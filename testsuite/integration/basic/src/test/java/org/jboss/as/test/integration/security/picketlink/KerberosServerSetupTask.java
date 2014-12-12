@@ -22,13 +22,10 @@
 
 package org.jboss.as.test.integration.security.picketlink;
 
-import org.jboss.as.test.integration.security.loginmodules.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +35,11 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifReader;
+import org.apache.directory.api.ldap.model.schema.SchemaManager;
+import org.apache.directory.server.annotations.CreateKdcServer;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.AnnotationUtils;
@@ -51,11 +53,6 @@ import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
 import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.api.ldap.model.entry.DefaultEntry;
-import org.apache.directory.api.ldap.model.ldif.LdifEntry;
-import org.apache.directory.api.ldap.model.ldif.LdifReader;
-import org.apache.directory.api.ldap.model.schema.SchemaManager;
-import org.apache.directory.server.annotations.CreateKdcServer;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
@@ -63,6 +60,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
+import org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
@@ -70,6 +68,7 @@ import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
+import org.jboss.security.SecurityConstants;
 
 /**
  * A server setup task which configures and starts two LDAP servers with Kerberos capabilities.
@@ -83,18 +82,17 @@ public class KerberosServerSetupTask implements ServerSetupTask {
     public static final String SECURITY_CREDENTIALS = "secret";
     public static final String SECURITY_PRINCIPAL = "uid=admin,ou=system";
 
-    private static final String KRB5_CONF_RESOURCE_FILENAME = "krb5.conf";
-    private static final String KRB5_CONF_1_FILENAME = "krb5-server1.conf";
-    public static final File KRB5_CONF_FILE = new File(KRB5_CONF_1_FILENAME);
-    
+    private static final String KEYSTORE_FILENAME = "ldaps.jks";
+    private static final File KEYSTORE_FILE = new File(KEYSTORE_FILENAME);
+
     public static final int LDAP_PORT = 10389;
     public static final int LDAPS_PORT = 10636;
 
     public static final int KERBEROS_PORT = 6088;
 
     public static final String KERBEROS_PRIMARY_REALM = "JBOSS.ORG";
-    
-    public static final String[] ROLE_NAMES = { "TheDuke", "Echo","Admin", "SharedRoles", "RX" };
+
+    public static final String[] ROLE_NAMES = { "TheDuke", "Echo", "Admin", "SharedRoles", "RX" };
 
     public static final String QUERY_ROLES;
     static {
@@ -106,9 +104,6 @@ public class KerberosServerSetupTask implements ServerSetupTask {
     }
 
     private boolean removeBouncyCastle = false;
-
-    private String origKrb5Conf;
-    private String origKrbDebug;
 
     private DirectoryService directoryService1;
     private LdapServer ldapServer1;
@@ -125,19 +120,16 @@ public class KerberosServerSetupTask implements ServerSetupTask {
      */
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         try {
-            if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
                 Security.addProvider(new BouncyCastleProvider());
                 removeBouncyCastle = true;
             }
-        } catch(SecurityException ex) {
+        } catch (SecurityException ex) {
             LOGGER.warn("Cannot register BouncyCastleProvider", ex);
         }
 
-        final String hostname = Utils.getSecondaryTestAddress(managementClient, false);
+        final String hostname = Utils.getHost(managementClient);
         createLdap1(managementClient, hostname);
-
-        origKrb5Conf = Utils.setSystemProperty("java.security.krb5.conf", KRB5_CONF_FILE.getAbsolutePath());
-        origKrbDebug = Utils.setSystemProperty("sun.security.krb5.debug", "true");
     }
 
     //@formatter:off
@@ -167,6 +159,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         transports =
         {
             @CreateTransport( protocol = "LDAP",  port = LDAP_PORT),
+            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT)
         },
         certificatePassword="secret")
     @CreateKdcServer(
@@ -178,19 +171,18 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         @CreateTransport( protocol = "TCP", port = KERBEROS_PORT )
     })
     //@formatter:on
-    public void createLdap1(ManagementClient managementClient, final String hostname) throws Exception, IOException, ClassNotFoundException, FileNotFoundException {
+    public void createLdap1(ManagementClient managementClient, final String hostname) throws Exception, IOException,
+            ClassNotFoundException, FileNotFoundException {
         final Map<String, String> map = new HashMap<String, String>();
-        final String cannonicalHost = getCannonicalHost(managementClient);
-        final String cannonicalIp = getFullCannonicalIp(managementClient);
+        final String cannonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
         map.put("hostname", cannonicalHost);
-        map.put("hostaddr", cannonicalIp);
         map.put("realm", KERBEROS_PRIMARY_REALM);
         directoryService1 = DSAnnotationProcessor.getDirectoryService();
         final String ldifContent = StrSubstitutor.replace(
                 IOUtils.toString(
                         KerberosServerSetupTask.class.getResourceAsStream(KerberosServerSetupTask.class.getSimpleName()
                                 + ".ldif"), "UTF-8"), map);
-        LOGGER.debug(ldifContent);
+        LOGGER.info(ldifContent);
 
         final SchemaManager schemaManager = directoryService1.getSchemaManager();
         try {
@@ -203,56 +195,22 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         }
         final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
                 (CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));
+        FileOutputStream fos = new FileOutputStream(KEYSTORE_FILE);
+        IOUtils.copy(getClass().getResourceAsStream(KEYSTORE_FILENAME), fos);
+        fos.close();
+
+        createLdapServer.setKeyStore(KEYSTORE_FILE.getAbsolutePath());
         fixTransportAddress(createLdapServer, cannonicalHost);
 
         ldapServer1 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService1);
         krbServer1 = KDCServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT, cannonicalHost);
         ldapServer1.start();
-
-        createKrb5Conf(cannonicalHost, KRB5_CONF_FILE, KERBEROS_PORT);
     }
 
     public static String getHttpServicePrincipal(ManagementClient managementClient) {
-        return "HTTP/" + getFullCannonicalIp(managementClient)+ "@" + KerberosServerSetupTask.KERBEROS_PRIMARY_REALM;
+        return "HTTP/" + NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient)) + "@"
+                + KerberosServerSetupTask.KERBEROS_PRIMARY_REALM;
     }
-
-    public static String getFullCannonicalIp(ManagementClient managementClient) {
-        String cannonicalIp = Utils.getSecondaryTestAddress(managementClient, false);
-        try {
-            return NetworkUtils.formatPossibleIpv6Address(InetAddress.getByName(cannonicalIp).getHostAddress());
-        } catch (UnknownHostException e) {
-            return NetworkUtils.formatPossibleIpv6Address(cannonicalIp);
-        }
-    }
-
-    public static String getCannonicalHost(ManagementClient managementClient) {
-        return NetworkUtils.formatPossibleIpv6Address(Utils.getSecondaryTestAddress(managementClient, true));
-    }
-
-    /**
-     * Creates a krb5.conf file for use with Kerberos server setup with this
-     * server setup task.
-     * @param hostname Hostname to use
-     * @param outputFile File to output
-     * @param port Kerberos server port
-     * @throws IOException
-     * @throws FileNotFoundException
-     */
-    private static void createKrb5Conf(final String hostname, final File outputFile, int port) throws IOException, FileNotFoundException {
-        FileOutputStream krb5Conf = new FileOutputStream(outputFile);
-        
-        Map<String,String> properties = new HashMap<String, String>();
-        properties.put("krbHostAndPort", hostname + ":" + port);
-        properties.put("krbHost", Utils.stripSquareBrackets(hostname));
-        
-        String content = StrSubstitutor.replace(IOUtils.toString(SAML2BasicAuthenticationTestCase.class.getResourceAsStream(KRB5_CONF_RESOURCE_FILENAME), "UTF-8"), properties);
-        
-        IOUtils.write(content, krb5Conf);
-        krb5Conf.close();
-        
-        LOGGER.debug(outputFile.getAbsolutePath() + ": \n" + content);
-    }
-
 
     /**
      * Fixes bind address in the CreateTransport annotation.
@@ -281,18 +239,15 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         krbServer1.stop();
         ldapServer1.stop();
         directoryService1.shutdown();
-        
-        KRB5_CONF_FILE.delete();
+
+        KEYSTORE_FILE.delete();
 
         FileUtils.deleteDirectory(directoryService1.getInstanceLayout().getInstanceDirectory());
 
-        Utils.setSystemProperty("java.security.krb5.conf", origKrb5Conf);
-        Utils.setSystemProperty("sun.security.krb5.debug", origKrbDebug);
-
-        if(removeBouncyCastle) {
+        if (removeBouncyCastle) {
             try {
                 Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-            } catch(SecurityException ex) {
+            } catch (SecurityException ex) {
                 LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
             }
         }
@@ -308,11 +263,22 @@ public class KerberosServerSetupTask implements ServerSetupTask {
          */
         @Override
         protected SystemProperty[] getSystemProperties() {
-            return new SystemProperty[] { 
-              new DefaultSystemProperty("java.security.krb5.conf", KRB5_CONF_FILE.getAbsolutePath()),
-              new DefaultSystemProperty("sun.security.krb5.debug", "true")
-            };
+            final Map<String, String> map = new HashMap<String, String>();
+            map.put("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath());
+            map.put("java.security.krb5.conf", Krb5ConfServerSetupTask.getKrb5ConfFullPath());
+            map.put("sun.security.krb5.debug", "true");
+            map.put(SecurityConstants.DISABLE_SECDOMAIN_OPTION, "true");
+            return mapToSystemProperties(map);
         }
     }
 
+    /**
+     * Task which generates krb5.conf and keytab file(s).
+     */
+    public static class Krb5ConfServerSetupTask extends AbstractKrb5ConfServerSetupTask {
+        @Override
+        protected List<UserForKeyTab> kerberosUsers() {
+            return null;
+        }
+    }
 }

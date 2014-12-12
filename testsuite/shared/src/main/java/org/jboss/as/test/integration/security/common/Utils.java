@@ -54,6 +54,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.http.Header;
@@ -97,14 +98,19 @@ import org.jboss.util.Base64;
  * @author Jan Lanik
  * @author Josef Cacek
  */
-public class Utils extends CoreUtils{
+public class Utils extends CoreUtils {
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
 
     public static final String UTF_8 = "UTF-8";
 
+    public static final boolean IBM_JDK = StringUtils.startsWith(SystemUtils.JAVA_VENDOR, "IBM");
+    public static final boolean OPEN_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "OpenJDK");
+    public static final boolean ORACLE_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "Java HotSpot");
+
     /** The REDIRECT_STRATEGY for Apache HTTP Client */
     public static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
+
         @Override
         public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) {
             boolean isRedirect = false;
@@ -386,8 +392,7 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Requests given URL and checks if the returned HTTP status code is the
-     * expected one. Returns HTTP response body
+     * Requests given URL and checks if the returned HTTP status code is the expected one. Returns HTTP response body
      *
      * @param URL url to which the request should be made
      * @param DefaultHttpClient httpClient to test multiple access
@@ -396,8 +401,8 @@ public class Utils extends CoreUtils{
      * @throws IOException
      * @throws URISyntaxException
      */
-    public static String makeCallWithHttpClient(URL url, HttpClient httpClient, int expectedStatusCode)
-            throws IOException, URISyntaxException {
+    public static String makeCallWithHttpClient(URL url, HttpClient httpClient, int expectedStatusCode) throws IOException,
+            URISyntaxException {
 
         String httpResponseBody = null;
         HttpGet httpGet = new HttpGet(url.toURI());
@@ -837,8 +842,8 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Copies server and clients keystores and truststores from this package to
-     * the given folder. Server truststore has accepted certificate from client keystore and vice-versa
+     * Copies server and clients keystores and truststores from this package to the given folder. Server truststore has accepted
+     * certificate from client keystore and vice-versa
      *
      * @param workingFolder folder to which key material should be copied
      * @throws IOException copying of keystores fails
@@ -860,8 +865,7 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Copies a resource file from current package to location denoted by given
-     * {@link File} instance.
+     * Copies a resource file from current package to location denoted by given {@link File} instance.
      *
      * @param file
      *
@@ -879,18 +883,19 @@ public class Utils extends CoreUtils{
     }
 
     public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword) {
-        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword, null);
+        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(),
+                keystorePassword, null);
     }
 
-    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword,
-            String vaultConfig) {
-        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword,
-                vaultConfig);
+    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile,
+            String keystorePassword, String vaultConfig) {
+        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(),
+                keystorePassword, vaultConfig);
     }
 
     /**
-     * Replace keystore paths and passwords variables in original configuration file with given values
-     * and set ${hostname} variable from system property: node0
+     * Replace keystore paths and passwords variables in original configuration file with given values and set ${hostname}
+     * variable from system property: node0
      *
      * @param originalFile String
      * @param keystoreFile File
@@ -899,9 +904,9 @@ public class Utils extends CoreUtils{
      * @param vaultConfig - path to vault settings
      * @return String content
      */
-    public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile, String keystorePassword,
-            String vaultConfig) {
-        String hostname = System.getProperty("node0");
+    public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile,
+            String keystorePassword, String vaultConfig) {
+        String hostname = getDefaultHost(false);
 
         // expand possible IPv6 address
         try {
@@ -925,8 +930,7 @@ public class Utils extends CoreUtils{
         map.put("password", keystorePassword);
 
         try {
-            content = StrSubstitutor.replace(
-                    IOUtils.toString(CoreUtils.class.getResourceAsStream(originalFile), "UTF-8"), map);
+            content = StrSubstitutor.replace(IOUtils.toString(CoreUtils.class.getResourceAsStream(originalFile), "UTF-8"), map);
         } catch (IOException ex) {
             String message = "Cannot find or modify configuration file " + originalFile + " , error : " + ex.getMessage();
             LOGGER.error(message);
@@ -975,8 +979,8 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Returns management address (host) from the givem {@link org.jboss.as.arquillian.container.ManagementClient}. If the returned value is IPv6 address then
-     * square brackets around are stripped.
+     * Returns management address (host) from the givem {@link org.jboss.as.arquillian.container.ManagementClient}. If the
+     * returned value is IPv6 address then square brackets around are stripped.
      *
      * @param managementClient
      * @return
@@ -986,7 +990,8 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Returns canonical hostname retrieved from management address of the givem {@link org.jboss.as.arquillian.container.ManagementClient}.
+     * Returns canonical hostname retrieved from management address of the givem
+     * {@link org.jboss.as.arquillian.container.ManagementClient}.
      *
      * @param managementClient
      * @return
@@ -998,19 +1003,31 @@ public class Utils extends CoreUtils{
     /**
      * Returns servlet URL, as concatenation of webapp URL and servlet path.
      *
-     * @param webAppURL        web application context URL (e.g. injected by Arquillian)
-     * @param servletPath      Servlet path starting with slash (must be not-<code>null</code>)
-     * @param mgmtClient       Management Client (may be null)
+     * @param webAppURL web application context URL (e.g. injected by Arquillian)
+     * @param servletPath Servlet path starting with slash (must be not-<code>null</code>)
+     * @param mgmtClient Management Client (may be null)
      * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
      * @return
      * @throws java.net.URISyntaxException
      */
     public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
-                                          boolean useCanonicalHost) throws URISyntaxException {
+            boolean useCanonicalHost) throws URISyntaxException {
         URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
         if (useCanonicalHost) {
             resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
         }
         return resultURI;
+    }
+
+    /**
+     * Returns hostname - either read from the "node0" system property or the loopback address "127.0.0.1".
+     *
+     * @param canonical return hostname in canonical form
+     *
+     * @return
+     */
+    public static String getDefaultHost(boolean canonical) {
+        final String hostname = System.getProperty("node0", "127.0.0.1");
+        return canonical ? getCannonicalHost(hostname) : hostname;
     }
 }

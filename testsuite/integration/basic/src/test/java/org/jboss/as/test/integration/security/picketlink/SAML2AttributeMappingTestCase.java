@@ -37,17 +37,21 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils;
 import org.jboss.as.test.integration.security.common.servlets.PrintAttributeServlet;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,8 +66,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ KerberosServerSetupTask.SystemPropertiesSetup.class, KerberosServerSetupTask.class, KerberosKeyTabSetup.class,
-        SAML2AttributeMappingTestCase.SecurityDomainsSetup.class })
+@ServerSetup({ KerberosServerSetupTask.Krb5ConfServerSetupTask.class, KerberosServerSetupTask.SystemPropertiesSetup.class,
+        KerberosServerSetupTask.class, SAML2AttributeMappingTestCase.SecurityDomainsSetup.class })
 @Ignore("AS7-6796 - Undertow SPNEGO")
 public class SAML2AttributeMappingTestCase {
 
@@ -83,6 +87,14 @@ public class SAML2AttributeMappingTestCase {
     @ArquillianResource
     @OperateOnDeployment(SP)
     private URL spUrl;
+
+    /**
+     * Skip unsupported/unstable/buggy Kerberos configurations.
+     */
+    @BeforeClass
+    public static void beforeClass() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    }
 
     @Deployment(name = IDP)
     public static WebArchive deploymentIdP() {
@@ -123,7 +135,6 @@ public class SAML2AttributeMappingTestCase {
      */
     @Test
     public void testPassUserPrincipalToAttributeManager() throws Exception {
-
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         httpClient.setRedirectStrategy(Utils.REDIRECT_STRATEGY);
 
@@ -165,7 +176,7 @@ public class SAML2AttributeMappingTestCase {
                                     .options(
                                             Krb5LoginConfiguration.getOptions(
                                                     KerberosServerSetupTask.getHttpServicePrincipal(managementClient),
-                                                    KerberosKeyTabSetup.getKeyTab(), true)).build()).build());
+                                                    AbstractKrb5ConfServerSetupTask.HTTP_KEYTAB_FILE, true)).build()).build());
 
             // Add IdP security domain
             res.add(new SecurityDomain.Builder()
@@ -184,7 +195,9 @@ public class SAML2AttributeMappingTestCase {
                                     .putOption("password-stacking", "useFirstPass")
                                     .putOption(
                                             Context.PROVIDER_URL,
-                                            "ldap://" + KerberosServerSetupTask.getCannonicalHost(managementClient) + ":"
+                                            "ldap://"
+                                                    + NetworkUtils.formatPossibleIpv6Address(Utils
+                                                            .getCannonicalHost(managementClient)) + ":"
                                                     + KerberosServerSetupTask.LDAP_PORT)
                                     .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org").putOption("baseFilter", "(uid={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
@@ -201,7 +214,9 @@ public class SAML2AttributeMappingTestCase {
                                     .flag("attribute")
                                     .putOption(
                                             Context.PROVIDER_URL,
-                                            "ldap://" + KerberosServerSetupTask.getCannonicalHost(managementClient) + ":"
+                                            "ldap://"
+                                                    + NetworkUtils.formatPossibleIpv6Address(Utils
+                                                            .getCannonicalHost(managementClient)) + ":"
                                                     + KerberosServerSetupTask.LDAP_PORT)
                                     .putOption("bindDN", KerberosServerSetupTask.SECURITY_PRINCIPAL)
                                     .putOption("bindCredential", KerberosServerSetupTask.SECURITY_CREDENTIALS)

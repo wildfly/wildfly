@@ -42,18 +42,6 @@ userPassword: httppwd
 krb5PrincipalName: HTTP/${hostname}@${realm}
 krb5KeyVersionNumber: 0
 
-dn: uid=HTTPaddr,ou=People,dc=jboss,dc=org
-objectClass: top
-objectClass: person
-objectClass: inetOrgPerson
-objectClass: krb5principal
-objectClass: krb5kdcentry
-cn: HTTP
-sn: Service
-uid: HTTPaddr
-userPassword: httppwd
-krb5PrincipalName: HTTP/${hostaddr}@${realm}
-krb5KeyVersionNumber: 0
 
 dn: uid=jduke,ou=People,dc=jboss,dc=org
 objectclass: top

@@ -4,11 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -85,10 +83,11 @@ public class PicketLinkTestBase {
             throws ClientProtocolException, IOException, URISyntaxException {
 
         String httpResponseBody = null;
-        HttpGet httpGet = new HttpGet(url.toURI());
+        final URI requestURI = Utils.replaceHost(url.toURI(), Utils.getDefaultHost(true));
+        HttpGet httpGet = new HttpGet(requestURI);
         HttpResponse response = httpClient.execute(httpGet);
         int statusCode = response.getStatusLine().getStatusCode();
-        LOGGER.info("Request to: " + url + " responds: " + statusCode);
+        LOGGER.info("Request to: " + requestURI + " responds: " + statusCode);
 
         assertEquals("Unexpected status code", expectedStatusCode, statusCode);
 
@@ -118,11 +117,12 @@ public class PicketLinkTestBase {
         params.setParameter(ClientPNames.HANDLE_REDIRECTS, false);
         String redirectLocation = url.toExternalForm();
 
-        HttpGet httpGet = new HttpGet(url.toURI());
+        final URI requestURI = Utils.replaceHost(url.toURI(), Utils.getDefaultHost(true));
+        HttpGet httpGet = new HttpGet(requestURI);
         httpGet.setParams(params);
         HttpResponse response = httpClient.execute(httpGet);
         int statusCode = response.getStatusLine().getStatusCode();
-        LOGGER.info("Request to: " + url + " responds: " + statusCode);
+        LOGGER.info("Request to: " + requestURI + " responds: " + statusCode);
 
         Header locationHeader = response.getFirstHeader("location");
         if (locationHeader != null) {
@@ -149,6 +149,7 @@ public class PicketLinkTestBase {
      */
     public static String postSAML2Assertions(URL spURL, URL idpURL, DefaultHttpClient httpClient)
             throws ClientProtocolException, IOException, URISyntaxException {
+        final String canonicalHost = Utils.getDefaultHost(true);
 
         String httpResponseBody = makeCall(spURL, httpClient, 200);
 
@@ -158,7 +159,7 @@ public class PicketLinkTestBase {
         List<NameValuePair> pairs = new ArrayList<NameValuePair>();
         pairs.add(new BasicNameValuePair("SAMLRequest", samlRequest));
 
-        HttpPost httpPost = new HttpPost(idpURL.toURI());
+        HttpPost httpPost = new HttpPost(Utils.replaceHost(idpURL.toURI(), canonicalHost));
         httpPost.setEntity(new UrlEncodedFormEntity(pairs));
         HttpResponse httpResponse = httpClient.execute(httpPost);
 
@@ -174,7 +175,7 @@ public class PicketLinkTestBase {
         pairs = new ArrayList<NameValuePair>();
         pairs.add(new BasicNameValuePair("SAMLResponse", samlResponse));
 
-        httpPost = new HttpPost(spURL.toURI());
+        httpPost = new HttpPost(Utils.replaceHost(spURL.toURI(), canonicalHost));
         httpPost.setEntity(new UrlEncodedFormEntity(pairs));
         httpResponse = httpClient.execute(httpPost);
 
@@ -199,20 +200,10 @@ public class PicketLinkTestBase {
     public static String propertiesReplacer(String resourceFile, String deploymentName, String bindingType,
             String idpContextPath) {
 
-        String hostname = System.getProperty("node0");
-
-        // expand possible IPv6 address
-        try {
-            hostname = NetworkUtils.formatPossibleIpv6Address(InetAddress.getByName(hostname).getHostAddress());
-        } catch (UnknownHostException ex) {
-            String message = "Cannot resolve host address: " + hostname + " , error : " + ex.getMessage();
-            LOGGER.error(message);
-            throw new RuntimeException(ex);
-        }
 
         final Map<String, String> map = new HashMap<String, String>();
         String content = "";
-        map.put("hostname", hostname);
+        map.put("hostname", NetworkUtils.formatPossibleIpv6Address(Utils.getDefaultHost(true)));
         map.put("deployment", deploymentName);
         map.put("bindingType", bindingType);
         map.put("idpContextPath", idpContextPath);
@@ -243,9 +234,10 @@ public class PicketLinkTestBase {
      * @throws PrivilegedActionException
      * @throws LoginException
      */
-    public static String makeCallWithKerberosAuthn(final URI uri, final DefaultHttpClient httpClient, final String user,
+    public static String makeCallWithKerberosAuthn(URI uri, final DefaultHttpClient httpClient, final String user,
             final String pass, final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException,
             LoginException {
+        uri = Utils.replaceHost(uri, Utils.getDefaultHost(true));
         LOGGER.info("Requesting URI: " + uri);
         httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
         httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
