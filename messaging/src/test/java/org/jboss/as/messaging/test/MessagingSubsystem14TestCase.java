@@ -38,6 +38,7 @@ import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.OVERRIDE_IN_VM_SECURITY;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SERVER_PATH;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
@@ -252,7 +253,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH),
                                 createChainedConfig(
                                         HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
-                                        concat(HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0, MAX_SAVED_REPLICATED_JOURNAL_SIZE, CHECK_FOR_LIVE_SERVER)))
+                                        concat(HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0, MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY, CHECK_FOR_LIVE_SERVER)))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(pathElement(ModelDescriptionConstants.PATH)),
                                 new RejectExpressionsConfig(ModelDescriptionConstants.PATH))
@@ -385,7 +386,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH),
                                 createChainedConfig(
                                         new AttributeDefinition[]{},
-                                        new AttributeDefinition[] { MAX_SAVED_REPLICATED_JOURNAL_SIZE }))
+                                        new AttributeDefinition[] { MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
                                 createChainedConfig(

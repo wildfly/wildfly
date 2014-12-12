@@ -54,6 +54,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         KNOWN_ATTRIBUTES.add("journalMaxIo");
         KNOWN_ATTRIBUTES.add("securityDomain");
         KNOWN_ATTRIBUTES.add("securityInvalidationInterval");
+        KNOWN_ATTRIBUTES.add("overrideInVmSecurity");
         KNOWN_ATTRIBUTES.add("liveConnectorRef");
         KNOWN_ATTRIBUTES.add("clustered");
 

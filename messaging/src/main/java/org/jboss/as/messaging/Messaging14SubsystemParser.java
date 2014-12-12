@@ -49,6 +49,7 @@ public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
     protected void handleUnknownConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
         switch (element) {
             case MAX_SAVED_REPLICATED_JOURNAL_SIZE:
+            case OVERRIDE_IN_VM_SECURITY:
                 handleElementText(reader, element, operation);
                 break;
             default: {

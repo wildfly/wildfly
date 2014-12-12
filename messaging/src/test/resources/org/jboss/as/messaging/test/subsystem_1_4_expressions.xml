@@ -9,6 +9,7 @@
             <security-domain>someDomain</security-domain>
             <security-enabled>${security.enabled:false}</security-enabled>
             <security-invalidation-interval>${security.invalidation.interval:1234}</security-invalidation-interval>
+            <override-in-vm-security>${override.in-vm.security:false}</override-in-vm-security>
             <wild-card-routing-enabled>${wild.card.routing.enabled:false}</wild-card-routing-enabled>
             <management-address>${management.address:my.management.address}</management-address>
             <management-notification-address>${management.notification.address:my.management.notif.address}</management-notification-address>

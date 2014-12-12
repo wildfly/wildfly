@@ -108,6 +108,13 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
+          <xs:element maxOccurs="1" minOccurs="0" name="override-in-vm-security" type="xs:boolean">
+              <xs:annotation>
+                  <xs:documentation>
+                      Whether the HornetQ server will override security credentials for in-vm connections (true by default).
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="wild-card-routing-enabled" type="xs:boolean">
                <xs:annotation>
                    <xs:documentation>
