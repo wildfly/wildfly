@@ -45,6 +45,8 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
@@ -109,6 +111,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final UserTransaction userTransaction;
     private final ServerSecurityManager serverSecurityManager;
     private final ControlPoint controlPoint;
+    private final AtomicBoolean exceptionLoggingEnabled;
 
     private final PrivilegedAction<Principal> getCaller = new PrivilegedAction<Principal>() {
         @Override
@@ -165,6 +168,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
         this.serverSecurityManager = ejbComponentCreateService.getServerSecurityManager();
         this.controlPoint = ejbComponentCreateService.getControlPoint();
+        this.exceptionLoggingEnabled = ejbComponentCreateService.getExceptionLoggingEnabled();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -559,5 +563,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     @Override
     public void done() {
         super.stop();
+    }
+
+
+    public boolean isExceptionLoggingEnabled() {
+        return exceptionLoggingEnabled.get();
     }
 }

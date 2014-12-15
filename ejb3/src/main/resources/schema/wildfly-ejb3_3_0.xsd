@@ -60,6 +60,7 @@
             <xs:element name="default-missing-method-permissions-deny-access" type="default-missing-method-permissions-deny-accessType" minOccurs="0" maxOccurs="1" />
             <xs:element name="disable-default-ejb-permissions" type="disable-default-ejb-permissionsType" minOccurs="0" maxOccurs="1" />
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="log-system-exceptions" type="log-system-exceptionsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
@@ -427,6 +428,17 @@
                    </xs:documentation>
                </xs:annotation>
         <xs:attribute name="value" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="log-system-exceptionsType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                       If this is enabled then system exceptions will be logged by the EJB subsystem.
+                   ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="value" type="xs:string"/>
     </xs:complexType>
 
 

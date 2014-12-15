@@ -41,6 +41,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Attachments;
@@ -327,6 +328,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 }
 
                 configuration.addComponentInterceptor(ExecutionTimeInterceptor.FACTORY, InterceptorOrder.Component.EJB_EXECUTION_TIME_INTERCEPTOR, true);
+                configuration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                    @Override
+                    public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService service) throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(LoggingInterceptor.LOGGING_ENABLED_SERVICE_NAME, AtomicBoolean.class, service.getExceptionLoggingEnabledInjector());
+                    }
+                });
             }
         });
 

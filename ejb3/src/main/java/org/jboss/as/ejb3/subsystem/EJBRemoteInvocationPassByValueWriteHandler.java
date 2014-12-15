@@ -36,8 +36,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueInjectionService;
 
-import java.util.List;
-
 /**
  * @author Jaikiran Pai
  */

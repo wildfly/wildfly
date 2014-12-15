@@ -90,6 +90,7 @@ public enum EJB3SubsystemXMLElement {
     THREAD_POOL("thread-pool"),
     THREAD_POOLS("thread-pools"),
     TIMER_SERVICE("timer-service"),
+    LOG_SYSTEM_EXCEPTIONS(EJB3SubsystemModel.LOG_SYSTEM_EXCEPTIONS),
     ;
 
     private final String name;

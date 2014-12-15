@@ -32,6 +32,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Logs any exceptions/errors that happen during invocation of EJB methods, as specified by the
@@ -46,6 +47,8 @@ import org.jboss.invocation.InterceptorFactory;
  */
 public class LoggingInterceptor implements Interceptor {
 
+    public static final ServiceName LOGGING_ENABLED_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "logging", "enabled");
+
     public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new LoggingInterceptor());
 
     private LoggingInterceptor() {
@@ -54,11 +57,14 @@ public class LoggingInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
+        final EJBComponent component = (EJBComponent) interceptorContext.getPrivateData(Component.class);
+        if(!component.isExceptionLoggingEnabled()) {
+            return interceptorContext.proceed();
+        }
         try {
             // we just pass on the control and do our work only when an exception occurs
             return interceptorContext.proceed();
         } catch (Throwable t) {
-            final EJBComponent component = (EJBComponent) interceptorContext.getPrivateData(Component.class);
             final Method invokedMethod = interceptorContext.getMethod();
             // check if it's an application exception. If yes, then *don't* log
             final ApplicationExceptionDetails appException = component.getApplicationException(t.getClass(), invokedMethod);
