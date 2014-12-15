@@ -197,16 +197,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (invoker == null) {
             throw EjbLogger.ROOT_LOGGER.invokerIsNull();
         }
-        final List<ScheduleTimer> timers = new ArrayList<ScheduleTimer>();
 
-        for (Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {
-            for (AutoTimer timer : entry.getValue()) {
-                timers.add(new ScheduleTimer(entry.getKey(), timer.getScheduleExpression(), timer.getTimerConfig()));
-            }
-        }
-        // restore the timers
         started = true;
-        restoreTimers(timers);
         // register ourselves to the TimerServiceRegistry (if any)
         if (timerServiceRegistry != null) {
             timerServiceRegistry.registerTimerService(this);
@@ -220,13 +212,29 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (timerServiceRegistry != null) {
             timerServiceRegistry.unRegisterTimerService(this);
         }
-        suspendTimers();
+
         timerPersistence.getValue().timerUndeployed(timedObjectInvoker.getValue().getTimedObjectId());
         started = false;
         this.transactionManager = null;
         IoUtils.safeClose(listenerHandle);
         listenerHandle = null;
         timerInjectedValue.getValue().purge(); //WFLY-3823
+    }
+
+
+    public synchronized void activate() {
+        final List<ScheduleTimer> timers = new ArrayList<ScheduleTimer>();
+        for (Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {
+            for (AutoTimer timer : entry.getValue()) {
+                timers.add(new ScheduleTimer(entry.getKey(), timer.getScheduleExpression(), timer.getTimerConfig()));
+            }
+        }
+        // restore the timers
+        restoreTimers(timers);
+    }
+
+    public synchronized void deactivate() {
+        suspendTimers();
     }
 
     @Override
@@ -1261,5 +1269,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             return TimerServiceImpl.this;
         }
     }
+
 
 }
