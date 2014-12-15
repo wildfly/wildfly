@@ -89,6 +89,11 @@ public class ComponentConfiguration {
 
     private final Set<Object> interceptorContextKeys = new HashSet<Object>();
 
+    /**
+     * Contains a set of all lifecycle methods defined by the bean
+     */
+    private final Set<Method> lifecycleMethods = new HashSet<>();
+
     public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         this.componentDescription = componentDescription;
         this.classIndex = classIndex;
@@ -464,5 +469,23 @@ public class ComponentConfiguration {
 
     public ConcurrentContext getConcurrentContext() {
         return concurrentContext;
+    }
+
+    /**
+     * Adds a lifecycle method to the lifecycle methods set
+     *
+     * @param method The lifecycle method
+     */
+    public void addLifecycleMethod(Method method) {
+        lifecycleMethods.add(method);
+    }
+
+    /**
+     * Returns a set of all lifecycle methods defined on the bean
+     *
+     * @return All lifecycle methods defined on the component class and its superclasses
+     */
+    public Set<Method> getLifecycleMethods() {
+        return Collections.unmodifiableSet(lifecycleMethods);
     }
 }

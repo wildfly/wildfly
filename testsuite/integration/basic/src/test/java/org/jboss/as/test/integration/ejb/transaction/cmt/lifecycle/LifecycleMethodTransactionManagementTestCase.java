@@ -84,4 +84,20 @@ public class LifecycleMethodTransactionManagementTestCase {
             userTransaction.rollback();
         }
     }
+
+
+    @Test
+    public void testStatefulRequiresNew() throws SystemException, NotSupportedException, NamingException {
+        UserTransaction userTransaction = (UserTransaction) new InitialContext().lookup("java:jboss/UserTransaction");
+        TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry) new InitialContext().lookup("java:jboss/TransactionSynchronizationRegistry");
+        userTransaction.begin();
+        StatefulRequiresNewLifecycleBean required = (StatefulRequiresNewLifecycleBean)new InitialContext().lookup("java:module/StatefulRequiresNewLifecycleBean");
+        try {
+            Object key = tsr.getTransactionKey();
+            Assert.assertNotSame(key, required.getKey());
+            Assert.assertEquals(Status.STATUS_ACTIVE, required.getState());
+        } finally {
+            userTransaction.rollback();
+        }
+    }
 }

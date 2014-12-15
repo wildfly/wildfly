@@ -33,9 +33,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponentCreateService;
@@ -165,9 +167,19 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         // up the tx attributes only for the views exposed by this component
         // AS7-899: We only want to process public methods of the proper sub-class. (getDefinedComponentMethods returns all in random order)
         // TODO: use ClassReflectionIndex (low prio, because we store the result without class name) (which is a bug: AS7-905)
+        Set<Method> lifeCycle = new HashSet<>(componentConfiguration.getLifecycleMethods());
         for (Method method : componentConfiguration.getComponentClass().getMethods()) {
             this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
+            lifeCycle.remove(method);
         }
+        //now handle non-public lifecycle methods declared on the bean class itself
+        //see WFLY-4127
+        for(Method method : lifeCycle)  {
+            if(method.getDeclaringClass().equals(componentConfiguration.getComponentClass())) {
+                this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
+            }
+        }
+
         final HashMap<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
         for (ViewDescription view : componentConfiguration.getComponentDescription().getViews()) {
             viewServices.put(view.getViewClassName(), view.getServiceName());
@@ -244,7 +256,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
         MethodIntf defaultMethodIntf = (ejbComponentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
         TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttributes().getAttribute(methodIntf, method, defaultMethodIntf);
-        txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
+        if(txAttr != null) {
+            txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
+        }
         Integer txTimeout = ejbComponentDescription.getTransactionTimeouts().getAttribute(methodIntf, method, defaultMethodIntf);
         if (txTimeout != null) {
             txTimeouts.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txTimeout);

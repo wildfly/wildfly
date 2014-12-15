@@ -86,29 +86,32 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
 
                 final InterceptorClassDescription interceptorConfig = InterceptorClassDescription.merge(ComponentDescription.mergeInterceptorConfig(clazz, classDescription, description, metadataComplete), moduleDescription.getInterceptorClassOverride(clazz.getName()));
 
-                handleClassMethod(clazz, interceptorConfig.getAroundInvoke(), componentUserAroundInvoke, false, false);
+                handleClassMethod(clazz, interceptorConfig.getAroundInvoke(), componentUserAroundInvoke, false, false, configuration);
 
                 if (description.isTimerServiceRequired()) {
-                    handleClassMethod(clazz, interceptorConfig.getAroundTimeout(), componentUserAroundTimeout, false, false);
+                    handleClassMethod(clazz, interceptorConfig.getAroundTimeout(), componentUserAroundTimeout, false, false, configuration);
                 }
                 if (!description.isIgnoreLifecycleInterceptors()) {
-                    handleClassMethod(clazz, interceptorConfig.getPostConstruct(), userPostConstruct, true, true);
-                    handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userPreDestroy, true, true);
+                    handleClassMethod(clazz, interceptorConfig.getPostConstruct(), userPostConstruct, true, true, configuration);
+                    handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userPreDestroy, true, true, configuration);
 
 
                     if (description.isPassivationApplicable()) {
-                        handleClassMethod(clazz, interceptorConfig.getPrePassivate(), componentUserPrePassivate, false, false);
-                        handleClassMethod(clazz, interceptorConfig.getPostActivate(), componentUserPostActivate, false, false);
+                        handleClassMethod(clazz, interceptorConfig.getPrePassivate(), componentUserPrePassivate, false, false, configuration);
+                        handleClassMethod(clazz, interceptorConfig.getPostActivate(), componentUserPostActivate, false, false, configuration);
                     }
                 }
             }
 
-            private void handleClassMethod(final Class<?> clazz, final MethodIdentifier methodIdentifier, final List<InterceptorFactory> interceptors, boolean changeMethod, boolean lifecycleMethod) throws DeploymentUnitProcessingException {
+            private void handleClassMethod(final Class<?> clazz, final MethodIdentifier methodIdentifier, final List<InterceptorFactory> interceptors, boolean changeMethod, boolean lifecycleMethod, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 if (methodIdentifier != null) {
                     final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
                     if (isNotOverriden(clazz, method, configuration.getComponentClass(), deploymentReflectionIndex)) {
                         InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new ManagedReferenceLifecycleMethodInterceptor(BasicComponentInstance.INSTANCE_KEY, method, changeMethod, lifecycleMethod));
                         interceptors.add(interceptorFactory);
+                        if(lifecycleMethod) {
+                            configuration.addLifecycleMethod(method);
+                        }
                     }
                 }
             }
