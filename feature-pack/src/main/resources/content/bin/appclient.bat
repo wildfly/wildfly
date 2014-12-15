@@ -12,8 +12,10 @@ set SERVER_OPTS=%*
 
 if "%OS%" == "Windows_NT" (
   set "DIRNAME=%~dp0%"
+  set "PROGNAME=%~nx0%"
 ) else (
   set DIRNAME=.\
+  set "PROGNAME=appclient.bat"
 )
 
 setlocal EnableDelayedExpansion
@@ -69,12 +71,6 @@ if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
 )
 
 set DIRNAME=
-
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=appclient.bat"
-)
 
 rem Setup JBoss specific properties
 set "JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%"
