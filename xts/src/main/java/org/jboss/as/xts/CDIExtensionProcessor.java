@@ -35,7 +35,8 @@ import org.jboss.as.weld.deployment.WeldPortableExtensions;
 public class CDIExtensionProcessor implements DeploymentUnitProcessor {
 
     private static final String[] EMPTY_STRING_ARRAY = {};
-    private static final String[] EXTENSIONS = {"org.jboss.narayana.txframework.impl.as.TXFrameworkCDIExtension"};
+    private static final String[] EXTENSIONS = {"org.jboss.narayana.txframework.impl.as.TXFrameworkCDIExtension",
+            "org.jboss.narayana.compensations.impl.CompensationsCDIExtension"};
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();

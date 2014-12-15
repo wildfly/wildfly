@@ -630,8 +630,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.narayana.txframework</groupId>
-            <artifactId>txframework</artifactId>
+            <groupId>org.jboss.narayana.compensations</groupId>
+            <artifactId>compensations</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
