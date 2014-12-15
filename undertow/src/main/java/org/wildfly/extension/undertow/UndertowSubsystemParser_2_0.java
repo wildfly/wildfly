@@ -78,7 +78,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                         .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                 ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES,ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
                                                 ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
+                                                ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT)
                                         .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT)
                         )
                         .addChild(
@@ -88,7 +88,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                         .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                 ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES,ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
                                                 ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
+                                                ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT)
                                         .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT)
                         ).addChild(
                                         builder(HttpsListenerResourceDefinition.INSTANCE)
@@ -98,7 +98,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                                 .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
                                                         ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
+                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT)
                                                 .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE)
