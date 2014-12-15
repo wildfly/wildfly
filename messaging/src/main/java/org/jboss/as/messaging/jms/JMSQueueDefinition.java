@@ -150,7 +150,7 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         if (registerRuntimeOnly) {
-            JMSQueueControlHandler.INSTANCE.registerOperations(registry);
+            JMSQueueControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
             if (!deployed) {
                 SimpleOperationDefinition addJNDI = new SimpleOperationDefinition(AbstractUpdateJndiHandler.ADD_JNDI,

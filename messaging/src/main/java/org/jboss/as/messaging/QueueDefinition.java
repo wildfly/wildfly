@@ -150,7 +150,7 @@ public class QueueDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         if (registerRuntimeOnly) {
-            QueueControlHandler.INSTANCE.registerOperations(registry);
+            QueueControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
         }
     }
 

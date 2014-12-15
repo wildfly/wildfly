@@ -39,6 +39,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -96,6 +97,8 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
     private final ParametersValidator moveMessageValidator = new ParametersValidator();
     private final ParametersValidator moveMessagesValidator = new ParametersValidator();
 
+    public static final ParameterValidator PRIORITY_VALIDATOR = new IntRangeValidator(0, 9, false, false);
+
     protected AbstractQueueControlHandler(final ParameterValidator messageIdValidator) {
         //populate validators
 
@@ -118,7 +121,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         moveMessagesValidator.registerValidator(REJECT_DUPLICATES, rejectDuplicatesValidator);
     }
 
-    public void registerOperations(final ManagementResourceRegistration registry) {
+    public void registerOperations(final ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
 
         final boolean forJMS = isJMS();
 
