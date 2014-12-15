@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,7 +46,7 @@ public class DefaultResourceAdapterWriteHandler extends AbstractWriteAttributeHa
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updateDefaultAdapterService(context, model, null);
+        updateDefaultAdapterService(context, model);
 
         return false;
     }
@@ -58,10 +56,10 @@ public class DefaultResourceAdapterWriteHandler extends AbstractWriteAttributeHa
                                          ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        updateDefaultAdapterService(context, restored, null);
+        updateDefaultAdapterService(context, restored);
     }
 
-    void updateDefaultAdapterService(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void updateDefaultAdapterService(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
         final ModelNode adapterNameNode = EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.resolveModelAttribute(context, model);
         final String adapterName =  adapterNameNode.isDefined() ? adapterNameNode.asString() : null;
@@ -77,9 +75,6 @@ public class DefaultResourceAdapterWriteHandler extends AbstractWriteAttributeHa
             ServiceController<?> newController =
                 context.getServiceTarget().addService(DefaultResourceAdapterService.DEFAULT_RA_NAME_SERVICE_NAME, defaultResourceAdapterService)
                     .install();
-            if (newControllers != null) {
-                newControllers.add(newController);
-            }
         }
 
     }

@@ -32,7 +32,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
-import java.util.List;
 
 /**
  * User: jpai
@@ -48,7 +47,7 @@ class DefaultSingletonBeanAccessTimeoutWriteHandler extends AbstractWriteAttribu
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updateOrCreateDefaultSingletonBeanAccessTimeoutService(context, model, null);
+        updateOrCreateDefaultSingletonBeanAccessTimeoutService(context, model);
 
         return false;
     }
@@ -57,10 +56,10 @@ class DefaultSingletonBeanAccessTimeoutWriteHandler extends AbstractWriteAttribu
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        updateOrCreateDefaultSingletonBeanAccessTimeoutService(context, restored, null);
+        updateOrCreateDefaultSingletonBeanAccessTimeoutService(context, restored);
     }
 
-    void updateOrCreateDefaultSingletonBeanAccessTimeoutService(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void updateOrCreateDefaultSingletonBeanAccessTimeoutService(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final long defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.resolveModelAttribute(context, model).asLong();
         final ServiceName serviceName = DefaultAccessTimeoutService.SINGLETON_SERVICE_NAME;
         final ServiceRegistry registry = context.getServiceRegistry(true);
@@ -73,9 +72,6 @@ class DefaultSingletonBeanAccessTimeoutWriteHandler extends AbstractWriteAttribu
             final DefaultAccessTimeoutService defaultAccessTimeoutService = new DefaultAccessTimeoutService(defaultAccessTimeout);
             final ServiceController<?> newService = context.getServiceTarget().addService(serviceName, defaultAccessTimeoutService)
                     .install();
-            if (newControllers != null) {
-                newControllers.add(newService);
-            }
         }
     }
 }
