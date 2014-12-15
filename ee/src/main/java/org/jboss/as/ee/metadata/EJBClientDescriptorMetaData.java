@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -34,13 +34,15 @@ import java.util.Set;
  * Metadata for configurations contained in jboss-ejb-client.xml descriptor
  *
  * @author Jaikiran Pai
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class EJBClientDescriptorMetaData {
 
-    private boolean excludeLocalReceiver;
+    private Boolean excludeLocalReceiver;
     private Boolean localReceiverPassByValue;
     private long invocationTimeout;
     private String deploymentNodeSelector;
+    private String profile;
 
     private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
     private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
@@ -96,7 +98,7 @@ public class EJBClientDescriptorMetaData {
      *
      * @param excludeLocalReceiver True if local receiver has to be excluded in the EJB client context. False otherwise.
      */
-    public void setExcludeLocalReceiver(final boolean excludeLocalReceiver) {
+    public void setExcludeLocalReceiver(final Boolean excludeLocalReceiver) {
         this.excludeLocalReceiver = excludeLocalReceiver;
     }
 
@@ -106,7 +108,7 @@ public class EJBClientDescriptorMetaData {
      *
      * @return
      */
-    public boolean isLocalReceiverExcluded() {
+    public Boolean isLocalReceiverExcluded() {
         return this.excludeLocalReceiver;
     }
 
@@ -135,6 +137,16 @@ public class EJBClientDescriptorMetaData {
     public void setDeploymentNodeSelector(final String selector) {
         this.deploymentNodeSelector = selector;
     }
+
+    public String getProfile() {
+        return this.profile;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+
 
     public class ClusterConfig extends CommonConnectionConfig {
 

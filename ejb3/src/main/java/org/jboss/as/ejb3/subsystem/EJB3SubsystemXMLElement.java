@@ -65,13 +65,18 @@ public enum EJB3SubsystemXMLElement {
 
     OPTIMISTIC_LOCKING("optimistic-locking"),
     OPTION("option"),
+    OUTBOUND_CONNECTION_REF("outbound-connection-ref"),
 
     PASSIVATION_STORE("passivation-store"),
     PASSIVATION_STORES("passivation-stores"),
+    PROFILE("profile"),
+    PROFILES("profiles"),
+    PROPERTY("property"),
     @Deprecated CLUSTER_PASSIVATION_STORE("cluster-passivation-store"),
     @Deprecated FILE_PASSIVATION_STORE("file-passivation-store"),
 
     REMOTE("remote"),
+    REMOTING_EJB_RECEIVER("remoting-ejb-receiver"),
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
     RESOURCE_ADAPTER_REF("resource-adapter-ref"),
 
@@ -85,7 +90,6 @@ public enum EJB3SubsystemXMLElement {
     THREAD_POOL("thread-pool"),
     THREAD_POOLS("thread-pools"),
     TIMER_SERVICE("timer-service"),
-
     ;
 
     private final String name;

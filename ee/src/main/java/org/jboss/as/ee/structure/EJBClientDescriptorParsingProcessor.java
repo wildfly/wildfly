@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -60,6 +60,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
     private static final QName ROOT_1_0 = new QName(EJBClientDescriptor10Parser.NAMESPACE_1_0, "jboss-ejb-client");
     private static final QName ROOT_1_1 = new QName(EJBClientDescriptor11Parser.NAMESPACE_1_1, "jboss-ejb-client");
     private static final QName ROOT_1_2 = new QName(EJBClientDescriptor12Parser.NAMESPACE_1_2, "jboss-ejb-client");
+    private static final QName ROOT_1_3 = new QName(EJBClientDescriptor13Parser.NAMESPACE_1_3, "jboss-ejb-client");
     private static final QName ROOT_NO_NAMESPACE = new QName("jboss-ejb-client");
 
 
@@ -72,6 +73,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
         mapper.registerRootElement(ROOT_1_0, EJBClientDescriptor10Parser.INSTANCE);
         mapper.registerRootElement(ROOT_1_1, EJBClientDescriptor11Parser.INSTANCE);
         mapper.registerRootElement(ROOT_1_2, EJBClientDescriptor12Parser.INSTANCE);
+        mapper.registerRootElement(ROOT_1_3, EJBClientDescriptor13Parser.INSTANCE);
         mapper.registerRootElement(ROOT_NO_NAMESPACE, EJBClientDescriptor12Parser.INSTANCE);
     }
 

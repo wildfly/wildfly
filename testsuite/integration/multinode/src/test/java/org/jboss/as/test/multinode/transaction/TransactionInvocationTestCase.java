@@ -64,7 +64,7 @@ public class TransactionInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, CLIENT_DEPLOYMENT + ".jar");
         jar.addClasses(ClientEjb.class, TransactionalRemote.class, TransactionInvocationTestCase.class,
                 TransactionalStatefulRemote.class);
-        jar.addAsManifestResource("META-INF/jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
         return jar;
     }
 

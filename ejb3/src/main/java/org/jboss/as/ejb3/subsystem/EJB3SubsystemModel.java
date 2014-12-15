@@ -28,6 +28,7 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * User: jpai
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public interface EJB3SubsystemModel {
     String LITE = "lite";
@@ -74,6 +75,14 @@ public interface EJB3SubsystemModel {
 
     String REMOTE = "remote";
     String SERVICE = "service";
+    String PROFILE = "profile";
+    String REMOTING_PROFILE = "remoting-profile";
+    String EXCLUDE_LOCAL_RECEIVER= "exclude-local-receiver";
+    String LOCAL_RECEIVER_PASS_BY_VALUE = "local-receiver-pass-by-value";
+    String REMOTING_EJB_RECEIVER = "remoting-ejb-receiver";
+    String OUTBOUND_CONNECTION_REF= "outbound-connection-ref";
+    String CONNECT_TIMEOUT= "connect-timeout";
+
     String TIMER = "timer";
     String TIMER_SERVICE = "timer-service";
     String THREAD_POOL = "thread-pool";

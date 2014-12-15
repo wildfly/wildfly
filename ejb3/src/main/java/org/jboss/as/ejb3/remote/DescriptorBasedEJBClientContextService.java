@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
@@ -32,7 +36,6 @@ import org.jboss.ejb.client.remoting.RemotingConnectionEJBReceiver;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -42,20 +45,14 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Connection;
 import org.xnio.IoFuture;
-import org.xnio.IoUtils;
 import org.xnio.OptionMap;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A service which sets up the {@link EJBClientContext} with appropriate remoting receivers and local receivers.
  * The receivers and the client context are configured in a jboss-ejb-client.xml.
  *
  * @author Jaikiran Pai
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class DescriptorBasedEJBClientContextService implements Service<EJBClientContext> {
 
@@ -65,21 +62,10 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
 
     private static final long DEFAULT_CONNECTION_TIMEOUT = 5000L;
 
-    /**
-     * The outbound connection references from which the remoting EJB receivers will be created
-     */
-    private final Map<ServiceName, InjectedValue<AbstractOutboundConnectionService>> remotingOutboundConnections = new HashMap<ServiceName, InjectedValue<AbstractOutboundConnectionService>>();
-
-    /**
-     * (optional) local EJB receiver for the EJB client context
-     */
-    private final InjectedValue<LocalEjbReceiver> localEjbReceiverInjectedValue = new InjectedValue<LocalEjbReceiver>();
+    private final InjectedValue<RemotingProfileService> profileServiceValue=new InjectedValue<RemotingProfileService>();
 
     private final EJBClientConfiguration ejbClientConfiguration;
     private final ClassLoader clientContextClassloader;
-
-    private final Map<String, OptionMap> channelCreationOpts = Collections.synchronizedMap(new HashMap<String, OptionMap>());
-    private final Map<String, Long> connectionTimeouts = Collections.synchronizedMap(new HashMap<String, Long>());
 
     /**
      * The client context
@@ -111,28 +97,22 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         } else {
             context = EJBClientContext.create(this.ejbClientConfiguration);
         }
+        final RemotingProfileService profileService=profileServiceValue.getValue();
         // add the (optional) local EJB receiver
-        final LocalEjbReceiver localEjbReceiver = this.localEjbReceiverInjectedValue.getOptionalValue();
+        final LocalEjbReceiver localEjbReceiver = profileService.getLocalEjbReceiverInjector().getOptionalValue();
         if (localEjbReceiver != null) {
             context.registerEJBReceiver(localEjbReceiver);
-            logger.debug("Added a local EJB receiver to descriptor based EJB client context named " + startContext.getController().getName());
+            logger.debugf("Added a local EJB receiver to descriptor based EJB client context named %s", startContext
+                    .getController().getName());
         }
         // now process the remoting receivers
-        this.registerRemotingEJBReceivers(startContext, context);
+        this.registerRemotingEJBReceivers(startContext, context,profileService);
         // we now have a fully configured EJB client context for use
         this.ejbClientContext = context;
     }
 
     @Override
     public synchronized void stop(StopContext context) {
-        final LocalEjbReceiver localEjbReceiver = this.localEjbReceiverInjectedValue.getOptionalValue();
-        if (localEjbReceiver != null) {
-            this.ejbClientContext.unregisterEJBReceiver(localEjbReceiver);
-            logger.debugf("Removed a local EJB receiver from descriptor based EJB client context named %s", context.getController().getName());
-        }
-        if(this.ejbClientContext != null) {
-            IoUtils.safeClose(this.ejbClientContext);
-        }
         this.ejbClientContext = null;
     }
 
@@ -141,52 +121,51 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         return this.ejbClientContext;
     }
 
-    public void addRemotingConnectionDependency(final ServiceBuilder<EJBClientContext> serviceBuilder, final ServiceName serviceName) {
-        final InjectedValue<AbstractOutboundConnectionService> value = new InjectedValue<AbstractOutboundConnectionService>();
-        serviceBuilder.addDependency(serviceName, AbstractOutboundConnectionService.class, value);
-        remotingOutboundConnections.put(serviceName, value);
+    public Injector<RemotingProfileService> getProfileServiceInjector() {
+        return this.profileServiceValue;
     }
 
-    public void setChannelCreationOptions(final String outboundConnectionName, final OptionMap options) {
-        this.channelCreationOpts.put(outboundConnectionName, options);
-    }
-
-    public void setConnectionCreationTimeout(final String outboundConnectionName, final long timeoutInMillis) {
-        this.connectionTimeouts.put(outboundConnectionName, timeoutInMillis);
-    }
-
-    public Injector<LocalEjbReceiver> getLocalEjbReceiverInjector() {
-        return this.localEjbReceiverInjectedValue;
-    }
-
-    private void registerRemotingEJBReceivers(final StartContext startContext, final EJBClientContext context) {
+    private void registerRemotingEJBReceivers(final StartContext startContext, final EJBClientContext context,
+            final RemotingProfileService profileService) {
+        final Map<ServiceName, InjectedValue<AbstractOutboundConnectionService>> remotingOutboundConnections = profileService
+                .getRemotingConnections();
+        final Map<String, Long> connectionTimeouts = profileService.getConnectionTimeouts();
+        final Map<String,OptionMap> channelCreationOpts=profileService.getChannelCreationOpts();
         final ServiceRegistry serviceRegistry = startContext.getController().getServiceContainer();
         int numRemotingReceivers = 0;
-        for (final Map.Entry<ServiceName, InjectedValue<AbstractOutboundConnectionService>> entry : this.remotingOutboundConnections.entrySet()) {
+        for (final Map.Entry<ServiceName, InjectedValue<AbstractOutboundConnectionService>> entry : remotingOutboundConnections
+                .entrySet()) {
             final InjectedValue<AbstractOutboundConnectionService> injectedValue = entry.getValue();
             final AbstractOutboundConnectionService outboundConnectionService = injectedValue.getValue();
             final String connectionName = outboundConnectionService.getConnectionName();
-            logger.debug("Creating remoting EJB receiver for connection " + connectionName);
-            final long connectionTimeout = this.connectionTimeouts.get(connectionName) <= 0 ? DEFAULT_CONNECTION_TIMEOUT : this.connectionTimeouts.get(connectionName);
-            final OptionMap options = this.channelCreationOpts.get(connectionName) == null ? OptionMap.EMPTY : this.channelCreationOpts.get(connectionName);
+            logger.debugf("Creating remoting EJB receiver for connection %s", connectionName);
+            final long connectionTimeout = connectionTimeouts.get(connectionName) <= 0 ? DEFAULT_CONNECTION_TIMEOUT
+                    : connectionTimeouts.get(connectionName);
+            final OptionMap options = channelCreationOpts.get(connectionName) == null ? OptionMap.EMPTY
+                    : channelCreationOpts.get(connectionName);
 
             Connection connection = null;
-            final ReconnectHandler reconnectHandler = new OutboundConnectionReconnectHandler(serviceRegistry, entry.getKey(), context, connectionTimeout, options);
+            final ReconnectHandler reconnectHandler = new OutboundConnectionReconnectHandler(serviceRegistry, entry.getKey(),
+                    context, connectionTimeout, options);
             try {
                 final IoFuture<Connection> futureConnection = outboundConnectionService.connect();
                 connection = IoFutureHelper.get(futureConnection, connectionTimeout, TimeUnit.MILLISECONDS);
 
             } catch (Exception e) {
                 // just log a message and register a reconnect handler
-                logger.debug("Failed to create a connection for " + connectionName + ". A reconnect handler will be added to the client context", e);
+                logger.debugf(e,
+                        "Failed to create a connection for %s. A reconnect handler will be added to the client context",
+                        connectionName, e);
                 context.registerReconnectHandler(reconnectHandler);
                 continue;
             }
-            final RemotingConnectionEJBReceiver ejbReceiver = new RemotingConnectionEJBReceiver(connection, reconnectHandler, options, outboundConnectionService.getProtocol());
+            final RemotingConnectionEJBReceiver ejbReceiver = new RemotingConnectionEJBReceiver(connection, reconnectHandler,
+                    options, outboundConnectionService.getProtocol());
             context.registerEJBReceiver(ejbReceiver);
             numRemotingReceivers++;
         }
-        logger.debug("Added " + numRemotingReceivers + " remoting EJB receivers to descriptor based EJB client context " + startContext.getController().getName());
+        logger.debugf("Added %s remoting EJB receivers to descriptor based EJB client context %s", numRemotingReceivers,
+                startContext.getController().getName());
     }
 
     /**
@@ -218,7 +197,7 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
             if (serviceController == null) {
                 // the outbound connection service is no longer available, so unregister this
                 // reconnect handler from the EJB client context
-                logger.debug("Unregistering " + this + " since " + this.outboundConnectionServiceName + " is no longer available");
+                logger.debugf("Unregistering %s since %s is no longer available", this, this.outboundConnectionServiceName);
                 this.clientContext.unregisterReconnectHandler(this);
                 return;
             }
@@ -226,14 +205,16 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
             try {
                 final IoFuture<Connection> futureConnection = outboundConnectionService.connect();
                 final Connection connection = IoFutureHelper.get(futureConnection, connectionTimeout, TimeUnit.MILLISECONDS);
-                logger.debug("Successful reconnect attempt#" + this.reconnectAttemptCount + " to outbound connection " + this.outboundConnectionServiceName);
+                logger.debugf("Successful reconnect attempt#%s to outbound connection %s", this.reconnectAttemptCount,
+                        this.outboundConnectionServiceName);
                 // successfully reconnected so unregister this reconnect handler
                 this.clientContext.unregisterReconnectHandler(this);
                 // register the newly reconnected connection
                 final EJBReceiver receiver = new RemotingConnectionEJBReceiver(connection, this, channelCreationOpts, outboundConnectionService.getProtocol()); //TODO: FIXME
                 this.clientContext.registerEJBReceiver(receiver);
             } catch (Exception e) {
-                logger.debug("Reconnect attempt#" + this.reconnectAttemptCount + " failed for outbound connection " + this.outboundConnectionServiceName, e);
+                logger.debugf(e, "Reconnect attempt#%s failed for outbound connection %s", this.reconnectAttemptCount,
+                        this.outboundConnectionServiceName);
             }
 
         }
