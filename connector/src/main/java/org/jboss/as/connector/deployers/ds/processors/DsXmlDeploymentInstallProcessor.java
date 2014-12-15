@@ -47,7 +47,6 @@ import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -123,7 +122,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             }
 
             ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-            ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
             if (dataSources.getDataSource() != null && dataSources.getDataSource().size() > 0) {
                 for (int i = 0; i < dataSources.getDataSource().size(); i++) {
@@ -136,7 +134,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String dsName = ds.getJndiName();
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, false);
                             installManagementModel(ds, deploymentUnit, addr);
-                            startDataSource(lds, jndiName, ds.getDriver(), serviceTarget, verificationHandler,
+                            startDataSource(lds, jndiName, ds.getDriver(), serviceTarget,
                                     getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName);
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, ds.getJndiName());
@@ -158,7 +156,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String dsName = xads.getJndiName();
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, true);
                             installManagementModel(xads, deploymentUnit, addr);
-                            startDataSource(xds, jndiName, xads.getDriver(), serviceTarget, verificationHandler,
+                            startDataSource(xds, jndiName, xads.getDriver(), serviceTarget,
                                     getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName);
 
                         } catch (Exception e) {
@@ -270,7 +268,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final String jndiName,
                                  final String driverName,
                                  final ServiceTarget serviceTarget,
-                                 final ServiceVerificationHandler verificationHandler,
                                  final ManagementResourceRegistration registration,
                                  final Resource resource,
                                  final String managementName) {
@@ -341,9 +338,9 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                     }
                 });
 
-        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install();
-        referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install();
-        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install();
+        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 
     private static PathAddress getDataSourceAddress(final String jndiName, DeploymentUnit deploymentUnit, boolean xa) {

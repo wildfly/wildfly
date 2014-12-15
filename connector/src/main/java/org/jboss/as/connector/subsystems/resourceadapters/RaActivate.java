@@ -26,7 +26,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -49,15 +48,12 @@ public class RaActivate implements OperationStepHandler {
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ServiceVerificationHandler svh = new ServiceVerificationHandler();
 
-
-                    ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveName, idName, svh);
+                    ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveName, idName);
 
                     if (restartedServiceName == null) {
-                        RaOperationUtil.activate(context, idName, archiveName, svh);
+                        RaOperationUtil.activate(context, idName, archiveName);
                     }
-                    context.addStep(svh, OperationContext.Stage.VERIFY);
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {

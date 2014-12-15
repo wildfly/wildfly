@@ -47,7 +47,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -64,30 +63,27 @@ public class RaDeploymentActivator {
         this.appclient = appclient;
     }
 
-    public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
+    public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget) {
         final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
         // add resources here
 
         controllers.add(serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService)
-            .addListener(listeners)
             .install());
 
         RaRepositoryService raRepositoryService = new RaRepositoryService();
         controllers.add(serviceTarget.addService(ConnectorServices.RA_REPOSITORY_SERVICE, raRepositoryService)
             .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raRepositoryService.getMdrInjector())
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
-                        raRepositoryService.getTransactionIntegrationInjector()).addListener(listeners)
+                        raRepositoryService.getTransactionIntegrationInjector())
             .install());
 
         ManagementRepositoryService managementRepositoryService = new ManagementRepositoryService();
         controllers.add(serviceTarget.addService(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, managementRepositoryService)
-            .addListener(listeners)
             .install());
 
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
         controllers.add(serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
             .addDependency(ConnectorServices.IRONJACAMAR_MDR)
-            .addListener(listeners)
             .install());
 
         return controllers;

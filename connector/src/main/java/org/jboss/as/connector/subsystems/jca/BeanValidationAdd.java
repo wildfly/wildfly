@@ -21,13 +21,10 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import java.util.List;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -49,8 +46,7 @@ public class BeanValidationAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
-            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final boolean enabled = JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
@@ -63,9 +59,6 @@ public class BeanValidationAdd extends AbstractBoottimeAddStepHandler {
         final BeanValidationService service = new BeanValidationService(config);
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(jcaConfigServiceName, JcaSubsystemConfiguration.class, service.getJcaConfigInjector() )
-                    .addListener(verificationHandler).install();
-
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-
+                    .install();
     }
 }

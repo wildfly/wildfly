@@ -25,8 +25,6 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.ADMIN_OBJECTS_NODE_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.List;
-
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -34,7 +32,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.ServiceController;
@@ -58,9 +55,7 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
-                                  ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> serviceControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel) throws OperationFailedException {
 
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
@@ -82,8 +77,8 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final AdminObjectService service = new AdminObjectService(adminObjectValue);
-        ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
+        serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                 .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector())
-                .addListener(verificationHandler).install();
+                .install();
     }
 }

@@ -21,21 +21,17 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import java.util.List;
-
 import org.jboss.as.connector.deployers.ra.processors.CachedConnectionManagerSetupProcessor;
 import org.jboss.as.connector.services.jca.CachedConnectionManagerService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -54,8 +50,7 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final boolean debug = JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().resolveModelAttribute(context, model).asBoolean();
         final boolean error = JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().resolveModelAttribute(context, model).asBoolean();
@@ -74,12 +69,11 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
         }
 
         CachedConnectionManagerService ccmService = new CachedConnectionManagerService(debug, error, ignoreUnknownConnections);
-        newControllers.add(serviceTarget
+        serviceTarget
                 .addService(ConnectorServices.CCM_SERVICE, ccmService)
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         ccmService.getTransactionIntegrationInjector())
-                .addListener(verificationHandler)
-                .install());
+                .install();
 
     }
 }

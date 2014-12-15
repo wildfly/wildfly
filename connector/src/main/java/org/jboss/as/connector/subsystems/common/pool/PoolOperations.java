@@ -89,7 +89,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             }
 
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToInvokeOperation(e.getLocalizedMessage())));
+                            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToInvokeOperation(e.getLocalizedMessage()));
                         }
                         if (operationResult != null) {
                             context.getResult().set(operationResult);

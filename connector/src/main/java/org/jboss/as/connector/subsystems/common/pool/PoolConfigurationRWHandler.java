@@ -107,7 +107,7 @@ public class PoolConfigurationRWHandler {
                     updatePoolConfigs(poolConfigs, parameterName, newValue);
                     handbackHolder.setHandback(poolConfigs);
                 } catch (Exception e) {
-                    throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToSetAttribute(e.getLocalizedMessage())));
+                    throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToSetAttribute(e.getLocalizedMessage()));
                 }
             }
 

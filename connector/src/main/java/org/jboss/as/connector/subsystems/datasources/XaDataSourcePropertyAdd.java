@@ -25,13 +25,10 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.msc.service.ServiceController;
@@ -53,9 +50,7 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
-                                  ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> serviceControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel) throws OperationFailedException {
 
         final String configPropertyValue = XADATASOURCE_PROPERTY_VALUE.resolveModelAttribute(context, recoveryEnvModel).asString();
         final ModelNode address = operation.require(OP_ADDR);
@@ -76,12 +71,7 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler {
 
             final XaDataSourcePropertiesService service = new XaDataSourcePropertiesService(configPropertyName, configPropertyValue);
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.NEVER)
-                    .addListener(verificationHandler).install();
-            if (serviceControllers != null) {
-                serviceControllers.add(controller);
-            }
-
-            context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+                    .install();
         } else {
             context.reloadRequired();
         }

@@ -35,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.lang.reflect.Constructor;
 import java.sql.Driver;
-import java.util.List;
 import java.util.ServiceLoader;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -48,7 +47,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -76,7 +74,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         model.get(DRIVER_NAME.getName()).set(driverName);//this shouldn't be here anymore
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final ModelNode address = operation.require(OP_ADDR);
         final String driverName = PathAddress.pathAddress(address).getLastElement().getValue();
         if (operation.get(DRIVER_NAME.getName()).isDefined() && !driverName.equals(operation.get(DRIVER_NAME.getName()).asString())) {
@@ -115,7 +113,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             boolean driverLoaded = false;
             if (serviceLoader != null) {
                 for (Driver driver : serviceLoader) {
-                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, verificationHandler);
+                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
                     driverLoaded = true;
                     //just consider first definition and create service for this. User can use different implementation only
                     // w/ explicit declaration of driver-class attribute
@@ -130,15 +128,15 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                         .asSubclass(Driver.class);
                 final Constructor<? extends Driver> constructor = driverClass.getConstructor();
                 final Driver driver = constructor.newInstance();
-                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, verificationHandler);
+                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
             } catch (Exception e) {
                 SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
-                throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.cannotInstantiateDriverClass(driverClassName)));
+                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.cannotInstantiateDriverClass(driverClassName));
             }
         }
     }
 
-    public static void startDriverServices(final ServiceTarget target, final ModuleIdentifier moduleId, Driver driver, final String driverName, final Integer majorVersion, final Integer minorVersion, final String dataSourceClassName, final String xaDataSourceClassName, final ServiceVerificationHandler serviceVerificationHandler)
+    public static void startDriverServices(final ServiceTarget target, final ModuleIdentifier moduleId, Driver driver, final String driverName, final Integer majorVersion, final Integer minorVersion, final String dataSourceClassName, final String xaDataSourceClassName)
             throws IllegalStateException {
         final int majorVer = driver.getMajorVersion();
         final int minorVer = driver.getMinorVersion();
@@ -160,9 +158,6 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         driverService.getDriverRegistryServiceInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
-        if(serviceVerificationHandler != null) {
-            builder.addListener(serviceVerificationHandler);
-        }
         builder.install();
     }
 

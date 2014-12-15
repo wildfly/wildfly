@@ -30,7 +30,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -46,7 +45,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -70,8 +68,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         String name = JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
 
@@ -156,7 +153,6 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING).append(name), Executor.class, wmService.getExecutorShortInjector());
 
         builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
-                .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

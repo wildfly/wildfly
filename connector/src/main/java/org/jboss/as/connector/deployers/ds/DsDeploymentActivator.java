@@ -33,7 +33,6 @@ import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -44,8 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class DsDeploymentActivator {
 
-    public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget,
-                                                             final ServiceListener<Object>... listeners) {
+    public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget) {
 
         final Collection<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>(1);
 
