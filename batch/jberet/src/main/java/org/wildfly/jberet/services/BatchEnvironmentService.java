@@ -69,7 +69,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     public synchronized void start(final StartContext context) throws StartException {
         WildFlyBatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
-                executorServiceInjector.getValue(), transactionManagerInjector.getOptionalValue());
+                executorServiceInjector.getValue(), transactionManagerInjector.getValue());
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -107,7 +107,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         WildFlyBatchEnvironment(final BeanManager beanManager,
                                 final ExecutorService executorService, final TransactionManager transactionManager) {
-            artifactFactory = (beanManager == null ? null : new WildFlyArtifactFactory(beanManager));
+            artifactFactory = new WildFlyArtifactFactory(beanManager);
             this.executorService = executorService;
             this.transactionManager = transactionManager;
         }
@@ -119,9 +119,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         @Override
         public ArtifactFactory getArtifactFactory() {
-            if (artifactFactory == null) {
-                throw WildFlyBatchLogger.LOGGER.serviceNotInstalled("BeanManager");
-            }
             return artifactFactory;
         }
 
@@ -175,9 +172,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         @Override
         public TransactionManager getTransactionManager() {
-            if (transactionManager == null) {
-                throw WildFlyBatchLogger.LOGGER.serviceNotInstalled("TransactionManager");
-            }
             return transactionManager;
         }
 

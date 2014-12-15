@@ -55,6 +55,9 @@ public final class WildFlyArtifactFactory extends AbstractArtifactFactory {
     }
 
     private Bean<?> getBean(final String ref) {
+        if (beanManager == null) {
+            return null;
+        }
         WildFlyBatchLogger.LOGGER.tracef("Looking up bean reference for '%s'", ref);
         final Set<Bean<?>> beans = beanManager.getBeans(ref);
         final Iterator<Bean<?>> iter = beans.iterator();

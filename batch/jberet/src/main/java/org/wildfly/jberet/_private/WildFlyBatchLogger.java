@@ -37,17 +37,6 @@ public interface WildFlyBatchLogger extends BasicLogger {
     WildFlyBatchLogger LOGGER = Logger.getMessageLogger(WildFlyBatchLogger.class, "org.wildfly.jberet");
 
     /**
-     * Creates an exception indicating a service was not installed.
-     *
-     * @param name a name for the service
-     *
-     * @return an {@link IllegalStateException} for the error
-     */
-    @Message(id = 1, value = "%s service was not added on the deployment. Ensure the deployment has a " +
-            "META-INF/batch.xml file or the META-INF/batch-jobs directory contains batch configuration files.")
-    IllegalStateException serviceNotInstalled(String name);
-
-    /**
      * Creates an exception indicating the job repository type was invalid.
      *
      * @param type the invalid type
