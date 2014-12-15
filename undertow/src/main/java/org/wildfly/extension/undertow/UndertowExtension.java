@@ -65,6 +65,11 @@ public class UndertowExtension implements Extension {
     static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
                     new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
+    private UndertowSubsystemParser_1_0 undertowSubsystemParser_1_0;
+    private UndertowSubsystemParser_1_1 undertowSubsystemParser_1_1;
+    private UndertowSubsystemParser_1_2 undertowSubsystemParser_1_2;
+    private UndertowSubsystemParser_2_0 undertowSubsystemParser_2_0;
+
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
@@ -75,22 +80,27 @@ public class UndertowExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_0.getUriString(), UndertowSubsystemParser_1_0.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_1.getUriString(), UndertowSubsystemParser_1_1.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_2.getUriString(), UndertowSubsystemParser_1_2.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_2_0.getUriString(), UndertowSubsystemParser_2_0.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_0.getUriString(), undertowSubsystemParser_1_0);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_1.getUriString(), undertowSubsystemParser_1_1);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_2.getUriString(), undertowSubsystemParser_1_2);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_2_0.getUriString(), undertowSubsystemParser_2_0);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
+        final UndertowRootDefinition undertowRootDefinition = new UndertowRootDefinition(context.getPathManager());
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 2, 0, 0);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(UndertowRootDefinition.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(undertowRootDefinition);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
 
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(DeploymentDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
 
-        subsystem.registerXMLElementWriter(UndertowSubsystemParser_2_0.INSTANCE);
+        undertowSubsystemParser_1_0 = new UndertowSubsystemParser_1_0(undertowRootDefinition);
+        undertowSubsystemParser_1_1 = new UndertowSubsystemParser_1_1(undertowRootDefinition);
+        undertowSubsystemParser_1_2 = new UndertowSubsystemParser_1_2(undertowRootDefinition);
+        undertowSubsystemParser_2_0 = new UndertowSubsystemParser_2_0(undertowRootDefinition);
+        subsystem.registerXMLElementWriter(undertowSubsystemParser_2_0);
     }
 
 

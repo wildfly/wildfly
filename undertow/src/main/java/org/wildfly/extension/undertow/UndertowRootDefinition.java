@@ -32,6 +32,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ValueExpression;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
@@ -42,7 +43,6 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 class UndertowRootDefinition extends PersistentResourceDefinition {
-    public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_HOST, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -81,10 +81,10 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     };
 
 
-    private UndertowRootDefinition() {
+    UndertowRootDefinition(PathManager pathManager) {
         super(UndertowExtension.SUBSYSTEM_PATH,
                 UndertowExtension.getResolver(),
-                UndertowSubsystemAdd.INSTANCE,
+                new UndertowSubsystemAdd(pathManager),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

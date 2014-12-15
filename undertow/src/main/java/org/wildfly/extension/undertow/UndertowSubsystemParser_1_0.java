@@ -53,11 +53,10 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
-    protected static final UndertowSubsystemParser_1_0 INSTANCE = new UndertowSubsystemParser_1_0();
-    private static final PersistentResourceXMLDescription xmlDescription;
+    private final PersistentResourceXMLDescription xmlDescription;
 
-    static {
-        xmlDescription = builder(UndertowRootDefinition.INSTANCE)
+    UndertowSubsystemParser_1_0(UndertowRootDefinition definition) {
+        xmlDescription = builder(definition)
                 .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID)
                 .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
@@ -232,11 +231,6 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 })
                 .build();
     }
-
-    private UndertowSubsystemParser_1_0() {
-    }
-
-
     /**
      * {@inheritDoc}
      */
