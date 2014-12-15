@@ -28,6 +28,8 @@ import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
 import static org.jboss.as.naming.util.NamingUtils.notAContextException;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -242,15 +244,37 @@ public class NamingContext implements EventContext {
     }
 
     /** {@inheritDoc} */
-    public void bind(final Name name, Object object) throws NamingException {
+    public void bind(final Name name, final Object object) throws NamingException {
         check(name, Action.BIND);
 
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
+            final Object value;
             if (object instanceof Referenceable) {
-                object = ((Referenceable) object).getReference();
+                value = ((Referenceable) object).getReference();
+            } else {
+                value = object;
             }
-            getWritableNamingStore().bind(absoluteName, object);
+            if (System.getSecurityManager() == null) {
+                getWritableNamingStore().bind(absoluteName, value);
+            } else {
+                // The permissions check has already happened for the binding further permissions should be allowed
+                final NamingException e = AccessController.doPrivileged(new PrivilegedAction<NamingException>() {
+                    @Override
+                    public NamingException run() {
+                        try {
+                            getWritableNamingStore().bind(absoluteName, value);
+                        } catch (NamingException e) {
+                            return e;
+                        }
+                        return null;
+                    }
+                });
+                // Check that a NamingException wasn't thrown during the bind
+                if (e != null) {
+                    throw e;
+                }
+            }
         } else {
             throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
         }
