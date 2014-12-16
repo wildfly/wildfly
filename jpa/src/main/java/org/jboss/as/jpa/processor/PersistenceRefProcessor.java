@@ -54,6 +54,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.Environment;
 import org.jboss.metadata.javaee.spec.PersistenceContextReferenceMetaData;
 import org.jboss.metadata.javaee.spec.PersistenceContextReferencesMetaData;
+import org.jboss.metadata.javaee.spec.PersistenceContextTypeDescription;
 import org.jboss.metadata.javaee.spec.PersistenceUnitReferenceMetaData;
 import org.jboss.metadata.javaee.spec.PersistenceUnitReferencesMetaData;
 import org.jboss.metadata.javaee.spec.PropertiesMetaData;
@@ -181,7 +182,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                                 map.put(prop.getKey(), prop.getValue());
                             }
                         }
-                        PersistenceContextType type = puRef.getPersistenceContextType() == null ? PersistenceContextType.TRANSACTION : puRef.getPersistenceContextType();
+                        PersistenceContextType type = (puRef.getPersistenceContextType() == null || puRef.getPersistenceContextType() == PersistenceContextTypeDescription.TRANSACTION) ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED ;
                         // create an EE 7 branch of
                         SynchronizationType synchronizationType =  SynchronizationType.SYNCHRONIZED;
 //                                (puRef.()== null || SynchronizationType.SYNCHRONIZED.name().equals(stType.asString()))?
