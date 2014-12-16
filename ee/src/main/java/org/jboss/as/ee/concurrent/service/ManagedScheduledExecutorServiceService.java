@@ -33,6 +33,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.RequestController;
 
 import java.util.concurrent.TimeUnit;
 
@@ -57,6 +59,8 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
     private final long threadLifeTime;
     private final InjectedValue<ContextServiceImpl> contextService;
     private final AbstractManagedExecutorService.RejectPolicy rejectPolicy;
+    private final InjectedValue<RequestController> requestController = new InjectedValue<>();
+    private ControlPoint controlPoint;
 
     /**
      * @param name
@@ -68,7 +72,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
      * @param keepAliveTimeUnit
      * @param threadLifeTime
      * @param rejectPolicy
-     * @see ManagedScheduledExecutorServiceImpl#ManagedScheduledExecutorServiceImpl(String, org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl, long, boolean, int, long, java.util.concurrent.TimeUnit, long, org.glassfish.enterprise.concurrent.ContextServiceImpl, org.glassfish.enterprise.concurrent.AbstractManagedExecutorService.RejectPolicy)
+     * @see ManagedScheduledExecutorServiceImpl#ManagedScheduledExecutorServiceImpl(String, org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl, long, boolean, int, long, java.util.concurrent.TimeUnit, long, org.glassfish.enterprise.concurrent.ContextServiceImpl, org.glassfish.enterprise.concurrent.AbstractManagedExecutorService.RejectPolicy, org.wildfly.extension.requestcontroller.ControlPoint)
      */
     public ManagedScheduledExecutorServiceService(String name, String jndiName, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, AbstractManagedExecutorService.RejectPolicy rejectPolicy) {
         super(jndiName);
@@ -89,10 +93,13 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
         ManagedThreadFactoryImpl managedThreadFactory = managedThreadFactoryInjectedValue.getOptionalValue();
         if(managedThreadFactory == null) {
             // if not injected create one using normal thread priority
-            final String threadFactoryName = "EE-ManagedScheduledExecutorService-"+name;
+            final String threadFactoryName = "EE-ManagedScheduledExecutorService-" + name;
             managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, null, Thread.NORM_PRIORITY);
         }
-        executorService = new ManagedScheduledExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService.getOptionalValue(), rejectPolicy);
+        if(requestController.getOptionalValue() != null) {
+            controlPoint = requestController.getValue().getControlPoint(name, "managed-scheduled-executor-service");
+        }
+        executorService = new ManagedScheduledExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService.getOptionalValue(), rejectPolicy, controlPoint);
     }
 
     @Override
@@ -104,6 +111,9 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
                 executorService.getManagedThreadFactory().stop();
             }
             this.executorService = null;
+        }
+        if(controlPoint != null) {
+            requestController.getValue().removeControlPoint(controlPoint);
         }
     }
 
@@ -122,4 +132,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
         return contextService;
     }
 
+    public InjectedValue<RequestController> getRequestController() {
+        return requestController;
+    }
 }

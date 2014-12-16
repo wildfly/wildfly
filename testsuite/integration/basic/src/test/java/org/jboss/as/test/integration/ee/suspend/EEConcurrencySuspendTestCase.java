@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -17,19 +17,11 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.suspend.web;
+package org.jboss.as.test.integration.ee.suspend;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -45,13 +37,24 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 /**
- * Tests for suspend/resume functionality in the web subsystem
+ * Tests for suspend/resume functionality with EE concurrency
+ *
+ * TODO: this test needs to be able to read the suspend state in order to really test anything,
+ * at the moment it just tests that it does not blow up
  */
 @RunWith(Arquillian.class)
-public class WebSuspendTestCase {
+public class EEConcurrencySuspendTestCase {
 
-    protected static Logger log = Logger.getLogger(WebSuspendTestCase.class);
+    protected static Logger log = Logger.getLogger(EEConcurrencySuspendTestCase.class);
 
 
     @ArquillianResource
@@ -60,8 +63,8 @@ public class WebSuspendTestCase {
     @Deployment
     public static WebArchive deployment() {
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "web-suspend.war");
-        war.addPackage(WebSuspendTestCase.class.getPackage());
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "ee-suspend.war");
+        war.addPackage(EEConcurrencySuspendTestCase.class.getPackage());
         war.addPackage(HttpRequest.class.getPackage());
         war.addClass(TestSuiteEnvironment.class);
         war.addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
@@ -71,7 +74,7 @@ public class WebSuspendTestCase {
     @Test
     public void testRequestInShutdown() throws Exception {
 
-        final String address = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/web-suspend/ShutdownServlet";
+        final String address = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/ee-suspend/ShutdownServlet";
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
             Future<Object> result = executorService.submit(new Callable<Object>() {
