@@ -211,7 +211,11 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         ServerHostInfo hostInfo = new ServerHostInfo(hostname);
         Host undertowHost = getUndertowHost(hostInfo);
         if (undertowHost!= null && !undertowHost.getAllAliases().isEmpty()) {
-            return undertowHost.getAllAliases().iterator().next();
+            for (String alias : undertowHost.getAllAliases()) {
+                if (undertowHost.getAllAliases().size() == 1 || !alias.equals(undertowHost.getName())) {
+                    return alias;
+                }
+            }
         }
         return null;
     }
