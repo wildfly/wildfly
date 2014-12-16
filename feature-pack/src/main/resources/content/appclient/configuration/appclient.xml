@@ -33,6 +33,7 @@
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.webservices"/>
+        <extension module="org.wildfly.extension.bean-validation"/>
     </extensions>
 
     <profile>
@@ -78,6 +79,7 @@
                 <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
             </formatter>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:bean-validation:1.0" />
         <subsystem xmlns="urn:jboss:domain:datasources:2.0">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
