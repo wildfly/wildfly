@@ -38,7 +38,7 @@ import org.jboss.as.connector.services.driver.InstalledDriver;
  */
 public class DriverRegistryImpl implements DriverRegistry {
 
-    private Map<String, InstalledDriver> drivers = new HashMap<String, InstalledDriver>();
+    private final Map<String ,HashMap<String, InstalledDriver>> drivers = new HashMap<>();
 
     @Override
     public void registerInstalledDriver(InstalledDriver driver) throws IllegalArgumentException {
@@ -46,9 +46,18 @@ public class DriverRegistryImpl implements DriverRegistry {
             throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("driver"));
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Adding driver: %s", driver);
-
+        String profile = driver.getProfile() != null ? driver.getProfile() : "nullProfile";
         synchronized (drivers) {
-            drivers.put(driver.getDriverName(), driver);
+            final HashMap<String,InstalledDriver> driversInProfile;
+            if (drivers.get(profile) == null) {
+                driversInProfile = new HashMap<String,InstalledDriver>();
+
+            } else {
+                driversInProfile = drivers.get(profile);
+            }
+
+            driversInProfile.put(driver.getDriverName(), driver);
+            drivers.put(profile, driversInProfile);
         }
 
     }
@@ -59,20 +68,28 @@ public class DriverRegistryImpl implements DriverRegistry {
             throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("driver"));
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Removing deployment: %s", driver);
+        String profile = driver.getProfile() != null ? driver.getProfile() : "nullProfile";
 
         synchronized (drivers) {
-            drivers.remove(driver.getDriverName());
+            final HashMap<String,InstalledDriver> driversInProfile = drivers.get(profile);
+            if (driversInProfile != null ) {
+                driversInProfile.remove(driver.getDriverName());
+            }
         }
 
     }
 
     @Override
-    public Set<InstalledDriver> getInstalledDrivers() {
-        return Collections.unmodifiableSet(Collections.synchronizedSet(new HashSet<InstalledDriver>(drivers.values())));
+    public Set<InstalledDriver> getInstalledDrivers(String profileName) {
+        String profile = profileName != null ? profileName : "nullProfile";
+
+        return Collections.unmodifiableSet(Collections.synchronizedSet(new HashSet<InstalledDriver>(drivers.get(profile).values())));
     }
 
     @Override
-    public InstalledDriver getInstalledDriver(String name) {
-        return drivers.get(name);
+    public InstalledDriver getInstalledDriver(String name, String profileName) {
+        String profile = profileName != null ? profileName : "nullProfile";
+
+        return drivers.get(profile).get(name);
     }
 }

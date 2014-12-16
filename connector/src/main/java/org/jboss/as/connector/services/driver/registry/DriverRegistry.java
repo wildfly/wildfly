@@ -47,7 +47,7 @@ public interface DriverRegistry {
      * Get the installed drivers
      * @return The set of drivers
      */
-    Set<InstalledDriver> getInstalledDrivers();
+    Set<InstalledDriver> getInstalledDrivers(String profileName);
 
-    InstalledDriver getInstalledDriver(String name);
+    InstalledDriver getInstalledDriver(String name, String profileName);
 }

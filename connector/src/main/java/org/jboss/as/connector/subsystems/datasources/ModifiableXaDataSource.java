@@ -53,6 +53,8 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
      */
     private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
+    private final String profile;
+
 
     /**
      * Create a new XADataSourceImpl.
@@ -83,11 +85,12 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
                                   Boolean useJavaContext, String poolName, Boolean enabled, String jndiName, Boolean spy, Boolean useCcm,
                                   final Boolean connectable, final Boolean tracking,
                                   Map<String, String> xaDataSourceProperty, String xaDataSourceClass, String driver, String newConnectionSql,
-                                  DsXaPool xaPool, Recovery recovery) throws ValidateException {
+                                  DsXaPool xaPool, Recovery recovery, final String profile) throws ValidateException {
         super(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlProperty, urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm,
                 connectable, tracking,
                 xaDataSourceProperty, xaDataSourceClass, driver, newConnectionSql, xaPool, recovery);
+        this.profile = profile;
     }
 
 
@@ -95,6 +98,10 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
         xaDataSourceProperty.put(name, value);
     }
 
+
+    public final String getProfile() {
+        return profile;
+    }
 
     @Override
     public void validate() throws ValidateException {

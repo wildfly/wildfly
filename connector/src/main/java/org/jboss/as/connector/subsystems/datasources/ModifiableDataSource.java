@@ -68,6 +68,8 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
 
     private final DsPool pool;
 
+    private final String profile;
+
 
     /**
      * Create a new DataSourceImpl.
@@ -93,6 +95,7 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
      * @param useccm                       useccm
      * @param jta                          jta
      * @param pool                         pool
+     * @param profile                      profile
      * @throws org.jboss.jca.common.api.validator.ValidateException
      *          ValidateException
      */
@@ -101,7 +104,7 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
                                 TimeOut timeOut, DsSecurity security, Statement statement, Validation validation,
                                 String urlDelimiter, String urlSelectorStrategyClassName, String newConnectionSql,
                                 Boolean useJavaContext, String poolName, Boolean enabled, String jndiName,
-                                Boolean spy, Boolean useccm, Boolean jta, final Boolean connectable, final Boolean tracking, DsPool pool)
+                                Boolean spy, Boolean useccm, Boolean jta, final Boolean connectable, final Boolean tracking, DsPool pool, final String profile)
             throws ValidateException {
         super(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useccm, driver, newConnectionSql,connectable,tracking);
@@ -116,6 +119,7 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
             this.connectionProperties = new HashMap<String, String>(0);
         }
         this.pool = pool;
+        this.profile = profile;
         this.validate();
     }
 
@@ -239,6 +243,10 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
         return pool;
     }
 
+    public final String getProfile() {
+        return profile;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -250,6 +258,8 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
         result = prime * result + ((dataSourceClass == null) ? 0 : dataSourceClass.hashCode());
         result = prime * result + ((newConnectionSql == null) ? 0 : newConnectionSql.hashCode());
         result = prime * result + ((pool == null) ? 0 : pool.hashCode());
+        result = prime * result + ((profile == null) ? 0 : profile.hashCode());
+
         return result;
     }
 
@@ -296,6 +306,11 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
             if (other.pool != null)
                 return false;
         } else if (!pool.equals(other.pool))
+            return false;
+        if (profile == null) {
+            if (other.profile != null)
+                return false;
+        } else if (!profile.equals(other.profile))
             return false;
         return true;
     }

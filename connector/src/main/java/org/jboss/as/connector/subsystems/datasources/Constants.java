@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -232,6 +233,10 @@ public class Constants {
     static final SimpleAttributeDefinition JDBC_COMPLIANT = SimpleAttributeDefinitionBuilder.create("jdbc-compliant", ModelType.BOOLEAN)
             .setAllowNull(true)
             .build();
+
+    static final SimpleAttributeDefinition PROFILE = SimpleAttributeDefinitionBuilder.create("profile", ModelType.STRING)
+                .setAllowNull(true)
+                .build();
 
     static final String STATISTICS = "statistics";
 
@@ -750,7 +755,8 @@ public class Constants {
             XA_DATASOURCE_CLASS,
             DRIVER_MAJOR_VERSION,
             DRIVER_MINOR_VERSION,
-            JDBC_COMPLIANT
+            JDBC_COMPLIANT,
+            PROFILE
     };
 
 

@@ -39,6 +39,7 @@ public final class InstalledDriver {
     private final int majorVersion;
     private final int minorVersion;
     private final boolean jdbcCompliant;
+    private final String profile;
 
     /**
      * Creates a new InstalledDriver for a driver that was loaded from the
@@ -57,7 +58,7 @@ public final class InstalledDriver {
      */
     public InstalledDriver(final String driverName, final ModuleIdentifier moduleName, final String driverClassName,
                            final String dataSourceClassName, final String xaDataSourceClassName,
-                           final int majorVersion, final int minorVersion, final boolean jdbcCompliant) {
+                           final int majorVersion, final int minorVersion, final boolean jdbcCompliant, final String profile) {
         this.deploymentUnitName = null;
         this.moduleName = moduleName;
         this.driverName = driverName;
@@ -67,6 +68,7 @@ public final class InstalledDriver {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.jdbcCompliant = jdbcCompliant;
+        this.profile = profile;
     }
 
     /**
@@ -96,6 +98,7 @@ public final class InstalledDriver {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.jdbcCompliant = jdbcCompliant;
+        this.profile = null;
 
     }
 
@@ -182,6 +185,8 @@ public final class InstalledDriver {
         if (moduleName != null ? !moduleName.equals(that.moduleName) : that.moduleName != null) return false;
         if (xaDataSourceClassName != null ? !xaDataSourceClassName.equals(that.xaDataSourceClassName) : that.xaDataSourceClassName != null)
             return false;
+        if (profile != null ? !profile.equals(that.profile) : that.profile != null)
+            return false;
 
         return true;
     }
@@ -197,12 +202,16 @@ public final class InstalledDriver {
         result = 31 * result + majorVersion;
         result = 31 * result + minorVersion;
         result = 31 * result + (jdbcCompliant ? 1 : 0);
+        result = 31 * result + (profile != null ? profile.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        if (profile != null) {
+            sb.append(profile).append(":");
+        }
         if (moduleName != null) {
             sb.append(moduleName);
         } else {
@@ -229,5 +238,9 @@ public final class InstalledDriver {
 
     public String getXaDataSourceClassName() {
         return xaDataSourceClassName;
+    }
+
+    public String getProfile() {
+        return profile;
     }
 }
