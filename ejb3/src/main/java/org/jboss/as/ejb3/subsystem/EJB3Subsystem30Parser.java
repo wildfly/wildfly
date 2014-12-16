@@ -69,6 +69,42 @@ public class EJB3Subsystem30Parser extends EJB3Subsystem20Parser {
     }
 
     @Override
+    protected void readElement(final XMLExtendedStreamReader reader, final EJB3SubsystemXMLElement element, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        switch (element) {
+            case LOG_SYSTEM_EXCEPTIONS: {
+                parseLogEjbExceptions(reader, ejb3SubsystemAddOperation);
+                break;
+            }
+            default: {
+                super.readElement(reader, element, operations, ejb3SubsystemAddOperation);
+            }
+        }
+    }
+
+
+    private void parseLogEjbExceptions(XMLExtendedStreamReader reader, ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.VALUE);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case VALUE:
+                    EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    // found the mandatory attribute
+                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.VALUE);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (!missingRequiredAttributes.isEmpty()) {
+            throw missingRequired(reader, missingRequiredAttributes);
+        }
+    }
+    @Override
     protected void parseDatabaseDataStore(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
         String name = null;
 

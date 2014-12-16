@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
@@ -75,7 +73,7 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updateCacheService(context, model, null);
+        updateCacheService(context, model);
 
         return false;
     }
@@ -85,10 +83,10 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
                                          ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        updateCacheService(context, restored, null);
+        updateCacheService(context, restored);
     }
 
-    void updateCacheService(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void updateCacheService(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
         ModelNode cacheName = this.attribute.resolveModelAttribute(context, model);
 
@@ -98,9 +96,6 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
         }
         if (cacheName.isDefined()) {
             ServiceController<?> controller = this.installValueService(context, this.serviceName, CacheFactoryBuilder.class, CacheFactoryBuilderService.getServiceName(cacheName.asString()));
-            if (newControllers != null) {
-                newControllers.add(controller);
-            }
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.jboss.as.ejb3.subsystem;
@@ -26,28 +26,31 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
+import org.jboss.as.ejb3.component.interceptors.LoggingInterceptor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * User: jpai
+ * @author Stuart Douglas
  */
-class DefaultSingletonBeanAccessTimeoutWriteHandler extends AbstractWriteAttributeHandler<Void> {
+class ExceptionLoggingWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-    static final DefaultSingletonBeanAccessTimeoutWriteHandler INSTANCE = new DefaultSingletonBeanAccessTimeoutWriteHandler();
+    static final ExceptionLoggingWriteHandler INSTANCE = new ExceptionLoggingWriteHandler();
 
-    private DefaultSingletonBeanAccessTimeoutWriteHandler() {
-        super(EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT);
+    private ExceptionLoggingWriteHandler() {
+        super(EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
     }
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updateOrCreateDefaultSingletonBeanAccessTimeoutService(context, model);
+        updateOrCreateDefaultExceptionLoggingEnabledService(context, model);
 
         return false;
     }
@@ -56,21 +59,21 @@ class DefaultSingletonBeanAccessTimeoutWriteHandler extends AbstractWriteAttribu
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        updateOrCreateDefaultSingletonBeanAccessTimeoutService(context, restored);
+        updateOrCreateDefaultExceptionLoggingEnabledService(context, restored);
     }
 
-    void updateOrCreateDefaultSingletonBeanAccessTimeoutService(final OperationContext context, final ModelNode model) throws OperationFailedException {
-        final long defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.resolveModelAttribute(context, model).asLong();
-        final ServiceName serviceName = DefaultAccessTimeoutService.SINGLETON_SERVICE_NAME;
+    void updateOrCreateDefaultExceptionLoggingEnabledService(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        final boolean enabled = EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS.resolveModelAttribute(context, model).asBoolean();
+        final ServiceName serviceName = LoggingInterceptor.LOGGING_ENABLED_SERVICE_NAME;
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final ServiceController sc = registry.getService(serviceName);
         if (sc != null) {
-            final DefaultAccessTimeoutService defaultAccessTimeoutService = DefaultAccessTimeoutService.class.cast(sc.getValue());
-            defaultAccessTimeoutService.setDefaultAccessTimeout(defaultAccessTimeout);
+            final AtomicBoolean value = (AtomicBoolean) sc.getValue();
+            value.set(enabled);
         } else {
             // create and install the service
-            final DefaultAccessTimeoutService defaultAccessTimeoutService = new DefaultAccessTimeoutService(defaultAccessTimeout);
-            final ServiceController<?> newService = context.getServiceTarget().addService(serviceName, defaultAccessTimeoutService)
+            final ValueService<AtomicBoolean> service = new ValueService<>(new ImmediateValue<>(new AtomicBoolean(enabled)));
+            context.getServiceTarget().addService(serviceName, service)
                     .install();
         }
     }

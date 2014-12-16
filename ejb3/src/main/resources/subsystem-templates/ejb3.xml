@@ -38,6 +38,7 @@
        <?IIOP?>
        <default-security-domain value="other"/>
        <default-missing-method-permissions-deny-access value="true" />
+       <log-system-exceptions value="true" />
    </subsystem>
    <supplement name="default">
       <replacement placeholder="STATEFUL-BEAN">

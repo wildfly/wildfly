@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -67,7 +65,7 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updatePoolService(context, model, null);
+        updatePoolService(context, model);
 
         return false;
     }
@@ -77,10 +75,10 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
                                          ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        updatePoolService(context, restored, null);
+        updatePoolService(context, restored);
     }
 
-    void updatePoolService(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void updatePoolService(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
         final ModelNode poolName = poolAttribute.resolveModelAttribute(context, model);
 
@@ -99,9 +97,6 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
                     .addDependency(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName.asString()),
                             PoolConfig.class, newDefaultPoolConfigService.getInjector())
                     .install();
-            if (newControllers != null) {
-                newControllers.add(newController);
-            }
         }
 
     }

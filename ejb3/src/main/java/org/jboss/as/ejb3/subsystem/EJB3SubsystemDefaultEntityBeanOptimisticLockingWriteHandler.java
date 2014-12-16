@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -55,7 +53,7 @@ public class EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler extends
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updateOptimisticLocking(context, model, null);
+        updateOptimisticLocking(context, model);
 
         return false;
     }
@@ -65,10 +63,10 @@ public class EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler extends
                                          ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        updateOptimisticLocking(context, restored, null);
+        updateOptimisticLocking(context, restored);
     }
 
-    void updateOptimisticLocking(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void updateOptimisticLocking(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
         final ModelNode enabled = EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING.resolveModelAttribute(context, model);
 
@@ -84,9 +82,6 @@ public class EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler extends
             ServiceController<?> newController =
                 context.getServiceTarget().addService(SERVICE_NAME, newDefaultPoolConfigService)
                     .install();
-            if (newControllers != null) {
-                newControllers.add(newController);
-            }
         }
 
     }

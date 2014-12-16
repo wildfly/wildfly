@@ -38,6 +38,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponentCreateService;
@@ -99,6 +100,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
+    private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
 
     /**
      * Construct a new instance.
@@ -368,5 +370,13 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public String getPolicyContextID() {
         return this.policyContextID;
+    }
+
+    InjectedValue<AtomicBoolean> getExceptionLoggingEnabledInjector() {
+        return exceptionLoggingEnabled;
+    }
+
+    public AtomicBoolean getExceptionLoggingEnabled() {
+        return exceptionLoggingEnabled.getValue();
     }
 }
