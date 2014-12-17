@@ -418,8 +418,11 @@
     <xs:simpleType name="SSlProtocolType">
         <xs:restriction base="xs:token">
             <xs:enumeration value="SSLv2" />
+            <xs:enumeration value="SSLv2Hello" />
             <xs:enumeration value="SSLv3" />
             <xs:enumeration value="TLSv1" />
+            <xs:enumeration value="TLSv1.1" />
+            <xs:enumeration value="TLSv1.2" />
             <xs:enumeration value="SSLv2+SSLv3" />
             <xs:enumeration value="ALL" />
         </xs:restriction>
