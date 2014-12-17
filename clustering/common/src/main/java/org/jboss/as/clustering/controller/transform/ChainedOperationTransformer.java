@@ -28,7 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.jboss.as.clustering.controller.OperationFactory;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -94,7 +94,7 @@ public class ChainedOperationTransformer implements OperationTransformer {
             steps.addAll(preSteps);
             steps.add(operation);
             steps.addAll(postSteps);
-            operation = OperationFactory.createCompositeOperation(steps);
+            operation = Operations.createCompositeOperation(steps);
         }
         return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
     }

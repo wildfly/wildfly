@@ -21,12 +21,6 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -34,11 +28,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -70,9 +69,25 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         Object[][] data = new Object[][] {
                 { JGroupsSchema.VERSION_1_1, 22 },
                 { JGroupsSchema.VERSION_2_0, 24 },
-                { JGroupsSchema.VERSION_3_0, 25 },
+                { JGroupsSchema.VERSION_3_0, 28 },
         };
         return Arrays.asList(data);
+    }
+
+    private KernelServices buildKernelServices() throws Exception {
+        return this.buildKernelServices(this.getSubsystemXml());
+    }
+
+    private KernelServices buildKernelServices(String xml) throws Exception {
+        return this.createKernelServicesBuilder(xml).build();
+    }
+
+    private KernelServicesBuilder createKernelServicesBuilder() {
+        return this.createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+    }
+
+    private KernelServicesBuilder createKernelServicesBuilder(String xml) throws XMLStreamException {
+        return this.createKernelServicesBuilder().setSubsystemXml(xml);
     }
 
     @Override
@@ -110,45 +125,12 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      */
     @Test
     public void testParseSubsystem() throws Exception {
-       // Parse the subsystem xml into operations
-       List<ModelNode> operations = super.parse(getSubsystemXml());
+        // Parse the subsystem xml into operations
+        List<ModelNode> operations = super.parse(getSubsystemXml());
 
-       /*
-       // print the operations
-       System.out.println("List of operations");
-       for (ModelNode op : operations) {
-           System.out.println("operation = " + op.toString());
-       }
-       */
-
-       // Check that we have the expected number of operations
-       // one for each resource instance
-       Assert.assertEquals(this.expectedOperationCount, operations.size());
-
-       // Check that each operation has the correct content
-       ModelNode addSubsystem = operations.get(0);
-       Assert.assertEquals(ADD, addSubsystem.get(OP).asString());
-       PathAddress addr = PathAddress.pathAddress(addSubsystem.get(OP_ADDR));
-       Assert.assertEquals(1, addr.size());
-       PathElement element = addr.getElement(0);
-       Assert.assertEquals(SUBSYSTEM, element.getKey());
-       Assert.assertEquals(getMainSubsystemName(), element.getValue());
-    }
-
-    /**
-     * Test that the model created from the xml looks as expected
-     */
-    @Test
-    public void testInstallIntoController() throws Exception {
-       // Parse the subsystem xml and install into the controller
-       KernelServices services = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
-
-       // Read the whole model and make sure it looks as expected
-       ModelNode model = services.readWholeModel();
-
-       // System.out.println("model = " + model.asString());
-
-       Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
+        // Check that we have the expected number of operations
+        // one for each resource instance
+        Assert.assertEquals(this.expectedOperationCount, operations.size());
     }
 
     /**
@@ -157,20 +139,15 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      */
     @Test
     public void testParseAndMarshalModel() throws Exception {
-       // Parse the subsystem xml and install into the first controller
+        KernelServices services = this.buildKernelServices();
 
-       KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
+        // Get the model and the persisted xml from the first controller
+        ModelNode modelA = services.readWholeModel();
+        String marshalled = services.getPersistedSubsystemXml();
+        ModelNode modelB = this.buildKernelServices(marshalled).readWholeModel();
 
-       // Get the model and the persisted xml from the first controller
-       ModelNode modelA = servicesA.readWholeModel();
-       String marshalled = servicesA.getPersistedSubsystemXml();
-
-       // Install the persisted xml from the first controller into a second controller
-       KernelServices servicesB = createKernelServicesBuilder(null).setSubsystemXml(marshalled).build();
-       ModelNode modelB = servicesB.readWholeModel();
-
-       // Make sure the models from the two controllers are identical
-       super.compare(modelA, modelB);
+        // Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
     }
 
     /**
@@ -179,54 +156,31 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      */
     @Test
     public void testDescribeHandler() throws Exception {
-       // Parse the subsystem xml and install into the first controller
-       KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
-       // Get the model and the describe operations from the first controller
-       ModelNode modelA = servicesA.readWholeModel();
-       ModelNode describeOp = new ModelNode();
-       describeOp.get(OP).set(DESCRIBE);
-       describeOp.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())).toModelNode());
-       List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+        KernelServices servicesA = this.buildKernelServices();
+        // Get the model and the describe operations from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        ModelNode operation = Operations.createDescribeOperation(PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH));
+        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(operation)).asList();
 
-       // Install the describe options from the first controller into a second controller
-       KernelServices servicesB = createKernelServicesBuilder(null).setBootOperations(operations).build();
-       ModelNode modelB = servicesB.readWholeModel();
+        // Install the describe options from the first controller into a second controller
+        KernelServices servicesB = this.createKernelServicesBuilder().setBootOperations(operations).build();
+        ModelNode modelB = servicesB.readWholeModel();
 
-       // Make sure the models from the two controllers are identical
-       super.compare(modelA, modelB);
-
-    }
-
-    @Test
-    public void testProtocolOrdering() throws Exception {
-        String xml = getSubsystemXml();
-        // KernelServices kernel = super.installInController(xml);
-        KernelServices kernel = super.createKernelServicesBuilder(null).setSubsystemXml(xml).build();
-
-        ModelNode model = kernel.readWholeModel().require("subsystem").require("jgroups").require("stack").require("maximal");
-        List<ModelNode> protocols = model.require("protocols").asList();
-        Set<String> keys = model.get("protocol").keys();
-
-        Assert.assertEquals(protocols.size(), keys.size());
-        int i = 0;
-        for (String key : keys) {
-            String name = protocols.get(i).asString();
-            Assert.assertEquals(key, name);
-            i++;
-        }
+        // Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
     }
 
     @Test
     public void testLegacyOperations() throws Exception {
         List<ModelNode> ops = new LinkedList<>();
-        PathAddress subsystemAddress = PathAddress.EMPTY_ADDRESS.append(SUBSYSTEM, getMainSubsystemName());
-        PathAddress udpAddress = subsystemAddress.append("stack", "udp");
+        PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+        PathAddress udpAddress = subsystemAddress.append(StackResourceDefinition.pathElement("udp"));
 
         ModelNode op = Util.createAddOperation(subsystemAddress);
         ///subsystem=jgroups:add(default-stack=udp)
         op.get("default-stack").set("udp");
         ops.add(op);
-        /*/subsystem=jgroups/stack=udp:add(transport={"type"=>"UDP","socket-binding"=>"jgroups-udp"},protocols=["PING","MERGE3","FD_SOCK","FD","VERIFY_SUSPECT","BARRIER","pbcast.NAKACK2","UNICAST2","pbcast.STABLE","pbcast.GMS","UFC","MFC","FRAG2","RSVP"]) */
+        //subsystem=jgroups/stack=udp:add(transport={"type"=>"UDP","socket-binding"=>"jgroups-udp"},protocols=["PING","MERGE3","FD_SOCK","FD","VERIFY_SUSPECT","BARRIER","pbcast.NAKACK2","UNICAST2","pbcast.STABLE","pbcast.GMS","UFC","MFC","FRAG2","RSVP"])
         op = Util.createAddOperation(udpAddress);
         ModelNode transport = new ModelNode();
         transport.get("type").set("UDP");
@@ -240,35 +194,24 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
             ModelNode protocol = new ModelNode();
             protocol.get(ModelKeys.TYPE).set(protocolList[i]) ;
             protocol.get("socket-binding").set("jgroups-udp");
-            System.out.println("adding protocol = " + protocol.toString());
             protocols.add(protocol);
         }
 
         op.get("transport").set(transport);
         op.get("protocols").set(protocols);
         ops.add(op);
-        /*/subsystem=jgroups/stack=udp/protocol= FD_SOCK:write-attribute(name=socket-binding,value=jgroups-udp-fd)*/
-        ops.add(Util.getWriteAttributeOperation(udpAddress.append("protocol", "FD_SOCK"), "socket-binding", new ModelNode("jgroups-udp-fd")));
+        //subsystem=jgroups/stack=udp/protocol= FD_SOCK:write-attribute(name=socket-binding,value=jgroups-udp-fd)
+        //ops.add(Util.getWriteAttributeOperation(udpAddress.append(ProtocolResourceDefinition.pathElement("FD_SOCK")), "socket-binding", new ModelNode("jgroups-udp-fd")));
 
-
-        /*
-        /subsystem=jgroups/stack=tcp:add(transport={"type"=>"TCP","socket-binding"=>"jgroups-tcp"},protocols=["MPING","MERGE2","FD_SOCK","FD","VERIFY_SUSPECT","pbcast.NAKACK2","UNICAST2","pbcast.STABLE","pbcast.GMS","UFC","MFC","FRAG2","RSVP"])
-        /subsystem=jgroups/stack=tcp/protocol= MPING:write-attribute(name=socket-binding,value=jgroups-mping)
-        /subsystem=jgroups/stack=tcp/protocol= FD_SOCK:write-attribute(name=socket-binding,value=jgroups-tcp-fd)*/
-
-
-        KernelServices servicesA = createKernelServicesBuilder(createAdditionalInitialization())
-                .setBootOperations(ops).build();
+        KernelServices servicesA = createKernelServicesBuilder(createAdditionalInitialization()).setBootOperations(ops).build();
 
         Assert.assertTrue("Subsystem boot failed!", servicesA.isSuccessfulBoot());
         //Get the model and the persisted xml from the first controller
         final ModelNode modelA = servicesA.readWholeModel();
         validateModel(modelA);
-        ModelNode protos = modelA.get(SUBSYSTEM,getMainSubsystemName(),"stack","udp","protocols");
-        Assert.assertEquals("we should get back same number of protocols that we send",14,protos.asList().size());
         servicesA.shutdown();
 
-        /*// Test the describe operation
+        // Test the describe operation
         final ModelNode operation = createDescribeOperation();
         final ModelNode result = servicesA.executeOperation(operation);
         Assert.assertTrue("the subsystem describe operation has to generate a list of operations to recreate the subsystem",
@@ -281,7 +224,6 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
         compare(modelA, modelC);
 
-        assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());*/
+        assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());
     }
-
 }

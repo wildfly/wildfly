@@ -21,8 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,14 +45,14 @@ public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress subsystemAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
+        PathAddress address = Operations.getPathAddress(operation);
 
         if (model.hasDefined(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
             ModelNode channels = model.get(ChannelResourceDefinition.WILDCARD_PATH.getKey());
             if (channels.isDefined()) {
                 for (Property channel: channels.asPropertyList()) {
-                    PathAddress address = subsystemAddress.append(ChannelResourceDefinition.pathElement(channel.getName()));
-                    context.addStep(Util.createRemoveOperation(address), new ChannelRemoveHandler(this.allowRuntimeOnlyRegistration), OperationContext.Stage.MODEL);
+                    PathAddress channelAddress = address.append(ChannelResourceDefinition.pathElement(channel.getName()));
+                    context.addStep(Util.createRemoveOperation(channelAddress), new ChannelRemoveHandler(this.allowRuntimeOnlyRegistration), OperationContext.Stage.MODEL);
                 }
             }
         }
@@ -62,8 +61,8 @@ public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
             ModelNode stacks = model.get(StackResourceDefinition.WILDCARD_PATH.getKey());
             if (stacks.isDefined()) {
                 for (Property stack: stacks.asPropertyList()) {
-                    PathAddress address = subsystemAddress.append(StackResourceDefinition.pathElement(stack.getName()));
-                    context.addStep(Util.createRemoveOperation(address), new StackRemoveHandler(), OperationContext.Stage.MODEL);
+                    PathAddress stackAddress = address.append(StackResourceDefinition.pathElement(stack.getName()));
+                    context.addStep(Util.createRemoveOperation(stackAddress), new StackRemoveHandler(), OperationContext.Stage.MODEL);
                 }
             }
         }

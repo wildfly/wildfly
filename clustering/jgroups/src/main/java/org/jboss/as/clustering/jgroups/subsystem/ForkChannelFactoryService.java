@@ -21,8 +21,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ForkChannelFactory;
+import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -37,8 +41,12 @@ import org.jgroups.Channel;
  */
 public class ForkChannelFactoryService implements Service<ChannelFactory> {
 
-    static ServiceBuilder<ChannelFactory> build(ServiceTarget target, String channel) {
-        ForkChannelFactoryService service = new ForkChannelFactoryService();
+    static ServiceBuilder<ChannelFactory> build(ServiceTarget target, String channel, ProtocolConfiguration... protocols) {
+        return build(target, channel, Arrays.asList(protocols));
+    }
+
+    static ServiceBuilder<ChannelFactory> build(ServiceTarget target, String channel, List<ProtocolConfiguration> protocols) {
+        ForkChannelFactoryService service = new ForkChannelFactoryService(protocols);
         return target.addService(ChannelFactoryService.getServiceName(channel), service)
                 .addDependency(ConnectedChannelService.getServiceName(channel), Channel.class, service.parentChannel)
                 .addDependency(ChannelService.getFactoryServiceName(channel), ChannelFactory.class, service.parentFactory)
@@ -47,11 +55,12 @@ public class ForkChannelFactoryService implements Service<ChannelFactory> {
 
     private final InjectedValue<Channel> parentChannel = new InjectedValue<>();
     private final InjectedValue<ChannelFactory> parentFactory = new InjectedValue<>();
+    private final List<ProtocolConfiguration> protocols;
 
     private volatile ChannelFactory factory = null;
 
-    private ForkChannelFactoryService() {
-        // Hide
+    private ForkChannelFactoryService(List<ProtocolConfiguration> protocols) {
+        this.protocols = protocols;
     }
 
     @Override
@@ -61,7 +70,7 @@ public class ForkChannelFactoryService implements Service<ChannelFactory> {
 
     @Override
     public void start(StartContext context) {
-        this.factory = new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue().getProtocolStackConfiguration());
+        this.factory = new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue().getProtocolStackConfiguration(), this.protocols);
     }
 
     @Override

@@ -38,12 +38,12 @@
         <xs:all>
             <xs:element name="channels" type="tns:channels" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation>Enumerates the cluster</xs:documentation>
+                    <xs:documentation>Enumerates the defined channels.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="stacks" type="tns:stacks">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>Enumerates the defined protocol stacks.</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:all>
@@ -53,7 +53,7 @@
         <xs:sequence>
             <xs:element name="channel" type="tns:channel" maxOccurs="unbounded">
                 <xs:annotation>
-                    <xs:documentation>Defines a cluster.</xs:documentation>
+                    <xs:documentation>Defines a channel.</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
@@ -65,6 +65,13 @@
     </xs:complexType>
 
     <xs:complexType name="channel">
+        <xs:sequence>
+            <xs:element name="fork" type="tns:fork" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Defines a fork of this channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -82,7 +89,24 @@
         </xs:attribute>
         <xs:attribute name="module" type="xs:string" default="org.wildfly.clustering.server">
             <xs:annotation>
-                <xs:documentation>Indicates the module from which to load this protocol.</xs:documentation>
+                <xs:documentation>Indicates the module from which to load clustering services.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="fork">
+        <xs:sequence>
+            <xs:element name="protocol" type="tns:protocol" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Defines a protocol to add to the protocol stack of this fork channel.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Defines the cluster name of this channel.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

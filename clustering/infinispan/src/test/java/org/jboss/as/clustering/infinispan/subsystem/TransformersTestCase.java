@@ -30,8 +30,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.io.IOException;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.OperationFactory;
-import org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition;
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -196,7 +196,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices(controller, version, dependencies);
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(services, version, createModelFixer(model));
+        checkSubsystemModelTransformation(services, version, createModelFixer(model), false);
 
         ModelNode transformed = services.readTransformedModel(version);
 
@@ -232,7 +232,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
             Assert.assertFalse(transformedOperation.rejectOperation(result));
             Assert.assertEquals(result, transformedOperation.transformResult(result));
 
-            operation = OperationFactory.createWriteAttributeOperation(address, DistributedCacheResourceDefinition.VIRTUAL_NODES.getName(), new ModelNode(4));
+            operation = Operations.createWriteAttributeOperation(address, DistributedCacheResourceDefinition.VIRTUAL_NODES.getName(), new ModelNode(4));
 
             transformedOperation = services.transformOperation(version, operation);
             Assert.assertEquals(DistributedCacheResourceDefinition.SEGMENTS.getName(), transformedOperation.getTransformedOperation().get(NAME).asString());

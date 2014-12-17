@@ -28,6 +28,9 @@ import java.util.List;
  * @author Paul Ferraro
  */
 public interface RelayConfiguration extends ProtocolConfiguration {
+
+    String PROTOCOL_NAME = "relay.RELAY2";
+
     String getSiteName();
     List<RemoteSiteConfiguration> getRemoteSites();
 }

@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +61,7 @@ import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationB
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.DummyTransactionManager;
 import org.infinispan.util.concurrent.IsolationLevel;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
@@ -174,19 +173,17 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
         ModelNode cacheModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         // we also need the containerModel
-        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
+        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress containerAddress = address.subAddress(0, address.size() - 1);
         ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
 
         this.installRuntimeServices(context, operation, containerModel, cacheModel);
     }
 
     void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel) throws OperationFailedException {
-        // get all required addresses, names and service names
-        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
-        String cacheName = cacheAddress.getLastElement().getValue();
-        String containerName = containerAddress.getLastElement().getValue();
+        PathAddress address = Operations.getPathAddress(operation);
+        String containerName = address.getElement(address.size() - 2).getValue();
+        String cacheName = address.getElement(address.size() - 1).getValue();
 
         // get model attributes
         String jndiName = ModelNodes.asString(CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel));
@@ -257,13 +254,9 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
     }
 
     void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel) throws OperationFailedException {
-        // get container and cache addresses
-        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
-
-        // get container and cache names
-        String cacheName = cacheAddress.getLastElement().getValue();
-        String containerName = containerAddress.getLastElement().getValue();
+        PathAddress address = Operations.getPathAddress(operation);
+        String containerName = address.getElement(address.size() - 2).getValue();
+        String cacheName = address.getElement(address.size() - 1).getValue();
 
         // remove all services started by CacheAdd, in reverse order
         // remove the binder service

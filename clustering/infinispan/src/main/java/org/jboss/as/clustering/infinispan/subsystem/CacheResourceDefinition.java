@@ -29,8 +29,10 @@ import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -38,9 +40,10 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -112,29 +115,25 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Set batching=true if transaction mode=BATCH
-            AttributeConverter batchingConverter = new AttributeConverter() {
+            ResourceTransformer batchingTransformer = new ResourceTransformer() {
                 @Override
-                public void convertOperationParameter(PathAddress address, String name, ModelNode value, ModelNode operation, TransformationContext context) {
-                    // Nothing to convert
-                }
-
-                @Override
-                public void convertResourceAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
                     PathAddress transactionAddress = address.append(TransactionResourceDefinition.PATH);
                     try {
                         ModelNode transaction = context.readResourceFromRoot(transactionAddress).getModel();
                         if (transaction.hasDefined(TransactionResourceDefinition.MODE.getName())) {
                             ModelNode mode = transaction.get(TransactionResourceDefinition.MODE.getName());
                             if ((mode.getType() == ModelType.STRING) && (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH)) {
-                                value.set(true);
+                                resource.getModel().get(BATCHING.getName()).set(true);
                             }
                         }
                     } catch (NoSuchElementException e) {
                         // Ignore, nothing to convert
                     }
+                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource).processChildren(resource);
                 }
             };
-            builder.getAttributeBuilder().setValueConverter(batchingConverter, BATCHING);
+            builder.setCustomResourceTransformer(batchingTransformer);
         }
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
@@ -177,10 +176,9 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        // do we really need a special handler here?
-        final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(ATTRIBUTES);
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
         if (this.allowRuntimeOnlyRegistration) {

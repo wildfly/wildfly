@@ -22,18 +22,16 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -52,8 +50,7 @@ public class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        PathAddress stackAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String stackName = stackAddress.getLastElement().getValue();
+        String stackName = Operations.getPathAddress(operation).getLastElement().getValue();
 
         ServiceRegistry registry = context.getServiceRegistry(false);
         ServiceName serviceName = ChannelFactoryService.getServiceName(stackName);

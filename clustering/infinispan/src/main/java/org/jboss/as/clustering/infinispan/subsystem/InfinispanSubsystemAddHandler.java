@@ -29,8 +29,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -41,21 +39,6 @@ import org.jboss.dmr.ModelNode;
  * @author Paul Ferraro
  */
 public class InfinispanSubsystemAddHandler extends AbstractBoottimeAddStepHandler {
-
-    static ModelNode createOperation(ModelNode address, ModelNode existing) {
-        ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        populate(existing, operation);
-        return operation;
-    }
-
-    private static void populate(ModelNode source, ModelNode target) {
-        target.get(ModelKeys.CACHE_CONTAINER).setEmptyObject();
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        populate(operation, model);
-    }
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {

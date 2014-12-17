@@ -18,10 +18,9 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.infinispan.Cache;
 import org.infinispan.interceptors.TxInterceptor;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
@@ -41,7 +40,7 @@ public class TransactionMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*/transaction=TRANSACTION
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        PathAddress address = Operations.getPathAddress(operation);
         String containerName = address.getElement(address.size() - 3).getValue();
         String cacheName = address.getElement(address.size() - 2).getValue();
         String name = operation.require(ModelDescriptionConstants.NAME).asString();

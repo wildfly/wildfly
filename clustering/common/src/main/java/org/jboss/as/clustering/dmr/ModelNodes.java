@@ -41,12 +41,12 @@ public class ModelNodes {
     }
 
     /**
-     * Returns the value of the node as a string, or the specified undefined value if the node is undefined.
+     * Returns the value of the node as a string, or the specified default value if the node is undefined.
      * @param value a model node
-     * @return the value of the node as a string, or the specified undefined value if the node is undefined.
+     * @return the value of the node as a string, or the specified default value if the node is undefined.
      */
-    public static String asString(ModelNode value, String undefinedValue) {
-        return value.isDefined() ? value.asString() : undefinedValue;
+    public static String asString(ModelNode value, String defaultValue) {
+        return value.isDefined() ? value.asString() : defaultValue;
     }
 
     /**
@@ -59,9 +59,9 @@ public class ModelNodes {
     }
 
     /**
-     * Returns the value of the node as a string, or the specified undefined value if the node is undefined.
+     * Returns the value of the node as a string, or the specified default value if the node is undefined.
      * @param value a model node
-     * @return the value of the node as a string, or the specified undefined value if the node is undefined.
+     * @return the value of the node as a string, or the specified default value if the node is undefined.
      */
     public static float asFloat(ModelNode value, float defaultValue) {
         return Double.valueOf(value.asDouble(defaultValue)).floatValue();
@@ -73,7 +73,16 @@ public class ModelNodes {
      * @return the value of the node as an Enum, or null if the node is undefined.
      */
     public static <E extends Enum<E>> E asEnum(ModelNode value, Class<E> targetClass) {
-        return value.isDefined() ? Enum.valueOf(targetClass, value.asString()) : null;
+        return asEnum(value, targetClass, null);
+    }
+
+    /**
+     * Returns the value of the node as an Enum value, or the specified default value if the node is undefined.
+     * @param value a model node
+     * @return the value of the node as an Enum, or the specified default if the node is undefined.
+     */
+    public static <E extends Enum<E>> E asEnum(ModelNode value, Class<E> targetClass, E defaultValue) {
+        return value.isDefined() ? Enum.valueOf(targetClass, value.asString()) : defaultValue;
     }
 
     /**
@@ -82,7 +91,16 @@ public class ModelNodes {
      * @return the value of the node as a module identifier, or null if the node is undefined.
      */
     public static ModuleIdentifier asModuleIdentifier(ModelNode value) {
-        return value.isDefined() ? ModuleIdentifier.fromString(value.asString()) : null;
+        return asModuleIdentifier(value, null);
+    }
+
+    /**
+     * Returns the value of the node as a module identifier, or the specified default if the node is undefined.
+     * @param value a model node
+     * @return the value of the node as a module identifier, or the specified default if the node is undefined.
+     */
+    public static ModuleIdentifier asModuleIdentifier(ModelNode value, ModuleIdentifier defaultValue) {
+        return value.isDefined() ? ModuleIdentifier.fromString(value.asString()) : defaultValue;
     }
 
     private ModelNodes() {

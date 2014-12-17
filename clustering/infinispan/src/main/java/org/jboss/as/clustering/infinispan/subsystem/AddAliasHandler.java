@@ -22,10 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-
 import java.util.List;
 
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -38,9 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class AddAliasCommand implements OperationStepHandler {
-
-    public static final AddAliasCommand INSTANCE = new AddAliasCommand();
+public class AddAliasHandler implements OperationStepHandler {
 
     private final ParametersValidator nameValidator = new ParametersValidator();
 
@@ -55,7 +52,7 @@ public class AddAliasCommand implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         this.nameValidator.validate(operation);
-        final String newAlias = operation.require(NAME).asString();
+        final String newAlias = Operations.getAttributeName(operation);
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode currentValue = submodel.get(CacheContainerResourceDefinition.ALIASES.getName()).clone();
 

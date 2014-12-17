@@ -55,6 +55,20 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                     ModelNode channel = property.getValue();
                     ChannelResourceDefinition.STACK.marshallAsAttribute(channel, writer);
                     ChannelResourceDefinition.MODULE.marshallAsAttribute(channel, writer);
+
+                    if (channel.hasDefined(ForkResourceDefinition.WILDCARD_PATH.getKey())) {
+                        for (Property forkProperty: channel.get(ForkResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                            writer.writeStartElement(Element.FORK.getLocalName());
+                            writer.writeAttribute(Attribute.NAME.getLocalName(), forkProperty.getName());
+                            ModelNode fork = forkProperty.getValue();
+                            if (fork.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
+                                for (Property protocol: fork.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                                    writeProtocol(writer, protocol);
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+                    }
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -66,13 +80,12 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                     writer.writeStartElement(Element.STACK.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                     ModelNode stack = property.getValue();
-                    if (stack.get(TransportResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
-                        writeTransport(writer, stack.get(TransportResourceDefinition.PATH.getKeyValuePair()));
+                    if (stack.hasDefined(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
+                        writeTransport(writer, stack.get(TransportResourceDefinition.WILDCARD_PATH.getKey()).asProperty());
                     }
-                    // write the protocols in their correct order
                     if (stack.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-                        for (Property protocol: StackAddHandler.getOrderedProtocolPropertyList(stack)) {
-                            writeProtocol(writer, protocol.getValue());
+                        for (Property protocol: stack.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                            writeProtocol(writer, protocol);
                         }
                     }
                     if (stack.get(RelayResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
@@ -86,9 +99,10 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writer.writeEndElement();
     }
 
-    private static void writeTransport(XMLExtendedStreamWriter writer, ModelNode transport) throws XMLStreamException {
+    private static void writeTransport(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeStartElement(Element.TRANSPORT.getLocalName());
-        writeProtocolAttributes(writer, transport);
+        writeProtocolAttributes(writer, property);
+        ModelNode transport = property.getValue();
         TransportResourceDefinition.SHARED.marshallAsAttribute(transport, writer);
         TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.marshallAsAttribute(transport, writer);
         TransportResourceDefinition.DEFAULT_EXECUTOR.marshallAsAttribute(transport, writer);
@@ -98,25 +112,22 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         TransportResourceDefinition.MACHINE.marshallAsAttribute(transport, writer);
         TransportResourceDefinition.RACK.marshallAsAttribute(transport, writer);
         TransportResourceDefinition.SITE.marshallAsAttribute(transport, writer);
-        writeProtocolElements(writer, transport);
+        writeProtocolProperties(writer, transport);
         writer.writeEndElement();
     }
 
-    private static void writeProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+    private static void writeProtocol(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeStartElement(Element.PROTOCOL.getLocalName());
-        writeProtocolAttributes(writer, protocol);
-        writeProtocolElements(writer, protocol);
+        writeProtocolAttributes(writer, property);
+        writeProtocolProperties(writer, property.getValue());
         writer.writeEndElement();
     }
 
-    private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
-        ProtocolResourceDefinition.TYPE.marshallAsAttribute(protocol, writer);
+    private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
+        writer.writeAttribute(Attribute.TYPE.getLocalName(), property.getName());
+        ModelNode protocol = property.getValue();
         ProtocolResourceDefinition.SOCKET_BINDING.marshallAsAttribute(protocol, writer);
         ProtocolResourceDefinition.MODULE.marshallAsAttribute(protocol, writer);
-    }
-
-    private static void writeProtocolElements(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
-        writeProtocolProperties(writer, protocol);
     }
 
     private static void writeProtocolProperties(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {

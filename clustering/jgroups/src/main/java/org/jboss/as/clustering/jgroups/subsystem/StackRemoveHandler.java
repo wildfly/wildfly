@@ -38,7 +38,7 @@ public class StackRemoveHandler extends AbstractRemoveStepHandler {
     }
 
     @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException{
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         StackAddHandler.installRuntimeServices(context, operation, model);
     }
 }

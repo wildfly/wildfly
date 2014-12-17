@@ -28,6 +28,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
@@ -162,18 +163,16 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     private final boolean allowRuntimeOnlyRegistration;
 
     CacheContainerResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER),
-                new CacheContainerAddHandler(), new CacheContainerRemoveHandler());
+        super(WILDCARD_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER), new CacheContainerAddHandler(), new CacheContainerRemoveHandler());
         this.resolvePathHandler = resolvePathHandler;
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        // the handlers need to take account of alias
-        final OperationStepHandler writeHandler = new CacheContainerWriteAttributeHandler(ATTRIBUTES);
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, CacheContainerReadAttributeHandler.INSTANCE, writeHandler);
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
         if (this.allowRuntimeOnlyRegistration) {
@@ -188,8 +187,8 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registration) {
         super.registerOperations(registration);
         // register add-alias and remove-alias
-        registration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_ADD, AddAliasCommand.INSTANCE);
-        registration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_REMOVE, RemoveAliasCommand.INSTANCE);
+        registration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_ADD, new AddAliasHandler());
+        registration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_REMOVE, new RemoveAliasHandler());
     }
 
     @Override

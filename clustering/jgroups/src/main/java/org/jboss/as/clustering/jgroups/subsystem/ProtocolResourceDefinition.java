@@ -22,24 +22,31 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.transform.OperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -59,11 +66,12 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
         return PathElement.pathElement(ModelKeys.PROTOCOL, name);
     }
 
-    // attributes
-    public static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, false)
+    @Deprecated
+    static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, true)
             .setXmlName(Attribute.TYPE.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .build();
 
     static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_BINDING, ModelType.STRING, true)
@@ -81,64 +89,86 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             .setValidator(new ModuleIdentifierValidator(true))
             .build();
 
-    static final SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
+    @Deprecated
+    static final AttributeDefinition PROPERTY = new SimpleAttributeDefinitionBuilder(ModelKeys.PROPERTY, ModelType.PROPERTY, true).build();
+
+    @Deprecated
     static final SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY)
+            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .setAllowNull(true)
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING };
-    static final AttributeDefinition[] PARAMETERS = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING, PROPERTIES };
-
-    static final ObjectTypeAttributeDefinition PROTOCOL = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.PROTOCOL, ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix(null)
-            .setSuffix("protocol")
-            .build();
-
-    static final ObjectListAttributeDefinition PROTOCOLS = ObjectListAttributeDefinition.Builder.of(ModelKeys.PROTOCOLS, PROTOCOL)
-            .setAllowNull(true)
-            .build();
-
-    // operations
-    static final OperationDefinition ADD = new SimpleOperationDefinitionBuilder(ModelKeys.ADD_PROTOCOL, JGroupsExtension.getResourceDescriptionResolver("stack"))
-            .setParameters(PARAMETERS)
-            .build();
-
-    static final OperationDefinition REMOVE = new SimpleOperationDefinitionBuilder(ModelKeys.REMOVE_PROTOCOL, JGroupsExtension.getResourceDescriptionResolver("stack"))
-            .setParameters(TYPE)
-            .build();
-
-    static final OperationStepHandler ADD_HANDLER = new ProtocolAddHandler(PARAMETERS);
-    static final OperationStepHandler REMOVE_HANDLER = new ProtocolRemoveHandler();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        buildTransformation(version, parent, WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        ProtocolResourceDefinition.addTransformations(version, builder);
+
+        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            // Translate /subsystem=jgroups/stack=*/protocol=*:add() -> /subsystem=jgroups/stack=*:add-protocol()
+            OperationTransformer addTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    PathAddress address = Operations.getPathAddress(operation);
+                    PathAddress stackAddress = address.subAddress(0, address.size() - 1);
+                    return Util.createOperation(StackResourceDefinition.ADD_PROTOCOL.getName(), stackAddress);
+                }
+            };
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(addTransformer, ATTRIBUTES)).inheritResourceAttributeDefinitions();
+
+            // Translate /subsystem=jgroups/stack=*/protocol=*:remove() -> /subsystem=jgroups/stack=*:remove-protocol()
+            OperationTransformer removeTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    PathAddress address = Operations.getPathAddress(operation);
+                    String protocol = address.getLastElement().getValue();
+                    PathAddress stackAddress = address.subAddress(0, address.size() - 1);
+                    ModelNode legacyOperation = Util.createOperation(StackResourceDefinition.REMOVE_PROTOCOL.getName(), stackAddress);
+                    legacyOperation.get(ProtocolResourceDefinition.TYPE.getName()).set(protocol);
+                    return legacyOperation;
+                }
+            };
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleOperationTransformer(removeTransformer));
+        }
+
+        PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
     /*
      * Builds transformations common to both protocols and transport.
      */
-    static ResourceTransformationDescriptionBuilder buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent, PathElement path) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(path);
+    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            AttributeConverter typeConverter = new AttributeConverter.DefaultAttributeConverter() {
+                @Override
+                protected void convertAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
+                    if (!value.isDefined()) {
+                        value.set(address.getLastElement().getValue());
+                    }
+                }
+            };
             builder.getAttributeBuilder()
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(MODULE.getDefaultValue()), MODULE)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, MODULE)
+                    .setValueConverter(typeConverter, TYPE)
                     .end();
         }
+
         if (JGroupsModel.VERSION_1_2_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PROPERTIES);
+            builder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PROPERTIES)
+                    .end();
         }
-
-        PropertyResourceDefinition.buildTransformation(version, builder);
-
-        return builder;
     }
 
-    // registration
     ProtocolResourceDefinition() {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROTOCOL));
+        this(new ReloadRequiredAddStepHandler(ATTRIBUTES));
+    }
+
+    ProtocolResourceDefinition(OperationStepHandler addHandler) {
+        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROTOCOL), addHandler, new ReloadRequiredRemoveStepHandler());
     }
 
     @Override
@@ -151,6 +181,6 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(PropertyResourceDefinition.INSTANCE);
+        registration.registerSubModel(new PropertyResourceDefinition());
     }
 }
