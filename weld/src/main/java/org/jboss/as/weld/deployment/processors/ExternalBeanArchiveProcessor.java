@@ -34,6 +34,7 @@ import java.util.Set;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -87,7 +88,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final Set<String> componentClassNames = new HashSet<>();
+        final Set<String> ejbClassName = new HashSet<>();
 
         final String beanArchiveIdPrefix = deploymentUnit.getName() + ".external.";
 
@@ -117,7 +118,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             EEModuleDescription moduleDesc = deployment.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             if(moduleDesc != null) {
                 for(ComponentDescription component : moduleDesc.getComponentDescriptions()) {
-                    componentClassNames.add(component.getComponentClassName());
+                    if(component instanceof EJBComponentDescription) {
+                        ejbClassName.add(component.getComponentClassName());
+                    }
                 }
             }
         }
@@ -161,7 +164,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                         if (!urlScanner.handleBeansXml(url, discoveredClasses)) {
                             continue;
                         }
-                        discoveredClasses.removeAll(componentClassNames);
+                        discoveredClasses.removeAll(ejbClassName);
 
                         final BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(new HashSet<String>(discoveredClasses), beansXml, dependency, beanArchiveIdPrefix + url.toExternalForm(), BeanArchiveType.EXTERNAL);
                         WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(bda);
