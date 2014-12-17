@@ -39,6 +39,8 @@ import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -59,6 +61,8 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
 
     public static final String LIST_SCHEDULED_MESSAGES = "list-scheduled-messages";
     public static final String LIST_SCHEDULED_MESSAGES_AS_JSON = "list-scheduled-messages-as-json";
+    public static final String LIST_DELIVERING_MESSAGES = "list-delivering-messages";
+    public static final String LIST_DELIVERING_MESSAGES_AS_JSON = LIST_DELIVERING_MESSAGES + "-as-json";
 
     private static final AttributeDefinition MESSAGE_ID = create(CommonAttributes.MESSAGE_ID, LONG)
             .build();
@@ -110,6 +114,15 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
         };
     }
 
+    protected AttributeDefinition[] getReplyMapConsumerMessageParameterDefinition() {
+        return new AttributeDefinition[]{
+                createNonEmptyStringAttribute("consumerName"),
+                new ObjectListAttributeDefinition.Builder("elements",
+                            new ObjectTypeAttributeDefinition.Builder("element", getReplyMessageParameterDefinitions()).build())
+                        .build()
+        };
+    }
+
     @Override
     public void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
         super.registerOperations(registry, resolver);
@@ -120,6 +133,15 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES, resolver)
+                .setReplyType(LIST)
+                .setReplyParameters(getReplyMapConsumerMessageParameterDefinition())
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES_AS_JSON, resolver)
                 .setReplyType(STRING)
                 .build(),
                 this);
@@ -154,6 +176,11 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
                 context.getResult().set(ModelNode.fromJSONString(json));
             } else if (LIST_SCHEDULED_MESSAGES_AS_JSON.equals(operationName)) {
                 context.getResult().set(queueControl.listScheduledMessagesAsJSON());
+            } else if (LIST_DELIVERING_MESSAGES.equals(operationName)) {
+                String json = queueControl.listDeliveringMessagesAsJSON();
+                context.getResult().set(ModelNode.fromJSONString(json));
+            } else if (LIST_DELIVERING_MESSAGES_AS_JSON.equals(operationName)) {
+                context.getResult().set(queueControl.listDeliveringMessagesAsJSON());
             } else {
                 // Bug
                 throwUnimplementedOperationException(operationName);
