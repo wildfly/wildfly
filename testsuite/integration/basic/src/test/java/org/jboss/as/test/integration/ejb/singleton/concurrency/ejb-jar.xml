@@ -26,6 +26,28 @@
 	            </access-timeout>
 	        </concurrent-method>
         </session>
+        <session>
+            <ejb-name>ReadOnlySingletonBeanDescriptorWithExpression</ejb-name>
+            <local-bean></local-bean>
+            <ejb-class>org.jboss.as.test.integration.ejb.singleton.concurrency.ReadOnlySingletonBeanDescriptorWithExpression</ejb-class>
+            <session-type>Singleton</session-type>
+            <transaction-type>Container</transaction-type>
+            <init-on-startup>true</init-on-startup>
+            <concurrency-management-type>Container</concurrency-management-type>
+            <concurrent-method>
+                <lock>Read</lock>
+                <method>
+                    <method-name>twoSecondEcho</method-name>
+                    <method-params>
+                        <method-param>java.lang.String</method-param>
+                    </method-params>
+                </method>
+                <access-timeout>
+                    <timeout>${thousand:${hundred}0}</timeout> <!-- should resolve to 1000 -->
+                    <unit>${unitprefix:milli${unit}}s</unit>
+                </access-timeout>
+            </concurrent-method>
+        </session>
     </enterprise-beans>
 </ejb-jar>
 

@@ -36,6 +36,11 @@
             <!-- AS7-2976: session-type is a mandatory work-around -->
             <session-type>Stateless</session-type>
         </session>
+        <session>
+            <ejb-name>DDBeanWithTimeoutValueUsingNestedExpression</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.transaction.cmt.timeout.BeanWithTimeoutValue</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
     </enterprise-beans>
     <assembly-descriptor>
         <container-transaction>
@@ -48,6 +53,17 @@
             <tx:trans-timeout>
                 <tx:timeout>10</tx:timeout>
                 <tx:unit>Seconds</tx:unit>
+            </tx:trans-timeout>
+        </container-transaction>
+        <container-transaction>
+            <method>
+                <ejb-name>DDBeanWithTimeoutValueUsingNestedExpression</ejb-name>
+                <method-name>*</method-name>
+                <method-intf>Local</method-intf>
+            </method>
+            <tx:trans-timeout>
+                <tx:timeout>${nonexistingprop:${nine:8}0}</tx:timeout>     <!-- this should resolve to 90 -->
+                <tx:unit>${unit:minute}${plural}</tx:unit>                 <!-- this should resolve to seconds -->
             </tx:trans-timeout>
         </container-transaction>
     </assembly-descriptor>
