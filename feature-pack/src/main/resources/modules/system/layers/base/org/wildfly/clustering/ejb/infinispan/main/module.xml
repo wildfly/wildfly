@@ -55,7 +55,9 @@
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
+        <module name="org.wildfly.clustering.marshalling"/>
         <module name="org.wildfly.clustering.server" services="import"/>
+        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.security.manager"/>
     </dependencies>

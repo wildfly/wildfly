@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.jboss.as.clustering.jgroups.subsystem.ConnectedChannelService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -30,6 +29,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 
 /**
  * Service providing a channel-based {@link NodeFactory}.
@@ -40,7 +40,7 @@ public class ChannelNodeFactoryService implements Service<JGroupsNodeFactory> {
     public static ServiceBuilder<JGroupsNodeFactory> build(ServiceTarget target, ServiceName name, String group) {
         ChannelNodeFactoryService service = new ChannelNodeFactoryService();
         return target.addService(name, service)
-                .addDependency(ConnectedChannelService.getServiceName(group), Channel.class, service.channel)
+                .addDependency(ChannelServiceName.CONNECTOR.getServiceName(group), Channel.class, service.channel)
         ;
     }
 

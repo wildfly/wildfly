@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups;
+package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
+import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.naming.deployment.ContextNames;
 
-import org.jboss.as.network.SocketBinding;
+public final class JGroupsBindingFactory {
 
-/**
- * Defines the configuration of a JGroups transport protocol.
- * @author Paul Ferraro
- */
-public interface TransportConfiguration extends ProtocolConfiguration {
+    public static ContextNames.BindInfo createChannelBinding(String channel) {
+        return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, JGroupsExtension.SUBSYSTEM_NAME, "channel", channel).getAbsoluteName());
+    }
 
-    boolean isShared();
+    public static ContextNames.BindInfo createChannelFactoryBinding(String stack) {
+        return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, JGroupsExtension.SUBSYSTEM_NAME, "factory", stack).getAbsoluteName());
+    }
 
-    SocketBinding getDiagnosticsSocketBinding();
-
-    ExecutorService getDefaultExecutor();
-
-    ExecutorService getOOBExecutor();
-
-    ScheduledExecutorService getTimerExecutor();
-
-    ThreadFactory getThreadFactory();
-
-    Topology getTopology();
-
-    interface Topology {
-        String getMachine();
-        String getRack();
-        String getSite();
+    private JGroupsBindingFactory() {
+        // Hide
     }
 }

@@ -29,9 +29,6 @@ import java.util.Map;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
-import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
 import org.jboss.as.controller.OperationContext;
@@ -50,6 +47,10 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.Channel;
 import org.jgroups.protocols.FORK;
 import org.jgroups.stack.Protocol;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 
 /**
  * Operation handler for registration of fork protocol runtime resources.
@@ -63,7 +64,7 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
         String forkName = address.getElement(address.size() - 2).getValue();
         String protocolName = address.getElement(address.size() - 1).getValue();
 
-        ServiceController<?> controller = registry.getService(ChannelService.getServiceName(channelName));
+        ServiceController<?> controller = registry.getService(ChannelServiceName.CHANNEL.getServiceName(channelName));
         if (controller != null) {
             Channel channel = (Channel) controller.getValue();
             if (channel != null) {

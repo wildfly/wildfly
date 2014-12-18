@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -37,9 +35,8 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsBindingFactory;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
@@ -67,6 +64,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.service.ChannelBuilder;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.CacheServiceInstaller;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
@@ -158,11 +158,11 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 }
 
                 if (!name.equals(channel)) {
-                    new BinderServiceBuilder<>(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).build(target).install();
+                    new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
 
-                    ChannelService.build(target, name).setInitialMode(ON_DEMAND).install();
+                    new ChannelBuilder(name).build(target).install();
 
-                    new AliasServiceBuilder<>(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).build(target).install();
+                    new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).build(target).install();
 
                     for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                         log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
@@ -192,8 +192,8 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
             if (transportExecutor != null) {
                 addExecutorDependency(configBuilder, transportExecutor, transportConfig.getExecutorInjector());
             }
-            configBuilder.addDependency(ChannelService.getServiceName(name), Channel.class, transportConfig.getChannelInjector());
-            configBuilder.addDependency(ChannelService.getFactoryServiceName(name), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
+            configBuilder.addDependency(ChannelServiceName.CHANNEL.getServiceName(name), Channel.class, transportConfig.getChannelInjector());
+            configBuilder.addDependency(ChannelServiceName.FACTORY.getServiceName(name), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
         }
         addExecutorDependency(configBuilder, listenerExecutor, dependencies.getListenerExecutorInjector());
         addScheduledExecutorDependency(configBuilder, evictionExecutor, dependencies.getEvictionExecutorInjector());
@@ -206,7 +206,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 .addAliases(aliases)
         ;
         if (transportConfig != null) {
-            managerBuilder.addDependency(ChannelService.getServiceName(name));
+            managerBuilder.addDependency(ChannelServiceName.CHANNEL.getServiceName(name));
         }
         managerBuilder.setInitialMode(initialMode).install();
 
@@ -243,9 +243,9 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             removeServices(context, ClusteredGroupServiceInstaller.class, name);
 
-            context.removeService(ChannelService.createChannelBinding(name).getBinderServiceName());
-            context.removeService(ChannelService.getServiceName(name));
-            context.removeService(ChannelService.getFactoryServiceName(name));
+            context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
+            context.removeService(ChannelServiceName.CHANNEL.getServiceName(name));
+            context.removeService(ChannelServiceName.FACTORY.getServiceName(name));
         } else {
             removeServices(context, LocalGroupServiceInstaller.class, name);
         }

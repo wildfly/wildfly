@@ -24,43 +24,56 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ForkChannelFactory;
-import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * Service that provides a {@link ChannelFactory} for creating fork channels.
  * @author Paul Ferraro
  */
-public class ForkChannelFactoryService implements Service<ChannelFactory> {
+public class ForkChannelFactoryService implements Service<ChannelFactory>, Builder<ChannelFactory> {
 
-    static ServiceBuilder<ChannelFactory> build(ServiceTarget target, String channel, ProtocolConfiguration... protocols) {
-        return build(target, channel, Arrays.asList(protocols));
-    }
-
-    static ServiceBuilder<ChannelFactory> build(ServiceTarget target, String channel, List<ProtocolConfiguration> protocols) {
-        ForkChannelFactoryService service = new ForkChannelFactoryService(protocols);
-        return target.addService(ChannelFactoryService.getServiceName(channel), service)
-                .addDependency(ConnectedChannelService.getServiceName(channel), Channel.class, service.parentChannel)
-                .addDependency(ChannelService.getFactoryServiceName(channel), ChannelFactory.class, service.parentFactory)
-        ;
-    }
-
+    private final String channelName;
     private final InjectedValue<Channel> parentChannel = new InjectedValue<>();
     private final InjectedValue<ChannelFactory> parentFactory = new InjectedValue<>();
     private final List<ProtocolConfiguration> protocols;
 
     private volatile ChannelFactory factory = null;
 
-    private ForkChannelFactoryService(List<ProtocolConfiguration> protocols) {
+    public ForkChannelFactoryService(String channelName, ProtocolConfiguration... protocols) {
+        this(channelName, Arrays.asList(protocols));
+    }
+
+    public ForkChannelFactoryService(String channelName, List<ProtocolConfiguration> protocols) {
+        this.channelName = channelName;
         this.protocols = protocols;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(this.channelName);
+    }
+
+    @Override
+    public ServiceBuilder<ChannelFactory> build(ServiceTarget target) {
+        return target.addService(this.getServiceName(), this)
+                .addDependency(ChannelServiceName.CONNECTOR.getServiceName(this.channelName), Channel.class, this.parentChannel)
+                .addDependency(ChannelServiceName.FACTORY.getServiceName(this.channelName), ChannelFactory.class, this.parentFactory)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+        ;
     }
 
     @Override

@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.jgroups.subsystem.ConnectedChannelService;
 import org.jboss.as.server.Services;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.modules.Module;
@@ -42,6 +41,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.marshalling.DynamicClassTable;
 import org.wildfly.clustering.marshalling.MarshallingConfigurationFactory;
 import org.wildfly.clustering.marshalling.MarshallingContext;
@@ -64,7 +64,7 @@ public class ChannelCommandDispatcherFactoryService implements Service<CommandDi
         ChannelCommandDispatcherFactoryService service = new ChannelCommandDispatcherFactoryService(identifier);
         return new AsynchronousServiceBuilder<>(name, service).build(target)
                 .addDependency(GroupServiceNames.NODE_FACTORY.getServiceName(group), JGroupsNodeFactory.class, service.nodeFactory)
-                .addDependency(ConnectedChannelService.getServiceName(group), Channel.class, service.channel)
+                .addDependency(ChannelServiceName.CONNECTOR.getServiceName(group), Channel.class, service.channel)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, service.loader)
         ;
     }

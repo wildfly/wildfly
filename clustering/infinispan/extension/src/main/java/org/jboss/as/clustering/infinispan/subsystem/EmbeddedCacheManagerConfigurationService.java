@@ -39,9 +39,6 @@ import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
 import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
 import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
-import org.jboss.as.clustering.jgroups.RelayConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -52,6 +49,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 
 /**
  * @author Paul Ferraro
@@ -146,7 +146,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
             // Topology is retrieved from the channel
             ProtocolStackConfiguration stack = transport.getChannelFactory().getProtocolStackConfiguration();
-            org.jboss.as.clustering.jgroups.TransportConfiguration.Topology topology = stack.getTransport().getTopology();
+            org.wildfly.clustering.jgroups.spi.TransportConfiguration.Topology topology = stack.getTransport().getTopology();
             if (topology != null) {
                 String site = topology.getSite();
                 if (site != null) {

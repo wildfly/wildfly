@@ -21,13 +21,10 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
-
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -41,6 +38,12 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.service.ChannelBuilder;
+import org.wildfly.clustering.jgroups.spi.service.ChannelConnectorBuilder;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
 import org.wildfly.clustering.spi.GroupServiceInstaller;
@@ -91,19 +94,19 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
         ServiceTarget target = context.getServiceTarget();
 
         // Install channel factory alias
-        new AliasServiceBuilder<>(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(stack), ChannelFactory.class).build(target).install();
+        new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ChannelFactoryService.getServiceName(stack), ChannelFactory.class).build(target).install();
 
         // Install channel
-        ChannelService.build(target, name).setInitialMode(ON_DEMAND).install();
+        new ChannelBuilder(name).build(target).install();
 
         // Install channel connector
-        ConnectedChannelService.build(target, name).setInitialMode(ON_DEMAND).install();
+        new ChannelConnectorBuilder(name).build(target).install();
 
         // Install channel jndi binding
-        new BinderServiceBuilder<>(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).build(target).install();
+        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
 
         // Install fork channel factory
-        ForkChannelFactoryService.build(target, name).setInitialMode(ON_DEMAND).install();
+        new ForkChannelFactoryService(name).build(target).install();
 
         // Install fork channel factory jndi binding
         new BinderServiceBuilder<>(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class).build(target).install();
@@ -118,13 +121,14 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
         String name = Operations.getPathAddress(operation).getLastElement().getValue();
 
-        context.removeService(ChannelService.getServiceName(name));
-        context.removeService(ChannelService.createChannelBinding(name).getBinderServiceName());
-        context.removeService(ChannelService.getFactoryServiceName(name));
-        context.removeService(ConnectedChannelService.getServiceName(name));
+        context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
 
-        context.removeService(ChannelFactoryService.getServiceName(name));
+        for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
+            context.removeService(factory.getServiceName(name));
+        }
+
         context.removeService(ChannelFactoryService.createChannelFactoryBinding(name).getBinderServiceName());
+        context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name));
 
         for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
             for (ServiceName serviceName : installer.getServiceNames(name)) {

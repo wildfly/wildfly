@@ -28,14 +28,15 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
 import org.wildfly.clustering.spi.GroupServiceInstaller;
@@ -66,14 +67,14 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
         ProtocolDefaultsService.build(target).setInitialMode(ON_DEMAND).install();
 
         String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
-        if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
-            new AliasServiceBuilder<>(ChannelService.getServiceName(ChannelService.DEFAULT), ChannelService.getServiceName(defaultChannel), Channel.class).build(target).install();
-            new AliasServiceBuilder<>(ConnectedChannelService.getServiceName(ChannelService.DEFAULT), ConnectedChannelService.getServiceName(defaultChannel), Channel.class).build(target).install();
-            new AliasServiceBuilder<>(ChannelService.getFactoryServiceName(ChannelService.DEFAULT), ChannelService.getFactoryServiceName(defaultChannel), ChannelFactory.class).build(target).install();
+        if ((defaultChannel != null) && !defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
+            for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
+                new AliasServiceBuilder<>(factory.getServiceName(), factory.getServiceName(defaultChannel), Object.class).build(target).install();
+            }
 
             for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                 Iterator<ServiceName> names = installer.getServiceNames(defaultChannel).iterator();
-                for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {
+                for (ServiceName name : installer.getServiceNames(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
                     new AliasServiceBuilder<>(name, names.next(), Object.class).build(target).install();
                 }
             }
@@ -95,13 +96,13 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
         }
 
         String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
-        if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
-            context.removeService(ChannelService.getServiceName(ChannelService.DEFAULT));
-            context.removeService(ConnectedChannelService.getServiceName(ChannelService.DEFAULT));
-            context.removeService(ChannelService.getFactoryServiceName(ChannelService.DEFAULT));
+        if ((defaultChannel != null) && !defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
+            for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
+                context.removeService(factory.getServiceName());
+            }
 
             for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
-                for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {
+                for (ServiceName name : installer.getServiceNames(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
                     context.removeService(name);
                 }
             }

@@ -24,15 +24,20 @@ package org.jboss.as.clustering.jgroups;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.modules.ModuleLoader;
 import org.jgroups.Channel;
 import org.jgroups.fork.ForkChannel;
 import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
+import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
  * Factory for creating forked channels.
@@ -96,8 +101,8 @@ public class ForkChannelFactory implements ChannelFactory {
         }
 
         @Override
-        public ProtocolDefaults getDefaults() {
-            return this.parentStack.getDefaults();
+        public Map<String, String> getDefaultProperties(String protocol) {
+            return this.parentStack.getDefaultProperties(protocol);
         }
 
         @Override
@@ -111,8 +116,8 @@ public class ForkChannelFactory implements ChannelFactory {
         }
 
         @Override
-        public ServerEnvironment getEnvironment() {
-            return this.parentStack.getEnvironment();
+        public String getNodeName() {
+            return this.parentStack.getNodeName();
         }
 
         @Override

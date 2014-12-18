@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups;
+package org.wildfly.clustering.jgroups;
 
 import org.jgroups.Channel;
 
@@ -30,10 +30,9 @@ import org.jgroups.Channel;
 public interface ChannelFactory {
     /**
      * Creates a JGroups channel
+     * @param id the unique identifier of this channel
      * @return a JGroups channel
      * @throws Exception if there was a failure setting up the protocol stack
      */
     Channel createChannel(String id) throws Exception;
-
-    ProtocolStackConfiguration getProtocolStackConfiguration();
 }

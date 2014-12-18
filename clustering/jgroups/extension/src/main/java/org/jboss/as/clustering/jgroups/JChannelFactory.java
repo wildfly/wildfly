@@ -57,6 +57,12 @@ import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
 import org.jgroups.util.SocketFactory;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
+import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
+import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -143,7 +149,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         stack.addProtocol(fork);
         fork.init();
 
-        channel.setName(this.configuration.getEnvironment().getNodeName());
+        channel.setName(this.configuration.getNodeName());
 
         TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
         if (topology != null) {
@@ -279,7 +285,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
     private static org.jgroups.conf.ProtocolConfiguration createProtocol(ProtocolStackConfiguration stack, ProtocolConfiguration protocol) {
         String protocolName = protocol.getName();
         ModuleIdentifier module = protocol.getModule();
-        final Map<String, String> properties = new HashMap<>(stack.getDefaults().getProperties(protocolName));
+        final Map<String, String> properties = new HashMap<>(stack.getDefaultProperties(protocolName));
         properties.putAll(protocol.getProperties());
         try {
             return new org.jgroups.conf.ProtocolConfiguration(protocol.getProtocolClassName(), properties, stack.getModuleLoader().loadModule(module).getClassLoader()) {

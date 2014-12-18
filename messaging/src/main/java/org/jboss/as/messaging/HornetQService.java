@@ -44,7 +44,6 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -67,6 +66,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

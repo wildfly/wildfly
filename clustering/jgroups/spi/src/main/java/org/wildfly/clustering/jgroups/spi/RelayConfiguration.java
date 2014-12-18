@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups;
+package org.wildfly.clustering.jgroups.spi;
 
 import java.util.List;
 
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.modules.ModuleLoader;
-
 /**
- * Defines the configuration of a JGroups protocol stack.
+ * Configuration of the RELAY2 protocol.
  * @author Paul Ferraro
  */
-public interface ProtocolStackConfiguration {
+public interface RelayConfiguration extends ProtocolConfiguration {
 
-    String getName();
+    String PROTOCOL_NAME = "relay.RELAY2";
 
-    ProtocolDefaults getDefaults();
-
-    TransportConfiguration getTransport();
-
-    List<ProtocolConfiguration> getProtocols();
-
-    ServerEnvironment getEnvironment();
-
-    RelayConfiguration getRelay();
-
-    ModuleLoader getModuleLoader();
+    String getSiteName();
+    List<RemoteSiteConfiguration> getRemoteSites();
 }

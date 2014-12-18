@@ -21,15 +21,15 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
-import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 
 /**
  * @author Paul Ferraro

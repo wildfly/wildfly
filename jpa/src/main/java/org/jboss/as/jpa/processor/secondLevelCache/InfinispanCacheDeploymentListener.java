@@ -29,7 +29,6 @@ import java.util.UUID;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceBuilder;
@@ -109,7 +108,6 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String collection = properties.getProperty(COLLECTION);
         String query = properties.getProperty(QUERY);
         String timestamps  = properties.getProperty(TIMESTAMPS);
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(ServiceBuilder.DependencyType.OPTIONAL, ChannelService.getServiceName(container));
         CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheConfigurationService.getServiceName(container, entity));
         CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheConfigurationService.getServiceName(container, collection));
         if (query != null) {

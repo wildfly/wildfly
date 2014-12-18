@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 
 /**
  * Handler for reading run-time only attributes from an underlying channel service.
@@ -48,7 +49,7 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
         if (metric == null) {
             context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
         } else {
-            JChannel channel = ServiceContainerHelper.findValue(context.getServiceRegistry(false), ChannelService.getServiceName(channelName));
+            JChannel channel = ServiceContainerHelper.findValue(context.getServiceRegistry(false), ChannelServiceName.CHANNEL.getServiceName(channelName));
             if (channel != null) {
                 context.getResult().set(metric.getValue(channel));
             }

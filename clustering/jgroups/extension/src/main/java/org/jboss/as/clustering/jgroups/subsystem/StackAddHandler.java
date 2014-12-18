@@ -34,13 +34,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
-import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
-import org.jboss.as.clustering.jgroups.RelayConfiguration;
-import org.jboss.as.clustering.jgroups.RemoteSiteConfiguration;
-import org.jboss.as.clustering.jgroups.TransportConfiguration;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -64,6 +58,13 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossExecutors;
 import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
+import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
+import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 
 /**
  * @author Paul Ferraro
@@ -168,7 +169,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
             builder.addDependency(ThreadsServices.threadFactoryName(threadFactory), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
         }
         for (Map.Entry<String, Injector<Channel>> entry: channels) {
-            builder.addDependency(ChannelService.getServiceName(entry.getKey()), Channel.class, entry.getValue());
+            builder.addDependency(ChannelServiceName.CHANNEL.getServiceName(entry.getKey()), Channel.class, entry.getValue());
         }
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
@@ -260,13 +261,13 @@ public class StackAddHandler extends AbstractAddStepHandler {
         }
 
         @Override
-        public ProtocolDefaults getDefaults() {
-            return this.defaults.getValue();
+        public Map<String, String> getDefaultProperties(String protocol) {
+            return this.defaults.getValue().getProperties(protocol);
         }
 
         @Override
-        public ServerEnvironment getEnvironment() {
-            return this.environment.getValue();
+        public String getNodeName() {
+            return this.environment.getValue().getNodeName();
         }
 
         @Override

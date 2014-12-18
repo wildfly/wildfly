@@ -28,10 +28,6 @@ import java.util.Map;
 
 import org.jboss.as.clustering.controller.descriptions.SimpleResourceDescriptionResolver;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
-import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
-import org.jboss.as.clustering.jgroups.RelayConfiguration;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
@@ -58,6 +54,11 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.Channel;
 import org.jgroups.protocols.relay.RELAY2;
 import org.jgroups.stack.Protocol;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 
 /**
  * @author Paul Ferraro
@@ -77,11 +78,11 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
         String channelName = address.getElement(address.size() - 2).getValue();
         String protocolName = address.getElement(address.size() - 1).getValue();
 
-        ServiceController<?> controller = registry.getService(ChannelService.getServiceName(channelName));
+        ServiceController<?> controller = registry.getService(ChannelServiceName.CHANNEL.getServiceName(channelName));
         if (controller != null) {
             Channel channel = (Channel) controller.getValue();
             if (channel != null) {
-                controller = registry.getService(ChannelService.getFactoryServiceName(channelName));
+                controller = registry.getService(ChannelServiceName.FACTORY.getServiceName(channelName));
                 ChannelFactory factory = (ChannelFactory) controller.getValue();
                 if (factory != null) {
                     ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();

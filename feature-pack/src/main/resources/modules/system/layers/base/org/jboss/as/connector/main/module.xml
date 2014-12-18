@@ -70,6 +70,8 @@
         <module name="org.picketbox"/>
         <module name="org.jboss.as.clustering.jgroups" optional="true"/>
         <module name="org.jgroups" optional="true"/>
+        <module name="org.wildfly.clustering.jgroups.api" optional="true"/>
+        <module name="org.wildfly.clustering.jgroups.spi" optional="true"/>
     </dependencies>
 
 </module>

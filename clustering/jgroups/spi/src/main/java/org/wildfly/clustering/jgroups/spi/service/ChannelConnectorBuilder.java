@@ -19,15 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
-
-import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
+package org.wildfly.clustering.jgroups.spi.service;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -37,33 +36,37 @@ import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * Service that connects/disconnects a channel.
  *
  * @author Paul Ferraro
  */
-public class ConnectedChannelService implements Service<Channel> {
+public class ChannelConnectorBuilder implements Builder<Channel>, Service<Channel> {
 
-    public static ServiceName getServiceName(String channel) {
-        return ChannelService.getServiceName(channel).append("connector");
-    }
+    private static final Logger LOGGER = org.jboss.logging.Logger.getLogger(ChannelConnectorBuilder.class);
 
-    public static ServiceBuilder<Channel> build(ServiceTarget target, String channel) {
-        ConnectedChannelService service = new ConnectedChannelService(channel);
-        return target.addService(getServiceName(channel), service)
-                .addDependency(ChannelService.getServiceName(channel), Channel.class, service.channel)
-                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.server)
-        ;
-    }
-
-    private ConnectedChannelService(String cluster) {
-        this.cluster = cluster;
-    }
-
-    private final String cluster;
+    private final String name;
     private final InjectedValue<Channel> channel = new InjectedValue<>();
     private final InjectedValue<MBeanServer> server = new InjectedValue<>();
+
+    public ChannelConnectorBuilder(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return ChannelServiceName.CONNECTOR.getServiceName(this.name);
+    }
+
+    @Override
+    public ServiceBuilder<Channel> build(ServiceTarget target) {
+        return target.addService(this.getServiceName(), this)
+                .addDependency(ChannelServiceName.CHANNEL.getServiceName(this.name), Channel.class, this.channel)
+                .addDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, this.server)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+    }
 
     @Override
     public Channel getValue() {
@@ -72,16 +75,16 @@ public class ConnectedChannelService implements Service<Channel> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        Channel channel = this.channel.getValue();
+        Channel channel = this.getValue();
         if (channel instanceof JChannel) {
             try {
-                JmxConfigurator.registerChannel((JChannel) channel, this.server.getValue(), this.cluster);
+                JmxConfigurator.registerChannel((JChannel) channel, this.server.getValue(), this.name);
             } catch (Exception e) {
-                ROOT_LOGGER.debug(e.getMessage(), e);
+                LOGGER.debug(e.getMessage(), e);
             }
         }
         try {
-            channel.connect(this.cluster);
+            channel.connect(this.name);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -89,13 +92,13 @@ public class ConnectedChannelService implements Service<Channel> {
 
     @Override
     public void stop(StopContext context) {
-        Channel channel = this.channel.getValue();
+        Channel channel = this.getValue();
         channel.disconnect();
         if (channel instanceof JChannel) {
             try {
-                JmxConfigurator.unregisterChannel((JChannel) channel, this.server.getValue(), this.cluster);
+                JmxConfigurator.unregisterChannel((JChannel) channel, this.server.getValue(), this.name);
             } catch (Exception e) {
-                ROOT_LOGGER.debug(e.getMessage(), e);
+                LOGGER.debug(e.getMessage(), e);
             }
         }
     }

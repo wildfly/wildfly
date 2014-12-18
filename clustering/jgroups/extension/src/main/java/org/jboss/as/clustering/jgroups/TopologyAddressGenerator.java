@@ -25,6 +25,7 @@ import org.jgroups.Address;
 import org.jgroups.stack.AddressGenerator;
 import org.jgroups.util.ExtendedUUID;
 import org.jgroups.util.Util;
+import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
  * An AddressGenerator which generates ExtendedUUID addresses with specified site, rack and machine ids.
