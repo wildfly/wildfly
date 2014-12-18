@@ -69,6 +69,6 @@ public class GroupServiceInstaller implements org.wildfly.clustering.spi.GroupSe
 
         this.builder.build(target, name, group, module).setInitialMode(ON_DEMAND).install();
 
-        new BinderServiceBuilder(target).build(bindInfo, name, Group.class).install();
+        new BinderServiceBuilder<>(bindInfo, name, Group.class).build(target).install();
     }
 }

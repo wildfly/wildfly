@@ -35,7 +35,7 @@ import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -61,7 +61,7 @@ public class KeyAffinityServiceFactoryService implements Service<KeyAffinityServ
     }
 
     public static ServiceBuilder<KeyAffinityServiceFactory> build(ServiceTarget target, String containerName, int bufferSize) {
-        return AsynchronousService.addService(target, KeyAffinityServiceFactoryService.getServiceName(containerName), new KeyAffinityServiceFactoryService(bufferSize), false, true);
+        return new AsynchronousServiceBuilder<>(KeyAffinityServiceFactoryService.getServiceName(containerName), new KeyAffinityServiceFactoryService(bufferSize)).startSynchronously().build(target);
     }
 
     private final int bufferSize;

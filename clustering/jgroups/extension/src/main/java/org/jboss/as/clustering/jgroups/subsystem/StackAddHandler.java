@@ -172,7 +172,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
         }
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        new BinderServiceBuilder(target).build(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class).install();
+        new BinderServiceBuilder<>(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class).build(target).install();
     }
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {

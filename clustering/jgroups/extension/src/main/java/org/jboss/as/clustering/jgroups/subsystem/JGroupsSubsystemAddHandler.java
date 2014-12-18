@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
-import org.wildfly.clustering.service.InjectedValueServiceBuilder;
+import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
 import org.wildfly.clustering.spi.GroupServiceInstaller;
 
@@ -65,25 +65,23 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
 
         ProtocolDefaultsService.build(target).setInitialMode(ON_DEMAND).install();
 
-        InjectedValueServiceBuilder builder = new InjectedValueServiceBuilder(target);
-
         String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
         if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
-            builder.build(ChannelService.getServiceName(ChannelService.DEFAULT), ChannelService.getServiceName(defaultChannel), Channel.class).install();
-            builder.build(ConnectedChannelService.getServiceName(ChannelService.DEFAULT), ConnectedChannelService.getServiceName(defaultChannel), Channel.class).install();
-            builder.build(ChannelService.getFactoryServiceName(ChannelService.DEFAULT), ChannelService.getFactoryServiceName(defaultChannel), ChannelFactory.class).install();
+            new AliasServiceBuilder<>(ChannelService.getServiceName(ChannelService.DEFAULT), ChannelService.getServiceName(defaultChannel), Channel.class).build(target).install();
+            new AliasServiceBuilder<>(ConnectedChannelService.getServiceName(ChannelService.DEFAULT), ConnectedChannelService.getServiceName(defaultChannel), Channel.class).build(target).install();
+            new AliasServiceBuilder<>(ChannelService.getFactoryServiceName(ChannelService.DEFAULT), ChannelService.getFactoryServiceName(defaultChannel), ChannelFactory.class).build(target).install();
 
             for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                 Iterator<ServiceName> names = installer.getServiceNames(defaultChannel).iterator();
                 for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {
-                    builder.build(name, names.next(), Object.class).install();
+                    new AliasServiceBuilder<>(name, names.next(), Object.class).build(target).install();
                 }
             }
         }
 
         String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
         if ((defaultStack != null) && !defaultStack.equals(ChannelFactoryService.DEFAULT)) {
-            builder.build(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT), ChannelFactoryService.getServiceName(defaultStack), ChannelFactory.class).install();
+            new AliasServiceBuilder<>(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT), ChannelFactoryService.getServiceName(defaultStack), ChannelFactory.class).build(target).install();
         }
     }
 

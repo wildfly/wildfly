@@ -94,7 +94,7 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.propertyeditor.PropertyEditors;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 
 /**
  * The managed subsystem add update.
@@ -131,7 +131,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final int statusInterval = STATUS_INTERVAL.resolveModelAttribute(context, modelConfig).asInt();
         InjectedValue<SocketBindingManager> socketBindingManager = new InjectedValue<SocketBindingManager>();
         ContainerEventHandlerService service = new ContainerEventHandlerService(config, loadProvider, socketBindingManager);
-        final ServiceBuilder<?> builder = AsynchronousService.addService(target, ContainerEventHandlerService.SERVICE_NAME, service, true, true)
+        final ServiceBuilder<?> builder = new AsynchronousServiceBuilder<>(ContainerEventHandlerService.SERVICE_NAME, service).build(target)
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, socketBindingManager)
                 .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE);

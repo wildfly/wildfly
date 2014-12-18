@@ -67,6 +67,6 @@ public class ServiceProviderRegistrationFactoryServiceInstaller implements Cache
 
         this.builder.build(target, name, container, cache).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        new BinderServiceBuilder(target).build(bindInfo, name, ServiceProviderRegistrationFactory.class).install();
+        new BinderServiceBuilder<>(bindInfo, name, ServiceProviderRegistrationFactory.class).build(target).install();
     }
 }

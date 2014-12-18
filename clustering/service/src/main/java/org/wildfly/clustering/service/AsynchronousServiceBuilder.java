@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.clustering.service;
 
 import java.util.concurrent.ExecutorService;
@@ -27,47 +26,65 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 /**
- * Service decorator that optionally starts/stops a service asynchronously.
+ * Builder for asynchronously started/stopped services.
  * @author Paul Ferraro
+ * @param <T> the type of value provided by services built by this builder
  */
-public final class AsynchronousService<T> implements Service<T> {
-    private static final boolean DEFAULT_ASYNC_START = true;
-    private static final boolean DEFAULT_ASYNC_STOP = true;
+public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
 
+    private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
     final Service<T> service;
-    private final Value<ExecutorService> executor;
-    private final boolean startAsynchronously;
-    private final boolean stopAsynchronously;
+    private final ServiceName name;
+    private volatile boolean startAsynchronously = true;
+    private volatile boolean stopAsynchronously = true;
 
-    public static <T> ServiceBuilder<T> addService(ServiceTarget target, ServiceName name, Service<T> service) {
-        return addService(target, name, service, DEFAULT_ASYNC_START, DEFAULT_ASYNC_STOP);
-    }
-
-    public static <T> ServiceBuilder<T> addService(ServiceTarget target, ServiceName name, Service<T> service, boolean startAsynchronously, boolean stopAsynchronously) {
-        final InjectedValue<ExecutorService> executor = new InjectedValue<>();
-        final ServiceBuilder<T> builder = target.addService(name, new AsynchronousService<>(service, executor, startAsynchronously, stopAsynchronously));
-        builder.addDependency(ServiceName.JBOSS.append("as", "server-executor"), ExecutorService.class, executor);
-        return builder;
-    }
-
-    public AsynchronousService(Service<T> service, Value<ExecutorService> executor) {
-        this(service, executor, DEFAULT_ASYNC_START, DEFAULT_ASYNC_STOP);
-    }
-
-    public AsynchronousService(Service<T> service, Value<ExecutorService> executor, boolean startAsynchronously, boolean stopAsynchronously) {
+    /**
+     * Constructs a new builder for building asynchronous service
+     * @param name the target service name
+     * @param service the target service
+     */
+    public AsynchronousServiceBuilder(ServiceName name, Service<T> service) {
+        this.name = name;
         this.service = service;
-        this.executor = executor;
-        this.startAsynchronously = startAsynchronously;
-        this.stopAsynchronously = stopAsynchronously;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public ServiceBuilder<T> build(ServiceTarget target) {
+        return target.addService(this.name, this)
+                .addDependency(ServiceName.JBOSS.append("as", "server-executor"), ExecutorService.class, this.executor)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+    }
+
+    /**
+     * Indicates that this service should *not* be started asynchronously.
+     * @return a reference to this builder
+     */
+    public AsynchronousServiceBuilder<T> startSynchronously() {
+        this.startAsynchronously = false;
+        return this;
+    }
+
+    /**
+     * Indicates that this service should *not* be stopped asynchronously.
+     * @return a reference to this builder
+     */
+    public AsynchronousServiceBuilder<T> stopSynchronously() {
+        this.stopAsynchronously = false;
+        return this;
     }
 
     @Override
@@ -82,7 +99,7 @@ public final class AsynchronousService<T> implements Service<T> {
                 @Override
                 public void run() {
                     try {
-                        AsynchronousService.this.service.start(context);
+                        AsynchronousServiceBuilder.this.service.start(context);
                         context.complete();
                     } catch (StartException e) {
                         context.failed(e);
@@ -110,7 +127,7 @@ public final class AsynchronousService<T> implements Service<T> {
                 @Override
                 public void run() {
                     try {
-                        AsynchronousService.this.service.stop(context);
+                        AsynchronousServiceBuilder.this.service.stop(context);
                     } finally {
                         context.complete();
                     }

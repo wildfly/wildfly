@@ -30,12 +30,11 @@ import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ejb.BeanContext;
-import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorService;
+import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
@@ -64,10 +63,7 @@ public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> exte
 
     @Override
     public void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName) {
-        RemoveOnCancelScheduledExecutorService.build(target, deploymentUnitServiceName.append(this.name, "expiration"), THREAD_FACTORY)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
+        new RemoveOnCancelScheduledExecutorServiceBuilder(deploymentUnitServiceName.append(this.name, "expiration"), THREAD_FACTORY).build(target).install();
     }
 
     @Override

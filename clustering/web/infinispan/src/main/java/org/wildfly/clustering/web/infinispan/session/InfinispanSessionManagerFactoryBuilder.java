@@ -33,7 +33,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
@@ -71,11 +71,10 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
                 return null;
             }
         };
-        AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
+        new AsynchronousServiceBuilder<>(cacheServiceName, new CacheService<>(cacheName, dependencies)).build(target)
                 .addAliases(InfinispanRouteLocatorService.getCacheServiceAlias(cacheName))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
 

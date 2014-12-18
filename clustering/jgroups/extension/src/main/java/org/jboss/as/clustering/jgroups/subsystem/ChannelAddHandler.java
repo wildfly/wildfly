@@ -41,7 +41,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
-import org.wildfly.clustering.service.InjectedValueServiceBuilder;
+import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
 import org.wildfly.clustering.spi.GroupServiceInstaller;
 
@@ -91,7 +91,7 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
         ServiceTarget target = context.getServiceTarget();
 
         // Install channel factory alias
-        new InjectedValueServiceBuilder(target).build(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(stack), ChannelFactory.class).install();
+        new AliasServiceBuilder<>(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(stack), ChannelFactory.class).build(target).install();
 
         // Install channel
         ChannelService.build(target, name).setInitialMode(ON_DEMAND).install();
@@ -100,13 +100,13 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
         ConnectedChannelService.build(target, name).setInitialMode(ON_DEMAND).install();
 
         // Install channel jndi binding
-        new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).install();
+        new BinderServiceBuilder<>(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).build(target).install();
 
         // Install fork channel factory
         ForkChannelFactoryService.build(target, name).setInitialMode(ON_DEMAND).install();
 
         // Install fork channel factory jndi binding
-        new BinderServiceBuilder(target).build(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class).install();
+        new BinderServiceBuilder<>(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class).build(target).install();
 
         // Install group services for channel
         for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {

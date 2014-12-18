@@ -21,6 +21,9 @@
  */
 package org.jboss.as.clustering.naming;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -30,28 +33,47 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.Builder;
 
 /**
- * Encapsulates the common logic for building a JNDI binding for a given service.
+ * Builds a ManagedReferenceFactory JNDI binding.
  * @author Paul Ferraro
  */
-public class BinderServiceBuilder {
+public class BinderServiceBuilder<T> implements Builder<ManagedReferenceFactory> {
 
-    private final ServiceTarget target;
+    private final ContextNames.BindInfo binding;
+    private final ServiceName targetServiceName;
+    private final Class<T> targetClass;
+    private final List<ContextNames.BindInfo> aliases = new LinkedList<>();
 
-    public BinderServiceBuilder(ServiceTarget target) {
-        this.target = target;
+    public BinderServiceBuilder(ContextNames.BindInfo binding, ServiceName targetServiceName, Class<T> targetClass) {
+        this.binding = binding;
+        this.targetServiceName = targetServiceName;
+        this.targetClass = targetClass;
     }
 
-    public <T> ServiceBuilder<ManagedReferenceFactory> build(ContextNames.BindInfo binding, ServiceName targetServiceName, Class<T> targetClass) {
-        String name = binding.getBindName();
+    public BinderServiceBuilder<T> alias(ContextNames.BindInfo alias) {
+        this.aliases.add(alias);
+        return this;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.binding.getBinderServiceName();
+    }
+
+    @Override
+    public ServiceBuilder<ManagedReferenceFactory> build(ServiceTarget target) {
+        String name = this.binding.getBindName();
         BinderService binder = new BinderService(name);
-        ServiceBuilder<ManagedReferenceFactory> builder = this.target.addService(binding.getBinderServiceName(), binder)
+        ServiceBuilder<ManagedReferenceFactory> builder = target.addService(this.getServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(name))
-                .addDependency(targetServiceName, targetClass, new ManagedReferenceInjector<T>(binder.getManagedObjectInjector()))
-                .addDependency(binding.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .addDependency(this.targetServiceName, this.targetClass, new ManagedReferenceInjector<T>(binder.getManagedObjectInjector()))
+                .addDependency(this.binding.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
         ;
-        return builder;
+        for (ContextNames.BindInfo alias : this.aliases) {
+            builder.addAliases(alias.getBinderServiceName(), ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(alias.getBindName()));
+        }
+        return builder.setInitialMode(ServiceController.Mode.PASSIVE);
     }
 }

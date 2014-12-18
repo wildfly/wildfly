@@ -22,29 +22,18 @@
 package org.wildfly.clustering.service;
 
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 
 /**
- * Encapsulates the common logic for building an injected value service.
+ * Encapsulates the logic for building a service.
  * @author Paul Ferraro
+ * @param <T> the type of value provided by services built by this builder
  */
-public class InjectedValueServiceBuilder {
-
-    private final ServiceTarget target;
-
-    public InjectedValueServiceBuilder(ServiceTarget target) {
-        this.target = target;
-    }
-
-    public <T> ServiceBuilder<T> build(ServiceName name, ServiceName targetName, Class<T> targetClass) {
-        InjectedValue<T> value = new InjectedValue<>();
-        return this.target.addService(name, new ValueService<>(value))
-                .addDependency(targetName, targetClass, value)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
-    }
+public interface Builder<T> extends ServiceNameProvider {
+    /**
+     * Builds a service into the specified target.
+     * @param target the service installation target
+     * @return a service builder
+     */
+    ServiceBuilder<T> build(ServiceTarget target);
 }

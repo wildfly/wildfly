@@ -67,6 +67,6 @@ public class CommandDispatcherFactoryServiceInstaller implements GroupServiceIns
         this.logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
         this.builder.build(target, name, group, module).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        new BinderServiceBuilder(target).build(bindInfo, name, CommandDispatcherFactory.class).install();
+        new BinderServiceBuilder<>(bindInfo, name, CommandDispatcherFactory.class).build(target).install();
     }
 }

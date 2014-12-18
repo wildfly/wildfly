@@ -41,7 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.conf.XmlConfigurator;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 
 /**
  * Service that provides protocol property defaults per protocol type.
@@ -52,7 +52,7 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME, "defaults");
 
     public static ServiceBuilder<ProtocolDefaults> build(ServiceTarget target) {
-        return AsynchronousService.addService(target, SERVICE_NAME, new ProtocolDefaultsService());
+        return new AsynchronousServiceBuilder<>(SERVICE_NAME, new ProtocolDefaultsService()).build(target);
     }
 
     private static final String DEFAULTS = "jgroups-defaults.xml";

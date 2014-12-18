@@ -93,7 +93,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.spi.CacheServiceInstaller;
 import org.wildfly.clustering.spi.ClusteredCacheServiceInstaller;
 import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
@@ -214,7 +214,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
         // Install cache configuration service
         ServiceName configServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
-        ServiceBuilder<?> configBuilder = AsynchronousService.addService(target, configServiceName, new CacheConfigurationService(cacheName, cacheConfigurationDependencies))
+        ServiceBuilder<?> configBuilder = new AsynchronousServiceBuilder<>(configServiceName, new CacheConfigurationService(cacheName, cacheConfigurationDependencies)).build(target)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheConfigurationDependencies.getCacheContainerInjector())
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, cacheConfigurationDependencies.getModuleLoaderInjector())
         ;
@@ -228,7 +228,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
         // Install cache service
         ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
-        ServiceBuilder<?> cacheBuilder = AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, cacheDependencies))
+        ServiceBuilder<?> cacheBuilder = new AsynchronousServiceBuilder<>(cacheServiceName, new CacheService<>(cacheName, cacheDependencies)).build(target)
                 .addDependency(configServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheDependencies.getCacheContainerInjector())
         ;
@@ -239,7 +239,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
         // Install jndi binding for cache
         ContextNames.BindInfo binding = createCacheBinding((jndiName != null) ? JndiNameFactory.parse(jndiName) : createJndiName(containerName, cacheName));
-        ServiceBuilder<ManagedReferenceFactory> binderBuilder = new BinderServiceBuilder(target).build(binding, cacheServiceName, Cache.class);
+        ServiceBuilder<ManagedReferenceFactory> binderBuilder = new BinderServiceBuilder<>(binding, cacheServiceName, Cache.class).build(target);
         if (defaultCache) {
             ContextNames.BindInfo defaultBinding = createCacheBinding(createJndiName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS));
             binderBuilder.addAliases(defaultBinding.getBinderServiceName(), ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(defaultBinding.getBindName()));

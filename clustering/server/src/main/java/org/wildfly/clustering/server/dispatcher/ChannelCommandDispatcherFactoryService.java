@@ -48,7 +48,7 @@ import org.wildfly.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.marshalling.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.VersionedMarshallingConfiguration;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
@@ -62,7 +62,7 @@ public class ChannelCommandDispatcherFactoryService implements Service<CommandDi
 
     public static ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target, ServiceName name, String group, ModuleIdentifier identifier) {
         ChannelCommandDispatcherFactoryService service = new ChannelCommandDispatcherFactoryService(identifier);
-        return AsynchronousService.addService(target, name, service)
+        return new AsynchronousServiceBuilder<>(name, service).build(target)
                 .addDependency(GroupServiceNames.NODE_FACTORY.getServiceName(group), JGroupsNodeFactory.class, service.nodeFactory)
                 .addDependency(ConnectedChannelService.getServiceName(group), Channel.class, service.channel)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, service.loader)

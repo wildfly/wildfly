@@ -21,54 +21,55 @@
  */
 package org.wildfly.clustering.service.concurrent;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossExecutors;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
+import org.wildfly.clustering.service.Builder;
 
 /**
- * Service that provides a {@link ScheduledThreadPoolExecutor} that removes tasks from the task queue upon cancellation.
+ * Service that provides an {@link Executor} that uses a cached thread pool.
  * @author Paul Ferraro
  */
-public class RemoveOnCancelScheduledExecutorService implements Service<ScheduledExecutorService> {
+public class CachedThreadPoolExecutorServiceBuilder implements Builder<ExecutorService>, Service<ExecutorService> {
 
-    public static ServiceBuilder<ScheduledExecutorService> build(ServiceTarget target, ServiceName name, ThreadFactory factory) {
-        return build(target, name, factory, 1);
-    }
+    private final ServiceName name;
+    private final ThreadFactory factory;
 
-    public static ServiceBuilder<ScheduledExecutorService> build(ServiceTarget target, ServiceName name, ThreadFactory factory, int size) {
-        return AsynchronousService.addService(target, name, new RemoveOnCancelScheduledExecutorService(size, factory), false, true);
-    }
+    private volatile ExecutorService executor;
 
-    private final ThreadFactory threadFactory;
-    private final int size;
-
-    private volatile ScheduledExecutorService executor;
-
-    private RemoveOnCancelScheduledExecutorService(int size, ThreadFactory threadFactory) {
-        this.size = size;
-        this.threadFactory = threadFactory;
+    public CachedThreadPoolExecutorServiceBuilder(ServiceName name, ThreadFactory factory) {
+        this.name = name;
+        this.factory = factory;
     }
 
     @Override
-    public ScheduledExecutorService getValue() {
-        return JBossExecutors.protectedScheduledExecutorService(this.executor);
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public ServiceBuilder<ExecutorService> build(ServiceTarget target) {
+        return new AsynchronousServiceBuilder<>(this.name, this).startSynchronously().build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    }
+
+    @Override
+    public ExecutorService getValue() {
+        return JBossExecutors.protectedExecutorService(this.executor);
     }
 
     @Override
     public void start(StartContext context) {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(this.size, this.threadFactory);
-        executor.setRemoveOnCancelPolicy(true);
-        executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-        this.executor = executor;
+        this.executor = Executors.newCachedThreadPool(this.factory);
     }
 
     @Override

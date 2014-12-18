@@ -69,6 +69,6 @@ public class RegistryFactoryServiceInstaller implements CacheServiceInstaller {
 
         RegistryService.build(target, container, cache).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        new BinderServiceBuilder(target).build(bindInfo, name, RegistryFactory.class).install();
+        new BinderServiceBuilder<>(bindInfo, name, RegistryFactory.class).build(target).install();
     }
 }

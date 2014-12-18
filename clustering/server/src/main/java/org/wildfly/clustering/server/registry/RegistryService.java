@@ -31,7 +31,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
@@ -43,7 +43,7 @@ public class RegistryService<K, V> implements Service<Registry<K, V>> {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <K, V> ServiceBuilder<Registry<K, V>> build(ServiceTarget target, String containerName, String cacheName) {
         RegistryService<K, V> service = new RegistryService<>();
-        return AsynchronousService.addService(target, CacheServiceNames.REGISTRY.getServiceName(containerName, cacheName), service)
+        return new AsynchronousServiceBuilder<>(CacheServiceNames.REGISTRY.getServiceName(containerName, cacheName), service).build(target)
                 .addDependency(CacheServiceNames.REGISTRY_FACTORY.getServiceName(containerName, cacheName), RegistryFactory.class, (Injector) service.factory)
                 .addDependency(CacheServiceNames.REGISTRY_ENTRY.getServiceName(containerName, cacheName), RegistryEntryProvider.class, service.provider)
         ;

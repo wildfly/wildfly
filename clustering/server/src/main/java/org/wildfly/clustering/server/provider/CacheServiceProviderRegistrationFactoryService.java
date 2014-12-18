@@ -39,7 +39,7 @@ import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.spi.CacheServiceNames;
 import org.wildfly.clustering.spi.GroupServiceNames;
 
@@ -51,7 +51,7 @@ public class CacheServiceProviderRegistrationFactoryService implements Service<S
 
     public static ServiceBuilder<ServiceProviderRegistrationFactory> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
         CacheServiceProviderRegistrationFactoryService service = new CacheServiceProviderRegistrationFactoryService(name);
-        return AsynchronousService.addService(target, name, service)
+        return new AsynchronousServiceBuilder<>(name, service).build(target)
                 .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
                 .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, service.group)
                 .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, service.dispatcherFactory)

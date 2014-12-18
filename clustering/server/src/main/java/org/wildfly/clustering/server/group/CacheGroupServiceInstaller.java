@@ -69,6 +69,6 @@ public class CacheGroupServiceInstaller implements CacheServiceInstaller {
 
         this.builder.build(target, name, container, cache).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        new BinderServiceBuilder(target).build(bindInfo, name, Group.class).install();
+        new BinderServiceBuilder<>(bindInfo, name, Group.class).build(target).install();
     }
 }

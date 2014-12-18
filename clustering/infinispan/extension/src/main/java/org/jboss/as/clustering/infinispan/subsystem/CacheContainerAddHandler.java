@@ -67,7 +67,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
-import org.wildfly.clustering.service.InjectedValueServiceBuilder;
+import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.CacheServiceInstaller;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
 import org.wildfly.clustering.spi.ClusteredCacheServiceInstaller;
@@ -142,8 +142,6 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         Transport transportConfig = null;
         String transportExecutor = null;
 
-        InjectedValueServiceBuilder builder = new InjectedValueServiceBuilder(target);
-
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             ModelNode transport = model.get(TransportResourceDefinition.PATH.getKeyValuePair());
             if (transport.isDefined()) {
@@ -160,17 +158,17 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 }
 
                 if (!name.equals(channel)) {
-                    new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).install();
+                    new BinderServiceBuilder<>(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).build(target).install();
 
                     ChannelService.build(target, name).setInitialMode(ON_DEMAND).install();
 
-                    builder.build(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).install();
+                    new AliasServiceBuilder<>(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).build(target).install();
 
                     for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                         log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
                         Iterator<ServiceName> names = installer.getServiceNames(channel).iterator();
                         for (ServiceName serviceName : installer.getServiceNames(name)) {
-                            builder.build(serviceName, names.next(), Object.class).install();
+                            new AliasServiceBuilder<>(serviceName, names.next(), Object.class).build(target).install();
                         }
                     }
                 }
@@ -215,7 +213,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         // Install cache container jndi binding
         ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
         ContextNames.BindInfo binding = createCacheContainerBinding(jndiName, name);
-        new BinderServiceBuilder(target).build(binding, serviceName, CacheContainer.class).install();
+        new BinderServiceBuilder<>(binding, serviceName, CacheContainer.class).build(target).install();
 
         // Install key affinity service factory
         KeyAffinityServiceFactoryService.build(target, name, 10).setInitialMode(ServiceController.Mode.ON_DEMAND).install();

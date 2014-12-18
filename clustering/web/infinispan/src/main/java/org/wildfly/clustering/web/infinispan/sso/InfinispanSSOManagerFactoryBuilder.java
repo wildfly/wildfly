@@ -33,7 +33,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilder;
 
@@ -66,10 +66,9 @@ public class InfinispanSSOManagerFactoryBuilder implements SSOManagerFactoryBuil
                 return null;
             }
         };
-        AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
+        new AsynchronousServiceBuilder<>(cacheServiceName, new CacheService<>(cacheName, dependencies)).build(target)
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
 

@@ -47,7 +47,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
-import org.wildfly.clustering.service.InjectedValueServiceBuilder;
+import org.wildfly.clustering.service.AliasServiceBuilder;
 
 /**
  * Add operation handler for fork resources.
@@ -99,7 +99,7 @@ public class ForkAddHandler extends AbstractAddStepHandler {
         }
 
         // Install channel factory alias
-        new InjectedValueServiceBuilder(target).build(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).install();
+        new AliasServiceBuilder<>(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).build(target).install();
 
         // Install channel
         ChannelService.build(target, name).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
@@ -108,7 +108,7 @@ public class ForkAddHandler extends AbstractAddStepHandler {
         ConnectedChannelService.build(target, name).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         // Install channel jndi binding
-        new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).install();
+        new BinderServiceBuilder<>(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).build(target).install();
     }
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {

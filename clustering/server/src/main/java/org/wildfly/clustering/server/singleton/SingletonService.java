@@ -55,7 +55,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
@@ -113,7 +113,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
                 }
             }
         };
-        final ServiceBuilder<T> singletonBuilder = AsynchronousService.addService(target, this.singletonServiceName, this)
+        final ServiceBuilder<T> singletonBuilder = new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
                 .addAliases(this.singletonServiceName.append("singleton"))
                 .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, this.group)
                 .addDependency(CacheServiceNames.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, cacheName), ServiceProviderRegistrationFactory.class, this.registrationFactory)

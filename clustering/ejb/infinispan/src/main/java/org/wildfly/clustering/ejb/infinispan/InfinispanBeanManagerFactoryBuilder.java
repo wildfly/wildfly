@@ -41,9 +41,9 @@ import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.service.AsynchronousService;
-import org.wildfly.clustering.service.concurrent.CachedThreadPoolExecutorService;
-import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorService;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
+import org.wildfly.clustering.service.concurrent.CachedThreadPoolExecutorServiceBuilder;
+import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
@@ -92,20 +92,13 @@ public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFac
                 return null;
             }
         };
-        AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
+        new AsynchronousServiceBuilder<>(cacheServiceName, new CacheService<>(cacheName, dependencies)).build(target)
                 .addDependency(configurationServiceName)
                 .addDependency(deploymentUnitServiceName.append("marshalling"))
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        RemoveOnCancelScheduledExecutorService.build(target, deploymentUnitServiceName.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-        CachedThreadPoolExecutorService.build(target, deploymentUnitServiceName.append(this.name, "eviction"), EVICTION_THREAD_FACTORY)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
+        new RemoveOnCancelScheduledExecutorServiceBuilder(deploymentUnitServiceName.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY).build(target).install();
+        new CachedThreadPoolExecutorServiceBuilder(deploymentUnitServiceName.append(this.name, "eviction"), EVICTION_THREAD_FACTORY).build(target).install();
     }
 
     @Override
