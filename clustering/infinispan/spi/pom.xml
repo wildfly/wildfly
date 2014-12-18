@@ -28,61 +28,39 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <artifactId>wildfly-clustering-infinispan</artifactId>
         <version>9.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-clustering</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-clustering-infinispan-spi</artifactId>
+    <packaging>jar</packaging>
 
-    <name>WildFly: Clustering Subsystems</name>
-
-    <modules>
-        <module>api</module>
-        <module>common</module>
-        <module>ee</module>
-        <module>ejb</module>
-        <module>infinispan</module>
-        <module>jgroups</module>
-        <module>marshalling</module>
-        <module>server</module>
-        <module>service</module>
-        <module>singleton</module>
-        <module>spi</module>
-        <module>web</module>
-    </modules>
+    <name>WildFly: Infinispan SPI</name>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-marshalling</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman</artifactId>
-            <scope>test</scope>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-security-manager</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman-submit</artifactId>
-            <scope>test</scope>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman-install</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman-bmunit</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
         </dependency>
     </dependencies>
-
 </project>

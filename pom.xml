@@ -910,12 +910,6 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -950,19 +944,46 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-infinispan</artifactId>
+                <artifactId>wildfly-clustering-infinispan-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-infinispan-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-jgroups</artifactId>
+                <artifactId>wildfly-clustering-jgroups-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-jgroups-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-jgroups-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-marshalling</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -993,7 +1014,6 @@
                 <artifactId>wildfly-clustering-web-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-web-undertow</artifactId>

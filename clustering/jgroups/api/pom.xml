@@ -28,18 +28,19 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-clustering</artifactId>
+        <artifactId>wildfly-clustering-jgroups</artifactId>
         <version>9.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-clustering-jgroups</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-clustering-jgroups-api</artifactId>
+    <packaging>jar</packaging>
 
-    <name>WildFly: JGroups modules</name>
+    <name>WildFly: JGroups API</name>
 
-    <modules>
-        <module>api</module>
-        <module>extension</module>
-        <module>spi</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+        </dependency>
+    </dependencies>
 </project>

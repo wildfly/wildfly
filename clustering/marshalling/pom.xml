@@ -28,61 +28,32 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <artifactId>wildfly-clustering</artifactId>
         <version>9.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-clustering</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-clustering-marshalling</artifactId>
+    <packaging>jar</packaging>
 
-    <name>WildFly: Clustering Subsystems</name>
-
-    <modules>
-        <module>api</module>
-        <module>common</module>
-        <module>ee</module>
-        <module>ejb</module>
-        <module>infinispan</module>
-        <module>jgroups</module>
-        <module>marshalling</module>
-        <module>server</module>
-        <module>service</module>
-        <module>singleton</module>
-        <module>spi</module>
-        <module>web</module>
-    </modules>
+    <name>WildFly: Clustering marshalling constructs</name>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman-submit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman-install</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman-bmunit</artifactId>
-            <scope>test</scope>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-security-manager</artifactId>
         </dependency>
     </dependencies>
-
 </project>
