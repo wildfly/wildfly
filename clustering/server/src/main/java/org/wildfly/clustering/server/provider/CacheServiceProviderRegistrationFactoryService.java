@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -40,6 +39,7 @@ import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+import org.wildfly.clustering.service.AsynchronousService;
 import org.wildfly.clustering.spi.CacheServiceNames;
 import org.wildfly.clustering.spi.GroupServiceNames;
 

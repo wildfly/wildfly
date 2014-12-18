@@ -26,12 +26,9 @@ import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.concurrent.CachedThreadPoolExecutorService;
-import org.jboss.as.clustering.concurrent.RemoveOnCancelScheduledExecutorService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController;
@@ -44,6 +41,9 @@ import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.service.AsynchronousService;
+import org.wildfly.clustering.service.concurrent.CachedThreadPoolExecutorService;
+import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorService;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**

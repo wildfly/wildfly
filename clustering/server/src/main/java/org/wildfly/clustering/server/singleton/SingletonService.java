@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.msc.DelegatingServiceBuilder;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.clustering.msc.ServiceControllerFactory;
@@ -56,6 +55,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.service.AsynchronousService;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;

@@ -29,7 +29,6 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.msc.InjectedValueServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,6 +36,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
+import org.wildfly.clustering.service.InjectedValueServiceBuilder;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
 import org.wildfly.clustering.spi.GroupServiceInstaller;
 

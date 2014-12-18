@@ -26,11 +26,11 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
-import org.jboss.as.clustering.marshalling.SimpleClassTable;
-import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.modules.Module;
+import org.wildfly.clustering.marshalling.MarshallingConfigurationFactory;
+import org.wildfly.clustering.marshalling.SimpleClassTable;
+import org.wildfly.clustering.marshalling.VersionedMarshallingConfiguration;
 
 /**
  * Versioned session attribute marshalling context.

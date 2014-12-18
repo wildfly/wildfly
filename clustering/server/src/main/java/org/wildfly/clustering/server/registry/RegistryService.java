@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -32,6 +31,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
+import org.wildfly.clustering.service.AsynchronousService;
 import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**

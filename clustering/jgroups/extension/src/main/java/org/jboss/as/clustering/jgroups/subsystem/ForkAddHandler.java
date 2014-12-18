@@ -32,7 +32,6 @@ import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.subsystem.StackAddHandler.Protocol;
-import org.jboss.as.clustering.msc.InjectedValueServiceBuilder;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -48,6 +47,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
+import org.wildfly.clustering.service.InjectedValueServiceBuilder;
 
 /**
  * Add operation handler for fork resources.

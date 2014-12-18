@@ -22,13 +22,13 @@
 
 package org.wildfly.mod_cluster.undertow;
 
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.AsynchronousService;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerAdapterBuilder;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerService;
 import org.wildfly.extension.undertow.ListenerService;

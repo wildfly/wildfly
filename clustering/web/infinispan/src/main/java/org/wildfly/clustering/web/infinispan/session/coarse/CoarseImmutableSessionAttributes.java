@@ -24,8 +24,8 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.clustering.marshalling.MarshalledValue;
-import org.jboss.as.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.MarshalledValue;
+import org.wildfly.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 

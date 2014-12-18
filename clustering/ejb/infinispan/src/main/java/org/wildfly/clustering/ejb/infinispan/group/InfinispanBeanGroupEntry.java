@@ -26,9 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.clustering.marshalling.MarshalledValue;
-import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
+import org.wildfly.clustering.marshalling.MarshalledValue;
+import org.wildfly.clustering.marshalling.MarshallingContext;
 
 /**
  * The cache entry of a bean group.

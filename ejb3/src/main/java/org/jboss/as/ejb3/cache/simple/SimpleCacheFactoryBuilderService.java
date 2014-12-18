@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.cache.simple;
 import java.security.AccessController;
 import java.util.concurrent.ThreadFactory;
 
-import org.jboss.as.clustering.concurrent.RemoveOnCancelScheduledExecutorService;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
@@ -36,6 +35,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ejb.BeanContext;
+import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorService;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**

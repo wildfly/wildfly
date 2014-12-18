@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.io;
 
-import org.jboss.as.clustering.marshalling.HashableMarshalledValue;
+import org.wildfly.clustering.marshalling.HashableMarshalledValue;
 
 /**
  * @author Paul Ferraro

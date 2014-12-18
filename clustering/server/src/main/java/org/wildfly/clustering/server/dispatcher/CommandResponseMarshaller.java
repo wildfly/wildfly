@@ -25,12 +25,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Buffer;
+import org.wildfly.clustering.marshalling.MarshallingContext;
 
 /**
  * Marshalling strategy for the command response.

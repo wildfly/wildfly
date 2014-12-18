@@ -52,8 +52,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEven
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.concurrent.Invoker;
-import org.jboss.as.clustering.concurrent.RetryingInvoker;
 import org.jboss.as.clustering.infinispan.distribution.ConsistentHashLocality;
 import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.jboss.as.clustering.infinispan.distribution.SimpleLocality;
@@ -62,6 +60,8 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Invoker;
+import org.wildfly.clustering.ee.infinispan.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;

@@ -32,7 +32,6 @@ import java.util.Map;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -42,6 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.conf.XmlConfigurator;
+import org.wildfly.clustering.service.AsynchronousService;
 
 /**
  * Service that provides protocol property defaults per protocol type.

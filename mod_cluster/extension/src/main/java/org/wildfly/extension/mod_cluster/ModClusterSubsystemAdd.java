@@ -67,7 +67,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -95,6 +94,7 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.propertyeditor.PropertyEditors;
+import org.wildfly.clustering.service.AsynchronousService;
 
 /**
  * The managed subsystem add update.

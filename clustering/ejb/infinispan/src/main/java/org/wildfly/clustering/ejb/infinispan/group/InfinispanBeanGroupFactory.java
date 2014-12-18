@@ -26,13 +26,13 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
-import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupFactory;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.marshalling.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.MarshallingContext;
 
 /**
  * Encapsulates the cache mapping strategy of a bean group.

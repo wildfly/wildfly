@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.jgroups.Channel;
+import org.wildfly.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 
 /**

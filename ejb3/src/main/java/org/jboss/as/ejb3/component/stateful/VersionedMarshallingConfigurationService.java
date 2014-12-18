@@ -24,8 +24,6 @@ package org.jboss.as.ejb3.component.stateful;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
-import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -35,6 +33,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
+import org.wildfly.clustering.marshalling.MarshallingConfigurationFactory;
+import org.wildfly.clustering.marshalling.VersionedMarshallingConfiguration;
 
 /**
  * Service that provides a versioned marshalling configuration for a deployment unit.

@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -42,6 +41,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.group.InfinispanNodeFactory;
+import org.wildfly.clustering.service.AsynchronousService;
 import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
