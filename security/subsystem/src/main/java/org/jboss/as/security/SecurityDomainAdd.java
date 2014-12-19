@@ -65,12 +65,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
 import javax.transaction.TransactionManager;
 
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -113,6 +113,7 @@ import org.jboss.security.identitytrust.config.IdentityTrustModuleEntry;
 import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
 import org.jboss.security.plugins.TransactionManagerLocator;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 
 /**
  * Add a security domain configuration.
@@ -183,7 +184,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                         transactionManagerInjector);
 
         if ("infinispan".equals(cacheType)) {
-            builder.addDependency(EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
+            builder.addDependency(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(CACHE_CONTAINER_NAME),
                     Object.class, securityDomainService.getCacheManagerInjector());
         }
 

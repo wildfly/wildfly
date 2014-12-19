@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.List;
-
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -44,10 +42,12 @@ public abstract class SharedStateCacheAddHandler extends ClusteredCacheAddHandle
     }
 
     @Override
-    void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
+    void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, AdvancedCacheConfigurationBuilder configBuilder) throws OperationFailedException {
 
         // process the basic clustered configuration
-        super.processModelNode(context, containerName, containerModel, cache, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
+        super.processModelNode(context, containerName, containerModel, cache, configBuilder);
+
+        ConfigurationBuilder builder = configBuilder.getConfigurationBuilder();
 
         if (cache.hasDefined(StateTransferResourceDefinition.PATH.getKey())) {
             ModelNode stateTransfer = cache.get(StateTransferResourceDefinition.PATH.getKeyValuePair());

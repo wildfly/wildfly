@@ -24,24 +24,19 @@ package org.wildfly.clustering.ejb.infinispan;
 import java.security.AccessController;
 import java.util.concurrent.ThreadFactory;
 
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
-import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.wildfly.clustering.service.concurrent.CachedThreadPoolExecutorServiceBuilder;
 import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
@@ -59,6 +54,13 @@ public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFac
     private static final ThreadFactory EXPIRATION_THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup(BeanExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
     private static final ThreadFactory EVICTION_THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup(BeanEvictionScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
 
+    static String getCacheName(ServiceName deploymentUnitServiceName) {
+        if (Services.JBOSS_DEPLOYMENT_SUB_UNIT.isParentOf(deploymentUnitServiceName)) {
+            return deploymentUnitServiceName.getParent().getSimpleName() + "/" + deploymentUnitServiceName.getSimpleName();
+        }
+        return deploymentUnitServiceName.getSimpleName();
+    }
+
     private final String name;
     private final BeanManagerFactoryBuilderConfiguration config;
 
@@ -69,31 +71,16 @@ public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFac
 
     @Override
     public void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName) {
-        String cacheName = BeanCacheConfigurationService.getCacheName(deploymentUnitServiceName);
-        ServiceName configurationServiceName = CacheConfigurationService.getServiceName(this.config.getContainerName(), cacheName);
-        final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
-        InjectedValue<Configuration> configuration = new InjectedValue<>();
-        target.addService(configurationServiceName, new BeanCacheConfigurationService(cacheName, container, configuration))
-                .addDependency(EmbeddedCacheManagerService.getServiceName(this.config.getContainerName()), EmbeddedCacheManager.class, container)
-                .addDependency(CacheConfigurationService.getServiceName(this.config.getContainerName(), this.config.getCacheName()), Configuration.class, configuration)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
+        String containerName = this.config.getContainerName();
+        String cacheName = getCacheName(deploymentUnitServiceName);
+        String templateCacheName = this.config.getCacheName();
+        if (templateCacheName == null) {
+            templateCacheName = CacheServiceNameFactory.DEFAULT_CACHE;
+        }
 
-        ServiceName cacheServiceName = CacheService.getServiceName(this.config.getContainerName(), cacheName);
-        CacheService.Dependencies dependencies = new CacheService.Dependencies() {
-            @Override
-            public EmbeddedCacheManager getCacheContainer() {
-                return container.getValue();
-            }
+        new TemplateConfigurationBuilder(containerName, cacheName, templateCacheName).build(target).install();
 
-            @Override
-            public XAResourceRecoveryRegistry getRecoveryRegistry() {
-                return null;
-            }
-        };
-        new AsynchronousServiceBuilder<>(cacheServiceName, new CacheService<>(cacheName, dependencies)).build(target)
-                .addDependency(configurationServiceName)
+        new CacheBuilder<>(this.config.getContainerName(), cacheName).build(target)
                 .addDependency(deploymentUnitServiceName.append("marshalling"))
                 .install()
         ;

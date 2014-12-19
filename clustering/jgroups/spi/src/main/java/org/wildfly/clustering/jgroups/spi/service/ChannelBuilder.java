@@ -87,9 +87,7 @@ public class ChannelBuilder implements Service<Channel>, Builder<Channel> {
 
     @Override
     public void stop(StopContext context) {
-        if (this.channel != null) {
-            this.channel.close();
-        }
+        this.channel.close();
         this.channel = null;
     }
 }

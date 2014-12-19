@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.jboss.as.clustering.infinispan.distribution.Locality;
+import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 
 /**
  * A scheduler for some task.

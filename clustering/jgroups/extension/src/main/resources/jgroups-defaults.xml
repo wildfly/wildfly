@@ -93,7 +93,7 @@
     <pbcast.STABLE stability_delay="500"
         desired_avg_gossip="5000"
         max_bytes="1m"/>
-    <pbcast.GMS print_local_addr="false"/>
+    <pbcast.GMS print_local_addr="true"/>
     <UFC max_credits="2m"/>
     <MFC max_credits="2m"/>
     <FRAG2 frag_size="30k"/>

@@ -51,6 +51,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 
 /**
  * Operation handler for registration of fork protocol runtime resources.
@@ -70,7 +71,7 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
             if (channel != null) {
                 FORK fork = (FORK) channel.getProtocolStack().findProtocol(FORK.class);
                 if (fork != null) {
-                    controller = registry.getService(ChannelFactoryService.getServiceName(channelName));
+                    controller = registry.getService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channelName));
                     if (controller != null) {
                         ChannelFactory factory = (ChannelFactory) controller.getValue();
                         if (factory != null) {

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.io;
+package org.wildfly.clustering.infinispan.spi.io;
 
 import java.io.IOException;
 import java.io.ObjectInput;

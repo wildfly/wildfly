@@ -50,6 +50,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.infinispan.spi.CacheContainer;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
 
 /**
  * @author Paul Ferraro
@@ -162,7 +164,7 @@ public class DefaultCacheContainerTest {
         verify(batch, never()).close();
         verify(batch, never()).discard();
 
-        result = this.subject.getCache(CacheContainer.DEFAULT_CACHE_ALIAS);
+        result = this.subject.getCache(CacheServiceNameFactory.DEFAULT_CACHE);
 
         assertNotSame(defaultCache, result);
         assertEquals(result, defaultCache);
@@ -340,7 +342,7 @@ public class DefaultCacheContainerTest {
 
         assertTrue(result);
 
-        result = this.subject.isRunning(CacheContainer.DEFAULT_CACHE_ALIAS);
+        result = this.subject.isRunning(CacheServiceNameFactory.DEFAULT_CACHE);
 
         assertTrue(result);
 
@@ -362,7 +364,7 @@ public class DefaultCacheContainerTest {
     public void startCaches() {
         when(this.manager.startCaches("other", "default")).thenReturn(this.manager);
         
-        EmbeddedCacheManager result = this.subject.startCaches("other", CacheContainer.DEFAULT_CACHE_ALIAS);
+        EmbeddedCacheManager result = this.subject.startCaches("other", CacheServiceNameFactory.DEFAULT_CACHE);
         
         assertSame(this.subject, result);
     }

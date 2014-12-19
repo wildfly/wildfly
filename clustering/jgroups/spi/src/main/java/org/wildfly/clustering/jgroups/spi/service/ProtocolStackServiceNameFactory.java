@@ -32,7 +32,7 @@ public interface ProtocolStackServiceNameFactory {
     /**
      * The alias for the default stack.
      */
-    String DEFAULT_STACK = "default";
+    String DEFAULT_STACK = "default-stack";
 
     /**
      * Returns an appropriate service name for the default stack

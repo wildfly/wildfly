@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.List;
-
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -70,12 +68,14 @@ public class DistributedCacheAddHandler extends SharedStateCacheAddHandler {
      * {@inheritDoc}
      */
     @Override
-    void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
+    void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, AdvancedCacheConfigurationBuilder configBuilder) throws OperationFailedException {
 
         // process the basic clustered configuration
-        super.processModelNode(context, containerName, containerModel, cache, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
+        super.processModelNode(context, containerName, containerModel, cache, configBuilder);
 
-        cacheConfigurationDependencies.setConsistentHashStrategy(ConsistentHashStrategy.valueOf(DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, cache).asString()));
+        ConfigurationBuilder builder = configBuilder.getConfigurationBuilder();
+
+        configBuilder.setConsistentHashStrategy(ConsistentHashStrategy.valueOf(DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, cache).asString()));
 
         builder.clustering().hash()
             .numOwners(DistributedCacheResourceDefinition.OWNERS.resolveModelAttribute(context, cache).asInt())

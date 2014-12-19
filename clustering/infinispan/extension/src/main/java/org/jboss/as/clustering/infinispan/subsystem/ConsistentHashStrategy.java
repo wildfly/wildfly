@@ -49,7 +49,7 @@ public enum ConsistentHashStrategy {
         }
     };
 
-    public static final ConsistentHashStrategy DEFAULT = INTRA_CACHE;
+    static final ConsistentHashStrategy DEFAULT = INTRA_CACHE;
 
     abstract ConsistentHashFactory<? extends ConsistentHash> createConsistentHashFactory(boolean topologyAware);
 

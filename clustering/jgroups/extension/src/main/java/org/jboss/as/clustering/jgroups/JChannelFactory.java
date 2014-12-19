@@ -41,6 +41,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -84,6 +85,8 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
 
     @Override
     public Channel createChannel(final String id) throws Exception {
+        JGroupsLogger.ROOT_LOGGER.debugf("Creating channel %s from stack %s", id, this.configuration.getName());
+
         PrivilegedExceptionAction<JChannel> action = new PrivilegedExceptionAction<JChannel>() {
             @Override
             public JChannel run() throws Exception {

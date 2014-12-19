@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -39,6 +38,7 @@ import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.group.InfinispanNodeFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
@@ -56,7 +56,7 @@ public class CacheRegistryFactoryService<K, V> implements Service<RegistryFactor
         return new AsynchronousServiceBuilder<>(name, service).build(target)
                 .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName, cacheName), InfinispanNodeFactory.class, service.factory)
                 .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, service.group)
-                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
+                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, service.cache)
         ;
     }
 

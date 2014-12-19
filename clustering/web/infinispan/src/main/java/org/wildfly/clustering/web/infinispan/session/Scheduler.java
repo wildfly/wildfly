@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.as.clustering.infinispan.distribution.Locality;
+import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 /**

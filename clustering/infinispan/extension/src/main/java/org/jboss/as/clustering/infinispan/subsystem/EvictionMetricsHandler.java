@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
 /**
  * Handler for cache eviction metrics.
@@ -48,7 +49,7 @@ public class EvictionMetricsHandler extends AbstractRuntimeOnlyHandler {
         if (metric == null) {
             context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
         } else {
-            Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheService.getServiceName(containerName, cacheName));
+            Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
             if (cache != null) {
                 context.getResult().set(metric.getValue(cache));
             }

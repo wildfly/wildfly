@@ -44,7 +44,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-infinispan-extension</artifactId>
+            <artifactId>wildfly-clustering-infinispan-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -81,6 +81,11 @@
                   projects that depend on this project.-->
             <scope>provided</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

@@ -32,4 +32,6 @@ public enum TransactionMode {
     NON_DURABLE_XA,
     FULL_XA,
     ;
+
+    static final TransactionMode DEFAULT = NONE;
 }

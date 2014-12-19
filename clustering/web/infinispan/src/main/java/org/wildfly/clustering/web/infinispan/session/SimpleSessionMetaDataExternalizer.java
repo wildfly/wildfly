@@ -27,7 +27,7 @@ import java.io.ObjectOutput;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
 
 /**
  * Externalizer for session meta data.

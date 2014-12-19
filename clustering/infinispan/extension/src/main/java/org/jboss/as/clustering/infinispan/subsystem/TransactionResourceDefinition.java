@@ -83,7 +83,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(TransactionMode.class, true, true))
-            .setDefaultValue(new ModelNode().set(TransactionMode.NONE.name()))
+            .setDefaultValue(new ModelNode().set(TransactionMode.DEFAULT.name()))
             .build();
 
     static final SimpleAttributeDefinition STOP_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.STOP_TIMEOUT, ModelType.LONG, true)

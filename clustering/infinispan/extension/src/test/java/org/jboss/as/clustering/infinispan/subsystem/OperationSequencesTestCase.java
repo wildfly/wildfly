@@ -15,6 +15,8 @@ import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
 /**
 * Test case for testing sequences of management operations.
@@ -119,10 +121,10 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
 
         // need to check that all services are correctly re-installed
-        ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName("maximal2");
+        ServiceName containerServiceName = CacheContainerServiceName.CACHE_CONTAINER.getServiceName("maximal2");
 
-        ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName("maximal2", "fred");
-        ServiceName cacheServiceName = CacheService.getServiceName("maximal2", "fred");
+        ServiceName cacheConfigurationServiceName = CacheServiceName.CONFIGURATION.getServiceName("maximal2", "fred");
+        ServiceName cacheServiceName = CacheServiceName.CACHE.getServiceName("maximal2", "fred");
 
         Assert.assertNotNull("cache container service not installed", servicesA.getContainer().getService(containerServiceName));
         Assert.assertNotNull("cache configuration service not installed", servicesA.getContainer().getService(cacheConfigurationServiceName));

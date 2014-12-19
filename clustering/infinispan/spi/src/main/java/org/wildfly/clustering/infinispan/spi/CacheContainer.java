@@ -19,17 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan;
+package org.wildfly.clustering.infinispan.spi;
 
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.wildfly.clustering.spi.CacheServiceNameFactory;
 
+/**
+ * Extends Infinispan's {@link EmbeddedCacheManager} exposing the name of the default cache.
+ * @author Paul Ferraro
+ */
 public interface CacheContainer extends EmbeddedCacheManager {
-    /**
-     * Cache name alias for the default cache of a cache container.
-     */
-    String DEFAULT_CACHE_ALIAS = CacheServiceNameFactory.DEFAULT_CACHE;
-
     /**
      * Returns the name of the default cache.
      * @return a cache name

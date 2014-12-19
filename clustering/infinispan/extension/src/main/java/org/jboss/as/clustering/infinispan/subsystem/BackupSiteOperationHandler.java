@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
 /**
  * Operation handler for backup site operations.
@@ -54,7 +55,7 @@ public class BackupSiteOperationHandler extends AbstractRuntimeOnlyHandler {
         String cacheName = address.getElement(address.size() - 2).getValue();
         final String site = address.getElement(address.size() - 1).getValue();
 
-        ServiceName cacheServiceName = CacheService.getServiceName(cacheContainerName, cacheName);
+        ServiceName cacheServiceName = CacheServiceName.CACHE.getServiceName(cacheContainerName, cacheName);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(cacheServiceName);
         final Cache<?, ?> cache = (Cache<?, ?>) controller.getValue();
 

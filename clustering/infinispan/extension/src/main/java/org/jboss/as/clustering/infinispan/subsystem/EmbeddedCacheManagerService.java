@@ -32,11 +32,11 @@ import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 
 /**
  * @author Paul Ferraro
@@ -45,16 +45,11 @@ import org.jboss.msc.value.InjectedValue;
 public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager> {
 
     private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
-    public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
-
-    public static ServiceName getServiceName(String name) {
-        return BASE_SERVICE_NAME.append(name);
-    }
 
     static ServiceBuilder<EmbeddedCacheManager> build(ServiceTarget target, String name) {
         EmbeddedCacheManagerService service = new EmbeddedCacheManagerService();
-        return target.addService(getServiceName(name), service)
-                .addDependency(EmbeddedCacheManagerConfigurationService.getServiceName(name), EmbeddedCacheManagerConfiguration.class, service.config)
+        return target.addService(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(name), service)
+                .addDependency(CacheContainerServiceName.CONFIGURATION.getServiceName(name), EmbeddedCacheManagerConfiguration.class, service.config)
         ;
     }
 

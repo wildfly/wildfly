@@ -41,9 +41,6 @@
         <module name="org.hibernate" slot="3" optional="true" services="import"/>  <!-- org.hibernate:3 must be created manually with Hibernate 3 jars -->
         <module name="org.hibernate.validator"/>
         <module name="org.infinispan" services="import"/>
-        <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.clustering.jgroups"/>
-        <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server"/>

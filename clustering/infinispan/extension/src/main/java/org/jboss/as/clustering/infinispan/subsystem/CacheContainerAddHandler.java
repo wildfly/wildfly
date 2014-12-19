@@ -30,14 +30,12 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
 
+import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsBindingFactory;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -64,9 +62,17 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
+import org.wildfly.clustering.infinispan.spi.CacheContainer;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceNameFactory;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.service.ChannelBuilder;
+import org.wildfly.clustering.jgroups.spi.service.ChannelConnectorBuilder;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.CacheServiceInstaller;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
@@ -133,7 +139,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
             List<ModelNode> list = operation.get(CacheContainerResourceDefinition.ALIASES.getName()).asList();
             aliases = new ServiceName[list.size()];
             for (int i = 0; i < list.size(); i++) {
-                aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).asString());
+                aliases[i] = CacheContainerServiceName.CACHE_CONTAINER.getServiceName(list.get(i).asString());
             }
         }
 
@@ -147,22 +153,15 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
             if (transport.isDefined()) {
                 transportConfig = new Transport(TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong());
 
-                String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport));
+                String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport), ChannelServiceNameFactory.DEFAULT_CHANNEL);
                 transportExecutor = ModelNodes.asString(TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport));
-
-                if (channel == null) {
-                    // Transport uses the default channel - we need to find its actual name to locate the appropriate ChannelFactory service
-                    PathAddress jgroupsAddress = address.subAddress(0, address.size() - 2).append(JGroupsSubsystemResourceDefinition.PATH);
-                    ModelNode jgroupsModel = context.readResourceFromRoot(jgroupsAddress, false).getModel();
-                    channel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, jgroupsModel));
-                }
 
                 if (!name.equals(channel)) {
                     new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
 
                     new ChannelBuilder(name).build(target).install();
-
-                    new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).build(target).install();
+                    new ChannelConnectorBuilder(name).build(target).install();
+                    new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channel), ChannelFactory.class).build(target).install();
 
                     for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                         log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
@@ -182,7 +181,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         }
 
         // Install cache container configuration service
-        ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(name);
+        ServiceName configServiceName = CacheContainerServiceName.CONFIGURATION.getServiceName(name);
         EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
         ServiceBuilder<EmbeddedCacheManagerConfiguration> configBuilder = target.addService(configServiceName, new EmbeddedCacheManagerConfigurationService(name, defaultCache, statistics, module, dependencies))
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, dependencies.getModuleLoaderInjector())
@@ -211,17 +210,23 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         managerBuilder.setInitialMode(initialMode).install();
 
         // Install cache container jndi binding
-        ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
         ContextNames.BindInfo binding = createCacheContainerBinding(jndiName, name);
-        new BinderServiceBuilder<>(binding, serviceName, CacheContainer.class).build(target).install();
+        new BinderServiceBuilder<>(binding, CacheContainerServiceName.CACHE_CONTAINER.getServiceName(name), CacheContainer.class).build(target).install();
 
         // Install key affinity service factory
         KeyAffinityServiceFactoryService.build(target, name, 10).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        if ((defaultCache != null) && !defaultCache.equals(CacheContainer.DEFAULT_CACHE_ALIAS)) {
+        if ((defaultCache != null) && !defaultCache.equals(CacheServiceNameFactory.DEFAULT_CACHE)) {
+
+            for (CacheServiceNameFactory nameFactory : CacheServiceName.values()) {
+                new AliasServiceBuilder<>(nameFactory.getServiceName(name), nameFactory.getServiceName(name, defaultCache), Object.class).build(target).install();
+            }
+
+            new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(name, CacheServiceNameFactory.DEFAULT_CACHE), CacheServiceName.CACHE.getServiceName(name), Cache.class).build(target).install();
+
             Class<? extends CacheServiceInstaller> installerClass = (transportConfig != null) ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
             for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
-                installer.install(target, name, CacheContainer.DEFAULT_CACHE_ALIAS);
+                installer.install(target, name, CacheServiceNameFactory.DEFAULT_CACHE);
             }
         }
     }
@@ -229,33 +234,30 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         String name = Operations.getPathAddress(operation).getLastElement().getValue();
 
-        // need to remove all container-related services started, in reverse order
-        context.removeService(KeyAffinityServiceFactoryService.getServiceName(name));
-
         // remove the BinderService entry
-        String jndiName = ModelNodes.asString(CacheContainerResourceDefinition.JNDI_NAME.resolveModelAttribute(context, model));
-        context.removeService(CacheContainerAddHandler.createCacheContainerBinding(jndiName, name).getBinderServiceName());
+        context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());
 
-        // remove the cache container
-        context.removeService(EmbeddedCacheManagerService.getServiceName(name));
-        context.removeService(EmbeddedCacheManagerConfigurationService.getServiceName(name));
+        for (CacheContainerServiceNameFactory factory : CacheContainerServiceName.values()) {
+            context.removeService(factory.getServiceName(name));
+        }
 
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             removeServices(context, ClusteredGroupServiceInstaller.class, name);
 
             context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
-            context.removeService(ChannelServiceName.CHANNEL.getServiceName(name));
-            context.removeService(ChannelServiceName.FACTORY.getServiceName(name));
+            for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
+                context.removeService(factory.getServiceName(name));
+            }
         } else {
             removeServices(context, LocalGroupServiceInstaller.class, name);
         }
 
         String defaultCache = ModelNodes.asString(CacheContainerResourceDefinition.DEFAULT_CACHE.resolveModelAttribute(context, model));
 
-        if ((defaultCache != null) && !defaultCache.equals(CacheContainer.DEFAULT_CACHE_ALIAS)) {
+        if ((defaultCache != null) && !defaultCache.equals(CacheServiceNameFactory.DEFAULT_CACHE)) {
             Class<? extends CacheServiceInstaller> installerClass = model.hasDefined(TransportResourceDefinition.PATH.getKey()) ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
             for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
-                for (ServiceName serviceName : installer.getServiceNames(name, CacheContainer.DEFAULT_CACHE_ALIAS)) {
+                for (ServiceName serviceName : installer.getServiceNames(name, CacheServiceNameFactory.DEFAULT_CACHE)) {
                     context.removeService(serviceName);
                 }
             }

@@ -24,9 +24,6 @@ package org.wildfly.clustering.web.infinispan.sso;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -35,6 +32,9 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
@@ -50,8 +50,8 @@ public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManage
     public static <A, D> ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
         InfinispanSSOManagerFactory<A, D> service = new InfinispanSSOManagerFactory<>();
         return target.addService(name, service)
-                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
-                .addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, service.affinityFactory)
+                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, service.cache)
+                .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, service.affinityFactory)
         ;
     }
 

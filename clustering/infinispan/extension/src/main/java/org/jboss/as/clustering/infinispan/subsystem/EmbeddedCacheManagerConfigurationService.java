@@ -38,17 +38,18 @@ import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
 import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
-import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jgroups.Channel;
+import org.wildfly.clustering.infinispan.spi.io.SimpleExternalizer;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
@@ -57,10 +58,6 @@ import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerConfigurationService implements Service<EmbeddedCacheManagerConfiguration>, EmbeddedCacheManagerConfiguration {
-
-    public static ServiceName getServiceName(String name) {
-        return EmbeddedCacheManagerService.getServiceName(name).append("config");
-    }
 
     interface TransportConfiguration {
         long getLockTimeout();
@@ -194,7 +191,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
         if (server != null) {
             jmxBuilder.enabled(this.statistics)
                 .mBeanServerLookup(new MBeanServerProvider(server))
-                .jmxDomain(EmbeddedCacheManagerService.BASE_SERVICE_NAME.getCanonicalName())
+                .jmxDomain(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(CacheServiceNameFactory.DEFAULT_CACHE).getParent().getCanonicalName())
                 .allowDuplicateDomains(true)
             ;
         } else {

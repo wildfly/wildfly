@@ -39,6 +39,7 @@ import org.jgroups.Channel;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 
 /**
  * Implements /subsystem=jgroups/stack=X/export-native-configuration() operation.
@@ -53,7 +54,7 @@ public class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
         String stackName = Operations.getPathAddress(operation).getLastElement().getValue();
 
         ServiceRegistry registry = context.getServiceRegistry(false);
-        ServiceName serviceName = ChannelFactoryService.getServiceName(stackName);
+        ServiceName serviceName = ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(stackName);
         try {
             ServiceController<ChannelFactory> controller = ServiceContainerHelper.getService(registry, serviceName);
             ServiceController.Mode mode = controller.getMode();

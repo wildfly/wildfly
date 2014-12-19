@@ -44,6 +44,7 @@ import org.wildfly.clustering.jgroups.spi.service.ChannelConnectorBuilder;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
 import org.wildfly.clustering.spi.GroupServiceInstaller;
@@ -87,14 +88,14 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
     static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         String name = Operations.getPathAddress(operation).getLastElement().getValue();
-        String stack = ModelNodes.asString(ChannelResourceDefinition.STACK.resolveModelAttribute(context, model), ChannelFactoryService.DEFAULT);
+        String stack = ModelNodes.asString(ChannelResourceDefinition.STACK.resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
 
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(ChannelResourceDefinition.MODULE.resolveModelAttribute(context, model));
 
         ServiceTarget target = context.getServiceTarget();
 
         // Install channel factory alias
-        new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ChannelFactoryService.getServiceName(stack), ChannelFactory.class).build(target).install();
+        new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(stack), ChannelFactory.class).build(target).install();
 
         // Install channel
         new ChannelBuilder(name).build(target).install();
@@ -106,10 +107,10 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
 
         // Install fork channel factory
-        new ForkChannelFactoryService(name).build(target).install();
+        new ForkChannelFactoryBuilder(name).build(target).install();
 
         // Install fork channel factory jndi binding
-        new BinderServiceBuilder<>(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class).build(target).install();
+        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name), ChannelFactory.class).build(target).install();
 
         // Install group services for channel
         for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
@@ -127,7 +128,7 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
             context.removeService(factory.getServiceName(name));
         }
 
-        context.removeService(ChannelFactoryService.createChannelFactoryBinding(name).getBinderServiceName());
+        context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
         context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name));
 
         for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {

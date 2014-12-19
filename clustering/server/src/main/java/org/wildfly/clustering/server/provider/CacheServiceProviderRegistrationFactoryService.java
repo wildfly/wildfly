@@ -24,7 +24,6 @@ package org.wildfly.clustering.server.provider;
 import java.util.Set;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -38,6 +37,7 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.spi.CacheServiceNames;
@@ -52,7 +52,7 @@ public class CacheServiceProviderRegistrationFactoryService implements Service<S
     public static ServiceBuilder<ServiceProviderRegistrationFactory> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
         CacheServiceProviderRegistrationFactoryService service = new CacheServiceProviderRegistrationFactoryService(name);
         return new AsynchronousServiceBuilder<>(name, service).build(target)
-                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
+                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, service.cache)
                 .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, service.group)
                 .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, service.dispatcherFactory)
         ;

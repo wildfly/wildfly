@@ -22,21 +22,24 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
-import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
 import org.wildfly.clustering.spi.GroupServiceInstaller;
@@ -64,13 +67,17 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
     static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ServiceTarget target = context.getServiceTarget();
 
-        ProtocolDefaultsService.build(target).setInitialMode(ON_DEMAND).install();
+        new ProtocolDefaultsBuilder().build(target).install();
 
-        String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
-        if ((defaultChannel != null) && !defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
+        String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
+        if (!defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
             for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
                 new AliasServiceBuilder<>(factory.getServiceName(), factory.getServiceName(defaultChannel), Object.class).build(target).install();
             }
+            new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL), ChannelServiceName.CHANNEL.getServiceName(defaultChannel), Channel.class).build(target).install();
+
+            new AliasServiceBuilder<>(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(ChannelServiceNameFactory.DEFAULT_CHANNEL), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
+            new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
 
             for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                 Iterator<ServiceName> names = installer.getServiceNames(defaultChannel).iterator();
@@ -80,31 +87,37 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
             }
         }
 
-        String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
-        if ((defaultStack != null) && !defaultStack.equals(ChannelFactoryService.DEFAULT)) {
-            new AliasServiceBuilder<>(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT), ChannelFactoryService.getServiceName(defaultStack), ChannelFactory.class).build(target).install();
+        String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
+        if (!defaultStack.equals(ProtocolStackServiceNameFactory.DEFAULT_STACK)) {
+            new AliasServiceBuilder<>(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultStack), ChannelFactory.class).build(target).install();
         }
     }
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         // remove the ProtocolDefaultsService
-        context.removeService(ProtocolDefaultsService.SERVICE_NAME);
+        context.removeService(ProtocolDefaultsBuilder.SERVICE_NAME);
 
         String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
-        if ((defaultStack != null) && !defaultStack.equals(ChannelFactoryService.DEFAULT)) {
-            context.removeService(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT));
+        if ((defaultStack != null) && !defaultStack.equals(ProtocolStackServiceNameFactory.DEFAULT_STACK)) {
+            context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName());
         }
 
         String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
         if ((defaultChannel != null) && !defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
-            for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
-                context.removeService(factory.getServiceName());
-            }
 
             for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                 for (ServiceName name : installer.getServiceNames(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
                     context.removeService(name);
                 }
+            }
+
+            context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL).getBinderServiceName());
+            context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(ChannelServiceNameFactory.DEFAULT_CHANNEL));
+
+            context.removeService(JGroupsBindingFactory.createChannelBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL).getBinderServiceName());
+
+            for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
+                context.removeService(factory.getServiceName());
             }
         }
     }

@@ -34,7 +34,6 @@ import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -43,28 +42,23 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.server.Services;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossExecutors;
 import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 
 /**
  * @author Paul Ferraro
@@ -127,16 +121,9 @@ public class StackAddHandler extends AbstractAddStepHandler {
         String oobExecutor = ModelNodes.asString(TransportResourceDefinition.OOB_EXECUTOR.resolveModelAttribute(context, transport));
         String transportSocketBinding = ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, transport));
 
-        // set up the protocol stack Protocol objects
-        ProtocolStack stackConfig = new ProtocolStack(name, transportConfig, relayConfig);
-
-        // create the channel factory service builder
+        List<ProtocolConfiguration> protocolConfigs = new LinkedList<>();
         ServiceTarget target = context.getServiceTarget();
-        ServiceBuilder<ChannelFactory> builder = target.addService(ChannelFactoryService.getServiceName(name), new ChannelFactoryService(stackConfig))
-                .addDependency(ProtocolDefaultsService.SERVICE_NAME, ProtocolDefaults.class, stackConfig.getDefaultsInjector())
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, stackConfig.getEnvironmentInjector())
-                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, stackConfig.getModuleLoaderInjector())
-        ;
+        ServiceBuilder<ChannelFactory> builder = new JChannelFactoryBuilder(name, transportConfig, protocolConfigs, relayConfig).build(target);
         // add transport dependencies
         addSocketBindingDependency(builder, transportSocketBinding, transportConfig.getSocketBindingInjector());
 
@@ -148,7 +135,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
                 module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, protocol));
                 Protocol protocolConfig = new Protocol(protocolProperty.getName(), module);
                 initProtocolProperties(context, protocol, protocolConfig);
-                stackConfig.getProtocols().add(protocolConfig);
+                protocolConfigs.add(protocolConfig);
                 String protocolSocketBinding = ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, protocol));
                 protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<>(protocolConfig, protocolSocketBinding));
             }
@@ -171,9 +158,9 @@ public class StackAddHandler extends AbstractAddStepHandler {
         for (Map.Entry<String, Injector<Channel>> entry: channels) {
             builder.addDependency(ChannelServiceName.CHANNEL.getServiceName(entry.getKey()), Channel.class, entry.getValue());
         }
-        builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        builder.install();
 
-        new BinderServiceBuilder<>(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class).build(target).install();
+        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name), ChannelFactory.class).build(target).install();
     }
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
@@ -181,8 +168,8 @@ public class StackAddHandler extends AbstractAddStepHandler {
         String name = address.getLastElement().getValue();
 
         // remove the ChannelFactoryServiceService
-        context.removeService(ChannelFactoryService.getServiceName(name));
-        context.removeService(ChannelFactoryService.createChannelFactoryBinding(name).getBinderServiceName());
+        context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name));
+        context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
     }
 
     static void initProtocolProperties(OperationContext context, ModelNode protocol, Protocol protocolConfig) throws OperationFailedException {
@@ -214,70 +201,6 @@ public class StackAddHandler extends AbstractAddStepHandler {
     private static void addExecutorDependency(ServiceBuilder<ChannelFactory> builder, String executor, Injector<Executor> injector) {
         if (executor != null) {
             builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
-        }
-    }
-
-    static class ProtocolStack implements ProtocolStackConfiguration {
-        private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<>();
-        private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
-        private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
-
-        private final String name;
-        private final TransportConfiguration transport;
-        private final RelayConfiguration relay;
-        private final List<ProtocolConfiguration> protocols = new LinkedList<>();
-
-        ProtocolStack(String name, TransportConfiguration transport, RelayConfiguration relay) {
-            this.name = name;
-            this.transport = transport;
-            this.relay = relay;
-        }
-
-        Injector<ProtocolDefaults> getDefaultsInjector() {
-            return this.defaults;
-        }
-
-        Injector<ServerEnvironment> getEnvironmentInjector() {
-            return this.environment;
-        }
-
-        Injector<ModuleLoader> getModuleLoaderInjector() {
-            return this.loader;
-        }
-
-        @Override
-        public TransportConfiguration getTransport() {
-            return this.transport;
-        }
-
-        @Override
-        public List<ProtocolConfiguration> getProtocols() {
-            return this.protocols;
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
-        public Map<String, String> getDefaultProperties(String protocol) {
-            return this.defaults.getValue().getProperties(protocol);
-        }
-
-        @Override
-        public String getNodeName() {
-            return this.environment.getValue().getNodeName();
-        }
-
-        @Override
-        public RelayConfiguration getRelay() {
-            return this.relay;
-        }
-
-        @Override
-        public ModuleLoader getModuleLoader() {
-            return this.loader.getValue();
         }
     }
 

@@ -22,7 +22,6 @@
 package org.wildfly.clustering.server.group;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -31,6 +30,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
@@ -42,7 +42,7 @@ public class CacheGroupService implements Service<Group>, CacheGroupConfiguratio
     public static ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
         CacheGroupService service = new CacheGroupService();
         return target.addService(name, service)
-                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
+                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, service.cache)
                 .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName, cacheName), InfinispanNodeFactory.class, service.factory)
         ;
     }

@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.msc.DelegatingServiceBuilder;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.clustering.msc.ServiceControllerFactory;
@@ -59,6 +58,7 @@ import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
+import org.wildfly.clustering.spi.CacheServiceNameFactory;
 import org.wildfly.clustering.spi.CacheServiceNames;
 import org.wildfly.clustering.spi.GroupServiceNames;
 
@@ -98,7 +98,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName) {
-        return this.build(target, containerName, CacheContainer.DEFAULT_CACHE_ALIAS);
+        return this.build(target, containerName, CacheServiceNameFactory.DEFAULT_CACHE);
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName, String cacheName) {

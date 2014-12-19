@@ -13,6 +13,7 @@ import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 
 /**
 * Test case for testing sequences of management operations.
@@ -131,7 +132,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
 
         // need to check that all services are correctly re-installed
-        ServiceName channelFactoryServiceName = ChannelFactoryService.getServiceName("maximal2");
+        ServiceName channelFactoryServiceName = ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName("maximal2");
         Assert.assertNotNull("channel factory service not installed", services.getContainer().getService(channelFactoryServiceName));
     }
 }

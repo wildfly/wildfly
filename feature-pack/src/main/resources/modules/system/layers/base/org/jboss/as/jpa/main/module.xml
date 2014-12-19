@@ -50,11 +50,9 @@
         <module name="org.infinispan"/>
         <module name="org.jboss.common-beans"/>
         <module name="org.wildfly.extension.bean-validation"/>
+        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.connector" />
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.clustering.jgroups"/>
-        <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.as.jpa.spi"/>
@@ -78,5 +76,7 @@
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.weld.core"/>
+        <module name="org.wildfly.clustering.infinispan.spi"/>
+        <module name="org.wildfly.clustering.service"/>
     </dependencies>
 </module>

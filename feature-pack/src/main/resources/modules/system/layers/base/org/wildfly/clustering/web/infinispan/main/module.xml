@@ -40,9 +40,6 @@
 
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
-        <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.clustering.jgroups"/>
-        <module name="org.jboss.as.clustering.infinispan" services="import"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.metadata.common"/>
@@ -54,6 +51,7 @@
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.infinispan.spi" services="import"/>
         <module name="org.wildfly.clustering.marshalling"/>
         <module name="org.wildfly.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.service"/>

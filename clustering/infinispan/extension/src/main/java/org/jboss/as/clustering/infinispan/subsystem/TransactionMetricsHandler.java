@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
 /**
  * A handler for cache transaction metrics.
@@ -50,7 +51,7 @@ public class TransactionMetricsHandler extends AbstractRuntimeOnlyHandler {
         if (metric == null) {
             context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
         } else {
-            Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheService.getServiceName(containerName, cacheName));
+            Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
             if (cache != null) {
                 TxInterceptor interceptor = CacheMetric.findInterceptor(cache, TxInterceptor.class);
                 context.getResult().set((interceptor != null) ? metric.getValue(interceptor) : new ModelNode(0));
