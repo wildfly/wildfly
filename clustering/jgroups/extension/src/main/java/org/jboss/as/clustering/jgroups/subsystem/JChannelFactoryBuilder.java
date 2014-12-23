@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +47,9 @@ import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.Dependency;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builder for a service that provides a {@link ChannelFactory} for creating channels.
@@ -56,15 +61,12 @@ public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<Ch
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final String name;
-    private final TransportConfiguration transport;
-    private final List<ProtocolConfiguration> protocols;
-    private final RelayConfiguration relay;
+    private ValueDependency<TransportConfiguration> transport = null;
+    private final List<ValueDependency<ProtocolConfiguration>> protocols = new LinkedList<>();
+    private ValueDependency<RelayConfiguration> relay = null;
 
-    public JChannelFactoryBuilder(String name, TransportConfiguration transport, List<ProtocolConfiguration> protocols, RelayConfiguration relay) {
+    public JChannelFactoryBuilder(String name) {
         this.name = name;
-        this.transport = transport;
-        this.protocols = protocols;
-        this.relay = relay;
     }
 
     @Override
@@ -74,16 +76,44 @@ public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<Ch
 
     @Override
     public ServiceBuilder<ChannelFactory> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
+        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(ProtocolDefaultsBuilder.SERVICE_NAME, ProtocolDefaults.class, this.defaults)
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        if (this.transport != null) {
+            this.transport.register(builder);
+        }
+        for (Dependency protocol : this.protocols) {
+            protocol.register(builder);
+        }
+        if (this.relay != null) {
+            this.relay.register(builder);
+        }
+        return builder;
     }
 
     @Override
     public ChannelFactory getValue() {
         return new JChannelFactory(this);
+    }
+
+    public TransportConfigurationBuilder setTransport(String type) {
+        TransportConfigurationBuilder builder = new TransportConfigurationBuilder(this.name, type);
+        this.transport = new InjectedValueDependency<>(builder, TransportConfiguration.class);
+        return builder;
+    }
+
+    public ProtocolConfigurationBuilder addProtocol(String type) {
+        ProtocolConfigurationBuilder builder = new ProtocolConfigurationBuilder(this.name, type);
+        this.protocols.add(new InjectedValueDependency<>(builder, ProtocolConfiguration.class));
+        return builder;
+    }
+
+    public RelayConfigurationBuilder setRelay(String site) {
+        RelayConfigurationBuilder builder = new RelayConfigurationBuilder(this.name).setSiteName(site);
+        this.relay = new InjectedValueDependency<>(builder, RelayConfiguration.class);
+        return builder;
     }
 
     @Override
@@ -98,12 +128,16 @@ public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<Ch
 
     @Override
     public TransportConfiguration getTransport() {
-        return this.transport;
+        return (this.transport != null) ? this.transport.getValue() : null;
     }
 
     @Override
     public List<ProtocolConfiguration> getProtocols() {
-        return this.protocols;
+        List<ProtocolConfiguration> protocols = new ArrayList<>(this.protocols.size());
+        for (Value<ProtocolConfiguration> protocol : this.protocols) {
+            protocols.add(protocol.getValue());
+        }
+        return protocols;
     }
 
     @Override
@@ -113,7 +147,7 @@ public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<Ch
 
     @Override
     public RelayConfiguration getRelay() {
-        return this.relay;
+        return (this.relay != null) ? this.relay.getValue() : null;
     }
 
     @Override

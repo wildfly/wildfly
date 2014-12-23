@@ -22,33 +22,23 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.jgroups.subsystem.StackAddHandler.Protocol;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ChannelBuilder;
 import org.wildfly.clustering.jgroups.spi.service.ChannelConnectorBuilder;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
@@ -77,35 +67,20 @@ public class ForkAddHandler extends AbstractAddStepHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-            List<Property> properties = model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList();
-            List<ProtocolConfiguration> protocols = new ArrayList<>(properties.size());
-            List<Map.Entry<String, Injector<SocketBinding>>> socketBindings = new ArrayList<>(properties.size());
+        ForkChannelFactoryBuilder builder = new ForkChannelFactoryBuilder(channel);
 
-            for (Property property : properties) {
+        if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property property : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 String protocolName = property.getName();
                 ModelNode protocol = property.getValue();
-                ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, protocol));
-                Protocol protocolConfig = new Protocol(protocolName, module);
-                StackAddHandler.initProtocolProperties(context, protocol, protocolConfig);
-                protocols.add(protocolConfig);
-
-                String socketBinding = ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, protocol));
-                if (socketBinding != null) {
-                    socketBindings.add(new AbstractMap.SimpleImmutableEntry<>(socketBinding, protocolConfig.getSocketBindingInjector()));
-                }
+                ProtocolConfigurationBuilder protocolBuilder = builder.addProtocol(protocolName)
+                        .setModule(ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, protocol)))
+                        .setSocketBinding(ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, protocol)));
+                StackAddHandler.addProtocolProperties(context, protocol, protocolBuilder).build(target).install();
             }
-
-            ServiceBuilder<ChannelFactory> builder = new ForkChannelFactoryBuilder(channel, protocols).build(target);
-
-            for (Map.Entry<String, Injector<SocketBinding>> socketBinding: socketBindings) {
-                builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding.getKey()), SocketBinding.class, socketBinding.getValue());
-            }
-
-            builder.install();
-        } else {
-            new ForkChannelFactoryBuilder(channel).build(target).install();
         }
+
+        builder.build(target).install();
 
         // Install channel factory alias
         new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channel), ChannelFactory.class).build(target).install();

@@ -21,17 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
@@ -41,23 +30,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.network.SocketBinding;
-import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.threads.JBossExecutors;
-import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
-import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
-import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 
 /**
@@ -78,87 +55,55 @@ public class StackAddHandler extends AbstractAddStepHandler {
             throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(name);
         }
 
+        ServiceTarget target = context.getServiceTarget();
+
         Property property = model.get(TransportResourceDefinition.WILDCARD_PATH.getKey()).asProperty();
         String type = property.getName();
         ModelNode transport = property.getValue();
-
-        ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, transport));
-        boolean shared = TransportResourceDefinition.SHARED.resolveModelAttribute(context, transport).asBoolean();
-
-        Transport transportConfig = new Transport(type, module, shared);
 
         String machine = ModelNodes.asString(TransportResourceDefinition.MACHINE.resolveModelAttribute(context, transport));
         String rack = ModelNodes.asString(TransportResourceDefinition.RACK.resolveModelAttribute(context, transport));
         String site = ModelNodes.asString(TransportResourceDefinition.SITE.resolveModelAttribute(context, transport));
 
-        transportConfig.setTopology(site, rack, machine);
+        JChannelFactoryBuilder builder = new JChannelFactoryBuilder(name);
+        TransportConfigurationBuilder transportBuilder = builder.setTransport(type)
+                .setModule(ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, transport)))
+                .setShared(TransportResourceDefinition.SHARED.resolveModelAttribute(context, transport).asBoolean())
+                .setTopology(site, rack, machine)
+                .setSocketBinding(ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, transport)))
+                .setDiagnosticsSocket(ModelNodes.asString(TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)))
+                .setThreadFactory(ModelNodes.asString(TransportResourceDefinition.THREAD_FACTORY.resolveModelAttribute(context, transport)))
+                .setDefaultExecutor(ModelNodes.asString(TransportResourceDefinition.DEFAULT_EXECUTOR.resolveModelAttribute(context, transport)))
+                .setOOBExecutor(ModelNodes.asString(TransportResourceDefinition.OOB_EXECUTOR.resolveModelAttribute(context, transport)))
+                .setTimerExecutor(ModelNodes.asString(TransportResourceDefinition.TIMER_EXECUTOR.resolveModelAttribute(context, transport)));
 
-        initProtocolProperties(context, transport, transportConfig);
+        addProtocolProperties(context, transport, transportBuilder).build(target).install();
 
-        Relay relayConfig = null;
-        List<Map.Entry<String, Injector<Channel>>> channels = new LinkedList<>();
         if (model.hasDefined(RelayResourceDefinition.PATH.getKey())) {
             ModelNode relay = model.get(RelayResourceDefinition.PATH.getKeyValuePair());
             String siteName = RelayResourceDefinition.SITE.resolveModelAttribute(context, relay).asString();
-            relayConfig = new Relay(siteName);
-            initProtocolProperties(context, relay, relayConfig);
+            RelayConfigurationBuilder relayBuilder = builder.setRelay(siteName);
             if (relay.hasDefined(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey())) {
-                List<RemoteSiteConfiguration> remoteSites = relayConfig.getRemoteSites();
                 for (Property remoteSiteProperty: relay.get(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                     String remoteSiteName = remoteSiteProperty.getName();
                     String channelName = RemoteSiteResourceDefinition.CHANNEL.resolveModelAttribute(context, remoteSiteProperty.getValue()).asString();
-                    RemoteSite remoteSite = new RemoteSite(remoteSiteName, channelName);
-                    remoteSites.add(remoteSite);
-                    channels.add(new AbstractMap.SimpleImmutableEntry<>(channelName, remoteSite.getChannelInjector()));
+                    relayBuilder.addRemoteSite(remoteSiteName, channelName).build(target).install();
                 }
             }
+            addProtocolProperties(context, relay, relayBuilder).build(target).install();
         }
-
-        String timerExecutor = ModelNodes.asString(TransportResourceDefinition.TIMER_EXECUTOR.resolveModelAttribute(context, transport));
-        String threadFactory = ModelNodes.asString(TransportResourceDefinition.THREAD_FACTORY.resolveModelAttribute(context, transport));
-        String diagnosticsSocketBinding = ModelNodes.asString(TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport));
-        String defaultExecutor = ModelNodes.asString(TransportResourceDefinition.DEFAULT_EXECUTOR.resolveModelAttribute(context, transport));
-        String oobExecutor = ModelNodes.asString(TransportResourceDefinition.OOB_EXECUTOR.resolveModelAttribute(context, transport));
-        String transportSocketBinding = ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, transport));
-
-        List<ProtocolConfiguration> protocolConfigs = new LinkedList<>();
-        ServiceTarget target = context.getServiceTarget();
-        ServiceBuilder<ChannelFactory> builder = new JChannelFactoryBuilder(name, transportConfig, protocolConfigs, relayConfig).build(target);
-        // add transport dependencies
-        addSocketBindingDependency(builder, transportSocketBinding, transportConfig.getSocketBindingInjector());
 
         if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-            List<Property> protocols = model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList();
-            List<Map.Entry<Protocol, String>> protocolSocketBindings = new ArrayList<>(protocols.size());
-            for (Property protocolProperty : protocols) {
+            for (Property protocolProperty : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 ModelNode protocol = protocolProperty.getValue();
-                module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, protocol));
-                Protocol protocolConfig = new Protocol(protocolProperty.getName(), module);
-                initProtocolProperties(context, protocol, protocolConfig);
-                protocolConfigs.add(protocolConfig);
-                String protocolSocketBinding = ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, protocol));
-                protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<>(protocolConfig, protocolSocketBinding));
-            }
-
-            for (Map.Entry<Protocol, String> entry: protocolSocketBindings) {
-                addSocketBindingDependency(builder, entry.getValue(), entry.getKey().getSocketBindingInjector());
+                ProtocolConfigurationBuilder protocolBuilder = builder.addProtocol(protocolProperty.getName())
+                        .setModule(ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, protocol)))
+                        .setSocketBinding(ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, protocol)));
+                addProtocolProperties(context, protocol, protocolBuilder).build(target).install();
             }
         }
 
-        // add remaining dependencies
-        addSocketBindingDependency(builder, diagnosticsSocketBinding, transportConfig.getDiagnosticsSocketBindingInjector());
-        addExecutorDependency(builder, defaultExecutor, transportConfig.getDefaultExecutorInjector());
-        addExecutorDependency(builder, oobExecutor, transportConfig.getOOBExecutorInjector());
-        if (timerExecutor != null) {
-            builder.addDependency(ThreadsServices.executorName(timerExecutor), ScheduledExecutorService.class, transportConfig.getTimerExecutorInjector());
-        }
-        if (threadFactory != null) {
-            builder.addDependency(ThreadsServices.threadFactoryName(threadFactory), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
-        }
-        for (Map.Entry<String, Injector<Channel>> entry: channels) {
-            builder.addDependency(ChannelServiceName.CHANNEL.getServiceName(entry.getKey()), Channel.class, entry.getValue());
-        }
-        builder.install();
+        builder.build(target).install();
 
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name), ChannelFactory.class).build(target).install();
     }
@@ -168,239 +113,36 @@ public class StackAddHandler extends AbstractAddStepHandler {
         String name = address.getLastElement().getValue();
 
         // remove the ChannelFactoryServiceService
-        context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name));
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
+        context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name));
+
+        Property transport = model.get(TransportResourceDefinition.WILDCARD_PATH.getKey()).asProperty();
+        context.removeService(new TransportConfigurationBuilder(name, transport.getName()).getServiceName());
+
+        if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property protocol : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                context.removeService(new ProtocolConfigurationBuilder(name, protocol.getName()).getServiceName());
+            }
+        }
+
+        if (model.hasDefined(RelayResourceDefinition.PATH.getKey())) {
+            context.removeService(new RelayConfigurationBuilder(name).getServiceName());
+            ModelNode relay = model.get(RelayResourceDefinition.PATH.getKeyValuePair());
+            if (relay.hasDefined(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey())) {
+                for (Property remoteSite: relay.get(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                    context.removeService(new RemoteSiteConfigurationBuilder(name, remoteSite.getName()).getServiceName());
+                }
+            }
+        }
     }
 
-    static void initProtocolProperties(OperationContext context, ModelNode protocol, Protocol protocolConfig) throws OperationFailedException {
+    static <C extends ProtocolConfiguration, B extends AbstractProtocolConfigurationBuilder<C>> B addProtocolProperties(OperationContext context, ModelNode protocol, B builder) throws OperationFailedException {
 
-        Map<String, String> properties = protocolConfig.getProperties();
-        // properties are a child resource of protocol
         if (protocol.hasDefined(PropertyResourceDefinition.WILDCARD_PATH.getKey())) {
             for (Property property : protocol.get(PropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                // the format of the property elements
-                //  "property" => {
-                //       "relative-to" => {"value" => "fred"},
-                //   }
-                String propertyName = property.getName();
-                // get the value from the ModelNode {"value" => "fred"}
-                ModelNode propertyValue = null;
-                propertyValue = PropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue());
-
-                properties.put(propertyName, propertyValue.asString());
-            }
-       }
-    }
-
-    private static void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, String socketBinding, Injector<SocketBinding> injector) {
-        if (socketBinding != null) {
-            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class, injector);
-        }
-    }
-
-    private static void addExecutorDependency(ServiceBuilder<ChannelFactory> builder, String executor, Injector<Executor> injector) {
-        if (executor != null) {
-            builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
-        }
-    }
-
-    static class Transport extends Protocol implements TransportConfiguration {
-        private final InjectedValue<SocketBinding> diagnosticsSocketBinding = new InjectedValue<>();
-        private final InjectedValue<Executor> defaultExecutor = new InjectedValue<>();
-        private final InjectedValue<Executor> oobExecutor = new InjectedValue<>();
-        private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<>();
-        private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<>();
-        private final boolean shared;
-        private Topology topology;
-
-        Transport(String name, ModuleIdentifier module, boolean shared) {
-            super(name, module);
-            this.shared = shared;
-        }
-
-        Injector<SocketBinding> getDiagnosticsSocketBindingInjector() {
-            return this.diagnosticsSocketBinding;
-        }
-
-        Injector<Executor> getDefaultExecutorInjector() {
-            return this.defaultExecutor;
-        }
-
-        Injector<Executor> getOOBExecutorInjector() {
-            return this.oobExecutor;
-        }
-
-        Injector<ScheduledExecutorService> getTimerExecutorInjector() {
-            return this.timerExecutor;
-        }
-
-        Injector<ThreadFactory> getThreadFactoryInjector() {
-            return this.threadFactory;
-        }
-
-        @Override
-        public boolean isShared() {
-            return this.shared;
-        }
-
-        @Override
-        public Topology getTopology() {
-            return this.topology;
-        }
-
-        public void setTopology(String site, String rack, String machine) {
-            if ((site != null) || (rack != null) || (machine != null)) {
-                this.topology = new TopologyImpl(site, rack, machine);
+                builder.addProperty(property.getName(), PropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString());
             }
         }
-
-        @Override
-        public SocketBinding getDiagnosticsSocketBinding() {
-            return this.diagnosticsSocketBinding.getOptionalValue();
-        }
-
-        @Override
-        public ExecutorService getDefaultExecutor() {
-            Executor executor = this.defaultExecutor.getOptionalValue();
-            return (executor != null) ? JBossExecutors.protectedExecutorService(executor) : null;
-        }
-
-        @Override
-        public ExecutorService getOOBExecutor() {
-            Executor executor = this.oobExecutor.getOptionalValue();
-            return (executor != null) ? JBossExecutors.protectedExecutorService(executor) : null;
-        }
-
-        @Override
-        public ScheduledExecutorService getTimerExecutor() {
-            return this.timerExecutor.getOptionalValue();
-        }
-
-        @Override
-        public ThreadFactory getThreadFactory() {
-            return this.threadFactory.getOptionalValue();
-        }
-
-        private class TopologyImpl implements Topology {
-            private final String site;
-            private final String rack;
-            private final String machine;
-
-            TopologyImpl(String site, String rack, String machine) {
-                this.site = site;
-                this.rack = rack;
-                this.machine = machine;
-            }
-
-            @Override
-            public String getMachine() {
-                return this.machine;
-            }
-
-            @Override
-            public String getRack() {
-                return this.rack;
-            }
-
-            @Override
-            public String getSite() {
-                return this.site;
-            }
-        }
-    }
-
-    static class Relay extends Protocol implements RelayConfiguration {
-        private final List<RemoteSiteConfiguration> remoteSites = new LinkedList<>();
-        private final String siteName;
-
-        Relay(String siteName) {
-            super(PROTOCOL_NAME, ProtocolConfiguration.DEFAULT_MODULE);
-            this.siteName = siteName;
-        }
-
-        @Override
-        public String getSiteName() {
-            return this.siteName;
-        }
-
-        @Override
-        public List<RemoteSiteConfiguration> getRemoteSites() {
-            return this.remoteSites;
-        }
-    }
-
-    static class RemoteSite implements RemoteSiteConfiguration {
-        private final InjectedValue<Channel> channel = new InjectedValue<>();
-        private final String name;
-        private final String clusterName;
-
-        RemoteSite(String name, String clusterName) {
-            this.name = name;
-            this.clusterName = clusterName;
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
-        public Channel getChannel() {
-            return this.channel.getValue();
-        }
-
-        Injector<Channel> getChannelInjector() {
-            return this.channel;
-        }
-
-        @Override
-        public String getClusterName() {
-            return this.clusterName;
-        }
-    }
-
-    static class Protocol implements ProtocolConfiguration {
-        private final String name;
-        private final ModuleIdentifier module;
-        private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<>();
-        private final Map<String, String> properties = new HashMap<>();
-
-        Protocol(String name, ModuleIdentifier module) {
-            this.name = name;
-            this.module = module;
-        }
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
-        public String getProtocolClassName() {
-            StringBuilder builder = new StringBuilder();
-            if (this.module.equals(ProtocolConfiguration.DEFAULT_MODULE) && !this.name.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
-                builder.append(org.jgroups.conf.ProtocolConfiguration.protocol_prefix).append('.');
-            }
-            return builder.append(this.name).toString();
-        }
-
-        @Override
-        public ModuleIdentifier getModule() {
-            return this.module;
-        }
-
-        @Override
-        public Map<String, String> getProperties() {
-            return this.properties;
-        }
-
-        Injector<SocketBinding> getSocketBindingInjector() {
-            return this.socketBinding;
-        }
-
-        @Override
-        public SocketBinding getSocketBinding() {
-            return this.socketBinding.getOptionalValue();
-        }
+        return builder;
     }
 }

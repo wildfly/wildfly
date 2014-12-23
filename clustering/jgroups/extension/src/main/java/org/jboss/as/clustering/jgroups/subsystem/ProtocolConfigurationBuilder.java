@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.configuration.global.GlobalConfiguration;
+package org.jboss.as.clustering.jgroups.subsystem;
+
 import org.jboss.modules.ModuleIdentifier;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public interface EmbeddedCacheManagerConfiguration {
-    GlobalConfiguration getGlobalConfiguration();
+public class ProtocolConfigurationBuilder extends AbstractProtocolConfigurationBuilder<ProtocolConfiguration> {
 
-    String getName();
+    public ProtocolConfigurationBuilder(String stackName, String name) {
+        super(stackName, name);
+    }
 
-    String getDefaultCache();
+    @Override
+    public ProtocolConfigurationBuilder setModule(ModuleIdentifier module) {
+        super.setModule(module);
+        return this;
+    }
 
-    ModuleIdentifier getModuleIdentifier();
+    @Override
+    public ProtocolConfigurationBuilder setSocketBinding(String socketBindingName) {
+        super.setSocketBinding(socketBindingName);
+        return this;
+    }
+
+    @Override
+    public ProtocolConfigurationBuilder addProperty(String name, String value) {
+        super.addProperty(name, value);
+        return this;
+    }
+
+    @Override
+    public ProtocolConfiguration getValue() {
+        return this;
+    }
 }

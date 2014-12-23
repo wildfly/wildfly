@@ -21,7 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.clustering.jgroups.ForkChannelFactory;
@@ -38,6 +39,8 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builder for a service that provides a {@link ChannelFactory} for creating fork channels.
@@ -48,15 +51,10 @@ public class ForkChannelFactoryBuilder implements Builder<ChannelFactory>, Value
     private final String channelName;
     private final InjectedValue<Channel> parentChannel = new InjectedValue<>();
     private final InjectedValue<ChannelFactory> parentFactory = new InjectedValue<>();
-    private final List<ProtocolConfiguration> protocols;
+    private final List<ValueDependency<ProtocolConfiguration>> protocols = new LinkedList<>();
 
-    public ForkChannelFactoryBuilder(String channelName, ProtocolConfiguration... protocols) {
-        this(channelName, Arrays.asList(protocols));
-    }
-
-    public ForkChannelFactoryBuilder(String channelName, List<ProtocolConfiguration> protocols) {
+    public ForkChannelFactoryBuilder(String channelName) {
         this.channelName = channelName;
-        this.protocols = protocols;
     }
 
     @Override
@@ -75,6 +73,16 @@ public class ForkChannelFactoryBuilder implements Builder<ChannelFactory>, Value
 
     @Override
     public ChannelFactory getValue() {
-        return new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue().getProtocolStackConfiguration(), this.protocols);
+        List<ProtocolConfiguration> protocols = new ArrayList<>(this.protocols.size());
+        for (Value<ProtocolConfiguration> protocol : this.protocols) {
+            protocols.add(protocol.getValue());
+        }
+        return new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue().getProtocolStackConfiguration(), protocols);
+    }
+
+    public ProtocolConfigurationBuilder addProtocol(String type) {
+        ProtocolConfigurationBuilder builder = new ProtocolConfigurationBuilder(this.channelName, type);
+        this.protocols.add(new InjectedValueDependency<>(builder, ProtocolConfiguration.class));
+        return builder;
     }
 }

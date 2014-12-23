@@ -62,6 +62,8 @@ import org.jboss.msc.value.Value;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.ConfigurationFactory;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.Dependency;
+import org.wildfly.clustering.service.InjectorDependency;
 
 /**
  * Builder for an advanced cache {@link Configuration}.
@@ -112,22 +114,6 @@ public class AdvancedCacheConfigurationBuilder implements Builder<Configuration>
         throw new IllegalArgumentException(resource);
     }
 
-    private static class Dependency<T> {
-        private final ServiceName name;
-        private final Class<T> targetClass;
-        private final Injector<T> injector;
-
-        Dependency(ServiceName name, Class<T> targetClass, Injector<T> injector) {
-            this.name = name;
-            this.targetClass = targetClass;
-            this.injector = injector;
-        }
-
-        void register(ServiceBuilder<?> builder) {
-            builder.addDependency(this.name, this.targetClass, this.injector);
-        }
-    }
-
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
     private final InjectedValue<TransactionManager> tm = new InjectedValue<>();
@@ -137,10 +123,10 @@ public class AdvancedCacheConfigurationBuilder implements Builder<Configuration>
     private final CacheMode mode;
     private final ModuleIdentifier module;
     private final ConfigurationBuilder configurationBuilder;
-    private final List<Dependency<?>> dependencies = new LinkedList<>();
+    private final List<Dependency> dependencies = new LinkedList<>();
     private final List<ServiceName> names = new LinkedList<>();
-    private volatile ConsistentHashStrategy consistentHashStrategy = ConsistentHashStrategy.DEFAULT;
-    private volatile TransactionMode txMode = TransactionMode.DEFAULT;
+    private ConsistentHashStrategy consistentHashStrategy = ConsistentHashStrategy.DEFAULT;
+    private TransactionMode txMode = TransactionMode.DEFAULT;
 
     /**
      * Constructs a new builder for an advanced {@link Configuration}.
@@ -151,32 +137,6 @@ public class AdvancedCacheConfigurationBuilder implements Builder<Configuration>
         this.configurationBuilder = new ConfigurationBuilder().read(getDefaultConfiguration(mode));
         this.mode = mode;
         this.module = module;
-    }
-
-    ConfigurationBuilder getConfigurationBuilder() {
-        return this.configurationBuilder;
-    }
-
-    void setConsistentHashStrategy(ConsistentHashStrategy consistentHashStrategy) {
-        this.consistentHashStrategy = consistentHashStrategy;
-    }
-
-    void setTransactionMode(TransactionMode txMode) {
-        this.txMode = txMode;
-    }
-
-    void addDependency(ServiceName name) {
-        this.names.add(name);
-    }
-
-    <T> Value<T> addDependency(ServiceName name, Class<T> targetClass) {
-        InjectedValue<T> value = new InjectedValue<>();
-        this.dependencies.add(new Dependency<>(name, targetClass, value));
-        return value;
-    }
-
-    <T> void addDependency(ServiceName name, Class<T> targetClass, Injector<T> injector) {
-        this.dependencies.add(new Dependency<>(name, targetClass, injector));
     }
 
     @Override
@@ -207,7 +167,7 @@ public class AdvancedCacheConfigurationBuilder implements Builder<Configuration>
             }
         }
 
-        for (Dependency<?> dependency : this.dependencies) {
+        for (Dependency dependency : this.dependencies) {
             dependency.register(builder);
         }
 
@@ -239,5 +199,34 @@ public class AdvancedCacheConfigurationBuilder implements Builder<Configuration>
         boolean topologyAware = this.container.getValue().getCacheManagerConfiguration().transport().hasTopologyInfo();
         this.consistentHashStrategy.buildHashConfiguration(this.configurationBuilder.clustering().hash(), this.mode, topologyAware);
         return this.configurationBuilder.build();
+    }
+
+    public ConfigurationBuilder getConfigurationBuilder() {
+        return this.configurationBuilder;
+    }
+
+    public AdvancedCacheConfigurationBuilder setConsistentHashStrategy(ConsistentHashStrategy consistentHashStrategy) {
+        this.consistentHashStrategy = consistentHashStrategy;
+        return this;
+    }
+
+    public AdvancedCacheConfigurationBuilder setTransactionMode(TransactionMode txMode) {
+        this.txMode = txMode;
+        return this;
+    }
+
+    public AdvancedCacheConfigurationBuilder addDependency(ServiceName name) {
+        this.names.add(name);
+        return this;
+    }
+
+    public <T> Value<T> addDependency(ServiceName name, Class<T> targetClass) {
+        InjectedValue<T> value = new InjectedValue<>();
+        this.dependencies.add(new InjectorDependency<>(name, targetClass, value));
+        return value;
+    }
+
+    public <T> void addDependency(ServiceName name, Class<T> targetClass, Injector<T> injector) {
+        this.dependencies.add(new InjectorDependency<>(name, targetClass, injector));
     }
 }

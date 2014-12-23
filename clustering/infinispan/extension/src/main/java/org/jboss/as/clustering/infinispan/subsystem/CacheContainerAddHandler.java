@@ -23,18 +23,12 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.ServiceLoader;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-
-import javax.management.MBeanServer;
+import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsBindingFactory;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
@@ -46,21 +40,13 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.deployment.JndiName;
-import org.jboss.as.server.Services;
-import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
@@ -82,6 +68,7 @@ import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
 import org.wildfly.clustering.spi.LocalGroupServiceInstaller;
 
 /**
+ * Add operation handler for /subsystem=infinispan/cache-container=*
  * @author Paul Ferraro
  * @author Tristan Tarrant
  * @author Richard Achmatowicz
@@ -128,52 +115,41 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         // make default cache non required (AS7-3488)
         String defaultCache = ModelNodes.asString(CacheContainerResourceDefinition.DEFAULT_CACHE.resolveModelAttribute(context, model));
         String jndiName = ModelNodes.asString(CacheContainerResourceDefinition.JNDI_NAME.resolveModelAttribute(context, model));
-        String listenerExecutor = ModelNodes.asString(CacheContainerResourceDefinition.LISTENER_EXECUTOR.resolveModelAttribute(context, model));
-        String evictionExecutor = ModelNodes.asString(CacheContainerResourceDefinition.EVICTION_EXECUTOR.resolveModelAttribute(context, model));
-        String replicationQueueExecutor = ModelNodes.asString(CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, model));
         ServiceController.Mode initialMode = StartMode.valueOf(CacheContainerResourceDefinition.START.resolveModelAttribute(context, model).asString()).getMode();
-        boolean statistics = CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        ModuleIdentifier module = ModelNodes.asModuleIdentifier(CacheContainerResourceDefinition.MODULE.resolveModelAttribute(context, model));
 
-        ServiceName[] aliases = null;
-        if (model.hasDefined(CacheContainerResourceDefinition.ALIASES.getName())) {
-            List<ModelNode> list = operation.get(CacheContainerResourceDefinition.ALIASES.getName()).asList();
-            aliases = new ServiceName[list.size()];
-            for (int i = 0; i < list.size(); i++) {
-                aliases[i] = CacheContainerServiceName.CACHE_CONTAINER.getServiceName(list.get(i).asString());
-            }
-        }
-
-        final ModuleIdentifier module = ModelNodes.asModuleIdentifier(CacheContainerResourceDefinition.MODULE.resolveModelAttribute(context, model));
-
-        Transport transportConfig = null;
-        String transportExecutor = null;
+        CacheContainerConfigurationBuilder configBuilder = new CacheContainerConfigurationBuilder(name)
+                .setModule(module)
+                .setStatisticsEnabled(CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean())
+                .setListenerExecutor(ModelNodes.asString(CacheContainerResourceDefinition.LISTENER_EXECUTOR.resolveModelAttribute(context, model)))
+                .setEvictionExecutor(ModelNodes.asString(CacheContainerResourceDefinition.EVICTION_EXECUTOR.resolveModelAttribute(context, model)))
+                .setReplicationQueueExecutor(ModelNodes.asString(CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, model)));
 
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             ModelNode transport = model.get(TransportResourceDefinition.PATH.getKeyValuePair());
-            if (transport.isDefined()) {
-                transportConfig = new Transport(TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong());
+            String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport), ChannelServiceNameFactory.DEFAULT_CHANNEL);
 
-                String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport), ChannelServiceNameFactory.DEFAULT_CHANNEL);
-                transportExecutor = ModelNodes.asString(TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport));
+            configBuilder.setTransport()
+                    .setLockTimeout(TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong(), TimeUnit.MILLISECONDS)
+                    .setExecutor(ModelNodes.asString(TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport)))
+                    .build(target).install();
 
-                if (!name.equals(channel)) {
-                    new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
+            if (!name.equals(channel)) {
+                new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
 
-                    new ChannelBuilder(name).build(target).install();
-                    new ChannelConnectorBuilder(name).build(target).install();
-                    new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channel), ChannelFactory.class).build(target).install();
+                new ChannelBuilder(name).build(target).install();
+                new ChannelConnectorBuilder(name).build(target).install();
+                new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channel), ChannelFactory.class).build(target).install();
 
-                    for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
-                        log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
-                        Iterator<ServiceName> names = installer.getServiceNames(channel).iterator();
-                        for (ServiceName serviceName : installer.getServiceNames(name)) {
-                            new AliasServiceBuilder<>(serviceName, names.next(), Object.class).build(target).install();
-                        }
+                for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
+                    log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
+                    Iterator<ServiceName> names = installer.getServiceNames(channel).iterator();
+                    for (ServiceName serviceName : installer.getServiceNames(name)) {
+                        new AliasServiceBuilder<>(serviceName, names.next(), Object.class).build(target).install();
                     }
                 }
             }
-        }
-        if (transportConfig == null) {
+        } else {
             for (GroupServiceInstaller installer : ServiceLoader.load(LocalGroupServiceInstaller.class, LocalGroupServiceInstaller.class.getClassLoader())) {
                 log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
                 installer.install(target, name, module);
@@ -181,40 +157,29 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         }
 
         // Install cache container configuration service
-        ServiceName configServiceName = CacheContainerServiceName.CONFIGURATION.getServiceName(name);
-        EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
-        ServiceBuilder<EmbeddedCacheManagerConfiguration> configBuilder = target.addService(configServiceName, new EmbeddedCacheManagerConfigurationService(name, defaultCache, statistics, module, dependencies))
-                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, dependencies.getModuleLoaderInjector())
-                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, dependencies.getMBeanServerInjector())
-        ;
-        if (transportConfig != null) {
-            if (transportExecutor != null) {
-                addExecutorDependency(configBuilder, transportExecutor, transportConfig.getExecutorInjector());
-            }
-            configBuilder.addDependency(ChannelServiceName.CHANNEL.getServiceName(name), Channel.class, transportConfig.getChannelInjector());
-            configBuilder.addDependency(ChannelServiceName.FACTORY.getServiceName(name), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
-        }
-        addExecutorDependency(configBuilder, listenerExecutor, dependencies.getListenerExecutorInjector());
-        addScheduledExecutorDependency(configBuilder, evictionExecutor, dependencies.getEvictionExecutorInjector());
-        addScheduledExecutorDependency(configBuilder, replicationQueueExecutor, dependencies.getReplicationQueueExecutorInjector());
-
-        configBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        configBuilder.build(target).install();
 
         // Install cache container service
-        ServiceBuilder<EmbeddedCacheManager> managerBuilder = EmbeddedCacheManagerService.build(target, name)
-                .addAliases(aliases)
-        ;
-        if (transportConfig != null) {
-            managerBuilder.addDependency(ChannelServiceName.CHANNEL.getServiceName(name));
+        CacheContainerBuilder containerBuilder = new CacheContainerBuilder(name, defaultCache);
+
+        if (model.hasDefined(CacheContainerResourceDefinition.ALIASES.getName())) {
+            for (ModelNode alias : operation.get(CacheContainerResourceDefinition.ALIASES.getName()).asList()) {
+                containerBuilder.addAlias(alias.asString());
+            }
         }
-        managerBuilder.setInitialMode(initialMode).install();
+
+        containerBuilder.build(target).setInitialMode(initialMode).install();
 
         // Install cache container jndi binding
-        ContextNames.BindInfo binding = createCacheContainerBinding(jndiName, name);
-        new BinderServiceBuilder<>(binding, CacheContainerServiceName.CACHE_CONTAINER.getServiceName(name), CacheContainer.class).build(target).install();
+        ContextNames.BindInfo binding = InfinispanBindingFactory.createCacheContainerBinding(name);
+        BinderServiceBuilder<CacheContainer> bindingBuilder = new BinderServiceBuilder<>(binding, CacheContainerServiceName.CACHE_CONTAINER.getServiceName(name), CacheContainer.class);
+        if (jndiName != null) {
+            bindingBuilder.alias(ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName()));
+        }
+        bindingBuilder.build(target).install();
 
         // Install key affinity service factory
-        KeyAffinityServiceFactoryService.build(target, name, 10).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new KeyAffinityServiceFactoryBuilder(name).build(target).install();
 
         if ((defaultCache != null) && !defaultCache.equals(CacheServiceNameFactory.DEFAULT_CACHE)) {
 
@@ -224,7 +189,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
 
             new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(name, CacheServiceNameFactory.DEFAULT_CACHE), CacheServiceName.CACHE.getServiceName(name), Cache.class).build(target).install();
 
-            Class<? extends CacheServiceInstaller> installerClass = (transportConfig != null) ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
+            Class<? extends CacheServiceInstaller> installerClass = model.hasDefined(TransportResourceDefinition.PATH.getKey()) ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
             for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
                 installer.install(target, name, CacheServiceNameFactory.DEFAULT_CACHE);
             }
@@ -243,6 +208,8 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
 
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             removeServices(context, ClusteredGroupServiceInstaller.class, name);
+
+            context.removeService(new TransportConfigurationBuilder(name).getServiceName());
 
             context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
             for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
@@ -269,129 +236,6 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
             for (ServiceName name: installer.getServiceNames(group)) {
                 context.removeService(name);
             }
-        }
-    }
-
-    private static void addExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<Executor> injector) {
-        if (executor != null) {
-            builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
-        }
-    }
-
-    private static void addScheduledExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<ScheduledExecutorService> injector) {
-        if (executor != null) {
-            builder.addDependency(ThreadsServices.executorName(executor), ScheduledExecutorService.class, injector);
-        }
-    }
-
-    static ContextNames.BindInfo createCacheContainerBinding(String jndiName, String container) {
-        JndiName name = (jndiName != null) ? JndiNameFactory.parse(jndiName) : JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, InfinispanExtension.SUBSYSTEM_NAME, "container", container);
-        return ContextNames.bindInfoFor(name.getAbsoluteName());
-    }
-
-    static class EmbeddedCacheManagerDependencies implements EmbeddedCacheManagerConfigurationService.Dependencies {
-        private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<>();
-        private final InjectedValue<Executor> listenerExecutor = new InjectedValue<>();
-        private final InjectedValue<ScheduledExecutorService> evictionExecutor = new InjectedValue<>();
-        private final InjectedValue<ScheduledExecutorService> replicationQueueExecutor = new InjectedValue<>();
-        private final EmbeddedCacheManagerConfigurationService.TransportConfiguration transport;
-        private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<>();
-
-        EmbeddedCacheManagerDependencies(EmbeddedCacheManagerConfigurationService.TransportConfiguration transport) {
-            this.transport = transport;
-        }
-
-        Injector<MBeanServer> getMBeanServerInjector() {
-            return this.mbeanServer;
-        }
-
-        Injector<Executor> getListenerExecutorInjector() {
-            return this.listenerExecutor;
-        }
-
-        Injector<ScheduledExecutorService> getEvictionExecutorInjector() {
-            return this.evictionExecutor;
-        }
-
-        Injector<ScheduledExecutorService> getReplicationQueueExecutorInjector() {
-            return this.replicationQueueExecutor;
-        }
-
-        Injector<ModuleLoader> getModuleLoaderInjector() {
-            return this.moduleLoader;
-        }
-
-        @Override
-        public EmbeddedCacheManagerConfigurationService.TransportConfiguration getTransportConfiguration() {
-            return this.transport;
-        }
-
-        @Override
-        public MBeanServer getMBeanServer() {
-            return this.mbeanServer.getOptionalValue();
-        }
-
-        @Override
-        public Executor getListenerExecutor() {
-            return this.listenerExecutor.getOptionalValue();
-        }
-
-        @Override
-        public ScheduledExecutorService getEvictionExecutor() {
-            return this.evictionExecutor.getOptionalValue();
-        }
-
-        @Override
-        public ScheduledExecutorService getReplicationQueueExecutor() {
-            return this.replicationQueueExecutor.getOptionalValue();
-        }
-
-        @Override
-        public ModuleLoader getModuleLoader() {
-            return this.moduleLoader.getValue();
-        }
-    }
-
-    static class Transport implements EmbeddedCacheManagerConfigurationService.TransportConfiguration {
-        private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
-        private final InjectedValue<Channel> channel = new InjectedValue<>();
-        private final InjectedValue<Executor> executor = new InjectedValue<>();
-        private final long lockTimeout;
-
-        Transport(long lockTimeout) {
-            this.lockTimeout = lockTimeout;
-        }
-
-        Injector<ChannelFactory> getChannelFactoryInjector() {
-            return this.channelFactory;
-        }
-
-        Injector<Executor> getExecutorInjector() {
-            return this.executor;
-        }
-
-        Injector<Channel> getChannelInjector() {
-            return this.channel;
-        }
-
-        @Override
-        public Channel getChannel() {
-            return this.channel.getValue();
-        }
-
-        @Override
-        public ChannelFactory getChannelFactory() {
-            return this.channelFactory.getValue();
-        }
-
-        @Override
-        public Executor getExecutor() {
-            return this.executor.getOptionalValue();
-        }
-
-        @Override
-        public long getLockTimeout() {
-            return this.lockTimeout;
         }
     }
 }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.affinity;
+package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -38,9 +38,12 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
+import org.wildfly.clustering.service.Builder;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
@@ -53,17 +56,30 @@ import static java.security.AccessController.doPrivileged;
  * Returns a trivial implementation if the specified cache is not distributed.
  * @author Paul Ferraro
  */
-public class KeyAffinityServiceFactoryService implements Service<KeyAffinityServiceFactory>, KeyAffinityServiceFactory {
+public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServiceFactory>, Service<KeyAffinityServiceFactory>, KeyAffinityServiceFactory {
 
-    public static ServiceBuilder<KeyAffinityServiceFactory> build(ServiceTarget target, String containerName, int bufferSize) {
-        return new AsynchronousServiceBuilder<>(CacheContainerServiceName.AFFINITY.getServiceName(containerName), new KeyAffinityServiceFactoryService(bufferSize)).startSynchronously().build(target);
-    }
-
-    private final int bufferSize;
+    private final String containerName;
+    private volatile int bufferSize = 10;
     private volatile ExecutorService executor;
 
-    public KeyAffinityServiceFactoryService(int bufferSize) {
-        this.bufferSize = bufferSize;
+    public KeyAffinityServiceFactoryBuilder(String containerName) {
+        this.containerName = containerName;
+    }
+
+    public KeyAffinityServiceFactoryBuilder bufferSize(int size) {
+        this.bufferSize = size;
+        return this;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return CacheContainerServiceName.AFFINITY.getServiceName(this.containerName);
+    }
+
+    @Override
+    public ServiceBuilder<KeyAffinityServiceFactory> build(ServiceTarget target) {
+        return new AsynchronousServiceBuilder<>(this.getServiceName(), this).startSynchronously().build(target)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
