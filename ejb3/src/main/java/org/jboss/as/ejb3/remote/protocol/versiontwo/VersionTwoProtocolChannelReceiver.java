@@ -33,6 +33,7 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.protocol.MessageHandler;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
+import org.jboss.as.ejb3.remote.protocol.versionone.MethodInvocationMessageHandler;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.marshalling.MarshallerFactory;
@@ -43,6 +44,7 @@ import org.jboss.remoting3.Channel;
  */
 public class VersionTwoProtocolChannelReceiver extends VersionOneProtocolChannelReceiver {
 
+    private static final byte HEADER_INVOCATION_REQUEST = 0x03;
     private static final byte HEADER_TX_RECOVER_MESSAGE = 0x19;
     private static final byte HEADER_COMPRESSED_MESSAGE = 0x1B;
 
@@ -56,6 +58,8 @@ public class VersionTwoProtocolChannelReceiver extends VersionOneProtocolChannel
     @Override
     protected MessageHandler getMessageHandler(byte header) {
         switch (header) {
+            case HEADER_INVOCATION_REQUEST:
+                return new CompressedMethodInvocationMessageHandler(this.deploymentRepository, this.marshallerFactory, this.executorService, this.remoteAsyncInvocationCancelStatus);
             case HEADER_TX_RECOVER_MESSAGE:
                 return new TransactionRecoverMessageHandler(this.transactionsRepository, this.marshallerFactory, this.executorService);
             case HEADER_COMPRESSED_MESSAGE:
