@@ -126,7 +126,7 @@
     </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils</artifactId>
+      <artifactId>commons-beanutils-core</artifactId>
       <licenses>
         <license>
           <name>Apache Software License, Version 2.0</name>

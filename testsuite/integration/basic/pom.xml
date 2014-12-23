@@ -350,49 +350,6 @@
             </build>
         </profile>
 
-        <!-- IIOP/CORBA stub generation - manual stub generation for IBM JDK -->
-        <profile>
-            <id>ibmjdk.profile</id>
-            <activation>
-                <property>
-                    <name>java.vendor</name>
-                    <value>IBM Corporation</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${version.exec.maven.plugin}</version>
-                        <executions>
-                            <!-- There is no similar option as -Dcom.sun.CORBA.ORBUseDynamicStub=true for IBM JDK
-                                  we need to create stub do it manually with rmic tools -->
-                            <execution>
-                                <id>ibmjdk.iiop.stub-creation</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>rmic</executable>
-                                    <workingDirectory>target/test-classes</workingDirectory>
-                                    <arguments>
-                                        <argument>-iiop</argument>
-                                        <argument>-classpath</argument>
-                                        <argument>${jboss.dist}/bin/client/jboss-client.jar:.</argument>
-                                        <argument>org.jboss.as.test.integration.ejb.iiop.naming.IIOPNamingHome</argument>
-                                        <argument>org.jboss.as.test.integration.ejb.iiop.naming.IIOPStatefulNamingHome</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
         <profile>
             <id>onlyOneSurefireExecution.basic.profile</id>
