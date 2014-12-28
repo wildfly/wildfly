@@ -29,6 +29,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.jmx.MBeanRegistrationService;
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.service.component.ServiceComponentInstantiator;
@@ -90,6 +91,7 @@ final class MBeanServices {
         createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod,componentInstantiator, setupActions, mbeanContextClassLoader);
         createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
         createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
+        Services.addServerExecutorDependency(createDestroyServiceBuilder, ((CreateDestroyService) createDestroyService).getExecutorInjector(), false);
         if(componentInstantiator != null) {
             // the service that starts the EE component needs to start first
             createDestroyServiceBuilder.addDependency(componentInstantiator.getComponentStartServiceName());
@@ -101,6 +103,7 @@ final class MBeanServices {
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);
+        Services.addServerExecutorDependency(startStopServiceBuilder, ((StartStopService) startStopService).getExecutorInjector(), false);
 
         this.mBeanName = mBeanName;
         this.target = target;

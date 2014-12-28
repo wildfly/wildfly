@@ -24,5 +24,4 @@
       xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
 
     <mbean name="jboss:name=service-mbean-support-test" code="org.jboss.as.test.integration.sar.servicembean.TestService" />
-    
 </server>
