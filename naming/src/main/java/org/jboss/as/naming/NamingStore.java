@@ -86,6 +86,16 @@ public interface NamingStore {
     List<Binding> listBindings(Name name) throws NamingException;
 
     /**
+     * Retrieves the named object, following links except for the terminal atomic component of the name.
+     * If the object bound to <tt>name</tt> is not a link, returns the object itself.
+     *
+     * @param name The entry name
+     * @return The link from the store.
+     * @throws NamingException If any errors occur.
+     */
+    Object lookupLink(Name name) throws NamingException;
+
+    /**
      * Close the naming store and cleanup any resource used by the store.
      *
      * @throws NamingException If any errors occur

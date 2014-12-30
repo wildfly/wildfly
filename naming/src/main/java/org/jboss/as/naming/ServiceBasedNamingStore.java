@@ -47,6 +47,7 @@ import javax.naming.spi.ResolveResult;
 
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.logging.NamingLogger;
+import org.jboss.as.naming.subsystem.LookupBindingManagedReferenceFactory;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -129,23 +130,7 @@ public class ServiceBasedNamingStore implements NamingStore {
             final ServiceController<?> controller = serviceRegistry.getService(lookupName);
             if (controller != null) {
                 final Object object = controller.getValue();
-                if (dereference && object instanceof ManagedReferenceFactory) {
-                    if(WildFlySecurityManager.isChecking()) {
-                        //WFLY-3487 JNDI lookups should be executed in a clean access control context
-                        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                            @Override
-                            public Object run() {
-                                final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
-                                return managedReference != null ? managedReference.getInstance() : null;
-                            }
-                        });
-                    } else {
-                        final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
-                        return managedReference != null ? managedReference.getInstance() : null;
-                    }
-                } else {
-                    return object;
-                }
+                return dereference ? dereference(object) : object;
             } else {
                 return null;
             }
@@ -157,6 +142,26 @@ public class ServiceBasedNamingStore implements NamingStore {
             NamingException n = NamingLogger.ROOT_LOGGER.lookupError(name);
             n.initCause(t);
             throw n;
+        }
+    }
+
+    private Object dereference(final Object object) {
+        if (object instanceof ManagedReferenceFactory) {
+            if(WildFlySecurityManager.isChecking()) {
+                //WFLY-3487 JNDI lookups should be executed in a clean access control context
+                return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    @Override
+                    public Object run() {
+                        final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
+                        return managedReference != null ? managedReference.getInstance() : null;
+                    }
+                });
+            } else {
+                final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
+                return managedReference != null ? managedReference.getInstance() : null;
+            }
+        } else {
+            return object;
         }
     }
 
@@ -253,6 +258,16 @@ public class ServiceBasedNamingStore implements NamingStore {
             }
         }
         return children;
+    }
+
+    @Override
+    public Object lookupLink(Name name) throws NamingException {
+        Object object = lookup(name, false);
+        if (object instanceof LookupBindingManagedReferenceFactory) {
+            return LookupBindingManagedReferenceFactory.class.cast(object).getLink();
+        } else {
+            return dereference(object);
+        }
     }
 
     public void close() throws NamingException {
