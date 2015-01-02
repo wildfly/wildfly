@@ -24,6 +24,7 @@ package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.SetupAction;
@@ -61,13 +62,26 @@ final class CreateDestroyService extends AbstractService {
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
             SarLogger.ROOT_LOGGER.tracef("Creating Service: %s", context.getController().getName());
         }
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    invokeLifecycleMethod(createMethod, context);
+                    if (componentInstantiator != null) {
+                        managedReference = componentInstantiator.initializeInstance(getValue());
+                    }
+                    context.complete();
+                } catch (Throwable e) {
+                    context.failed(new StartException(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("create()"), e));
+                }
+            }
+        };
         try {
-            invokeLifecycleMethod(createMethod, context);
-        } catch (final Exception e) {
-            throw new StartException(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("create()"), e);
-        }
-        if(componentInstantiator != null) {
-            managedReference = componentInstantiator.initializeInstance(getValue());
+            executor.getValue().submit(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
         }
     }
 
@@ -76,13 +90,27 @@ final class CreateDestroyService extends AbstractService {
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
             SarLogger.ROOT_LOGGER.tracef("Destroying Service: %s", context.getController().getName());
         }
-        if(managedReference != null) {
-            managedReference.release();
-        }
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if(managedReference != null) {
+                        managedReference.release();
+                    }
+                    invokeLifecycleMethod(destroyMethod, context);
+                } catch (Exception e) {
+                    SarLogger.ROOT_LOGGER.error(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("destroy()"), e);
+                } finally {
+                    context.complete();
+                }
+            }
+        };
         try {
-            invokeLifecycleMethod(destroyMethod, context);
-        } catch (final Exception e) {
-            SarLogger.ROOT_LOGGER.error(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("create()"), e);
+            executor.getValue().submit(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
         }
     }
 

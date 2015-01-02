@@ -24,6 +24,7 @@ package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.service.logging.SarLogger;
@@ -53,10 +54,23 @@ final class StartStopService extends AbstractService {
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
             SarLogger.ROOT_LOGGER.tracef("Starting Service: %s", context.getController().getName());
         }
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+            try {
+                invokeLifecycleMethod(startMethod, context);
+                context.complete();
+            } catch (Throwable e) {
+                context.failed(new StartException(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("start()"), e));
+            }
+            }
+        };
         try {
-            invokeLifecycleMethod(startMethod, context);
-        } catch (final Exception e) {
-            throw new StartException(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("start()"), e);
+            executor.getValue().submit(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
         }
     }
 
@@ -65,10 +79,24 @@ final class StartStopService extends AbstractService {
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
             SarLogger.ROOT_LOGGER.tracef("Stopping Service: %s", context.getController().getName());
         }
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    invokeLifecycleMethod(stopMethod, context);
+                } catch (Exception e) {
+                    SarLogger.ROOT_LOGGER.error(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("stop()"), e);
+                } finally {
+                    context.complete();
+                }
+            }
+        };
         try {
-            invokeLifecycleMethod(stopMethod, context);
-        } catch (final Exception e) {
-            SarLogger.ROOT_LOGGER.error(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("stop()"), e);
+            executor.getValue().submit(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
         }
     }
 
