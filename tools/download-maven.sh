@@ -1,6 +1,6 @@
 #!/bin/sh
 MAVEN_VERSION=3.2.3
-MAVEN_URL=http://www.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.zip
+MAVEN_URL=http://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.zip
 
 if [ -d tools ]; then
   #executed from root of WF install
