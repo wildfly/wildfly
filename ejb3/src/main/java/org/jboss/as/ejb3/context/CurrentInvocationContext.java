@@ -38,10 +38,6 @@ public class CurrentInvocationContext {
         return current;
     }
 
-    public static <T extends InterceptorContext> T get(Class<T> expectedType) {
-        return expectedType.cast(get());
-    }
-
     public static EJBContextImpl getEjbContext() {
         final InterceptorContext context = get();
         if(context == null) {

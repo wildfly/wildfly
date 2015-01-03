@@ -290,8 +290,8 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                 // these are private to JBoss EJB implementation and not meant to be visible to the
                 // application, so add these attachments to the privateData of the InterceptorContext
                 if (EJBClientInvocationContext.PRIVATE_ATTACHMENTS_KEY.equals(key)) {
-                    final Map<Object, Object> privateAttachments = (Map<Object, Object>) value;
-                    for (final Map.Entry<Object, Object> privateAttachment : privateAttachments.entrySet()) {
+                    final Map<?, ?> privateAttachments = (Map<?, ?>) value;
+                    for (final Map.Entry<?, ?> privateAttachment : privateAttachments.entrySet()) {
                         interceptorContext.putPrivateData(privateAttachment.getKey(), privateAttachment.getValue());
                     }
                 } else {
@@ -321,7 +321,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
             this.remoteAsyncInvocationCancelStatus.registerAsyncInvocation(invocationId, asyncInvocationCancellationFlag);
             try {
                 final Object result = componentView.invoke(interceptorContext);
-                return result == null ? null : ((Future) result).get();
+                return result == null ? null : ((Future<?>) result).get();
             } finally {
                 // now that the async invocation is done, we no longer need to keep track of the
                 // cancellation flag for this invocation

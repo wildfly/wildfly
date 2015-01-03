@@ -170,14 +170,6 @@ public class AllowedMethodsInformation {
             this.methodType = methodType;
         }
 
-        public CurrentSynchronizationCallback.CallbackType getCallbackType() {
-            return callbackType;
-        }
-
-        public MethodType getMethodType() {
-            return methodType;
-        }
-
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

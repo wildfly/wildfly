@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
 
@@ -67,10 +66,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final SuspendController suspendController;
     private final ActivationSpec activationSpec;
     private final MessageEndpointFactory endpointFactory;
-    private final Class<?> messageListenerInterface;
     private final ClassLoader classLoader;
     private volatile boolean deliveryActive;
-    private ResourceAdapter resourceAdapter;
     private Endpoint endpoint;
     private String activationName;
 
@@ -90,11 +87,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
                 deactivate();
             }
             listener.done();
-        }
-
-        @Deprecated
-        public void suspened(ServerActivityCallback listener) {
-            suspended(listener);
         }
 
         public void suspended(ServerActivityCallback listener) {
@@ -142,7 +134,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         this.classLoader = ejbComponentCreateService.getModuleClassLoader();
         this.suspendController = ejbComponentCreateService.getSuspendControllerInjectedValue().getValue();
         this.activationSpec = activationSpec;
-        this.messageListenerInterface = messageListenerInterface;
         final ClassLoader componentClassLoader = doPrivileged(new GetClassLoaderAction(ejbComponentCreateService.getComponentClass()));
         final MessageEndpointService<?> service = new MessageEndpointService<Object>() {
             @Override
@@ -202,10 +193,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public String getPoolName() {
         return poolName;
-    }
-
-    protected void setResourceAdapter(ResourceAdapter resourceAdapter) {
-        this.resourceAdapter = resourceAdapter;
     }
 
     void setEndpoint(final Endpoint endpoint) {

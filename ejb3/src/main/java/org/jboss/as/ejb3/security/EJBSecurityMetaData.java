@@ -41,10 +41,6 @@ import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
  */
 public class EJBSecurityMetaData {
 
-    private final String ejbName;
-
-    private final String ejbClassName;
-
     /**
      * The security domain for this EJB component
      */
@@ -83,8 +79,6 @@ public class EJBSecurityMetaData {
             throw EjbLogger.ROOT_LOGGER.invalidComponentConfiguration(componentConfiguration.getComponentName());
         }
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
-        this.ejbClassName = ejbComponentDescription.getEJBClassName();
-        this.ejbName = ejbComponentDescription.getEJBName();
         this.runAsRole = ejbComponentDescription.getRunAs();
         this.securityDomain = ejbComponentDescription.getSecurityDomain();
         this.runAsPrincipal = ejbComponentDescription.getRunAsPrincipal();

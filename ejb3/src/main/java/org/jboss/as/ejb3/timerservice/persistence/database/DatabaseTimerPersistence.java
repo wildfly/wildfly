@@ -100,7 +100,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     private final Map<String, Set<String>> knownTimerIds = new HashMap<>();
 
-    private final String name;
     /** Identifier for the database dialect to be used for the timer-sql.properties */
     private String database;
     /** List of extracted known dialects*/
@@ -126,8 +125,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String DELETE_TIMER = "delete-timer";
     private static final String UPDATE_RUNNING = "update-running";
 
-    public DatabaseTimerPersistence(final String name, final String database, String partition, int refreshInterval, boolean allowExecution) {
-        this.name = name;
+    public DatabaseTimerPersistence(final String database, String partition, int refreshInterval, boolean allowExecution) {
         this.database = database;
         this.partition = partition;
         this.refreshInterval = refreshInterval;

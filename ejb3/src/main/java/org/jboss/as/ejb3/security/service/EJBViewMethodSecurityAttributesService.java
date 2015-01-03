@@ -45,11 +45,9 @@ public class EJBViewMethodSecurityAttributesService implements Service<EJBViewMe
 
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("view-method-security-attributes");
 
-    private final String viewClassName;
     private final Map<Method, EJBMethodSecurityAttribute> methodSecurityAttributes;
 
-    public EJBViewMethodSecurityAttributesService(final String viewClassName, final Map<Method, EJBMethodSecurityAttribute> securityAttributes) {
-        this.viewClassName = viewClassName;
+    public EJBViewMethodSecurityAttributesService(final Map<Method, EJBMethodSecurityAttribute> securityAttributes) {
         this.methodSecurityAttributes = Collections.unmodifiableMap(new HashMap<>(securityAttributes));
     }
 
@@ -96,19 +94,14 @@ public class EJBViewMethodSecurityAttributesService implements Service<EJBViewMe
     }
 
     public static class Builder {
-        private final String viewClassName;
         private final Map<Method, EJBMethodSecurityAttribute> methodSecurityAttributes = new IdentityHashMap<>();
-
-        public Builder(final String viewClassName) {
-            this.viewClassName = viewClassName;
-        }
 
         public void addMethodSecurityMetadata(final Method viewMethod, final EJBMethodSecurityAttribute securityAttribute) {
             methodSecurityAttributes.put(viewMethod, securityAttribute);
         }
 
         public EJBViewMethodSecurityAttributesService build() {
-            return new EJBViewMethodSecurityAttributesService(viewClassName, methodSecurityAttributes);
+            return new EJBViewMethodSecurityAttributesService(methodSecurityAttributes);
         }
     }
 }

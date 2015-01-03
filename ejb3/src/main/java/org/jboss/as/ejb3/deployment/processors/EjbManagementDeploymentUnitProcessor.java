@@ -103,7 +103,7 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
     private void installManagementResource(ComponentConfiguration configuration, DeploymentUnit deploymentUnit) {
         final EJBComponentType type = EJBComponentType.getComponentType(configuration);
         PathAddress addr = getComponentAddress(type, configuration, deploymentUnit);
-        final AbstractEJBComponentRuntimeHandler handler = type.getRuntimeHandler();
+        final AbstractEJBComponentRuntimeHandler<?> handler = type.getRuntimeHandler();
         handler.registerComponent(addr, configuration.getComponentDescription().getStartServiceName());
         deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.MANAGED_COMPONENTS, new InstalledComponent(type, addr));
         deploymentUnit.createDeploymentSubModel(EJB3Extension.SUBSYSTEM_NAME, addr.getLastElement());

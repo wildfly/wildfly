@@ -110,7 +110,7 @@ public enum EJBComponentType {
 
     }
 
-    public Pool getPool(EJBComponent component) {
+    public Pool<?> getPool(EJBComponent component) {
         return pooledComponent(component).getPool();
     }
 
