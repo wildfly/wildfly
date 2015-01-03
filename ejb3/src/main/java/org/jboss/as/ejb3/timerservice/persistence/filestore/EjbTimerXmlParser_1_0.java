@@ -22,34 +22,6 @@
 
 package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.timerservice.CalendarTimer;
-import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
-import org.jboss.as.ejb3.timerservice.TimerState;
-import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
-import org.jboss.marshalling.ByteBufferInput;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.Unmarshaller;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.util.Base64;
-
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.CALENDAR_TIMER;
@@ -78,6 +50,34 @@ import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPe
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.TIMER_ID;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.TIMER_STATE;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.TYPE;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.timerservice.CalendarTimer;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
+import org.jboss.as.ejb3.timerservice.TimerState;
+import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
+import org.jboss.marshalling.ByteBufferInput;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.Unmarshaller;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.util.Base64;
 
 /**
  * Parser for persistent EJB timers that are stored in XML.
@@ -413,10 +413,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                 handled = false;
         }
         return handled;
-    }
-
-    private void unexpectedEndOfDocument(Location location) throws XMLStreamException {
-        throw EjbLogger.ROOT_LOGGER.unexpectedEndOfDocument(location);
     }
 
     private static class LoadableElements {

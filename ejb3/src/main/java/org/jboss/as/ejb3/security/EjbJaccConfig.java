@@ -40,7 +40,7 @@ public class EjbJaccConfig {
     private final List<Permission> deny = new ArrayList<Permission>();
 
     public void addRole(String role, Permission permission) {
-        roles.add(new Entry(role, permission));
+        roles.add(new Entry<>(role, permission));
     }
     public List<Map.Entry<String, Permission>> getRoles() {
         return roles;

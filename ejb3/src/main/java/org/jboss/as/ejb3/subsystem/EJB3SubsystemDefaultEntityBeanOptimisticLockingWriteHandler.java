@@ -71,14 +71,14 @@ public class EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler extends
         final ModelNode enabled = EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING.resolveModelAttribute(context, model);
 
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-        ServiceController existingService = serviceRegistry.getService(SERVICE_NAME);
+        ServiceController<?> existingService = serviceRegistry.getService(SERVICE_NAME);
         // if a default optimistic locking config is installed, remove it
         if (existingService != null) {
             context.removeService(existingService);
         }
 
         if (enabled.isDefined()) {
-            final Service<Boolean> newDefaultPoolConfigService = new ValueService<Boolean>(new ImmediateValue(enabled.asBoolean()));
+            final Service<Boolean> newDefaultPoolConfigService = new ValueService<Boolean>(new ImmediateValue<Boolean>(enabled.asBoolean()));
             ServiceController<?> newController =
                 context.getServiceTarget().addService(SERVICE_NAME, newDefaultPoolConfigService)
                     .install();

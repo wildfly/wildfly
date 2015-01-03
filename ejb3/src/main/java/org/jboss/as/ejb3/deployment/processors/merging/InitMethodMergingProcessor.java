@@ -38,7 +38,6 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.InitMethodMetaData;
 import org.jboss.metadata.ejb.spec.InitMethodsMetaData;
-import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
@@ -100,7 +99,6 @@ public class InitMethodMergingProcessor extends AbstractMergingProcessor<Statefu
                 for (InitMethodMetaData method : inits) {
                     Method beanMethod = MethodResolutionUtils.resolveMethod(method.getBeanMethod(), componentClass, deploymentReflectionIndex);
                     if (method.getCreateMethod() != null) {
-                        MethodParametersMetaData p = method.getCreateMethod().getMethodParams();
                         description.addInitMethod(beanMethod, method.getCreateMethod().getMethodName());
                     } else {
                         description.addInitMethod(beanMethod, null);

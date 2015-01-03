@@ -279,7 +279,6 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
                     final int count = reader.getAttributeCount();
                     for (int i = 0; i < count; i++) {
                         requireNoNamespaceAttribute(reader, i);
-                        final String value = reader.getAttributeValue(i);
                         final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case CORE_THREADS:

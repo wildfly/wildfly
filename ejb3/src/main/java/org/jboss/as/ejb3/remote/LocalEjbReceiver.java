@@ -135,7 +135,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
     @Override
     protected void processInvocation(final EJBClientInvocationContext invocation, final EJBReceiverInvocationContext receiverContext) throws Exception {
-        final EJBLocator locator = invocation.getLocator();
+        final EJBLocator<?> locator = invocation.getLocator();
         final EjbDeploymentInformation ejb = findBean(locator.getAppName(), locator.getModuleName(), locator.getDistinctName(), locator.getBeanName());
         final EJBComponent ejbComponent = ejb.getEjbComponent();
 
@@ -202,10 +202,10 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         interceptorContext.putPrivateData(ComponentView.class, view);
 
         if (locator instanceof StatefulEJBLocator) {
-            final SessionID sessionID = ((StatefulEJBLocator) locator).getSessionId();
+            final SessionID sessionID = ((StatefulEJBLocator<?>) locator).getSessionId();
             interceptorContext.putPrivateData(SessionID.class, sessionID);
         } else if (locator instanceof EntityEJBLocator) {
-            final Object primaryKey = ((EntityEJBLocator) locator).getPrimaryKey();
+            final Object primaryKey = ((EntityEJBLocator<?>) locator).getPrimaryKey();
             interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
         }
 

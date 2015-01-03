@@ -59,7 +59,6 @@ public class EntityBeanHomeMethodInterceptorFactory implements InterceptorFactor
 
                 //grab a bean from the pool to invoke the business method on
                 final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
-                final Object result;
                 final InvocationType invocationType = context.getPrivateData(InvocationType.class);
                 try {
                     context.putPrivateData(InvocationType.class, InvocationType.HOME_METHOD);

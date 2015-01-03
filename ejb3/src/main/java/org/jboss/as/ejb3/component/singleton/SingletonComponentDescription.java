@@ -42,7 +42,6 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
@@ -77,8 +76,6 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     private boolean initOnStartup;
 
     private final List<ServiceName> dependsOn = new ArrayList<ServiceName>();
-
-    private DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
     /**
      * Construct a new instance.

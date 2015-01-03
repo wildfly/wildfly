@@ -52,7 +52,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
 import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
@@ -79,8 +78,7 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  */
 public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurator {
 
-    private static final Logger logger = Logger.getLogger(EJBContainerInterceptorsViewConfigurator.class);
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
 
     public static final EJBContainerInterceptorsViewConfigurator INSTANCE = new EJBContainerInterceptorsViewConfigurator();
 
@@ -233,7 +231,6 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
         private final EJBComponentDescription ejbComponentDescription;
         private final DeploymentReflectionIndex deploymentReflectionIndex;
         private final Class<?> interceptorClass;
-        private final String interceptorClassName;
 
         private final List<InterceptorFactory> aroundInvokeInterceptorFactories = new ArrayList<InterceptorFactory>();
         private final List<InterceptorFactory> aroundTimeoutInterceptorFactories = new ArrayList<InterceptorFactory>();
@@ -247,7 +244,6 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
             this.deploymentReflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
             this.moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
             this.interceptorClass = interceptorClass;
-            this.interceptorClassName = interceptorClass.getName();
 
         }
 
