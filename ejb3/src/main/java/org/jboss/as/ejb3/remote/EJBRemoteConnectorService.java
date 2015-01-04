@@ -247,8 +247,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             try {
                 final byte version = dataInputStream.readByte();
                 final String clientMarshallingStrategy = dataInputStream.readUTF();
-                EjbLogger.ROOT_LOGGER.debug("Client with protocol version " + version + " and marshalling strategy " + clientMarshallingStrategy +
-                        " trying to communicate on " + channel);
+                if (EjbLogger.ROOT_LOGGER.isDebugEnabled()) {
+                    EjbLogger.ROOT_LOGGER.debug("Client with protocol version " + version + " and marshalling strategy "
+                            + clientMarshallingStrategy + " trying to communicate on " + channel);
+                }
                 if (!EJBRemoteConnectorService.this.isSupportedMarshallingStrategy(clientMarshallingStrategy)) {
                     EjbLogger.ROOT_LOGGER.unsupportedClientMarshallingStrategy(clientMarshallingStrategy, channel);
                     channel.close();

@@ -58,6 +58,6 @@ class InvocationCancellationMessageHandler extends AbstractMessageHandler {
         }
         // mark it as cancelled
         cancellationFlag.set(true);
-        logger.debug("Invocation with id " + invocationToCancel + " has been marked as cancelled, as requested");
+        logger.debugf("Invocation with id %s has been marked as cancelled, as requested", invocationToCancel);
     }
 }

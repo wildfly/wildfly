@@ -205,7 +205,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                             // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
                             // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
                             if (throwable instanceof EJBComponentUnavailableException) {
-                                EjbLogger.EJB3_INVOCATION_LOGGER.debug("Cannot handle method invocation: " + invokedMethod + " on bean: " + beanName + " due to EJB component unavailability exception. Returning a no such EJB available message back to client");
+                                EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle method invocation: %s on bean: %s due to EJB component unavailability exception. Returning a no such EJB available message back to client", invokedMethod, beanName);
                                 MethodInvocationMessageHandler.this.writeNoSuchEJBFailureMessage(channelAssociation, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
                             } else {
                                 // write out the failure

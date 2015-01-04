@@ -116,7 +116,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                         deploymentName = moduleDescription.getApplicationName() + "." + moduleDescription.getModuleName() + "." + moduleDescription.getDistinctName();
                     }
 
-                    ROOT_LOGGER.debug("Installing timer service for component " + componentDescription.getComponentName());
+                    ROOT_LOGGER.debugf("Installing timer service for component %s", componentDescription.getComponentName());
                     componentDescription.getConfigurators().add(new ComponentConfigurator() {
                         @Override
                         public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {

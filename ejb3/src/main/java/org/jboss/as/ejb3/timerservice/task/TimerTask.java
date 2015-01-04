@@ -94,7 +94,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         final TimerImpl timer = timerService.getTimer(timerId);
         try {
             if (cancelled) {
-                ROOT_LOGGER.debug("Timer task was cancelled for " + timer);
+                ROOT_LOGGER.debugf("Timer task was cancelled for %s", timer);
                 return;
             }
 

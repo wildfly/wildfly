@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.iiop.stub;
 import javax.rmi.CORBA.Util;
 
 import java.security.PrivilegedAction;
+
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.iiop.LocalIIOPInvoker;
 import org.jboss.as.jacorb.rmi.marshal.strategy.StubStrategy;
@@ -72,6 +73,11 @@ public abstract class DynamicIIOPStub
             EjbLogger.EJB3_INVOCATION_LOGGER.trace(msg);
     }
 
+    private static void tracef(final String format, final Object... params) {
+        if (EjbLogger.EJB3_INVOCATION_LOGGER.isTraceEnabled())
+            EjbLogger.EJB3_INVOCATION_LOGGER.tracef(format, params);
+    }
+
     /**
      * Constructs a <code>DynamicIIOPStub</code>.
      */
@@ -110,7 +116,7 @@ public abstract class DynamicIIOPStub
                     OutputStream out =
                             (OutputStream) _request(operationName, true);
                     stubStrategy.writeParams(out, params);
-                    trace("sent request: " + operationName);
+                    tracef("sent request: %s", operationName);
                     in = (InputStream) _invoke(out);
                     if (stubStrategy.isNonVoid()) {
                         trace("received reply");

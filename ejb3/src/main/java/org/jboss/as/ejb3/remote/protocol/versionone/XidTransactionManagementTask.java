@@ -100,7 +100,7 @@ abstract class XidTransactionManagementTask implements Runnable {
     protected SubordinateTransaction tryRecoveryForImportedTransaction() throws Exception {
         final XATerminator xaTerminator = SubordinationManager.getXATerminator();
         if (xaTerminator instanceof XATerminatorImple) {
-            EjbLogger.ROOT_LOGGER.debug("Trying to recover an imported transaction for Xid " + this.xidTransactionID.getXid());
+            EjbLogger.ROOT_LOGGER.debugf("Trying to recover an imported transaction for Xid %s", this.xidTransactionID.getXid());
             // We intentionally pass null for Xid since passing the specific Xid doesn't seem to work for some reason.
             // As for null for parentNodeName, we do that intentionally since we aren't aware of the parent node on which
             // the transaction originated

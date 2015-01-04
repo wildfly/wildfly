@@ -131,11 +131,11 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         };
         final PoolConfig poolConfig = ejbComponentCreateService.getPoolConfig();
         if (poolConfig == null) {
-            ROOT_LOGGER.debug("Pooling is disabled for MDB " + ejbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debugf("Pooling is disabled for MDB %s", ejbComponentCreateService.getComponentName());
             this.pool = null;
             this.poolName = null;
         } else {
-            ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for MDB " + ejbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debugf("Using pool config %s to create pool for MDB %s", poolConfig, ejbComponentCreateService.getComponentName());
             this.pool = poolConfig.createPool(factory);
             this.poolName = poolConfig.getPoolName();
         }

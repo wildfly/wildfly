@@ -132,7 +132,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         if (this.initOnStartup) {
             // Do not call createInstance() because we can't ever assume that the singleton instance
             // hasn't already been created.
-            ROOT_LOGGER.debug(this.getComponentName() + " bean is a @Startup (a.k.a init-on-startup) bean, creating/getting the singleton instance");
+            ROOT_LOGGER.debugf("%s bean is a @Startup (a.k.a init-on-startup) bean, creating/getting the singleton instance", this.getComponentName());
             this.getComponentInstance();
         }
     }

@@ -54,8 +54,10 @@ public class LocalEJBReceiverPreferringDeploymentNodeSelector implements Deploym
         // prefer local node if available
         for (final String eligibleNode : eligibleNodes) {
             if (localNodeName.equals(eligibleNode)) {
-                logger.debug("Selected local node " + this.localNodeName + " for [app: " + appName + ", module: "
-                        + moduleName + ",  distinctname: " + distinctName + "]");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Selected local node " + this.localNodeName + " for [app: " + appName + ", module: "
+                            + moduleName + ",  distinctname: " + distinctName + "]");
+                }
                 return eligibleNode;
             }
         }

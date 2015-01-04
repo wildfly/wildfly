@@ -71,11 +71,11 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
         };
         final PoolConfig poolConfig = slsbComponentCreateService.getPoolConfig();
         if (poolConfig == null) {
-            ROOT_LOGGER.debug("Pooling is disabled for Stateless EJB " + slsbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debugf("Pooling is disabled for Stateless EJB %s", slsbComponentCreateService.getComponentName());
             this.pool = null;
             this.poolName = null;
         } else {
-            ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for Stateless EJB " + slsbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debugf("Using pool config %s to create pool for Stateless EJB %s", poolConfig, slsbComponentCreateService.getComponentName());
             this.pool = poolConfig.createPool(factory);
             this.poolName = poolConfig.getPoolName();
         }

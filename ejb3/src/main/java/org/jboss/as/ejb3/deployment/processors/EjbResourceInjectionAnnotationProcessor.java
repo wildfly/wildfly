@@ -149,8 +149,11 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     private void process(final DeploymentUnit deploymentUnit, final String beanInterface, final String beanName, final String lookup, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName, final EEModuleDescription eeModuleDescription) {
 
         if (!isEmpty(lookup) && !isEmpty(beanName)) {
-            logger.debug("Both beanName = " + beanName + " and lookup = " + lookup + " have been specified in @EJB annotation." +
-                    " lookup will be given preference. Class: " + classInfo.name());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Both beanName = " + beanName + " and lookup = " + lookup
+                        + " have been specified in @EJB annotation." + " lookup will be given preference. Class: "
+                        + classInfo.name());
+            }
         }
 
         final EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());

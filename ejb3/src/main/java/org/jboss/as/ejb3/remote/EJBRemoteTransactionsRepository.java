@@ -76,7 +76,7 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
     @Override
     public void start(StartContext context) throws StartException {
         recoveryManagerService.getValue().addSerializableXAResourceDeserializer(EJBXAResourceDeserializer.INSTANCE);
-        logger.debug("Registered EJB XA resource deserializer " + EJBXAResourceDeserializer.INSTANCE);
+        logger.debugf("Registered EJB XA resource deserializer %s", EJBXAResourceDeserializer.INSTANCE);
     }
 
     @Override
