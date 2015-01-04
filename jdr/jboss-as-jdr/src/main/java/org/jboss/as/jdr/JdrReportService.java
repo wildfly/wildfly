@@ -98,7 +98,7 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
      * Collect a JDR report.
      */
     public JdrReport collect() throws OperationFailedException {
-        JdrRunner runner = new JdrRunner();
+        JdrRunner runner = new JdrRunner(true);
         serverEnvironment = serverEnvironmentValue.getValue();
         runner.setJbossHomeDir(serverEnvironment.getHomeDir().getAbsolutePath());
         runner.setReportLocationDir(serverEnvironment.getServerTempDir().getAbsolutePath());
