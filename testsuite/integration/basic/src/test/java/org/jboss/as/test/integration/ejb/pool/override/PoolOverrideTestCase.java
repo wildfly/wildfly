@@ -39,7 +39,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -55,7 +57,8 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-@ServerSetup(PoolOverrideTestCase.PoolOverrideTestCaseSetup.class)
+@ServerSetup({PoolOverrideTestCase.PoolOverrideTestCaseSetup.class,
+        PoolOverrideTestCase.AllowPropertyReplacementSetup.class})
 public class PoolOverrideTestCase {
 
     private static final Logger logger = Logger.getLogger(PoolOverrideTestCase.class);
@@ -67,6 +70,7 @@ public class PoolOverrideTestCase {
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedEJB.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolSetInDDBean.POOL_NAME_IN_DD, 1, 10, TimeUnit.MILLISECONDS);
             EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedAndSetInDDBean.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
+            EJBManagementUtil.createStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedWithExpressionEJB.POOL_NAME, 1, 10, TimeUnit.MILLISECONDS);
         }
 
         @Override
@@ -74,6 +78,51 @@ public class PoolOverrideTestCase {
             EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedEJB.POOL_NAME);
             EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolSetInDDBean.POOL_NAME_IN_DD);
             EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedAndSetInDDBean.POOL_NAME);
+            EJBManagementUtil.removeStrictMaxPool(managementClient.getControllerClient(), PoolAnnotatedWithExpressionEJB.POOL_NAME);
+        }
+    }
+
+    static class AllowPropertyReplacementSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(ManagementClient managementClient, String s) throws Exception {
+            final ModelNode enableSubstitutionOp = new ModelNode();
+            enableSubstitutionOp.get(ClientConstants.OP_ADDR).set(ClientConstants.SUBSYSTEM, "ee");
+            enableSubstitutionOp.get(ClientConstants.OP).set(ClientConstants.WRITE_ATTRIBUTE_OPERATION);
+            enableSubstitutionOp.get(ClientConstants.NAME).set("annotation-property-replacement");
+            enableSubstitutionOp.get(ClientConstants.VALUE).set(true);
+            try {
+                applyUpdate(managementClient, enableSubstitutionOp);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String s) throws Exception {
+            final ModelNode disableSubstitution = new ModelNode();
+            disableSubstitution.get(ClientConstants.OP_ADDR).set(ClientConstants.SUBSYSTEM, "ee");
+            disableSubstitution.get(ClientConstants.OP).set(ClientConstants.WRITE_ATTRIBUTE_OPERATION);
+            disableSubstitution.get(ClientConstants.NAME).set("annotation-property-replacement");
+            disableSubstitution.get(ClientConstants.VALUE).set(false);
+            try {
+                applyUpdate(managementClient, disableSubstitution);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void applyUpdate(final ManagementClient managementClient, final ModelNode update)
+                throws Exception {
+            ModelNode result = managementClient.getControllerClient().execute(update);
+            if (result.hasDefined(ClientConstants.OUTCOME)
+                    && ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
+            } else if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
+                final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
+                throw new RuntimeException(failureDesc);
+            } else {
+                throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+            }
         }
     }
 
@@ -83,7 +132,10 @@ public class PoolOverrideTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-pool-override-test.jar");
         jar.addPackage(PoolAnnotatedEJB.class.getPackage());
         jar.addAsManifestResource(PoolOverrideTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        jar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("modifyThread")), "META-INF/jboss-permissions.xml");
+        jar.addAsManifestResource(PoolOverrideTestCase.class.getPackage(), "jboss.properties",
+                "jboss.properties");
+        jar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("modifyThread")),
+                "META-INF/jboss-permissions.xml");
         return jar;
     }
 
@@ -96,6 +148,12 @@ public class PoolOverrideTestCase {
     @Test
     public void testSLSBWithPoolAnnotation() throws Exception {
         final PoolAnnotatedEJB bean = InitialContext.doLookup("java:module/" + PoolAnnotatedEJB.class.getSimpleName());
+        this.testSimulatenousInvocationOnEJBsWithSingleInstanceInPool(bean);
+    }
+
+    @Test
+    public void testSLSBWithPoolAnnotationWithExpression() throws Exception {
+        final PoolAnnotatedWithExpressionEJB bean = InitialContext.doLookup("java:module/" + PoolAnnotatedWithExpressionEJB.class.getSimpleName());
         this.testSimulatenousInvocationOnEJBsWithSingleInstanceInPool(bean);
     }
 

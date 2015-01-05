@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.singleton.concurrency;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -40,6 +41,11 @@ import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -52,6 +58,7 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
+@ServerSetup(SingletonBeanTestCase.AllowPropertyReplacementSetup.class)
 public class SingletonBeanTestCase {
 
     private static final Logger log = Logger.getLogger(SingletonBeanTestCase.class.getName());
@@ -65,9 +72,57 @@ public class SingletonBeanTestCase {
         jar.addClass(ReadOnlySingleton.class);
         jar.addClass(SingletonBeanTestCase.class);
         jar.addClass(ReadOnlySingletonBeanDescriptor.class);
+        jar.addClass(ReadOnlySingletonBeanDescriptorWithExpression.class);
         jar.addAsManifestResource(SingletonBeanTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(SingletonBeanTestCase.class.getPackage(), "jboss.properties", "jboss.properties");
         log.info(jar.toString(true));
         return jar;
+    }
+
+    static class AllowPropertyReplacementSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(ManagementClient managementClient, String s) throws Exception {
+            final ModelNode enableSubstitutionOp = new ModelNode();
+            enableSubstitutionOp.get(ClientConstants.OP_ADDR).set(ClientConstants.SUBSYSTEM, "ee");
+            enableSubstitutionOp.get(ClientConstants.OP).set(ClientConstants.WRITE_ATTRIBUTE_OPERATION);
+            enableSubstitutionOp.get(ClientConstants.NAME).set("spec-descriptor-property-replacement");
+            enableSubstitutionOp.get(ClientConstants.VALUE).set(true);
+
+            try {
+                applyUpdate(managementClient, enableSubstitutionOp);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String s) throws Exception {
+            final ModelNode disableSubstitution = new ModelNode();
+            disableSubstitution.get(ClientConstants.OP_ADDR).set(ClientConstants.SUBSYSTEM, "ee");
+            disableSubstitution.get(ClientConstants.OP).set(ClientConstants.WRITE_ATTRIBUTE_OPERATION);
+            disableSubstitution.get(ClientConstants.NAME).set("spec-descriptor-property-replacement");
+            disableSubstitution.get(ClientConstants.VALUE).set(false);
+
+            try {
+                applyUpdate(managementClient, disableSubstitution);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void applyUpdate(final ManagementClient managementClient, final ModelNode update)
+                throws Exception {
+            ModelNode result = managementClient.getControllerClient().execute(update);
+            if (result.hasDefined(OUTCOME)
+                    && ClientConstants.SUCCESS.equals(result.get(OUTCOME).asString())) {
+            } else if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
+                final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
+                throw new RuntimeException(failureDesc);
+            } else {
+                throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+            }
+        }
     }
 
     @EJB(mappedName = "java:global/ejb3-singleton-bean-example/ReadOnlySingletonBean!org.jboss.as.test.integration.ejb.singleton.concurrency.ReadOnlySingletonBean")
@@ -78,6 +133,9 @@ public class SingletonBeanTestCase {
     
     @EJB(mappedName = "java:global/ejb3-singleton-bean-example/ReadOnlySingletonBeanDescriptor!org.jboss.as.test.integration.ejb.singleton.concurrency.ReadOnlySingletonBeanDescriptor")
     private ReadOnlySingletonBeanDescriptor readOnlySingletonBeanDescriptor;
+
+    @EJB(mappedName = "java:global/ejb3-singleton-bean-example/ReadOnlySingletonBeanDescriptorWithExpression!org.jboss.as.test.integration.ejb.singleton.concurrency.ReadOnlySingletonBeanDescriptorWithExpression")
+    private ReadOnlySingletonBeanDescriptorWithExpression readOnlySingletonBeanDescriptorWithExpression;
 
 
     /**
@@ -93,6 +151,11 @@ public class SingletonBeanTestCase {
     @Test
     public void testReadOnlySingletonDescriptor() throws Exception {
         testReadOnlySingleton(readOnlySingletonBeanDescriptor);
+    }
+
+    @Test
+    public void testReadOnlySingletonDescriptorWithExpression() throws Exception {
+        testReadOnlySingleton(readOnlySingletonBeanDescriptorWithExpression);
     }
     
     public void testReadOnlySingleton(ReadOnlySingleton readOnlySingleton) throws Exception {
