@@ -22,18 +22,6 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectStreamException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
@@ -62,11 +50,23 @@ import org.jboss.remoting3.MessageOutputStream;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoUtils;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectStreamException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
 
 /**
  * @author Jaikiran Pai
  */
-class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
+public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
     private static final char METHOD_PARAM_TYPE_SEPARATOR = ',';
 
@@ -77,7 +77,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
     private final MarshallerFactory marshallerFactory;
     private final RemoteAsyncInvocationCancelStatusService remoteAsyncInvocationCancelStatus;
 
-    MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final org.jboss.marshalling.MarshallerFactory marshallerFactory, final ExecutorService executorService,
+    public MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final org.jboss.marshalling.MarshallerFactory marshallerFactory, final ExecutorService executorService,
                                    final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus) {
         super(deploymentRepository);
         this.marshallerFactory = marshallerFactory;
@@ -242,7 +242,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         if (weakAffinity != null) {
                             attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
                         }
-                        writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments);
+                        writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments, invokedMethod);
                     } catch (Throwable ioe) {
                         boolean isAsyncVoid = componentView.isAsynchronous(invokedMethod) && invokedMethod.getReturnType().equals(Void.TYPE);
                         if (!isAsyncVoid)
@@ -355,7 +355,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         return null;
     }
 
-    private void writeMethodInvocationResponse(final ChannelAssociation channelAssociation, final short invocationId, final Object result, final Map<String, Object> attachments) throws IOException {
+    private void writeMethodInvocationResponse(final ChannelAssociation channelAssociation, final short invocationId, final Object result, final Map<String, Object> attachments, Method invokedMethod) throws IOException {
         final DataOutputStream outputStream;
         final MessageOutputStream messageOutputStream;
         try {
@@ -363,7 +363,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         } catch (Throwable e) {
             throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
-        outputStream = new DataOutputStream(messageOutputStream);
+        outputStream = wrapMessageOutputStream(messageOutputStream, invokedMethod);
         try {
             // write invocation response header
             outputStream.write(HEADER_METHOD_INVOCATION_RESPONSE);
@@ -377,9 +377,14 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             // finish marshalling
             marshaller.finish();
         } finally {
+            IoUtils.safeClose(outputStream);
+            IoUtils.safeClose(messageOutputStream);
             channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
-            outputStream.close();
         }
+    }
+
+    protected DataOutputStream wrapMessageOutputStream(MessageOutputStream messageOutputStream, Method invokedMethod) throws IOException {
+        return new DataOutputStream(messageOutputStream);
     }
 
 
