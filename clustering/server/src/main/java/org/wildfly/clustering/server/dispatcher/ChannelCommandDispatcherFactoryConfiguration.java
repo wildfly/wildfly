@@ -26,7 +26,7 @@ import org.wildfly.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 
 /**
- * Configuration for a {@link ChannelCommandDispatcherFactoryService}.
+ * Configuration for a {@link ChannelCommandDispatcherFactory}.
  * @author Paul Ferraro
  */
 public interface ChannelCommandDispatcherFactoryConfiguration {

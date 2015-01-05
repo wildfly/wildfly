@@ -32,7 +32,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -41,8 +40,9 @@ import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
-import org.wildfly.clustering.spi.GroupServiceInstaller;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
+import org.wildfly.clustering.spi.GroupBuilderProvider;
 
 /**
  * Handler for JGroups subsystem add operations.
@@ -79,10 +79,10 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
             new AliasServiceBuilder<>(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(ChannelServiceNameFactory.DEFAULT_CHANNEL), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
             new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
 
-            for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
-                Iterator<ServiceName> names = installer.getServiceNames(defaultChannel).iterator();
-                for (ServiceName name : installer.getServiceNames(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
-                    new AliasServiceBuilder<>(name, names.next(), Object.class).build(target).install();
+            for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+                Iterator<Builder<?>> groupBuilders = provider.getBuilders(defaultChannel, null).iterator();
+                for (Builder<?> groupBuilder : provider.getBuilders(ChannelServiceNameFactory.DEFAULT_CHANNEL, null)) {
+                    new AliasServiceBuilder<>(groupBuilder.getServiceName(), groupBuilders.next().getServiceName(), Object.class).build(target).install();
                 }
             }
         }
@@ -105,9 +105,9 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
         String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
         if ((defaultChannel != null) && !defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
 
-            for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
-                for (ServiceName name : installer.getServiceNames(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
-                    context.removeService(name);
+            for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+                for (Builder<?> builder : provider.getBuilders(ChannelServiceNameFactory.DEFAULT_CHANNEL, null)) {
+                    context.removeService(builder.getServiceName());
                 }
             }
 

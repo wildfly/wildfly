@@ -30,7 +30,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.CacheServiceNames;
+import org.wildfly.clustering.spi.CacheGroupServiceName;
 
 public class RegistryInstallerService implements Service<Void> {
 
@@ -44,7 +44,7 @@ public class RegistryInstallerService implements Service<Void> {
     public ServiceBuilder<Void> build(ServiceTarget target) {
         return target.addService(SERVICE_NAME, this)
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, this.collector)
-                .addDependency(CacheServiceNames.REGISTRY.getServiceName(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME), Registry.class, this.registry)
+                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME), Registry.class, this.registry)
         ;
     }
 

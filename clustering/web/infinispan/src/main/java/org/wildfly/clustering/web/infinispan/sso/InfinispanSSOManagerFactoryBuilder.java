@@ -21,30 +21,69 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
+import org.infinispan.Cache;
+import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
-import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilder;
 
-public class InfinispanSSOManagerFactoryBuilder implements SSOManagerFactoryBuilder<TransactionBatch> {
+public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOManagerFactory<A, D, TransactionBatch>>, Value<SSOManagerFactory<A, D, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
 
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
+    private final String host;
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<Cache> cache = new InjectedValue<>();
+    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
+
+    public InfinispanSSOManagerFactoryBuilder(String host) {
+        this.host = host;
+    }
+
     @Override
-    public <A, D> ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target, ServiceName name, String host) {
+    public ServiceName getServiceName() {
+        return ServiceName.JBOSS.append("clustering", "sso", this.host);
+    }
+
+    @Override
+    public ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target) {
         String containerName = DEFAULT_CACHE_CONTAINER;
         String templateCacheName = CacheServiceNameFactory.DEFAULT_CACHE;
-        String cacheName = host;
+        String cacheName = this.host;
 
         new TemplateConfigurationBuilder(containerName, cacheName, templateCacheName).build(target).install();
 
         new CacheBuilder<>(containerName, cacheName).build(target).install();
 
-        return InfinispanSSOManagerFactory.build(target, name, containerName, cacheName);
+        return target.addService(this.getServiceName(), new ValueService<>(this))
+                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
+                .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
+        ;
+    }
+
+    @Override
+    public SSOManagerFactory<A, D, TransactionBatch> getValue() {
+        return new InfinispanSSOManagerFactory<>(this);
+    }
+
+    @Override
+    public <K, V> Cache<K, V> getCache() {
+        return this.cache.getValue();
+    }
+
+    @Override
+    public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
+        return this.affinityFactory.getValue();
     }
 }

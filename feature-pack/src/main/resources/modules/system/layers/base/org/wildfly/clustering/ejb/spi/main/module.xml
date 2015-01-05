@@ -40,5 +40,6 @@
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.ejb.infinispan" services="import" optional="true"/>
+        <module name="org.wildfly.clustering.service"/>
     </dependencies>
 </module>

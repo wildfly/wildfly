@@ -41,6 +41,7 @@
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.extension.undertow"/>
     </dependencies>

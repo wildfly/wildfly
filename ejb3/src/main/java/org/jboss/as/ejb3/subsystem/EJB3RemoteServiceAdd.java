@@ -60,11 +60,12 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.spi.CacheServiceInstaller;
-import org.wildfly.clustering.spi.CacheServiceNameFactory;
-import org.wildfly.clustering.spi.GroupServiceInstaller;
-import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
-import org.wildfly.clustering.spi.LocalGroupServiceInstaller;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.CacheGroupServiceNameFactory;
+import org.wildfly.clustering.spi.GroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -123,11 +124,15 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         if (!rootResource.hasChild(infinispanPath) || !rootResource.getChild(infinispanPath).hasChild(PathElement.pathElement("cache-container", BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME))) {
             // Install services that would normally be installed by this container/cache
             ModuleIdentifier module = Module.forClass(this.getClass()).getIdentifier();
-            for (GroupServiceInstaller installer: ServiceLoader.load(LocalGroupServiceInstaller.class, LocalGroupServiceInstaller.class.getClassLoader())) {
-                installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, module);
+            for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
+                for (Builder<?> builder : provider.getBuilders(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, module)) {
+                    builder.build(target).install();
+                }
             }
-            for (CacheServiceInstaller installer: ServiceLoader.load(LocalCacheServiceInstaller.class, LocalCacheServiceInstaller.class.getClassLoader())) {
-                installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, CacheServiceNameFactory.DEFAULT_CACHE);
+            for (CacheGroupBuilderProvider provider : ServiceLoader.load(LocalCacheGroupBuilderProvider.class, LocalCacheGroupBuilderProvider.class.getClassLoader())) {
+                for (Builder<?> builder : provider.getBuilders(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, CacheGroupServiceNameFactory.DEFAULT_CACHE)) {
+                    builder.build(target).install();
+                }
             }
         }
 

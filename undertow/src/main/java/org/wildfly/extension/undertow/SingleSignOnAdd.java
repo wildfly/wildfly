@@ -70,7 +70,7 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        SingleSignOnManagerService.build(target, managerServiceName, virtualHostServiceName)
+        SingleSignOnManagerService.build(target, managerServiceName, serverName, hostName)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 

@@ -72,9 +72,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
-import org.wildfly.clustering.spi.CacheServiceInstaller;
-import org.wildfly.clustering.spi.ClusteredCacheServiceInstaller;
-import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.ClusteredCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 
 /**
  * Base class for cache add handlers
@@ -145,10 +146,12 @@ public class CacheAddHandler extends AbstractAddStepHandler {
 
         new XAResourceRecoveryBuilder(containerName, cacheName).build(target).install();
 
-        Class<? extends CacheServiceInstaller> installerClass = this.mode.isClustered() ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
-        for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
-            log.debugf("Installing %s for cache %s of container %s", installer.getClass().getSimpleName(), cacheName, containerName);
-            installer.install(target, containerName, cacheName);
+        Class<? extends CacheGroupBuilderProvider> providerClass = this.mode.isClustered() ? ClusteredCacheGroupBuilderProvider.class : LocalCacheGroupBuilderProvider.class;
+        for (CacheGroupBuilderProvider provider : ServiceLoader.load(providerClass, providerClass.getClassLoader())) {
+            log.debugf("Installing %s for cache %s of container %s", provider.getClass().getSimpleName(), cacheName, containerName);
+            for (Builder<?> groupBuilder : provider.getBuilders(containerName, cacheName)) {
+                groupBuilder.build(target).install();
+            }
         }
     }
 
@@ -165,10 +168,10 @@ public class CacheAddHandler extends AbstractAddStepHandler {
             context.removeService(factory.getServiceName(containerName, cacheName));
         }
 
-        Class<? extends CacheServiceInstaller> installerClass = this.mode.isClustered() ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
-        for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
-            for (ServiceName name : installer.getServiceNames(containerName, cacheName)) {
-                context.removeService(name);
+        Class<? extends CacheGroupBuilderProvider> installerClass = this.mode.isClustered() ? ClusteredCacheGroupBuilderProvider.class : LocalCacheGroupBuilderProvider.class;
+        for (CacheGroupBuilderProvider provider : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
+            for (Builder<?> builder : provider.getBuilders(containerName, cacheName)) {
+                context.removeService(builder.getServiceName());
             }
         }
 

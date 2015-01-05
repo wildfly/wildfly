@@ -45,7 +45,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
@@ -60,12 +59,13 @@ import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.spi.CacheServiceInstaller;
-import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
-import org.wildfly.clustering.spi.ClusteredCacheServiceInstaller;
-import org.wildfly.clustering.spi.GroupServiceInstaller;
-import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
-import org.wildfly.clustering.spi.LocalGroupServiceInstaller;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
+import org.wildfly.clustering.spi.ClusteredCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.GroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
  * Add operation handler for /subsystem=infinispan/cache-container=*
@@ -141,18 +141,20 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 new ChannelConnectorBuilder(name).build(target).install();
                 new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channel), ChannelFactory.class).build(target).install();
 
-                for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
-                    log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
-                    Iterator<ServiceName> names = installer.getServiceNames(channel).iterator();
-                    for (ServiceName serviceName : installer.getServiceNames(name)) {
-                        new AliasServiceBuilder<>(serviceName, names.next(), Object.class).build(target).install();
+                for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+                    log.debugf("Installing %s for cache container %s", provider.getClass().getSimpleName(), name);
+                    Iterator<Builder<?>> builders = provider.getBuilders(channel, module).iterator();
+                    for (Builder<?> builder : provider.getBuilders(name, module)) {
+                        new AliasServiceBuilder<>(builder.getServiceName(), builders.next().getServiceName(), Object.class).build(target).install();
                     }
                 }
             }
         } else {
-            for (GroupServiceInstaller installer : ServiceLoader.load(LocalGroupServiceInstaller.class, LocalGroupServiceInstaller.class.getClassLoader())) {
-                log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
-                installer.install(target, name, module);
+            for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
+                log.debugf("Installing %s for cache container %s", provider.getClass().getSimpleName(), name);
+                for (Builder<?> builder : provider.getBuilders(name, module)) {
+                    builder.build(target).install();
+                }
             }
         }
 
@@ -189,9 +191,11 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
 
             new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(name, CacheServiceNameFactory.DEFAULT_CACHE), CacheServiceName.CACHE.getServiceName(name), Cache.class).build(target).install();
 
-            Class<? extends CacheServiceInstaller> installerClass = model.hasDefined(TransportResourceDefinition.PATH.getKey()) ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
-            for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
-                installer.install(target, name, CacheServiceNameFactory.DEFAULT_CACHE);
+            Class<? extends CacheGroupBuilderProvider> providerClass = model.hasDefined(TransportResourceDefinition.PATH.getKey()) ? ClusteredCacheGroupBuilderProvider.class : LocalCacheGroupBuilderProvider.class;
+            for (CacheGroupBuilderProvider installer : ServiceLoader.load(providerClass, providerClass.getClassLoader())) {
+                for (Builder<?> builder : installer.getBuilders(name, CacheServiceNameFactory.DEFAULT_CACHE)) {
+                    builder.build(target).install();
+                }
             }
         }
     }
@@ -207,7 +211,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         }
 
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
-            removeServices(context, ClusteredGroupServiceInstaller.class, name);
+            removeServices(context, ClusteredGroupBuilderProvider.class, name);
 
             context.removeService(new TransportConfigurationBuilder(name).getServiceName());
 
@@ -216,25 +220,25 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 context.removeService(factory.getServiceName(name));
             }
         } else {
-            removeServices(context, LocalGroupServiceInstaller.class, name);
+            removeServices(context, LocalGroupBuilderProvider.class, name);
         }
 
         String defaultCache = ModelNodes.asString(CacheContainerResourceDefinition.DEFAULT_CACHE.resolveModelAttribute(context, model));
 
         if ((defaultCache != null) && !defaultCache.equals(CacheServiceNameFactory.DEFAULT_CACHE)) {
-            Class<? extends CacheServiceInstaller> installerClass = model.hasDefined(TransportResourceDefinition.PATH.getKey()) ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
-            for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
-                for (ServiceName serviceName : installer.getServiceNames(name, CacheServiceNameFactory.DEFAULT_CACHE)) {
-                    context.removeService(serviceName);
+            Class<? extends CacheGroupBuilderProvider> providerClass = model.hasDefined(TransportResourceDefinition.PATH.getKey()) ? ClusteredCacheGroupBuilderProvider.class : LocalCacheGroupBuilderProvider.class;
+            for (CacheGroupBuilderProvider provider : ServiceLoader.load(providerClass, providerClass.getClassLoader())) {
+                for (Builder<?> builder : provider.getBuilders(name, CacheServiceNameFactory.DEFAULT_CACHE)) {
+                    context.removeService(builder.getServiceName());
                 }
             }
         }
     }
 
-    private static <I extends GroupServiceInstaller> void removeServices(OperationContext context, Class<I> installerClass, String group) {
-        for (I installer: ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
-            for (ServiceName name: installer.getServiceNames(group)) {
-                context.removeService(name);
+    private static <I extends GroupBuilderProvider> void removeServices(OperationContext context, Class<I> providerClass, String group) {
+        for (I provider: ServiceLoader.load(providerClass, providerClass.getClassLoader())) {
+            for (Builder<?> builder : provider.getBuilders(group, null)) {
+                context.removeService(builder.getServiceName());
             }
         }
     }

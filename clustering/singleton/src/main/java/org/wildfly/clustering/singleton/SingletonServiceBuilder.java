@@ -23,18 +23,15 @@ package org.wildfly.clustering.singleton;
 
 import java.io.Serializable;
 
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * Builds a singleton service.
  * @author Paul Ferraro
  * @param <T> the singleton service value type
  */
-public interface SingletonServiceBuilder<T extends Serializable> {
+public interface SingletonServiceBuilder<T extends Serializable> extends Builder<T> {
     SingletonServiceBuilder<T> requireQuorum(int quorum);
 
     SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy policy);
-
-    ServiceBuilder<T> build(ServiceTarget target);
 }

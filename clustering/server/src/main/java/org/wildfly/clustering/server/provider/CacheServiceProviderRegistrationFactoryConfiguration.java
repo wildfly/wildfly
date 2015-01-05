@@ -31,7 +31,7 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 
 /**
- * Configuration for a {@link CacheServiceProviderRegistrationFactoryService}.
+ * Configuration for a {@link CacheServiceProviderRegistrationFactoryBuilder}.
  * @author Paul Ferraro
  */
 public interface CacheServiceProviderRegistrationFactoryConfiguration {

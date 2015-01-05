@@ -31,14 +31,15 @@ import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ejb.BeanContext;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
+import org.wildfly.clustering.ejb.BeanManagerFactory;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderProvider;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactoryProvider;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * Service that returns a distributable {@link org.jboss.as.ejb3.cache.CacheFactoryBuilder}.
@@ -53,21 +54,26 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     }
 
     private final String name;
-    private final BeanManagerFactoryBuilder<UUID, K, Batch> builder;
+    private final BeanManagerFactoryBuilderFactory<UUID, K, Batch> builder;
     private final BeanManagerFactoryBuilderConfiguration config;
 
     public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderConfiguration config) {
         this(name, load(), config);
     }
 
-    private static BeanManagerFactoryBuilderProvider<Batch> load() {
-        for (BeanManagerFactoryBuilderProvider<Batch> provider: ServiceLoader.load(BeanManagerFactoryBuilderProvider.class, BeanManagerFactoryBuilderProvider.class.getClassLoader())) {
+    private static BeanManagerFactoryBuilderFactoryProvider<Batch> load() {
+        for (BeanManagerFactoryBuilderFactoryProvider<Batch> provider: ServiceLoader.load(BeanManagerFactoryBuilderFactoryProvider.class, BeanManagerFactoryBuilderFactoryProvider.class.getClassLoader())) {
             return provider;
+        }
+        try {
+            BeanManagerFactoryBuilderFactoryProvider.class.getClassLoader().loadClass("org.wildfly.clustering.ejb.infinispan.InfinispanBeanManagerFactoryBuilderFactoryProvider").newInstance();
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderProvider<Batch> provider, BeanManagerFactoryBuilderConfiguration config) {
+    public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderFactoryProvider<Batch> provider, BeanManagerFactoryBuilderConfiguration config) {
         this.name = name;
         this.config = config;
         this.builder = provider.<UUID, K>getBeanManagerFactoryBuilder(name, config);
@@ -89,17 +95,15 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
 
     @Override
     public void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName) {
-        this.builder.installDeploymentUnitDependencies(target, deploymentUnitServiceName);
+        for (Builder<?> builder : this.builder.getDeploymentBuilders(deploymentUnitServiceName)) {
+            builder.build(target).install();
+        }
     }
 
     @Override
     public ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName serviceName, BeanContext context, StatefulTimeoutInfo statefulTimeout) {
-        ServiceName factoryServiceName = serviceName.append(this.name, "bean-manager");
-        this.builder.build(target, factoryServiceName, context)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-        return DistributableCacheFactoryService.build(target, serviceName, factoryServiceName);
+        Builder<? extends BeanManagerFactory<UUID, K, V, Batch>> builder = this.builder.getBeanManagerFactoryBuilder(context);
+        return new DistributableCacheFactoryService<>(serviceName, builder).build(target);
     }
 
     @Override

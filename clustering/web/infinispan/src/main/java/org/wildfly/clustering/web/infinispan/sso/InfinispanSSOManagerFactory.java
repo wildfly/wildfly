@@ -25,16 +25,9 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
@@ -47,33 +40,18 @@ import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
 public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManagerFactory<A, D, TransactionBatch>> implements SSOManagerFactory<A, D, TransactionBatch> {
 
-    public static <A, D> ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
-        InfinispanSSOManagerFactory<A, D> service = new InfinispanSSOManagerFactory<>();
-        return target.addService(name, service)
-                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, service.cache)
-                .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, service.affinityFactory)
-        ;
-    }
+    private final InfinispanSSOManagerFactoryConfiguration configuration;
 
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
-
-    private InfinispanSSOManagerFactory() {
-        // Hide
-    }
-
-    @Override
-    public SSOManagerFactory<A, D, TransactionBatch> getValue() {
-        return this;
+    public InfinispanSSOManagerFactory(InfinispanSSOManagerFactoryConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     @Override
     public <L> SSOManager<A, D, L, TransactionBatch> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
-        Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache = this.cache.getValue();
-        Cache<CoarseSessionsKey, Map<D, String>> sessionsCache = this.cache.getValue();
+        Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache = this.configuration.getCache();
+        Cache<CoarseSessionsKey, Map<D, String>> sessionsCache = this.configuration.getCache();
         SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(authenticationCache, sessionsCache, localContextFactory);
-        IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, authenticationCache, this.affinityFactory.getValue());
+        IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, authenticationCache, this.configuration.getKeyAffinityServiceFactory());
         Batcher<TransactionBatch> batcher = new InfinispanBatcher(authenticationCache);
         return new InfinispanSSOManager<>(factory, idFactory, batcher);
     }

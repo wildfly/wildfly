@@ -32,7 +32,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 
 /**
- * Configuration for a {@link CacheRegistryFactoryService}.
+ * Configuration for a {@link CacheRegistryFactoryBuilder}.
  * @author Paul Ferraro
  */
 public interface CacheRegistryFactoryConfiguration<K, V> {

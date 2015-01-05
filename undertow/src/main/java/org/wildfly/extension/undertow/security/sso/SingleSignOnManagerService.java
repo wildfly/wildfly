@@ -32,6 +32,7 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * Service that provides a {@link io.undertow.security.impl.SingleSignOnManager}
@@ -39,11 +40,11 @@ import org.wildfly.extension.undertow.Host;
  */
 public class SingleSignOnManagerService implements Service<io.undertow.security.impl.SingleSignOnManager> {
 
-    public static ServiceBuilder<io.undertow.security.impl.SingleSignOnManager> build(ServiceTarget target, ServiceName name, ServiceName hostName) {
+    public static ServiceBuilder<io.undertow.security.impl.SingleSignOnManager> build(ServiceTarget target, ServiceName name, String serverName, String hostName) {
         ServiceName factoryName = name.append("factory");
         DistributableSingleSignOnManagerFactoryBuilder builder = new DistributableSingleSignOnManagerFactoryBuilderValue().getValue();
         if (builder != null) {
-            builder.build(target, factoryName, hostName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+            builder.build(target, factoryName, serverName, hostName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         } else {
             SingleSignOnManagerFactory factory = new InMemorySingleSignOnManagerFactory();
             target.addService(factoryName, new ValueService<>(new ImmediateValue<>(factory))).install();
@@ -51,7 +52,7 @@ public class SingleSignOnManagerService implements Service<io.undertow.security.
         SingleSignOnManagerService service = new SingleSignOnManagerService();
         return target.addService(name, service)
                 .addDependency(factoryName, SingleSignOnManagerFactory.class, service.factory)
-                .addDependency(hostName, Host.class, service.host)
+                .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class, service.host)
         ;
     }
 

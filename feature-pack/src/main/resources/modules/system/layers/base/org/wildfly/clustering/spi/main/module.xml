@@ -35,5 +35,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.server" services="import"/>
+        <module name="org.wildfly.clustering.service"/>
     </dependencies>
 </module>

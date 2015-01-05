@@ -58,9 +58,9 @@ import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
-import org.wildfly.clustering.spi.CacheServiceNameFactory;
-import org.wildfly.clustering.spi.CacheServiceNames;
-import org.wildfly.clustering.spi.GroupServiceNames;
+import org.wildfly.clustering.spi.CacheGroupServiceNameFactory;
+import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.spi.GroupServiceName;
 
 /**
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
@@ -98,7 +98,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName) {
-        return this.build(target, containerName, CacheServiceNameFactory.DEFAULT_CACHE);
+        return this.build(target, containerName, CacheGroupServiceNameFactory.DEFAULT_CACHE);
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName, String cacheName) {
@@ -115,9 +115,9 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
         };
         final ServiceBuilder<T> singletonBuilder = new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
                 .addAliases(this.singletonServiceName.append("singleton"))
-                .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, this.group)
-                .addDependency(CacheServiceNames.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, cacheName), ServiceProviderRegistrationFactory.class, this.registrationFactory)
-                .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
+                .addDependency(CacheGroupServiceName.GROUP.getServiceName(containerName, cacheName), Group.class, this.group)
+                .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, cacheName), ServiceProviderRegistrationFactory.class, this.registrationFactory)
+                .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addListener(listener)
         ;
         // Add dependencies to the target service builder, but install should return the installed singleton controller
