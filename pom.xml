@@ -217,7 +217,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
-        <version.org.wildfly.build-tools>1.0.0.Alpha6</version.org.wildfly.build-tools>
+        <version.org.wildfly.build-tools>1.0.0.Alpha8</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.1.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>1.0.0.Alpha15</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.Alpha4</version.org.wildfly.arquillian>
