@@ -60,10 +60,12 @@ public class WeldApplication extends ForwardingApplication {
     }
 
     private void init() {
-        if (!initialized &&  beanManager() != null) {
+        if (!initialized) {
             synchronized (this) {
-                if(!initialized &&  beanManager() != null) {
-                    elResolver.setDelegate(beanManager().getELResolver());
+                if(!initialized) {
+                    if(beanManager() != null) {
+                        elResolver.setDelegate(beanManager().getELResolver());
+                    }
                     initialized = true;
                 }
             }
@@ -78,10 +80,10 @@ public class WeldApplication extends ForwardingApplication {
 
     @Override
     public ExpressionFactory getExpressionFactory() {
-        init();
         // may be improved for thread safety, but right now the only risk is to invoke wrapExpressionFactory
         // multiple times for concurrent threads. This is ok, as the call is
         if (expressionFactory == null) {
+            init();
             synchronized (this) {
                 if (expressionFactory == null) {
                     BeanManager bm = beanManager();
