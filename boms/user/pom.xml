@@ -33,7 +33,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
-    <version>8.2.1.Final</version>
+    <version>8.2.2.Final-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
