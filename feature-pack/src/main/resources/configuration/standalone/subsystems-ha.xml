@@ -26,7 +26,7 @@
         <subsystem>resource-adapters.xml</subsystem>
         <subsystem>request-controller.xml</subsystem>
         <subsystem>sar.xml</subsystem>
-        <subsystem include-if-set="security.manager">security-manager.xml</subsystem>
+        <subsystem>security-manager.xml</subsystem>
         <subsystem>security.xml</subsystem>
         <subsystem>transactions.xml</subsystem>
         <subsystem supplement="ha">undertow.xml</subsystem>

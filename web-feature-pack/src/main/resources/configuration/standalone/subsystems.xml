@@ -9,6 +9,7 @@
        <subsystem supplement="web-build">naming.xml</subsystem>
        <subsystem>request-controller.xml</subsystem>
        <subsystem supplement="web-build">security.xml</subsystem>
+       <subsystem>security-manager.xml</subsystem>
        <subsystem>undertow.xml</subsystem>
    </subsystems>
 </config>

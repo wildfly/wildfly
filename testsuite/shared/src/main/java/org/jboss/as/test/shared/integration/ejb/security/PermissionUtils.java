@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Permission;
 
+import nu.xom.Attribute;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
@@ -40,13 +41,15 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 public final class PermissionUtils {
     public static Asset createPermissionsXmlAsset(Permission... permissions) {
         final Element permissionsElement = new Element("permissions");
+        permissionsElement.setNamespaceURI("http://xmlns.jcp.org/xml/ns/javaee");
+        permissionsElement.addAttribute(new Attribute("version", "7"));
         for (Permission permission : permissions) {
             final Element permissionElement = new Element("permission");
 
-            final Element classNameElement = new Element("classname");
+            final Element classNameElement = new Element("class-name");
             final Element nameElement = new Element("name");
             classNameElement.appendChild(permission.getClass().getName());
-            classNameElement.appendChild(permission.getName());
+            nameElement.appendChild(permission.getName());
             permissionElement.appendChild(classNameElement);
             permissionElement.appendChild(nameElement);
 
@@ -56,6 +59,7 @@ public final class PermissionUtils {
                 actionsElement.appendChild(actions);
                 permissionElement.appendChild(actionsElement);
             }
+            permissionsElement.appendChild(permissionElement);
         }
         Document document = new Document(permissionsElement);
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
