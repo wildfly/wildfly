@@ -163,14 +163,14 @@
         <version.org.jboss.hal.release-stream>2.5.2.Final</version.org.jboss.hal.release-stream>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.1.4.1</version.org.jboss.byteman>
-        <version.org.jboss.classfilewriter>1.0.3.Final-redhat-1</version.org.jboss.classfilewriter>
-        <version.org.jboss.common.jboss-common-beans>1.1.0.Final-redhat-1</version.org.jboss.common.jboss-common-beans>
+        <version.org.jboss.classfilewriter>1.0.3.Final-redhat-2</version.org.jboss.classfilewriter>
+        <version.org.jboss.common.jboss-common-beans>1.1.0.Final-redhat-2</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.jboss-common-core>2.2.17.GA-redhat-2</version.org.jboss.jboss-common-core>
         <version.org.jboss.com.sun.httpserver>1.0.4.Final-redhat-1</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.27.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.1.0.redhat-1</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>1.0.7.Final-redhat-1</version.org.jboss.genericjms>
-        <version.org.jboss.iiop-client>1.0.0.Final-redhat-2</version.org.jboss.iiop-client>
+        <version.org.jboss.iiop-client>1.0.0.Final-redhat-3</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.1.2.Final-redhat-1</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.0.30.Final-redhat-1</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.2.2.Final-redhat-1</version.org.jboss.jandex>
@@ -179,7 +179,7 @@
         <version.org.jboss.jbossts>4.17.29.Final</version.org.jboss.jbossts>
         <version.org.jboss.jboss-vfs>3.2.9.Final</version.org.jboss.jboss-vfs>
         <version.org.jboss.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit>
-        <version.org.jboss.logging.jboss-logging>3.1.4.GA-redhat-1</version.org.jboss.logging.jboss-logging>
+        <version.org.jboss.logging.jboss-logging>3.1.4.GA-redhat-2</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-processor>1.1.0.Final</version.org.jboss.logging.jboss-logging-processor>
         <version.org.jboss.logmanager.jboss-logmanager>1.5.4.Final-redhat-1</version.org.jboss.logmanager.jboss-logmanager>
         <version.org.jboss.logmanager.log4j-jboss-logmanager>1.1.1.Final-redhat-1</version.org.jboss.logmanager.log4j-jboss-logmanager>
@@ -209,23 +209,23 @@
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.3.GA-redhat-1</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.logging.jul-to-slf4j-stub>1.0.1.Final-redhat-1</version.org.jboss.logging.jul-to-slf4j-stub>
         <!-- Include the artifactId for org.jboss.spec project versions because artifactId contains the API spec version -->
-        <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
-        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>1.0.2.Final-redhat-2</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>
+        <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
+        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>1.0.2.Final-redhat-3</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>
         <version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>1.0.4.Final-redhat-1</version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>
-        <version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>
+        <version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.1_spec>2.1.28.Final-redhat-1</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.1_spec>
-        <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>
-        <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
+        <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>
+        <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
-        <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
-        <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.4.Final-redhat-2</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
+        <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
+        <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.4.Final-redhat-3</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.3.Final-redhat-1</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_2.5_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.servlet.jboss-servlet-api_2.5_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.2.Final-redhat-1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.2.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
         <version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>1.0.6.Final-redhat-1</version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>
-        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>
+        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>
         <version.org.jboss.spec.javax.ws.rs.jboss-jaxrs-api_1.1_spec>1.0.1.Final-redhat-3</version.org.jboss.spec.javax.ws.rs.jboss-jaxrs-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.4.Final-redhat-2</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>1.0.2.Final-redhat-3</version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>
