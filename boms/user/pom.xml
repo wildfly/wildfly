@@ -77,7 +77,7 @@
         <version.org.jboss.logging.processor>1.2.0.Final</version.org.jboss.logging.processor>
         <version.org.jboss.resteasy>3.0.10.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.negotiation>2.2.7.Final</version.org.jboss.security.negotiation>
-        <version.org.jboss.spec.jboss.javaee.7.0>1.0.0.Final</version.org.jboss.spec.jboss.javaee.7.0>
+        <version.org.jboss.spec.jboss.javaee.7.0>1.0.2.Final</version.org.jboss.spec.jboss.javaee.7.0>
         <version.org.jboss.shrinkwrap.resolver>2.0.0</version.org.jboss.shrinkwrap.resolver>
         <version.org.picketlink>2.6.0.Final</version.org.picketlink>
 
