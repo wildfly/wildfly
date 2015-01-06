@@ -65,14 +65,6 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Enforce correct JUnit version. -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${version.junit}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!--  Resteasy BOM -->
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
