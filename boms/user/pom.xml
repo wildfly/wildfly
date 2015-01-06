@@ -25,6 +25,12 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>16</version>
+    </parent>
+
     <groupId>org.wildfly.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
     <version>8.2.1.Final-SNAPSHOT</version>
@@ -101,15 +107,6 @@
         <version.surefire.plugin>2.17</version.surefire.plugin>
         <version.org.wildfly.plugins.maven.plugin>1.0.2.Final</version.org.wildfly.plugins.maven.plugin>
 
-
-        <!-- Repository Deployment URLs -->
-
-        <jboss.releases.repo.url>
-            https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/
-        </jboss.releases.repo.url>
-        <jboss.snapshots.repo.url>
-            https://repository.jboss.org/nexus/content/repositories/snapshots/
-        </jboss.snapshots.repo.url>
     </properties>
 
     <modules>
@@ -124,17 +121,5 @@
         <module>jboss-javaee-7.0-with-transactions</module>
     </modules>
 
-    <distributionManagement>
-        <repository>
-            <id>jboss-releases-repository</id>
-            <name>JBoss Releases Repository</name>
-            <url>${jboss.releases.repo.url}</url>
-        </repository>
-        <snapshotRepository>
-            <id>jboss-snapshots-repository</id>
-            <name>JBoss Snapshots Repository</name>
-            <url>${jboss.snapshots.repo.url}</url>
-        </snapshotRepository>
-    </distributionManagement>
 
 </project>
