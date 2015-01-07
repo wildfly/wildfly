@@ -469,14 +469,20 @@ public class GlobalOperationHandlers {
             return null;
         }
         if (len == 5) {
-            return new Locale(unparsed.substring(0, 2), unparsed.substring(3));
+            return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed.substring(0, 2), unparsed.substring(3)));
         }
 
         if (!isLocaleSeparator(unparsed.charAt(5))) {
             reportInvalidLocaleFormat(context, unparsed);
             return null;
         }
-        return new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6));
+        return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6)));
+    }
+
+    private static final String ENGLISH = new Locale("en").getLanguage();
+
+    static Locale replaceByRootLocaleIfLanguageIsEnglish(Locale locale) {
+        return (locale.getLanguage().equals(ENGLISH) ? Locale.ROOT : locale);
     }
 
     static boolean getRecursive(OperationContext context, ModelNode op) throws OperationFailedException
