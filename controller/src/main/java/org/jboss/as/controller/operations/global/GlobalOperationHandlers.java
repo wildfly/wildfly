@@ -437,46 +437,12 @@ public class GlobalOperationHandlers {
             return null;
         }
         String unparsed = normalizeLocale(operation.get(GlobalOperationAttributes.LOCALE.getName()).asString());
-        int len = unparsed.length();
-        if (len != 2 && len != 5 && len < 7) {
-            reportInvalidLocaleFormat(context, unparsed);
+        try {
+            return LocaleResolver.resolveLocale(unparsed);
+        } catch (IllegalArgumentException e) {
+            reportInvalidLocaleFormat(context, e.getMessage());
             return null;
         }
-
-        char char0 = unparsed.charAt(0);
-        char char1 = unparsed.charAt(1);
-        if (char0 < 'a' || char0 > 'z' || char1 < 'a' || char1 > 'z') {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
-        }
-        if (len == 2) {
-            return new Locale(unparsed, "");
-        }
-
-        if (!isLocaleSeparator(unparsed.charAt(2))) {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
-        }
-        char char3 = unparsed.charAt(3);
-        if (isLocaleSeparator(char3)) {
-            // no country
-            return new Locale(unparsed.substring(0, 2), "", unparsed.substring(4));
-        }
-
-        char char4 = unparsed.charAt(4);
-        if (char3 < 'A' || char3 > 'Z' || char4 < 'A' || char4 > 'Z') {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
-        }
-        if (len == 5) {
-            return new Locale(unparsed.substring(0, 2), unparsed.substring(3));
-        }
-
-        if (!isLocaleSeparator(unparsed.charAt(5))) {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
-        }
-        return new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6));
     }
 
     static boolean getRecursive(OperationContext context, ModelNode op) throws OperationFailedException
@@ -518,10 +484,6 @@ public class GlobalOperationHandlers {
 
     private static String normalizeLocale(String toNormalize) {
         return ("zh_Hans".equalsIgnoreCase(toNormalize) || "zh-Hans".equalsIgnoreCase(toNormalize)) ? "zh_CN" : toNormalize;
-    }
-
-    private static boolean isLocaleSeparator(char ch) {
-        return ch == '-' || ch == '_';
     }
 
     private static void reportInvalidLocaleFormat(OperationContext context, String format) {
