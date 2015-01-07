@@ -45,6 +45,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -67,6 +68,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.JChannel;
+import org.jgroups.stack.Configurator;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -235,11 +237,13 @@ class HornetQService implements Service<HornetQServer> {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
                     if (jgroupFactories.containsKey(key)) {
-                        ChannelFactory channelFactory = jgroupFactories.get(key);
+                        JChannelFactory channelFactory = (JChannelFactory) jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        JChannel channel = (JChannel) channelFactory.createChannel(channelName);
-                        channels.put(channelName, channel);
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channel, channelName));
+
+                        List<org.jgroups.conf.ProtocolConfiguration> nativeList = channelFactory.getProtocolStack();
+                        String nativeJGroupsConfigString = Configurator.printConfigurations(nativeList);
+
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channelName, nativeJGroupsConfigString));
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
@@ -259,14 +263,13 @@ class HornetQService implements Service<HornetQServer> {
                     final String key = "discovery" + name;
                     DiscoveryGroupConfiguration config = null;
                     if (jgroupFactories.containsKey(key)) {
-                        ChannelFactory channelFactory = jgroupFactories.get(key);
+                        JChannelFactory channelFactory = (JChannelFactory) jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        JChannel channel = channels.get(channelName);
-                        if (channel == null) {
-                            channel = (JChannel) channelFactory.createChannel(key);
-                            channels.put(channelName, channel);
-                        }
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channel, channelName);
+
+                        List<org.jgroups.conf.ProtocolConfiguration> nativeList = channelFactory.getProtocolStack();
+                        String nativeJGroupsConfigString = Configurator.printConfigurations(nativeList);
+
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channelName, nativeJGroupsConfigString);
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
