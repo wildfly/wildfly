@@ -23,11 +23,14 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -47,6 +50,7 @@ import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.filter.PathFilters;
+import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
@@ -61,6 +65,8 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author Thomas.Diesler@jboss.com
  */
 public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor {
+
+    private static final String TEMP_DIR = "jboss.server.temp.dir";
 
     public static final String WEB_INF_LIB = "WEB-INF/lib";
     public static final String WEB_INF_CLASSES = "WEB-INF/classes";
@@ -127,6 +133,22 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         final WarMetaData warMetaData = new WarMetaData();
         warMetaData.setSharedWebMetaData(sharedWebMetaData);
         deploymentUnit.putAttachment(WarMetaData.ATTACHMENT_KEY, warMetaData);
+
+        String deploymentName;
+        if(deploymentUnit.getParent() == null) {
+            deploymentName = deploymentUnit.getName();
+        } else {
+            deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
+        }
+
+        PathManager pathManager = deploymentUnit.getAttachment(Attachments.PATH_MANAGER);
+
+        File tempDir = new File(pathManager.getPathEntry(TEMP_DIR).resolvePath(), deploymentName);
+        tempDir.mkdirs();
+        warMetaData.setTempDir(tempDir);
+
+        moduleSpecification.addPermissionFactory(new ImmediatePermissionFactory(new FilePermission(tempDir.getAbsolutePath() + File.separatorChar + "-", "read,write,delete")));
+
         // Add the shared TLDs metadata
         final TldsMetaData tldsMetaData = new TldsMetaData();
         tldsMetaData.setSharedTlds(sharedTldsMetaData);
