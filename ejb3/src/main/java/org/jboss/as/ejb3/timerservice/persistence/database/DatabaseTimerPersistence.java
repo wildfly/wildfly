@@ -517,6 +517,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getTimedObjectInvoker().getValue().getClassLoader());
                 if (timeoutMethod == null) {
                     EjbLogger.ROOT_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), new NoSuchMethodException());
+                    return null;
                 }
                 cb.setTimeoutMethod(timeoutMethod);
             }

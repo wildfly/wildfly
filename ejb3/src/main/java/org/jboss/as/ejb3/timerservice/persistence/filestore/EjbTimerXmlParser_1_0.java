@@ -41,6 +41,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -274,10 +275,17 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                         if (loadableElements.primaryKey != null) {
                             builder.setPrimaryKey(deserialize(loadableElements.primaryKey));
                         }
-                        if (loadableElements.className != null) {
-                            builder.setTimeoutMethod(CalendarTimer.getTimeoutMethod(new TimeoutMethod(loadableElements.className, loadableElements.methodName, loadableElements.params.toArray(new String[loadableElements.params.size()])), classLoader));
+                        if (loadableElements.methodName != null) {
+                            Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(loadableElements.className, loadableElements.methodName, loadableElements.params.toArray(new String[loadableElements.params.size()])), classLoader);
+                            if(timeoutMethod != null) {
+                                builder.setTimeoutMethod(timeoutMethod);
+                                timers.add(builder.build(timerService));
+                            } else {
+                                EjbLogger.ROOT_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), null);
+                            }
+                        } else {
+                            timers.add(builder.build(timerService));
                         }
-                        timers.add(builder.build(timerService));
                     } catch (Exception e) {
                         EjbLogger.ROOT_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), e);
                     }

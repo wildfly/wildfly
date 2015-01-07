@@ -3031,4 +3031,5 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 465, value = "Invalid client descriptor configuration: 'profile' and 'remoting-ejb-receivers' cannot be used together")
     DeploymentUnitProcessingException profileAndRemotingEjbReceiversUsedTogether();
+
 }
