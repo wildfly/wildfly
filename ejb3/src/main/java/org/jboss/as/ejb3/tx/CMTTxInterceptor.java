@@ -156,7 +156,6 @@ public class CMTTxInterceptor implements Interceptor {
             } else if (t instanceof NoSuchEJBException || t instanceof NoSuchEntityException) {
                 // If this is an NoSuchEJBException, pass through to the caller
                 toThrow = (Exception) t;
-                // TODO WFLY-2967 even if we log-and-throw some stuff should this case be one?
             } else if (t instanceof RuntimeException) {
                 toThrow = new EJBTransactionRolledbackException(t.getMessage(), (Exception) t);
             } else {// application exception
@@ -167,8 +166,6 @@ public class CMTTxInterceptor implements Interceptor {
         }
 
         setRollbackOnly(tx);
-        // TODO WFLY-2967 remove this log-and-throw below, change msg to DEBUG or limit its scope to certain cases
-        EjbLogger.ROOT_LOGGER.failureInCallerTransaction(t); // log orig 't' not noisier wrapper created above
         throw toThrow;
     }
 
