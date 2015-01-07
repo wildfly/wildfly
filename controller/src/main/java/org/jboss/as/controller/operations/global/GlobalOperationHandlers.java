@@ -437,48 +437,54 @@ public class GlobalOperationHandlers {
             return null;
         }
         String unparsed = normalizeLocale(operation.get(GlobalOperationAttributes.LOCALE.getName()).asString());
+        try {
+            return resolveLocale(unparsed);
+        } catch (IllegalArgumentException e) {
+            reportInvalidLocaleFormat(context, e.getMessage());
+            return null;
+        }
+    }
+
+    static Locale resolveLocale(String unparsed) throws IllegalArgumentException {
         int len = unparsed.length();
         if ( len < 1 || len > 7 ) {
             throw new IllegalArgumentException(unparsed);
         }
 
         if (len != 2 && len != 5 && len < 7) {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
+            throw new IllegalArgumentException(unparsed);
         }
 
         char char0 = unparsed.charAt(0);
         char char1 = unparsed.charAt(1);
         if (char0 < 'a' || char0 > 'z' || char1 < 'a' || char1 > 'z') {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
+            throw new IllegalArgumentException(unparsed);
         }
         if (len == 2) {
-            return new Locale(unparsed, "");
+            return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed, ""));
         }
 
         if (!isLocaleSeparator(unparsed.charAt(2))) {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
+            throw new IllegalArgumentException(unparsed);
         }
+
         char char3 = unparsed.charAt(3);
         if (isLocaleSeparator(char3)) {
             // no country
-            return new Locale(unparsed.substring(0, 2), "", unparsed.substring(4));
+            return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed.substring(0, 2), "", unparsed.substring(4)));
         }
 
         char char4 = unparsed.charAt(4);
         if (char3 < 'A' || char3 > 'Z' || char4 < 'A' || char4 > 'Z') {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
+            throw new IllegalArgumentException(unparsed);
         }
+
         if (len == 5) {
             return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed.substring(0, 2), unparsed.substring(3)));
         }
 
         if (!isLocaleSeparator(unparsed.charAt(5))) {
-            reportInvalidLocaleFormat(context, unparsed);
-            return null;
+            throw new IllegalArgumentException(unparsed);
         }
         return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6)));
     }
