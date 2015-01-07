@@ -46,7 +46,12 @@ set "CLASSPATH=%CLASSPATH%;%JBOSS_HOME%\bin\client\jboss-cli-client.jar"
 
 rem echo %CLASSPATH%
 
-"%JAVA_HOME%\bin\jconsole.exe" "-J-Djava.class.path=%CLASSPATH%"
+rem Set default module root paths
+if "x%JBOSS_MODULEPATH%" == "x" (
+  set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
+)
+
+"%JAVA_HOME%\bin\jconsole.exe" "-J-Djava.class.path=%CLASSPATH%" "-J-Dmodule.path=%JBOSS_MODULEPATH%"
 
 :END
 goto :EOF
