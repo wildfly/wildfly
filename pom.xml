@@ -269,7 +269,7 @@
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.yaml.snakeyaml>1.8.0.redhat-3</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.5.redhat-9</version.sun.jaxb>
-        <version.sun.saaj-impl>1.3.16.redhat-3</version.sun.saaj-impl>
+        <version.sun.saaj-impl>1.3.16.SP1-redhat-1</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.3.redhat-1</version.wsdl4j>
         <version.xml-resolver>1.2.redhat-9</version.xml-resolver> <!-- Apache xml-resolver -->
