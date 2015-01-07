@@ -438,6 +438,10 @@ public class GlobalOperationHandlers {
         }
         String unparsed = normalizeLocale(operation.get(GlobalOperationAttributes.LOCALE.getName()).asString());
         int len = unparsed.length();
+        if ( len < 1 || len > 7 ) {
+            throw new IllegalArgumentException(unparsed);
+        }
+
         if (len != 2 && len != 5 && len < 7) {
             reportInvalidLocaleFormat(context, unparsed);
             return null;
