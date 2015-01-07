@@ -438,61 +438,11 @@ public class GlobalOperationHandlers {
         }
         String unparsed = normalizeLocale(operation.get(GlobalOperationAttributes.LOCALE.getName()).asString());
         try {
-            return resolveLocale(unparsed);
+            return LocaleResolver.resolveLocale(unparsed);
         } catch (IllegalArgumentException e) {
             reportInvalidLocaleFormat(context, e.getMessage());
             return null;
         }
-    }
-
-    static Locale resolveLocale(String unparsed) throws IllegalArgumentException {
-        int len = unparsed.length();
-        if ( len < 1 || len > 7 ) {
-            throw new IllegalArgumentException(unparsed);
-        }
-
-        if (len != 2 && len != 5 && len < 7) {
-            throw new IllegalArgumentException(unparsed);
-        }
-
-        char char0 = unparsed.charAt(0);
-        char char1 = unparsed.charAt(1);
-        if (char0 < 'a' || char0 > 'z' || char1 < 'a' || char1 > 'z') {
-            throw new IllegalArgumentException(unparsed);
-        }
-        if (len == 2) {
-            return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed, ""));
-        }
-
-        if (!isLocaleSeparator(unparsed.charAt(2))) {
-            throw new IllegalArgumentException(unparsed);
-        }
-
-        char char3 = unparsed.charAt(3);
-        if (isLocaleSeparator(char3)) {
-            // no country
-            return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed.substring(0, 2), "", unparsed.substring(4)));
-        }
-
-        char char4 = unparsed.charAt(4);
-        if (char3 < 'A' || char3 > 'Z' || char4 < 'A' || char4 > 'Z') {
-            throw new IllegalArgumentException(unparsed);
-        }
-
-        if (len == 5) {
-            return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed.substring(0, 2), unparsed.substring(3)));
-        }
-
-        if (!isLocaleSeparator(unparsed.charAt(5))) {
-            throw new IllegalArgumentException(unparsed);
-        }
-        return replaceByRootLocaleIfLanguageIsEnglish(new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6)));
-    }
-
-    private static final String ENGLISH = new Locale("en").getLanguage();
-
-    static Locale replaceByRootLocaleIfLanguageIsEnglish(Locale locale) {
-        return (locale.getLanguage().equals(ENGLISH) ? Locale.ROOT : locale);
     }
 
     static boolean getRecursive(OperationContext context, ModelNode op) throws OperationFailedException
@@ -534,10 +484,6 @@ public class GlobalOperationHandlers {
 
     private static String normalizeLocale(String toNormalize) {
         return ("zh_Hans".equalsIgnoreCase(toNormalize) || "zh-Hans".equalsIgnoreCase(toNormalize)) ? "zh_CN" : toNormalize;
-    }
-
-    private static boolean isLocaleSeparator(char ch) {
-        return ch == '-' || ch == '_';
     }
 
     private static void reportInvalidLocaleFormat(OperationContext context, String format) {

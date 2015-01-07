@@ -6,9 +6,7 @@
 package org.jboss.as.controller.operations.global;
 
 import java.util.Locale;
-import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
@@ -56,7 +54,7 @@ public class LocaleResolverTest {
 
     public void invalidLanguageOrCountry(String unparsed) {
         try { 
-            GlobalOperationHandlers.resolveLocale(unparsed);
+            LocaleResolver.resolveLocale(unparsed);
         } catch ( IllegalArgumentException e) {
             assertEquals(unparsed,e.getMessage());
             return; // pass...
@@ -66,8 +64,8 @@ public class LocaleResolverTest {
     
     @Test
     public void wfly3723() {
-        assertEquals("",french, GlobalOperationHandlers.resolveLocale(french.toLanguageTag())); 
-        assertEquals("",german, GlobalOperationHandlers.resolveLocale(german.toLanguageTag())); 
-        assertEquals("",Locale.ROOT, GlobalOperationHandlers.resolveLocale(english.toLanguageTag()));         
+        assertEquals("",french, LocaleResolver.resolveLocale(french.toLanguageTag())); 
+        assertEquals("",german, LocaleResolver.resolveLocale(german.toLanguageTag())); 
+        assertEquals("",Locale.ROOT, LocaleResolver.resolveLocale(english.toLanguageTag()));         
     }
 }
