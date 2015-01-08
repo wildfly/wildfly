@@ -98,7 +98,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             if (fileUrl == null) {
                 throw JaxrsLogger.JAXRS_LOGGER.noSpringIntegrationJar();
             }
-            File dir = new File(fileUrl.getFile());
+            File dir = new File(fileUrl.toURI());
             File file = null;
             for (String jar : dir.list()) {
                 if (jar.endsWith(".jar")) {
