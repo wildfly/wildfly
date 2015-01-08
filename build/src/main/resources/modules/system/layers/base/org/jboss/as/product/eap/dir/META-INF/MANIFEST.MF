@@ -1,4 +1,4 @@
 JBoss-Product-Release-Name: EAP
-JBoss-Product-Release-Version: 6.4.0.Alpha1
+JBoss-Product-Release-Version: 6.4.0.Beta1
 JBoss-Product-Console-Slot: eap
 JBoss-Product-Icon: /icon/Shadowman_RGB_32x32.png
