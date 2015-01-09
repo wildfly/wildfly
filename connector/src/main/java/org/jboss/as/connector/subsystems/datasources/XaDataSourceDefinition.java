@@ -31,6 +31,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DUMP_QUEUED_THREADS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_ADD_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
@@ -133,7 +134,11 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                     if (attribute.equals(STATISTICS_ENABLED)) {
                         resourceRegistration.registerReadWriteAttribute(attribute, null, new ReloadRequiredWriteAttributeHandler());
                     } else {
-                        resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredWriteHandler);
+                        if (attribute.equals(ENABLED)) {
+                            resourceRegistration.registerReadWriteAttribute(attribute, null, new EnableAttributeWriteHandler(true, ENABLED));
+                        } else {
+                            resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredWriteHandler);
+                        }
                     }
 
                 }
