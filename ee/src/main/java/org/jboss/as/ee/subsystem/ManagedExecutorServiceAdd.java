@@ -23,6 +23,7 @@ package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedExecutorServiceAdapter;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -66,7 +67,7 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
         final AbstractManagedExecutorService.RejectPolicy rejectPolicy = AbstractManagedExecutorService.RejectPolicy.valueOf(ManagedExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
 
         final ManagedExecutorServiceService service = new ManagedExecutorServiceService(name, jndiName, hungTaskThreshold, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy);
-        final ServiceBuilder serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedExecutorServiceServiceName(name), service);
+        final ServiceBuilder<ManagedExecutorServiceAdapter> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedExecutorServiceServiceName(name), service);
 
         boolean rcPresent = context.getOriginalRootResource().hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
         String contextService = null;

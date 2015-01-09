@@ -34,8 +34,6 @@ import java.util.List;
  */
 public class TimeoutMethod implements Serializable {
 
-    private Long id;
-
     private String declaringClass;
 
     private String methodName;
@@ -54,10 +52,6 @@ public class TimeoutMethod implements Serializable {
         if (methodParams != null) {
             this.methodParams = new ArrayList<String>(Arrays.asList(methodParams));
         }
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public String getMethodName() {

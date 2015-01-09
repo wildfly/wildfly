@@ -49,7 +49,7 @@ public class OwnableReentrantLock extends AbstractQueuedSynchronizer implements 
 
     private static final long serialVersionUID = 493297473462848792L;
 
-    private final ThreadLocalStack currentRequestor = new ThreadLocalStack();
+    private final ThreadLocalStack<Object> currentRequestor = new ThreadLocalStack<>();
 
     /**
      * Current owner

@@ -70,7 +70,7 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
     public Iterator<RemotingConnectionConfiguration> getConnectionConfigurations() {
         // The jboss-ejb-client.xml will *not* be used for auto creating connections to remote servers.
         // Instead we let the remote-outbound-connection to handle the connection creation/configuration
-        return Collections.EMPTY_SET.iterator();
+        return Collections.<RemotingConnectionConfiguration>emptySet().iterator();
     }
 
     @Override

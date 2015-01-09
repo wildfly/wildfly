@@ -69,12 +69,12 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
-        final ServiceController serviceController = installRuntimeService(context, operation, strictMaxPoolModel, verificationHandler);
+        final ServiceController<PoolConfig> serviceController = installRuntimeService(context, operation, strictMaxPoolModel, verificationHandler);
         // add this to the service controllers
         serviceControllers.add(serviceController);
     }
 
-    ServiceController installRuntimeService(OperationContext context, ModelNode operation, ModelNode strictMaxPoolModel,
+    ServiceController<PoolConfig> installRuntimeService(OperationContext context, ModelNode operation, ModelNode strictMaxPoolModel,
                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         final int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, strictMaxPoolModel).asInt();

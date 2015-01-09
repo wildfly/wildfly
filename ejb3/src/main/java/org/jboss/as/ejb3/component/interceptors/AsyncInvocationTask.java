@@ -34,7 +34,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
  *
 * @author Stuart Douglas
 */
-public abstract class AsyncInvocationTask implements Runnable, Future {
+public abstract class AsyncInvocationTask implements Runnable, Future<Object> {
     private final CancellationFlag cancelledFlag;
 
     private volatile boolean running = false;

@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.concurrency;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 
 import javax.ejb.LockType;
 import javax.interceptor.InvocationContext;
@@ -39,11 +38,6 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
  * @author Jaikiran Pai
  */
 public class ContainerManagedConcurrencyInterceptor implements Interceptor {
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(ContainerManagedConcurrencyInterceptor.class);
 
     /**
      * A spec compliant {@link org.jboss.as.ejb3.concurrency.EJBReadWriteLock}

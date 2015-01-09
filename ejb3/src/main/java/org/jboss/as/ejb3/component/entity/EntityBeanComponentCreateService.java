@@ -55,7 +55,7 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
     private final Class<EJBLocalHome> localHomeClass;
     private final Class<EJBObject> remoteClass;
     private final Class<EJBLocalObject> localClass;
-    private final Class<Object> primaryKeyClass;
+    private final Class<?> primaryKeyClass;
     private final Method ejbStoreMethod;
     private final Method ejbLoadMethod;
     private final Method ejbActivateMethod;
@@ -80,7 +80,7 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
         localHomeClass = (Class<EJBLocalHome>) load(classLoader, beanMetaData.getLocalHome());
         localClass = (Class<EJBLocalObject>) load(classLoader, beanMetaData.getLocal());
         remoteClass = (Class<EJBObject>) load(classLoader, beanMetaData.getRemote());
-        primaryKeyClass = (Class<Object>) load(classLoader, beanMetaData.getPrimKeyClass());
+        primaryKeyClass = (Class<?>) load(classLoader, beanMetaData.getPrimKeyClass());
 
         final ClassLoader classLoader1 = componentConfiguration.getModuleClassLoader();
         final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader1));
@@ -174,7 +174,7 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
         return localClass;
     }
 
-    public Class<Object> getPrimaryKeyClass() {
+    public Class<?> getPrimaryKeyClass() {
         return primaryKeyClass;
     }
 

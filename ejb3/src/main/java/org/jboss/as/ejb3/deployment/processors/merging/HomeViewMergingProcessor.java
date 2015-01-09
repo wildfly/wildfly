@@ -163,7 +163,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
 
 
     private String inferRemoteInterfaceFromHome(final String homeClassName, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription description) throws ClassNotFoundException, DeploymentUnitProcessingException {
-        final Class homeClass = module.getClassLoader().loadClass(homeClassName);
+        final Class<?> homeClass = module.getClassLoader().loadClass(homeClassName);
         final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(homeClass);
         Class<?> remote = null;
         for (final Method method : index.getMethods()) {
@@ -181,7 +181,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
     }
 
     private String inferLocalInterfaceFromLocalHome(final String localHomeClassName, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription description) throws ClassNotFoundException, DeploymentUnitProcessingException {
-        final Class localHomeClass = module.getClassLoader().loadClass(localHomeClassName);
+        final Class<?> localHomeClass = module.getClassLoader().loadClass(localHomeClassName);
         final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(localHomeClass);
         Class<?> localClass = null;
         for (final Method method : index.getMethods()) {

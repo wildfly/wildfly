@@ -45,7 +45,6 @@ import org.jboss.as.ejb3.util.MethodInfoHelper;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.ExcludeListMetaData;
@@ -65,8 +64,6 @@ import org.jboss.metadata.ejb.spec.MethodsMetaData;
  * @author Stuart Douglas
  */
 public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
-
-    private static final Logger logger = Logger.getLogger(MethodPermissionsMergingProcessor.class);
 
     public MethodPermissionsMergingProcessor() {
         super(EJBComponentDescription.class);

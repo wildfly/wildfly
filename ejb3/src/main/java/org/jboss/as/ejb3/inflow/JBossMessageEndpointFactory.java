@@ -40,11 +40,11 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  */
 public class JBossMessageEndpointFactory implements MessageEndpointFactory {
     private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
-    private final MessageEndpointService service;
+    private final MessageEndpointService<?> service;
     private final ProxyFactory<Object> factory;
     private final Class<?> endpointClass;
 
-    public JBossMessageEndpointFactory(final ClassLoader classLoader, final MessageEndpointService service, final Class<Object> ejbClass, final Class<?> messageListenerInterface) {
+    public JBossMessageEndpointFactory(final ClassLoader classLoader, final MessageEndpointService<?> service, final Class<Object> ejbClass, final Class<?> messageListenerInterface) {
         // todo: generics bug; only Object.class is a Class<Object>.  Everything else is Class<? extends Object> aka Class<?>
         this.service = service;
         final ProxyConfiguration<Object> configuration = new ProxyConfiguration<Object>()
