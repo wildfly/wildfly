@@ -10,6 +10,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,7 +36,8 @@ public class ExcludeEjbSubsystemTestCase {
 
     @Test(expected = NameNotFoundException.class)
     public void testEjbNotInstalled() throws NamingException {
-        initialContext.lookup("java:module/" + SimpleEjb.class.getSimpleName());
+        Object result = initialContext.lookup("java:module/" + SimpleEjb.class.getSimpleName());
+        Assert.fail("Expected lookup to fail, instead " + result + " was returned");
     }
 
 
