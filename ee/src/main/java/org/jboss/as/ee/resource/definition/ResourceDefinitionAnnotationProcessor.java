@@ -24,6 +24,8 @@ package org.jboss.as.ee.resource.definition;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -80,22 +82,20 @@ public abstract class ResourceDefinitionAnnotationProcessor implements Deploymen
         if (index == null) {
             return;
         }
+        final List<BindingConfiguration> moduleBindingConfigurations = moduleDescription.getBindingConfigurations();
         final PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
         final DotName annotationName = getAnnotationDotName();
         for (AnnotationInstance annotationInstance : index.getAnnotations(annotationName)) {
-            final List<BindingConfiguration> bindingConfigurations = getAnnotatedClassBindingConfigurations(moduleDescription, annotationInstance);
-            final ResourceDefinitionInjectionSource injectionSource = processAnnotation(annotationInstance, propertyReplacer);
-            bindingConfigurations.add(new BindingConfiguration(injectionSource.getJndiName(),injectionSource));
+            processAnnotation(annotationInstance, propertyReplacer, getAnnotatedClassBindingConfigurations(moduleDescription, annotationInstance), moduleBindingConfigurations, deploymentUnit);
         }
         final DotName collectionAnnotationName = getAnnotationCollectionDotName();
         if (collectionAnnotationName != null) {
             for (AnnotationInstance annotationInstance : index.getAnnotations(collectionAnnotationName)) {
                 final AnnotationInstance[] nestedAnnotationInstances = annotationInstance.value().asNestedArray();
                 if (nestedAnnotationInstances != null && nestedAnnotationInstances.length > 0) {
-                    final List<BindingConfiguration> bindingConfigurations = getAnnotatedClassBindingConfigurations(moduleDescription, annotationInstance);
+                    final List<BindingConfiguration> classBindingConfigurations = getAnnotatedClassBindingConfigurations(moduleDescription, annotationInstance);
                     for (AnnotationInstance nestedAnnotationInstance : nestedAnnotationInstances) {
-                        final ResourceDefinitionInjectionSource injectionSource = processAnnotation(nestedAnnotationInstance, propertyReplacer);
-                        bindingConfigurations.add(new BindingConfiguration(injectionSource.getJndiName(),injectionSource));
+                        processAnnotation(nestedAnnotationInstance, propertyReplacer, classBindingConfigurations, moduleBindingConfigurations, deploymentUnit);
                     }
                 }
             }
@@ -114,6 +114,17 @@ public abstract class ResourceDefinitionAnnotationProcessor implements Deploymen
         }
         final ClassInfo classInfo = (ClassInfo) target;
         return moduleDescription.addOrGetLocalClassDescription(classInfo.name().toString()).getBindingConfigurations();
+    }
+
+    private void processAnnotation(AnnotationInstance annotationInstance, PropertyReplacer propertyReplacer, List<BindingConfiguration> classBindingConfigurations, List<BindingConfiguration> moduleBindingConfigurations, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        final ResourceDefinitionInjectionSource injectionSource = processAnnotation(annotationInstance, propertyReplacer);
+        final BindingConfiguration bindingConfiguration = new BindingConfiguration(injectionSource.getJndiName(),injectionSource);
+        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) || (bindingConfiguration.getName().startsWith("java:") && !bindingConfiguration.getName().startsWith("java:comp"))) {
+            // add it to the module bindings if it's not a component scoped binding, some components, such as app client, will have related classes not processed by module bindings processor
+            moduleBindingConfigurations.add(bindingConfiguration);
+        } else {
+            classBindingConfigurations.add(bindingConfiguration);
+        }
     }
 
     /**
