@@ -218,7 +218,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 if ("-secmgr".equals(arg) || arg.startsWith("-Djava.security.manager")) {
                     useSecMgr = true;
                 } else {
-                    cmd.add(arg);
+                    jbossArgs.add(arg);
                 }
             }
         }
