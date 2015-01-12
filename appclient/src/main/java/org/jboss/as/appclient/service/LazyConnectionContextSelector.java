@@ -25,6 +25,7 @@ package org.jboss.as.appclient.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -38,6 +39,7 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoFuture;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
@@ -99,14 +101,19 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
 
     @Override
     public EJBClientContext getCurrent() {
-        if (clientContext == null) {
-            synchronized (this) {
+        return WildFlySecurityManager.doUnchecked(new PrivilegedAction<EJBClientContext>() {
+            @Override
+            public EJBClientContext run() {
                 if (clientContext == null) {
-                    createConnection();
+                    synchronized (this) {
+                        if (clientContext == null) {
+                            createConnection();
+                        }
+                    }
                 }
+                return clientContext;
             }
-        }
-        return clientContext;
+        });
     }
 
     public synchronized void close() {
