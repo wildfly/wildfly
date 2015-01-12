@@ -23,8 +23,8 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.io.IOException;
 
-import org.jboss.as.clustering.marshalling.MarshalledValue;
-import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.MarshalledValue;
+import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 
 /**
  * Session attribute marshaller that stores attribute values using marshalled values.

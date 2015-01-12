@@ -45,7 +45,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.xnio"/>
-        <module name="org.wildfly.clustering.web.undertow"/>
+        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.extension.mod_cluster"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="org.wildfly.security.manager"/>

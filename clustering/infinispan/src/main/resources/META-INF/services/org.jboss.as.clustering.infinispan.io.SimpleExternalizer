@@ -1,4 +1,0 @@
-org.jboss.as.clustering.infinispan.io.HashableMarshalledValueExternalizer
-org.jboss.as.clustering.infinispan.io.ServiceNameExternalizer
-org.jboss.as.clustering.infinispan.io.SimpleMarshalledValueExternalizer
-org.jboss.as.clustering.infinispan.io.UUIDExternalizer

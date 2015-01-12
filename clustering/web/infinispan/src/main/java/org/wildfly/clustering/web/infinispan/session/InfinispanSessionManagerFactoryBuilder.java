@@ -21,73 +21,109 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.msc.AsynchronousService;
+import org.infinispan.Cache;
+import org.infinispan.remoting.transport.Address;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.spi.GroupServiceName;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 
-/**
- * Service building strategy the Infinispan session manager factory.
- * @author Paul Ferraro
- */
-public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFactoryBuilder<TransactionBatch> {
+public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionManagerFactory<TransactionBatch>>, Value<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration {
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
-    @Override
-    public ServiceBuilder<SessionManagerFactory<TransactionBatch>> buildDeploymentDependency(ServiceTarget target, ServiceName name, SessionManagerConfiguration config) {
-        ServiceName templateCacheServiceName = getCacheServiceName(config.getCacheName());
-        String templateCacheName = templateCacheServiceName.getSimpleName();
-        ServiceName containerServiceName = templateCacheServiceName.getParent();
-        String containerName = containerServiceName.getSimpleName();
-        String cacheName = config.getDeploymentName();
-        ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
-        ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
-
-        SessionCacheConfigurationService.build(target, containerName, cacheName, templateCacheName)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-        final InjectedValue<EmbeddedCacheManager> cacheContainer = new InjectedValue<>();
-        CacheService.Dependencies dependencies = new CacheService.Dependencies() {
-            @Override
-            public EmbeddedCacheManager getCacheContainer() {
-                return cacheContainer.getValue();
-            }
-
-            @Override
-            public XAResourceRecoveryRegistry getRecoveryRegistry() {
-                return null;
-            }
-        };
-        AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
-                .addAliases(InfinispanRouteLocatorService.getCacheServiceAlias(cacheName))
-                .addDependency(cacheConfigurationServiceName)
-                .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-
-        return InfinispanSessionManagerFactory.build(target, name, containerName, cacheName, config);
-    }
-
     private static ServiceName getCacheServiceName(String cacheName) {
-        ServiceName baseServiceName = EmbeddedCacheManagerService.BASE_SERVICE_NAME;
+        ServiceName baseServiceName = CacheContainerServiceName.CACHE_CONTAINER.getServiceName(DEFAULT_CACHE_CONTAINER).getParent();
         ServiceName serviceName = ServiceName.parse((cacheName != null) ? cacheName : DEFAULT_CACHE_CONTAINER);
         if (!baseServiceName.isParentOf(serviceName)) {
             serviceName = baseServiceName.append(serviceName);
         }
-        return (serviceName.length() < 4) ? serviceName.append(CacheContainer.DEFAULT_CACHE_ALIAS) : serviceName;
+        return (serviceName.length() < 4) ? serviceName.append(CacheServiceNameFactory.DEFAULT_CACHE) : serviceName;
+    }
+
+    private final SessionManagerConfiguration configuration;
+
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<Cache> cache = new InjectedValue<>();
+    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
+    private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
+
+    public InfinispanSessionManagerFactoryBuilder(SessionManagerConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return ServiceName.JBOSS.append("clustering", "web", this.configuration.getDeploymentName());
+    }
+
+    @Override
+    public ServiceBuilder<SessionManagerFactory<TransactionBatch>> build(ServiceTarget target) {
+        ServiceName templateCacheServiceName = getCacheServiceName(this.configuration.getCacheName());
+        String templateCacheName = templateCacheServiceName.getSimpleName();
+        String containerName = templateCacheServiceName.getParent().getSimpleName();
+        String cacheName = this.configuration.getDeploymentName();
+
+        new TemplateConfigurationBuilder(containerName, cacheName, templateCacheName).build(target).install();
+
+        new CacheBuilder<>(containerName, cacheName).build(target)
+                .addAliases(InfinispanRouteLocatorBuilder.getCacheServiceAlias(cacheName))
+                .install();
+
+        return target.addService(this.getServiceName(), new ValueService<>(this))
+                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
+                .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
+                .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
+                .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName), NodeFactory.class, this.nodeFactory)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+        ;
+    }
+
+    @Override
+    public SessionManagerFactory<TransactionBatch> getValue() {
+        return new InfinispanSessionManagerFactory(this);
+    }
+
+    @Override
+    public SessionManagerConfiguration getSessionManagerConfiguration() {
+        return this.configuration;
+    }
+
+    @Override
+    public <K, V> Cache<K, V> getCache() {
+        return this.cache.getValue();
+    }
+
+    @Override
+    public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
+        return this.affinityFactory.getValue();
+    }
+
+    @Override
+    public CommandDispatcherFactory getCommandDispatcherFactory() {
+        return this.dispatcherFactory.getValue();
+    }
+
+    @Override
+    public NodeFactory<Address> getNodeFactory() {
+        return this.nodeFactory.getValue();
     }
 }

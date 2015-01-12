@@ -26,11 +26,11 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
-import org.jboss.as.clustering.marshalling.SimpleClassTable;
-import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
+import org.wildfly.clustering.marshalling.SimpleClassTable;
+import org.wildfly.clustering.marshalling.VersionedMarshallingConfiguration;
 
 /**
  * Versioned session attribute marshalling context.
@@ -42,7 +42,8 @@ public class SessionAttributeMarshallingContext implements VersionedMarshallingC
     private final Map<Integer, MarshallingConfiguration> configurations = new ConcurrentHashMap<>();
 
     public SessionAttributeMarshallingContext(Module module) {
-        MarshallingConfiguration configuration = MarshallingConfigurationFactory.createMarshallingConfiguration(module.getModuleLoader());
+        MarshallingConfiguration configuration = new MarshallingConfiguration();
+        configuration.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
         configuration.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
         this.configurations.put(CURRENT_VERSION, configuration);
     }

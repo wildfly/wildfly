@@ -24,7 +24,7 @@ package org.wildfly.clustering.server.singleton;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.jboss.as.clustering.marshalling.ClassTableContributor;
+import org.wildfly.clustering.marshalling.ClassTableContributor;
 
 /**
  * ClassTable contributor for a {@link SingletonService}.

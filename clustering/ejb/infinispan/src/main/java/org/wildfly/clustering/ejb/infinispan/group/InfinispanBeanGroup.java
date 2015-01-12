@@ -25,13 +25,13 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.marshalling.MarshallingContext;
 
 /**
  * A {@link org.wildfly.clustering.ejb.infinispan.BeanGroup} implementation backed by an infinispan cache.

@@ -38,5 +38,5 @@ public interface DistributableSingleSignOnManagerFactoryBuilder {
      * @param hostServiceName the service name of the host
      * @return a service builder
      */
-    ServiceBuilder<SingleSignOnManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName hostServiceName);
+    ServiceBuilder<SingleSignOnManagerFactory> build(ServiceTarget target, ServiceName name, String serverName, String hostName);
 }

@@ -47,9 +47,6 @@
         <module name="org.dom4j"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.javassist"/>
-        <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.clustering.jgroups"/>
-        <module name="org.jboss.as.clustering.infinispan"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>

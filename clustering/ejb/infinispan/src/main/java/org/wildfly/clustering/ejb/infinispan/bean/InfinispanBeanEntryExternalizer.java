@@ -26,7 +26,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Date;
 
-import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
 
 /**
  * @author Paul Ferraro

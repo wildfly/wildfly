@@ -27,8 +27,8 @@ import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
 import org.jgroups.Address;
+import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
 
 /**
  * Infinispan externalizer for an {@link AddressableNode}.

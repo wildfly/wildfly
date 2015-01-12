@@ -35,6 +35,7 @@
         <module name="javax.transaction.api"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.jboss.logging"/>
         <module name="org.wildfly.clustering.ee.spi"/>
     </dependencies>
 </module>

@@ -31,8 +31,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.msc.DelegatingServiceBuilder;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.clustering.msc.ServiceControllerFactory;
@@ -56,11 +54,13 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
-import org.wildfly.clustering.spi.CacheServiceNames;
-import org.wildfly.clustering.spi.GroupServiceNames;
+import org.wildfly.clustering.spi.CacheGroupServiceNameFactory;
+import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.spi.GroupServiceName;
 
 /**
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
@@ -98,7 +98,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName) {
-        return this.build(target, containerName, CacheContainer.DEFAULT_CACHE_ALIAS);
+        return this.build(target, containerName, CacheGroupServiceNameFactory.DEFAULT_CACHE);
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName, String cacheName) {
@@ -113,11 +113,11 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
                 }
             }
         };
-        final ServiceBuilder<T> singletonBuilder = AsynchronousService.addService(target, this.singletonServiceName, this)
+        final ServiceBuilder<T> singletonBuilder = new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
                 .addAliases(this.singletonServiceName.append("singleton"))
-                .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, this.group)
-                .addDependency(CacheServiceNames.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, cacheName), ServiceProviderRegistrationFactory.class, this.registrationFactory)
-                .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
+                .addDependency(CacheGroupServiceName.GROUP.getServiceName(containerName, cacheName), Group.class, this.group)
+                .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, cacheName), ServiceProviderRegistrationFactory.class, this.registrationFactory)
+                .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addListener(listener)
         ;
         // Add dependencies to the target service builder, but install should return the installed singleton controller

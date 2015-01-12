@@ -32,7 +32,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-jgroups}"/>
+        <artifact name="${org.wildfly:wildfly-clustering-jgroups-extension}"/>
     </resources>
 
     <dependencies>
@@ -51,6 +51,8 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.threads"/>
         <module name="org.jgroups"/>
+        <module name="org.wildfly.clustering.jgroups.spi"/>
+        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.security.manager"/>
     </dependencies>

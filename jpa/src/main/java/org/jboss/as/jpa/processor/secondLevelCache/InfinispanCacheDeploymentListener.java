@@ -27,9 +27,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,12 +34,13 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.cache.spi.Wrapper;
 import org.jipijapa.event.spi.EventListener;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.service.AliasServiceBuilder;
 
 /**
  * InfinispanCacheDeploymentListener adds Infinispan second level cache dependencies during application deployment.
@@ -86,16 +84,14 @@ public class InfinispanCacheDeploymentListener implements EventListener {
 
             ServiceContainer target = currentServiceContainer();
             // Create a mock service that represents this session factory instance
-            InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<EmbeddedCacheManager>();
-            ServiceBuilder<EmbeddedCacheManager> builder = target.addService(serviceName, new ValueService<EmbeddedCacheManager>(manager))
-                    .addDependency(EmbeddedCacheManagerService.getServiceName(container), EmbeddedCacheManager.class, manager)
+            ServiceBuilder<EmbeddedCacheManager> builder = new AliasServiceBuilder<>(serviceName, CacheContainerServiceName.CACHE_CONTAINER.getServiceName(container), EmbeddedCacheManager.class).build(target)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
             ;
             embeddedCacheManager = ServiceContainerHelper.getValue(builder.install());
 
         } else {
             // need a shared cache for jpa applications
-            serviceName = EmbeddedCacheManagerService.getServiceName(container);
+            serviceName = CacheContainerServiceName.CACHE_CONTAINER.getServiceName(container);
             ServiceRegistry registry = currentServiceContainer();
             embeddedCacheManager = (EmbeddedCacheManager) registry.getRequiredService(serviceName).getValue();
         }
@@ -109,12 +105,11 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String collection = properties.getProperty(COLLECTION);
         String query = properties.getProperty(QUERY);
         String timestamps  = properties.getProperty(TIMESTAMPS);
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(ServiceBuilder.DependencyType.OPTIONAL, ChannelService.getServiceName(container));
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheConfigurationService.getServiceName(container, entity));
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheConfigurationService.getServiceName(container, collection));
+        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, entity));
+        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, collection));
         if (query != null) {
-            CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheConfigurationService.getServiceName(container, timestamps));
-            CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheConfigurationService.getServiceName(container, query));
+            CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, timestamps));
+            CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, query));
         }
     }
 

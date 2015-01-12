@@ -28,10 +28,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
 import org.jboss.ejb.client.BasicSessionID;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UnknownSessionID;
+import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
 
 /**
  * @author Paul Ferraro

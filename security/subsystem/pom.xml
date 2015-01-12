@@ -95,7 +95,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-infinispan</artifactId>
+            <artifactId>wildfly-clustering-infinispan-spi</artifactId>
         </dependency>
 
         <dependency>

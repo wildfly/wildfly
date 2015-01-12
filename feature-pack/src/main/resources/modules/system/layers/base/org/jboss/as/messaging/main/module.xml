@@ -68,7 +68,7 @@
         <module name="org.jboss.remote-naming"/>
         <module name="org.jboss.threads"/>
         <!--  JGroups is required only as an option to cluster HornetQ nodes -->
-        <module name="org.jboss.as.clustering.jgroups" optional="true"/>
+        <module name="org.wildfly.clustering.jgroups.spi" optional="true"/>
         <module name="org.jgroups" optional="true"/>
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.core"/>

@@ -1,3 +1,0 @@
-org.wildfly.clustering.server.dispatcher.LocalCommandDispatcherFactoryServiceInstaller
-org.wildfly.clustering.server.group.LocalGroupServiceInstaller
-org.wildfly.clustering.server.group.LocalNodeFactoryServiceInstaller

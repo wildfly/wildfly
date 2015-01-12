@@ -22,14 +22,22 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+
+import java.util.Arrays;
 import java.util.ServiceLoader;
 
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilder;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.web.sso.SSOManagerFactory;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
 
 
@@ -37,30 +45,43 @@ import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
  * Builds a distributable {@link SingleSignOnManagerFactory} service.
  * @author Paul Ferraro
  */
-public class DistributableSingleSignOnManagerFactoryBuilder implements org.wildfly.extension.undertow.security.sso.DistributableSingleSignOnManagerFactoryBuilder {
+public class DistributableSingleSignOnManagerFactoryBuilder implements org.wildfly.extension.undertow.security.sso.DistributableSingleSignOnManagerFactoryBuilder, Value<SingleSignOnManagerFactory> {
 
-    private static SSOManagerFactoryBuilder<Batch> load() {
-        for (SSOManagerFactoryBuilder<Batch> builder: ServiceLoader.load(SSOManagerFactoryBuilder.class, SSOManagerFactoryBuilder.class.getClassLoader())) {
+    private static SSOManagerFactoryBuilderProvider<Batch> load() {
+        for (SSOManagerFactoryBuilderProvider<Batch> builder: ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader())) {
             return builder;
         }
         return null;
     }
 
-    private final SSOManagerFactoryBuilder<Batch> builder;
+    private final SSOManagerFactoryBuilderProvider<Batch> provider;
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<SSOManagerFactory> manager = new InjectedValue<>();
+    private final InjectedValue<SessionManagerRegistry> registry = new InjectedValue<>();
 
     public DistributableSingleSignOnManagerFactoryBuilder() {
         this(load());
     }
 
-    private DistributableSingleSignOnManagerFactoryBuilder(SSOManagerFactoryBuilder<Batch> builder) {
-        this.builder = builder;
+    private DistributableSingleSignOnManagerFactoryBuilder(SSOManagerFactoryBuilderProvider<Batch> builder) {
+        this.provider = builder;
     }
 
     @Override
-    public ServiceBuilder<SingleSignOnManagerFactory> build(ServiceTarget target, ServiceName name, final ServiceName hostServiceName) {
-        ServiceName managerServiceName = name.append("distributable");
-        this.builder.build(target, managerServiceName, hostServiceName.getSimpleName()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        SessionManagerRegistryService.build(target, hostServiceName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        return DistributableSingleSignOnManagerFactoryService.build(target, name, hostServiceName, managerServiceName);
+    public ServiceBuilder<SingleSignOnManagerFactory> build(ServiceTarget target, ServiceName name, String serverName, String hostName) {
+        Builder<SSOManagerFactory<AuthenticatedSession, String, Batch>> factoryBuilder = this.provider.getBuilder(hostName);
+        Builder<SessionManagerRegistry> registryBuilder = new SessionManagerRegistryBuilder(serverName, hostName);
+        for (Builder<?> builder : Arrays.asList(factoryBuilder, registryBuilder)) {
+            builder.build(target).install();
+        }
+        return target.addService(name, new ValueService<>(this))
+                .addDependency(factoryBuilder.getServiceName(), SSOManagerFactory.class, this.manager)
+                .addDependency(registryBuilder.getServiceName(), SessionManagerRegistry.class, this.registry)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+    }
+
+    @Override
+    public SingleSignOnManagerFactory getValue() {
+        return new DistributableSingleSignOnManagerFactory(this.manager.getValue(), this.registry.getValue());
     }
 }

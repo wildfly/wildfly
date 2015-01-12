@@ -121,7 +121,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-jgroups</artifactId>
+            <artifactId>wildfly-clustering-jgroups-spi</artifactId>
         </dependency>
 
         <dependency>

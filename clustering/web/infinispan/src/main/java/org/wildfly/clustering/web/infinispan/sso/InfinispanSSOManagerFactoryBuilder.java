@@ -21,58 +21,69 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.msc.AsynchronousService;
+import org.infinispan.Cache;
+import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilder;
 
-public class InfinispanSSOManagerFactoryBuilder implements SSOManagerFactoryBuilder<TransactionBatch> {
+public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOManagerFactory<A, D, TransactionBatch>>, Value<SSOManagerFactory<A, D, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
 
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
+    private final String host;
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<Cache> cache = new InjectedValue<>();
+    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
+
+    public InfinispanSSOManagerFactoryBuilder(String host) {
+        this.host = host;
+    }
+
     @Override
-    public <A, D> ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target, ServiceName name, String host) {
+    public ServiceName getServiceName() {
+        return ServiceName.JBOSS.append("clustering", "sso", this.host);
+    }
+
+    @Override
+    public ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target) {
         String containerName = DEFAULT_CACHE_CONTAINER;
-        ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
-        String templateCacheName = CacheContainer.DEFAULT_CACHE_ALIAS;
-        String cacheName = host;
-        ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
-        ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
+        String templateCacheName = CacheServiceNameFactory.DEFAULT_CACHE;
+        String cacheName = this.host;
 
-        SSOCacheConfigurationService.build(target, containerName, cacheName, templateCacheName)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
+        new TemplateConfigurationBuilder(containerName, cacheName, templateCacheName).build(target).install();
+
+        new CacheBuilder<>(containerName, cacheName).build(target).install();
+
+        return target.addService(this.getServiceName(), new ValueService<>(this))
+                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
+                .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
         ;
-        final InjectedValue<EmbeddedCacheManager> cacheContainer = new InjectedValue<>();
-        CacheService.Dependencies dependencies = new CacheService.Dependencies() {
-            @Override
-            public EmbeddedCacheManager getCacheContainer() {
-                return cacheContainer.getValue();
-            }
+    }
 
-            @Override
-            public XAResourceRecoveryRegistry getRecoveryRegistry() {
-                return null;
-            }
-        };
-        AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
-                .addDependency(cacheConfigurationServiceName)
-                .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
+    @Override
+    public SSOManagerFactory<A, D, TransactionBatch> getValue() {
+        return new InfinispanSSOManagerFactory<>(this);
+    }
 
-        return InfinispanSSOManagerFactory.build(target, name, containerName, cacheName);
+    @Override
+    public <K, V> Cache<K, V> getCache() {
+        return this.cache.getValue();
+    }
+
+    @Override
+    public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
+        return this.affinityFactory.getValue();
     }
 }

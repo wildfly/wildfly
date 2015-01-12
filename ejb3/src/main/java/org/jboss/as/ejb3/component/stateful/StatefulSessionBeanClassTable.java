@@ -36,7 +36,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
 
-import org.jboss.as.clustering.marshalling.SimpleClassTable;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
@@ -44,6 +43,7 @@ import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.ejb.client.SessionID;
+import org.wildfly.clustering.marshalling.SimpleClassTable;
 
 /**
  * @author Paul Ferraro

@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.services.workmanager;
 
-import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
@@ -37,6 +36,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.ChannelFactory;
 
 import java.util.concurrent.Executor;
 

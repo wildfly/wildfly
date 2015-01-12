@@ -23,8 +23,8 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.Map;
 
-import org.jboss.as.clustering.marshalling.MarshalledValue;
-import org.jboss.as.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.MarshalledValue;
+import org.wildfly.clustering.marshalling.MarshallingContext;
 
 /**
  * The cache entry for a bean group

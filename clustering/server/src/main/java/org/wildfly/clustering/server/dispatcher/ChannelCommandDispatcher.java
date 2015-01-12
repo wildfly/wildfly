@@ -33,7 +33,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.clustering.jgroups.Addressable;
 import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.blocks.MessageDispatcher;
@@ -46,6 +45,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.server.Addressable;
 
 /**
  * MessageDispatcher-based command dispatcher.

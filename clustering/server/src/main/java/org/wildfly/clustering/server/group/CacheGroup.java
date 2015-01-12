@@ -36,7 +36,7 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 
 /**
- * {@link Cache} based {@link Group} implementation
+ * {@link Group} implementation based on the topology of a cache.
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener(sync = false)

@@ -24,7 +24,7 @@ package org.wildfly.clustering.server.group;
 import org.infinispan.Cache;
 
 /**
- * Configuration for a {@link CacheGroupService}.
+ * Configuration for a {@link CacheGroup}.
  * @author Paul Ferraro
  */
 public interface CacheGroupConfiguration {

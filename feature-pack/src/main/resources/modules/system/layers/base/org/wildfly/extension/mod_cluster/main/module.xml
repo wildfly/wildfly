@@ -42,6 +42,7 @@
         <module name="org.jboss.mod_cluster.core"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
+        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.mod_cluster.undertow" services="import" optional="true"/>
     </dependencies>
 </module>

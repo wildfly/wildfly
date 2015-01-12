@@ -25,7 +25,7 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 
 /**

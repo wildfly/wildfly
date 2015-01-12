@@ -25,27 +25,17 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
-import org.jboss.as.clustering.marshalling.MarshalledValue;
-import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
-import org.jboss.as.clustering.marshalling.MarshallingContext;
-import org.jboss.as.clustering.marshalling.SimpleMarshalledValueFactory;
-import org.jboss.as.clustering.marshalling.SimpleMarshallingContextFactory;
+import org.wildfly.clustering.marshalling.MarshalledValue;
+import org.wildfly.clustering.marshalling.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.SimpleMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.SimpleMarshallingContextFactory;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
-import org.wildfly.clustering.spi.CacheServiceNames;
-import org.wildfly.clustering.spi.GroupServiceNames;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
@@ -64,42 +54,22 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
  * Factory for creating session managers.
  * @author Paul Ferraro
  */
-@SuppressWarnings("rawtypes")
-public class InfinispanSessionManagerFactory extends AbstractService<SessionManagerFactory<TransactionBatch>> implements SessionManagerFactory<TransactionBatch> {
+public class InfinispanSessionManagerFactory implements SessionManagerFactory<TransactionBatch> {
 
-    public static ServiceBuilder<SessionManagerFactory<TransactionBatch>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName, SessionManagerConfiguration config) {
-        InfinispanSessionManagerFactory factory = new InfinispanSessionManagerFactory(config);
-        return target.addService(name, factory)
-                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, factory.cache)
-                .addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, factory.affinityFactory)
-                .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, factory.dispatcherFactory)
-                .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName), NodeFactory.class, factory.nodeFactory)
-        ;
-    }
+    private final InfinispanSessionManagerFactoryConfiguration config;
 
-    private final SessionManagerConfiguration config;
-    private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
-    private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
-    private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
-
-    private InfinispanSessionManagerFactory(SessionManagerConfiguration config) {
+    public InfinispanSessionManagerFactory(InfinispanSessionManagerFactoryConfiguration config) {
         this.config = config;
     }
 
     @Override
-    public SessionManagerFactory getValue() {
-        return this;
-    }
-
-    @Override
     public <L> SessionManager<L, TransactionBatch> createSessionManager(final SessionContext context, IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
-        final Batcher<TransactionBatch> batcher = new InfinispanBatcher(this.cache.getValue());
-        final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(identifierFactory, this.cache.getValue(), this.affinityFactory.getValue());
-        final Cache<String, ?> cache = this.cache.getValue();
-        final CommandDispatcherFactory dispatcherFactory = this.dispatcherFactory.getValue();
-        final NodeFactory<Address> nodeFactory = this.nodeFactory.getValue();
-        final int maxActiveSessions = this.config.getMaxActiveSessions();
+        final Batcher<TransactionBatch> batcher = new InfinispanBatcher(this.config.getCache());
+        final Cache<String, ?> cache = this.config.getCache();
+        final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(identifierFactory, cache, this.config.getKeyAffinityServiceFactory());
+        final CommandDispatcherFactory dispatcherFactory = this.config.getCommandDispatcherFactory();
+        final NodeFactory<Address> nodeFactory = this.config.getNodeFactory();
+        final int maxActiveSessions = this.config.getSessionManagerConfiguration().getMaxActiveSessions();
         InfinispanSessionManagerConfiguration config = new InfinispanSessionManagerConfiguration() {
             @Override
             public SessionContext getSessionContext() {
@@ -140,20 +110,21 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
     }
 
     private <L> SessionFactory<?, L> getSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory) {
-        Module module = this.config.getModule();
+        SessionManagerConfiguration config = this.config.getSessionManagerConfiguration();
+        Module module = config.getModule();
         MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SessionAttributeMarshallingContext(module), module.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
 
-        switch (this.config.getAttributePersistenceStrategy()) {
+        switch (config.getAttributePersistenceStrategy()) {
             case FINE: {
-                Cache<String, FineSessionCacheEntry<L>> sessionCache = this.cache.getValue();
-                Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache = this.cache.getValue();
+                Cache<String, FineSessionCacheEntry<L>> sessionCache = this.config.getCache();
+                Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache = this.config.getCache();
                 SessionAttributeMarshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller = new MarshalledValueSessionAttributeMarshaller<>(factory, marshallingContext);
                 return new FineSessionFactory<>(sessionCache, attributeCache, context, marshaller, localContextFactory);
             }
             case COARSE: {
-                Cache<String, CoarseSessionCacheEntry<L>> sessionCache = this.cache.getValue();
-                Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache = this.cache.getValue();
+                Cache<String, CoarseSessionCacheEntry<L>> sessionCache = this.config.getCache();
+                Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache = this.config.getCache();
                 SessionAttributeMarshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller = new MarshalledValueSessionAttributeMarshaller<>(factory, marshallingContext);
                 return new CoarseSessionFactory<>(sessionCache, attributesCache, context, marshaller, localContextFactory);
             }

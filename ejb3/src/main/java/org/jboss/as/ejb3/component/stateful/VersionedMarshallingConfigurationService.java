@@ -24,17 +24,17 @@ package org.jboss.as.ejb3.component.stateful;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
-import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
+import org.wildfly.clustering.marshalling.VersionedMarshallingConfiguration;
 
 /**
  * Service that provides a versioned marshalling configuration for a deployment unit.
@@ -58,7 +58,8 @@ public class VersionedMarshallingConfigurationService implements Service<Version
 
     @Override
     public void start(StartContext context) {
-        MarshallingConfiguration config = MarshallingConfigurationFactory.createMarshallingConfiguration(this.loader.getValue());
+        MarshallingConfiguration config = new MarshallingConfiguration();
+        config.setClassResolver(ModularClassResolver.getInstance(this.loader.getValue()));
         config.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(this.deployment.getValue()));
         config.setClassTable(new StatefulSessionBeanClassTable());
         config.setObjectTable(new EJBClientContextIdentifierObjectTable());

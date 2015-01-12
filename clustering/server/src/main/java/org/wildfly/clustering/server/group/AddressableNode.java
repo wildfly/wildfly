@@ -23,9 +23,9 @@ package org.wildfly.clustering.server.group;
 
 import java.net.InetSocketAddress;
 
-import org.jboss.as.clustering.jgroups.Addressable;
 import org.jgroups.Address;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.Addressable;
 
 /**
  * Node implementation that associates a JGroups {@link Address} with its logical name

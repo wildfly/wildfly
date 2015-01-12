@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
 
 /**
  * Externalizer for {@link CoarseAuthenticationEntry}.

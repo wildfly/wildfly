@@ -1,0 +1,4 @@
+org.wildfly.clustering.infinispan.spi.io.HashableMarshalledValueExternalizer
+org.wildfly.clustering.infinispan.spi.io.ServiceNameExternalizer
+org.wildfly.clustering.infinispan.spi.io.SimpleMarshalledValueExternalizer
+org.wildfly.clustering.infinispan.spi.io.UUIDExternalizer

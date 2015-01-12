@@ -26,8 +26,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.InetAddress;
 
-import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
 import org.jboss.as.network.ClientMapping;
+import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
 
 /**
  * @author Paul Ferraro
