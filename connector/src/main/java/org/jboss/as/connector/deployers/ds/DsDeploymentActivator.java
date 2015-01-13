@@ -22,9 +22,6 @@
 
 package org.jboss.as.connector.deployers.ds;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.jboss.as.connector.deployers.datasource.DataSourceDefinitionAnnotationProcessor;
 import org.jboss.as.connector.deployers.datasource.DataSourceDefinitionDescriptorProcessor;
 import org.jboss.as.connector.deployers.ds.processors.DsXmlDeploymentInstallProcessor;
@@ -32,8 +29,6 @@ import org.jboss.as.connector.deployers.ds.processors.DsXmlDeploymentParsingProc
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Service activator which installs the various service required for datasource
@@ -42,13 +37,6 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class DsDeploymentActivator {
-
-    public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget) {
-
-        final Collection<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>(1);
-
-        return controllers;
-    }
 
     public void activateProcessors(final DeploymentProcessorTarget updateContext) {
         updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DSXML_DEPLOYMENT, new DsXmlDeploymentParsingProcessor());

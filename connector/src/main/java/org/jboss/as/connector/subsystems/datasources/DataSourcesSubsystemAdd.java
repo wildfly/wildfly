@@ -58,8 +58,5 @@ class DataSourcesSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DEFAULT_BINDINGS_DATASOURCE, new DefaultDataSourceBindingProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
-
-
-        dsDeploymentActivator.activateServices(context.getServiceTarget());
     }
 }
