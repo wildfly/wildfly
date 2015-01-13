@@ -263,6 +263,12 @@ public class Constants {
             .build();
 
 
+    static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+                .setDefaultValue(new ModelNode(false))
+                .setAllowNull(true)
+                .setAllowExpression(true)
+                .build();
+
     static final SimpleAttributeDefinition WM_SECURITY = new SimpleAttributeDefinitionBuilder(WM_SECURITY_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
             .setAllowNull(true)

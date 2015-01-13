@@ -69,6 +69,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
@@ -145,6 +146,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
     private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra, final String name) throws XMLStreamException {
         streamWriter.writeStartElement(Activations.Tag.RESOURCE_ADAPTER.getLocalName());
         streamWriter.writeAttribute(ResourceAdapterParser.Attribute.ID.getLocalName(), name);
+        STATISTICS_ENABLED.marshallAsAttribute(ra, streamWriter);
         ARCHIVE.marshallAsElement(ra, streamWriter);
         MODULE.marshallAsElement(ra, streamWriter);
 

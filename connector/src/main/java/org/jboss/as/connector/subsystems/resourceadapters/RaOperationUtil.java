@@ -334,7 +334,7 @@ public class RaOperationUtil {
 
     }
 
-    public static void activate(OperationContext context, String raName, String archiveName) throws OperationFailedException {
+    public static void activate(OperationContext context, String raName, String archiveName, boolean statsEnabled) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(archiveName));
 
@@ -350,7 +350,8 @@ public class RaOperationUtil {
         InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
         Activation raxml = (Activation) RaxmlController.getValue();
-        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource());
+        RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(),
+                raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), statsEnabled);
     }
 
     public static ServiceName installRaServices(OperationContext context, String name, ModifiableResourceAdapter resourceAdapter, final List<ServiceController<?>> newControllers) {

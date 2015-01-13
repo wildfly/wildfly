@@ -23,6 +23,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
@@ -215,7 +216,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME)),
                         new FailedOperationTransformationConfig.AttributesPathAddressConfig(WM_SECURITY.getName(), WM_SECURITY_MAPPING_REQUIRED.getName(),
-                                WM_SECURITY_DOMAIN.getName(), MODULE.getName()) {
+                                WM_SECURITY_DOMAIN.getName(), MODULE.getName(), STATISTICS_ENABLED.getName()) {
                             @Override
                             protected boolean isAttributeWritable(String attributeName) {
                                 return false;

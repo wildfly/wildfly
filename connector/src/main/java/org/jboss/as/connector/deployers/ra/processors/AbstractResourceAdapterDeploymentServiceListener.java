@@ -68,13 +68,15 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
     private final Resource deploymentResource;
     private final String bootstrapCtx;
     private final String raName;
+    private final boolean statsEnabled;
 
-    public AbstractResourceAdapterDeploymentServiceListener(ManagementResourceRegistration registration, String deploymentUnitName, Resource deploymentResource, final String bootstrapCtx, final String raName) {
+    public AbstractResourceAdapterDeploymentServiceListener(ManagementResourceRegistration registration, String deploymentUnitName, Resource deploymentResource, final String bootstrapCtx, final String raName, final boolean statsEnabled) {
         this.registration = registration;
         this.deploymentUnitName = deploymentUnitName;
         this.deploymentResource = deploymentResource;
         this.bootstrapCtx = bootstrapCtx;
         this.raName = raName;
+        this.statsEnabled = statsEnabled;
     }
 
     public void transition(final ServiceController<? extends Object> controller,
@@ -88,7 +90,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                     for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
                         if (cm.getPool() != null) {
                             StatisticsPlugin poolStats = cm.getPool().getStatistics();
-                            poolStats.setEnabled(false);
+                            poolStats.setEnabled(statsEnabled);
                             final ServiceController<?> bootstrapContextController = controller.getServiceContainer().getService(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootstrapCtx));
                             WorkManager wm = null;
                             if (bootstrapContextController != null) {
@@ -181,7 +183,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     }
                                     if (deploymentMD.getConnector() != null && deploymentMD.getConnector().getResourceAdapter() != null && deploymentMD.getConnector().getResourceAdapter().getStatistics() != null) {
                                         StatisticsPlugin raStats = deploymentMD.getConnector().getResourceAdapter().getStatistics();
-                                        raStats.setEnabled(false);
+                                        raStats.setEnabled(statsEnabled);
                                         PoolMetrics.ParametrizedPoolMetricsHandler handler = new PoolMetrics.ParametrizedPoolMetricsHandler(raStats);
                                         for (AttributeDefinition attribute : StatisticsResourceDefinition.getAttributesFromPlugin(raStats)){
                                             raRegistration.registerMetric(attribute, handler);

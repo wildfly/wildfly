@@ -153,6 +153,15 @@
           </xs:documentation>
         </xs:annotation>
     </xs:attribute>
+    <xs:attribute default="false" name="statistics-enabled" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>
+                <![CDATA[[
+                      Enable statistics for this resource-adapter
+                     ]]>
+            </xs:documentation>
+          </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:simpleType name="transaction-supportType">
