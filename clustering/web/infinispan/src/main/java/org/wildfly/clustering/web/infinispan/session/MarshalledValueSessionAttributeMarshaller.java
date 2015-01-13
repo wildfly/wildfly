@@ -22,6 +22,8 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.io.IOException;
+import java.io.InvalidClassException;
+import java.io.InvalidObjectException;
 
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueFactory;
@@ -40,11 +42,13 @@ public class MarshalledValueSessionAttributeMarshaller<V, C> implements SessionA
     }
 
     @Override
-    public V read(MarshalledValue<V, C> value) {
+    public V read(MarshalledValue<V, C> value) throws InvalidSerializedFormException {
         if (value == null) return null;
         try {
             return value.get(this.context);
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (ClassNotFoundException | InvalidClassException | InvalidObjectException e) {
+            throw new InvalidSerializedFormException(e);
+        } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
     }

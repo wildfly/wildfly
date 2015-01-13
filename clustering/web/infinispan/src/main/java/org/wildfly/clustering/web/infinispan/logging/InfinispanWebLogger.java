@@ -65,4 +65,15 @@ public interface InfinispanWebLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 6, value = "Failed to schedule expiration/passivation of session %s on primary owner.")
     void failedToScheduleSession(@Cause Throwable cause, String sessionId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 7, value = "Failed to activate attributes of session %s")
+    void failedToActivateSession(@Cause Throwable cause, String sessionId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 8, value = "Failed to activate attribute %2$s of session %1$s")
+    void failedToActivateSessionAttribute(@Cause Throwable cause, String sessionId, String attribute);
+
+    @Message(id = 9, value = "Failed to read attribute %2$s of session %1$s")
+    IllegalStateException failedToReadSessionAttribute(@Cause Throwable cause, String sessionId, String attribute);
 }

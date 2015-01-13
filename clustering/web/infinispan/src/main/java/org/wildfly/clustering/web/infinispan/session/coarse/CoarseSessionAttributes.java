@@ -24,10 +24,7 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 import java.util.Map;
 
 import org.wildfly.clustering.ee.infinispan.Mutator;
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.session.MutableDetector;
-import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributes;
 
 /**
@@ -35,31 +32,32 @@ import org.wildfly.clustering.web.session.SessionAttributes;
  * @author Paul Ferraro
  */
 public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes implements SessionAttributes {
+    private final Map<String, Object> attributes;
     private final Mutator mutator;
 
-    public CoarseSessionAttributes(MarshalledValue<Map<String, Object>, MarshallingContext> attributes, SessionAttributeMarshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller, Mutator mutator) {
-        super(attributes, marshaller);
+    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator) {
+        super(attributes);
+        this.attributes = attributes;
         this.mutator = mutator;
     }
 
     @Override
     public Object removeAttribute(String name) {
-        Object value = this.getAttributes().remove(name);
+        Object value = this.attributes.remove(name);
         this.mutator.mutate();
         return value;
     }
 
     @Override
     public Object setAttribute(String name, Object value) {
-        Map<String, Object> attributes = this.getAttributes();
-        Object old = (value != null) ? attributes.put(name, value) : attributes.remove(name);
+        Object old = (value != null) ? this.attributes.put(name, value) : this.attributes.remove(name);
         this.mutator.mutate();
         return old;
     }
 
     @Override
     public Object getAttribute(String name) {
-        Object value = super.getAttribute(name);
+        Object value = this.attributes.get(name);
         if (MutableDetector.isMutable(value)) {
             this.mutator.mutate();
         }

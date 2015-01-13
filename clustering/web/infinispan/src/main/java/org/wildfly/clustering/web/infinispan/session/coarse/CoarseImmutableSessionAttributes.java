@@ -24,9 +24,6 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 import java.util.Map;
 import java.util.Set;
 
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.MarshallingContext;
-import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
 /**
@@ -34,25 +31,19 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
  * @author Paul Ferraro
  */
 public class CoarseImmutableSessionAttributes implements ImmutableSessionAttributes {
-    private final MarshalledValue<Map<String, Object>, MarshallingContext> attributes;
-    private final SessionAttributeMarshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller;
+    private final Map<String, Object> attributes;
 
-    public CoarseImmutableSessionAttributes(MarshalledValue<Map<String, Object>, MarshallingContext> attributes, SessionAttributeMarshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller) {
+    public CoarseImmutableSessionAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;
-        this.marshaller = marshaller;
-    }
-
-    protected Map<String, Object> getAttributes() {
-        return this.marshaller.read(this.attributes);
     }
 
     @Override
     public Set<String> getAttributeNames() {
-        return this.getAttributes().keySet();
+        return this.attributes.keySet();
     }
 
     @Override
     public Object getAttribute(String name) {
-        return this.getAttributes().get(name);
+        return this.attributes.get(name);
     }
 }
