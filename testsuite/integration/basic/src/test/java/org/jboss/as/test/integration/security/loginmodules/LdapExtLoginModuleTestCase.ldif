@@ -370,3 +370,39 @@ objectClass: referral
 objectClass: top
 ou: RefRoles
 ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
+
+# Example6: "jduke" - "TheDuke", "Echo", "Admin"
+#baseCtxDN= o=example6,dc=jboss,dc=org
+#baseFilter= (uid={0})
+#rolesCtxDN= o=example6,dc=jboss,dc=org
+#roleFilter= (member={1})
+#roleAttributeID= cn
+
+dn: o=example6,dc=jboss,dc=org
+objectclass: top
+objectclass: organization
+o: example6
+
+dn: uid=jduke,o=example6,dc=jboss,dc=org
+uid: jduke
+userpassword: theduke
+sn: duke
+cn: Java Duke
+objectclass: top
+objectclass: person
+objectclass: inetOrgPerson
+
+dn: uid=sa,o=example6,dc=jboss,dc=org
+uid: sa
+userpassword: secretValue
+sn: SysAdmin
+cn: SysAdmin with a vaulted password
+objectclass: top
+objectclass: person
+objectclass: inetOrgPerson
+
+dn: cn=Admin,o=example6,dc=jboss,dc=org
+member: uid=jduke,o=example6,dc=jboss,dc=org
+cn: Admin
+objectclass: top
+objectclass: groupOfNames
