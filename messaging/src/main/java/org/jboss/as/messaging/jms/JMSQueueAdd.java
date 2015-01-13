@@ -26,8 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
-import java.util.List;
-
 import javax.jms.Queue;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -35,14 +33,12 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.BinderServiceUtil;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -62,7 +58,7 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceTarget serviceTarget = context.getServiceTarget();
@@ -75,7 +71,7 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
 
         // Do not pass the JNDI bindings to HornetQ but install them directly instead so that the
         // dependencies from the BinderServices to the JMSQueueService are not broken
-        Service<Queue> queueService = JMSQueueService.installService(verificationHandler, newControllers, name, serviceTarget, hqServiceName, selector, durable, new String[0]);
+        Service<Queue> queueService = JMSQueueService.installService(name, serviceTarget, hqServiceName, selector, durable, new String[0]);
 
         final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
         final String[] jndiBindings = JMSServices.getJndiBindings(entries);
@@ -85,9 +81,10 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
     }
 
     /**
-     * @deprecated use {@link JMSQueueService#installService(org.jboss.as.controller.ServiceVerificationHandler, java.util.List, String, org.jboss.msc.service.ServiceTarget, org.jboss.msc.service.ServiceName, String, boolean, String[])} instead
+     * @deprecated use {@link JMSQueueService#installService(String, org.jboss.msc.service.ServiceTarget, org.jboss.msc.service.ServiceName, String, boolean, String[])} instead
      */
-    public void installServices(final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final ServiceTarget serviceTarget, final ServiceName hqServiceName, final String selector, final boolean durable, final String[] jndiBindings) {
-        JMSQueueService.installService(verificationHandler, newControllers, name, serviceTarget, hqServiceName, selector, durable, jndiBindings);
+    @Deprecated
+    public void installServices(final String name, final ServiceTarget serviceTarget, final ServiceName hqServiceName, final String selector, final boolean durable, final String[] jndiBindings) {
+        JMSQueueService.installService(name, serviceTarget, hqServiceName, selector, durable, jndiBindings);
     }
 }

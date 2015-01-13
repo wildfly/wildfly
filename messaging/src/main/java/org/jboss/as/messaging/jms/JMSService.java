@@ -35,7 +35,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -67,11 +66,10 @@ public class JMSService implements Service<JMSServerManager> {
     private final boolean overrideInVMSecurity;
     private JMSServerManager jmsServer;
 
-    public static ServiceController<JMSServerManager> addService(final ServiceTarget target, ServiceName hqServiceName, boolean overrideInVMSecurity, final ServiceListener<Object>... listeners) {
+    public static ServiceController<JMSServerManager> addService(final ServiceTarget target, ServiceName hqServiceName, boolean overrideInVMSecurity) {
         final JMSService service = new JMSService(hqServiceName, overrideInVMSecurity);
         ServiceBuilder<JMSServerManager> builder = target.addService(JMSServices.getJmsManagerBaseServiceName(hqServiceName), service)
                 .addDependency(hqServiceName, HornetQServer.class, service.hornetQServer)
-                .addListener(listeners)
                 .setInitialMode(Mode.ACTIVE);
         addServerExecutorDependency(builder, service.serverExecutor, false);
         return builder.install();

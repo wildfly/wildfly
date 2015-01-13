@@ -85,7 +85,7 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
 
         if (config == null) {
             String exceptionMessage = MessagingLogger.ROOT_LOGGER.noDestinationRegisteredForAddress(operationAddress);
-            throw new OperationFailedException(new ModelNode().set(exceptionMessage));
+            throw new OperationFailedException(exceptionMessage);
         }
 
         return config;

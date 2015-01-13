@@ -24,15 +24,11 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * The add operation for the messaging subsystem's http-acceptor resource.
@@ -49,27 +45,23 @@ public class HTTPAcceptorAdd extends HornetQReloadRequiredHandlers.AddStepHandle
 
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode
-            model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws
-            OperationFailedException {
-        super.performRuntime(context, operation, model, verificationHandler, newControllers);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.performRuntime(context, operation, model);
 
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String hornetqServerName = address.getElement(address.size() - 2).getValue();
         String acceptorName = address.getLastElement().getValue();
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
-        launchServices(context, hornetqServerName, acceptorName, fullModel, verificationHandler, newControllers);
+        launchServices(context, hornetqServerName, acceptorName, fullModel);
     }
 
-    void launchServices(OperationContext context, String hornetqServerName, String acceptorName, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void launchServices(OperationContext context, String hornetqServerName, String acceptorName, ModelNode model) throws OperationFailedException {
         String httpConnectorName = HTTPAcceptorDefinition.HTTP_LISTENER.resolveModelAttribute(context, model).asString();
 
         HTTPUpgradeService.installService(context.getServiceTarget(),
                 hornetqServerName,
                 acceptorName,
-                httpConnectorName,
-                verificationHandler,
-                newControllers);
+                httpConnectorName);
     }
 }

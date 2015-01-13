@@ -24,8 +24,6 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.ArrayList;
-
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.server.HornetQServer;
@@ -33,7 +31,6 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
@@ -88,6 +85,6 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        addOperation.performRuntime(context, operation, model, new ServiceVerificationHandler(), new ArrayList<ServiceController<?>>());
+        addOperation.performRuntime(context, operation, model);
     }
 }

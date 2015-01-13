@@ -25,7 +25,6 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -33,7 +32,6 @@ import javax.jms.Queue;
 
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.msc.service.Service;
@@ -124,7 +122,7 @@ public class JMSQueueService implements Service<Queue> {
         return queue;
     }
 
-    public static Service<Queue> installService(final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final ServiceTarget serviceTarget, final ServiceName hqServiceName, final String selector, final boolean durable, final String[] jndiBindings) {
+    public static Service<Queue> installService(final String name, final ServiceTarget serviceTarget, final ServiceName hqServiceName, final String selector, final boolean durable, final String[] jndiBindings) {
         final JMSQueueService service = new JMSQueueService(name, selector, durable, jndiBindings);
 
         final ServiceName serviceName = JMSServices.getJmsQueueBaseServiceName(hqServiceName).append(name);
@@ -133,15 +131,7 @@ public class JMSQueueService implements Service<Queue> {
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.jmsServer)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
         addServerExecutorDependency(serviceBuilder, service.executorInjector, false);
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        final ServiceController<Queue> controller = serviceBuilder.install();
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
-
+        serviceBuilder.install();
         return service;
     }
 }

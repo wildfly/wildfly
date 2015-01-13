@@ -43,7 +43,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.HornetQActivationService;
@@ -51,7 +50,6 @@ import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 
@@ -76,7 +74,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
@@ -87,10 +85,9 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName, service)
                 .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
-                .addListener(verificationHandler)
                 .setInitialMode(Mode.PASSIVE);
         org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector(), false);
-        newControllers.add(serviceBuilder.install());
+        serviceBuilder.install();
     }
 
     static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {

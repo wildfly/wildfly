@@ -24,7 +24,6 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -32,7 +31,6 @@ import javax.jms.Topic;
 
 import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.msc.service.Service;
@@ -119,7 +117,7 @@ public class JMSTopicService implements Service<Topic> {
         return topic;
     }
 
-    public static JMSTopicService installService(final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final ServiceName hqServiceName, final ServiceTarget serviceTarget, final String[] jndiBindings) {
+    public static JMSTopicService installService(final String name, final ServiceName hqServiceName, final ServiceTarget serviceTarget, final String[] jndiBindings) {
         final JMSTopicService service = new JMSTopicService(name, jndiBindings);
         final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(hqServiceName).append(name);
 
@@ -128,15 +126,7 @@ public class JMSTopicService implements Service<Topic> {
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.jmsServer)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
         org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.executorInjector, false);
-        if(verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        final ServiceController<Topic> controller = serviceBuilder.install();
-        if(newControllers != null) {
-            newControllers.add(controller);
-        }
-
+        serviceBuilder.install();
         return service;
     }
 }

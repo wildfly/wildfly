@@ -72,7 +72,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                     final ModelNode entries = topic.getDestination().resolve().get(CommonAttributes.DESTINATION_ENTRIES.getName());
                     jndiBindings = JMSServices.getJndiBindings(entries);
                 }
-                JMSTopicService.installService(null, null, topic.getName(), hqServiceName, phaseContext.getServiceTarget(), jndiBindings);
+                JMSTopicService.installService(topic.getName(), hqServiceName, phaseContext.getServiceTarget(), jndiBindings);
 
                 //create the management registration
                 final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, topic.getServer());
@@ -96,7 +96,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                 final String selector = destination.hasDefined(SELECTOR.getName()) ? destination.get(SELECTOR.getName()).resolve().asString() : null;
                 final boolean durable = destination.hasDefined(DURABLE.getName()) ? destination.get(DURABLE.getName()).resolve().asBoolean() : false;
 
-                JMSQueueService.installService(null, null, queue.getName(), phaseContext.getServiceTarget(), hqServiceName, selector, durable, jndiBindings);
+                JMSQueueService.installService(queue.getName(), phaseContext.getServiceTarget(), hqServiceName, selector, durable, jndiBindings);
 
                 //create the management registration
                 final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, queue.getServer());

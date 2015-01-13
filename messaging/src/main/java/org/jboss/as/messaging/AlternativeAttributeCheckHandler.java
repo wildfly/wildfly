@@ -66,11 +66,11 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
             final Resource resource = context.readResource(EMPTY_ADDRESS);
             if (alternativeMustBeSet) {
                 if (!attr.hasAlternative(resource.getModel())) {
-                    throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.undefineAttributeWithoutAlternative(attributeName)));
+                    throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.undefineAttributeWithoutAlternative(attributeName));
                 }
             } else {
                 if (attr.hasAlternative(resource.getModel())) {
-                    throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.altAttributeAlreadyDefined(attributeName)));
+                    throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.altAttributeAlreadyDefined(attributeName));
                 }
             }
         }
@@ -80,9 +80,9 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
         boolean hasAttr1 = operation.hasDefined(attr1);
         boolean hasAttr2 = operation.hasDefined(attr2);
         if (!hasAttr1 && !hasAttr2 && !acceptNone) {
-            throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.invalidOperationParameters(attr1, attr2)));
+            throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.invalidOperationParameters(attr1, attr2));
         } else if (hasAttr1 && hasAttr2) {
-            throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.cannotIncludeOperationParameters(attr1, attr2)));
+            throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.cannotIncludeOperationParameters(attr1, attr2));
         }
     }
 }

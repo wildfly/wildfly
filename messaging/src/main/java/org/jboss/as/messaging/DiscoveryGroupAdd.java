@@ -30,7 +30,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
@@ -42,7 +41,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.network.NetworkInterfaceBinding;
@@ -77,7 +75,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -119,7 +117,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
                             .install();
 
                 } catch (Exception e) {
-                    throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+                    throw new OperationFailedException(e.getLocalizedMessage());
                 }
             }
         }
