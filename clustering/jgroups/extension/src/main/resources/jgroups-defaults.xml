@@ -31,54 +31,16 @@
         max_bundle_size="31k"
         ip_ttl="2"
 
-        thread_pool.enabled="true"
-        thread_pool.min_threads="20"
-        thread_pool.max_threads="300"
-        thread_pool.keep_alive_time="60000"
-        thread_pool.queue_enabled="true"
-        thread_pool.queue_max_size="100"
         thread_pool.rejection_policy="discard"
-
-        oob_thread_pool.enabled="true"
-        oob_thread_pool.min_threads="20"
-        oob_thread_pool.max_threads="300"
-        oob_thread_pool.keep_alive_time="60000"
-        oob_thread_pool.queue_enabled="false"
         oob_thread_pool.rejection_policy="discard"
-
-        internal_thread_pool.enabled="true"
-        internal_thread_pool.min_threads="2"
-        internal_thread_pool.max_threads="4"
-        internal_thread_pool.keep_alive_time="60000"
-        internal_thread_pool.queue_enabled="true"
-        internal_thread_pool.queue_max_size="100"
         internal_thread_pool.rejection_policy="discard"/>
     <TCP
         recv_buf_size="20m"
         send_buf_size="640k"
         max_bundle_size="31k"
 
-        thread_pool.enabled="true"
-        thread_pool.min_threads="20"
-        thread_pool.max_threads="300"
-        thread_pool.keep_alive_time="60000"
-        thread_pool.queue_enabled="true"
-        thread_pool.queue_max_size="100"
         thread_pool.rejection_policy="discard"
-
-        oob_thread_pool.enabled="true"
-        oob_thread_pool.min_threads="20"
-        oob_thread_pool.max_threads="300"
-        oob_thread_pool.keep_alive_time="60000"
-        oob_thread_pool.queue_enabled="false"
         oob_thread_pool.rejection_policy="discard"
-
-        internal_thread_pool.enabled="true"
-        internal_thread_pool.min_threads="2"
-        internal_thread_pool.max_threads="4"
-        internal_thread_pool.keep_alive_time="60000"
-        internal_thread_pool.queue_enabled="true"
-        internal_thread_pool.queue_max_size="100"
         internal_thread_pool.rejection_policy="discard"/>
     <MPING ip_ttl="2"/>
     <FD timeout="3000" max_tries="5" msg_counts_as_heartbeat="false"/>

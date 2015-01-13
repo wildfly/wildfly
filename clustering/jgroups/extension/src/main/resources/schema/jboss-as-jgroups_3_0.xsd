@@ -260,17 +260,17 @@
                 <xs:documentation>Maximum thread pool size for the thread pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="queue-max-size" type="xs:int" use="optional">
+        <xs:attribute name="queue-length" type="xs:int" use="optional">
             <xs:annotation>
-                <xs:documentation>Maximum queue size for the thread pool.</xs:documentation>
+                <xs:documentation>Maximum queue length for the thread pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="keepalive-time" type="xs:int" use="optional">
+        <xs:attribute name="keep-alive-time" type="xs:int" use="optional">
             <xs:annotation>
                 <xs:documentation>Timeout in given time unit to remove idle thread from the pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="keepalive-time-unit" type="tns:time-unitType" use="optional" default="SECONDS">
+        <xs:attribute name="keep-alive-time-unit" type="tns:time-unitType" use="optional" default="SECONDS">
             <xs:annotation>
                 <xs:documentation>Time unit for the keepalive time.</xs:documentation>
             </xs:annotation>

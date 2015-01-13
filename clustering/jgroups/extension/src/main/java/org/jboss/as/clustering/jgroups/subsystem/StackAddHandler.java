@@ -40,6 +40,8 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 
 /**
  * @author Paul Ferraro
+ * @author Richard Achmatowicz
+ * @author Radoslav Husar
  */
 public class StackAddHandler extends AbstractAddStepHandler {
 
@@ -76,13 +78,11 @@ public class StackAddHandler extends AbstractAddStepHandler {
 
         addProtocolProperties(context, transport, transportBuilder);
 
-        // Setup threading as jgroups properties
-        if (transport.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
-            addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition.DEFAULT, "thread_pool", context, transport, transportBuilder);
-            addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition.INTERNAL, "internal_thread_pool", context, transport, transportBuilder);
-            addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition.OOB, "oob_thread_pool", context, transport, transportBuilder);
-            addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition.TIMER, "timer", context, transport, transportBuilder);
-        }
+        // Setup thread pool configuration via JGroups properties
+        addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition.DEFAULT, "thread_pool", context, transport, transportBuilder);
+        addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition.INTERNAL, "internal_thread_pool", context, transport, transportBuilder);
+        addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition.OOB, "oob_thread_pool", context, transport, transportBuilder);
+        addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition.TIMER, "timer", context, transport, transportBuilder);
 
         transportBuilder.build(target).install();
 
@@ -152,32 +152,30 @@ public class StackAddHandler extends AbstractAddStepHandler {
         return builder;
     }
 
-    static <C extends ProtocolConfiguration, B extends AbstractProtocolConfigurationBuilder<C>> B addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition pool, String propertyPrefix, OperationContext context, ModelNode transport, B builder) throws OperationFailedException {
-        if (transport.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
-            ModelNode threadModel = transport.get(pool.getPathElement().getKeyValuePair());
+    static <C extends ProtocolConfiguration, B extends AbstractProtocolConfigurationBuilder<C>> B addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition pool, String propertyPrefix, OperationContext context, ModelNode transport, B builder) throws OperationFailedException {
+        ModelNode threadModel = transport.get(pool.getPathElement().getKeyValuePair());
 
-            if (pool.getMinThreads().resolveModelAttribute(context, threadModel).isDefined()) {
-                builder.addProperty(propertyPrefix + ".min_threads", pool.getMinThreads().resolveModelAttribute(context, threadModel).asString());
-            }
-            if (pool.getMaxThreads().resolveModelAttribute(context, threadModel).isDefined()) {
-                builder.addProperty(propertyPrefix + ".max_threads", pool.getMaxThreads().resolveModelAttribute(context, threadModel).asString());
-            }
-            if (pool.getQueueLength().resolveModelAttribute(context, threadModel).isDefined()) {
-                int queueSize = pool.getQueueLength().resolveModelAttribute(context, threadModel).asInt();
-                if (queueSize == 0) {
-                    builder.addProperty(propertyPrefix + ".queue_enabled", Boolean.FALSE.toString());
-                } else {
-                    builder.addProperty(propertyPrefix + ".queue_enabled", Boolean.TRUE.toString());
-                    builder.addProperty(propertyPrefix + ".queue_max_size", String.valueOf(queueSize));
-                }
-            }
-            if (pool.getKeepAliveTime().resolveModelAttribute(context, threadModel).isDefined()) {
-                long keepAliveTime = pool.getKeepAliveTime().resolveModelAttribute(context, threadModel).asLong();
-                TimeUnit unit = Enum.valueOf(TimeUnit.class, pool.getKeepAliveTimeUnit().resolveModelAttribute(context, threadModel).asString());
-                long keepAliveTimeInSeconds = unit.toMillis(keepAliveTime);
-                builder.addProperty(propertyPrefix + ".keep_alive_time", String.valueOf(keepAliveTimeInSeconds));
-            }
+        builder.addProperty(propertyPrefix + ".min_threads", pool.getMinThreads().resolveModelAttribute(context, threadModel).asString())
+                .addProperty(propertyPrefix + ".max_threads", pool.getMaxThreads().resolveModelAttribute(context, threadModel).asString());
+
+        // queue_*
+        int queueSize = pool.getQueueLength().resolveModelAttribute(context, threadModel).asInt();
+        if (propertyPrefix.equals("timer")) {
+            // Timer pool doesn't accept queue_enabled property
+            builder.addProperty(propertyPrefix + ".queue_max_size", String.valueOf(queueSize));
+        } else if (queueSize == 0) {
+            builder.addProperty(propertyPrefix + ".queue_enabled", Boolean.FALSE.toString());
+        } else {
+            builder.addProperty(propertyPrefix + ".queue_enabled", Boolean.TRUE.toString())
+                    .addProperty(propertyPrefix + ".queue_max_size", String.valueOf(queueSize));
         }
+
+        // keep_alive_*
+        long keepAliveTime = pool.getKeepAliveTime().resolveModelAttribute(context, threadModel).asLong();
+        TimeUnit unit = Enum.valueOf(TimeUnit.class, pool.getKeepAliveTimeUnit().resolveModelAttribute(context, threadModel).asString());
+        long keepAliveTimeInMillis = unit.toMillis(keepAliveTime);
+        builder.addProperty(propertyPrefix + ".keep_alive_time", String.valueOf(keepAliveTimeInMillis));
+
         return builder;
     }
 }
