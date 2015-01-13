@@ -70,19 +70,19 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
         return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
-    public Builder<P> setModule(ModuleIdentifier module) {
+    public AbstractProtocolConfigurationBuilder<P> setModule(ModuleIdentifier module) {
         this.module = module;
         return this;
     }
 
-    public Builder<P> setSocketBinding(String socketBindingName) {
+    public AbstractProtocolConfigurationBuilder<P> setSocketBinding(String socketBindingName) {
         if (socketBindingName != null) {
             this.socketBinding = new InjectedValueDependency<>(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class);
         }
         return this;
     }
 
-    public Builder<P> addProperty(String name, String value) {
+    public AbstractProtocolConfigurationBuilder<P> addProperty(String name, String value) {
         this.properties.put(name, value);
         return this;
     }
