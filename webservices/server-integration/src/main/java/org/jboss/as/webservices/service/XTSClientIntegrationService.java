@@ -31,7 +31,6 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -75,12 +74,11 @@ public final class XTSClientIntegrationService implements Service<Void> {
         return serverConfig;
     }
 
-    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object> listeners) {
+    public static ServiceController<?> install(final ServiceTarget serviceTarget) {
         final XTSClientIntegrationService service = new XTSClientIntegrationService();
         final ServiceBuilder<?> builder = serviceTarget.addService(WSServices.XTS_CLIENT_INTEGRATION_SERVICE, service);
         builder.addDependency(ServiceName.JBOSS.append("xts").append("handlers"), UnifiedHandlerChainMetaData.class, service.getPostHandlerChainsInjector());
         builder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, service.getServerConfigInjector());
-        builder.addListener(listeners);
         //set passive initial mode, as this has to start only *if* the XTS service above is actually installed and started
         return builder.setInitialMode(ServiceController.Mode.PASSIVE).install();
     }

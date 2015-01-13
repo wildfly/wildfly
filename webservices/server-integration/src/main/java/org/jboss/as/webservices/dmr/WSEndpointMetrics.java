@@ -100,7 +100,7 @@ final class WSEndpointMetrics implements OperationStepHandler {
                         try {
                             context.getResult().set(getEndpointMetricsFragment(operation, registry));
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode(getFallbackMessage() + ": " + e.getMessage()));
+                            throw new OperationFailedException(getFallbackMessage() + ": " + e.getMessage());
                         }
                     } else {
                         context.getResult().set(getFallbackMessage());
