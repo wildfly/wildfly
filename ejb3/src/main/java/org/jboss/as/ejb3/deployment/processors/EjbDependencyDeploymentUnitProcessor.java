@@ -22,9 +22,10 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.server.deployment.EjbDeploymentMarker.isEjbDeployment;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,8 +36,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-
-import static org.jboss.as.server.deployment.EjbDeploymentMarker.isEjbDeployment;
+import org.wildfly.iiop.openjdk.deployment.IIOPDeploymentMarker;
 
 /**
  * Responsible for adding appropriate Java EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
@@ -52,7 +52,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final ModuleIdentifier EJB_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.ejb3");
     private static final ModuleIdentifier EJB_CLIENT = ModuleIdentifier.create("org.jboss.ejb-client");
     private static final ModuleIdentifier EJB_IIOP_CLIENT = ModuleIdentifier.create("org.jboss.iiop-client");
-    private static final ModuleIdentifier JACORB = ModuleIdentifier.create("org.jboss.as.jacorb");
+    private static final ModuleIdentifier IIOP_OPENJDK = ModuleIdentifier.create("org.wildfly.iiop-openjdk");
     private static final ModuleIdentifier EJB_API = ModuleIdentifier.create("javax.ejb.api");
 
 
@@ -82,9 +82,9 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         //we always have to add this, as even non-ejb deployments may still lookup IIOP ejb's
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_SUBSYSTEM, false, false, true, false));
 
-        if (JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             //needed for dynamic IIOP stubs
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JACORB, false, false, false, false));
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IIOP_OPENJDK, false, false, false, false));
         }
 
         // fetch the EjbJarMetaData

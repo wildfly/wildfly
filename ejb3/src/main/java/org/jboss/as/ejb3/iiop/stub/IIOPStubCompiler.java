@@ -28,18 +28,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
 
-import org.jboss.as.jacorb.rmi.AttributeAnalysis;
-import org.jboss.as.jacorb.rmi.ExceptionAnalysis;
-import org.jboss.as.jacorb.rmi.InterfaceAnalysis;
-import org.jboss.as.jacorb.rmi.OperationAnalysis;
-import org.jboss.as.jacorb.rmi.RMIIIOPViolationException;
-import org.jboss.as.jacorb.rmi.marshal.CDRStream;
-import org.jboss.as.jacorb.rmi.marshal.strategy.StubStrategy;
 import org.jboss.classfilewriter.ClassFile;
 import org.jboss.classfilewriter.ClassMethod;
 import org.jboss.classfilewriter.code.CodeAttribute;
 import org.jboss.classfilewriter.util.Boxing;
 import org.jboss.classfilewriter.util.DescriptorUtils;
+import org.wildfly.iiop.openjdk.rmi.AttributeAnalysis;
+import org.wildfly.iiop.openjdk.rmi.ExceptionAnalysis;
+import org.wildfly.iiop.openjdk.rmi.InterfaceAnalysis;
+import org.wildfly.iiop.openjdk.rmi.OperationAnalysis;
+import org.wildfly.iiop.openjdk.rmi.RMIIIOPViolationException;
+import org.wildfly.iiop.openjdk.rmi.marshal.CDRStream;
+import org.wildfly.iiop.openjdk.rmi.marshal.strategy.StubStrategy;
 
 /**
  * Utility class responsible for the dynamic generation of bytecodes of
@@ -152,7 +152,7 @@ public class IIOPStubCompiler {
                     + typeName.substring(1));
             ret = DescriptorUtils.makeDescriptor(returnType);
         }
-        ca.invokevirtual(superclass.getName(), invoke, "(Ljava/lang/String;Lorg/jboss/as/jacorb/rmi/marshal/strategy/StubStrategy;[Ljava/lang/Object;)" + ret);
+        ca.invokevirtual(superclass.getName(), invoke, "(Ljava/lang/String;Lorg/wildfly/iiop/openjdk/rmi/marshal/strategy/StubStrategy;[Ljava/lang/Object;)" + ret);
         if (!returnType.isPrimitive() && returnType != Object.class) {
             ca.checkcast(returnType);
         }
@@ -229,7 +229,7 @@ public class IIOPStubCompiler {
             init.aconstNull();
 
             // Constructs the StubStrategy
-            init.invokestatic(StubStrategy.class.getName(), "forMethod", "([Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)Lorg/jboss/as/jacorb/rmi/marshal/strategy/StubStrategy;");
+            init.invokestatic(StubStrategy.class.getName(), "forMethod", "([Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)Lorg/wildfly/iiop/openjdk/rmi/marshal/strategy/StubStrategy;");
 
             // Set the strategy field of this stub class
             init.putstatic(asm.getName(), strategyField, StubStrategy.class);

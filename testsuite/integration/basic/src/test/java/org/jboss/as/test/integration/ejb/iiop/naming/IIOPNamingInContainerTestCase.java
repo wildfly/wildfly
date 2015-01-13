@@ -16,6 +16,7 @@ import javax.ejb.RemoveException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
+
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.Properties;
@@ -38,17 +39,9 @@ public class IIOPNamingInContainerTestCase {
                 .addAsManifestResource(IIOPNamingInContainerTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
     }
 
-    @Deployment(name="test2")
-    public static Archive<?> descriptorOverrideDeploy() {
-        return ShrinkWrap.create(JavaArchive.class, "test2.jar")
-                .addPackage(IIOPNamingInContainerTestCase.class.getPackage())
-                .addAsManifestResource(IIOPNamingInContainerTestCase.class.getPackage(), "jboss-ejb3-naming.xml", "jboss-ejb3.xml");
-    }
-
     @Test
     @OperateOnDeployment("test")
     public void testIIOPNamingInvocation() throws NamingException, RemoteException {
-
         final Properties prope = new Properties();
         final InitialContext context = new InitialContext(prope);
         final Object iiopObj = context.lookup("corbaname:iiop:" + managementClient.getMgmtAddress() + ":3528#IIOPNamingBean");
@@ -75,27 +68,4 @@ public class IIOPNamingInContainerTestCase {
 
         }
     }
-
-    /**
-     * <p>
-     * Tests the lookup of a bean that used the jboss-ejb3.xml deployment descriptor to override the COSNaming binding.
-     * So, insteand of looking for the standard test2/IIOPNamingBean context we will look for the configured
-     * bean/custom/name/IIOPNamingBean context.
-     * </p>
-     *
-     * @throws NamingException if an error occurs while looking up the bean.
-     * @throws RemoteException if an error occurs while invoking the remote bean.
-     */
-    @Test
-    @OperateOnDeployment("test2")
-    public void testIIOPNamingInvocationWithDDOverride() throws NamingException, RemoteException {
-        final Properties prope = new Properties();
-        final InitialContext context = new InitialContext(prope);
-        final Object iiopObj = context.lookup("corbaname:iiop:" + managementClient.getMgmtAddress() + ":3528#bean/custom/name/IIOPNamingBean");
-        final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
-        final IIOPRemote result = object.create();
-        Assert.assertEquals("hello", result.hello());
-    }
-
-
 }

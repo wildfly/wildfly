@@ -52,7 +52,7 @@
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>
         <module name="org.omg.api"/>
-        <module name="org.jboss.as.jacorb"/>
+        <module name="org.wildfly.iiop-openjdk"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.narayana.compensations"/>

@@ -333,8 +333,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jacorb</groupId>
-            <artifactId>jacorb</artifactId>
+            <groupId>org.jboss.openjdk-orb</groupId>
+            <artifactId>openjdk-orb</artifactId>
         </dependency>
 
         <dependency>
@@ -826,7 +826,7 @@
 
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-jacorb</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1080,6 +1080,12 @@
             <groupId>org.jboss.spec.javax.rmi</groupId>
             <artifactId>jboss-rmi-api_1.0_spec</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>org.jboss.spec.javax.xml.bind</groupId>
@@ -2259,6 +2265,17 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jsr77</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-iiop-openjdk</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

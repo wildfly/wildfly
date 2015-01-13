@@ -11,7 +11,7 @@
         <subsystem supplement="full-ha">ejb3.xml</subsystem>
         <subsystem>io.xml</subsystem>
         <subsystem supplement="ha">infinispan.xml</subsystem>
-        <subsystem>jacorb.xml</subsystem>
+        <subsystem>iiop-openjdk.xml</subsystem>
         <subsystem>jaxrs.xml</subsystem>
         <subsystem>jca.xml</subsystem>
         <subsystem>jdr.xml</subsystem>

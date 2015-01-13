@@ -42,9 +42,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
-import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
-import org.jboss.as.jacorb.rmi.RmiIdlUtil;
-import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
+import org.jboss.iiop.csiv2.SASCurrent;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.iiop.HandleImplIIOP;
@@ -70,6 +68,8 @@ import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentPackage.NoContext;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
+import org.wildfly.iiop.openjdk.rmi.RmiIdlUtil;
+import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

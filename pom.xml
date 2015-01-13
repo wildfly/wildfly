@@ -162,6 +162,7 @@
         <version.org.jboss.narayana>5.0.4.Final</version.org.jboss.narayana>
         <version.org.jboss.metadata>9.0.0.Beta1</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.3.1.Beta1</version.org.jboss.mod_cluster>
+        <version.org.jboss.openjdk-orb>8.0.2.Beta1</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.remote-naming>2.0.3.Final</version.org.jboss.remote-naming>
         <version.org.jboss.resteasy>3.0.10.Final</version.org.jboss.resteasy>
@@ -274,13 +275,14 @@
         <module>ejb3</module>
         <module>embedded</module>
         <module>feature-pack</module>
-        <module>jacorb</module>
+        <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
         <module>jsf</module>
         <module>jsr77</module>
         <module>legacy/cmp</module>
+        <module>legacy/jacorb</module>
         <module>legacy/jaxr</module>
         <module>legacy/web</module>
         <module>mail</module>
@@ -303,7 +305,7 @@
         <module>weld</module>
         <module>xts</module>
         <module>rts</module>
-		<module>testsuite/shared</module>
+        <module>testsuite/shared</module>
         <module>testsuite</module>
     </modules>
 
@@ -1189,6 +1191,12 @@
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-io</artifactId>
                 <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-iiop-openjdk</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -4687,7 +4695,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-jacorb</artifactId>
+                <artifactId>narayana-jts-idlj</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -4972,6 +4980,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+		<groupId>org.jboss.openjdk-orb</groupId>
+		<artifactId>openjdk-orb</artifactId>
+	        <version>${version.org.jboss.openjdk-orb}</version>
+	    </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>

@@ -69,10 +69,10 @@ vi:ts=4:sw=4:expandtab
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
-
+ 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-jacorb</artifactId>
+            <artifactId>wildfly-iiop-openjdk</artifactId>
         </dependency>
 
         <dependency>
@@ -203,5 +203,11 @@ projects that depend on this project.-->
             <artifactId>groovy-all</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.rmi</groupId>
+            <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+            <scope>test</scope>
+      </dependency>
     </dependencies>
 </project>
