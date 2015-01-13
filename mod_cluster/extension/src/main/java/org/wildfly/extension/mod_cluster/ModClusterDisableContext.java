@@ -70,7 +70,7 @@ public class ModClusterDisableContext implements OperationStepHandler {
                     try {
                         service.disableContext(webHost, webContext);
                     } catch (IllegalArgumentException e) {
-                        throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext)));
+                        throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
                     }
 
                     context.completeStep(new OperationContext.RollbackHandler() {

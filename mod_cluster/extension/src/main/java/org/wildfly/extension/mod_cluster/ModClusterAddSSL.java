@@ -26,11 +26,8 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.
@@ -50,19 +47,15 @@ class ModClusterAddSSL extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
-            throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         // need to set reload-required on the server
         context.reloadRequired();
     }
 
     @Override
-    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
-        // just revert the reload-required
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
         context.revertReloadRequired();
     }
-
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {

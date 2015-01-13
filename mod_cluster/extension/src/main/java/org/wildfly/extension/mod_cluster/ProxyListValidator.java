@@ -53,7 +53,7 @@ public class ProxyListValidator implements ParameterValidator {
                     host = null;
                 }
                 if (host == null || port == 0) {
-                    throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.needHostAndPort()));
+                    throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.needHostAndPort());
                 }
             }
         }
