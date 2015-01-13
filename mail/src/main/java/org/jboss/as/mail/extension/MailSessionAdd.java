@@ -30,14 +30,12 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
 import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -84,26 +82,18 @@ class MailSessionAdd extends AbstractAddStepHandler {
      * @param context             the operation context
      * @param operation           the operation being executed
      * @param model               persistent configuration model node that corresponds to the address of {@code operation}
-     * @param verificationHandler step handler that can be added as a listener to any new services installed in order to
-     *                            validate the services installed correctly during the
-     *                            {@link org.jboss.as.controller.OperationContext.Stage#VERIFY VERIFY stage}
-     * @param controllers         holder for the {@link org.jboss.msc.service.ServiceController} for any new services installed by the method. The
-     *                            method should add the {@code ServiceController} for any new services to this list. If the
-     *                            overall operation needs to be rolled back, the list will be used in
-     *                            {@link #rollbackRuntime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, java.util.List)}  to automatically removed
-     *                            the newly added services
      * @throws org.jboss.as.controller.OperationFailedException
      *          if {@code operation} is invalid or updating the runtime otherwise fails
      */
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         ModelNode fullTree = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        installRuntimeServices(context, address, fullTree, verificationHandler, controllers);
+        installRuntimeServices(context, address, fullTree);
     }
 
 
-    static void installRuntimeServices(OperationContext context, PathAddress address, ModelNode fullModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
+    static void installRuntimeServices(OperationContext context, PathAddress address, ModelNode fullModel) throws OperationFailedException {
         String name = address.getLastElement().getValue();
 
         final String jndiName = getJndiName(fullModel, context);
@@ -148,13 +138,12 @@ class MailSessionAdd extends AbstractAddStepHandler {
                     }
                 });
 
-        mailSessionBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler);
-        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler);
-        controllers.add(mailSessionBuilder.install());
-        controllers.add(binderBuilder.install());
-
+        mailSessionBuilder
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+        binderBuilder
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     /**

@@ -101,11 +101,6 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 Mode.ON_DEMAND).install();
     }
 
-    @Override
-    protected boolean requiresRuntimeVerification() {
-        return false;
-    }
-
     // Synchronization objects created by iiop ejb beans require wrapping by JTSSychronizationWrapper to work correctly
     // (WFLY-3538). This hack is used obtain jts configuration in order to avoid doing this in non-jts environments when it is
     // not necessary.

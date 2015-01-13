@@ -24,7 +24,6 @@ package org.jboss.as.txn.service;
 
 import javax.transaction.TransactionManager;
 
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -44,11 +43,10 @@ public class TransactionManagerService extends AbstractService<TransactionManage
 
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
-    public static ServiceController<TransactionManager> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
+    public static ServiceController<TransactionManager> addService(final ServiceTarget target) {
         TransactionManagerService service = new TransactionManagerService();
         ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, service);
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
-        serviceBuilder.addListener(verificationHandler);
         return serviceBuilder.install();
     }
 

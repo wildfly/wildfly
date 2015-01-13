@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ee.component.deployers;
 
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -194,8 +193,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         // Gather information about the dependency
         final String bindingName = bindingConfiguration.getName().startsWith("java:") ? bindingConfiguration.getName() : "java:module/env/" + bindingConfiguration.getName();
 
-        final ServiceVerificationHandler serviceVerificationHandler = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.SERVICE_VERIFICATION_HANDLER);
-
         InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
                 true,
                 module.getModuleName(),
@@ -232,7 +229,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     ServiceBuilder<ManagedReferenceFactory> serviceBuilder = CurrentServiceContainer.getServiceContainer().addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
-                    serviceBuilder.addListener(serviceVerificationHandler);
                     serviceBuilder.install();
                 } catch (DuplicateServiceException e) {
                     final ServiceController<ManagedReferenceFactory> controller = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());

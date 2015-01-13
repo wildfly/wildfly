@@ -24,7 +24,6 @@ package org.jboss.as.naming.subsystem;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.external.ExternalContexts;
@@ -44,8 +43,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
-import java.util.List;
-
 import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
 
 /**
@@ -62,7 +59,7 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
 
         ROOT_LOGGER.activatingSubsystem();
 
@@ -70,53 +67,47 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
 
         // Create the java: namespace
-        newControllers.add(target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
+        target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler)
-                .install());
+                .install();
 
         // Create the Naming Service
         final NamingService namingService = new NamingService();
-        newControllers.add(target.addService(NamingService.SERVICE_NAME, namingService)
+        target.addService(NamingService.SERVICE_NAME, namingService)
                 .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, namingService.getNamingStore())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler)
-                .install());
+                .install();
 
         // Create the java:global namespace
-        newControllers.add(target.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new NamingStoreService())
+        target.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new NamingStoreService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler)
-                .install());
+                .install();
 
         // Create the java:jboss vendor namespace
-        newControllers.add(target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService())
+        target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler)
-                .install());
+                .install();
 
         // Setup remote naming store
         //we always install the naming store, but we don't install the server unless it has been explicitly enabled
-        newControllers.add(target.addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, new NamingStoreService())
+        target.addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, new NamingStoreService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler)
-                .install());
+                .install();
 
         // add the default namespace context selector service
         DefaultNamespaceContextSelectorService defaultNamespaceContextSelectorService = new DefaultNamespaceContextSelectorService();
-        newControllers.add(target.addService(DefaultNamespaceContextSelectorService.SERVICE_NAME, defaultNamespaceContextSelectorService)
+        target.addService(DefaultNamespaceContextSelectorService.SERVICE_NAME, defaultNamespaceContextSelectorService)
                 .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, NamingStore.class, defaultNamespaceContextSelectorService.getGlobalNamingStore())
                 .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, defaultNamespaceContextSelectorService.getJbossNamingStore())
                 .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, defaultNamespaceContextSelectorService.getRemoteExposedNamingStore())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler)
-                .install());
+                .install();
 
-        newControllers.add(target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install());
+        target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install();
 
         // create the subsystem's external context instance, and install related Service and DUP
         final ExternalContexts externalContexts = new ExternalContextsNavigableSet();
-        newControllers.add(target.addService(ExternalContextsService.SERVICE_NAME, new ExternalContextsService(externalContexts)).install());
+        target.addService(ExternalContextsService.SERVICE_NAME, new ExternalContextsService(externalContexts)).install();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

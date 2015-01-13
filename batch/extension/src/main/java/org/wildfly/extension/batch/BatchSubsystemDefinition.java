@@ -24,7 +24,6 @@ package org.wildfly.extension.batch;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -36,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -53,7 +51,6 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.batch.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
@@ -182,8 +179,7 @@ class BatchSubsystemDefinition extends SimpleResourceDefinition {
         }
 
         @Override
-        protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                      final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
+        protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
 
             context.addStep(new AbstractDeploymentChainStep() {

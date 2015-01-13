@@ -357,6 +357,7 @@ public class EJBEndpointAuthenticationTestCase {
     /**
      * @deprecated This is a really bad way to do this - we cannot unexport this non-API class until this is removed
      */
+    @Deprecated
     private String getNotAllowedExceptionMessage(String methodName) throws NoSuchMethodException {
         return EjbLogger.ROOT_LOGGER.invocationOfMethodNotAllowed(EJBEndpoint.class.getMethod(methodName, String.class), "EJBEndpoint").getMessage();
     }

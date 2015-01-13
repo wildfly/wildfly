@@ -59,6 +59,7 @@ public class EjbDeploymentInformation {
      * @param iorFactory            The {@link EjbIIOPService}
      * @deprecated since 7.1.1.Final - Use {@link #EjbDeploymentInformation(String, org.jboss.msc.value.InjectedValue, java.util.Map, java.util.Map, ClassLoader, org.jboss.msc.value.InjectedValue)} instead
      */
+    @Deprecated
     public EjbDeploymentInformation(final String ejbName, final InjectedValue<EJBComponent> ejbComponent, final Map<String, InjectedValue<ComponentView>> componentViews, final ClassLoader deploymentClassLoader, final InjectedValue<EjbIIOPService> iorFactory) {
         this.ejbName = ejbName;
         this.ejbComponent = ejbComponent;

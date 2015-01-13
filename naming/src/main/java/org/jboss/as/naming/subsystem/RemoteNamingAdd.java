@@ -21,13 +21,11 @@
  */
 package org.jboss.as.naming.subsystem;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.remote.RemoteNamingServerService;
@@ -51,29 +49,21 @@ public class RemoteNamingAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        installRuntimeServices(context, verificationHandler, newControllers);
+        installRuntimeServices(context);
     }
 
-    void installRuntimeServices(final OperationContext context, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void installRuntimeServices(final OperationContext context) throws OperationFailedException {
 
         final RemoteNamingServerService remoteNamingServerService = new RemoteNamingServerService();
 
         final ServiceBuilder<RemoteNamingService> builder = context.getServiceTarget().addService(RemoteNamingServerService.SERVICE_NAME, remoteNamingServerService);
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-        final ServiceController<RemoteNamingService> controller = builder
-                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteNamingServerService.getEndpointInjector())
+        builder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteNamingServerService.getEndpointInjector())
                 .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, remoteNamingServerService.getNamingStoreInjector())
                 .addInjection(remoteNamingServerService.getExecutorServiceInjector(), Executors.newFixedThreadPool(10))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
-
     }
 
 

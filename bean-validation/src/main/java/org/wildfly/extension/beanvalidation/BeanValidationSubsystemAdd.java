@@ -26,7 +26,6 @@ package org.wildfly.extension.beanvalidation;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationDeploymentDependenciesProcessor;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.beanvalidation.BeanValidationResourceReferenceProcessorRegistryProcessor;
@@ -34,9 +33,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
 
 import static org.wildfly.extension.beanvalidation.logging.BeanValidationLogger.ROOT_LOGGER;
 
@@ -54,7 +50,7 @@ class BeanValidationSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 ROOT_LOGGER.debug("Activating Bean Validation subsystem");

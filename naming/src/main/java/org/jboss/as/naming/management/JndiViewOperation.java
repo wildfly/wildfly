@@ -114,7 +114,7 @@ public class JndiViewOperation implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
-            throw new OperationFailedException(new ModelNode().set(NamingLogger.ROOT_LOGGER.jndiViewNotAvailable()));
+            throw new OperationFailedException(NamingLogger.ROOT_LOGGER.jndiViewNotAvailable());
         }
         context.stepCompleted();
     }

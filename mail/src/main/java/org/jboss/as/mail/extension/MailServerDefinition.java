@@ -22,7 +22,6 @@
 
 package org.jboss.as.mail.extension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -35,7 +34,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -46,7 +44,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -151,8 +148,8 @@ class MailServerDefinition extends PersistentResourceDefinition {
         }
 
         @Override
-        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel, verificationHandler, new ArrayList<ServiceController<?>>());
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+            MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel);
         }
 
         @Override

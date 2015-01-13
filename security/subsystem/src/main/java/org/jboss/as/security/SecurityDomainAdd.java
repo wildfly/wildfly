@@ -76,7 +76,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -137,7 +136,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         SecurityDomainResourceDefinition.CACHE_TYPE.validateAndSet(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, final ModelNode model) {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String securityDomain = address.getLastElement().getValue();
 
@@ -146,18 +145,14 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-                launchServices(context, securityDomain, Resource.Tools.readModel(resource), verificationHandler, newControllers);
+                launchServices(context, securityDomain, Resource.Tools.readModel(resource));
                 // Rollback handled by the parent step
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
     }
 
-    void launchServices(OperationContext context, String securityDomain, ModelNode model) throws OperationFailedException {
-        launchServices(context, securityDomain, model, null, null);
-    }
-
-    public void launchServices(OperationContext context, String securityDomain, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    public void launchServices(OperationContext context, String securityDomain, ModelNode model) throws OperationFailedException {
         final ApplicationPolicy applicationPolicy = createApplicationPolicy(context, securityDomain, model);
         final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(context, securityDomain, model);
         final String cacheType = getAuthenticationCacheType(model);
@@ -188,14 +183,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                     Object.class, securityDomainService.getCacheManagerInjector());
         }
 
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-
-        ServiceController<SecurityDomainContext> controller = builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 
     private ApplicationPolicy createApplicationPolicy(OperationContext context, String securityDomain, final ModelNode model)

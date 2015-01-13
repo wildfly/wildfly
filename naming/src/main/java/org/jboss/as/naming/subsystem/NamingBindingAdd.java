@@ -27,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 
 import javax.naming.InitialContext;
@@ -38,7 +37,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
@@ -59,7 +57,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -80,13 +77,13 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
-        installRuntimeServices(context, name, model, verificationHandler, newControllers);
+        installRuntimeServices(context, name, model);
     }
 
-    void installRuntimeServices(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void installRuntimeServices(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
         boolean allowed = false;
         for (String ns : GLOBAL_NAMESPACES) {
             if (name.startsWith(ns)) {
@@ -100,19 +97,19 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         final BindingType type = BindingType.forName(NamingBindingResourceDefinition.BINDING_TYPE.resolveModelAttribute(context, model).asString());
         if (type == BindingType.SIMPLE) {
-            installSimpleBinding(context, name, model, verificationHandler, newControllers);
+            installSimpleBinding(context, name, model);
         } else if (type == BindingType.OBJECT_FACTORY) {
-            installObjectFactory(context, name, model, verificationHandler, newControllers);
+            installObjectFactory(context, name, model);
         } else if (type == BindingType.LOOKUP) {
-            installLookup(context, name, model, verificationHandler, newControllers);
+            installLookup(context, name, model);
         } else if (type == BindingType.EXTERNAL_CONTEXT) {
-            installExternalContext(context, name, model, verificationHandler, newControllers);
+            installExternalContext(context, name, model);
         } else {
             throw NamingLogger.ROOT_LOGGER.unknownBindingType(type.toString());
         }
     }
 
-    void installSimpleBinding(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void installSimpleBinding(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
         final String value = NamingBindingResourceDefinition.VALUE.resolveModelAttribute(context, model).asString();
         final String type;
@@ -133,20 +130,11 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
 
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-
-        if (newControllers != null) {
-            newControllers.add(
-                    builder.install());
-        } else {
-            builder.install();
-        }
+        builder.install();
     }
 
 
-    void installObjectFactory(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void installObjectFactory(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
         final ModuleIdentifier moduleID = ModuleIdentifier.fromString(NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString());
         final String className = NamingBindingResourceDefinition.CLASS.resolveModelAttribute(context, model).asString();
@@ -217,23 +205,13 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             }
         });
 
-        ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
-
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-
-        if (newControllers != null) {
-            newControllers.add(
-                    builder.install());
-        } else {
-            builder.install();
-        }
+        serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
+                .install();
     }
 
 
-    void installExternalContext(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void installExternalContext(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
         final String moduleID = NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString();
         final String className = NamingBindingResourceDefinition.CLASS.resolveModelAttribute(context, model).asString();
@@ -279,20 +257,10 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             }
         });
 
-        ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
+        serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .addDependency(ExternalContextsService.SERVICE_NAME, ExternalContexts.class, binderService.getExternalContextsInjector());
-
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-
-        if (newControllers != null) {
-            newControllers.add(
-                    builder.install());
-        } else {
-            builder.install();
-        }
+                .addDependency(ExternalContextsService.SERVICE_NAME, ExternalContexts.class, binderService.getExternalContextsInjector())
+                .install();
     }
 
 
@@ -303,7 +271,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         return environment;
     }
 
-    void installLookup(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    void installLookup(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
         final String lookup = NamingBindingResourceDefinition.LOOKUP.resolveModelAttribute(context, model).asString();
 
@@ -334,19 +302,9 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             }
         });
 
-        ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
-
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-
-        if (newControllers != null) {
-            newControllers.add(
-                    builder.install());
-        } else {
-            builder.install();
-        }
+        serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
+                .install();
     }
 
     private Object coerceToType(final String value, final String type) throws OperationFailedException {

@@ -21,12 +21,9 @@
  */
 package org.wildfly.extension.rts;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -69,43 +66,35 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
-            ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
 
         if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
             RTSLogger.ROOT_LOGGER.trace("RTSSubsystemAdd.performBoottime");
         }
 
-        registerCoordinatorService(context, model, verificationHandler, newControllers);
-        registerParticipantService(context, model, verificationHandler, newControllers);
-        registerVolatileParticipantService(context, model, verificationHandler, newControllers);
-        registerInboundBridgeService(context, verificationHandler, newControllers);
+        registerCoordinatorService(context, model);
+        registerParticipantService(context, model);
+        registerVolatileParticipantService(context, model);
+        registerInboundBridgeService(context);
 
         registerDeploymentProcessors(context);
     }
 
-    private void registerInboundBridgeService(final OperationContext context,
-              final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+    private void registerInboundBridgeService(final OperationContext context) {
 
         final InboundBridgeService inboundBridgeService = new InboundBridgeService();
         final ServiceBuilder<InboundBridgeService> inboundBridgeServiceBuilder = context
                 .getServiceTarget()
                 .addService(RTSSubsystemExtension.INBOUND_BRIDGE, inboundBridgeService)
-                .addListener(verificationHandler)
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
 
-        inboundBridgeServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-
-        final ServiceController<InboundBridgeService> inboundBridgeServiceController = inboundBridgeServiceBuilder.install();
-
-        if (newControllers != null) {
-            newControllers.add(inboundBridgeServiceController);
-        }
+        inboundBridgeServiceBuilder
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
-    private void registerCoordinatorService(final OperationContext context, final ModelNode model,
-            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+    private void registerCoordinatorService(final OperationContext context, final ModelNode model) {
 
         final String socketBindingName = model.get(Attribute.SOCKET_BINDING.getLocalName()).asString();
         final String serverName = model.get(Attribute.SERVER.getLocalName()).asString();
@@ -114,23 +103,17 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<CoordinatorService> coordinatorServiceBuilder = context
                 .getServiceTarget()
                 .addService(RTSSubsystemExtension.COORDINATOR, coordinatorService)
-                .addListener(verificationHandler)
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class,
                         coordinatorService.getInjectedSocketBinding())
                 .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class,
                         coordinatorService.getInjectedHost());
 
-        coordinatorServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-
-        final ServiceController<CoordinatorService> coordinatorServiceController = coordinatorServiceBuilder.install();
-
-        if (newControllers != null) {
-            newControllers.add(coordinatorServiceController);
-        }
+        coordinatorServiceBuilder
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
-    private void registerParticipantService(final OperationContext context, final ModelNode model,
-            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+    private void registerParticipantService(final OperationContext context, final ModelNode model) {
 
         final String socketBindingName = model.get(Attribute.SOCKET_BINDING.getLocalName()).asString();
         final String serverName = model.get(Attribute.SERVER.getLocalName()).asString();
@@ -139,23 +122,19 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<ParticipantService> participantServiceBuilder = context
                 .getServiceTarget()
                 .addService(RTSSubsystemExtension.PARTICIPANT, participantService)
-                .addListener(verificationHandler)
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class,
                         participantService.getInjectedSocketBinding())
                 .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class,
                         participantService.getInjectedHost());
 
-        participantServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        participantServiceBuilder
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
-        final ServiceController<ParticipantService> participantServiceController = participantServiceBuilder.install();
 
-        if (newControllers != null) {
-            newControllers.add(participantServiceController);
-        }
     }
 
-    private void registerVolatileParticipantService(final OperationContext context, final ModelNode model,
-            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+    private void registerVolatileParticipantService(final OperationContext context, final ModelNode model) {
 
         final String socketBindingName = model.get(Attribute.SOCKET_BINDING.getLocalName()).asString();
         final String serverName = model.get(Attribute.SERVER.getLocalName()).asString();
@@ -164,20 +143,14 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<VolatileParticipantService> volatileParticipantServiceBuilder = context
                 .getServiceTarget()
                 .addService(RTSSubsystemExtension.VOLATILE_PARTICIPANT, volatileParticipantService)
-                .addListener(verificationHandler)
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class,
                         volatileParticipantService.getInjectedSocketBinding())
                 .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class,
                         volatileParticipantService.getInjectedHost());
 
-        volatileParticipantServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-
-        final ServiceController<VolatileParticipantService> volatileParticipantServiceController =
-                volatileParticipantServiceBuilder.install();
-
-        if (newControllers != null) {
-            newControllers.add(volatileParticipantServiceController);
-        }
+        volatileParticipantServiceBuilder
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     private void registerDeploymentProcessors(final OperationContext context) {
@@ -188,5 +161,4 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
     }
-
 }

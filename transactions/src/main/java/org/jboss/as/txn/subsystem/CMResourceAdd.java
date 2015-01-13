@@ -25,18 +25,14 @@ package org.jboss.as.txn.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.txn.logging.TransactionLogger.ROOT_LOGGER;
 
-import java.util.List;
-
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.txn.service.CMResourceService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -67,8 +63,7 @@ class CMResourceAdd extends AbstractAddStepHandler {
      * {@inheritDoc}
      */
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String jndiName = address.getLastElement().getValue();
         final String tableName = CMResourceResourceDefinition.CM_TABLE_NAME.resolveModelAttribute(context, model).asString();
@@ -77,11 +72,12 @@ class CMResourceAdd extends AbstractAddStepHandler {
         ROOT_LOGGER.debugf("adding commit-markable-resource: jndi-name=%s, table-name=%s, batch-size=%d, immediate-cleanup=%b", jndiName, tableName, batchSize, immediateCleanup);
 
         CMResourceService service = new CMResourceService(jndiName, tableName, immediateCleanup, batchSize);
-        final ServiceBuilder<?> builder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_CMR.append(jndiName), service);
-        builder.addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, service.getJTAEnvironmentBeanInjector());
-        newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
+        context.getServiceTarget().addService(TxnServices.JBOSS_TXN_CMR.append(jndiName), service)
+                .addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, service.getJTAEnvironmentBeanInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
-        if (! context.isBooting()) {
+        if (!context.isBooting()) {
             context.reloadRequired();
         }
     }

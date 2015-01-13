@@ -241,7 +241,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
       final ServiceName config = componentConfigs.get(pa);
       if (config == null) {
           String exceptionMessage = EjbLogger.ROOT_LOGGER.noComponentRegisteredForAddress(operationAddress);
-          throw new OperationFailedException(new ModelNode().set(exceptionMessage));
+          throw new OperationFailedException(exceptionMessage);
       }
 
       return config;
@@ -254,12 +254,12 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         ServiceController<?> controller = registry.getService(serviceName);
         if (controller == null) {
             String exceptionMessage = EjbLogger.ROOT_LOGGER.noComponentAvailableForAddress(operationAddress);
-            throw new OperationFailedException(new ModelNode().set(exceptionMessage));
+            throw new OperationFailedException(exceptionMessage);
         }
         ServiceController.State controllerState = controller.getState();
         if (controllerState != ServiceController.State.UP) {
             String exceptionMessage = EjbLogger.ROOT_LOGGER.invalidComponentState(operationAddress, controllerState, ServiceController.State.UP);
-            throw new OperationFailedException(new ModelNode().set(exceptionMessage));
+            throw new OperationFailedException(exceptionMessage);
         }
         return componentClass.cast(controller.getValue());
     }
