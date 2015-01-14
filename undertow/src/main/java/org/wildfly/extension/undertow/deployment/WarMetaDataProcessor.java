@@ -187,17 +187,12 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     }
                     otherPos = i;
                 } else {
-                    boolean found = false;
                     for (WebOrdering ordering : orderings) {
                         if (orderingElementMetaData.getName().equals(ordering.getName())) {
                             order.add(ordering.getJar());
                             jarsSet.remove(ordering.getJar());
-                            found = true;
                             break;
                         }
-                    }
-                    if (!found) {
-                        UndertowLogger.ROOT_LOGGER.invalidAbsoluteOrdering(orderingElementMetaData.getName());
                     }
                 }
                 i++;
@@ -622,10 +617,6 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                         found = true;
                     }
                 }
-                if (!found) {
-                    // Unknown name
-                    throw new IllegalStateException(UndertowLogger.ROOT_LOGGER.invalidRelativeOrderingUnknownName(webOrdering.getJar()));
-                }
             }
             Iterator<String> before = webOrdering.getBefore().iterator();
             while (before.hasNext()) {
@@ -643,10 +634,6 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                         ordering2.addAfter(ordering);
                         found = true;
                     }
-                }
-                if (!found) {
-                    // Unknown name
-                    throw new IllegalStateException(UndertowLogger.ROOT_LOGGER.invalidRelativeOrderingUnknownName(webOrdering.getJar()));
                 }
             }
         }
