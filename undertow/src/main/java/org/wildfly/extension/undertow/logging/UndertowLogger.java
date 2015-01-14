@@ -228,8 +228,8 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 45, value = "Duplicate name declared in JAR: %s")
     String invalidRelativeOrderingDuplicateName(String jar);
 
-    @Message(id = 46, value = "Unknown name declared in JAR: %s")
-    String invalidRelativeOrderingUnknownName(String jar);
+    // @Message(id = 46, value = "Unknown name declared in JAR: %s")
+    // String invalidRelativeOrderingUnknownName(String jar);
 
     @Message(id = 47, value = "Relative ordering conflict with JAR: %s")
     String invalidRelativeOrderingConflict(String jar);
