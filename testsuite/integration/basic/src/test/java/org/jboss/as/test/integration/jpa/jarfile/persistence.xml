@@ -30,6 +30,7 @@
 			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.session_factory_name" value="modelSessionFactory" />
+                        <property name="jboss.as.jpa.providerModule" value="org.hibernate:4.3" />
 		</properties>
 	</persistence-unit>
 </persistence>
