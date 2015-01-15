@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.HostEffect;
 import org.jboss.as.controller.access.ServerGroupEffect;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
@@ -44,12 +45,16 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
 
     public static final ScopingConstraintFactory FACTORY = new Factory();
 
-    private static final ServerGroupEffectConstraint GLOBAL_USER = new ServerGroupEffectConstraint(true);
-    private static final ServerGroupEffectConstraint GLOBAL_REQUIRED = new ServerGroupEffectConstraint(false);
+    private static final ServerGroupEffectConstraint GLOBAL_USER = new ServerGroupEffectConstraint(true, false);
+    private static final ServerGroupEffectConstraint DOMAIN_GLOBAL_REQUIRED = new ServerGroupEffectConstraint(false, false);
+    private static final ServerGroupEffectConstraint HOST_GLOBAL_REQUIRED = new ServerGroupEffectConstraint(false, true);
     private static final ServerGroupEffectConstraint UNASSIGNED = new ServerGroupEffectConstraint();
 
     private final boolean user;
     private final boolean global;
+    // nonServerHost means it applies to a host resource
+    // but not a server or server-config child
+    private final boolean nonServerHost;
     private final boolean unassigned;
     private final GroupsHolder groupsHolder;
     private final boolean readOnly;
@@ -57,10 +62,11 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     private final boolean groupRemove;
     private final ServerGroupEffectConstraint readOnlyConstraint;
 
-    // For unassigned resources
+    // For domain unassigned resources
     private ServerGroupEffectConstraint() {
         this.user = false;
         this.global = false;
+        this.nonServerHost = false;
         this.unassigned = true;
         this.readOnly = false;
         this.readOnlyConstraint = null;
@@ -70,9 +76,10 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     }
 
     // For GLOBAL cases
-    private ServerGroupEffectConstraint(final boolean user) {
+    private ServerGroupEffectConstraint(final boolean user, boolean nonServerHost) {
         this.user = user;
         this.global = true;
+        this.nonServerHost = nonServerHost;
         this.unassigned = false;
         this.readOnly = false;
         this.readOnlyConstraint = null;
@@ -81,9 +88,10 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
         this.groupsHolder = new GroupsHolder();
     }
 
-    private ServerGroupEffectConstraint(Set<String> allowed, boolean groupAdd, boolean groupRemove) {
+    private ServerGroupEffectConstraint(Set<String> allowed, boolean nonServerHost, boolean groupAdd, boolean groupRemove) {
         this.user = false;
         this.global = false;
+        this.nonServerHost = nonServerHost;
         this.unassigned = false;
         this.groupsHolder = new GroupsHolder(allowed);
         this.readOnly = false;
@@ -96,24 +104,26 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     public ServerGroupEffectConstraint(List<String> allowed) {
         this.user = true;
         this.global = false;
+        this.nonServerHost = false;
         this.unassigned = false;
         this.groupsHolder = new GroupsHolder(allowed);
         this.readOnly = false;
         this.groupAdd = false;
         this.groupRemove = false;
-        this.readOnlyConstraint = new ServerGroupEffectConstraint(groupsHolder, true);
+        this.readOnlyConstraint = new ServerGroupEffectConstraint(groupsHolder);
     }
 
     /**
      * Creates the constraint the standard constraint will return from {@link #getOutofScopeReadConstraint()}
      * Only call from {@link ServerGroupEffectConstraint#ServerGroupEffectConstraint(java.util.List)}
      */
-    private ServerGroupEffectConstraint(GroupsHolder groupsHolder, boolean readOnly) {
+    private ServerGroupEffectConstraint(GroupsHolder groupsHolder) {
         this.user = true;
         this.global = false;
+        this.nonServerHost = false;
         this.unassigned = false;
         this.groupsHolder = groupsHolder;
-        this.readOnly = readOnly;
+        this.readOnly = true;
         this.groupAdd = false;
         this.groupRemove = false;
         this.readOnlyConstraint = null;
@@ -135,7 +145,8 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
                 assert !sgec.user : "illegal comparison";
                 if (readOnly) {
                     // Allow global or any matching server group
-                    if (!sgec.global) {
+                    // Also, since this is readOnly, allow nonServerHost
+                    if (!sgec.global && !sgec.nonServerHost) {
                         boolean anyMatch = anyMatch(ourSpecific, sgecSpecific);
                         if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("read-only server-group constraint violated " +
                                 "for action %s due to no match between groups %s and allowed groups %s",
@@ -248,22 +259,26 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetAttribute target) {
-            return getRequiredConstraint(target.getServerGroupEffect());
+            return getRequiredConstraint(target.getServerGroupEffect(), target.getHostEffect());
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
-            return getRequiredConstraint(target.getServerGroupEffect());
+            return getRequiredConstraint(target.getServerGroupEffect(), target.getHostEffect());
         }
 
-        private Constraint getRequiredConstraint(ServerGroupEffect serverGroupEffect) {
+        private Constraint getRequiredConstraint(ServerGroupEffect serverGroupEffect, HostEffect hostEffect) {
+            boolean nonServerHost = hostEffect != null && !hostEffect.isHostEffectGlobal() && !hostEffect.isServerEffect();
             if (serverGroupEffect == null || serverGroupEffect.isServerGroupEffectGlobal()) {
-                return GLOBAL_REQUIRED;
+                if (nonServerHost) {
+                    return HOST_GLOBAL_REQUIRED;
+                }
+                return DOMAIN_GLOBAL_REQUIRED;
             } else if (serverGroupEffect.isServerGroupEffectUnassigned()) {
                 return UNASSIGNED;
             }
             return new ServerGroupEffectConstraint(serverGroupEffect.getAffectedServerGroups(),
-                    serverGroupEffect.isServerGroupAdd(), serverGroupEffect.isServerGroupRemove());
+                    nonServerHost, serverGroupEffect.isServerGroupAdd(), serverGroupEffect.isServerGroupRemove());
         }
 
         @Override

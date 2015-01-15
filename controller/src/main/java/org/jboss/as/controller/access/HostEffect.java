@@ -54,6 +54,13 @@ public interface HostEffect {
     boolean isHostEffectGlobal();
 
     /**
+     * Gets whether the resource is related to a specific server (either a server resource or a server-config).
+     *
+     * @return {@code true} if the resource relates to a specific server.
+     */
+    boolean isServerEffect();
+
+    /**
      * Gets the names of the hosts affected by this resource, or {@code null} if
      * {@link #isHostEffectGlobal()} returns {@code true}
      *

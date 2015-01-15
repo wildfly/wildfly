@@ -75,55 +75,76 @@ class HostServerGroupTracker {
         private final boolean unassigned;
         private final boolean groupAdd;
         private final boolean groupRemove;
+        private final boolean serverEffect;
 
-        private static HostServerGroupEffect forGlobal(PathAddress address) {
-            return new HostServerGroupEffect(address, (Set<String>) null, null, false, false, false);
+        /** Creates an HSGE for an address in the domain-wide tree that CANNOT be mapped to server groups.*/
+        private static HostServerGroupEffect forDomainGlobal(PathAddress address) {
+            return new HostServerGroupEffect(address, (Set<String>) null, null, false, false, false, false);
         }
 
+        /** Creates an HSGE for an address in the domain-wide tree that IS mapped to server groups.*/
         private static HostServerGroupEffect forDomain(PathAddress address,
                                                        Set<String> serverGroupEffects) {
             return new HostServerGroupEffect(address,
-                    serverGroupEffects == null ? EMPTY : serverGroupEffects, null, false, false, false);
+                    serverGroupEffects == null ? EMPTY : serverGroupEffects, null, false, false, false, false);
         }
 
+        /** Creates an HSGE for an address in the domain-wide tree that CAN be mapped to server groups but currently IS NOT mapped.*/
         private static HostServerGroupEffect forUnassignedDomain(PathAddress address) {
-            return new HostServerGroupEffect(address, EMPTY, null, true, false, false);
+            return new HostServerGroupEffect(address, EMPTY, null, false, true, false, false);
         }
 
+        /** Creates an HSGE for an address in a server-group tree */
         private static HostServerGroupEffect forServerGroup(PathAddress address, String serverGroup,
                                                             boolean groupAdd, boolean groupRemove) {
-            return new HostServerGroupEffect(address, Collections.singleton(serverGroup), null, false, groupAdd, groupRemove);
+            return new HostServerGroupEffect(address, Collections.singleton(serverGroup), null, false, false, groupAdd, groupRemove);
         }
 
-        private static HostServerGroupEffect forHost(PathAddress address, Set<String> serverGroupEffects, String hostEffect) {
-            return new HostServerGroupEffect(address, serverGroupEffects, hostEffect, false, false, false);
+        /** Creates an HSGE for the local host-tree resource (excluding server and server-config subtress for a host
+         * that HAS been mapped to one or more server groups */
+        private static HostServerGroupEffect forMappedHost(PathAddress address, Set<String> serverGroupEffects, String hostEffect) {
+            return new HostServerGroupEffect(address, serverGroupEffects, hostEffect, false, false, false, false);
         }
 
+        /** Creates an HSGE for an address on a remote host. We don't need to worry the op doing writes or impacting
+         * unallowed server groups in this process; those will be attempted and authorized in the remote process. */
         private static HostServerGroupEffect forNonLocalHost(PathAddress address, String hostEffect) {
-            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, false, false, false);
+            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, false, false, false, false);
         }
 
+        /** Creates an HSGE for the local host-tree resource (excluding server and server-config subtress for a host
+         * that HAS NOT been mapped to any server groups */
         private static HostServerGroupEffect forUnassignedHost(PathAddress address, String hostEffect) {
-            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, true, false, false);
+            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, false, true, false, false);
         }
 
+        /** Creates an HSGE for an address that points to /host=xxx/server-config=* and not to a specific server-config */
         private static HostServerGroupEffect forWildCardServerConfig(PathAddress address, String hostEffect) {
-            return new HostServerGroupEffect(address, EMPTY, hostEffect, true, false, false);
+            return new HostServerGroupEffect(address, EMPTY, hostEffect, false, true, false, false);
         }
 
-
+        /** Creates an HSGE for an address that points to a domain server resource, or a non-wildcard server-config resource*/
         static HostServerGroupEffect forServer(PathAddress address, String serverGroupEffect, String hostEffect) {
             assert serverGroupEffect != null : "serverGroupEffect is null";
-            return new HostServerGroupEffect(address, Collections.singleton(serverGroupEffect), hostEffect, false, false, false);
+            return new HostServerGroupEffect(address, Collections.singleton(serverGroupEffect), hostEffect, true, false, false, false);
+        }
+
+        /** Creates an HSGE for a local host address that points to an unknown server or server-config resource  */
+        private static HostServerGroupEffect forUnknownLocalServer(PathAddress address, String hostEffect) {
+            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, false, false, false, false);
         }
 
 
         private HostServerGroupEffect(PathAddress address,
                                       Set<String> serverGroupEffects,
-                                      String hostEffect, boolean unassigned,
-                                      boolean groupAdd, boolean groupRemove) {
+                                      String hostEffect,
+                                      boolean serverEffect,
+                                      boolean unassigned,
+                                      boolean groupAdd,
+                                      boolean groupRemove) {
             this.address = address;
             this.serverGroupEffects = serverGroupEffects;
+            this.serverEffect = serverEffect;
             this.unassigned = unassigned;
             this.hostEffects = hostEffect == null ? null : Collections.singleton(hostEffect);
             this.groupAdd = groupAdd;
@@ -166,6 +187,11 @@ class HostServerGroupTracker {
         }
 
         @Override
+        public boolean isServerEffect() {
+            return serverEffect;
+        }
+
+        @Override
         public Set<String> getAffectedHosts() {
             return hostEffects;
         }
@@ -196,7 +222,7 @@ class HostServerGroupTracker {
                         if (hostResource != null) {
                             String serverGroup = null;
                             Resource serverConfig = hostResource.getChild(PathElement.pathElement(SERVER_CONFIG, secondElement.getValue()));
-                            if (serverConfig != null) { // may be null if hostName is not the local host
+                            if (serverConfig != null) { // may be null if it's a wildcard or server-config not created yet (bad address or add op)
                                 ModelNode model = serverConfig.getModel();
                                 if (model.hasDefined(GROUP)) {
                                     serverGroup = model.get(GROUP).asString();
@@ -213,19 +239,21 @@ class HostServerGroupTracker {
 
                             if (serverGroup != null) {
                                 return HostServerGroupEffect.forServer(address, serverGroup, hostName);
-                            } // else may be null if hostName is not the local host.
+                            } // else maybe it's a bad address
                               // We checked it's not a server-config add so assume it's a read and just provide the
-                              // forHost response, which will be acceptable for a read for any server group scoped role
-                        } // else not the local host. Can only be a read, so just use the forHost response,
+                              // forUnknownLocalServer response, which will be acceptable for a read for any server group scoped role
+                              // Presumably the request will fail for reasons unrelated to authorization
+                            return HostServerGroupEffect.forUnknownLocalServer(address, hostName);
+                        } // else not the local host. Can only be a read on this process, so just use the forNonLocalHost response,
                           // which will be acceptable for a read for any server group scoped role
                         return HostServerGroupEffect.forNonLocalHost(address, hostName);
                     }
                 }
                 return getHostEffect(address, hostName, root);
             } else if (PROFILE.equals(type)) {
-                return getDomainEffect(address, firstElement.getValue(), profilesToGroups, root);
+                return getMappableDomainEffect(address, firstElement.getValue(), profilesToGroups, root);
             } else if (SOCKET_BINDING_GROUP.equals(type)) {
-                return getDomainEffect(address, firstElement.getValue(), socketsToGroups, root);
+                return getMappableDomainEffect(address, firstElement.getValue(), socketsToGroups, root);
             } else if (SERVER_GROUP.equals(type)) {
                 // WFLY-2190 make add/remove global. So, s-g-s-r can't remove its own server group
                 // and can't add it. This helps the console, but since there ideally would be validation
@@ -239,9 +267,9 @@ class HostServerGroupTracker {
                     return HostServerGroupEffect.forServerGroup(address, firstElement.getValue(), add, !add);
                 }
             } else if (DEPLOYMENT.equals(type)) {
-                return getDomainEffect(address, firstElement.getValue(), deploymentsToGroups, root);
+                return getMappableDomainEffect(address, firstElement.getValue(), deploymentsToGroups, root);
             } else if (DEPLOYMENT_OVERLAY.equals(type)) {
-                return getDomainEffect(address, firstElement.getValue(), overlaysToGroups, root);
+                return getMappableDomainEffect(address, firstElement.getValue(), overlaysToGroups, root);
             }
         } else {
             // WFLY-1916 -- need special handling for deployment related ops
@@ -249,7 +277,7 @@ class HostServerGroupTracker {
             if (FULL_REPLACE_DEPLOYMENT.equals(opName)) {
                 // The name of the deployment being replaced is what matters
                 if (operation.hasDefined(NAME)) {
-                    return getDomainEffect(address, operation.get(NAME).asString(),
+                    return getMappableDomainEffect(address, operation.get(NAME).asString(),
                             deploymentsToGroups, root);
                 }
             } else if (UPLOAD_OPS.contains(opName)) {
@@ -258,7 +286,7 @@ class HostServerGroupTracker {
             }
         }
 
-        return HostServerGroupEffect.forGlobal(address);
+        return HostServerGroupEffect.forDomainGlobal(address);
     }
 
     synchronized void invalidate() {
@@ -270,8 +298,9 @@ class HostServerGroupTracker {
         hostsToGroups.clear();
     }
 
-    private synchronized HostServerGroupEffect getDomainEffect(PathAddress address, String key,
-                                                               Map<String, Set<String>> map, Resource root) {
+    /** Creates an appropriate HSGE for a domain-wide resource of a type that is mappable to server groups */
+    private synchronized HostServerGroupEffect getMappableDomainEffect(PathAddress address, String key,
+                                                                       Map<String, Set<String>> map, Resource root) {
         if (requiresMapping) {
             map(root);
             requiresMapping = false;
@@ -281,6 +310,7 @@ class HostServerGroupTracker {
                               : HostServerGroupEffect.forUnassignedDomain(address);
     }
 
+    /** Creates an appropriate HSGE for resources in the host tree, excluding the server and server-config subtrees */
     private synchronized HostServerGroupEffect getHostEffect(PathAddress address, String host, Resource root)  {
         if (requiresMapping) {
             map(root);
@@ -300,7 +330,7 @@ class HostServerGroupTracker {
             }
         }
         return mapped == null ? HostServerGroupEffect.forUnassignedHost(address, host)
-                : HostServerGroupEffect.forHost(address, mapped, host);
+                : HostServerGroupEffect.forMappedHost(address, mapped, host);
 
     }
 
