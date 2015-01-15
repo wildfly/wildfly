@@ -86,7 +86,7 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
         try {
             File file = root.getRoot().getPhysicalFile();
             if(file != null && file.isDirectory()) {
-                FilePermission permission = new FilePermission(file.getAbsolutePath() + "/-", "read");
+                FilePermission permission = new FilePermission(file.getAbsolutePath() + File.separatorChar + "-", "read");
                 permissions.add(new ImmediatePermissionFactory(permission));
             }
         } catch (IOException ex) {
