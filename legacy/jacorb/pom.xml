@@ -30,12 +30,11 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
+        <relativePath>../../pom.xml</relativePath>
         <version>9.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jacorb</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>WildFly: JacORB Subsystem</name>
