@@ -65,7 +65,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class NamingContext implements EventContext {
 
-    private static final RuntimePermission SET_ACTIVE_NAMING_STORE = new RuntimePermission("org.jboss.as.naming.SET_ACTIVE_NAMING_STORE");
+    /**
+     * A {@link org.jboss.as.naming.NamingPermission} needed to set the active {@link org.jboss.as.naming.NamingStore}. The name of the permission is "{@code setActiveNamingStore}."
+     */
+    private static final NamingPermission SET_ACTIVE_NAMING_STORE = new NamingPermission("setActiveNamingStore");
     /*
      * The active naming store to use for any context created without a name store.
      */

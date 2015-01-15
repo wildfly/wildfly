@@ -35,33 +35,45 @@ import org.jboss.remoting3.Connection;
  */
 public class RemotingContext {
 
-    private static final RuntimePermission SET_CONNECTION_PERMISSION = new RuntimePermission("org.jboss.as.security.remoting.SET_CONNECTION");
-    private static final RuntimePermission CLEAR_CONNECTION_PERMISSION = new RuntimePermission("org.jboss.as.security.remoting.CLEAR_CONNECTION");
-    private static final RuntimePermission GET_CONNECTION_PERMISSION = new RuntimePermission("org.jboss.as.security.remoting.GET_CONNECTION");
-    private static final RuntimePermission IS_SET_PERMISSION = new RuntimePermission("org.jboss.as.security.remoting.IS_CONNECTION_SET");
+    /**
+     * A {@link org.jboss.as.security.remoting.RemotingPermission} needed to clear a {@link org.jboss.as.security.remoting.RemotingContext}'s {@link org.jboss.remoting3.Connection}. The name of the permission is "{@code clearConnection}."
+     */
+    private static final RemotingPermission CLEAR_CONNECTION = new RemotingPermission("clearConnection");
+    /**
+     * A {@link org.jboss.as.security.remoting.RemotingPermission} needed to retrieve a {@link org.jboss.as.security.remoting.RemotingContext}'s {@link org.jboss.remoting3.Connection}. The name of the permission is "{@code getConnection}."
+     */
+    private static final RemotingPermission GET_CONNECTION = new RemotingPermission("getConnection");
+    /**
+     * A {@link org.jboss.as.security.remoting.RemotingPermission} needed to check if a {@link org.jboss.as.security.remoting.RemotingContext}'s {@link org.jboss.remoting3.Connection} is set. The name of the permission is "{@code isConnectionSet}."
+     */
+    private static final RemotingPermission IS_CONNECTION_SET = new RemotingPermission("isConnectionSet");
+    /**
+     * A {@link org.jboss.as.security.remoting.RemotingPermission} needed to set a {@link org.jboss.as.security.remoting.RemotingContext}'s {@link org.jboss.remoting3.Connection}. The name of the permission is "{@code setConnection}."
+     */
+    private static final RemotingPermission SET_CONNECTION = new RemotingPermission("setConnection");
 
     private static ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
 
     public static void setConnection(final Connection connection) {
-        checkPermission(SET_CONNECTION_PERMISSION);
+        checkPermission(SET_CONNECTION);
 
         RemotingContext.connection.set(connection);
     }
 
     public static void clear() {
-        checkPermission(CLEAR_CONNECTION_PERMISSION);
+        checkPermission(CLEAR_CONNECTION);
 
         connection.set(null);
     }
 
     public static Connection getConnection() {
-        checkPermission(GET_CONNECTION_PERMISSION);
+        checkPermission(GET_CONNECTION);
 
         return connection.get();
     }
 
     public static boolean isSet() {
-        checkPermission(IS_SET_PERMISSION);
+        checkPermission(IS_CONNECTION_SET);
 
         return connection.get() != null;
     }
