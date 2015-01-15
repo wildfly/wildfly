@@ -34,10 +34,12 @@ public class ExcludeEjbSubsystemTestCase {
         return jar;
     }
 
-    @Test(expected = NameNotFoundException.class)
+    @Test
     public void testEjbNotInstalled() throws NamingException {
-        Object result = initialContext.lookup("java:module/" + SimpleEjb.class.getSimpleName());
-        Assert.fail("Expected lookup to fail, instead " + result + " was returned");
+        try {
+            Object result = initialContext.lookup("java:module/" + SimpleEjb.class.getSimpleName());
+            Assert.fail("Expected lookup to fail, instead " + result + " was returned");
+        } catch (NameNotFoundException expected) {}
     }
 
 
