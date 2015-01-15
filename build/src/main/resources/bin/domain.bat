@@ -16,17 +16,6 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-rem Read an optional configuration file.
-if "x%DOMAIN_CONF%" == "x" (
-   set "DOMAIN_CONF=%DIRNAME%domain.conf.bat"
-)
-if exist "%DOMAIN_CONF%" (
-   echo Calling "%DOMAIN_CONF%"
-   call "%DOMAIN_CONF%" %*
-) else (
-   echo Config file not found "%DOMAIN_CONF%"
-)
-
 pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
@@ -45,6 +34,17 @@ if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
    echo.
    echo       JBOSS_HOME: "%JBOSS_HOME%"
    echo.
+)
+
+rem Read an optional configuration file.
+if "x%DOMAIN_CONF%" == "x" (
+   set "DOMAIN_CONF=%DIRNAME%domain.conf.bat"
+)
+if exist "%DOMAIN_CONF%" (
+   echo Calling "%DOMAIN_CONF%"
+   call "%DOMAIN_CONF%" %*
+) else (
+   echo Config file not found "%DOMAIN_CONF%"
 )
 
 set DIRNAME=
@@ -89,34 +89,35 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 )
 
 rem Setup directories, note directories with spaces do not work
+setlocal EnableDelayedExpansion
 set "CONSOLIDATED_OPTS=%JAVA_OPTS% %SERVER_OPTS%"
-:DIRLOOP
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.base.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
-    for /f %%i IN ("%%b") DO set "JBOSS_BASE_DIR=%%~fi"
-  )
+set baseDirFound=false
+set configDirFound=false
+set logDirFound=false
+for %%a in (!CONSOLIDATED_OPTS!) do (
+   if !baseDirFound! == true (
+      set "JBOSS_BASE_DIR=%%~a"
+      set baseDirFound=false
+   )
+   if !configDirFound! == true (
+      set "JBOSS_CONFIG_DIR=%%~a"
+      set configDirFound=false
+   )
+   if !logDirFound! == true (
+      set "JBOSS_LOG_DIR=%%~a"
+      set logDirFound=false
+   )
+   if "%%~a" == "-Djboss.domain.base.dir" (
+       set baseDirFound=true
+   )
+   if "%%~a" == "-Djboss.domain.config.dir" (
+       set configDirFound=true
+   )
+   if "%%~a" == "-Djboss.domain.log.dir" (
+       set logDirFound=true
+   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.config.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
-    for /f %%i IN ("%%b") DO set "JBOSS_CONFIG_DIR=%%~fi"
-  )
-)
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.log.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
-    for /f %%i IN ("%%b") DO set "JBOSS_LOG_DIR=%%~fi"
-  )
-)
-
-for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
-  if %%i == "" (
-    goto ENDDIRLOOP
-  ) else (
-    set CONSOLIDATED_OPTS=%%j
-    GOTO DIRLOOP
-  )
-)
-
-:ENDDIRLOOP
+setlocal DisableDelayedExpansion
 
 rem Setup JBoss specific properties
 
@@ -146,7 +147,7 @@ echo   JBOSS_HOME: "%JBOSS_HOME%"
 echo.
 echo   JAVA: "%JAVA%"
 echo.
-echo   JAVA_OPTS: "%JAVA_OPTS%"
+echo   JAVA_OPTS: "%PROCESS_CONTROLLER_JAVA_OPTS%"
 echo.
 echo ===============================================================================
 echo.

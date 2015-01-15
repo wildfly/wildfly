@@ -1,4 +1,5 @@
 @echo off
+setlocal ENABLEEXTENSIONS
 rem -------------------------------------------------------------------------
 rem JBoss Admin CLI Script for Windows
 rem -------------------------------------------------------------------------
@@ -48,6 +49,7 @@ set "JBOSS_RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
 if not exist "%JBOSS_RUNJAR%" (
   echo Could not locate "%JBOSS_RUNJAR%".
   echo Please check that you are in the bin directory when running this script.
+  set /A RC=1
   goto END
 )
 
@@ -59,17 +61,32 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 rem Add base package for L&F
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing"
 
+set LOGGING_CONFIG=
 echo "%JAVA_OPTS%" | findstr /I "logging.configuration" > nul
 if errorlevel == 1 (
-  set "JAVA_OPTS=%JAVA_OPTS% -Dlogging.configuration=file:"%JBOSS_HOME%"\bin\jboss-cli-logging.properties"
+  set "LOGGING_CONFIG=-Dlogging.configuration=file:%JBOSS_HOME%\bin\jboss-cli-logging.properties"
 ) else (
   echo logging.configuration already set in JAVA_OPTS
 )
-"%JAVA%" %JAVA_OPTS% ^
-    -jar "%JBOSS_RUNJAR%" ^
-    -mp "%JBOSS_MODULEPATH%" ^
-     org.jboss.as.cli ^
-     %*
+if "x%LOGGING_CONFIG%" == "x" (
+  "%JAVA%" %JAVA_OPTS% ^
+      -jar "%JBOSS_RUNJAR%" ^
+      -mp "%JBOSS_MODULEPATH%" ^
+       org.jboss.as.cli ^
+         %*
+) else (
+  "%JAVA%" %JAVA_OPTS% "%LOGGING_CONFIG%" ^
+      -jar "%JBOSS_RUNJAR%" ^
+      -mp "%JBOSS_MODULEPATH%" ^
+       org.jboss.as.cli ^
+       %*
+)
 
+set /A RC=%errorlevel%
 :END
 if "x%NOPAUSE%" == "x" pause
+
+if "x%RC%" == "x" (
+  set /A RC=0
+)
+exit /B %RC%

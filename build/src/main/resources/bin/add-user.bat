@@ -31,7 +31,7 @@ popd
 
 if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
    echo.
-   echo   WARNING:  JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+   echo   WARNING: The JBOSS_HOME ^("%SANITIZED_JBOSS_HOME%"^) that this script uses points to a different installation than the one that this script resides in ^("%RESOLVED_JBOSS_HOME%"^). Unpredictable results may occur.
    echo.
    echo       JBOSS_HOME: "%JBOSS_HOME%"
    echo.
@@ -47,9 +47,10 @@ if "x%JAVA_HOME%" == "x" (
 )
 
 rem Find jboss-modules.jar, or we can't continue
-set "JBOSS_RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
-if not exist "%JBOSS_RUNJAR%" (
-  echo Could not locate "%JBOSS_RUNJAR%".
+if exist "%JBOSS_HOME%\jboss-modules.jar" (
+    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
+) else (
+  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
   echo Please check that you are in the bin directory when running this script.
   goto END
 )
@@ -62,10 +63,8 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 rem Uncomment to override standalone and domain user location
 rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.server.config.user.dir=..\standalone\configuration -Djboss.domain.config.user.dir=..\domain\configuration"
 
-set "JAVA_OPTS=%JAVA_OPTS%"
-
 "%JAVA%" %JAVA_OPTS% ^
-    -jar "%JBOSS_RUNJAR%" ^
+    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
      org.jboss.as.domain-add-user ^
      %*
