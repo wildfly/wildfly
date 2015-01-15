@@ -238,7 +238,8 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                         ModClusterDefinition.ADVERTISE_PATH,
                                         ModClusterDefinition.ADVERTISE_FREQUENCY,
                                         ModClusterDefinition.HEALTH_CHECK_INTERVAL,
-                                        ModClusterDefinition.BROKEN_NODE_TIMEOUT)
+                                        ModClusterDefinition.BROKEN_NODE_TIMEOUT,
+                                        ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)

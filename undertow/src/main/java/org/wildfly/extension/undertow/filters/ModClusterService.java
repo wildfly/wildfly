@@ -1,5 +1,7 @@
 package org.wildfly.extension.undertow.filters;
 
+import io.undertow.Handlers;
+import io.undertow.predicate.PredicateParser;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.SocketBinding;
@@ -42,11 +44,12 @@ public class ModClusterService extends FilterService {
     private final String advertisePath;
     private final String advertiseProtocol;
     private final String securityKey;
+    private final Predicate managementAccessPredicate;
 
     private ModCluster modCluster;
     private MCMPConfig config;
 
-    ModClusterService(ModelNode model, long healthCheckInterval, int maxRequestTime, long removeBrokenNodes, int advertiseFrequency, String advertisePath, String advertiseProtocol, String securityKey) {
+    ModClusterService(ModelNode model, long healthCheckInterval, int maxRequestTime, long removeBrokenNodes, int advertiseFrequency, String advertisePath, String advertiseProtocol, String securityKey, Predicate managementAccessPredicate) {
         super(ModClusterDefinition.INSTANCE, model);
         this.healthCheckInterval = healthCheckInterval;
         this.maxRequestTime = maxRequestTime;
@@ -55,6 +58,7 @@ public class ModClusterService extends FilterService {
         this.advertisePath = advertisePath;
         this.advertiseProtocol = advertiseProtocol;
         this.securityKey = securityKey;
+        this.managementAccessPredicate = managementAccessPredicate;
     }
 
     @Override
@@ -104,7 +108,7 @@ public class ModClusterService extends FilterService {
         //to specify the next handler. To get around this we invoke the mod_proxy handler
         //and then if it has not dispatched or handled the request then we know that we can
         //just pass it on to the next handler
-        final HttpHandler mcmp = config.create(modCluster, next);
+        final HttpHandler mcmp = managementAccessPredicate != null  ? Handlers.predicate(managementAccessPredicate, config.create(modCluster, next), next)  :  config.create(modCluster, next);
         final HttpHandler proxyHandler = modCluster.getProxyHandler();
         HttpHandler theHandler = new HttpHandler() {
             @Override
@@ -130,6 +134,16 @@ public class ModClusterService extends FilterService {
             securityKey = securityKeyNode.asString();
         }
 
+        String managementAccessPredicateString = null;
+        ModelNode managementAccessPredicateNode = ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE.resolveModelAttribute(operationContext, model);
+        if(managementAccessPredicateNode.isDefined()) {
+            managementAccessPredicateString = managementAccessPredicateNode.asString();
+        }
+        Predicate managementAccessPredicate = null;
+        if(managementAccessPredicateString != null) {
+            managementAccessPredicate = PredicateParser.parse(managementAccessPredicateString, ModClusterService.class.getClassLoader());
+        }
+
         ModClusterService service = new ModClusterService(model,
                 ModClusterDefinition.HEALTH_CHECK_INTERVAL.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.MAX_REQUEST_TIME.resolveModelAttribute(operationContext, model).asInt(),
@@ -137,7 +151,7 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.ADVERTISE_FREQUENCY.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.ADVERTISE_PATH.resolveModelAttribute(operationContext, model).asString(),
                 ModClusterDefinition.ADVERTISE_PROTOCOL.resolveModelAttribute(operationContext, model).asString(),
-                securityKey);
+                securityKey, managementAccessPredicate);
         ServiceBuilder<FilterService> builder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.advertiseSocketBinding);

@@ -116,7 +116,12 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .build();
 
 
-    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL, ADVERTISE_PATH, ADVERTISE_FREQUENCY, HEALTH_CHECK_INTERVAL, MAX_REQUEST_TIME));
+    public static final AttributeDefinition MANAGEMENT_ACCESS_PREDICATE = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_ACCESS_PREDICATE, ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .build();
+
+    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL, ADVERTISE_PATH, ADVERTISE_FREQUENCY, HEALTH_CHECK_INTERVAL, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE));
     public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();
 
     private ModClusterDefinition() {

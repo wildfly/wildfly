@@ -152,4 +152,5 @@ public interface Constants {
     String ADVERTISE_FREQUENCY = "advertise-frequency";
     String HEALTH_CHECK_INTERVAL = "health-check-interval";
     String BROKEN_NODE_TIMEOUT = "broken-node-timeout";
+    String MANAGEMENT_ACCESS_PREDICATE = "management-access-predicate";
 }

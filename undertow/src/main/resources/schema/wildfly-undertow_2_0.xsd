@@ -447,5 +447,6 @@
         <xs:attribute name="advertise-frequency" type="xs:int" use="optional"/>
         <xs:attribute name="health-check-interval" type="xs:int" use="optional"/>
         <xs:attribute name="broken-node-timeout" type="xs:int" use="optional"/>
+        <xs:attribute name="management-access-predicate" type="xs:string" use="optional"/>
     </xs:complexType>
 </xs:schema>
