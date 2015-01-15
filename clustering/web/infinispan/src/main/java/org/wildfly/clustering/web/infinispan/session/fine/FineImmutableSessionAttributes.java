@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.infinispan.Cache;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.session.InvalidSerializedFormException;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
@@ -55,10 +57,19 @@ public class FineImmutableSessionAttributes<V> implements ImmutableSessionAttrib
     @Override
     public Object getAttribute(String name) {
         SessionAttributeCacheKey key = this.createKey(name);
-        return this.marshaller.read(this.cache.get(key));
+        return this.read(name, this.cache.get(key));
     }
 
     protected SessionAttributeCacheKey createKey(String attribute) {
         return new SessionAttributeCacheKey(this.id, attribute);
+    }
+
+    protected Object read(String name, V value) {
+        try {
+            return this.marshaller.read(value);
+        } catch (InvalidSerializedFormException e) {
+            // This should not happen here, since attributes were pre-activated during FineSessionFactory.findValue(...)
+            throw InfinispanWebLogger.ROOT_LOGGER.failedToReadSessionAttribute(e, this.id, name);
+        }
     }
 }

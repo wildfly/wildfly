@@ -21,11 +21,14 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.Map;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.context.Flag;
 import org.infinispan.transaction.LockingMode;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
+import org.wildfly.clustering.ee.infinispan.MutableCacheEntry;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshallingContext;
@@ -33,6 +36,7 @@ import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
+import org.wildfly.clustering.web.infinispan.session.InvalidSerializedFormException;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.infinispan.session.SessionFactory;
 import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaData;
@@ -50,7 +54,7 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  * and one cache entry per session attribute.
  * @author Paul Ferraro
  */
-public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEntry<L>, L> {
+public class FineSessionFactory<L> implements SessionFactory<MutableCacheEntry<FineSessionCacheEntry<L>>, L> {
 
     private final Cache<String, FineSessionCacheEntry<L>> sessionCache;
     private final Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache;
@@ -67,32 +71,57 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
     }
 
     @Override
-    public Session<L> createSession(String id, FineSessionCacheEntry<L> entry) {
-        SessionMetaData metaData = entry.getMetaData();
-        Mutator mutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.sessionCache, id, entry);
+    public Session<L> createSession(String id, MutableCacheEntry<FineSessionCacheEntry<L>> entry) {
+        FineSessionCacheEntry<L> sessionEntry = entry.getValue();
+        SessionMetaData metaData = sessionEntry.getMetaData();
         SessionAttributes attributes = new FineSessionAttributes<>(id, this.attributeCache, this.marshaller);
-        return new InfinispanSession<>(id, entry.getMetaData(), attributes, entry.getLocalContext(), this.localContextFactory, this.context, mutator, this);
+        return new InfinispanSession<>(id, metaData, attributes, sessionEntry.getLocalContext(), this.localContextFactory, this.context, entry.getMutator(), this);
     }
 
     @Override
-    public ImmutableSession createImmutableSession(String id, FineSessionCacheEntry<L> entry) {
+    public ImmutableSession createImmutableSession(String id, MutableCacheEntry<FineSessionCacheEntry<L>> entry) {
         ImmutableSessionAttributes attributes = new FineImmutableSessionAttributes<>(id, this.attributeCache, this.marshaller);
-        return new InfinispanImmutableSession(id, entry.getMetaData(), attributes, this.context);
+        return new InfinispanImmutableSession(id, entry.getValue().getMetaData(), attributes, this.context);
     }
 
     @Override
-    public FineSessionCacheEntry<L> findValue(String id) {
+    public MutableCacheEntry<FineSessionCacheEntry<L>> findValue(String id) {
         TransactionConfiguration transaction = this.sessionCache.getCacheConfiguration().transaction();
         boolean pessimistic = transaction.transactionMode().isTransactional() && (transaction.lockingMode() == LockingMode.PESSIMISTIC);
         Cache<String, FineSessionCacheEntry<L>> cache = pessimistic ? this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.sessionCache;
-        return cache.get(id);
+        FineSessionCacheEntry<L> value = cache.get(id);
+        if (value == null) return null;
+        // Preemptively read all attributes to detect invalid session attributes
+        for (Map.Entry<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> entry : this.attributeCache.getAdvancedCache().getGroup(id).entrySet()) {
+            try {
+                this.marshaller.read(entry.getValue());
+            } catch (InvalidSerializedFormException e) {
+                InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, entry.getKey().getAttribute());
+                this.remove(id);
+                return null;
+            }
+        }
+        return new MutableCacheEntry<>(value, new CacheEntryMutator<>(this.sessionCache, id, value));
     }
 
     @Override
-    public FineSessionCacheEntry<L> createValue(String id) {
-        FineSessionCacheEntry<L> entry = new FineSessionCacheEntry<>(new SimpleSessionMetaData());
-        FineSessionCacheEntry<L> existing = this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(id, entry);
-        return (existing != null) ? existing : entry;
+    public MutableCacheEntry<FineSessionCacheEntry<L>> createValue(String id) {
+        FineSessionCacheEntry<L> value = new FineSessionCacheEntry<>(new SimpleSessionMetaData());
+        FineSessionCacheEntry<L> existing = this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(id, value);
+        if (existing == null) {
+            return new MutableCacheEntry<>(value, Mutator.PASSIVE);
+        }
+        // Preemptively read all attributes to detect invalid session attributes
+        for (Map.Entry<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> entry : this.attributeCache.getAdvancedCache().getGroup(id).entrySet()) {
+            try {
+                this.marshaller.read(entry.getValue());
+            } catch (InvalidSerializedFormException e) {
+                InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, entry.getKey().getAttribute());
+                this.remove(id);
+                return this.createValue(id);
+            }
+        }
+        return new MutableCacheEntry<>(existing, new CacheEntryMutator<>(this.sessionCache, id, existing));
     }
 
     @Override

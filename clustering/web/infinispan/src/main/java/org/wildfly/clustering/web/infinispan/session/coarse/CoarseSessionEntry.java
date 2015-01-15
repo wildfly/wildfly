@@ -23,27 +23,26 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.util.Map;
 
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.ee.infinispan.MutableCacheEntry;
 
 /**
  * Wrapper for session cache entry and session attributes cache entry.
  * @author Paul Ferraro
  */
 public class CoarseSessionEntry<L> {
-    private final CoarseSessionCacheEntry<L> cacheEntry;
-    private final MarshalledValue<Map<String, Object>, MarshallingContext> attributes;
+    private final MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry;
+    private final MutableCacheEntry<Map<String, Object>> attributesEntry;
 
-    public CoarseSessionEntry(CoarseSessionCacheEntry<L> cacheEntry, MarshalledValue<Map<String, Object>, MarshallingContext> attributes) {
-        this.cacheEntry = cacheEntry;
-        this.attributes = attributes;
+    public CoarseSessionEntry(MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry, MutableCacheEntry<Map<String, Object>> attributesEntry) {
+        this.sessionEntry = sessionEntry;
+        this.attributesEntry = attributesEntry;
     }
 
-    public CoarseSessionCacheEntry<L> getCacheEntry() {
-        return this.cacheEntry;
+    public MutableCacheEntry<CoarseSessionCacheEntry<L>> getMutableSessionEntry() {
+        return this.sessionEntry;
     }
 
-    public MarshalledValue<Map<String, Object>, MarshallingContext> getAttributes() {
-        return this.attributes;
+    public MutableCacheEntry<Map<String, Object>> getMutableAttributesEntry() {
+        return this.attributesEntry;
     }
 }
