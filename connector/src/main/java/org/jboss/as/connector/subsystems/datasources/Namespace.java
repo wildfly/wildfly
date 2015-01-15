@@ -37,6 +37,8 @@ public enum Namespace {
 
     DATASOURCES_1_1("urn:jboss:domain:datasources:1.1"),
 
+    DATASOURCES_1_2("urn:jboss:domain:datasources:1.2"),
+
     DATASOURCES_2_0("urn:jboss:domain:datasources:2.0"),
 
     DATASOURCES_3_0("urn:jboss:domain:datasources:3.0");
