@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class TimerServiceResource implements Resource {
 
-    private Resource delegate = Resource.Factory.create();
+    private Resource delegate = Resource.Factory.create(true);
 
     /**
      * @return
