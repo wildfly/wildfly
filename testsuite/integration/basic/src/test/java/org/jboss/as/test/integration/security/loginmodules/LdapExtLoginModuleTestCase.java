@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.security.loginmodules;
 
+import static org.jboss.as.test.integration.security.common.BasicVaultServerSetupTask.ATTRIBUTE_NAME;
+import static org.jboss.as.test.integration.security.common.BasicVaultServerSetupTask.VAULT_BLOCK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -47,6 +49,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
+import org.jboss.as.test.integration.security.common.BasicVaultServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
@@ -67,7 +70,8 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ LdapExtLDAPServerSetupTask.SystemPropertiesSetup.class, LdapExtLDAPServerSetupTask.class,
+@ServerSetup({ BasicVaultServerSetupTask.class, LdapExtLDAPServerSetupTask.SystemPropertiesSetup.class,
+        LdapExtLDAPServerSetupTask.class,
         LdapExtLoginModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
 @Category(CommonCriteria.class)
@@ -85,6 +89,7 @@ public class LdapExtLoginModuleTestCase {
     private static final String DEP4 = "DEP4";
     private static final String DEP4_DIRECT = "DEP4-direct";
     private static final String DEP5 = "DEP5";
+    private static final String DEP6 = "DEP6";
 
     // Public methods --------------------------------------------------------
 
@@ -156,6 +161,16 @@ public class LdapExtLoginModuleTestCase {
     @Deployment(name = DEP5)
     public static WebArchive deployment5() {
         return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP5);
+    }
+
+    /**
+     * Creates {@link WebArchive} for {@link #test6(URL)}.
+     *
+     * @return
+     */
+    @Deployment(name = DEP6)
+    public static WebArchive deployment6() {
+        return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP6);
     }
 
     /**
@@ -234,6 +249,17 @@ public class LdapExtLoginModuleTestCase {
         testDeployment(webAppURL, "jduke", "theduke", "R1");
         // referral authenticated user
         testDeployment(webAppURL, "ebrown", "atomic", "ebrown-1");
+    }
+
+    /**
+     * Test case for Example 6.
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment(DEP6)
+    public void test6(@ArquillianResource URL webAppURL) throws Exception {
+        testDeployment(webAppURL, "jduke", "theduke", "Admin");
     }
 
     // Private methods -------------------------------------------------------
@@ -322,6 +348,10 @@ public class LdapExtLoginModuleTestCase {
         @Override
         protected SecurityDomain[] getSecurityDomains() {
             final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient);
+            final String ldapUrl = "ldap://" + secondaryTestAddress + ":"
+                    + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAP_PORT;
+            final String ldapsUrl = "ldaps://" + secondaryTestAddress + ":"
+                    + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAPS_PORT;
             final SecurityDomain sd1 = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_NAME_PREFIX + DEP1)
                     .loginModules(
@@ -330,12 +360,7 @@ public class LdapExtLoginModuleTestCase {
                                     .options(getCommonOptions())
                                     .putOption(Context.REFERRAL, "follow")
                                     .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org")
-                                    .putOption(
-                                            "java.naming.provider.url",
-                                            "ldap://"
-                                                    + secondaryTestAddress
-                                                    + ":"
-                                                    + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAP_PORT)
+                                    .putOption("java.naming.provider.url", ldapUrl)
                                     .putOption("baseFilter", "(|(objectClass=referral)(uid={0}))")
                                     .putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(|(objectClass=referral)(member={1}))")
@@ -347,10 +372,7 @@ public class LdapExtLoginModuleTestCase {
                     .name("LdapExtended")
                     .options(getCommonOptions())
                     .putOption(Context.REFERRAL, "ignore")
-                    .putOption(
-                            "java.naming.provider.url",
-                            "ldap://" + secondaryTestAddress + ":"
-                                    + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAP_PORT)
+                    .putOption("java.naming.provider.url", ldapsUrl)
                     .putOption("baseCtxDN", "ou=People,o=example2,dc=jboss,dc=org")
                     .putOption("baseFilter", "(uid={0})")
                     .putOption("rolesCtxDN", "ou=Roles,o=example2,dc=jboss,dc=org")
@@ -372,12 +394,7 @@ public class LdapExtLoginModuleTestCase {
                                     .name(LdapExtLoginModule.class.getName())
                                     .options(getCommonOptions())
                                     .putOption(Context.REFERRAL, "follow")
-                                    .putOption(
-                                            "java.naming.provider.url",
-                                            "ldaps://"
-                                                    + secondaryTestAddress
-                                                    + ":"
-                                                    + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAPS_PORT)
+                                    .putOption("java.naming.provider.url", ldapsUrl)
                                     .putOption("baseCtxDN", "ou=People,o=example3,dc=jboss,dc=org")
                                     .putOption("baseFilter", "(|(objectClass=referral)(cn={0}))")
                                     .putOption("rolesCtxDN", "ou=Roles,o=example3,dc=jboss,dc=org")
@@ -393,12 +410,8 @@ public class LdapExtLoginModuleTestCase {
                                     .name(LdapExtLoginModule.class.getName())
                                     .options(getCommonOptions())
                                     .putOption(Context.REFERRAL, "ignore")
-                                    .putOption(
-                                            "java.naming.provider.url",
-                                            "ldaps://"
-                                                    + secondaryTestAddress
-                                                    + ":"
-                                                    + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAPS_PORT)
+                                    .putOption("java.naming.provider.url", ldapsUrl)
+                                    //
                                     .putOption("baseCtxDN", "ou=People,o=example4,dc=jboss,dc=org")
                                     .putOption("baseFilter", "(employeeNumber={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,o=example4,dc=jboss,dc=org")
@@ -412,12 +425,7 @@ public class LdapExtLoginModuleTestCase {
                                     .name(LdapExtLoginModule.class.getName())
                                     .options(getCommonOptions())
                                     .putOption(Context.REFERRAL, "ignore")
-                                    .putOption(
-                                            "java.naming.provider.url",
-                                            "ldap://"
-                                                    + secondaryTestAddress
-                                                    + ":"
-                                                    + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAP_PORT)
+                                    .putOption("java.naming.provider.url", ldapUrl)
                                     .putOption("baseCtxDN", "o=example4,dc=jboss,dc=org") //
                                     .putOption("baseFilter", "(uid={0})") //
                                     .putOption("rolesCtxDN", "o=example4,dc=jboss,dc=org") //
@@ -434,12 +442,7 @@ public class LdapExtLoginModuleTestCase {
                                     .name(LdapExtLoginModule.class.getName())
                                     .options(getCommonOptions())
                                     .putOption(Context.REFERRAL, "throw")
-                                    .putOption(
-                                            "java.naming.provider.url",
-                                            "ldap://"
-                                                    + secondaryTestAddress
-                                                    + ":"
-                                                    + org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask.LDAP_PORT) //
+                                    .putOption("java.naming.provider.url", ldapUrl)
                                     .putOption("baseCtxDN", "ou=People,o=example5,dc=jboss,dc=org") //
                                     .putOption("baseFilter", "(|(objectClass=referral)(uid={0}))") //
                                     .putOption("rolesCtxDN", "ou=People,o=example5,dc=jboss,dc=org") //
@@ -447,7 +450,23 @@ public class LdapExtLoginModuleTestCase {
                                     .putOption("roleAttributeID", "employeeNumber")
                                     .putOption("referralUserAttributeIDToCheck", "uid").build())
                     .build();
-            return new SecurityDomain[] { sd1, sd2, sd2throw, sd3, sd4, sd4_direct, sd5 };
+
+            final SecurityDomain sd6 = new SecurityDomain.Builder()
+                    .name(SECURITY_DOMAIN_NAME_PREFIX + DEP6)
+                    .loginModules(
+                            new SecurityModule.Builder().name("org.jboss.security.auth.spi.LdapExtLoginModule")
+                                    .options(getCommonOptions()) //
+                                    .putOption("bindDN", "uid=sa,o=example6,dc=jboss,dc=org")
+                                    .putOption("bindCredential", "VAULT::" + VAULT_BLOCK + "::" + ATTRIBUTE_NAME + "::1")
+                                    .putOption("java.naming.provider.url", ldapUrl)
+                                    .putOption("baseCtxDN", "o=example6,dc=jboss,dc=org")
+                                    .putOption("baseFilter", "(uid={0})")
+                                    .putOption("rolesCtxDN", "o=example6,dc=jboss,dc=org")
+                                    .putOption("roleFilter", "(member={1})")
+                                    .putOption("roleAttributeID", "cn")
+                                    .build()) //
+                    .build();
+            return new SecurityDomain[] { sd1, sd2, sd2throw, sd3, sd4, sd4_direct, sd5, sd6 };
         }
 
         private Map<String, String> getCommonOptions() {

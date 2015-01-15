@@ -57,7 +57,7 @@ ou: People
 dn: o=example5,dc=jboss,dc=org
 objectclass: top
 objectclass: organization
-o: example3
+o: example5
 
 dn: ou=People,o=example5,dc=jboss,dc=org
 objectclass: top
