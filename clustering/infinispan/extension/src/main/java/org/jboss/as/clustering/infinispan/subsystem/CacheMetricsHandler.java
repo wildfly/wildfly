@@ -40,7 +40,7 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
         // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
         String containerName = address.getElement(address.size() - 2).getValue();
         String cacheName = address.getElement(address.size() - 1).getValue();
         String name = Operations.getAttributeName(operation);

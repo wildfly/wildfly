@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,7 +44,7 @@ public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
 
         if (model.hasDefined(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
             ModelNode channels = model.get(ChannelResourceDefinition.WILDCARD_PATH.getKey());

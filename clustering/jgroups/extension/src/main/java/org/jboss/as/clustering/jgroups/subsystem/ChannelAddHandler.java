@@ -23,7 +23,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -68,10 +67,10 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
 
         // Register runtime resource children for channel protocols
         if (this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
-            PathAddress address = Operations.getPathAddress(operation);
-            String name = address.getLastElement().getValue();
+            String name = context.getCurrentAddressValue();
             String stack = ModelNodes.asString(ChannelResourceDefinition.STACK.resolveModelAttribute(context, resource.getModel()));
 
+            PathAddress address = context.getCurrentAddress();
             PathAddress subsystemAddress = address.subAddress(0, address.size() - 1);
             // Lookup the name of the default stack if necessary
             PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement((stack != null) ? stack : JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, context.readResourceFromRoot(subsystemAddress, false).getModel()).asString()));
@@ -87,7 +86,7 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
 
     static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        String name = Operations.getPathAddress(operation).getLastElement().getValue();
+        String name = context.getCurrentAddressValue();
         String stack = ModelNodes.asString(ChannelResourceDefinition.STACK.resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
 
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(ChannelResourceDefinition.MODULE.resolveModelAttribute(context, model));
@@ -122,7 +121,7 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
     }
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
-        String name = Operations.getPathAddress(operation).getLastElement().getValue();
+        String name = context.getCurrentAddressValue();
 
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
 

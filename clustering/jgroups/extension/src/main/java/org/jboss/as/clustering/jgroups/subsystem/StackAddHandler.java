@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -49,7 +48,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
 
     static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        String name = Operations.getPathAddress(operation).getLastElement().getValue();
+        String name = context.getCurrentAddressValue();
 
         if (!model.hasDefined(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
             throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(name);
@@ -109,8 +108,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
     }
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
-        PathAddress address = Operations.getPathAddress(operation);
-        String name = address.getLastElement().getValue();
+        String name = context.getCurrentAddressValue();
 
         // remove the ChannelFactoryServiceService
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());

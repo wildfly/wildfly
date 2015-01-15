@@ -42,7 +42,7 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        String channelName = Operations.getPathAddress(operation).getLastElement().getValue();
+        String channelName = context.getCurrentAddressValue();
         String name = Operations.getAttributeName(operation);
         ChannelMetric metric = ChannelMetric.forName(name);
 

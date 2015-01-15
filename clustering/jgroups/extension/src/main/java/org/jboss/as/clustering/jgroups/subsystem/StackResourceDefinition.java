@@ -25,7 +25,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -147,7 +146,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
         OperationStepHandler addHandler = new StackAddHandler() {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-                PathAddress address = Operations.getPathAddress(operation);
+                PathAddress address = context.getCurrentAddress();
                 ModelNode transport = null;
                 if (operation.hasDefined(TRANSPORT.getName())) {
                     transport = operation.remove(TRANSPORT.getName());
@@ -207,7 +206,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
         OperationStepHandler legacyAddProtocolHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
-                PathAddress address = Operations.getPathAddress(operation);
+                PathAddress address = context.getCurrentAddress();
                 String protocol = operation.require(ProtocolResourceDefinition.TYPE.getName()).asString();
                 PathAddress protocolAddress = address.append(ProtocolResourceDefinition.pathElement(protocol));
                 ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
@@ -233,7 +232,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
         OperationStepHandler legacyRemoveProtocolHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
-                PathAddress address = Operations.getPathAddress(operation);
+                PathAddress address = context.getCurrentAddress();
                 String protocol = operation.require(ProtocolResourceDefinition.TYPE.getName()).asString();
                 PathAddress protocolAddress = address.append(ProtocolResourceDefinition.pathElement(protocol));
                 ModelNode removeOperation = Util.createRemoveOperation(protocolAddress);

@@ -27,7 +27,6 @@ import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsBindingFactory;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -88,8 +87,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
     }
 
     static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress address = Operations.getPathAddress(operation);
-        String name = address.getLastElement().getValue();
+        String name = context.getCurrentAddressValue();
 
         // Handle case where ejb subsystem has already installed services for this cache-container
         // This can happen if the ejb cache-container is added to a running server
@@ -201,7 +199,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
     }
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        String name = Operations.getPathAddress(operation).getLastElement().getValue();
+        String name = context.getCurrentAddressValue();
 
         // remove the BinderService entry
         context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());

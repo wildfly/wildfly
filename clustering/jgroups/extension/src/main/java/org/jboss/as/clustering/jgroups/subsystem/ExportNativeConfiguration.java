@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -51,7 +50,7 @@ public class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        String stackName = Operations.getPathAddress(operation).getLastElement().getValue();
+        String stackName = context.getCurrentAddressValue();
 
         ServiceRegistry registry = context.getServiceRegistry(false);
         ServiceName serviceName = ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(stackName);
