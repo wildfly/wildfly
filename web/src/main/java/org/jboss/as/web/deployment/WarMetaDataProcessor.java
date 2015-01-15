@@ -22,6 +22,7 @@
 
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebLogger.ROOT_LOGGER;
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.io.Serializable;
@@ -618,7 +619,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 }
                 if (!found) {
                     // Unknown name
-                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingUnknownName(webOrdering.getJar()));
+                    ROOT_LOGGER.invalidRelativeOrderingUnknownName(webOrdering.getJar());
                 }
             }
             Iterator<String> before = webOrdering.getBefore().iterator();
@@ -640,7 +641,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 }
                 if (!found) {
                     // Unknown name
-                    throw new IllegalStateException(MESSAGES.invalidRelativeOrderingUnknownName(webOrdering.getJar()));
+                    ROOT_LOGGER.invalidRelativeOrderingUnknownName(webOrdering.getJar());
                 }
             }
         }

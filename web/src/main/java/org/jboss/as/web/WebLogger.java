@@ -74,6 +74,11 @@ public interface WebLogger extends BasicLogger {
      */
     WebLogger WEB_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.web");
 
+    // moved from WebMessages
+    @LogMessage(level = WARN)
+    @Message(id = 18035, value = "Unknown web fragment name declared in JAR: %s")
+    void invalidRelativeOrderingUnknownName(String jar);
+
     @LogMessage(level = ERROR)
     @Message(id = 18200, value = "Failed to start welcome context")
     void stopWelcomeContextFailed(@Cause Throwable cause);

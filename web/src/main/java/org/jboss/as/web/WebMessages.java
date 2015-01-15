@@ -159,8 +159,9 @@ public interface WebMessages {
     @Message(id = 18034, value = "Duplicate name declared in JAR: %s")
     String invalidRelativeOrderingDuplicateName(String jar);
 
-    @Message(id = 18035, value = "Unknown name declared in JAR: %s")
-    String invalidRelativeOrderingUnknownName(String jar);
+    // moved to WebLogger
+    // @Message(id = 18035, value = "Unknown web fragment name declared in JAR: %s")
+    // String invalidRelativeOrderingUnknownName(String jar);
 
     @Message(id = 18036, value = "Relative ordering conflict with JAR: %s")
     String invalidRelativeOrderingConflict(String jar);
