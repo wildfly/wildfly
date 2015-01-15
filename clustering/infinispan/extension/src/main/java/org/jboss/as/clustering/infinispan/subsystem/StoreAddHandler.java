@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -49,7 +48,7 @@ public class StoreAddHandler extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
         PathAddress cacheAddress = address.subAddress(0, address.size() - 1);
 
         ModelNode cache = Resource.Tools.readModel(context.readResourceFromRoot(cacheAddress));

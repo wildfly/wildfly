@@ -101,7 +101,7 @@ public class CacheAddHandler extends AbstractAddStepHandler {
         ModelNode cacheModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         // we also need the containerModel
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
         PathAddress containerAddress = address.subAddress(0, address.size() - 1);
         ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
 

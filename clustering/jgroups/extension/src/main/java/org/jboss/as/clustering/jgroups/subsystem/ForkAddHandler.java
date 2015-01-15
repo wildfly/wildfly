@@ -25,7 +25,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -61,7 +60,7 @@ public class ForkAddHandler extends AbstractAddStepHandler {
 
     static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
         String name = address.getElement(address.size() - 1).getValue();
         String channel = address.getElement(address.size() - 2).getValue();
 
@@ -104,7 +103,7 @@ public class ForkAddHandler extends AbstractAddStepHandler {
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
 
-        String name = Operations.getPathAddress(operation).getLastElement().getValue();
+        String name = context.getCurrentAddressValue();
 
         for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(name, null)) {

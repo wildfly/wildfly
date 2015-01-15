@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,7 +43,7 @@ public class ChannelRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        String channelName = Operations.getPathAddress(operation).getLastElement().getValue();
+        String channelName = context.getCurrentAddressValue();
 
         if (this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
             Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);

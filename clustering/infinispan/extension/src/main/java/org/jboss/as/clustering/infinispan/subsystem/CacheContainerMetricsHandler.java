@@ -37,7 +37,7 @@ public class CacheContainerMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
         // Address is of the form: /subsystem=infinispan/cache-container=*
-        String containerName = Operations.getPathAddress(operation).getLastElement().getValue();
+        String containerName = context.getCurrentAddressValue();
         String name = Operations.getAttributeName(operation);
 
         CacheContainerMetric metric = CacheContainerMetric.forName(name);

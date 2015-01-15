@@ -240,8 +240,8 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(final OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        PathAddress address = Operations.getPathAddress(operation);
-        String protocolName = address.getLastElement().getValue();
+        PathAddress address = context.getCurrentAddress();
+        String protocolName = context.getCurrentAddressValue();
         String name = Operations.getAttributeName(operation);
 
         try {

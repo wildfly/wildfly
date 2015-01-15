@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -47,7 +46,7 @@ public class ForkRemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        String name = Operations.getPathAddress(operation).getLastElement().getValue();
+        String name = context.getCurrentAddressValue();
 
         if (this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
             Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);

@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
@@ -94,7 +93,7 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
-        String protocolName = Operations.getPathAddress(operation).getLastElement().getValue();
+        String protocolName = context.getCurrentAddressValue();
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, operation));
         Class<? extends Protocol> protocolClass = ProtocolResourceRegistrationHandler.findProtocolClass(context, protocolName, module);
 

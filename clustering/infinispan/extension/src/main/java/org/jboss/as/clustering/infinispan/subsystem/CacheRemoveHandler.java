@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,7 +37,7 @@ public class CacheRemoveHandler extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         // we also need the containerModel to re-install cache services
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
         CacheType type = CacheType.forName(address.getLastElement().getKey());
 
         PathAddress containerAddress = address.subAddress(0, address.size() - 1);
@@ -51,7 +50,7 @@ public class CacheRemoveHandler extends AbstractRemoveStepHandler {
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode cacheModel) throws OperationFailedException {
 
         // we also need the containerModel to re-install cache services
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
         CacheType type = CacheType.forName(address.getLastElement().getKey());
 
         PathAddress containerAddress = address.subAddress(0, address.size() - 1);

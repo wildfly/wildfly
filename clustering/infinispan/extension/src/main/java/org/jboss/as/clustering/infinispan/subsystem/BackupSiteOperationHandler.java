@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.Cache;
 import org.infinispan.xsite.XSiteAdminOperations;
 import org.jboss.as.clustering.controller.Operation;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -50,7 +49,7 @@ public class BackupSiteOperationHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
         String cacheContainerName = address.getElement(address.size() - 3).getValue();
         String cacheName = address.getElement(address.size() - 2).getValue();
         final String site = address.getElement(address.size() - 1).getValue();

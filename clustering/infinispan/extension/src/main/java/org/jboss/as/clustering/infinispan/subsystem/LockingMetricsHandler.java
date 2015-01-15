@@ -40,7 +40,7 @@ public class LockingMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*/locking=LOCKING
-        PathAddress address = Operations.getPathAddress(operation);
+        PathAddress address = context.getCurrentAddress();
         String containerName = address.getElement(address.size() - 3).getValue();
         String cacheName = address.getElement(address.size() - 2).getValue();
         String name = Operations.getAttributeName(operation);
