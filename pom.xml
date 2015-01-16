@@ -89,7 +89,7 @@
         <version.com.sun.faces>2.1.28.redhat-7</version.com.sun.faces>
         <version.com.sun.istack>2.6.1.redhat-3</version.com.sun.istack>
         <version.com.sun.xml.txw2>20110809.0.0.redhat-5</version.com.sun.xml.txw2>
-        <version.com.sun.xsom>20110809-redhat-3</version.com.sun.xsom>
+        <version.com.sun.xsom>20110809.0.0.redhat-4</version.com.sun.xsom>
         <version.commons-beanutils>1.8.3.redhat-6</version.commons-beanutils>
         <version.commons-cli>1.2.0.redhat-8</version.commons-cli>
         <version.commons-codec>1.4.0.redhat-4</version.commons-codec>
@@ -103,10 +103,10 @@
         <version.httpunit>1.7</version.httpunit>
         <version.io.netty>3.6.10.Final-redhat-1</version.io.netty>
         <version.javax.activation>1.1.1.redhat-4</version.javax.activation>
-        <version.javax.enterprise>1.0-SP4-redhat-4</version.javax.enterprise>
-        <version.javax.faces>1.2_15-b01-redhat-11</version.javax.faces>
-        <version.javax.inject.javax.inject>1.redhat-4</version.javax.inject.javax.inject>
-        <version.javax.jws.jsr181-api>1.0-MR1-redhat-6</version.javax.jws.jsr181-api>
+        <version.javax.enterprise>1.0.0.SP4-redhat-5</version.javax.enterprise>
+        <version.javax.faces>1.2.15.b01-redhat-12</version.javax.faces>
+        <version.javax.inject.javax.inject>1.0.0.redhat-5</version.javax.inject.javax.inject>
+        <version.javax.jws.jsr181-api>1.0.0.MR1-redhat-7</version.javax.jws.jsr181-api>
         <version.javax.mail>1.4.5.redhat-2</version.javax.mail>
         <version.javax.validation>1.0.0.GA-redhat-3</version.javax.validation>
         <version.jaxen>1.1.3.redhat-4</version.jaxen>
@@ -237,7 +237,7 @@
         <version.org.jboss.threads>2.1.2.Final-redhat-1</version.org.jboss.threads>
         <version.org.jboss.web>7.5.4.Final-redhat-1</version.org.jboss.web>
         <version.org.jboss.weld.weld>1.1.28.Final-redhat-1</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>1.1.Final-redhat-5</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld-api>1.1.0.Final-redhat-6</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.2.Final-redhat-1</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>2.3.1.Final-redhat-1</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>2.3.1.Final-redhat-1</version.org.jboss.ws.common>
@@ -272,7 +272,7 @@
         <version.sun.saaj-impl>1.3.16.SP1-redhat-2</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.3.redhat-1</version.wsdl4j>
-        <version.xml-resolver>1.2.redhat-9</version.xml-resolver> <!-- Apache xml-resolver -->
+        <version.xml-resolver>1.2.0.redhat-10</version.xml-resolver> <!-- Apache xml-resolver -->
         <version.xom>1.2.7.redhat-4</version.xom>
 
         <!-- Non-default maven plugin versions and configuration -->
