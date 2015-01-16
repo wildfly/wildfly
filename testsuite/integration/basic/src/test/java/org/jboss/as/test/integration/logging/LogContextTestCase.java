@@ -19,12 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.logging.perdeploy;
+package org.jboss.as.test.integration.logging;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -32,14 +35,17 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.test.integration.logging.util.AbstractLoggingTest;
-import org.jboss.as.test.integration.logging.util.LoggingBean;
-import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
+import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
+import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -55,12 +61,14 @@ import org.junit.runner.RunWith;
  * <p/>
  * This tests that after an undeploy the {@link org.jboss.logmanager.LogContext log contexts} and class loaders are
  * cleaned up during an undeploy. Attempts to find leaking class loaders.
+ * <p/>
+ * This test can't be moved to core at this point as it needs to have processing for EAR's and WAR's.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @ServerSetup(LogContextTestCase.LoggingProfileSetup.class)
 @RunWith(Arquillian.class)
-public class LogContextTestCase extends AbstractLoggingTest {
+public class LogContextTestCase {
     private static final String LOG_FILE_NAME = "log-context-profile-test.log";
 
     @Deployment(name = "logcontext", testable = false)
@@ -71,14 +79,14 @@ public class LogContextTestCase extends AbstractLoggingTest {
     @Deployment(name = "logging", testable = false, managed = false)
     public static WebArchive createLoggingDeployment() {
         return loggingDeployment("logging-test.war")
-                .addAsManifestResource(LoggingBean.class.getPackage(),
+                .addAsManifestResource(LogContextTestCase.class.getPackage(),
                         "logging.properties", "logging.properties");
     }
 
     @Deployment(name = "logging-ear", testable = false, managed = false)
     public static EnterpriseArchive createEarDeployment() {
         return ShrinkWrap.create(EnterpriseArchive.class, "logging.ear")
-                .addAsManifestResource(LoggingBean.class.getPackage(),
+                .addAsManifestResource(LogContextTestCase.class.getPackage(),
                         "logging.properties", "logging.properties")
                 .setManifest(new StringAsset(
                         Descriptors.create(ManifestDescriptor.class)
@@ -99,7 +107,7 @@ public class LogContextTestCase extends AbstractLoggingTest {
     @Deployment(name = "logging-profile-ear", testable = false, managed = false)
     public static EnterpriseArchive createEarProfileDeployment() {
         return ShrinkWrap.create(EnterpriseArchive.class, "logging-profile.ear")
-                .addAsManifestResource(LoggingBean.class.getPackage(),
+                .addAsManifestResource(LogContextTestCase.class.getPackage(),
                         "logging.properties", "logging.properties")
                 .setManifest(new StringAsset(
                         Descriptors.create(ManifestDescriptor.class)
@@ -115,7 +123,7 @@ public class LogContextTestCase extends AbstractLoggingTest {
     @Test
     @OperateOnDeployment("logcontext")
     public void contextTest(@ArquillianResource(LogContextHackServlet.class) final URL url) throws Exception {
-        final String u = UrlBuilder.of(url, LogContextHackServlet.SERVLET_URL).build();
+        final String u = url + LogContextHackServlet.SERVLET_URL;
         String result = performCall(u);
         Assert.assertEquals("No LogContexts should exist in WAR deployment", 0, Integer.valueOf(result).intValue());
         deployer.deploy("logging");
@@ -153,7 +161,7 @@ public class LogContextTestCase extends AbstractLoggingTest {
     private static WebArchive loggingDeployment(final String name) {
         return ShrinkWrap
                 .create(WebArchive.class, name)
-                .addClasses(LoggingBean.class);
+                .addClasses(LogContextHackServlet.class);
     }
 
     private static WebArchive logContextDeployment(final String name) {
@@ -167,57 +175,77 @@ public class LogContextTestCase extends AbstractLoggingTest {
 
     }
 
-    static class LoggingProfileSetup extends AbstractMgmtServerSetupTask {
+    private static String performCall(final String url) throws ExecutionException, IOException, TimeoutException {
+        return HttpRequest.get(url, TimeoutUtil.adjust(10), TimeUnit.SECONDS);
+    }
+
+    private static ModelNode createAddress(final String... paths) {
+        PathAddress address = PathAddress.pathAddress("subsystem", "logging");
+        for (int i = 0; i < paths.length; i++) {
+            final String key = paths[i];
+            if (++i < paths.length) {
+                address = address.append(PathElement.pathElement(key, paths[i]));
+            } else {
+                address = address.append(PathElement.pathElement(key));
+            }
+        }
+        return address.toModelNode();
+    }
+
+    private static ModelNode executeOperation(final ManagementClient client, final Operation op) throws IOException {
+        ModelNode result = client.getControllerClient().execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            Assert.assertTrue(Operations.getFailureDescription(result).toString(), false);
+        }
+        return result;
+    }
+
+    static class LoggingProfileSetup implements ServerSetupTask {
         private final Deque<ModelNode> tearDownOps;
 
         public LoggingProfileSetup() {
-            tearDownOps = new ArrayDeque<ModelNode>();
+            tearDownOps = new ArrayDeque<>();
         }
 
         @Override
-        protected void doSetup(final ManagementClient managementClient) throws Exception {
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            final CompositeOperationBuilder builder = CompositeOperationBuilder.create();
             // Setup a logging-profile
-            final ModelNode loggingProfileAddress = AddressBuilder.create()
-                    .add("logging-profile", "test")
-                    .build();
+            final ModelNode loggingProfileAddress = createAddress("logging-profile", "test");
 
             // Add the profile and add a remove operation
-            ModelNode op = Operations.createAddOperation(loggingProfileAddress);
-            executeOperation(op);
+            builder.addStep(Operations.createAddOperation(loggingProfileAddress));
             tearDownOps.addFirst(Operations.createRemoveOperation(loggingProfileAddress));
 
-            final ModelNode fileHandlerAddress = AddressBuilder.create(loggingProfileAddress)
-                    .add("file-handler", "test-handler")
-                    .build();
-            op = Operations.createAddOperation(fileHandlerAddress);
-            op.get("append").set("true");
+            final ModelNode fileHandlerAddress = createAddress("logging-profile", "test", "file-handler", "test-handler");
+            ModelNode op = Operations.createAddOperation(fileHandlerAddress);
+            op.get("append").set(true);
             final ModelNode file = op.get("file");
             file.get("relative-to").set("jboss.server.log.dir");
             file.get("path").set(LOG_FILE_NAME);
             op.get("formatter").set("[test-profile] %d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n");
-            executeOperation(op);
+            builder.addStep(op);
             tearDownOps.addFirst(Operations.createRemoveOperation(fileHandlerAddress));
 
-            final ModelNode rootLoggerAddress = AddressBuilder.create(loggingProfileAddress)
-                    .add("root-logger", "ROOT")
-                    .build();
+            final ModelNode rootLoggerAddress = createAddress("logging-profile", "test", "root-logger", "ROOT");
             op = Operations.createAddOperation(rootLoggerAddress);
             op.get("level").set("INFO");
             final ModelNode handlers = op.get("handlers").setEmptyList();
             handlers.add("test-handler");
-            executeOperation(op);
+            builder.addStep(op);
             tearDownOps.addFirst(Operations.createRemoveOperation(rootLoggerAddress));
+
+            executeOperation(managementClient, builder.build());
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            final CompositeOperationBuilder builder = CompositeOperationBuilder.create();
             ModelNode op;
             while ((op = tearDownOps.poll()) != null) {
-                try {
-                    executeOperation(op);
-                } catch (Exception ignore) {
-                }
+                builder.addStep(op);
             }
+            executeOperation(managementClient, builder.build());
         }
     }
 
