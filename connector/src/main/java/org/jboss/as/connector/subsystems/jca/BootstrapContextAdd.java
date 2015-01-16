@@ -69,7 +69,7 @@ public class BootstrapContextAdd extends AbstractAddStepHandler {
                 final BootStrapContextService bootCtxService = new BootStrapContextService(ctx, name, usingDefaultWm);
                 serviceTarget
                         .addService(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(name), bootCtxService)
-                        .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ConnectorServices.WORKMANAGER_SERVICE.append(workmanager), WorkManager.class, bootCtxService.getWorkManagerValueInjector())
+                        .addDependency(ServiceBuilder.DependencyType.REQUIRED, ConnectorServices.WORKMANAGER_SERVICE.append(workmanager), WorkManager.class, bootCtxService.getWorkManagerValueInjector())
                         .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, bootCtxService.getXaTerminatorInjector())
                         .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, bootCtxService.getTxManagerInjector())
                         .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, bootCtxService.getJcaConfigInjector())
