@@ -323,6 +323,14 @@ public class ContextNames {
             serviceBuilder.addDependency(getParentContextServiceName(), NamingStore.class, lookupInjector);
         }
 
+        /**
+         * Creates an alias bind info, with same bind name but different parent naming context.
+         * @param parentContextServiceName
+         * @return
+         */
+        public BindInfo alias(ServiceName parentContextServiceName) {
+            return new BindInfo(parentContextServiceName, getBindName());
+        }
     }
 
     /**
