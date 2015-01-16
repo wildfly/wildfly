@@ -30,7 +30,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.InitialContext;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -311,28 +310,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final BinderService binderService = new BinderService(name);
-        binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
-            @Override
-            public ManagedReference getReference() {
-                try {
-                    final Object value = new InitialContext().lookup(lookup);
-                    return new ImmediateManagedReference(value);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            @Override
-            public String getInstanceClassName() {
-                final Object value = getReference().getInstance();
-                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
-            }
-
-            @Override
-            public String getJndiViewInstanceValue() {
-                return String.valueOf(getReference().getInstance());
-            }
-        });
+        binderService.getManagedObjectInjector().inject(new LookupBindingManagedReferenceFactory(lookup));
 
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());

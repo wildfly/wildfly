@@ -434,7 +434,7 @@ public class NamingContext implements EventContext {
         }
         try {
             final Name absoluteName = getAbsoluteName(name);
-            Object link = namingStore.lookup(absoluteName);
+            Object link = namingStore.lookupLink(absoluteName);
             if (!(link instanceof LinkRef) && link instanceof Reference) {
                 link = getObjectInstance(link, name, null);
             }

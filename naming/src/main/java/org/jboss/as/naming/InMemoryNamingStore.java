@@ -219,6 +219,11 @@ public class InMemoryNamingStore implements WritableNamingStore {
         return root.accept(new ListBindingsVisitor(nodeName));
     }
 
+    @Override
+    public Object lookupLink(Name name) throws NamingException {
+        return lookup(name);
+    }
+
     public Context createSubcontext(final Name name) throws NamingException {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
