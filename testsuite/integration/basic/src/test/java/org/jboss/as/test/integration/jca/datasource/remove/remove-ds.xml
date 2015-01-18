@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:datasources:3.0">
+            <datasources>
+                <datasource jndi-name="java:jboss/datasources/RemoveDS"
+                            pool-name="RemoveDS">
+                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+                    <driver>h2</driver>
+                    <security>
+                        <user-name>sa</user-name>
+                        <password>sa</password>
+                    </security>
+                </datasource>
+            </datasources>
+</subsystem>
+                

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.datasources;
+package org.jboss.as.test.integration.jca.datasource.remove;
+
+import org.jboss.as.test.shared.TimeoutUtil;
+
+import javax.annotation.Resource;
+import javax.ejb.Remote;
+import javax.ejb.Stateless;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
- * Operation handler responsible for removing a XA data-source.
- *
- * @author John Bailey
+ * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
-public class XaDataSourceRemove extends AbstractDataSourceRemove {
-    static final XaDataSourceRemove INSTANCE = new XaDataSourceRemove(XaDataSourceAdd.INSTANCE);
+@Stateless
+@Remote(RemoveDsBeanRemote.class)
+public class RemoveDsBean implements RemoveDsBeanRemote {
 
-    protected XaDataSourceRemove(final AbstractDataSourceAdd addHandler) {
-        super(addHandler);
+    @Resource(mappedName = "java:jboss/datasources/RemoveDS")
+    private DataSource removeDS;
+
+    public void testDatasource() {
+        assert removeDS != null;
+        try (Connection connection = removeDS.getConnection()) {
+            assert connection != null;
+            assert connection.isValid(TimeoutUtil.adjust(1000));
+        } catch (SQLException e) {
+            throw new RuntimeException("Connection is not valid.", e);
+        }
     }
 }

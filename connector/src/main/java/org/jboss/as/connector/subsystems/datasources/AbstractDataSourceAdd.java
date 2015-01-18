@@ -100,7 +100,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         context.stepCompleted();
     }
 
-    private void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource,
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource,
                                 final ModelNode model) throws OperationFailedException {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();

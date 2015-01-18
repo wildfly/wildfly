@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -29,7 +30,11 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -43,6 +48,11 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler {
 
+    private AbstractDataSourceAdd addHandler;
+
+    protected AbstractDataSourceRemove(final AbstractDataSourceAdd addHandler) {
+        this.addHandler = addHandler;
+    }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
 
@@ -108,8 +118,21 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         context.getResourceRegistrationForUpdate().unregisterOverrideModel(dsName);
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        addHandler.performRuntime(context, operation, /* resource (unused there anyway) */ null, model);
+
+        boolean enabled = ! operation.hasDefined(ENABLED.getName()) || ENABLED.resolveModelAttribute(context, model).asBoolean();
+        if (context.isNormalServer() && enabled) {
+            final ManagementResourceRegistration datasourceRegistration = context.getResourceRegistrationForUpdate();
+            PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
+            Resource resource = context.getOriginalRootResource();
+            for (PathElement element : addr) {
+                resource = resource.getChild(element);
+            }
+            DataSourceEnable.addServices(context, operation, datasourceRegistration,
+                    Resource.Tools.readModel(resource), this instanceof XaDataSourceRemove);
+        }
     }
 
 }
