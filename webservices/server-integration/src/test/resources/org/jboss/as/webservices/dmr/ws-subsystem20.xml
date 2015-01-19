@@ -16,7 +16,9 @@
         <property name="foo" value="${ws.prop.foo:bar}"/>
     </endpoint-config>
     <client-config name="My-Client-Config">
-        <pre-handler-chain name="my-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM" />
+        <pre-handler-chain name="my-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="MyHandler" class="org.jboss.ws.common.invocation.MyHandler"/>
+        </pre-handler-chain>
         <pre-handler-chain name="my-handlers2" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
             <handler name="MyHandler" class="org.jboss.ws.common.invocation.MyHandler"/>
         </pre-handler-chain>

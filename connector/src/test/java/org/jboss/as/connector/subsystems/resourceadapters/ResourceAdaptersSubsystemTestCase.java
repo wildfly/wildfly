@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
@@ -63,6 +64,30 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("empty-resourceadapters.xml");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-resource-adapters_3_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/resource-adapters.xml",
+                "/subsystem-templates/resource-adapters-genericjms.xml"
+        };
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("genericjms.cf.jndi-name", "genericjms");
+        properties.put("genericjms.cf.pool-name", "mypool");
+        properties.put("genericjms.cf.jndi.contextfactory", "foo");
+        properties.put("genericjms.cf.jndi.url", "bar");
+        properties.put("genericjms.cf.jndi.lookup", "baz");
+        return properties;
     }
 
     @Test

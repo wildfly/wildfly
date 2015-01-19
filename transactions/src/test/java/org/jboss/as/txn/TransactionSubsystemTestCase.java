@@ -90,6 +90,18 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-txn_3_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/transactions.xml"
+        };
+    }
+
+    @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         String transformed = ModelTestUtils.normalizeXML(original.replace("enable-statistics", "statistics-enabled"));
         super.compareXml(configId, transformed, marshalled, true);

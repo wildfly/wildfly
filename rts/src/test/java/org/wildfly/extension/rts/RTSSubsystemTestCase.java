@@ -40,4 +40,15 @@ public class RTSSubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-rts_1_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/rts.xml"
+        };
+    }
 }

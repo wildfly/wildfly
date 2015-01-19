@@ -129,9 +129,9 @@
         </xs:annotation>
         <xs:sequence>
             <xs:element name="context-services" type="contextServicesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="managed-thread-factories" type="managedThreadFactoriesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="managed-executor-services" type="managedExecutorServicesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="managed-scheduled-executor-services" type="managedScheduledExecutorServicesType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="managed-thread-factories" type="managedThreadFactoriesType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
 

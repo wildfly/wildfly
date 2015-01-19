@@ -66,6 +66,18 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem_2_0.xml");
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-mail_2_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/mail.xml"
+        };
+    }
+
     @Test
     public void testExpressions() throws Exception {
         standardSubsystemTest("subsystem_1_1_expressions.xml", false);

@@ -61,7 +61,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -115,6 +118,27 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem_3_0_expressions.xml");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-messaging_3_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+            "/subsystem-templates/messaging.xml",
+            "/subsystem-templates/messaging-hornetq-colocated.xml"
+        };
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("messaging.cluster.user.name", "myClusterUser");
+        properties.put("messaging.cluster.user.password", "myClusterPassword");
+        return properties;
     }
 
     ////////////////////////////////////////

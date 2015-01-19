@@ -91,9 +91,26 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("subsystem_1_2.xml", false);
     }
 
+    @Test
+    public void testSubsystemWithSimpleLoadProvider() throws Exception {
+        super.standardSubsystemTest("subsystem_2_0_simple-load-provider.xml");
+    }
+
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem_2_0.xml");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-mod-cluster_2_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+            "/subsystem-templates/mod_cluster.xml"
+        };
     }
 
     // --------------------------------------------------- Transformers for 1.2 & 1.3
@@ -410,7 +427,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals("SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA", ssl.get("cipher-suite").resolve().asString());
         Assert.assertEquals("mykeyalias", ssl.get("key-alias").resolve().asString());
         Assert.assertEquals("mypassword", ssl.get("password").resolve().asString());
-        Assert.assertEquals("TLS", ssl.get("protocol").resolve().asString());
+        Assert.assertEquals("TLSv1", ssl.get("protocol").resolve().asString());
         ServiceController<?> service = services.getContainer().getService(ContainerEventHandlerService.CONFIG_SERVICE_NAME);
         MCMPHandlerConfiguration sslConfig = (MCMPHandlerConfiguration) service.getValue();
         Assert.assertTrue(sslConfig.isSsl());
@@ -419,7 +436,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals("mypassword", sslConfig.getSslKeyStorePassword());
         Assert.assertEquals("/home/rhusar/client-keystore.jks", sslConfig.getSslKeyStore());
         Assert.assertEquals("SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA", sslConfig.getSslCiphers());
-        Assert.assertEquals("TLS", sslConfig.getSslProtocol());
+        Assert.assertEquals("TLSv1", sslConfig.getSslProtocol());
         Assert.assertEquals("/home/rhusar/client-keystore.jks", sslConfig.getSslTrustStore());
         Assert.assertEquals("/home/rhusar/revocations", sslConfig.getSslCrlFile());
     }

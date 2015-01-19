@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.jboss.as.controller.ModelVersion;
@@ -107,6 +108,25 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("securitysubsystemv12.xml");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-security_1_2.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/security.xml"
+        };
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("jboss.server.config.dir", System.getProperty("java.io.tmpdir"));
+        return properties;
     }
 
     @Test
