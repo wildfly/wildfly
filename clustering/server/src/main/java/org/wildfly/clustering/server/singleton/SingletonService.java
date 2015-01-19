@@ -115,7 +115,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
         };
         final ServiceBuilder<T> singletonBuilder = new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
                 .addAliases(this.singletonServiceName.append("singleton"))
-                .addDependency(CacheGroupServiceName.GROUP.getServiceName(containerName, cacheName), Group.class, this.group)
+                .addDependency(CacheGroupServiceName.GROUP_CACHE.getServiceName(containerName, cacheName), Group.class, this.group)
                 .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, cacheName), ServiceProviderRegistrationFactory.class, this.registrationFactory)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addListener(listener)

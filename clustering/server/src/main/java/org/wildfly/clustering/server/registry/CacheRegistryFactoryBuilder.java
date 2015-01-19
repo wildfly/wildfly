@@ -63,7 +63,7 @@ public class CacheRegistryFactoryBuilder<K, V> extends RegistryFactoryServiceNam
     public ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target) {
         return new AsynchronousServiceBuilder<>(this.getServiceName(), new ValueService<>(this)).build(target)
                 .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(this.containerName, this.cacheName), InfinispanNodeFactory.class, this.factory)
-                .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
+                .addDependency(CacheGroupServiceName.GROUP_CACHE.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
                 .addDependency(CacheServiceName.CACHE.getServiceName(this.containerName, this.cacheName), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }

@@ -40,4 +40,15 @@ public enum GroupServiceName implements GroupServiceNameFactory {
             return "group";
         }
     },
+    GROUP_CACHE() {
+        @Override
+        public ServiceName getServiceName(String group) {
+            return BASE_SERVICE_NAME.append(this.toString(), group);
+        }
+
+        @Override
+        public String toString() {
+            return "group-cache";
+        }
+    },
 }
