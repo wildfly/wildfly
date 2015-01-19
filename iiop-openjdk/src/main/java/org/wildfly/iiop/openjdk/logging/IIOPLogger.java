@@ -59,7 +59,7 @@ import org.wildfly.iiop.openjdk.rmi.ir.IRConstructionException;
 @MessageLogger(projectCode = "WFLYIIOP", length = 4)
 public interface IIOPLogger extends BasicLogger {
 
-    IIOPLogger ROOT_LOGGER = Logger.getMessageLogger(IIOPLogger.class, IIOPLogger.class.getPackage().toString());
+    IIOPLogger ROOT_LOGGER = Logger.getMessageLogger(IIOPLogger.class, "org.wildfly.iiop.openjdk");
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating IIOP Subsystem")
