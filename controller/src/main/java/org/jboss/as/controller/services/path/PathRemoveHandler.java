@@ -76,7 +76,7 @@ public class PathRemoveHandler implements OperationStepHandler {
     }
 
     static PathRemoveHandler createSpecifiedNoServicesInstance(final PathManagerService pathManager) {
-        return new PathRemoveHandler(pathManager, true);
+        return new PathRemoveHandler(pathManager, false);
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
