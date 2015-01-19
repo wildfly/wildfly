@@ -43,9 +43,9 @@ public class ServletResourceManager implements ResourceManager {
     private final Collection<VirtualFile> overlays;
     private final boolean explodedDeployment;
 
-    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment) throws IOException {
+    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment, boolean followSymlink) throws IOException {
         this.explodedDeployment = explodedDeployment;
-        deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile(), 1024 * 1024);
+        deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile(), 1024 * 1024, followSymlink, "/"); //TODO: enable safe paths support
         this.overlays = overlays;
     }
 
