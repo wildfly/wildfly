@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.logging.perdeploy;
+package org.jboss.as.test.integration.logging;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
