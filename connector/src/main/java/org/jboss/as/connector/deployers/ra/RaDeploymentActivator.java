@@ -22,10 +22,6 @@
 
 package org.jboss.as.connector.deployers.ra;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.jboss.as.connector.deployers.ds.processors.DriverProcessor;
 import org.jboss.as.connector.deployers.ds.processors.StructureDriverProcessor;
 import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
@@ -46,7 +42,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -63,30 +58,27 @@ public class RaDeploymentActivator {
         this.appclient = appclient;
     }
 
-    public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget) {
-        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+    public void activateServices(final ServiceTarget serviceTarget) {
         // add resources here
 
-        controllers.add(serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService)
-            .install());
+        serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService)
+            .install();
 
         RaRepositoryService raRepositoryService = new RaRepositoryService();
-        controllers.add(serviceTarget.addService(ConnectorServices.RA_REPOSITORY_SERVICE, raRepositoryService)
+        serviceTarget.addService(ConnectorServices.RA_REPOSITORY_SERVICE, raRepositoryService)
             .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raRepositoryService.getMdrInjector())
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         raRepositoryService.getTransactionIntegrationInjector())
-            .install());
+            .install();
 
         ManagementRepositoryService managementRepositoryService = new ManagementRepositoryService();
-        controllers.add(serviceTarget.addService(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, managementRepositoryService)
-            .install());
+        serviceTarget.addService(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, managementRepositoryService)
+            .install();
 
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
-        controllers.add(serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
+        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
             .addDependency(ConnectorServices.IRONJACAMAR_MDR)
-            .install());
-
-        return controllers;
+            .install();
     }
 
 

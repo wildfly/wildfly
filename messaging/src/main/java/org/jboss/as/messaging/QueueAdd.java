@@ -39,7 +39,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -68,7 +67,7 @@ public class QueueAdd extends AbstractAddStepHandler {
         }
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = registry.getService(hqServiceName);
@@ -78,12 +77,11 @@ public class QueueAdd extends AbstractAddStepHandler {
             final CoreQueueConfiguration queueConfiguration = createCoreQueueConfiguration(context, queueName, model);
             final QueueService service = new QueueService(queueConfiguration, false);
             final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(hqServiceName).append(queueName);
-            newControllers.add(context.getServiceTarget().addService(queueServiceName, service)
+            context.getServiceTarget().addService(queueServiceName, service)
                     .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
                     .addDependency(hqServiceName, HornetQServer.class, service.getHornetQService())
-                    .addListener(verificationHandler)
                     .setInitialMode(Mode.PASSIVE)
-                    .install());
+                    .install();
 
         }
         // else the initial subsystem install is not complete; MessagingSubsystemAdd will add a

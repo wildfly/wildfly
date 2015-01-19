@@ -31,7 +31,6 @@ import static org.jboss.as.messaging.CommonAttributes.CORE;
 import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import java.io.IOException;
-import java.util.List;
 
 import io.netty.channel.socket.SocketChannel;
 import io.undertow.server.HttpServerExchange;
@@ -40,7 +39,6 @@ import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.remoting.SimpleHttpUpgradeHandshake;
 import org.jboss.msc.service.Service;
@@ -80,7 +78,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         this.httpListenerName = httpListenerName;
     }
 
-    public static void installService(final ServiceTarget serviceTarget, String hornetQServerName, final String acceptorName, final String httpListenerName, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+    public static void installService(final ServiceTarget serviceTarget, String hornetQServerName, final String acceptorName, final String httpListenerName) {
 
         final HTTPUpgradeService service = new HTTPUpgradeService(hornetQServerName, acceptorName, httpListenerName);
 
@@ -89,16 +87,8 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
                 .addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry)
                 .addDependency(HornetQActivationService.getHornetQActivationServiceName(MessagingServices.getHornetQServiceName(hornetQServerName)));
 
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-
-        builder.setInitialMode(ServiceController.Mode.PASSIVE);
-
-        ServiceController<HTTPUpgradeService> controller = builder.install();
-        if(newControllers != null) {
-            newControllers.add(controller);
-        }
+        builder.setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
     }
 
     @Override

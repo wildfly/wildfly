@@ -22,7 +22,6 @@
 package org.jboss.as.security;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -31,7 +30,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -78,7 +76,7 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
         }
 
         @Override
-        protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             Map<String, Object> vaultOptions = new HashMap<String, Object>();
             ModelNode vaultClassNode = CODE.resolveModelAttribute(context, model);
             String vaultClass = vaultClassNode.getType() == ModelType.UNDEFINED ? null : vaultClassNode.asString();
@@ -91,10 +89,9 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
             // add security vault service
             if (vaultClass != null || !vaultOptions.isEmpty()) {
                 final SecurityVaultService vaultService = new SecurityVaultService(vaultClass, vaultOptions);
-                newControllers.add(context.getServiceTarget()
+                context.getServiceTarget()
                         .addService(SecurityVaultService.SERVICE_NAME, vaultService)
-                        .addListener(verificationHandler)
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install());
+                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
             }
 
         }

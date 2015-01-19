@@ -21,8 +21,6 @@
  */
 package org.jboss.as.security;
 
-import java.util.List;
-
 import javax.security.auth.login.Configuration;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -32,7 +30,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -127,7 +124,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
         }
 
         @Override
-        protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             SecurityLogger.ROOT_LOGGER.activatingSecuritySubsystem();
 
             if(context.getProcessType() != ProcessType.APPLICATION_CLIENT) {
@@ -137,10 +134,9 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             final ServiceTarget target = context.getServiceTarget();
 
             final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
-            newControllers.add(target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
+            target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, bootstrapService.getServiceModuleLoaderInjectedValue())
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE).install());
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             context.addStep(new AbstractDeploymentChainStep() {
                 protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -151,44 +147,41 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             // add service to bind SecurityDomainJndiInjectable to JNDI
             final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
             final BinderService binderService = new BinderService("jaas");
-            newControllers.add(target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("jaas"), binderService)
+            target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("jaas"), binderService)
                 .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
                 .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class, securityDomainJndiInjectable.getSecurityManagementInjector())
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE).install());
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             // add security management service
             ModelNode modelNode = SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.resolveModelAttribute(context,model);
             final SecurityManagementService securityManagementService = new SecurityManagementService(
                 AUTHENTICATION_MANAGER, modelNode.isDefined() && modelNode.asBoolean(), CALLBACK_HANDLER,
                 AUTHORIZATION_MANAGER, AUDIT_MANAGER, IDENTITY_TRUST_MANAGER, MAPPING_MANAGER);
-            newControllers.add(target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
-                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, securityManagementService.getServiceModuleLoaderInjectedValue())
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE).install());
+            target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
+                    .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, securityManagementService.getServiceModuleLoaderInjectedValue())
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             // add subject factory service
             final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(SUBJECT_FACTORY);
-            newControllers.add(target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService)
+            target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService)
                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                         subjectFactoryService.getSecurityManagementInjector())
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE).install());
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             // add jaas configuration service
             Configuration loginConfig = XMLLoginConfigImpl.getInstance();
             final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
-            newControllers.add(target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
-                .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
+            target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             //add Simple Security Manager Service
             final SimpleSecurityManagerService simpleSecurityManagerService = new SimpleSecurityManagerService();
 
-            newControllers.add(target.addService(SimpleSecurityManagerService.SERVICE_NAME, simpleSecurityManagerService)
+            target.addService(SimpleSecurityManagerService.SERVICE_NAME, simpleSecurityManagerService)
                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                             simpleSecurityManagerService.getSecurityManagementInjector())
-                .addListener(verificationHandler).install());
+                .install();
 
             context.addStep(new AbstractDeploymentChainStep() {
                 protected void execute(DeploymentProcessorTarget processorTarget) {

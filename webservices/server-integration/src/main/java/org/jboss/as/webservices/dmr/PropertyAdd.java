@@ -26,14 +26,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
 import static org.jboss.as.webservices.dmr.PackageUtils.getPropertyServiceName;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.PropertyService;
 import org.jboss.dmr.ModelNode;
@@ -55,15 +53,15 @@ final class PropertyAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void rollbackRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final List<ServiceController<?>> controllers) {
-        super.rollbackRuntime(context, operation, model, controllers);
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        super.rollbackRuntime(context, operation, resource);
         if (!context.isBooting()) {
             context.revertReloadRequired();
         }
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         //modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
         if (context.isBooting()) {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -83,9 +81,6 @@ final class PropertyAdd extends AbstractAddStepHandler {
             final ServiceName propertyServiceName = getPropertyServiceName(configServiceName, propertyName);
             final ServiceBuilder<?> propertyServiceBuilder = target.addService(propertyServiceName, service);
             ServiceController<?> controller = propertyServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-            if (newControllers != null) {
-                newControllers.add(controller);
-            }
         } else {
             context.reloadRequired();
         }

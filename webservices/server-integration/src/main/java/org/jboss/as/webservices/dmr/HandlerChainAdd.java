@@ -27,14 +27,12 @@ import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceName;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.HandlerChainService;
 import org.jboss.dmr.ModelNode;
@@ -57,15 +55,15 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void rollbackRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final List<ServiceController<?>> controllers) {
-        super.rollbackRuntime(context, operation, model, controllers);
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        super.rollbackRuntime(context, operation, resource);
         if (!context.isBooting()) {
             context.revertReloadRequired();
         }
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         //modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
         if (context.isBooting()) {
             final String protocolBindings = getAttributeValue(operation, PROTOCOL_BINDINGS);
@@ -88,10 +86,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
             for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, handlerChainServiceName, address, HANDLER)) {
                 handlerChainServiceBuilder.addDependency(sn, UnifiedHandlerMetaData.class, service.getHandlersInjector()); //get a new injector instance each time
             }
-            ServiceController<?> controller = handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-            if (newControllers != null) {
-                newControllers.add(controller);
-            }
+            handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
         } else {
             context.reloadRequired();
         }

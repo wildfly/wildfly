@@ -22,12 +22,9 @@
 
 package org.jboss.as.jsf.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 import org.jboss.as.jsf.deployment.JSFBeanValidationFactoryProcessor;
 import org.jboss.as.jsf.deployment.JSFCdiExtensionDeploymentProcessor;
@@ -40,7 +37,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * The JSF subsystem add update handler.
@@ -57,7 +53,7 @@ class JSFSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, final ModelNode model) {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_VERSION, new JSFVersionProcessor(model));
@@ -71,10 +67,5 @@ class JSFSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JSF_VALIDATOR_FACTORY, new JSFBeanValidationFactoryProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
-    }
-
-    @Override
-    protected boolean requiresRuntimeVerification() {
-        return false;
     }
 }

@@ -45,7 +45,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.registry.Resource;
@@ -99,7 +98,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         ServiceRegistry registry = context.getServiceRegistry(false);
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
@@ -141,7 +140,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
                             .install();
 
                 } catch (Exception e) {
-                    throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+                    throw new OperationFailedException(e.getLocalizedMessage());
                 }
             }
         }

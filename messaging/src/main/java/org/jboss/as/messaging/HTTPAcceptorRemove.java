@@ -49,6 +49,6 @@ public class HTTPAcceptorRemove extends AbstractRemoveStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String hornetqServerName = address.getElement(address.size() - 2).getValue();
         String acceptorName = address.getLastElement().getValue();
-        HTTPAcceptorAdd.INSTANCE.launchServices(context, hornetqServerName, acceptorName, model, null, null);
+        HTTPAcceptorAdd.INSTANCE.launchServices(context, hornetqServerName, acceptorName, model);
     }
 }

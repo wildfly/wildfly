@@ -40,14 +40,12 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -68,8 +66,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         }
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
@@ -119,8 +116,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         final PathAddress hqServiceAddress = MessagingServices.getHornetQServerPathAddress(address);
 
-        PooledConnectionFactoryService.installService(verificationHandler, newControllers, serviceTarget,
-                name, hqServiceAddress.getLastElement().getValue(), connectors, discoveryGroupName, jgroupsChannelName,
+        PooledConnectionFactoryService.installService(serviceTarget, name, hqServiceAddress.getLastElement().getValue(), connectors, discoveryGroupName, jgroupsChannelName,
                 adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize);
     }
 

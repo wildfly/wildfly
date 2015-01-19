@@ -343,7 +343,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 newControllers.add(hqServerServiceController);
                 boolean overrideInVMSecurity = OVERRIDE_IN_VM_SECURITY.resolveModelAttribute(context, operation).asBoolean();
-                newControllers.add(JMSService.addService(serviceTarget, hqServiceName, overrideInVMSecurity, verificationHandler));
+                newControllers.add(JMSService.addService(serviceTarget, hqServiceName, overrideInVMSecurity));
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }

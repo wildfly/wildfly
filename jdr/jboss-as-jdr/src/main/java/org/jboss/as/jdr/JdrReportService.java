@@ -24,7 +24,6 @@ package org.jboss.as.jdr;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -57,13 +56,12 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jdr", "collector");
 
-    public static ServiceController<JdrReportCollector> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
+    public static ServiceController<JdrReportCollector> addService(final ServiceTarget target) {
 
         JdrReportService service = new JdrReportService();
         return target.addService(SERVICE_NAME, service)
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.serverEnvironmentValue)
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.modelControllerValue)
-                .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

@@ -22,17 +22,14 @@
 
 package org.jboss.as.messaging;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * Requires a reload only if the hornetq service is up and running.
@@ -47,15 +44,14 @@ interface HornetQReloadRequiredHandlers {
         }
 
         @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.reloadRequired();
             }
         }
 
         @Override
-        protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                List<ServiceController<?>> controllers) {
+        protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
             if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.revertReloadRequired();
             }

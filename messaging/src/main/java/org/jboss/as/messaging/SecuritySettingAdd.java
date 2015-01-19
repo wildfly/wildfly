@@ -23,7 +23,6 @@
 package org.jboss.as.messaging;
 
 import java.util.HashSet;
-import java.util.List;
 
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -31,7 +30,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -52,7 +50,7 @@ class SecuritySettingAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final HornetQServer server = getServer(context, operation);
         if(server != null) {

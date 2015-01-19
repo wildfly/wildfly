@@ -34,7 +34,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
@@ -92,9 +91,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
             "security-domain");
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                  final ServiceVerificationHandler verificationHandler,
-                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         // This needs to run after all child resources so that they can detect a fresh state
         context.addStep(new OperationStepHandler() {
@@ -102,15 +99,14 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                 ModelNode node = Resource.Tools.readModel(resource);
-                launchServices(context, node, verificationHandler, newControllers);
+                launchServices(context, node);
                 // Rollback handled by the parent step
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
     }
 
-    protected void launchServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler,
-                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void launchServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
 
         IIOPLogger.ROOT_LOGGER.activatingSubsystem();
@@ -170,43 +166,42 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         String sslSocketBinding = props.getProperty(Constants.ORB_SSL_SOCKET_BINDING);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,
                 orbService.getIIOPSSLSocketBindingInjector());
-        builder.addListener(verificationHandler);
         // set the initial mode and install the service.
-        newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
+        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service the initializes the Root POA.
         CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa");
-        newControllers.add(context.getServiceTarget().addService(CorbaPOAService.ROOT_SERVICE_NAME, rootPOAService)
+        context.getServiceTarget().addService(CorbaPOAService.ROOT_SERVICE_NAME, rootPOAService)
                 .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, rootPOAService.getORBInjector())
-                .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service the initializes the interface repository POA.
         final CorbaPOAService irPOAService = new CorbaPOAService("IRPOA", "irpoa", IdAssignmentPolicyValue.USER_ID, null, null,
                 LifespanPolicyValue.PERSISTENT, null, null, null);
-        newControllers.add(context.getServiceTarget()
+        context.getServiceTarget()
                 .addService(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, irPOAService)
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, irPOAService.getParentPOAInjector())
-                .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service that initializes the naming service POA.
         final CorbaPOAService namingPOAService = new CorbaPOAService("Naming", null, IdAssignmentPolicyValue.USER_ID, null,
                 null, LifespanPolicyValue.PERSISTENT, null, null, null);
-        newControllers.add(context.getServiceTarget()
+        context.getServiceTarget()
                 .addService(CorbaPOAService.SERVICE_NAME.append("namingpoa"), namingPOAService)
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingPOAService.getParentPOAInjector())
-                .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the CORBA naming service.
         final String rootContext = props.getProperty(Constants.NAMING_ROOT_CONTEXT);
         final CorbaNamingService namingService = new CorbaNamingService(rootContext);
-        newControllers.add(context
+        context
                 .getServiceTarget()
                 .addService(CorbaNamingService.SERVICE_NAME, namingService)
                 .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, namingService.getORBInjector())
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingService.getRootPOAInjector())
                 .addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
-                        namingService.getNamingPOAInjector()).addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE).install());
+                        namingService.getNamingPOAInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
      // create the IOR security config metadata service.
         IORSecurityConfigMetaData securityConfigMetaData = null;
@@ -215,10 +210,9 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
             securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
                     model.get(IORSettingsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         }
-        newControllers.add(context.getServiceTarget().addService(IORSecConfigMetaDataService.SERVICE_NAME,
+        context.getServiceTarget().addService(IORSecConfigMetaDataService.SERVICE_NAME,
                 new IORSecConfigMetaDataService(securityConfigMetaData))
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE).install());
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
 
         configureClientSecurity(props);

@@ -21,13 +21,10 @@
  */
 package org.jboss.as.jpa.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
@@ -49,7 +46,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jipijapa.cache.spi.Classification;
 
@@ -75,7 +71,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
         JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.validateAndSet(operation, model);
     }
 
-    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws
+    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws
         OperationFailedException {
 
         runtimeValidator.validate(operation.resolve());
@@ -134,8 +130,8 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
 
 
         final ServiceTarget target = context.getServiceTarget();
-        newControllers.add(JPAService.addService(target, dataSourceName, defaultExtendedPersistenceInheritance, verificationHandler));
-        newControllers.add(JPAUserTransactionListenerService.addService(target, verificationHandler));
+        JPAService.addService(target, dataSourceName, defaultExtendedPersistenceInheritance);
+        JPAUserTransactionListenerService.addService(target);
 
     }
 }

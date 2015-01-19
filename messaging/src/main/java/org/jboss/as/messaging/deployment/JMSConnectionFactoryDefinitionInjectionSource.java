@@ -189,7 +189,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
 
         final String pcfName = uniqueName(context, name);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), name);
-        PooledConnectionFactoryService.installService(null, null, serviceTarget, pcfName, getHornetQServerName(), connectors,
+        PooledConnectionFactoryService.installService(serviceTarget, pcfName, getHornetQServerName(), connectors,
                 discoveryGroupName, jgroupsChannelName, adapterParams,
                 bindInfo,
                 txSupport, minPoolSize, maxPoolSize, true);

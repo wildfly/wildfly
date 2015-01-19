@@ -67,8 +67,4 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
     }
-
-    protected boolean requiresRuntimeVerification() {
-        return false;
-    }
 }

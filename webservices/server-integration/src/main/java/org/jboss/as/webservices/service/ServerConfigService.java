@@ -37,7 +37,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -90,7 +89,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
     }
 
     public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig,
-            final ServiceListener<Object> listener, final List<ServiceName> dependencies, final boolean jmxSubsystemAvailable) {
+            final List<ServiceName> dependencies, final boolean jmxSubsystemAvailable) {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
         if (jmxSubsystemAvailable) {
             builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
@@ -102,10 +101,8 @@ public final class ServerConfigService implements Service<ServerConfig> {
         for (ServiceName dep : dependencies) {
             builder.addDependency(dep);
         }
-        builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
-        ServiceController<?> sc = builder.install();
-        return sc;
+        return builder.install();
     }
 
     /*

@@ -43,7 +43,7 @@ public class MimeMappingAdd implements OperationStepHandler {
         if (operation.hasDefined("name") && operation.hasDefined("value")) {
             mimetypes.get(operation.get("name").asString()).set(operation.get("value").asString());
         } else {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.nameAndValueRequiredForAddMimeMapping()));
+            throw new OperationFailedException(MESSAGES.nameAndValueRequiredForAddMimeMapping());
         }
 
         context.stepCompleted();

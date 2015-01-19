@@ -47,7 +47,6 @@ import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivator
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.JGroupsChannelLocator;
 import org.jboss.as.messaging.MessagingServices;
@@ -110,7 +109,6 @@ import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -223,13 +221,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     /**
      *
-     * @param verificationHandler can be {@code null}
-     * @param newControllers  can be {@code null}
      */
 
-    public static void installService(final ServiceVerificationHandler verificationHandler,
-                                      final List<ServiceController<?>> newControllers,
-                                      ServiceTarget serviceTarget,
+    public static void installService(ServiceTarget serviceTarget,
                                       String name,
                                       String hqServerName,
                                       List<String> connectors,
@@ -249,17 +243,13 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 connectors, discoveryGroupName, hqServerName, jgroupsChannelName, adapterParams,
                 bindInfo, txSupport, minPoolSize, maxPoolSize, pickAnyConnectors);
 
-        installService0(verificationHandler, newControllers, serviceTarget, hqServiceName, serviceName, service);
+        installService0(serviceTarget, hqServiceName, serviceName, service);
     }
 
     /**
      *
-     * @param verificationHandler can be {@code null}
-     * @param newControllers  can be {@code null}
      */
-    public static void installService(final ServiceVerificationHandler verificationHandler,
-                                      final List<ServiceController<?>> newControllers,
-                                      ServiceTarget serviceTarget,
+    public static void installService(ServiceTarget serviceTarget,
                                       String name,
                                       String hqServerName,
                                       List<String> connectors,
@@ -277,30 +267,21 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 connectors, discoveryGroupName, hqServerName, jgroupsChannelName, adapterParams,
                 jndiNames, txSupport, minPoolSize, maxPoolSize);
 
-        installService0(verificationHandler, newControllers, serviceTarget, hqServiceName, serviceName, service);
+        installService0(serviceTarget, hqServiceName, serviceName, service);
     }
 
-    private static void installService0(ServiceVerificationHandler verificationHandler,
-                                        List<ServiceController<?>> newControllers,
-                                        ServiceTarget serviceTarget,
+    private static void installService0(ServiceTarget serviceTarget,
                                         ServiceName hqServiceName,
                                         ServiceName serviceName,
                                         PooledConnectionFactoryService service) {
-        ServiceBuilder serviceBuilder = serviceTarget
+        serviceTarget
                 .addService(serviceName, service)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, service.transactionManager)
                 .addDependency(hqServiceName, HornetQServer.class, service.hornetQService)
                 .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName))
-                .setInitialMode(ServiceController.Mode.PASSIVE);
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        final ServiceController<Void> controller = serviceBuilder.install();
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
     }
 
     public Void getValue() throws IllegalStateException, IllegalArgumentException {

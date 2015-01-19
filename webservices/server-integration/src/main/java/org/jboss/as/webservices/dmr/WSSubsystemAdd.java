@@ -40,7 +40,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.jmx.JMXExtension;
@@ -53,7 +52,6 @@ import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.service.XTSClientIntegrationService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -73,7 +71,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         WSLogger.ROOT_LOGGER.activatingWebservicesExtension();
         ModuleClassLoaderProvider.register();
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
@@ -89,13 +87,13 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean jmxAvailable = isJMXSubsystemAvailable(context);
         if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true, context);
-            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient), jmxAvailable));
+            ServerConfigService.install(serviceTarget, serverConfig, getServerConfigDependencies(context, appclient), jmxAvailable);
         }
         if (!appclient) {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
-            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient), jmxAvailable));
+            ServerConfigService.install(serviceTarget, serverConfig, getServerConfigDependencies(context, appclient), jmxAvailable);
         }
-        newControllers.add(XTSClientIntegrationService.install(serviceTarget, verificationHandler));
+        XTSClientIntegrationService.install(serviceTarget);
     }
 
     private static ServerConfigImpl createServerConfig(ModelNode configuration, boolean appclient, OperationContext context) throws OperationFailedException {

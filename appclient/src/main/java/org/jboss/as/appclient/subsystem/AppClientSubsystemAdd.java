@@ -38,7 +38,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.Services;
@@ -46,7 +45,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.appclient.jboss.JBossClientMetaData;
-import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.appclient.subsystem.Constants.CONNECTION_PROPERTIES_URL;
 import static org.jboss.as.appclient.subsystem.Constants.HOST_URL;
@@ -72,7 +70,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
-    protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
         final String deployment = AppClientSubsystemResourceDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
         final File file = new File(AppClientSubsystemResourceDefinition.FILE.resolveModelAttribute(context, model).asString());
         final String hostUrl = model.hasDefined(HOST_URL) ? AppClientSubsystemResourceDefinition.HOST_URL.resolveModelAttribute(context, model).asString() : null;
@@ -96,10 +94,10 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ApplicationClientDeploymentService service = new ApplicationClientDeploymentService(file);
 
-        newControllers.add(
-                context.getServiceTarget().addService(ApplicationClientDeploymentService.SERVICE_NAME, service)
+        context.getServiceTarget()
+                .addService(ApplicationClientDeploymentService.SERVICE_NAME, service)
                         .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getControllerValue())
-                        .install());
+                        .install();
 
     }
 

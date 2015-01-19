@@ -27,7 +27,6 @@ import org.jboss.as.txn.service.UserTransactionRegistryService;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -68,15 +67,13 @@ public class JPAUserTransactionListenerService implements Service<Void> {
         return userTransactionRegistryInjectedValue;
     }
 
-    public static ServiceController<?> addService(ServiceTarget target, final ServiceListener<Object>... listeners) {
+    public static void addService(ServiceTarget target) {
 
         JPAUserTransactionListenerService jpaUserTransactionListenerService = new JPAUserTransactionListenerService();
 
-        return target.addService(SERVICE_NAME, jpaUserTransactionListenerService)
-                .addListener(listeners)
+        target.addService(SERVICE_NAME, jpaUserTransactionListenerService)
                 .addDependency(UserTransactionRegistryService.SERVICE_NAME, new CastingInjector<UserTransactionRegistry>(jpaUserTransactionListenerService.getUserTransactionRegistryInjectedValue(), UserTransactionRegistry.class))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-
     }
 }

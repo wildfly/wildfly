@@ -154,7 +154,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         }
         destination.get(ENTRIES).add(jndiName);
 
-        Service<Queue> queueService = JMSQueueService.installService(null, null, queueName, serviceTarget, hqServiceName, selector, durable, new String[0]);
+        Service<Queue> queueService = JMSQueueService.installService(queueName, serviceTarget, hqServiceName, selector, durable, new String[0]);
         inject(serviceBuilder, injector, queueService);
 
         //create the management registration
@@ -176,7 +176,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         destination.get(NAME).set(topicName);
         destination.get(ENTRIES).add(jndiName);
 
-        Service<Topic> topicService = JMSTopicService.installService(null, null, topicName, hqServiceName, serviceTarget, new String[0]);
+        Service<Topic> topicService = JMSTopicService.installService(topicName, hqServiceName, serviceTarget, new String[0]);
         inject(serviceBuilder, injector, topicService);
 
         //create the management registration

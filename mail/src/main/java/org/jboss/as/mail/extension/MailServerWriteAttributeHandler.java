@@ -22,7 +22,6 @@
 
 package org.jboss.as.mail.extension;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -30,10 +29,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -51,8 +48,8 @@ class MailServerWriteAttributeHandler extends RestartParentWriteAttributeHandler
     }
 
     @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel, verificationHandler, new ArrayList<ServiceController<?>>());
+    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+        MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel);
     }
 
     @Override

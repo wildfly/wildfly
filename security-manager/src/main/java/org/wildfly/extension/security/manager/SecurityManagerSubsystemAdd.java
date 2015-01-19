@@ -32,7 +32,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -45,7 +44,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.LoadedPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
-import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.security.manager.deployment.PermissionsParseProcessor;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -69,8 +67,7 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers)
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
             throws OperationFailedException {
 
         // This needs to run after all child resources so that they can detect a fresh state
@@ -79,7 +76,7 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                 ModelNode node = Resource.Tools.readModel(resource);
-                launchServices(context, node, verificationHandler, newControllers);
+                launchServices(context, node);
                 // Rollback handled by the parent step
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
@@ -92,12 +89,10 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
      *
      * @param context a reference to the {@link OperationContext}.
      * @param node the {@link ModelNode} that contains all the configured permissions.
-     * @param handler a reference to the {@link ServiceVerificationHandler}.
-     * @param controlers a list of {@link ServiceController} instances. This is where the security manager service is to
      *                   be added.
      * @throws OperationFailedException if an error occurs while launching the security manager services.
      */
-    protected void launchServices(final OperationContext context, final ModelNode node, final ServiceVerificationHandler handler, final List<ServiceController<?>> controlers)
+    protected void launchServices(final OperationContext context, final ModelNode node)
             throws OperationFailedException {
 
         // get the minimum set of deployment permissions.

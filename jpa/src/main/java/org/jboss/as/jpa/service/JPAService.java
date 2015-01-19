@@ -54,7 +54,6 @@ import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -97,11 +96,10 @@ public class JPAService implements Service<Void> {
         JPAService.defaultExtendedPersistenceInheritance = defaultExtendedPersistenceInheritance;
     }
 
-    public static ServiceController<?> addService(
+    public static void addService(
             final ServiceTarget target,
             final String defaultDataSourceName,
-            final ExtendedPersistenceInheritance defaultExtendedPersistenceInheritance,
-            final ServiceListener<Object>... listeners) {
+            final ExtendedPersistenceInheritance defaultExtendedPersistenceInheritance) {
         JPAService jpaService = new JPAService();
         setDefaultDataSourceName(defaultDataSourceName);
         setDefaultExtendedPersistenceInheritance(defaultExtendedPersistenceInheritance);
@@ -130,8 +128,7 @@ public class JPAService implements Service<Void> {
                 }
             };
 
-        return target.addService(SERVICE_NAME, jpaService)
-            .addListener(listeners)
+        target.addService(SERVICE_NAME, jpaService)
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(transactionManagerInjector, TransactionManager.class))
             .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, new CastingInjector<TransactionSynchronizationRegistry>(transactionRegistryInjector, TransactionSynchronizationRegistry.class))

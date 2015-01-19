@@ -46,7 +46,7 @@ public class WebValveParamAdd implements OperationStepHandler {
         if (operation.hasDefined("param-name") && operation.hasDefined("param-value")) {
             mimetypes.get(operation.get("param-name").asString()).set(operation.get("param-value").asString());
         } else {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.paramNameAndParamValueRequiredForAddParam()));
+            throw new OperationFailedException(MESSAGES.paramNameAndParamValueRequiredForAddParam());
         }
 
         if (!context.isBooting() && context.isNormalServer()) {

@@ -75,7 +75,7 @@ public class ModClusterStopContext implements OperationStepHandler {
                     try {
                         service.stopContext(webHost, webContext, waitTime, TimeUnit.SECONDS);
                     } catch (IllegalArgumentException e) {
-                        throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext)));
+                        throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
                     }
 
                     context.completeStep(new OperationContext.RollbackHandler() {
