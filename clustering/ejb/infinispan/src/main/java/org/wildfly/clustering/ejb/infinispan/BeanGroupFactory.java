@@ -35,7 +35,7 @@ import org.wildfly.clustering.ee.infinispan.Remover;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public interface BeanGroupFactory<G, I, T> extends Creator<G, BeanGroupEntry<I, T>>, Locator<G, BeanGroupEntry<I, T>>, Evictor<G>, Remover<G> {
+public interface BeanGroupFactory<G, I, T> extends Creator<G, BeanGroupEntry<I, T>, Void>, Locator<G, BeanGroupEntry<I, T>>, Evictor<G>, Remover<G> {
     /**
      * Create a new bean group using the specified identifier and entry.
      * @param id a group identifier

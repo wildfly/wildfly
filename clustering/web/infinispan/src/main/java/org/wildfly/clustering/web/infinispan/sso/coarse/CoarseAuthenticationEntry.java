@@ -23,7 +23,8 @@ package org.wildfly.clustering.web.infinispan.sso.coarse;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.web.infinispan.sso.Authenticator;
+import org.wildfly.clustering.marshalling.MarshalledValue;
+import org.wildfly.clustering.marshalling.MarshallingContext;
 
 /**
  * Cache entry that store authentication data plus any local context
@@ -32,18 +33,17 @@ import org.wildfly.clustering.web.infinispan.sso.Authenticator;
  * @param <D> the deployment identifier type
  * @param <L> the local context type
  */
-public class CoarseAuthenticationEntry<A, D, L> implements Authenticator<A> {
+public class CoarseAuthenticationEntry<A, D, L> {
 
+    private final MarshalledValue<A, MarshallingContext> authentication;
     private final AtomicReference<L> localContext = new AtomicReference<>();
-    private volatile A authentication;
 
-    public A getAuthentication() {
-        return this.authentication;
+    public CoarseAuthenticationEntry(MarshalledValue<A, MarshallingContext> authentication) {
+        this.authentication = authentication;
     }
 
-    @Override
-    public void setAuthentication(A authentication) {
-        this.authentication = authentication;
+    public MarshalledValue<A, MarshallingContext> getAuthentication() {
+        return this.authentication;
     }
 
     public AtomicReference<L> getLocalContext() {

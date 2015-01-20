@@ -27,7 +27,7 @@ import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 
-public class InfinispanSSOManager<V extends Authenticator<A>, A, D, L> implements SSOManager<A, D, L, TransactionBatch> {
+public class InfinispanSSOManager<V, A, D, L> implements SSOManager<A, D, L, TransactionBatch> {
 
     private final SSOFactory<V, A, D, L> factory;
     private final Batcher<TransactionBatch> batcher;
@@ -41,8 +41,7 @@ public class InfinispanSSOManager<V extends Authenticator<A>, A, D, L> implement
 
     @Override
     public SSO<A, D, L> createSSO(String ssoId, A authentication) {
-        V value = this.factory.createValue(ssoId);
-        value.setAuthentication(authentication);
+        V value = this.factory.createValue(ssoId, authentication);
         return this.factory.createSSO(ssoId, value);
     }
 

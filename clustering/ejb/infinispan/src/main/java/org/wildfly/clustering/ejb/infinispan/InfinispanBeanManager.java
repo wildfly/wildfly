@@ -249,7 +249,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     @Override
     public Bean<G, I, T> createBean(I id, G groupId, T bean) {
         InfinispanEjbLogger.ROOT_LOGGER.tracef("Creating bean %s associated with group %s", id, groupId);
-        BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, this.groupFactory.createValue(groupId));
+        BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, this.groupFactory.createValue(groupId, null));
         group.addBean(id, bean);
         group.releaseBean(id, this.passivation.isPersistent() ? this.passivation.getPassivationListener() : null);
         return new SchedulableBean(this.beanFactory.createBean(id, this.beanFactory.createValue(id, groupId)));

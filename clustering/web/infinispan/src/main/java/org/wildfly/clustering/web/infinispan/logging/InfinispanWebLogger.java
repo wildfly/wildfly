@@ -76,4 +76,8 @@ public interface InfinispanWebLogger extends BasicLogger {
 
     @Message(id = 9, value = "Failed to read attribute %2$s of session %1$s")
     IllegalStateException failedToReadSessionAttribute(@Cause Throwable cause, String sessionId, String attribute);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10, value = "Failed to activate authentication for single sign on %s")
+    void failedToActivateAuthentication(@Cause Throwable cause, String ssoId);
 }

@@ -45,7 +45,7 @@ public class CoarseSessionsKeyExternalizer extends AbstractSimpleExternalizer<Co
     }
 
     @Override
-    public CoarseSessionsKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public CoarseSessionsKey readObject(ObjectInput input) throws IOException {
         return new CoarseSessionsKey(input.readUTF());
     }
 }

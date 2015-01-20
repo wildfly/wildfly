@@ -19,16 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.marshalling;
+
 
 
 /**
- * Session attribute marshalling strategy.
+ * Marshalling strategy.
  * @author Paul Ferraro
+ * @param V the value type
+ * @param S the serialized form type
  */
-public interface SessionAttributeMarshaller<A, V> {
+public interface Marshaller<V, S> {
 
-    A read(V value) throws InvalidSerializedFormException;
+    /**
+     * Reads a value from its marshalled form.
+     * @param value the marshalled form
+     * @return an unmarshalled value/
+     * @throws InvalidSerializedFormException if the serialized form is invalid
+     */
+    V read(S value) throws InvalidSerializedFormException;
 
-    V write(A attribute);
+    /**
+     * Writes a value to its serialized form
+     * @param a value to marshal.
+     * @return the serialized form of the value
+     */
+    S write(V value);
 }

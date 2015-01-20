@@ -249,7 +249,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
     @Override
     public Session<L> createSession(String id) {
-        Session<L> session = this.factory.createSession(id, this.factory.createValue(id));
+        Session<L> session = this.factory.createSession(id, this.factory.createValue(id, null));
         final Time time = this.defaultMaxInactiveInterval;
         session.getMetaData().setMaxInactiveInterval(time.getValue(), time.getUnit());
         return new SchedulableSession(session);

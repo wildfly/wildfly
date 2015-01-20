@@ -22,30 +22,30 @@
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
 import java.util.Map;
-
-import org.wildfly.clustering.web.infinispan.sso.Authenticator;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Simple container for CoarseAuthenticationEntry and sessions map.
  * @author Paul Ferraro
  */
-public class CoarseSSOEntry<A, D, L> implements Authenticator<A> {
+public class CoarseSSOEntry<A, D, L> {
 
-    private final CoarseAuthenticationEntry<A, D, L> authenticationEntry;
+    private final A authentication;
+    private final AtomicReference<L> localContext;
     private final Map<D, String> sessions;
 
-    public CoarseSSOEntry(CoarseAuthenticationEntry<A, D, L> authenticationEntry, Map<D, String> sessions) {
-        this.authenticationEntry = authenticationEntry;
+    public CoarseSSOEntry(A authentication, AtomicReference<L> localContext, Map<D, String> sessions) {
+        this.authentication = authentication;
+        this.localContext = localContext;
         this.sessions = sessions;
     }
 
-    @Override
-    public void setAuthentication(A authentication) {
-        this.authenticationEntry.setAuthentication(authentication);
+    public A getAuthentication() {
+        return this.authentication;
     }
 
-    public CoarseAuthenticationEntry<A, D, L> getAuthenticationEntry() {
-        return this.authenticationEntry;
+    public AtomicReference<L> getLocalContext() {
+        return this.localContext;
     }
 
     public Map<D, String> getSessions() {

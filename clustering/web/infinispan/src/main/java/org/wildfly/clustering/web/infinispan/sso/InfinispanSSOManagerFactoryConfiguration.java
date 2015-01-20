@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.sso;
 
 import org.infinispan.Cache;
+import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 
 /**
@@ -32,4 +33,6 @@ public interface InfinispanSSOManagerFactoryConfiguration {
     <K, V> Cache<K, V> getCache();
 
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();
+
+    ModuleLoader getModuleLoader();
 }
