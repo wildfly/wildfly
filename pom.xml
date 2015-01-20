@@ -251,7 +251,7 @@
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.2.13.Final-redhat-1</version.org.jgroups>
         <version.org.jvnet>1.6</version.org.jvnet>
-        <version.org.kohsuke.rngom>201103-redhat-3</version.org.kohsuke.rngom>
+        <version.org.kohsuke.rngom>201103.0.0.redhat-4</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.3.redhat-2</version.org.opensaml.opensaml>
         <version.org.opensaml.openws>1.4.4.redhat-2</version.org.opensaml.openws>
