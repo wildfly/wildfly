@@ -102,7 +102,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         // topology changes (members added/removed events in the cluster)
         final Collection<Registry<String, List<ClientMapping>>> clusters = this.clientMappingRegistryCollector.getRegistries();
         try {
-            this.sendNewClusterFormedMessage(clusters);
+            // WFLY-4273
+            if (clusters != null && clusters.size() > 0) {
+                this.sendNewClusterFormedMessage(clusters);
+            }
         } catch (IOException ioe) {
             // just log and don't throw an error
             EjbLogger.ROOT_LOGGER.failedToSendClusterFormationMessageToClient(ioe, channel);
