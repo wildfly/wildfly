@@ -264,13 +264,13 @@
         <module>appclient</module>
         <module>batch</module>
         <module>bean-validation</module>
-		<module>build</module>
+        <module>build</module>
         <module>client/ejb</module>
         <module>client/jms</module>
         <module>client/shade</module>
         <module>clustering</module>
         <module>connector</module>
-		<module>dist</module>
+        <module>dist</module>
         <module>ee</module>
         <module>ejb3</module>
         <module>embedded</module>
@@ -731,23 +731,23 @@
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
-                                	<pluginExecutionFilter>
-                                		<groupId>
-                                			org.wildfly.build
-                                		</groupId>
-                                		<artifactId>
-                                			wildfly-server-provisioning-maven-plugin
-                                		</artifactId>
-                                		<versionRange>
-                                			[1.0.0.Alpha2,)
-                                		</versionRange>
-                                		<goals>
-                                			<goal>build</goal>
-                                		</goals>
-                                	</pluginExecutionFilter>
-                                	<action>
-                                		<ignore></ignore>
-                                	</action>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.wildfly.build
+                                        </groupId>
+                                        <artifactId>
+                                            wildfly-server-provisioning-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.0.0.Alpha2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>build</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
                                 </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
@@ -818,10 +818,10 @@
     <dependencyManagement>
         <dependencies>
 
-			<!-- Core Modules -->
+            <!-- Core Modules -->
 
-			<!-- TODO order order orderrrrrr -->
-			<dependency>
+            <!-- TODO order order orderrrrrr -->
+            <dependency>
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-build-plugin</artifactId>
                 <version>${version.org.wildfly.core}</version>
@@ -842,7 +842,7 @@
                 <version>${version.org.wildfly.core}</version>
             </dependency>
 
-			<dependency>
+            <dependency>
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-feature-pack</artifactId>
                 <type>zip</type>
@@ -1458,7 +1458,7 @@
                 <type>pom</type>
             </dependency>
 
-			<dependency>
+            <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-web-feature-pack</artifactId>
                 <type>pom</type>
@@ -3516,17 +3516,17 @@
             </dependency>
 
             <dependency>
-	        <groupId>org.apache.httpcomponents</groupId>
-	        <artifactId>httpasyncclient</artifactId>
-	        <version>${version.org.apache.httpcomponents.httpasyncclient}</version>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpasyncclient</artifactId>
+                <version>${version.org.apache.httpcomponents.httpasyncclient}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                     <exclusion>
-	                <groupId>commons-io</groupId>
-	                <artifactId>commons-io</artifactId>
+                        <groupId>commons-io</groupId>
+                        <artifactId>commons-io</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4982,10 +4982,10 @@
             </dependency>
 
             <dependency>
-		<groupId>org.jboss.openjdk-orb</groupId>
-		<artifactId>openjdk-orb</artifactId>
-	        <version>${version.org.jboss.openjdk-orb}</version>
-	    </dependency>
+                <groupId>org.jboss.openjdk-orb</groupId>
+                <artifactId>openjdk-orb</artifactId>
+                <version>${version.org.jboss.openjdk-orb}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
