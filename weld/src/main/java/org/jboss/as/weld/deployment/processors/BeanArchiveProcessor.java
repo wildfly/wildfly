@@ -25,6 +25,7 @@ import static org.jboss.as.weld.util.Utils.getDeploymentUnitId;
 import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
 import static org.jboss.as.weld.util.Utils.isClassesRoot;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,7 +52,6 @@ import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
@@ -60,6 +60,7 @@ import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.discovery.AnnotationType;
 import org.jboss.as.weld.ejb.EjbDescriptorImpl;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.bootstrap.WeldJaxwsInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.as.weld.util.Indices;
@@ -163,6 +164,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
         private final Multimap<ResourceRoot, ComponentDescription> componentDescriptions = HashMultimap.create();
         private final Multimap<ResourceRoot, EJBComponentDescription> ejbComponentDescriptions = HashMultimap.create();
+        private final List<ComponentDescription> implicitComponentDescriptions = new ArrayList<ComponentDescription>();
 
         public Components(DeploymentUnit deploymentUnit, Map<ResourceRoot, Index> indexes) {
             for (ComponentDescription component : deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION).getComponentDescriptions()) {
@@ -179,6 +181,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 }
                 if (resourceRoot == null || isClassesRoot(resourceRoot)) {
                     // special handling
+                    implicitComponentDescriptions.add(component);
                     resourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
                 }
 
@@ -305,9 +308,11 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 List<AnnotationInstance> annotationInstances = index.getAnnotations(beanDefiningAnnotation.getName());
                 implicitBeanClasses.addAll(Lists.transform(Indices.getAnnotatedClasses(annotationInstances), Indices.CLASS_INFO_TO_FQCN));
             }
-            //make all components into implicit beans so they will support injection
+            // Make all explicit components into implicit beans so they will support injection
             for(ComponentDescription description : components.componentDescriptions.get(resourceRoot)) {
-                implicitBeanClasses.add(description.getComponentClassName());
+                if(!components.implicitComponentDescriptions.contains(description)) {
+                    implicitBeanClasses.add(description.getComponentClassName());
+                }
             }
             return implicitBeanClasses;
         }
