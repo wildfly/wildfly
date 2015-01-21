@@ -69,7 +69,7 @@ public class CacheServiceProviderRegistrationFactoryBuilder extends ServiceProvi
     public ServiceBuilder<ServiceProviderRegistrationFactory> build(ServiceTarget target) {
         return new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
                 .addDependency(CacheServiceName.CACHE.getServiceName(this.containerName, this.cacheName), Cache.class, this.cache)
-                .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
+                .addDependency(CacheGroupServiceName.GROUP_CACHE.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(this.containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }

@@ -49,7 +49,7 @@ public class CacheGroupBuilderProvider implements org.wildfly.clustering.spi.Cac
     @Override
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         Builder<Group> builder = this.factory.createBuilder(containerName, cacheName);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, GroupServiceName.GROUP.toString(), containerName, cacheName).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, GroupServiceName.GROUP_CACHE.toString(), containerName, cacheName).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), Group.class);
         return Arrays.asList(builder, bindingBuilder);
     }

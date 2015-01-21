@@ -52,7 +52,7 @@ public class LocalServiceProviderRegistrationFactoryBuilder extends ServiceProvi
     @Override
     public ServiceBuilder<ServiceProviderRegistrationFactory> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
+                .addDependency(CacheGroupServiceName.GROUP_CACHE.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 

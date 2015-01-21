@@ -32,6 +32,6 @@ import org.wildfly.clustering.spi.CacheGroupServiceName;
 public class CacheGroupServiceNameProvider extends CacheServiceNameProvider {
 
     public CacheGroupServiceNameProvider(String containerName, String cacheName) {
-        super(CacheGroupServiceName.GROUP, containerName, cacheName);
+        super(CacheGroupServiceName.GROUP_CACHE, containerName, cacheName);
     }
 }

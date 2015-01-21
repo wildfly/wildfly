@@ -34,10 +34,10 @@ public enum CacheGroupServiceName implements CacheGroupServiceNameFactory {
             return GroupServiceName.NODE_FACTORY.getServiceName(container).append(cache);
         }
     },
-    GROUP() {
+    GROUP_CACHE() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return GroupServiceName.GROUP.getServiceName(container).append(cache);
+            return GroupServiceName.GROUP_CACHE.getServiceName(container).append(cache);
         }
     },
     REGISTRY() {
