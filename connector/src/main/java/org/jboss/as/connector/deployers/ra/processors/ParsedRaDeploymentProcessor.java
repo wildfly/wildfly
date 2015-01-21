@@ -150,7 +150,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 });
 
             }
-            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnit.getName(), deploymentResource, bootstrapCtx, deploymentUnit.getName()) {
+            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnit.getName(), deploymentResource, bootstrapCtx, deploymentUnit.getName(), false) {
 
                 @Override
                 protected void registerIronjacamar(final ServiceController<? extends Object> controller, final ManagementResourceRegistration subRegistration, final Resource subsystemResource) {

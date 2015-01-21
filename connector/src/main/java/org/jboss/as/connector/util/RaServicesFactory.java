@@ -56,7 +56,9 @@ import org.jboss.security.SubjectFactory;
 
 public class RaServicesFactory {
 
-    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, Activation raxml, final Resource deploymentResource) {
+    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module,
+                                               ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment,
+                                               Activation raxml, final Resource deploymentResource, final boolean statsEnabled) {
         // Create the service
 
         ServiceName serviceName = ConnectorServices.getDeploymentServiceName(deploymentUnitName,raxml);
@@ -105,7 +107,7 @@ public class RaServicesFactory {
                     }
                 });
             }
-            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnitName, deploymentResource, bootstrapCtxName, raxml.getId()) {
+            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnitName, deploymentResource, bootstrapCtxName, raxml.getId(), statsEnabled) {
 
                 @Override
                 protected void registerIronjacamar(ServiceController<? extends Object> controller, ManagementResourceRegistration subRegistration, Resource subsystemResource) {

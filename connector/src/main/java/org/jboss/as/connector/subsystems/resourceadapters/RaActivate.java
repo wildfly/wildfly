@@ -29,6 +29,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
@@ -43,7 +45,9 @@ public class RaActivate implements OperationStepHandler {
 
         final ModelNode address = operation.require(OP_ADDR);
         final String idName = PathAddress.pathAddress(address).getLastElement().getValue();
-        final String archiveName = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("archive").asString();
+        ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        final String archiveName = ARCHIVE.resolveModelAttribute(context, model).asString();
+        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
@@ -52,7 +56,7 @@ public class RaActivate implements OperationStepHandler {
                     ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveName, idName);
 
                     if (restartedServiceName == null) {
-                        RaOperationUtil.activate(context, idName, archiveName);
+                        RaOperationUtil.activate(context, idName, archiveName, statsEnabled);
                     }
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override

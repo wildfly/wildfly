@@ -64,6 +64,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USETRYLOCK;
@@ -99,7 +100,8 @@ public class CommonAttributes {
             WM_SECURITY_DEFAULT_PRINCIPAL,
             WM_SECURITY_DEFAULT_GROUPS,
             WM_SECURITY_MAPPING_GROUPS,
-            WM_SECURITY_MAPPING_USERS
+            WM_SECURITY_MAPPING_USERS,
+            STATISTICS_ENABLED
     };
     static final AttributeDefinition[] CONNECTION_DEFINITIONS_NODE_ATTRIBUTE = {
             CLASS_NAME,

@@ -38,6 +38,7 @@ import java.util.List;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
@@ -56,7 +57,7 @@ public class RaAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    public void performRuntime(final OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    public void performRuntime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
         // Compensating is remove
         final ModelNode address = operation.require(OP_ADDR);
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
@@ -87,7 +88,7 @@ public class RaAdd extends AbstractAddStepHandler {
                         //newly added configuration
                         ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveOrModuleName, name);
                         if (restartedServiceName == null) {
-                            RaOperationUtil.activate(context, name, archiveOrModuleName);
+                            RaOperationUtil.activate(context, name, archiveOrModuleName, STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
                         }
                         context.completeStep(new OperationContext.RollbackHandler() {
                             @Override
