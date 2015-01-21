@@ -28,6 +28,7 @@ import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -46,6 +47,7 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOMana
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
+    private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
 
     public InfinispanSSOManagerFactoryBuilder(String host) {
         this.host = host;
@@ -69,6 +71,7 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOMana
         return target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
                 .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
+                .addDependency(ServiceName.JBOSS.append("as", "service-module-loader"), ModuleLoader.class, this.loader)
         ;
     }
 
@@ -85,5 +88,10 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOMana
     @Override
     public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
         return this.affinityFactory.getValue();
+    }
+
+    @Override
+    public ModuleLoader getModuleLoader() {
+        return this.loader.getValue();
     }
 }

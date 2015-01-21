@@ -25,6 +25,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.context.Flag;
 import org.infinispan.transaction.LockingMode;
+import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.PassivationListener;
@@ -75,7 +76,7 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
              throw InfinispanEjbLogger.ROOT_LOGGER.invalidBeanGroup(id, groupId);
         }
         BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, groupEntry);
-        Mutator mutator = (entry.getLastAccessedTime() == null) ? Mutator.PASSIVE : new BeanMutator<>(this.cache, this.createKey(id), entry);
+        Mutator mutator = (entry.getLastAccessedTime() == null) ? Mutator.PASSIVE : new CacheEntryMutator<>(this.cache, this.createKey(id), entry);
         return new InfinispanBean<>(id, entry, group, mutator, this, this.timeout, this.listener);
     }
 
@@ -121,23 +122,6 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
             }
             // The actual bean instance is stored in the group, so this is the important entry to evict.
             this.groupFactory.evict(entry.getGroupId());
-        }
-    }
-
-    private static class BeanMutator<G, I> implements Mutator {
-        private final Cache<BeanKey<I>, BeanEntry<G>> cache;
-        private final BeanKey<I> key;
-        private final BeanEntry<G> entry;
-
-        BeanMutator(Cache<BeanKey<I>, BeanEntry<G>> cache, BeanKey<I> key, BeanEntry<G> entry) {
-            this.cache = cache;
-            this.key = key;
-            this.entry = entry;
-        }
-
-        @Override
-        public void mutate() {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(this.key, this.entry);
         }
     }
 }

@@ -26,6 +26,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.infinispan.spi.io.SimpleMarshalledValueExternalizer;
+import org.wildfly.clustering.marshalling.SimpleMarshalledValue;
 
 /**
  * Externalizer for {@link CoarseAuthenticationEntry}.
@@ -35,6 +37,8 @@ import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
  */
 public class CoarseAuthenticationEntryExternalizer<A, D> extends AbstractSimpleExternalizer<CoarseAuthenticationEntry<A, D, ?>> {
     private static final long serialVersionUID = 4667240286133879206L;
+
+    private static final SimpleMarshalledValueExternalizer EXTERNALIZER = new SimpleMarshalledValueExternalizer();
 
     public CoarseAuthenticationEntryExternalizer() {
         this(CoarseAuthenticationEntry.class);
@@ -47,14 +51,11 @@ public class CoarseAuthenticationEntryExternalizer<A, D> extends AbstractSimpleE
 
     @Override
     public void writeObject(ObjectOutput output, CoarseAuthenticationEntry<A, D, ?> entry) throws IOException {
-        output.writeObject(entry.getAuthentication());
+        EXTERNALIZER.writeObject(output, (SimpleMarshalledValue<?>) entry.getAuthentication());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public CoarseAuthenticationEntry<A, D, ?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        CoarseAuthenticationEntry<A, D, ?> entry = new CoarseAuthenticationEntry<>();
-        entry.setAuthentication((A) input.readObject());
-        return entry;
+        return new CoarseAuthenticationEntry<>(EXTERNALIZER.readObject(input));
     }
 }

@@ -27,6 +27,8 @@ import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.MarshalledValueMarshaller;
+import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.marshalling.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.SimpleMarshallingContextFactory;
@@ -119,13 +121,13 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
             case FINE: {
                 Cache<String, FineSessionCacheEntry<L>> sessionCache = this.config.getCache();
                 Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache = this.config.getCache();
-                SessionAttributeMarshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller = new MarshalledValueSessionAttributeMarshaller<>(factory, marshallingContext);
+                Marshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
                 return new FineSessionFactory<>(sessionCache, attributeCache, context, marshaller, localContextFactory);
             }
             case COARSE: {
                 Cache<String, CoarseSessionCacheEntry<L>> sessionCache = this.config.getCache();
                 Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache = this.config.getCache();
-                SessionAttributeMarshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller = new MarshalledValueSessionAttributeMarshaller<>(factory, marshallingContext);
+                Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
                 return new CoarseSessionFactory<>(sessionCache, attributesCache, context, marshaller, localContextFactory);
             }
             default: {

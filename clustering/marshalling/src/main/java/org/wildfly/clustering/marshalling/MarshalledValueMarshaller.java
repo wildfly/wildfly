@@ -19,24 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.marshalling;
 
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
 
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.MarshalledValueFactory;
-
 /**
- * Session attribute marshaller that stores attribute values using marshalled values.
+ * Marshaller that stores attribute values using marshalled values.
  * @author Paul Ferraro
  */
-public class MarshalledValueSessionAttributeMarshaller<V, C> implements SessionAttributeMarshaller<V, MarshalledValue<V, C>> {
+public class MarshalledValueMarshaller<V, C> implements Marshaller<V, MarshalledValue<V, C>> {
     private final MarshalledValueFactory<C> factory;
     private final C context;
 
-    public MarshalledValueSessionAttributeMarshaller(MarshalledValueFactory<C> factory, C context) {
+    public MarshalledValueMarshaller(MarshalledValueFactory<C> factory, C context) {
         this.factory = factory;
         this.context = context;
     }

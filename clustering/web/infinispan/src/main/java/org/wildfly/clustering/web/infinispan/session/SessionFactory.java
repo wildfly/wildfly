@@ -32,7 +32,7 @@ import org.wildfly.clustering.web.session.Session;
  * Factory for creating sessions.  This represents the cache mapping strategy for sessions.
  * @author Paul Ferraro
  */
-public interface SessionFactory<V, L> extends Creator<String, V>, Locator<String, V>, Remover<String>, Evictor<String> {
+public interface SessionFactory<V, L> extends Creator<String, V, Void>, Locator<String, V>, Remover<String>, Evictor<String> {
     Session<L> createSession(String id, V value);
     ImmutableSession createImmutableSession(String id, V value);
 }

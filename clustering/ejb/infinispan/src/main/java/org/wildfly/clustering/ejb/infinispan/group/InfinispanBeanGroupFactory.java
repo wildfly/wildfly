@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
@@ -56,7 +57,7 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
     }
 
     @Override
-    public BeanGroupEntry<I, T> createValue(G id) {
+    public BeanGroupEntry<I, T> createValue(G id, Void context) {
         Map<I, T> beans = new HashMap<>();
         BeanGroupEntry<I, T> entry = new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(beans));
         BeanGroupEntry<I, T> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(id, entry);
@@ -84,24 +85,7 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
 
     @Override
     public BeanGroup<G, I, T> createGroup(final G id, final BeanGroupEntry<I, T> entry) {
-        Mutator mutator = new BeanGroupMutator<>(this.cache, id, entry);
+        Mutator mutator = new CacheEntryMutator<>(this.cache, id, entry);
         return new InfinispanBeanGroup<>(id, entry, this.context, mutator, this);
-    }
-
-    private static class BeanGroupMutator<G, I, T> implements Mutator {
-        private final Cache<G, BeanGroupEntry<I, T>> cache;
-        private final G id;
-        private final BeanGroupEntry<I, T> entry;
-
-        BeanGroupMutator(Cache<G, BeanGroupEntry<I, T>> cache, G id, BeanGroupEntry<I, T> entry) {
-            this.cache = cache;
-            this.id = id;
-            this.entry = entry;
-        }
-
-        @Override
-        public void mutate() {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(this.id, this.entry);
-        }
     }
 }
