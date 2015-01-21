@@ -1288,21 +1288,25 @@ final class OperationContextImpl extends AbstractOperationContext {
                     return effectResult;
                 }
             }
+            AuthorizationResult errResult = null;
+
             if (allAttributes) {
                 ImmutableManagementResourceRegistration mrr = authResp.targetResource.getResourceRegistration();
                 ModelNode model = authResp.targetResource.getResource().getModel();
                 Set<Action.ActionEffect> attributeEffects = actionEffects.isEmpty() ? authResp.standardAction.getActionEffects() : actionEffects;
+
                 for (String attr : mrr.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
                     ModelNode currentValue = model.has(attr) ? model.get(attr) : new ModelNode();
                     AuthorizationResult attrResult = authorize(opId, attr, currentValue, attributeEffects);
                     if (attrResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                        return attrResult;
+
+                        errResult = attrResult;
                     }
                 }
                 authResp.attributesComplete = true;
             }
 
-            return AuthorizationResult.PERMITTED;
+            return errResult != null ? errResult : AuthorizationResult.PERMITTED;
         }
     }
 
