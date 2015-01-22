@@ -140,7 +140,7 @@ public class TimerImpl implements Timer {
         } else {
             this.nextExpiration = builder.nextDate;
         }
-        this.previousRun = null;
+        this.previousRun = builder.previousRun;
         this.primaryKey = builder.primaryKey;
 
         this.timerState = builder.timerState;
