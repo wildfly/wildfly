@@ -57,6 +57,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -274,6 +275,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         }
     }
 
+    @Ignore("re-enable when WFLY-3532 resoolved")
     @Test
     public void testConcurrentFailover() throws Exception {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
