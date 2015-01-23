@@ -146,7 +146,7 @@ public class WebsocketTestCase {
         private static final String HTTP_CONNECTOR_NAME = "http";
         private static final String HTTP_NIO_PROTOCOL = "org.apache.coyote.http11.Http11NioProtocol";
 
-        private String originalProtocol = null;
+        private static String originalProtocol = null;
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
