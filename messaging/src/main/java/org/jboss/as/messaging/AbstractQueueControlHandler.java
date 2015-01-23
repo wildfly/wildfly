@@ -27,13 +27,20 @@ import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.OperationDefinitionHelper.createNonEmptyStringAttribute;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeReadOnlyOperation;
+import static org.jboss.dmr.ModelType.LIST;
+import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.EnumSet;
 import java.util.Locale;
 
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -84,6 +91,11 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
     public static final String RESUME = "resume";
     public static final String LIST_CONSUMERS = "list-consumers";
     public static final String LIST_CONSUMERS_AS_JSON = "list-consumers-as-json";
+    public static final String LIST_SCHEDULED_MESSAGES = "list-scheduled-messages";
+    public static final String LIST_SCHEDULED_MESSAGES_AS_JSON = LIST_SCHEDULED_MESSAGES + "-as-json";
+    public static final String LIST_DELIVERING_MESSAGES = "list-delivering-messages";
+    public static final String LIST_DELIVERING_MESSAGES_AS_JSON = LIST_DELIVERING_MESSAGES + "-as-json";
+
 
     public static final String MESSAGE_ID = "message-id";
     public static final String NEW_PRIORITY = "new-priority";
@@ -139,6 +151,28 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListMessages(locale, forJMS, true);
+            }
+        }, readOnly);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES, resolver)
+                        .setReplyType(LIST)
+                        .setReplyParameters(getReplyMapConsumerMessageParameterDefinition())
+                        .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES_AS_JSON, resolver)
+                        .setReplyType(STRING)
+                        .build(),
+                this);
+        registry.registerOperationHandler(LIST_SCHEDULED_MESSAGES, this, new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                return MessagingDescriptions.getListScheduledMessages(locale, forJMS, false);
+            }
+        }, readOnly);
+
+        registry.registerOperationHandler(LIST_SCHEDULED_MESSAGES_AS_JSON, this, new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                return MessagingDescriptions.getListScheduledMessages(locale, forJMS, true);
             }
         }, readOnly);
 
@@ -309,6 +343,16 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                 context.getResult().set(ModelNode.fromJSONString(json));
             } else if (LIST_MESSAGES_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listMessagesAsJSON(getFilter(operation)));
+            } else if (LIST_DELIVERING_MESSAGES.equals(operationName)) {
+                String json = control.listDeliveringMessagesAsJSON();
+                context.getResult().set(ModelNode.fromJSONString(json));
+            } else if (LIST_DELIVERING_MESSAGES_AS_JSON.equals(operationName)) {
+                context.getResult().set(control.listDeliveringMessagesAsJSON());
+            } else if (LIST_SCHEDULED_MESSAGES.equals(operationName)) {
+                String json = control.listScheduledMessagesAsJSON();
+                context.getResult().set(ModelNode.fromJSONString(json));
+            } else if (LIST_SCHEDULED_MESSAGES_AS_JSON.equals(operationName)) {
+                context.getResult().set(control.listScheduledMessagesAsJSON());
             } else if (COUNT_MESSAGES.equals(operationName)) {
                 context.getResult().set(control.countMessages(getFilter(operation)));
             } else if (REMOVE_MESSAGE.equals(operationName)) {
@@ -427,6 +471,17 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
     protected abstract boolean isJMS();
 
+    protected AttributeDefinition[] getReplyMapConsumerMessageParameterDefinition() {
+        return new AttributeDefinition[]{
+                createNonEmptyStringAttribute("consumerName"),
+                new ObjectListAttributeDefinition.Builder("elements",
+                        new ObjectTypeAttributeDefinition.Builder("element", getReplyMessageParameterDefinitions()).build())
+                        .build()
+        };
+    }
+
+    protected abstract AttributeDefinition[] getReplyMessageParameterDefinitions();
+
     protected final void throwUnimplementedOperationException(final String operationName) {
         // Bug
         throw MESSAGES.unsupportedOperation(operationName);
@@ -489,5 +544,9 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         void resume() throws Exception;
 
         String listConsumersAsJSON() throws Exception;
+
+        String listScheduledMessagesAsJSON() throws  Exception;
+
+        String listDeliveringMessagesAsJSON() throws Exception;
     }
 }

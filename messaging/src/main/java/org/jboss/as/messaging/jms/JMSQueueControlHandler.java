@@ -25,6 +25,7 @@ package org.jboss.as.messaging.jms;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -47,6 +48,11 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<JMSQueue
     @Override
     public boolean isJMS() {
         return true;
+    }
+
+    @Override
+    protected AttributeDefinition[] getReplyMessageParameterDefinitions() {
+        return JMSManagementHelper.JMS_MESSAGE_PARAMETERS;
     }
 
     protected AbstractQueueControlHandler.DelegatingQueueControl<JMSQueueControl> getQueueControl(HornetQServer hqServer, String queueName){
@@ -169,6 +175,16 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<JMSQueue
             @Override
             public String listConsumersAsJSON() throws Exception {
                 return control.listConsumersAsJSON();
+            }
+
+            @Override
+            public String listScheduledMessagesAsJSON() throws Exception {
+                return control.listScheduledMessagesAsJSON();
+            }
+
+            @Override
+            public String listDeliveringMessagesAsJSON() throws Exception {
+                return control.listDeliveringMessagesAsJSON();
             }
         };
     }

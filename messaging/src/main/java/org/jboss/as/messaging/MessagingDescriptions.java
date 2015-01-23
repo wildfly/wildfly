@@ -114,15 +114,24 @@ public class MessagingDescriptions {
         return result;
     }
 
-    public static ModelNode getListScheduledMessages(Locale locale) {
+    public static ModelNode getListScheduledMessages(Locale locale, boolean forJMS, boolean json) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, QueueControlHandler.LIST_SCHEDULED_MESSAGES, "queue");
+        String opName = json ? AbstractQueueControlHandler.LIST_SCHEDULED_MESSAGES_AS_JSON : AbstractQueueControlHandler.LIST_SCHEDULED_MESSAGES;
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, opName, "queue");
 
         final ModelNode repProps = result.get(REPLY_PROPERTIES);
-        repProps.get(DESCRIPTION).set(bundle.getString("queue.list-scheduled-messages.reply"));
-        repProps.get(TYPE).set(ModelType.LIST);
-        populateCoreMessageDescription(bundle, repProps.get(VALUE_TYPE));
+        repProps.get(DESCRIPTION).set(bundle.getString("queue." + opName + ".reply"));
+        if (json) {
+            repProps.get(TYPE).set(ModelType.STRING);
+        } else {
+            repProps.get(TYPE).set(ModelType.LIST);
+            if (forJMS) {
+                populateJMSMessageDescription(bundle, repProps.get(VALUE_TYPE));
+            } else {
+                populateCoreMessageDescription(bundle, repProps.get(VALUE_TYPE));
+            }
+        }
 
         return result;
     }
