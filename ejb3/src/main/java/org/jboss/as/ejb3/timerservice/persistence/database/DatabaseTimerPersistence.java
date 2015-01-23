@@ -398,10 +398,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 setNodeName(TimerState.IN_TIMEOUT, statement, 2);
                 statement.setString(3, timer.getId());
                 statement.setString(4, TimerState.IN_TIMEOUT.name());
+                statement.setString(5, TimerState.RETRY_TIMEOUT.name());
                 if (timer.getNextExpiration() == null) {
-                    statement.setTimestamp(5, null);
+                    statement.setTimestamp(6, null);
                 } else {
-                    statement.setTimestamp(5, new Timestamp(timer.getNextExpiration().getTime()));
+                    statement.setTimestamp(6, new Timestamp(timer.getNextExpiration().getTime()));
                 }
             } catch (SQLException e) {
                 // something wrong with the preparation
