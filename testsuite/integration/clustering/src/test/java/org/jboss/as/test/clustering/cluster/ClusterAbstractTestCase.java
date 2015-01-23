@@ -26,10 +26,10 @@ import java.util.TreeMap;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.web.session.RoutingSupport;
@@ -75,7 +75,7 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     }
 
     @ArquillianResource
-    protected ContainerController controller;
+    protected WildFlyContainerController controller;
     @ArquillianResource
     protected Deployer deployer;
 
@@ -109,6 +109,10 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
 
     protected void stop(String... containers) {
         NodeUtil.stop(this.controller, containers);
+    }
+
+    protected void stop(int timeout, String... containers) {
+        NodeUtil.stop(timeout, this.controller, containers);
     }
 
     protected void deploy(String... deployments) {
