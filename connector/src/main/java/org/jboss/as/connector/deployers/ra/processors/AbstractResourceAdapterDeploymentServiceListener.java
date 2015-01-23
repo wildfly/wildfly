@@ -139,11 +139,14 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     }
                                     Resource subsystemResource;
 
-                                    if (!deploymentResource.hasChild(pe)) {
-                                        subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
-                                        deploymentResource.registerChild(pe, subsystemResource);
-                                    } else {
-                                        subsystemResource = deploymentResource.getChild(pe);
+                                    // Instances of Resoure is not thread-safe and need to be synchronized externally
+                                    synchronized (deploymentResource) {
+                                        if (!deploymentResource.hasChild(pe)) {
+                                            subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
+                                            deploymentResource.registerChild(pe, subsystemResource);
+                                        } else {
+                                            subsystemResource = deploymentResource.getChild(pe);
+                                        }
                                     }
 
                                     ManagementResourceRegistration statsRegistration;
