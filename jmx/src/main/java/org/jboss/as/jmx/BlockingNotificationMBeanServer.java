@@ -316,7 +316,8 @@ public class BlockingNotificationMBeanServer implements MBeanServer {
             }
         }
         Pattern p = Pattern.compile(name.getDomain().replace("*", ".*"));
-        if (p.matcher(resolvedDomain).matches() || p.matcher(expressionsDomain).matches()) {
+        if ((resolvedDomain != null && p.matcher(resolvedDomain).matches())
+                || (expressionsDomain != null && p.matcher(expressionsDomain).matches())) {
             return true;
         }
 
