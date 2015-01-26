@@ -173,8 +173,6 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 }
             } finally {
                 this.postTimeoutProcessing(timer);
-                //if it has expired we need to persist it
-                timerService.persistTimer(timer, false);
             }
         } catch (Exception e) {
             ROOT_LOGGER.exceptionRunningTimerTask(timer, timedObjectId, e);
@@ -214,6 +212,11 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         }
     }
 
+    /**
+     * After running the timer calculate the new state or expire the timer and persist it if changed.
+     *
+     * @param timer timer to post processing and persist
+     */
     protected void postTimeoutProcessing(TimerImpl timer) {
         timer.lock();
         try {
@@ -224,11 +227,9 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                     timerService.expireTimer(timer);
                 } else {
                     timer.setTimerState(TimerState.ACTIVE);
-                    // persist changes
-                    timerService.persistTimer(timer, false);
                 }
+                timerService.persistTimer(timer, false);
             }
-
         } finally {
             timer.unlock();
         }
