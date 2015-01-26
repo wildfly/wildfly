@@ -152,11 +152,17 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         if (index == null) {
             throw UndertowLogger.ROOT_LOGGER.unableToResolveAnnotationIndex(deploymentUnit);
         }
+        //WFLY-4205, look in the parent as well as the war
+        CompositeIndex parentIndex = deploymentUnit.getParent() == null ? null : deploymentUnit.getParent().getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         // Find classes which extend, implement, or are annotated by HandlesTypes
         for (Class<?> type : typesArray) {
             DotName className = DotName.createSimple(type.getName());
-            Set<ClassInfo> classInfos = processHandlesType(className, type, index);
+            Set<ClassInfo> classInfos = new HashSet<>();
+            classInfos.addAll(processHandlesType(className, type, index));
+            if(parentIndex != null) {
+                classInfos.addAll(processHandlesType(className, type, parentIndex));
+            }
             Set<Class<?>> classes = loadClassInfoSet(classInfos, classLoader);
             Set<ServletContainerInitializer> sciSet = typesMap.get(type);
             for (ServletContainerInitializer sci : sciSet) {
