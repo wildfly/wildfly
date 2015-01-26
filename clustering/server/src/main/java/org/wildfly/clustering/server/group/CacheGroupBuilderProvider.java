@@ -21,18 +21,12 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.server.CacheBuilderFactory;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.GroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
 
 /**
  * Provides the requisite builders for a cache-based {@link Group}.
@@ -48,9 +42,6 @@ public class CacheGroupBuilderProvider implements org.wildfly.clustering.spi.Cac
 
     @Override
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
-        Builder<Group> builder = this.factory.createBuilder(containerName, cacheName);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, GroupServiceName.GROUP.toString(), containerName, cacheName).getAbsoluteName());
-        Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), Group.class);
-        return Arrays.asList(builder, bindingBuilder);
+        return Collections.<Builder<?>>singleton(this.factory.createBuilder(containerName, cacheName));
     }
 }

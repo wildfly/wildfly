@@ -24,6 +24,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
+import java.util.ServiceLoader;
+
 import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -34,6 +36,9 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.GroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
  * @author Paul Ferraro
@@ -51,5 +56,13 @@ public class InfinispanSubsystemAddHandler extends AbstractBoottimeAddStepHandle
             }
         };
         context.addStep(step, OperationContext.Stage.RUNTIME);
+
+        // Install singleton local group services
+        for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
+            ROOT_LOGGER.debugf("Installing %s for %s group", provider.getClass().getSimpleName(), LocalGroupBuilderProvider.LOCAL);
+            for (Builder<?> builder : provider.getBuilders(LocalGroupBuilderProvider.LOCAL, null)) {
+                builder.build(context.getServiceTarget()).install();
+            }
+        }
     }
 }
