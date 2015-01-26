@@ -25,12 +25,14 @@ import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.weld.WeldModuleResourceLoader;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
+import org.jboss.as.weld.util.Reflections;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleDependencySpec;
@@ -223,12 +225,28 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         if (module.equals(that.getModule())) {
             return true;
         }
+
+        // basic check whether the module is our dependency
         for (DependencySpec dependency : module.getDependencies()) {
             if (dependency instanceof ModuleDependencySpec) {
                 ModuleDependencySpec moduleDependency = (ModuleDependencySpec) dependency;
                 if (moduleDependency.getIdentifier().equals(that.getModule().getIdentifier())) {
                     return true;
                 }
+            }
+        }
+
+        /*
+         * full check - we try to load a class from the target bean archive and check whether its module
+         * is the same as the one of the bean archive
+         * See WFLY-4250 for more info
+         */
+        Iterator<String> iterator = target.getBeanClasses().iterator();
+        if (iterator.hasNext()) {
+            Class<?> clazz = Reflections.loadClass(iterator.next(), module.getClassLoader());
+            if (clazz != null) {
+                Module classModule = Module.forClass(clazz);
+                return classModule != null && classModule.equals(that.getModule());
             }
         }
         return false;
