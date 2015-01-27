@@ -193,13 +193,9 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         ServerHostInfo hostInfo = new ServerHostInfo(hostname);
         Host undertowHost = getUndertowHost(hostInfo);
         if (undertowHost != null && !undertowHost.getServer().getListeners().isEmpty()) {
-            if (!securePort) {
-                return undertowHost.getServer().getListeners().get(0).getBinding().getValue().getAbsolutePort();
-            } else {
-                for(ListenerService<?> listener : undertowHost.getServer().getListeners()) {
-                    if (listener.isSecure()) {
-                        return listener.getBinding().getValue().getPort();
-                    }
+            for(ListenerService<?> listener : undertowHost.getServer().getListeners()) {
+                if (listener.isSecure() == securePort) {
+                    return listener.getBinding().getValue().getAbsolutePort();
                 }
             }
         }
