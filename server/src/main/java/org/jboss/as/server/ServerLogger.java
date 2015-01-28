@@ -96,6 +96,11 @@ public interface ServerLogger extends BasicLogger {
     ServerLogger NETWORK_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.server.net");
 
     /**
+     * Logger for deprecated APIs.
+     */
+    ServerLogger DEPRECATED_DEP_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.dependency.deprecated");
+
+    /**
      * Log message for when a jboss-deployment-structure.xml file is ignored
      * @param file name of the ignored file
      */
@@ -433,4 +438,8 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15979, value = "%s deployment has been re-deployed, its content will not be removed. You will need to restart it.")
     void undeployingDeploymentHasBeenRedeployed(String deploymentName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15980, value = "Deployment \"%s\" is using a deprecated module (\"%s\") which may be removed in future versions without notice.")
+    void deprecatedApiUsed(String name, ModuleIdentifier id);
 }

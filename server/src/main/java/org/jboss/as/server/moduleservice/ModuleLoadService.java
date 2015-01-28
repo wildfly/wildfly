@@ -21,6 +21,12 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import static org.jboss.as.server.ServerLogger.DEPRECATED_DEP_LOGGER;
+import static org.jboss.as.server.ServerLogger.PRIVATE_DEP_LOGGER;
+import static org.jboss.as.server.ServerLogger.UNSUPPORTED_DEP_LOGGER;
+import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
+import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,11 +46,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.server.ServerLogger.PRIVATE_DEP_LOGGER;
-import static org.jboss.as.server.ServerLogger.UNSUPPORTED_DEP_LOGGER;
-import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
-import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
 
 /**
  * Service that loads and re-links a module once all the modules dependencies are available.
@@ -79,6 +80,8 @@ public class ModuleLoadService implements Service<Module> {
                                 PRIVATE_DEP_LOGGER.privateApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
                             } else if (val.equals("unsupported")) {
                                 UNSUPPORTED_DEP_LOGGER.unsupportedApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
+                            } else if (val.equals("deprecated")) {
+                                DEPRECATED_DEP_LOGGER.deprecatedApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
                             }
                         }
                     } catch (ModuleNotFoundException ignore) {
