@@ -275,6 +275,10 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10487, value = "Unable to find driver class name in \"%s\" jar")
     void cannotFindDriverClassName(String driverName);
 
+    @LogMessage(level = WARN)
+    @Message(id = 10489, value = "-ds.xml file deployment is deprecated. Support will be removed in next versions")
+    void deprecated();
+
 }
 
 

@@ -24,6 +24,7 @@ package org.jboss.as.connector.deployers.ds.processors;
 
 import org.jboss.as.connector.deployers.Util;
 import org.jboss.as.connector.deployers.ds.DsXmlParser;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
@@ -78,7 +79,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
         final PropertyReplacer propertyReplacer = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_REPLACER);
 
         final Set<VirtualFile> files = dataSources(deploymentUnit);
-
+        ConnectorLogger.ROOT_LOGGER.deprecated();
         for (VirtualFile f : files) {
             InputStream xmlStream = null;
             try {
