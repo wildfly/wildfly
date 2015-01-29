@@ -80,7 +80,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
         final PropertyReplacer propertyReplacer = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_REPLACER);
 
         final Set<VirtualFile> files = dataSources(deploymentUnit);
-
+        ConnectorLogger.ROOT_LOGGER.deprecated();
         for (VirtualFile f : files) {
             InputStream xmlStream = null;
             try {

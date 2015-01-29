@@ -208,7 +208,7 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 12, value = "<drivers/> in standalone -ds.xml deployments aren't supported: Ignoring %s")
     void driversElementNotSupported(String deploymentName);
 
-//    @Message(id = 13, value = "the attribute class-name cannot be null for more than one connection-definition")
+    //    @Message(id = 13, value = "the attribute class-name cannot be null for more than one connection-definition")
 //    OperationFailedException classNameNullForMoreCD();
 //
 //    @Message(id = 14, value = "the attribute class-name cannot be null for more than one admin-object")
@@ -246,7 +246,7 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating a failure to start JGroup channel for a Distributed Work Manager
      *
      * @param channelName the name of the channel
-     * @param wmName the name of the workmanager
+     * @param wmName      the name of the workmanager
      * @return a {@link StartException} for the error.
      */
     @Message(id = 22, value = "Failed to start JGroups channel %s for distributed workmanager %s")
@@ -280,7 +280,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating the inability to complete the deployment.
      *
      * @param cause the cause of the error.
-     *
      * @return a {@link DeployException} for the error.
      */
     @Message(id = 30, value = "unable to deploy")
@@ -290,7 +289,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating the inability to deploy and validate a datasource or an XA datasource.
      *
      * @param cause the cause of the error.
-     *
      * @return a {@link DeployException} for the error.
      */
     @Message(id = 31, value = "unable to validate and deploy ds or xads")
@@ -310,7 +308,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param cause the cause of the error.
      * @param name  the name of the deployment in error.
-     *
      * @return a {@link StartException} for the error.
      */
     @Message(id = 33, value = "Error during the deployment of %s")
@@ -320,7 +317,6 @@ public interface ConnectorLogger extends BasicLogger {
      * A message indicating inability to instantiate the driver class.
      *
      * @param driverClassName the driver class name.
-     *
      * @return the message.
      */
     @Message(id = 34, value = "Unable to instantiate driver class \"%s\". See log (WARN) for more details")
@@ -341,7 +337,6 @@ public interface ConnectorLogger extends BasicLogger {
      * @param type          the type that failed to create.
      * @param operation     the operation.
      * @param reasonMessage the reason.
-     *
      * @return the message.
      */
     @Message(id = 36, value = "Failed to create %s instance for [%s]%n reason: %s")
@@ -351,7 +346,6 @@ public interface ConnectorLogger extends BasicLogger {
      * A message indicating a failure to get the metrics.
      *
      * @param message a message to append.
-     *
      * @return the message.
      */
     @Message(id = 37, value = "failed to get metrics: %s")
@@ -362,7 +356,6 @@ public interface ConnectorLogger extends BasicLogger {
      * the {@code deploymentUnit} parameter.
      *
      * @param deploymentUnit the deployment.
-     *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
     @Message(id = 38, value = "Failed to get module attachment for %s")
@@ -372,7 +365,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating a failure to get the URL delimiter.
      *
      * @param cause the cause of the error.
-     *
      * @return a {@link DeployException} for the error.
      */
     @Message(id = 39, value = "failed to get url delimiter")
@@ -382,7 +374,6 @@ public interface ConnectorLogger extends BasicLogger {
      * A message indicating a failure to invoke an operation.
      *
      * @param message the message to append.
-     *
      * @return th message.
      */
     @Message(id = 40, value = "failed to invoke operation: %s")
@@ -392,7 +383,6 @@ public interface ConnectorLogger extends BasicLogger {
      * A message indicating a failure to load the module for a driver.
      *
      * @param moduleName the module name.
-     *
      * @return the message.
      */
     @Message(id = 41, value = "Failed to load module for driver [%s]")
@@ -402,7 +392,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating a failure to match the pool.
      *
      * @param jndiName the JNDI name.
-     *
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 42, value = "failed to match pool. Check JndiName: %s")
@@ -412,7 +401,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating a failure to parse the service XML.
      *
      * @param xmlFile the service XML file.
-     *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
     @Message(id = 43, value = "Failed to parse service xml [%s]")
@@ -423,7 +411,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param cause   the cause of the error.
      * @param xmlFile the service XML file.
-     *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
     DeploymentUnitProcessingException failedToParseServiceXml(@Cause Throwable cause, VirtualFile xmlFile);
@@ -434,7 +421,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param cause          the cause of the error.
      * @param deploymentRoot the deployment root.
-     *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
     @Message(id = 44, value = "Failed to process RA child archives for [%s]")
@@ -444,7 +430,6 @@ public interface ConnectorLogger extends BasicLogger {
      * A message indicating a failure to set an attribute.
      *
      * @param message the message to append.
-     *
      * @return the message.
      */
     @Message(id = 45, value = "failed to set attribute: %s")
@@ -456,7 +441,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param cause          the cause of the error.
      * @param deploymentName the deployment name.
-     *
      * @return a {@link StartException} for the error.
      */
     @Message(id = 46, value = "Failed to start RA deployment [%s]")
@@ -474,7 +458,6 @@ public interface ConnectorLogger extends BasicLogger {
      * A message indicating the parameter name is invalid.
      *
      * @param parameterName the invalid parameter name.
-     *
      * @return the message.
      */
     @Message(id = 48, value = "Invalid parameter name: %s")
@@ -500,7 +483,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating the class, represented by the {@code clazz} parameter, should be an annotation.
      *
      * @param clazz the invalid class.
-     *
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 51, value = "%s should be an annotation")
@@ -510,7 +492,6 @@ public interface ConnectorLogger extends BasicLogger {
      * A message indicating the variable is {@code null}.
      *
      * @param name the name of the variable.
-     *
      * @return the message
      */
     @Message(id = 52, value = "%s is null")
@@ -522,7 +503,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param serviceType the service type.
      * @param obj         the object.
-     *
      * @return the message.
      */
     @Message(id = 53, value = "%s service [%s] is already started")
@@ -534,7 +514,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param serviceType the service type.
      * @param obj         the object.
-     *
      * @return the message.
      */
     @Message(id = 54, value = "%s service [%s] is not available")
@@ -546,7 +525,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param serviceType the service type.
      * @param obj         the object.
-     *
      * @return the message.
      */
     @Message(id = 55, value = "%s service [%s] is not enabled")
@@ -565,7 +543,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param propertyType the unknown property type.
      * @param propertyName the name of the property.
-     *
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 57, value = "Unknown property type: %s for property %s")
@@ -575,7 +552,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating a variable is undefined.
      *
      * @param name the name of the variable.
-     *
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 58, value = "%s is undefined")
@@ -585,7 +561,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating that a service is already registered
      *
      * @param name the name of the service.
-     *
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 59, value = "Service '%s' already registered")
@@ -595,7 +570,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating that a service isn't registered
      *
      * @param name the name of the service.
-     *
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 60, value = "Service '%s' isn't registered")
@@ -603,6 +577,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     /**
      * Failed to load native libraries
+     *
      * @param cause the exception.
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
@@ -613,7 +588,6 @@ public interface ConnectorLogger extends BasicLogger {
      * Creates an exception indicating that the ServiceName doesn't belong to a resource adapter service
      *
      * @param serviceName The service name
-     *
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 62, value = "%s isn't a resource adapter service")
@@ -634,7 +608,6 @@ public interface ConnectorLogger extends BasicLogger {
 
     /**
      * No datasource exists at the deployment address
-     *
      */
     @Message(id = 65, value = "No DataSource exists at address %s")
     String noDataSourceRegisteredForAddress(PathAddress address);
@@ -667,6 +640,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     /**
      * A message indicating that at least on xa-datasource-property is required
+     *
      * @return the message.
      */
     @Message(id = 69, value = "At least one xa-datasource-property is required for an xa-datasource")
@@ -694,7 +668,6 @@ public interface ConnectorLogger extends BasicLogger {
      *
      * @param cause     the cause of the error.
      * @param className the name of the class that failed.
-     *
      * @return a {@link DeployException} for the error.
      */
     @Message(id = 72, value = "Deployment %s failed")
@@ -708,6 +681,7 @@ public interface ConnectorLogger extends BasicLogger {
      */
     @Message(id = 73, value = "Failed to load module for RA [%s]")
     String failedToLoadModuleRA(String moduleName);
+
     /**
      * Creates an exception indicating a method is undefined.
      *
@@ -774,6 +748,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     /**
      * MDR empty during deployment of deployment annotation
+     *
      * @param jndiName The JNDI name
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
@@ -782,7 +757,8 @@ public interface ConnectorLogger extends BasicLogger {
 
     /**
      * Resource adapter not found during deployment of deployment annotation
-     * @param ra The resource adapter
+     *
+     * @param ra       The resource adapter
      * @param jndiName The JNDI name
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
@@ -791,8 +767,9 @@ public interface ConnectorLogger extends BasicLogger {
 
     /**
      * Invalid connection factory interface defined
-     * @param cf The connection factory
-     * @param ra The resource adapter
+     *
+     * @param cf       The connection factory
+     * @param ra       The resource adapter
      * @param jndiName The JNDI name
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
@@ -801,7 +778,8 @@ public interface ConnectorLogger extends BasicLogger {
 
     /**
      * Admin object declared for JCA 1.0 archive
-     * @param ra The resource adapter
+     *
+     * @param ra       The resource adapter
      * @param jndiName The JNDI name
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
@@ -810,8 +788,9 @@ public interface ConnectorLogger extends BasicLogger {
 
     /**
      * Invalid admin object class defined
-     * @param ao The admin object
-     * @param ra The resource adapter
+     *
+     * @param ao       The admin object
+     * @param ra       The resource adapter
      * @param jndiName The JNDI name
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
@@ -840,6 +819,10 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 90, value = "Jndi name shouldn't include '//' or end with '/'")
     OperationFailedException jndiNameShouldValidate();
+
+    @LogMessage(level = WARN)
+    @Message(id = 91, value = "-ds.xml file deployment is deprecated. Support will be removed in next versions")
+    void deprecated();
 }
 
 
