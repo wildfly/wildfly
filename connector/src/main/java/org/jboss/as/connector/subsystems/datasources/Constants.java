@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -271,6 +272,7 @@ class Constants {
             .setAllowExpression(false)
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
+            .setDeprecated(ModelVersion.create(1,3))
             .build();
 
     static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
@@ -589,8 +591,8 @@ class Constants {
             .setAttributeResolver(DataSourcesExtension.getResourceDescriptionResolver("jdbc-driver"))
             .build();
     static final SimpleOperationDefinition DATASOURCE_ENABLE = new SimpleOperationDefinitionBuilder(ENABLE, DataSourcesExtension.getResourceDescriptionResolver())
-            .setParameters(SimpleAttributeDefinitionBuilder.create(PERSISTENT, ModelType.BOOLEAN).setDefaultValue(new ModelNode(true)).build()).build();
-    static final SimpleOperationDefinition DATASOURCE_DISABLE = new SimpleOperationDefinitionBuilder(DISABLE, DataSourcesExtension.getResourceDescriptionResolver())
+            .setParameters(SimpleAttributeDefinitionBuilder.create(PERSISTENT, ModelType.BOOLEAN).setDefaultValue(new ModelNode(true)).build()).setDeprecated(ModelVersion.create(1,3)).build();
+    static final SimpleOperationDefinition DATASOURCE_DISABLE = new SimpleOperationDefinitionBuilder(DISABLE, DataSourcesExtension.getResourceDescriptionResolver()).setDeprecated(ModelVersion.create(1,3))
             .build();
     static final SimpleOperationDefinition FLUSH_IDLE_CONNECTION = new SimpleOperationDefinitionBuilder("flush-idle-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
             .setRuntimeOnly().build();
