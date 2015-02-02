@@ -95,7 +95,7 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE)
-                                                .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE)
+                                                .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE)
                                                                 .addAttributes(LocationDefinition.HANDLER)
