@@ -68,6 +68,8 @@ public interface ResourceBuilder {
 
     ResourceBuilder addOperation(OperationDefinition operationDefinition, OperationStepHandler handler, boolean inherited);
 
+    ResourceBuilder deprecated(ModelVersion since);
+
     ResourceDefinition build();
 
     class Factory {

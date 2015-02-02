@@ -317,7 +317,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
         this.deprecationData = new DeprecationData(since);
     }
 
-    public DeprecationData getDeprecationData(){
+    protected DeprecationData getDeprecationData(){
         return this.deprecationData;
     }
 }

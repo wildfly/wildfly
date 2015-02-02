@@ -43,8 +43,9 @@ class ResourceBuilderRoot implements ResourceBuilder {
     private ResourceDescriptionResolver attributeResolver = null;
     private OperationStepHandler addHandler;
     private OperationStepHandler removeHandler;
-    private final ResourceBuilderRoot parent;
+    private DeprecationData deprecationData;
     private final List<ResourceBuilderRoot> children = new LinkedList<ResourceBuilderRoot>();
+    private final ResourceBuilderRoot parent;
 
 
     private ResourceBuilderRoot(PathElement pathElement, StandardResourceDescriptionResolver resourceResolver,
@@ -146,6 +147,12 @@ class ResourceBuilderRoot implements ResourceBuilder {
         return this;
     }
 
+    @Override
+    public ResourceBuilder deprecated(ModelVersion since) {
+        this.deprecationData = new DeprecationData(since);
+        return this;
+    }
+
     public ResourceBuilder pushChild(final PathElement pathElement) {
         return pushChild(pathElement, resourceResolver.getChildResolver(pathElement.getKey()));
     }
@@ -206,7 +213,7 @@ class ResourceBuilderRoot implements ResourceBuilder {
         final ResourceBuilderRoot builder;
 
         private BuilderResourceDefinition(ResourceBuilderRoot builder) {
-            super(builder.pathElement, builder.resourceResolver, builder.addHandler, builder.removeHandler);
+            super(builder.pathElement, builder.resourceResolver, builder.addHandler, builder.removeHandler, builder.deprecationData);
             this.builder = builder;
         }
 
