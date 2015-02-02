@@ -57,7 +57,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
     private final OperationStepHandler removeHandler;
     private final OperationEntry.Flag addRestartLevel;
     private final OperationEntry.Flag removeRestartLevel;
-    private final DeprecationData deprecationData;
+    private volatile DeprecationData deprecationData;
 
     /**
      * {@link ResourceDefinition} that uses the given {code descriptionProvider} to describe the resource.
@@ -193,7 +193,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
     @Override
     public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
         return descriptionProvider == null
-                ? new DefaultResourceDescriptionProvider(resourceRegistration, descriptionResolver, deprecationData)
+                ? new DefaultResourceDescriptionProvider(resourceRegistration, descriptionResolver, getDeprecationData())
                 : descriptionProvider;
     }
 
@@ -313,4 +313,11 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
         // no-op
     }
 
+    protected void setDeprecated(ModelVersion since) {
+        this.deprecationData = new DeprecationData(since);
+    }
+
+    public DeprecationData getDeprecationData(){
+        return this.deprecationData;
+    }
 }
