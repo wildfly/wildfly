@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.List;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -48,6 +49,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -79,7 +81,7 @@ public class DataSourceEnable implements OperationStepHandler {
             model.get(ENABLED).set(true);
 
         if (context.isNormalServer()) {
-            DataSourceStatisticsListener.registerStatisticsResources(resource);
+            DataSourceStatisticsService.registerStatisticsResources(resource);
 
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -201,8 +203,12 @@ public class DataSourceEnable implements OperationStepHandler {
         if (dataSourceController != null) {
             if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
                 final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
-                dataSourceController.addListener(new DataSourceStatisticsListener(datasourceRegistration, statsEnabled));
-
+                DataSourceStatisticsService statsService = new DataSourceStatisticsService(datasourceRegistration, statsEnabled);
+                serviceTarget.addService(dataSourceServiceName.append(Constants.STATISTICS), statsService)
+                        .addDependency(dataSourceServiceName)
+                        .addDependency(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName), CommonDeployment.class, statsService.getCommonDeploymentInjector())
+                        .setInitialMode(ServiceController.Mode.PASSIVE)
+                        .install();
                 dataSourceController.setMode(ServiceController.Mode.ACTIVE);
             } else {
                 throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source", dsName));

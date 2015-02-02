@@ -25,7 +25,6 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -140,9 +139,9 @@ public class RaRemove implements OperationStepHandler {
                             try {
                                 if (wasActive){
                                     if(isModule){
-                                        RaOperationUtil.activate(context, idName, archiveName, STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
+                                        RaOperationUtil.activate(context, idName, archiveName);
                                     } else {
-                                        RaOperationUtil.activate(context, archiveName, archiveName, STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
+                                        RaOperationUtil.activate(context, archiveName, archiveName);
                                     }
                                 }
                             } catch (OperationFailedException e) {

@@ -86,6 +86,7 @@ import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
+import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 
 /**
  * Handler for exposing transaction logs
@@ -133,6 +134,8 @@ public class IronJacamarResourceCreator {
     }
 
 
+
+
     private void addConnectionDefinition(final Resource parent, ConnectionDefinition connDef) {
         final Resource connDefResource = new IronJacamarResource.IronJacamarRuntimeResource();
         final ModelNode model = connDefResource.getModel();
@@ -147,14 +150,14 @@ public class IronJacamarResourceCreator {
         setAttribute(model, USE_JAVA_CONTEXT, connDef.isUseJavaContext());
         setAttribute(model, ENABLED, connDef.isEnabled());
 
-            setAttribute(model, CONNECTABLE, connDef.isConnectable());
-            if (connDef.isTracking() != null) {
-                setAttribute(model, TRACKING, connDef.isTracking());
-            }
+        setAttribute(model, CONNECTABLE, connDef.isConnectable());
+        if (connDef.isTracking() != null) {
+            setAttribute(model, TRACKING, connDef.isTracking());
+        }
 
         setAttribute(model, USE_CCM, connDef.isUseCcm());
-            setAttribute(model, SHARABLE, connDef.isSharable());
-            setAttribute(model, ENLISTMENT, connDef.isEnlistment());
+        setAttribute(model, SHARABLE, connDef.isSharable());
+        setAttribute(model, ENLISTMENT, connDef.isEnlistment());
 
         final Pool pool = connDef.getPool();
         if (pool != null) {
@@ -163,27 +166,26 @@ public class IronJacamarResourceCreator {
             setAttribute(model, MIN_POOL_SIZE, pool.getMinPoolSize());
 
 
-                setAttribute(model, INITIAL_POOL_SIZE, pool.getInitialPoolSize());
-                if (pool.getCapacity() != null) {
-                    if (pool.getCapacity().getIncrementer() != null) {
-                        setAttribute(model, CAPACITY_INCREMENTER_CLASS, pool.getCapacity().getIncrementer().getClassName());
-                        if ( pool.getCapacity().getIncrementer().getConfigPropertiesMap() != null) {
-                            for (Map.Entry<String, String> config : pool.getCapacity().getIncrementer().getConfigPropertiesMap().entrySet()) {
-                                model.get(CAPACITY_INCREMENTER_PROPERTIES.getName(), config.getKey()).set(config.getValue());
-                            }
+            setAttribute(model, INITIAL_POOL_SIZE, pool.getInitialPoolSize());
+            if (pool.getCapacity() != null) {
+                if (pool.getCapacity().getIncrementer() != null) {
+                    setAttribute(model, CAPACITY_INCREMENTER_CLASS, pool.getCapacity().getIncrementer().getClassName());
+                    if (pool.getCapacity().getIncrementer().getConfigPropertiesMap() != null) {
+                        for (Map.Entry<String, String> config : pool.getCapacity().getIncrementer().getConfigPropertiesMap().entrySet()) {
+                            model.get(CAPACITY_INCREMENTER_PROPERTIES.getName(), config.getKey()).set(config.getValue());
                         }
-                    }
-                    if (pool.getCapacity().getDecrementer() != null) {
-                        setAttribute(model, CAPACITY_DECREMENTER_CLASS, pool.getCapacity().getDecrementer().getClassName());
-                        if (pool.getCapacity().getDecrementer().getConfigPropertiesMap() != null) {
-                            for (Map.Entry<String, String> config : pool.getCapacity().getDecrementer().getConfigPropertiesMap().entrySet()) {
-                                model.get(CAPACITY_DECREMENTER_PROPERTIES.getName(), config.getKey()).set(config.getValue());
-                            }
-                        }
-
                     }
                 }
+                if (pool.getCapacity().getDecrementer() != null) {
+                    setAttribute(model, CAPACITY_DECREMENTER_CLASS, pool.getCapacity().getDecrementer().getClassName());
+                    if (pool.getCapacity().getDecrementer().getConfigPropertiesMap() != null) {
+                        for (Map.Entry<String, String> config : pool.getCapacity().getDecrementer().getConfigPropertiesMap().entrySet()) {
+                            model.get(CAPACITY_DECREMENTER_PROPERTIES.getName(), config.getKey()).set(config.getValue());
+                        }
+                    }
 
+                }
+            }
 
 
             setAttribute(model, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
@@ -252,6 +254,8 @@ public class IronJacamarResourceCreator {
             }
         }
 
+        final Resource statsResource = new IronJacamarResource.IronJacamarRuntimeResource();
+        connDefResource.registerChild( PathElement.pathElement(Constants.STATISTICS_NAME, "local"), statsResource);
         final PathElement element = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME, connDef.getJndiName());
         parent.registerChild(element, connDefResource);
 
@@ -282,39 +286,39 @@ public class IronJacamarResourceCreator {
         setAttribute(model, Constants.BOOTSTRAP_CONTEXT, ironJacamarMetadata.getBootstrapContext());
         if (ironJacamarMetadata.getTransactionSupport() != null)
             model.get(Constants.TRANSACTION_SUPPORT.getName()).set(ironJacamarMetadata.getTransactionSupport().name());
-            if (ironJacamarMetadata.getWorkManager() != null && ironJacamarMetadata.getWorkManager().getSecurity() != null) {
-                WorkManagerSecurity security = ironJacamarMetadata.getWorkManager().getSecurity();
-                model.get(Constants.WM_SECURITY.getName()).set(true);
-                if (security.getDefaultGroups() != null) {
-                    for (String group : security.getDefaultGroups()) {
-                        model.get(Constants.WM_SECURITY_DEFAULT_GROUPS.getName()).add(group);
-                    }
-                }
-                if (security.getDefaultPrincipal() != null)
-                    model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
-                model.get(Constants.WM_SECURITY_MAPPING_REQUIRED.getName()).set(security.isMappingRequired());
-                model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
-                if (security.getGroupMappings() != null) {
-                    for (Map.Entry<String, String> entry : security.getGroupMappings().entrySet()) {
-                        final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
-                        final ModelNode subModel = mapping.getModel();
-                        subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
-                        subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
-                        final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_GROUPS.getName(), WM_SECURITY_MAPPING_GROUP.getName());
-                        ijResourceAdapter.registerChild(element, mapping);
-                    }
-                }
-                if (security.getUserMappings() != null) {
-                    for (Map.Entry<String, String> entry : security.getUserMappings().entrySet()) {
-                        final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
-                        final ModelNode subModel = mapping.getModel();
-                        subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
-                        subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
-                        final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_USERS.getName(), WM_SECURITY_MAPPING_USER.getName());
-                        ijResourceAdapter.registerChild(element, mapping);
-                    }
+        if (ironJacamarMetadata.getWorkManager() != null && ironJacamarMetadata.getWorkManager().getSecurity() != null) {
+            WorkManagerSecurity security = ironJacamarMetadata.getWorkManager().getSecurity();
+            model.get(Constants.WM_SECURITY.getName()).set(true);
+            if (security.getDefaultGroups() != null) {
+                for (String group : security.getDefaultGroups()) {
+                    model.get(Constants.WM_SECURITY_DEFAULT_GROUPS.getName()).add(group);
                 }
             }
+            if (security.getDefaultPrincipal() != null)
+                model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
+            model.get(Constants.WM_SECURITY_MAPPING_REQUIRED.getName()).set(security.isMappingRequired());
+            model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
+            if (security.getGroupMappings() != null) {
+                for (Map.Entry<String, String> entry : security.getGroupMappings().entrySet()) {
+                    final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
+                    final ModelNode subModel = mapping.getModel();
+                    subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
+                    subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
+                    final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_GROUPS.getName(), WM_SECURITY_MAPPING_GROUP.getName());
+                    ijResourceAdapter.registerChild(element, mapping);
+                }
+            }
+            if (security.getUserMappings() != null) {
+                for (Map.Entry<String, String> entry : security.getUserMappings().entrySet()) {
+                    final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
+                    final ModelNode subModel = mapping.getModel();
+                    subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
+                    subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
+                    final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_USERS.getName(), WM_SECURITY_MAPPING_USER.getName());
+                    ijResourceAdapter.registerChild(element, mapping);
+                }
+            }
+        }
         if (ironJacamarMetadata.getBeanValidationGroups() != null) {
             for (String bv : ironJacamarMetadata.getBeanValidationGroups()) {
                 model.get(Constants.BEANVALIDATION_GROUPS.getName()).add(new ModelNode().set(bv));
@@ -335,6 +339,9 @@ public class IronJacamarResourceCreator {
                 addAdminObject(ijResourceAdapter, adminObject);
             }
         }
+        final Resource statsResource = new IronJacamarResource.IronJacamarRuntimeResource();
+        ijResourceAdapter.registerChild( PathElement.pathElement(Constants.STATISTICS_NAME, "local"), statsResource);
+
         final PathElement element = PathElement.pathElement(Constants.RESOURCEADAPTER_NAME, name);
         parent.registerChild(element, ijResourceAdapter);
 
@@ -366,6 +373,16 @@ public class IronJacamarResourceCreator {
         PathElement ijPe = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
         if (parentResource.getChild(ijPe) == null) {
             parentResource.registerChild(ijPe, ironJacamarResource);
+        }
+    }
+
+    private void setStatsModelValue(ModelNode result, String attributeName, StatisticsPlugin stats) {
+        if (stats.getType(attributeName) == int.class) {
+            result.set((Integer) stats.getValue(attributeName));
+        } else if (stats.getType(attributeName) == long.class) {
+            result.set((Long) stats.getValue(attributeName));
+        } else {
+            result.set("" + stats.getValue(attributeName));
         }
     }
 

@@ -41,7 +41,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -59,10 +58,10 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private final MetadataRepository mdr;
+    private ConnectorXmlDescriptor connectorXmlDescriptor;
 
-    public RaXmlDeploymentProcessor(final MetadataRepository mdr) {
-        this.mdr = mdr;
+    public RaXmlDeploymentProcessor() {
+
     }
 
     /**
@@ -71,7 +70,6 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
-     *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -80,7 +78,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
 
 
-        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit
+        connectorXmlDescriptor = deploymentUnit
                 .getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if (connectorXmlDescriptor == null) {
             return; // Skip non ra deployments
@@ -125,7 +123,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     String rarName = raxml.getArchive();
 
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource, false);
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource);
 
                     }
                 }
@@ -145,4 +143,6 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
     public void undeploy(final DeploymentUnit context) {
     }
+
+
 }
