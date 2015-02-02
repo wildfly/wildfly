@@ -70,6 +70,7 @@ public interface Constants {
     String SIMPLE_ERROR_PAGE = "simple-error-page";
     String SCHEME = "scheme";
     String MAX_POST_SIZE = "max-post-size";
+    String CUSTOM_RESPONSE_CODE = "custom-response-code";
     /*JSP config */
     String CHECK_INTERVAL = "check-interval";
     String CONTAINER = "container";

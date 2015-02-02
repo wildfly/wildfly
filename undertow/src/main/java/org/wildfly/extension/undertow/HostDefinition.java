@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -37,6 +38,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -86,8 +88,13 @@ class HostDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("ROOT.war"))
             .build();
 
+    static final SimpleAttributeDefinition CUSTOM_RESPONSE_CODE = new SimpleAttributeDefinitionBuilder(Constants.CUSTOM_RESPONSE_CODE, ModelType.INT, true)
+    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+    .setValidator(new IntRangeValidator(400, 599, true, true))
+    .build();
+
     static final HostDefinition INSTANCE = new HostDefinition();
-    private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE));
+    private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, CUSTOM_RESPONSE_CODE));
     private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
             LocationDefinition.INSTANCE,
             AccessLogDefinition.INSTANCE,

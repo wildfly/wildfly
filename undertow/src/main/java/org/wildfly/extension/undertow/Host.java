@@ -54,7 +54,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author Radoslav Husar
  */
 public class Host implements Service<Host> {
-    private final PathHandler pathHandler = new PathHandler();
+    private final HttpUnavailablePathHandler pathHandler = new HttpUnavailablePathHandler(new PathHandler());
     private volatile HttpHandler rootHandler = pathHandler;
     private final Set<String> allAliases;
     private final String name;
@@ -66,13 +66,23 @@ public class Host implements Service<Host> {
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
 
-    protected Host(String name, List<String> aliases, String defaultWebModule) {
+    protected Host(final String name, final List<String> aliases, final String defaultWebModule, final int customResponseCode ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
         hosts.add(name);
         hosts.addAll(aliases);
         allAliases = Collections.unmodifiableSet(hosts);
+        this.pathHandler.setResponseCode(customResponseCode);
+    }
+
+    protected Host(final String name, final List<String> aliases, final String defaultWebModule ) {
+        this.name = name;
+        this.defaultWebModule = defaultWebModule;
+        Set<String> hosts = new HashSet<>(aliases.size() + 1);
+        hosts.add(name);
+        hosts.addAll(aliases);
+        this.allAliases = Collections.unmodifiableSet(hosts);
     }
 
     private String getDeployedContextPath(DeploymentInfo deploymentInfo) {
