@@ -22,24 +22,32 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.services.resourceadapters.statistics.ResourceAdapterStatisticsService;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Operation handler responsible for adding a Ra.
@@ -57,12 +65,15 @@ public class RaAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    public void performRuntime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
+    public void performRuntime(final OperationContext context, ModelNode operation, final Resource resource) throws OperationFailedException {
         // Compensating is remove
         final ModelNode address = operation.require(OP_ADDR);
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
         final String archiveOrModuleName;
-        if (!model.hasDefined(ARCHIVE.getName()) && ! model.hasDefined(MODULE.getName())) {
+        ModelNode model = resource.getModel();
+        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+
+        if (!model.hasDefined(ARCHIVE.getName()) && !model.hasDefined(MODULE.getName())) {
             throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
         }
         if (model.get(ARCHIVE.getName()).isDefined()) {
@@ -88,7 +99,7 @@ public class RaAdd extends AbstractAddStepHandler {
                         //newly added configuration
                         ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveOrModuleName, name);
                         if (restartedServiceName == null) {
-                            RaOperationUtil.activate(context, name, archiveOrModuleName, STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
+                            RaOperationUtil.activate(context, name, archiveOrModuleName);
                         }
                         context.completeStep(new OperationContext.RollbackHandler() {
                             @Override
@@ -105,7 +116,29 @@ public class RaAdd extends AbstractAddStepHandler {
                 }, OperationContext.Stage.RUNTIME);
             }
         }
+        ServiceRegistry registry = context.getServiceRegistry(true);
 
+        final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, name));
+        Activation raxml = (Activation) RaxmlController.getValue();
+        ServiceName serviceName = ConnectorServices.getDeploymentServiceName(archiveOrModuleName, name);
+        String bootStrapCtxName = DEFAULT_NAME;
+        if (raxml.getBootstrapContext() != null && !raxml.getBootstrapContext().equals("undefined")) {
+            bootStrapCtxName = raxml.getBootstrapContext();
+        }
+
+        ResourceAdapterStatisticsService raStatsService = new ResourceAdapterStatisticsService(context.getResourceRegistrationForUpdate(), name, statsEnabled);
+
+        ServiceBuilder statsServiceBuilder = context.getServiceTarget().addService(ServiceName.of(ConnectorServices.RA_SERVICE, name).append(ConnectorServices.STATISTICS_SUFFIX), raStatsService);
+        statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), raStatsService.getBootstrapContextInjector())
+                .addDependency(serviceName, raStatsService.getResourceAdapterDeploymentInjector())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
+
+        PathElement peStats = PathElement.pathElement(Constants.STATISTICS_NAME, "extended");
+
+        final Resource statsResource = new IronJacamarResource.IronJacamarRuntimeResource();
+
+        resource.registerChild(peStats, statsResource);
 
     }
 }

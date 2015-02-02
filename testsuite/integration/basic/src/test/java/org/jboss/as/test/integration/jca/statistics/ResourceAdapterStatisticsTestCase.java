@@ -212,11 +212,11 @@ public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
     @Override
     public ModelNode translateFromConnectionToStatistics(ModelNode connectionNode) {
         ModelNode statNode = new ModelNode();
-        statNode.add(DEPLOYMENT, connectionNode.get(1).get("resource-adapter").asString());
+        //statNode.add(DEPLOYMENT, connectionNode.get(1).get("resource-adapter").asString());
         statNode.add(SUBSYSTEM, "resource-adapters");
-        statNode.add("statistics", "statistics");
         statNode.add(connectionNode.get(1));
         statNode.add("connection-definitions", connectionNode.get(2).get("connection-definitions").asString());
+        statNode.add("statistics", "pool");
         return statNode;
     }
 }

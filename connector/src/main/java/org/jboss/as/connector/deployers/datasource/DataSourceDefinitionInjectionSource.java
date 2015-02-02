@@ -217,7 +217,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                                  final ServiceBuilder valueSourceServiceBuilder, final Injector<ManagedReferenceFactory> injector) {
 
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append("DataSourceDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(
                         serviceTarget.addService(dataSourceServiceName, dataSourceService),

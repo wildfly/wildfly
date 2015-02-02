@@ -239,7 +239,7 @@ public class Constants {
                 .setAllowNull(true)
                 .build();
 
-    static final String STATISTICS = "statistics";
+    public static final String STATISTICS = "statistics";
 
 
     static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinitionBuilder(CONNECTION_URL_NAME, ModelType.STRING, false)

@@ -36,9 +36,12 @@ import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
+import org.jboss.as.connector.services.resourceadapters.IronJacamarActivationResourceService;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
 import org.jboss.as.connector.subsystems.resourceadapters.RaOperationUtil;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.spec.AdminObject;
@@ -59,6 +62,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A ResourceAdapterDeploymentService.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
@@ -71,6 +75,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
     private final Connector cmd;
     private final Activation activation;
+    private final ManagementResourceRegistration registration;
+    private final Resource deploymentResource;
     private CommonDeployment raDeployment = null;
     private String deploymentName;
 
@@ -78,22 +84,24 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private final ServiceName duServiceName;
 
     /**
-     *
      * @param connectorXmlDescriptor
      * @param cmd
-     * @activationm activation
      * @param classLoader
      * @param deploymentServiceName
-     * @param duServiceName the deployment unit's service name
+     * @param duServiceName          the deployment unit's service name
+     * @activationm activation
      */
     public ResourceAdapterDeploymentService(final ConnectorXmlDescriptor connectorXmlDescriptor, final Connector cmd,
-                                            final Activation activation, final ClassLoader classLoader, final ServiceName deploymentServiceName, final ServiceName duServiceName) {
+                                            final Activation activation, final ClassLoader classLoader, final ServiceName deploymentServiceName, final ServiceName duServiceName,
+                                            final ManagementResourceRegistration registration, final Resource deploymentResource) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.cmd = cmd;
         this.activation = activation;
         this.classLoader = classLoader;
         this.deploymentServiceName = deploymentServiceName;
         this.duServiceName = duServiceName;
+        this.registration = registration;
+        this.deploymentResource = deploymentResource;
     }
 
     @Override
@@ -102,10 +110,10 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
         connectorServicesRegistrationName = deploymentName;
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s", deploymentName);
         final boolean fromModule = duServiceName.getParent().equals(RaOperationUtil.RAR_MODULE);
         final AS7RaDeployer raDeployer =
-            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, classLoader, cmd, activation, deploymentServiceName, fromModule);
+                new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, classLoader, cmd, activation, deploymentServiceName, fromModule);
         raDeployer.setConfiguration(config.getValue());
 
         ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -125,10 +133,21 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 value = new ResourceAdapterDeployment(raDeployment, deploymentName, raServiceName);
                 managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
                 registry.getValue().registerResourceAdapterDeployment(value);
-                context.getChildTarget()
+                ServiceTarget serviceTarget = context.getChildTarget();
+                serviceTarget
                         .addService(raServiceName,
                                 new ResourceAdapterService(deploymentName, raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                         .install();
+                final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
+
+                IronJacamarActivationResourceService ijResourceService = new IronJacamarActivationResourceService(registration, deploymentResource, false);
+
+                serviceTarget.addService(deployerServiceName.append(ConnectorServices.IRONJACAMAR_RESOURCE), ijResourceService)
+                        .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, ijResourceService.getMdrInjector())
+                        .addDependency(deployerServiceName, ResourceAdapterDeployment.class, ijResourceService.getResourceAdapterDeploymentInjector())
+                        .setInitialMode(Mode.PASSIVE)
+                        .install();
+
             } else {
                 DEPLOYMENT_CONNECTOR_LOGGER.debugf("Not activating: %s", deploymentName);
             }
@@ -140,7 +159,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     // TODO this could be replaced by the superclass method if there is no need for the TCCL change and push/pop owner
     // The stop() call doesn't do that so it's probably not needed
     private void cleanupStartAsync(final StartContext context, final String deploymentName, final Throwable cause,
-            final ServiceName duServiceName, final ClassLoader toUse) {
+                                   final ServiceName duServiceName, final ClassLoader toUse) {
         ExecutorService executorService = getLifecycleExecutorService();
         Runnable r = new Runnable() {
             @Override
@@ -182,8 +201,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     }
 
     public AS7MetadataRepository getMdr() {
-            return mdr.getValue();
-        }
+        return mdr.getValue();
+    }
 
     private class AS7RaDeployer extends AbstractAS7RaDeployer {
 
@@ -191,7 +210,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         private final boolean fromModule;
 
         public AS7RaDeployer(ServiceTarget serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd, Activation activation,  final ServiceName deploymentServiceName, final boolean fromModule) {
+                             Connector cmd, Activation activation, final ServiceName deploymentServiceName, final boolean fromModule) {
             super(serviceContainer, url, deploymentName, root, cl, cmd, deploymentServiceName);
             this.activation = activation;
             this.fromModule = fromModule;
@@ -215,29 +234,29 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 Set<String> raMcfClasses = new HashSet<String>();
                 Set<String> raAoClasses = new HashSet<String>();
 
-                    ResourceAdapter ra = cmd.getResourceadapter();
-                    if (ra != null && ra.getOutboundResourceadapter() != null &&
+                ResourceAdapter ra = cmd.getResourceadapter();
+                if (ra != null && ra.getOutboundResourceadapter() != null &&
                         ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
-                        List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
-                        if (cdMetas.size() > 0) {
-                            for (ConnectionDefinition cdMeta : cdMetas) {
-                                raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
-                            }
+                    List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
+                    if (cdMetas.size() > 0) {
+                        for (ConnectionDefinition cdMeta : cdMetas) {
+                            raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
                         }
                     }
+                }
 
-                    if (ra != null && ra.getAdminObjects() != null) {
-                        List<AdminObject> aoMetas = ra.getAdminObjects();
-                        if (aoMetas.size() > 0) {
-                            for (AdminObject aoMeta : aoMetas) {
-                                raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
-                            }
+                if (ra != null && ra.getAdminObjects() != null) {
+                    List<AdminObject> aoMetas = ra.getAdminObjects();
+                    if (aoMetas.size() > 0) {
+                        for (AdminObject aoMeta : aoMetas) {
+                            raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
                         }
                     }
+                }
 
-                    // Pure inflow always active except in case it is deployed as module
-                    if (raMcfClasses.size() == 0 && raAoClasses.size() == 0 && ! fromModule)
-                        return true;
+                // Pure inflow always active except in case it is deployed as module
+                if (raMcfClasses.size() == 0 && raAoClasses.size() == 0 && !fromModule)
+                    return true;
 
 
                 if (activation != null) {

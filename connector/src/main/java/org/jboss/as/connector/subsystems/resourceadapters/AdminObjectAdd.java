@@ -22,20 +22,30 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.ADMIN_OBJECTS_NODE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.services.resourceadapters.statistics.AdminObjectStatisticsService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -43,7 +53,8 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class AdminObjectAdd extends AbstractAddStepHandler {
     static final AdminObjectAdd INSTANCE = new AdminObjectAdd();
-    private AdminObjectAdd(){
+
+    private AdminObjectAdd() {
 
     }
 
@@ -55,11 +66,23 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, final Resource resource) throws OperationFailedException {
 
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
-        final String archiveName = path.getElement(path.size() - 2).getValue();
+        final String raName = path.getElement(path.size() - 2).getValue();
+        final String archiveOrModuleName;
+        ModelNode raModel = context.readResourceFromRoot(path.subAddress(0, path.size() - 1)).getModel();
+        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, raModel).asBoolean();
+
+        if (!raModel.hasDefined(ARCHIVE.getName()) && !raModel.hasDefined(MODULE.getName())) {
+            throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
+        }
+        if (raModel.get(ARCHIVE.getName()).isDefined()) {
+            archiveOrModuleName = raModel.get(ARCHIVE.getName()).asString();
+        } else {
+            archiveOrModuleName = raModel.get(MODULE.getName()).asString();
+        }
         final String poolName = PathAddress.pathAddress(address).getLastElement().getValue();
 
 
@@ -71,8 +94,8 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         }
 
 
-        ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, poolName);
-        ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName);
+        ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, raName, poolName);
+        ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, raName);
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -80,5 +103,30 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                 .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector())
                 .install();
+
+        ServiceRegistry registry = context.getServiceRegistry(true);
+
+        final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
+        Activation raxml = (Activation) RaxmlController.getValue();
+        ServiceName deploymentServiceName = ConnectorServices.getDeploymentServiceName(archiveOrModuleName, raName);
+        String bootStrapCtxName = DEFAULT_NAME;
+        if (raxml.getBootstrapContext() != null && !raxml.getBootstrapContext().equals("undefined")) {
+            bootStrapCtxName = raxml.getBootstrapContext();
+        }
+
+
+        AdminObjectStatisticsService adminObjectStatisticsService = new AdminObjectStatisticsService(context.getResourceRegistrationForUpdate(), poolName, statsEnabled);
+
+        ServiceBuilder statsServiceBuilder = serviceTarget.addService(serviceName.append(ConnectorServices.STATISTICS_SUFFIX), adminObjectStatisticsService);
+        statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), adminObjectStatisticsService.getBootstrapContextInjector())
+                .addDependency(deploymentServiceName, adminObjectStatisticsService.getResourceAdapterDeploymentInjector())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
+
+        PathElement peAO = PathElement.pathElement(Constants.STATISTICS_NAME, "extended");
+
+        final Resource aoResource = new IronJacamarResource.IronJacamarRuntimeResource();
+
+        resource.registerChild(peAO, aoResource);
     }
 }
