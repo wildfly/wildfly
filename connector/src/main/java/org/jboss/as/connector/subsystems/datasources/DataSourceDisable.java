@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.List;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -67,7 +68,7 @@ public class DataSourceDisable implements OperationStepHandler {
 
         if (context.isNormalServer()) {
 
-            DataSourceStatisticsListener.removeStatisticsResources(resource);
+            DataSourceStatisticsService.removeStatisticsResources(resource);
 
             if (context.isResourceServiceRestartAllowed()) {
                 context.addStep(new OperationStepHandler() {
@@ -90,17 +91,18 @@ public class DataSourceDisable implements OperationStepHandler {
                         } else {
                             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.serviceNotAvailable("Data-source", dsName));
                         }
-
+                        context.removeService(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName));
+                        context.removeService(dataSourceServiceName.append(Constants.STATISTICS));
                         final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(dsName);
                         final ServiceController<?> referenceController = registry.getService(referenceServiceName);
-                        if (referenceController != null ) {
+                        if (referenceController != null) {
                             context.removeService(referenceController);
                         }
 
                         final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
 
                         final ServiceController<?> binderController = registry.getService(binderServiceName);
-                        if (binderController != null ) {
+                        if (binderController != null) {
                             context.removeService(binderController);
                         }
 

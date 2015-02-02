@@ -22,16 +22,15 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation handler responsible for disabling an existing data-source.
@@ -47,7 +46,6 @@ public class RaActivate implements OperationStepHandler {
         final String idName = PathAddress.pathAddress(address).getLastElement().getValue();
         ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         final String archiveName = ARCHIVE.resolveModelAttribute(context, model).asString();
-        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
@@ -56,7 +54,7 @@ public class RaActivate implements OperationStepHandler {
                     ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveName, idName);
 
                     if (restartedServiceName == null) {
-                        RaOperationUtil.activate(context, idName, archiveName, statsEnabled);
+                        RaOperationUtil.activate(context, idName, archiveName);
                     }
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
