@@ -345,7 +345,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
         }
     }
 
-    protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {
+    protected abstract class AbstractWildFlyRaDeployer extends AbstractResourceAdapterDeployer {
 
         protected final ServiceTarget serviceTarget;
         protected final URL url;
@@ -355,8 +355,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
         protected final Connector cmd;
         protected final ServiceName deploymentServiceName;
 
-        protected AbstractAS7RaDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd,  final ServiceName deploymentServiceName) {
+        protected AbstractWildFlyRaDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
+                                            Connector cmd, final ServiceName deploymentServiceName) {
             super(true);
             this.serviceTarget = serviceTarget;
             this.url = url;
