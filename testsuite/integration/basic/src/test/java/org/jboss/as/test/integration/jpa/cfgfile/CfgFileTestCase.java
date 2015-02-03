@@ -36,6 +36,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,6 +45,7 @@ import org.junit.runner.RunWith;
  *
  * @author Zbynek Roubalik
  */
+@Ignore // ignore until WFLY-4309 + HHH-9511 is fixed in a wildfly copy of Hibernate
 @RunWith(Arquillian.class)
 public class CfgFileTestCase {
 
