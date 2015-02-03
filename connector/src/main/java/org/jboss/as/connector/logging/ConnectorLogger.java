@@ -276,7 +276,7 @@ public interface ConnectorLogger extends BasicLogger {
     void cannotFindDriverClassName(String driverName);
 
     @LogMessage(level = WARN)
-    @Message(id = 10489, value = "-ds.xml file deployment is deprecated. Support will be removed in next versions")
+    @Message(id = 10489, value = "-ds.xml file deployments are deprecated. Support may be removed in a future version.")
     void deprecated();
 
 }

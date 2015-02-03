@@ -22,6 +22,13 @@
 
 package org.jboss.as.connector.deployers.ds.processors;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
 import org.jboss.as.connector.deployers.Util;
 import org.jboss.as.connector.deployers.ds.DsXmlParser;
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -37,13 +44,6 @@ import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * Picks up -ds.xml deployments
@@ -79,7 +79,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
         final PropertyReplacer propertyReplacer = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_REPLACER);
 
         final Set<VirtualFile> files = dataSources(deploymentUnit);
-        ConnectorLogger.ROOT_LOGGER.deprecated();
+        boolean loggedDeprication = false;
         for (VirtualFile f : files) {
             InputStream xmlStream = null;
             try {
@@ -89,6 +89,10 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
                 DataSources dataSources = parser.parse(xmlStream);
 
                 if (dataSources != null) {
+                    if (!loggedDeprication) {
+                        loggedDeprication = true;
+                        ConnectorLogger.ROOT_LOGGER.deprecated();
+                    }
                     deploymentUnit.addToAttachmentList(DATA_SOURCES_ATTACHMENT_KEY, dataSources);
                 }
             } catch (Exception e) {
