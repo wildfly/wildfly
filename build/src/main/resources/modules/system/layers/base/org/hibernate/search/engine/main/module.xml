@@ -43,8 +43,8 @@
         <module name="org.codehaus.jackson.jackson-core-asl" />
         <module name="org.codehaus.jackson.jackson-mapper-asl" />
 
-        <!-- Optionally integrate with JDG -->
-        <module name="org.hibernate.search.infinispan-storage" slot="jdg-6.3" services="import" optional="true" />
+        <!-- Optionally integrate with JDG 6.4 -->
+        <module name="org.hibernate.search.infinispan-storage" slot="jdg-6.4" services="import" optional="true" />
 
     </dependencies>
 
