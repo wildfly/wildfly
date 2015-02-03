@@ -103,6 +103,7 @@ public class BasicComponent implements Component {
 
     protected void waitForComponentStart() {
         if (!gate) {
+            EeLogger.ROOT_LOGGER.tracef("Waiting for component %s (%s)", componentName, componentClass);
             // Block until successful start
             synchronized (this) {
                 if (stopping.get()) {
@@ -118,6 +119,7 @@ public class BasicComponent implements Component {
                     }
                 }
             }
+            EeLogger.ROOT_LOGGER.tracef("Finished waiting for component %s (%s)", componentName, componentClass);
         }
     }
     /**
