@@ -22,14 +22,11 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
@@ -42,21 +39,18 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ServerAdd extends AbstractBoottimeAddStepHandler {
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (SimpleAttributeDefinition def : ServerDefinition.ATTRIBUTES) {
-            def.validateAndSet(operation, model);
-        }
-    }
 
+    ServerAdd() {
+        super(ServerDefinition.ATTRIBUTES);
+    }
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final PathAddress address = context.getCurrentAddress();
         final PathAddress parentAddress = address.subAddress(0, address.size() - 1);
         final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(parentAddress));
 
-        final String name = address.getLastElement().getValue();
+        final String name = context.getCurrentAddressValue();
         final String defaultHost = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, resource.getModel()).asString();
         final String servletContainer = ServerDefinition.SERVLET_CONTAINER.resolveModelAttribute(context, resource.getModel()).asString();
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context,subsystemModel).asString();

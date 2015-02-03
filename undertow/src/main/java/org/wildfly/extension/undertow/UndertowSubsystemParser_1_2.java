@@ -27,18 +27,11 @@ package org.wildfly.extension.undertow;
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import java.util.List;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
@@ -55,12 +48,12 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class UndertowSubsystemParser_1_2 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+public class UndertowSubsystemParser_1_2 extends PersistentResourceXMLParser {
     protected static final UndertowSubsystemParser_1_2 INSTANCE = new UndertowSubsystemParser_1_2();
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = builder(UndertowRootDefinition.INSTANCE)
+        xmlDescription = builder(UndertowRootDefinition.INSTANCE, Namespace.UNDERTOW_1_2.getUriString())
                 .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID)
                 .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
@@ -246,25 +239,12 @@ public class UndertowSubsystemParser_1_2 implements XMLStreamConstants, XMLEleme
                 .build();
     }
 
-    private UndertowSubsystemParser_1_2() {
-    }
+        private UndertowSubsystemParser_1_2() {
+        }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        ModelNode model = new ModelNode();
-        model.get(UndertowRootDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
-        xmlDescription.persist(writer, model, Namespace.CURRENT.getUriString());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
-    }
+        @Override
+        public PersistentResourceXMLDescription getParserDescription() {
+                return xmlDescription;
+        }
 }
 
