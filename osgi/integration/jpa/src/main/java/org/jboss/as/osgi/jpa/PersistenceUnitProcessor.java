@@ -21,7 +21,8 @@
  */
 package org.jboss.as.osgi.jpa;
 
-import java.util.Properties;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import javax.persistence.EntityManagerFactory;
 
@@ -94,7 +95,7 @@ public class PersistenceUnitProcessor implements DeploymentUnitProcessor {
             PersistenceUnitService puService = injectedPersistenceUnitService.getValue();
             BundleContext bundleContext = injectedBundle.getValue().getBundleContext();
             EntityManagerFactory emf = puService.getEntityManagerFactory();
-            Properties properties = new Properties();
+            final Dictionary<String, String> properties = new Hashtable<String, String>();
             properties.put(EntityManagerFactoryBuilder.JPA_UNIT_NAME, puService.getScopedPersistenceUnitName());
             // [TODO] unit version/provider
             properties.put(EntityManagerFactoryBuilder.JPA_UNIT_VERSION, "unknown");
