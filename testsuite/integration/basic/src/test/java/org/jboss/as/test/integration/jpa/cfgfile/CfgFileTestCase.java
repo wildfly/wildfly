@@ -50,18 +50,16 @@ public class CfgFileTestCase {
     private static final String ARCHIVE_NAME = "jpa_cfgfile";
 
     private static final String hibernate_cfg_xml =
-		"<?xml version='1.0' encoding='utf-8'?>\n " +
-		  "<!DOCTYPE hibernate-configuration PUBLIC\n" +
-		  "\"-//Hibernate/Hibernate Configuration DTD 3.0//EN\"\n" +
-		  "\"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd\">\n" +
-		  "<hibernate-configuration>" +
-		  	"<session-factory>" +
-		  	"    <property name=\"connection.driver_class\">org.hsqldb.jdbcDriver</property>" +
-		  	"    <property name=\"hibernate.connection.datasource\">java:jboss/datasources/ExampleDS</property>" +
-		  	"    <property name=\"dialect\">org.hibernate.dialect.HSQLDialect</property>" +
-		  	"    <property name=\"hibernate.hbm2ddl.auto\">create-drop</property>" +
-		  	"  </session-factory>" +
-		  "</hibernate-configuration>";
+            "<?xml version='1.0' encoding='utf-8'?>\n " +
+                    "<!DOCTYPE hibernate-configuration>\n" +
+                    "<hibernate-configuration>\n" +
+                    "<session-factory>\n" +
+                    "    <property name=\"connection.driver_class\">org.hsqldb.jdbcDriver</property>\n" +
+                    "    <property name=\"hibernate.connection.datasource\">java:jboss/datasources/ExampleDS</property>\n" +
+                    "    <property name=\"dialect\">org.hibernate.dialect.HSQLDialect</property>\n" +
+                    "    <property name=\"hibernate.hbm2ddl.auto\">create-drop</property>\n" +
+                    "  </session-factory>\n" +
+                    "</hibernate-configuration>";
     
 
     @Deployment
