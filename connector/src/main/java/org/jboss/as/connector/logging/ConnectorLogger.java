@@ -821,7 +821,7 @@ public interface ConnectorLogger extends BasicLogger {
     OperationFailedException jndiNameShouldValidate();
 
     @LogMessage(level = WARN)
-    @Message(id = 91, value = "-ds.xml file deployment is deprecated. Support will be removed in next versions")
+    @Message(id = 91, value = "-ds.xml file deployments are deprecated. Support may be removed in a future version.")
     void deprecated();
 }
 
