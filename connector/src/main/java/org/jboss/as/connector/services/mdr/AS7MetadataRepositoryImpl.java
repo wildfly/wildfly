@@ -23,18 +23,18 @@
 package org.jboss.as.connector.services.mdr;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.core.mdr.SimpleMetadataRepository;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * An AS7' implementation of MetadataRepository
@@ -43,8 +43,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implements AS7MetadataRepository {
 
-    private final Map<String, Activation> ironJacamarMetaData = new HashMap<>();
-    private final List<ServiceName> jndiServices = new LinkedList<>();
+    private final ConcurrentMap<String, Activation> ironJacamarMetaData = new ConcurrentHashMap<>();
 
     /**
      * Constructor
@@ -64,6 +63,7 @@ public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implemen
     @Override
     public synchronized void unregisterResourceAdapter(String uniqueId) throws NotFoundException {
         super.unregisterResourceAdapter(uniqueId);
+        ironJacamarMetaData.remove(uniqueId);
     }
 
     @Override
@@ -118,6 +118,6 @@ public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implemen
 
     @Override
     public synchronized Set<String> getResourceAdaptersWithIronJacamarMetadata() {
-        return ironJacamarMetaData.keySet();
+        return Collections.unmodifiableSet(ironJacamarMetaData.keySet());
     }
 }
