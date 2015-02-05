@@ -123,7 +123,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                     if ("-secmgr".equals(arg) || arg.startsWith("-Djava.security.manager")) {
                         useSecMgr = true;
                     } else {
-                        cmd.add(arg);
+                        jbossArgs.add(arg);
                     }
                 }
             }
