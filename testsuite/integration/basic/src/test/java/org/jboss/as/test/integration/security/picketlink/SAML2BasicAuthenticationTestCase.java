@@ -113,7 +113,7 @@ public class SAML2BasicAuthenticationTestCase {
 		try {
 
 			final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(PicketLinkTestBase.ANIL, PicketLinkTestBase.ANIL);
-			httpClient.getCredentialsProvider().setCredentials(new AuthScope(idpUrl.getHost(), idpUrl.getPort()),credentials);
+            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, idpUrl.getPort()), credentials);
 
 			// login to IdP
 			String response = PicketLinkTestBase.makeCall(idpUrl, httpClient, 200);
@@ -151,7 +151,7 @@ public class SAML2BasicAuthenticationTestCase {
 		try {
 
 			final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(PicketLinkTestBase.ANIL, PicketLinkTestBase.ANIL);
-			httpClient.getCredentialsProvider().setCredentials(new AuthScope(idpUrl.getHost(), idpUrl.getPort()),credentials);
+            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, idpUrl.getPort()), credentials);
 
 			String response = PicketLinkTestBase.makeCall(sp2Url, httpClient, 200);
 			assertTrue("SP2 index page was not reached",response.contains("Welcome to SP2"));
@@ -176,7 +176,7 @@ public class SAML2BasicAuthenticationTestCase {
 		try {
 
 			final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(PicketLinkTestBase.ANIL, PicketLinkTestBase.ANIL);
-			httpClient.getCredentialsProvider().setCredentials(new AuthScope(idpUrl.getHost(), idpUrl.getPort()),credentials);
+            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, idpUrl.getPort()), credentials);
 
 			String response = PicketLinkTestBase.makeCall(idpUrl, httpClient, 200);
 			assertTrue("IdP index page was not reached",response.contains("Welcome to IdP"));
@@ -204,7 +204,7 @@ public class SAML2BasicAuthenticationTestCase {
 			PicketLinkTestBase.makeCall(sp2Url, httpClient, 401);
 			
 			final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(PicketLinkTestBase.MARCUS, PicketLinkTestBase.MARCUS);
-			httpClient.getCredentialsProvider().setCredentials(new AuthScope(idpUrl.getHost(), idpUrl.getPort()),credentials);
+            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, idpUrl.getPort()), credentials);
 
 			PicketLinkTestBase.makeCall(sp2Url, httpClient, 403);
 			

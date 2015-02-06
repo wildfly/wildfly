@@ -92,6 +92,7 @@ import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils;
 import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
@@ -102,6 +103,7 @@ import org.jboss.security.negotiation.AdvancedLdapLoginModule;
 import org.jboss.security.negotiation.NegotiationAuthenticator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -151,6 +153,11 @@ public class AdvancedLdapLoginModuleTestCase {
     ManagementClient mgmtClient;
 
     // Public methods --------------------------------------------------------
+
+    @BeforeClass
+    public static void beforeClass() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    }
 
     /**
      * Creates {@link WebArchive} for {@link #test1(URL)}.
@@ -211,7 +218,7 @@ public class AdvancedLdapLoginModuleTestCase {
     @Test
     @OperateOnDeployment(DEP2)
     public void test2(@ArquillianResource URL webAppURL) throws Exception {
-        //JBPAPP-10173 - ExtendedLdap LM would contain also "jduke"
+        // JBPAPP-10173 - ExtendedLdap LM would contain also "jduke"
         testDeployment(webAppURL, "TheDuke", "Echo");
     }
 
@@ -234,8 +241,9 @@ public class AdvancedLdapLoginModuleTestCase {
     @Test
     @OperateOnDeployment(DEP4)
     public void test4(@ArquillianResource URL webAppURL) throws Exception {
-        //JBPAPP-10173 - ExtendedLdap LM would contain also "R1", "R2", "R3"
-        //recursion in AdvancedLdapLoginModule is enabled only if the roleAttributeIsDN module option is true. This is not required in LdapExtLogiModule.
+        // JBPAPP-10173 - ExtendedLdap LM would contain also "R1", "R2", "R3"
+        // recursion in AdvancedLdapLoginModule is enabled only if the roleAttributeIsDN module option is true. This is not
+        // required in LdapExtLogiModule.
         testDeployment(webAppURL, "RG2", "R5");
     }
 
@@ -271,6 +279,7 @@ public class AdvancedLdapLoginModuleTestCase {
     private void testDeployment(URL webAppURL, String... assignedRoles) throws MalformedURLException, ClientProtocolException,
             IOException, URISyntaxException, LoginException, PrivilegedActionException {
         final URI rolesPrintingURI = getServletURI(webAppURL, RolePrintingServlet.SERVLET_PATH + "?" + QUERY_ROLES);
+
         final String rolesResponse = Utils.makeCallWithKerberosAuthn(rolesPrintingURI, "jduke", "theduke", 200);
         final List<String> assignedRolesList = Arrays.asList(assignedRoles);
 
@@ -287,7 +296,8 @@ public class AdvancedLdapLoginModuleTestCase {
     }
 
     /**
-     * Constructs URI for given servlet path.
+     * Constructs URI for given servlet path. For the host (canonical host name) in the URI check if kerberos is supported for
+     * this configuration (Java version, Java vendor, hostname).
      *
      * @param servletPath
      * @return
@@ -391,11 +401,11 @@ public class AdvancedLdapLoginModuleTestCase {
          */
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             try {
-                if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
                     Security.addProvider(new BouncyCastleProvider());
                     removeBouncyCastle = true;
                 }
-            } catch(SecurityException ex) {
+            } catch (SecurityException ex) {
                 LOGGER.warn("Cannot register BouncyCastleProvider", ex);
             }
             directoryService = DSAnnotationProcessor.getDirectoryService();
@@ -458,10 +468,10 @@ public class AdvancedLdapLoginModuleTestCase {
             kdcServer.stop();
             directoryService.shutdown();
             FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
-            if(removeBouncyCastle) {
+            if (removeBouncyCastle) {
                 try {
                     Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-                } catch(SecurityException ex) {
+                } catch (SecurityException ex) {
                     LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
                 }
             }
@@ -486,9 +496,9 @@ public class AdvancedLdapLoginModuleTestCase {
         protected SecurityDomain[] getSecurityDomains() {
             final SecurityModule.Builder kerberosModuleBuilder = new SecurityModule.Builder();
             if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-                //http://www.ibm.com/developerworks/java/jdk/security/60/secguides/jgssDocs/api/com/ibm/security/auth/module/Krb5LoginModule.html
-                //http://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzaha%2Frzahajgssusejaas20.htm
-                //TODO Handle class name on AS side?
+                // http://www.ibm.com/developerworks/java/jdk/security/60/secguides/jgssDocs/api/com/ibm/security/auth/module/Krb5LoginModule.html
+                // http://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzaha%2Frzahajgssusejaas20.htm
+                // TODO Handle class name on AS side?
                 kerberosModuleBuilder.name("com.ibm.security.auth.module.Krb5LoginModule")
                         .putOption("useKeytab", Krb5ConfServerSetupTask.HTTP_KEYTAB_FILE.toURI().toString())
                         .putOption("credsType", "both") //
@@ -536,7 +546,7 @@ public class AdvancedLdapLoginModuleTestCase {
                                     .putOption("roleAttributeID", "description") //
                                     .putOption("roleAttributeIsDN", TRUE) //
                                     .putOption("roleNameAttributeID", "cn") //
-                                    //                                    .putOption("roleRecursion", "0") //
+                                    // .putOption("roleRecursion", "0") //
                                     .build()) //
                     .build();
             final SecurityDomain sd3 = new SecurityDomain.Builder()
@@ -550,7 +560,7 @@ public class AdvancedLdapLoginModuleTestCase {
                                     .putOption("rolesCtxDN", "ou=Roles,o=example3,dc=jboss,dc=org") //
                                     .putOption("roleFilter", "(member={1})") //
                                     .putOption("roleAttributeID", "cn") //
-                                    //                                    .putOption("roleRecursion", "0") //
+                                    // .putOption("roleRecursion", "0") //
                                     .build()) //
                     .build();
             final SecurityDomain sd4 = new SecurityDomain.Builder()

@@ -115,14 +115,14 @@ public class SAML2GlobalSSOandLogoutTestCase {
 		try {
 
 			UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(PicketLinkTestBase.ANIL, PicketLinkTestBase.ANIL);
-			httpClient.getCredentialsProvider().setCredentials(new AuthScope(idpUrl.getHost(), idpUrl.getPort()),credentials);
+            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, idpUrl.getPort()), credentials);
 			
 			String response = PicketLinkTestBase.makeCall(sp1Url, httpClient, 200);
 			assertTrue("SP1 index page was not reached",response.contains("Welcome to SP1"));
 			
 			//now we change credentials so when they are requested again we get 403 - Forbidden
 			credentials = new UsernamePasswordCredentials(PicketLinkTestBase.MARCUS, PicketLinkTestBase.MARCUS);
-			httpClient.getCredentialsProvider().setCredentials(new AuthScope(idpUrl.getHost(), idpUrl.getPort()),credentials);
+            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, idpUrl.getPort()), credentials);
 			
 			response = PicketLinkTestBase.makeCall(sp2Url, httpClient, 200);
 			assertTrue("SP2 index page was not reached",response.contains("Welcome to SP2"));

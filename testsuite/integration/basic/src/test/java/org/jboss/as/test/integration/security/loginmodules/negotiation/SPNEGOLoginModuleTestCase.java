@@ -24,25 +24,18 @@ package org.jboss.as.test.integration.security.loginmodules.negotiation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.Principal;
 import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifEntry;
@@ -71,22 +64,22 @@ import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
-import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
+import org.jboss.as.test.integration.security.common.SecurityTraceLoggingServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.integration.security.loginmodules.LdapExtLoginModuleTestCase;
-import org.jboss.as.test.integration.security.xacml.CustomXACMLAuthorizationModule;
 import org.jboss.logging.Logger;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.negotiation.NegotiationAuthenticator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,7 +90,7 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ Krb5ConfServerSetupTask.class, //
+@ServerSetup({ SecurityTraceLoggingServerSetupTask.class, Krb5ConfServerSetupTask.class, //
         SPNEGOLoginModuleTestCase.KerberosSystemPropertiesSetupTask.class, //
         SPNEGOLoginModuleTestCase.KDCServerSetupTask.class, //
         GSSTestServer.class, //
@@ -119,6 +112,11 @@ public class SPNEGOLoginModuleTestCase {
     ManagementClient mgmtClient;
 
     // Public methods --------------------------------------------------------
+
+    @BeforeClass
+    public static void beforeClass() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    }
 
     /**
      * Creates {@link WebArchive}.
@@ -148,31 +146,6 @@ public class SPNEGOLoginModuleTestCase {
     }
 
     /**
-     * Creates {@link JavaArchive} for testing the {@link CustomXACMLAuthorizationModule}.
-     *
-     * @return
-     * @throws IOException
-     * @throws IllegalArgumentException
-     */
-    @Deployment(name = "EJB", testable = false)
-    public static JavaArchive deploymentEjb() throws IllegalArgumentException, IOException {
-        final JavaArchive jar = ShrinkWrap
-                .create(JavaArchive.class, "ejb-spnego.jar")
-                .addClasses(SimpleSession.class, SimpleStatelessSessionBean.class)
-                .addAsManifestResource(
-                        new StringAsset(
-                                "<jboss:ejb-jar xmlns:jboss='http://www.jboss.com/xml/ns/javaee' xmlns='http://java.sun.com/xml/ns/javaee' xmlns:s='urn:security' version='3.1' impl-version='2.0'>"
-                                        + "<assembly-descriptor><s:security>"
-                                        + "<ejb-name>*</ejb-name><s:security-domain>SPNEGO</s:security-domain>"
-                                        + "</s:security></assembly-descriptor>" //
-                                        + "</jboss:ejb-jar>"), "jboss-ejb3.xml");
-        jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation"),
-                "jboss-deployment-structure.xml");
-        LOGGER.info(jar.toString(true));
-        return jar;
-    }
-
-    /**
      * Correct login.
      *
      * @throws Exception
@@ -181,6 +154,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testAuthn(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+
         LOGGER.info("Testing successful authentication " + servletUri);
         final String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "theduke", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
@@ -195,18 +169,19 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testUnsuccessfulAuthn(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+
         LOGGER.info("Testing failed authentication " + servletUri);
         try {
             Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "the%", HttpServletResponse.SC_OK);
             fail();
         } catch (LoginException e) {
-            //OK
+            // OK
         }
         try {
             Utils.makeCallWithKerberosAuthn(servletUri, "jd%", "theduke", HttpServletResponse.SC_OK);
             fail();
         } catch (LoginException e) {
-            //OK
+            // OK
         }
     }
 
@@ -219,6 +194,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testUnsuccessfulAuthz(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+
         LOGGER.info("Testing correct authentication, but failed authorization " + servletUri);
         Utils.makeCallWithKerberosAuthn(servletUri, "hnelson", "secret", HttpServletResponse.SC_FORBIDDEN);
     }
@@ -232,6 +208,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testUnsecured(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleServlet.SERVLET_PATH);
+
         LOGGER.info("Testing access to unprotected resource " + servletUri);
         final String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, null, null, HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body.", SimpleServlet.RESPONSE_BODY, responseBody);
@@ -246,6 +223,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testIdentityPropagation(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, PropagateIdentityServlet.SERVLET_PATH);
+
         LOGGER.info("Testing identity propagation " + servletUri);
         final String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "theduke", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body.", "jduke@JBOSS.ORG", responseBody);
@@ -260,6 +238,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB-FORM")
     public void testFormFallback(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+
         LOGGER.info("Testing fallback to FORM authentication. " + servletUri);
 
         LOGGER.info("Testing successful SPNEGO authentication");
@@ -277,38 +256,6 @@ public class SPNEGOLoginModuleTestCase {
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
     }
 
-    /**
-     * Tests EJB authentication using SPNEGO.
-     *
-     * @throws Exception
-     */
-    @Test
-    @OperateOnDeployment("EJB")
-    @Ignore("AS7-4874 EJB3 in AS7 doesn't support Kerberos authentication")
-    public void testEjbAccess() throws Exception {
-        LOGGER.info("Testing EJB3 access.");
-
-        final Configuration tmpConfig = Configuration.getConfiguration();
-
-        Configuration
-                .setConfiguration(new Krb5LoginConfiguration("hnelson", Krb5ConfServerSetupTask.HNELSON_KEYTAB_FILE, false));
-        Context ctx = getRemoteContext();
-        SimpleSession session = (SimpleSession) ctx.lookup("ejb:/ejb-spnego//SimpleStatelessSessionBean!"
-                + SimpleSession.class.getName());
-        Principal principal = session.invokeRegularMethod();
-        ctx.close();
-        assertEquals("User's principal name doesn't match.", "hnelson@JBOSS.ORG", principal.getName());
-
-        Configuration.setConfiguration(new Krb5LoginConfiguration("jduke", Krb5ConfServerSetupTask.JDUKE_KEYTAB_FILE, false));
-        ctx = getRemoteContext();
-        session = (SimpleSession) ctx.lookup("ejb:/ejb-spnego//SimpleStatelessSessionBean!" + SimpleSession.class.getName());
-        principal = session.invokeAdministrativeMethod();
-        ctx.close();
-        assertEquals("User's principal name doesn't match.", "jduke@JBOSS.ORG", principal.getName());
-
-        Configuration.setConfiguration(tmpConfig);
-    }
-
     // Private methods -------------------------------------------------------
 
     private static WebArchive createWebApp(final String webAppName, final String webXmlFilename, final String securityDomain) {
@@ -323,16 +270,6 @@ public class SPNEGOLoginModuleTestCase {
                 "jboss-deployment-structure.xml");
         LOGGER.info(war.toString(true));
         return war;
-    }
-
-    private Context getRemoteContext() throws Exception {
-        final Properties env = new Properties();
-        //        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        //        env.put(Context.PROVIDER_URL, mgmtClient.getRemoteEjbURL().toString());
-        //        env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
-        //        env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
-        env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        return new InitialContext(env);
     }
 
     /**
@@ -386,6 +323,7 @@ public class SPNEGOLoginModuleTestCase {
 
         private DirectoryService directoryService;
         private KdcServer kdcServer;
+
         private boolean removeBouncyCastle = false;
 
         /**
@@ -399,11 +337,11 @@ public class SPNEGOLoginModuleTestCase {
          */
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             try {
-                if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
                     Security.addProvider(new BouncyCastleProvider());
                     removeBouncyCastle = true;
                 }
-            } catch(SecurityException ex) {
+            } catch (SecurityException ex) {
                 LOGGER.warn("Cannot register BouncyCastleProvider", ex);
             }
             directoryService = DSAnnotationProcessor.getDirectoryService();
@@ -441,10 +379,10 @@ public class SPNEGOLoginModuleTestCase {
             kdcServer.stop();
             directoryService.shutdown();
             FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
-            if(removeBouncyCastle) {
+            if (removeBouncyCastle) {
                 try {
                     Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-                } catch(SecurityException ex) {
+                } catch (SecurityException ex) {
                     LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
                 }
             }
@@ -467,10 +405,10 @@ public class SPNEGOLoginModuleTestCase {
         @Override
         protected SecurityDomain[] getSecurityDomains() {
             final SecurityModule.Builder kerberosModuleBuilder = new SecurityModule.Builder();
-            if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-                //http://www.ibm.com/developerworks/java/jdk/security/60/secguides/jgssDocs/api/com/ibm/security/auth/module/Krb5LoginModule.html
-                //http://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzaha%2Frzahajgssusejaas20.htm
-                //TODO Handle class name on AS side?
+            if (Utils.IBM_JDK) {
+                // http://www.ibm.com/developerworks/java/jdk/security/60/secguides/jgssDocs/api/com/ibm/security/auth/module/Krb5LoginModule.html
+                // http://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzaha%2Frzahajgssusejaas20.htm
+                // TODO Handle class name on AS side?
                 kerberosModuleBuilder.name("com.ibm.security.auth.module.Krb5LoginModule") //
                         .putOption("useKeytab", Krb5ConfServerSetupTask.HTTP_KEYTAB_FILE.toURI().toString()) //
                         .putOption("credsType", "acceptor");
@@ -482,8 +420,8 @@ public class SPNEGOLoginModuleTestCase {
                         .putOption("keyTab", Krb5ConfServerSetupTask.getKeyTabFullPath()) //
                         .putOption("doNotPrompt", TRUE);
             }
-            kerberosModuleBuilder.putOption("principal",
-                    "HTTP/" + NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient)) + "@JBOSS.ORG") //
+            final String host = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
+            kerberosModuleBuilder.putOption("principal", "HTTP/" + host + "@JBOSS.ORG") //
                     .putOption("debug", TRUE);
             final SecurityDomain hostDomain = new SecurityDomain.Builder().name("host")
                     .loginModules(kerberosModuleBuilder.build()) //
