@@ -29,6 +29,9 @@ package org.jboss.as.connector.subsystems.datasources;
  */
 public class DataSourceRemove extends AbstractDataSourceRemove {
 
-    static final DataSourceRemove INSTANCE = new DataSourceRemove();
+    static final DataSourceRemove INSTANCE = new DataSourceRemove(DataSourceAdd.INSTANCE);
 
+    protected DataSourceRemove(AbstractDataSourceAdd addHandler) {
+        super(addHandler);
+    }
 }
