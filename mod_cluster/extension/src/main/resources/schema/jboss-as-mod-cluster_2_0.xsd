@@ -192,7 +192,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="protocol" default="ALL" type="SSlProtocolType">
+    <xs:attribute name="protocol" default="TLS" type="xs:string">
       <xs:annotation>
         <xs:documentation>
           sslProtocol: Overrides the default SSL socket protocol.
@@ -214,16 +214,6 @@
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
-
-  <xs:simpleType name="SSlProtocolType">
-    <xs:restriction base="xs:token">
-        <xs:enumeration value="SSLv2"/>
-        <xs:enumeration value="SSLv3"/>
-        <xs:enumeration value="TLSv1"/>
-        <xs:enumeration value="SSLv2+SSLv3"/>
-        <xs:enumeration value="ALL"/>
-    </xs:restriction>
-  </xs:simpleType>
 
   <!-- <simple-load-provider load="1"/> -->
   <xs:complexType name="simple-load-providerType">
