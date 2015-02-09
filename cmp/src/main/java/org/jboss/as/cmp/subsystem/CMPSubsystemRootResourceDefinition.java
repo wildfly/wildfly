@@ -39,5 +39,6 @@ class CMPSubsystemRootResourceDefinition extends SimpleResourceDefinition {
                 CmpExtension.getResolver(CmpExtension.SUBSYSTEM_NAME),
                 CmpSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(CmpExtension.DEPRECATED_SINCE);
     }
 }

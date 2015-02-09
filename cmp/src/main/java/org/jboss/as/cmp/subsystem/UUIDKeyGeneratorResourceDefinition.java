@@ -61,6 +61,7 @@ class UUIDKeyGeneratorResourceDefinition extends AbstractKeyGeneratorResourceDef
         super(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH,
                 CmpExtension.getResolver(CmpSubsystemModel.UUID_KEY_GENERATOR),
                 UUIDKeyGeneratorAdd.INSTANCE, UUIDKeyGeneratorRemove.INSTANCE);
+        setDeprecated(CmpExtension.DEPRECATED_SINCE);
     }
 
     @Override

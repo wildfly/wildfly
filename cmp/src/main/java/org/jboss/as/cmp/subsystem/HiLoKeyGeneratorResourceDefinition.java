@@ -121,6 +121,7 @@ class HiLoKeyGeneratorResourceDefinition extends AbstractKeyGeneratorResourceDef
         super(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH,
                 CmpExtension.getResolver(CmpSubsystemModel.HILO_KEY_GENERATOR),
                 HiLoKeyGeneratorAdd.INSTANCE, HiLoKeyGeneratorRemove.INSTANCE);
+        setDeprecated(CmpExtension.DEPRECATED_SINCE);
     }
 
     @Override
