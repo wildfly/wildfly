@@ -61,6 +61,7 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
         super(SecurityExtension.VAULT_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.VAULT),
                 VaultResourceDefinitionAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

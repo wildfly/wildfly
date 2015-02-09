@@ -47,6 +47,7 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
                 SecurityExtension.getResourceDescriptionResolver(Constants.ACL),
                 ACLResourceDefinitionAdd.INSTANCE,
                 new SecurityDomainReloadRemoveHandler());
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

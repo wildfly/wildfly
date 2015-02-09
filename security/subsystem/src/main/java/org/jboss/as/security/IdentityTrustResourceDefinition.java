@@ -44,6 +44,7 @@ public class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
         super(PathElement.pathElement(Constants.IDENTITY_TRUST, Constants.CLASSIC),
                 SecurityExtension.getResourceDescriptionResolver(Constants.IDENTITY_TRUST),
                 new IdentityTrustResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
