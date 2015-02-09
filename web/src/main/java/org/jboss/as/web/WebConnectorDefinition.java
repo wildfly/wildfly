@@ -223,6 +223,7 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver(Constants.CONNECTOR),
                 WebConnectorAdd.INSTANCE,
                 new ServiceRemoveStepHandler(WebSubsystemServices.JBOSS_WEB_CONNECTOR, WebConnectorAdd.INSTANCE));
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 

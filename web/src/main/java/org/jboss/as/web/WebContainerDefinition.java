@@ -84,6 +84,7 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver(Constants.CONTAINER),
                 WebContainerAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 

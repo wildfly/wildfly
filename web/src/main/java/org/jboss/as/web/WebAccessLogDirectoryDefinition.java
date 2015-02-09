@@ -65,6 +65,7 @@ public class WebAccessLogDirectoryDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver("virtual-server.access-log.directory"),
                 WebAccessLogDirectoryAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

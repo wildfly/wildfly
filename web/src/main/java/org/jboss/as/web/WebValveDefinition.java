@@ -112,6 +112,7 @@ public class WebValveDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver(Constants.VALVE),
                 WebValveAdd.INSTANCE,
                 new ServiceRemoveStepHandler(WebSubsystemServices.JBOSS_WEB_VALVE, WebValveAdd.INSTANCE));
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     /**

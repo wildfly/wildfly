@@ -60,6 +60,7 @@ public class WebDeploymentDefinition extends SimpleResourceDefinition {
     private WebDeploymentDefinition() {
         super(PathElement.pathElement(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME),
               WebExtension.getResourceDescriptionResolver("deployment"));
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 

@@ -100,6 +100,7 @@ public class WebAccessLogDefinition extends SimpleResourceDefinition {
                 new ReloadRequiredRemoveStepHandler());
         SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

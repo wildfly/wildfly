@@ -216,6 +216,7 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
                 WebSSLRemove.INSTANCE);
         SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-ssl", false, true, true);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 

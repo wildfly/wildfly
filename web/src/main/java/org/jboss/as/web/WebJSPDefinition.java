@@ -214,6 +214,7 @@ public class WebJSPDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver("configuration.jsp"),
                 WebJSPConfigurationAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 

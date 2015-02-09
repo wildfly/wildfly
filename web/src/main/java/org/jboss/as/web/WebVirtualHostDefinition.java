@@ -75,6 +75,7 @@ public class WebVirtualHostDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver(Constants.VIRTUAL_SERVER),
                 WebVirtualHostAdd.INSTANCE,
                 WebVirtualHostRemove.INSTANCE);
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

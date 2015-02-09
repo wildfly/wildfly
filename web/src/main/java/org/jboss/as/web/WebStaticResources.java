@@ -116,6 +116,7 @@ public class WebStaticResources extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver("configuration.static"),
                 WebStaticResourcesAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

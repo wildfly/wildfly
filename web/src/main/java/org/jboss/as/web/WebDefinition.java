@@ -73,6 +73,7 @@ public class WebDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver(null)
                 , WebSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 

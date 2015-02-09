@@ -57,6 +57,7 @@ public class WebDeploymentServletDefinition extends SimpleResourceDefinition {
     private WebDeploymentServletDefinition() {
         super(PathElement.pathElement("servlet"),
                 WebExtension.getResourceDescriptionResolver("deployment.servlet"));
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

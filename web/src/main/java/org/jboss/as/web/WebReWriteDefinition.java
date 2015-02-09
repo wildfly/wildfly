@@ -66,6 +66,7 @@ public class WebReWriteDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver("virtual-server.rewrite"),
                 WebReWriteAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override
