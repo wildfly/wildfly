@@ -111,7 +111,7 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
      */
     public static final String REPLY = "reply";
 
-    private final String keyPrefix;
+    protected final String keyPrefix;
     private final String bundleBaseName;
     private final WeakReference<ClassLoader> bundleLoader;
     private final boolean reuseAttributesForAdd;
