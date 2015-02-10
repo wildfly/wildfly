@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.smoke.ejb3.jndi;
 
+import static org.junit.Assert.assertNotNull;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -29,11 +31,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertNotNull;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Tests that the session beans are bound to all the jndi binding names mandated by the EJB3.1 spec, when the EJBs are
@@ -69,10 +72,20 @@ public class StandaloneModuleEjbJndiBindingTestCase {
      */
     private static final String JAVA_MODULE_NAMESPACE_PREFIX = "java:module/";
 
+    private ClassLoader oldTCCL;
+    
+    @Before 
+    public void before() {
+        oldTCCL = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(StandaloneModuleEjbJndiBindingTestCase.class.getClassLoader());
+    }
+
+    @After 
+    public void after() {
+        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
+    }
+    
     /**
      * Create the deployment
-     *
-     * @return
      */
     @Deployment
     public static JavaArchive createStandaloneJar() {
@@ -85,8 +98,6 @@ public class StandaloneModuleEjbJndiBindingTestCase {
 
     /**
      * Tests that all possible local view bindings of a Stateless bean are available.
-     *
-     * @throws Exception
      */
     @Test
     public void testLocalBindingsOnSLSB() throws Exception {
@@ -126,8 +137,6 @@ public class StandaloneModuleEjbJndiBindingTestCase {
 
     /**
      * Tests that all possible remote view bindings of a Stateless bean are available.
-     *
-     * @throws Exception
      */
     @Test
     public void testRemoteBindingsOnSLSB() throws Exception {
@@ -152,8 +161,6 @@ public class StandaloneModuleEjbJndiBindingTestCase {
 
     /**
      * Tests that all possible local view bindings of a Stateful bean are available.
-     *
-     * @throws Exception
      */
     @Test
     public void testLocalBindingsOnSFSB() throws Exception {
@@ -188,8 +195,6 @@ public class StandaloneModuleEjbJndiBindingTestCase {
 
     /**
      * Tests that all possible remote view bindings of a Stateful bean are available.
-     *
-     * @throws Exception
      */
     @Test
     public void testRemoteBindingsOnSFSB() throws Exception {
