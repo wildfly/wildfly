@@ -95,7 +95,7 @@ public class CMTTxInterceptor implements Interceptor {
             } else if (txStatus == Status.STATUS_ROLLEDBACK) {
                 // handle reaper canceled (rolled back) tx case (see WFLY-1346)
                 // clear current tx state and throw RollbackException (EJBTransactionRolledbackException)
-                tm.suspend();
+                tm.rollback();
                 throw EjbLogger.ROOT_LOGGER.transactionAlreadyRolledBack(tx);
             } else if (txStatus == Status.STATUS_UNKNOWN) {
                 // STATUS_UNKNOWN isn't expected to be reached here but if it does, we need to clear current thread tx.
