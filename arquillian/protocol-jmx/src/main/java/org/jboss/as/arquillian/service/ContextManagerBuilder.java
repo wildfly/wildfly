@@ -31,8 +31,12 @@ import org.jboss.as.server.deployment.SetupAction;
  */
 public class ContextManagerBuilder {
 
-
     private final List<SetupAction> setupActions = new ArrayList<SetupAction>();
+    private final ArquillianConfig config;
+
+    ContextManagerBuilder(ArquillianConfig config) {
+        this.config = config;
+    }
 
     /**
      * Adds a {@link SetupAction} to the builder. This action will be run by the {@link ContextManager} in the order it was
@@ -55,7 +59,7 @@ public class ContextManagerBuilder {
     }
 
     public ContextManager build() {
-        return new ContextManager(setupActions);
+        return new ContextManager(config, setupActions);
     }
 
 }

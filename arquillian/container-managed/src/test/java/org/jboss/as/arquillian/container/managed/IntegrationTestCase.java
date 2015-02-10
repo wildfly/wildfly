@@ -51,6 +51,7 @@ public class IntegrationTestCase {
     public void shouldBeAbleToInject() throws Exception {
         Assert.assertNotNull(service);
         Assert.assertEquals("Hello Earthling!", service.greet("Earthling"));
+        Assert.assertSame(getClass().getClassLoader(), Thread.currentThread().getContextClassLoader());
     }
 
     @Test

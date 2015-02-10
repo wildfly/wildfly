@@ -25,6 +25,7 @@ import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.protocol.jmx.AbstractJMXProtocol;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
+import org.jboss.as.arquillian.container.CommonContainerConfiguration;
 import org.jboss.shrinkwrap.api.Archive;
 
 /**
@@ -44,7 +45,8 @@ public class JMXProtocolAS7 extends AbstractJMXProtocol {
         if(archiveHolderInst.get() == null) {
             archiveHolderInst.set(new ServiceArchiveHolder());
         }
-        return new JMXProtocolPackager(archiveHolderInst.get());
+        CommonContainerConfiguration containerConfig = CommonContainerConfiguration.getContainerConfiguration();
+        return new JMXProtocolPackager(archiveHolderInst.get(), containerConfig);
     }
 
     @Override

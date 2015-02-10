@@ -49,8 +49,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private String serverConfig = System.getProperty("jboss.server.config.file.name", "standalone.xml");
 
-    private boolean allowConnectingToRunningServer = Boolean.parseBoolean(System.getProperty(
-        "allowConnectingToRunningServer", "false"));
+    private boolean allowConnectingToRunningServer = Boolean.parseBoolean(System.getProperty("allowConnectingToRunningServer", "false"));
 
     private boolean enableAssertions = true;
 
@@ -73,17 +72,10 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         super.validate();
     }
 
-    /**
-     * @return the javaVmArguments
-     */
     public String getJavaVmArguments() {
         return javaVmArguments;
     }
 
-    /**
-     * @param javaVmArguments
-     *            the javaVmArguments to set
-     */
     public void setJavaVmArguments(String javaVmArguments) {
         this.javaVmArguments = javaVmArguments;
     }
@@ -96,17 +88,10 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         this.jbossArguments = jbossArguments;
     }
 
-    /**
-     * @param startupTimeoutInSeconds
-     *            the startupTimeoutInSeconds to set
-     */
     public void setStartupTimeoutInSeconds(int startupTimeoutInSeconds) {
         this.startupTimeoutInSeconds = startupTimeoutInSeconds;
     }
 
-    /**
-     * @return the startupTimeoutInSeconds
-     */
     public int getStartupTimeoutInSeconds() {
         return startupTimeoutInSeconds;
     }
@@ -123,25 +108,16 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         return stopTimeoutInSeconds;
     }
 
-    /**
-     * @param outputToConsole
-     *            the outputToConsole to set
-     */
     public void setOutputToConsole(boolean outputToConsole) {
         this.outputToConsole = outputToConsole;
     }
 
-    /**
-     * @return the outputToConsole
-     */
     public boolean isOutputToConsole() {
         return outputToConsole;
     }
 
     /**
      * Get the server configuration file name. Equivalent to [-server-config=...] on the command line.
-     *
-     * @return the server config
      */
     public String getServerConfig() {
         return serverConfig;
@@ -149,9 +125,6 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     /**
      * Set the server configuration file name. Equivalent to [-server-config=...] on the command line.
-     *
-     * @param serverConfig
-     *            the server config
      */
     public void setServerConfig(String serverConfig) {
         this.serverConfig = serverConfig;
