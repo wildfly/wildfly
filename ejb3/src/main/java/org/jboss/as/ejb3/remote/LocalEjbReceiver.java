@@ -29,6 +29,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.ejb.AsyncResult;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
@@ -223,7 +225,16 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                     protected Object runInvocation() throws Exception {
                         setSecurityContextOnAssociation(securityContext);
                         try {
-                            return view.invoke(interceptorContext);
+                            Object result = view.invoke(interceptorContext);
+                            // WFLY-4331 - clone the result of an async task
+                            if(result instanceof AsyncResult) {
+                                  Object asyncValue = ((AsyncResult)result).get();
+                              return new AsyncResult(LocalEjbReceiver.clone(asyncValue.getClass(), resultCloner, asyncValue, allowPassByReference));
+                            }
+                            return LocalEjbReceiver.clone(result.getClass(), resultCloner, result, allowPassByReference);
+                        } catch(ExecutionException e) {
+                            // WFLY-4331 - clone the exception of an async task
+                            throw ((Exception) LocalEjbReceiver.clone(e.getClass(), resultCloner, e, allowPassByReference));
                         } finally {
                             clearSecurityContextOnAssociation();
                         }
@@ -231,8 +242,6 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                 };
                 interceptorContext.putPrivateData(CancellationFlag.class, flag);
                 component.getAsynchronousExecutor().submit(task);
-                //TODO: we do not clone the result of an async task
-                //TODO: we do not clone the exception of an async task
                 receiverContext.resultReady(new ImmediateResultProducer(task));
             } else {
                 throw EjbLogger.ROOT_LOGGER.asyncInvocationOnlyApplicableForSessionBeans();
@@ -281,7 +290,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         return new StatefulEJBLocator<T>(viewType, appName, moduleName, beanName, distinctName, sessionID, statefulComponent.getCache().getStrictAffinity(), this.getNodeName());
     }
 
-    private Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
+    private static Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
         if (object == null) {
             return null;
         }
@@ -295,7 +304,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         return clone(cloner, object);
     }
 
-    private Object clone(final ObjectCloner cloner, final Object object) {
+    private static Object clone(final ObjectCloner cloner, final Object object) {
         if (object == null) {
             return null;
         }
