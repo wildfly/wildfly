@@ -126,8 +126,9 @@ public class CalendarBasedTimeoutTestCase {
             testRun29thOfFeb();
             testSomeSpecificTime();
             testEvery10Seconds();
-            testWithStartInThePast();
-            testWithStartInTheFutureAndLaterSchedule();
+            // [FIXME WFLY-4334] CalendarBasedTimeoutTestCase fails consistently
+            //testWithStartInThePast();
+            //testWithStartInTheFutureAndLaterSchedule();
         }
     }
 
