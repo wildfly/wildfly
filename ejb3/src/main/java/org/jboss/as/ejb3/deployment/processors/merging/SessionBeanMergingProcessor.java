@@ -79,7 +79,7 @@ public class SessionBeanMergingProcessor extends AbstractMergingProcessor<Sessio
             boolean ejbActivate = false, ejbPassivate = false, ejbRemove = false;
             Class<?> c  = componentClass;
             while (c != null && c != Object.class) {
-                final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(c);
+                final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(c);
 
                 if(!ejbActivate) {
                     final Method method = index.getMethod(ejbActivateIdentifier);

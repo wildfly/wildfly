@@ -203,7 +203,6 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         private final String beanInterface;
         private final String beanName;
         private final String lookup;
-        private final String description;
         private final PropertyReplacer propertyReplacer;
 
         public EJBResourceWrapper(AnnotationInstance annotation, PropertyReplacer propertyReplacer) {
@@ -217,7 +216,6 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
                 lookupValue = stringValueOrNull(annotation, "mappedName");
             }
             this.lookup = lookupValue;
-            description = stringValueOrNull(annotation, "description");
         }
 
         private String name() {
@@ -234,10 +232,6 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
         private String lookup() {
             return lookup;
-        }
-
-        private String description() {
-            return description;
         }
 
         private String stringValueOrNull(final AnnotationInstance annotation, final String attribute) {

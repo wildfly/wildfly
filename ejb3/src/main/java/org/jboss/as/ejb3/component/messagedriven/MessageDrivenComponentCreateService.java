@@ -99,9 +99,6 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
         final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(activeResourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
         final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec, deliveryActive);
-        // set the resource adapter
-        final ResourceAdapter resourceAdapter = this.resourceAdapterInjectedValue.getValue();
-        component.setResourceAdapter(resourceAdapter);
         // set the endpoint
         final EJBUtilities ejbUtilities = this.ejbUtilitiesInjectedValue.getValue();
         final Endpoint endpoint = ejbUtilities.getEndpoint(activeResourceAdapterName);

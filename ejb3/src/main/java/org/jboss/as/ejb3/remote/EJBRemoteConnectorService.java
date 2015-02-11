@@ -21,8 +21,20 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.ejb3.logging.EjbLogger;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.as.ejb3.remote.protocol.versiontwo.VersionTwoProtocolChannelReceiver;
@@ -35,7 +47,6 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -51,17 +62,6 @@ import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.ServiceRegistrationException;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -100,11 +100,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     @Override
     public void start(StartContext context) throws StartException {
-        // get the remoting server (which allows remoting connector to connect to it) service
-        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
         // Register an EJB channel open listener
-        final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
+        final OpenListener channelOpenListener = new ChannelOpenListener();
         try {
             registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
         } catch (ServiceRegistrationException e) {
@@ -176,12 +174,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     private class ChannelOpenListener implements OpenListener {
 
-        private final ServiceContainer serviceContainer;
-
-        ChannelOpenListener(final ServiceContainer serviceContainer) {
-            this.serviceContainer = serviceContainer;
-        }
-
         @Override
         public void channelOpened(Channel channel) {
             final ChannelAssociation channelAssociation = new ChannelAssociation(channel);
@@ -203,7 +195,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             }
 
             // receive messages from the client
-            channel.receiveMessage(new ClientVersionMessageReceiver(this.serviceContainer, channelAssociation));
+            channel.receiveMessage(new ClientVersionMessageReceiver(channelAssociation));
         }
 
         @Override
@@ -213,11 +205,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     private class ClientVersionMessageReceiver implements Channel.Receiver {
 
-        private final ServiceContainer serviceContainer;
         private final ChannelAssociation channelAssociation;
 
-        ClientVersionMessageReceiver(final ServiceContainer serviceContainer, final ChannelAssociation channelAssociation) {
-            this.serviceContainer = serviceContainer;
+        ClientVersionMessageReceiver(final ChannelAssociation channelAssociation) {
             this.channelAssociation = channelAssociation;
         }
 

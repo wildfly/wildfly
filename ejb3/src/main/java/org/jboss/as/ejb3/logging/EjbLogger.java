@@ -392,7 +392,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 35, value = "Could not find EJB for locator %s, EJB client proxy will not be replaced")
-    void couldNotFindEjbForLocatorIIOP(EJBLocator locator);
+    void couldNotFindEjbForLocatorIIOP(EJBLocator<?> locator);
 
 
     /**
@@ -400,7 +400,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 36, value = "EJB %s is not being replaced with a Stub as it is not exposed over IIOP")
-    void ejbNotExposedOverIIOP(EJBLocator locator);
+    void ejbNotExposedOverIIOP(EJBLocator<?> locator);
 
     /**
      * Logs an error message indicating that dynamic stub creation failed
@@ -603,19 +603,19 @@ public interface EjbLogger extends BasicLogger {
     IllegalStateException ejbLocalObjectUnavailable(String beanName);
 
     @Message(id = 79, value = "[EJB 3.1 spec, section 14.1.1] Class: %s cannot be marked as an application exception because it is not of type java.lang.Exception")
-    IllegalArgumentException cannotBeApplicationExceptionBecauseNotAnExceptionType(Class klass);
+    IllegalArgumentException cannotBeApplicationExceptionBecauseNotAnExceptionType(Class<?> klass);
 
     @Message(id = 80, value = "[EJB 3.1 spec, section 14.1.1] Exception class: %s cannot be marked as an application exception because it is of type java.rmi.RemoteException")
-    IllegalArgumentException rmiRemoteExceptionCannotBeApplicationException(Class klass);
+    IllegalArgumentException rmiRemoteExceptionCannotBeApplicationException(Class<?> klass);
 
     @Message(id = 81, value = "%s annotation is allowed only on classes. %s is not a class")
     RuntimeException annotationOnlyAllowedOnClass(String annotationName, AnnotationTarget incorrectTarget);
 
     @Message(id = 82, value = "Bean %s specifies @Remote annotation, but does not implement 1 interface")
-    DeploymentUnitProcessingException beanWithRemoteAnnotationImplementsMoreThanOneInterface(Class beanClass);
+    DeploymentUnitProcessingException beanWithRemoteAnnotationImplementsMoreThanOneInterface(Class<?> beanClass);
 
     @Message(id = 83, value = "Bean %s specifies @Local annotation, but does not implement 1 interface")
-    DeploymentUnitProcessingException beanWithLocalAnnotationImplementsMoreThanOneInterface(Class beanClass);
+    DeploymentUnitProcessingException beanWithLocalAnnotationImplementsMoreThanOneInterface(Class<?> beanClass);
 
     @Message(id = 84, value = "Could not analyze remote interface for %s")
     RuntimeException failedToAnalyzeRemoteInterface(@Cause Exception e, String beanName);
@@ -654,22 +654,22 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException unknownSessionBeanType(String sessionType);
 
     @Message(id = 96, value = "More than one method found with name %s on %s")
-    DeploymentUnitProcessingException moreThanOneMethodWithSameNameOnComponent(String methodName, Class componentClass);
+    DeploymentUnitProcessingException moreThanOneMethodWithSameNameOnComponent(String methodName, Class<?> componentClass);
 
     @Message(id = 97, value = "Unknown EJB locator type %s")
-    RuntimeException unknownEJBLocatorType(EJBLocator locator);
+    RuntimeException unknownEJBLocatorType(EJBLocator<?> locator);
 
     @Message(id = 98, value = "Could not create CORBA object for %s")
-    RuntimeException couldNotCreateCorbaObject(@Cause Exception cause, EJBLocator locator);
+    RuntimeException couldNotCreateCorbaObject(@Cause Exception cause, EJBLocator<?> locator);
 
     @Message(id = 99, value = "Provided locator %s was not for EJB %s")
-    IllegalArgumentException incorrectEJBLocatorForBean(EJBLocator locator, String beanName);
+    IllegalArgumentException incorrectEJBLocatorForBean(EJBLocator<?> locator, String beanName);
 
     @Message(id = 100, value = "Failed to lookup java:comp/ORB")
     IOException failedToLookupORB();
 
     @Message(id = 101, value = "%s is not an ObjectImpl")
-    IOException notAnObjectImpl(Class type);
+    IOException notAnObjectImpl(Class<?> type);
 
     @Message(id = 102, value = "Message endpoint %s has already been released")
     UnavailableException messageEndpointAlreadyReleased(MessageEndpoint messageEndpoint);
@@ -752,7 +752,7 @@ public interface EjbLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 123, value = "Asynchronous invocations are only supported on session beans. Bean class %s is not a session bean, invocation on method %s will have no asynchronous semantics")
-    void asyncMethodSupportedOnlyForSessionBeans(Class beanClass, Method invokedMethod);
+    void asyncMethodSupportedOnlyForSessionBeans(Class<?> beanClass, Method invokedMethod);
 
     @LogMessage(level = INFO)
     @Message(id = 124, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for addresses %s")
@@ -1745,7 +1745,7 @@ public interface EjbLogger extends BasicLogger {
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
     @Message(id = 267, value = "Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)%n due to multiple create* methods with different return types on home %s")
-    DeploymentUnitProcessingException multipleCreateMethod(Class localHomeClass);
+    DeploymentUnitProcessingException multipleCreateMethod(Class<?> localHomeClass);
 
     /**
      * Creates an exception indicating it Could not find EJB referenced by @DependsOn annotation

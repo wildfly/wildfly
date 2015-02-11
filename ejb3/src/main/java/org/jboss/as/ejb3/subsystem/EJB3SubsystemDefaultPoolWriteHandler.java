@@ -83,7 +83,7 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
         final ModelNode poolName = poolAttribute.resolveModelAttribute(context, model);
 
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-        ServiceController existingDefaultPoolConfigService = serviceRegistry.getService(poolConfigServiceName);
+        ServiceController<?> existingDefaultPoolConfigService = serviceRegistry.getService(poolConfigServiceName);
         // if a default MDB pool is already installed, then remove it first
         if (existingDefaultPoolConfigService != null) {
             context.removeService(existingDefaultPoolConfigService);

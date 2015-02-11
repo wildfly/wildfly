@@ -94,7 +94,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             viewMethodSecurityAttributesServiceBuilder = null;
             viewMethodSecurityAttributesServiceName = null;
         } else {
-            viewMethodSecurityAttributesServiceBuilder = new EJBViewMethodSecurityAttributesService.Builder(viewClassName);
+            viewMethodSecurityAttributesServiceBuilder = new EJBViewMethodSecurityAttributesService.Builder();
             viewMethodSecurityAttributesServiceName =  EJBViewMethodSecurityAttributesService.getServiceName(ejbComponentDescription.getApplicationName(), ejbComponentDescription.getModuleName(), ejbComponentDescription.getEJBName(), viewClassName);
         }
         // setup the method specific security interceptor(s)

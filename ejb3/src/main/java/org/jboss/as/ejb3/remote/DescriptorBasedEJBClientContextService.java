@@ -63,7 +63,6 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
     private static final long DEFAULT_CONNECTION_TIMEOUT = 5000L;
 
     private final InjectedValue<RemotingProfileService> profileServiceValue=new InjectedValue<RemotingProfileService>();
-
     private final EJBClientConfiguration ejbClientConfiguration;
     private final ClassLoader clientContextClassloader;
 
@@ -136,7 +135,7 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         for (final Map.Entry<ServiceName, InjectedValue<AbstractOutboundConnectionService>> entry : remotingOutboundConnections
                 .entrySet()) {
             final InjectedValue<AbstractOutboundConnectionService> injectedValue = entry.getValue();
-            final AbstractOutboundConnectionService outboundConnectionService = injectedValue.getValue();
+            final AbstractOutboundConnectionService<?> outboundConnectionService = injectedValue.getValue();
             final String connectionName = outboundConnectionService.getConnectionName();
             logger.debugf("Creating remoting EJB receiver for connection %s", connectionName);
             final long connectionTimeout = connectionTimeouts.get(connectionName) <= 0 ? DEFAULT_CONNECTION_TIMEOUT
@@ -193,7 +192,7 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         @Override
         public void reconnect() throws IOException {
             this.reconnectAttemptCount++;
-            final ServiceController serviceController = this.serviceRegistry.getService(this.outboundConnectionServiceName);
+            final ServiceController<?> serviceController = this.serviceRegistry.getService(this.outboundConnectionServiceName);
             if (serviceController == null) {
                 // the outbound connection service is no longer available, so unregister this
                 // reconnect handler from the EJB client context
@@ -201,7 +200,7 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
                 this.clientContext.unregisterReconnectHandler(this);
                 return;
             }
-            final AbstractOutboundConnectionService outboundConnectionService = (AbstractOutboundConnectionService) serviceController.getValue();
+            final AbstractOutboundConnectionService<?> outboundConnectionService = (AbstractOutboundConnectionService<?>) serviceController.getValue();
             try {
                 final IoFuture<Connection> futureConnection = outboundConnectionService.connect();
                 final Connection connection = IoFutureHelper.get(futureConnection, connectionTimeout, TimeUnit.MILLISECONDS);

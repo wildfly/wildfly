@@ -21,8 +21,11 @@
  */
 package org.jboss.as.ee.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -36,8 +39,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Eduardo Martins
@@ -67,7 +68,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         final AbstractManagedExecutorService.RejectPolicy rejectPolicy = AbstractManagedExecutorService.RejectPolicy.valueOf(ManagedScheduledExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
 
         final ManagedScheduledExecutorServiceService service = new ManagedScheduledExecutorServiceService(name, jndiName, hungTaskThreshold, longRunningTasks, coreThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy);
-        final ServiceBuilder serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedScheduledExecutorServiceServiceName(name), service);
+        final ServiceBuilder<ManagedScheduledExecutorServiceAdapter> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedScheduledExecutorServiceServiceName(name), service);
 
         String contextService = null;
         if(model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {

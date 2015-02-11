@@ -25,7 +25,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 
 /**
@@ -34,7 +33,7 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class AnnotatedEJBComponentDescriptionDeploymentUnitProcessor extends AbstractDeploymentUnitProcessor implements DeploymentUnitProcessor {
-    private static final Logger logger = Logger.getLogger(AnnotatedEJBComponentDescriptionDeploymentUnitProcessor.class);
+
     private final EJBComponentDescriptionFactory[] factories;
 
     /**

@@ -1065,14 +1065,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
     }
 
-    private void startNewTx() {
-        try {
-            this.transactionManager.begin();
-        } catch (Throwable t) {
-            throw EjbLogger.ROOT_LOGGER.failToStartTransaction(t);
-        }
-    }
-
     private void assertTimerServiceState() {
         AllowedMethodsInformation.checkAllowed(MethodType.TIMER_SERVICE_METHOD);
         if (isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {

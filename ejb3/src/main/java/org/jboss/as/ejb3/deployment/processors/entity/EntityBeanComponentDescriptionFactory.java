@@ -24,13 +24,12 @@ package org.jboss.as.ejb3.deployment.processors.entity;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 import org.jboss.msc.service.ServiceName;
@@ -39,8 +38,6 @@ import org.jboss.msc.service.ServiceName;
  * @author Stuart Douglas
  */
 public class EntityBeanComponentDescriptionFactory extends AbstractDeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger(EntityBeanComponentDescriptionFactory.class);
 
     public EntityBeanComponentDescriptionFactory(final boolean appclient) {
         super(appclient);

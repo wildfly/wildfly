@@ -25,7 +25,6 @@ import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -47,8 +46,6 @@ import java.util.Iterator;
  * @author Stuart Douglas
  */
 public class DefaultEjbClientContextService implements Service<EJBClientContext> {
-
-    private static final Logger logger = Logger.getLogger(DefaultEjbClientContextService.class);
 
     /**
      * The base service name for these services
@@ -189,7 +186,7 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         @Override
         public Iterator<RemotingConnectionConfiguration> getConnectionConfigurations() {
             // This client configuration will *not* be used for auto creating connections to remote servers.
-            return Collections.EMPTY_SET.iterator();
+            return Collections.<RemotingConnectionConfiguration>emptySet().iterator();
         }
 
         @Override

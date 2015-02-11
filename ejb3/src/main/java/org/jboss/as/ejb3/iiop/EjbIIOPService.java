@@ -343,7 +343,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 // This is an entity bean (lifespan: persistent)
                 beanServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
                 final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
-                final Class pkClass = entityBeanComponent.getPrimaryKeyClass();
+                final Class<?> pkClass = entityBeanComponent.getPrimaryKeyClass();
                 ejbMetaData = new EJBMetaDataImplIIOP(entityBeanComponent.getRemoteClass(), entityBeanComponent.getHomeClass(), pkClass, false, false, homeHandle);
             } else {
                 // This is a session bean (lifespan: transient)
@@ -457,14 +457,14 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                     final Marshaller marshaller = factory.createMarshaller(configuration);
                     final ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     marshaller.start(new OutputStreamByteOutput(stream));
-                    marshaller.writeObject(((StatefulEJBLocator) locator).getSessionId());
+                    marshaller.writeObject(((StatefulEJBLocator<?>) locator).getSessionId());
                     marshaller.finish();
                     return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
                 } else if (locator instanceof EntityEJBLocator) {
                     final Marshaller marshaller = factory.createMarshaller(configuration);
                     final ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     marshaller.start(new OutputStreamByteOutput(stream));
-                    marshaller.writeObject(((EntityEJBLocator) locator).getPrimaryKey());
+                    marshaller.writeObject(((EntityEJBLocator<?>) locator).getPrimaryKey());
                     marshaller.finish();
                     return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
                 }
@@ -483,7 +483,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      * @param locator The locator to get the handle for
      * @return The {@link org.jboss.ejb.client.EJBHandle} or {@link org.jboss.ejb.client.EJBHomeHandle}
      */
-    public Object handleForLocator(final EJBLocator locator) {
+    public Object handleForLocator(final EJBLocator<?> locator) {
         final org.omg.CORBA.Object reference = referenceForLocator(locator);
         if(locator instanceof EJBHomeLocator) {
             return new HomeHandleImplIIOP(orb.getValue().object_to_string(reference));

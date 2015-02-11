@@ -30,7 +30,6 @@ import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.EJBClientConfiguration;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -42,8 +41,6 @@ import org.xnio.OptionMap;
  * @author Jaikiran Pai
  */
 class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonConnectionCreationConfiguration {
-
-    private static final Logger logger = Logger.getLogger(EJBClientCommonConnectionConfig.class);
 
     private OptionMap connectionCreationOptions = OptionMap.EMPTY;
     private OptionMap channelCreationOptions = OptionMap.EMPTY;

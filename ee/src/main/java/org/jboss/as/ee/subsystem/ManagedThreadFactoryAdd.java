@@ -22,6 +22,7 @@
 package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -51,7 +52,7 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
         final int priority = ManagedThreadFactoryResourceDefinition.PRIORITY_AD.resolveModelAttribute(context, model).asInt();
 
         final ManagedThreadFactoryService service = new ManagedThreadFactoryService(name, jndiName, priority);
-        final ServiceBuilder serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedThreadFactoryServiceName(name), service);
+        final ServiceBuilder<ManagedThreadFactoryImpl> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedThreadFactoryServiceName(name), service);
         String contextService = null;
         if(model.hasDefined(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
