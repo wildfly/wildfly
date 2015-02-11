@@ -112,6 +112,7 @@ public class WebStaticResources extends ModelOnlyResourceDefinition {
         super(WebExtension.STATIC_RESOURCES_PATH,
                 WebExtension.getResourceDescriptionResolver("configuration.static"),
                 STATIC_ATTRIBUTES);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 

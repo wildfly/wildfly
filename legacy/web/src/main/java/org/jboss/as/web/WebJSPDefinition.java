@@ -195,6 +195,7 @@ public class WebJSPDefinition extends ModelOnlyResourceDefinition {
         super(WebExtension.JSP_CONFIGURATION_PATH,
                 WebExtension.getResourceDescriptionResolver("configuration.jsp"),
                 JSP_ATTRIBUTES);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 

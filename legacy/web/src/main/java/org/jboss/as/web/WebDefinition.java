@@ -68,6 +68,7 @@ public class WebDefinition extends ModelOnlyResourceDefinition {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, WebExtension.SUBSYSTEM_NAME),
                 WebExtension.getResourceDescriptionResolver(null),
                 DEFAULT_VIRTUAL_SERVER, NATIVE, INSTANCE_ID, DEFAULT_SESSION_TIMEOUT);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 
