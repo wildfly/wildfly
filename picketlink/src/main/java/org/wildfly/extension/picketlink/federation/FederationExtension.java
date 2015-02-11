@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.picketlink.federation;
 
+import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
+import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_0;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -39,9 +42,6 @@ import org.wildfly.extension.picketlink.federation.model.keystore.KeyResourceDef
 import org.wildfly.extension.picketlink.federation.model.keystore.KeyStoreProviderResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.parser.FederationSubsystemWriter;
 
-import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
-import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_0;
-
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
@@ -51,13 +51,15 @@ public class FederationExtension implements Extension {
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
     private static final String RESOURCE_NAME = FederationExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(CURRENT.getMajor(), CURRENT.getMinor());
+
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, FederationExtension.class.getClassLoader(), true, true);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT.getMajor(), CURRENT.getMinor());
+        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         subsystemRegistration.registerSubsystemModel(new FederationSubsystemRootResourceDefinition(context));
         subsystemRegistration.registerXMLElementWriter(FederationSubsystemWriter.INSTANCE);

@@ -74,9 +74,7 @@ public final class WSExtension implements Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     private static final String RESOURCE_NAME = WSExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
     // attributes on the endpoint element
      static final AttributeDefinition ENDPOINT_WSDL = new SimpleAttributeDefinitionBuilder(
@@ -112,8 +110,7 @@ public final class WSExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerXMLElementWriter(WSSubsystemWriter.getInstance());
         // ws subsystem
         ResourceBuilder propertyResource = ResourceBuilder.Factory.create(PROPERTY_PATH, getResourceDescriptionResolver(Constants.PROPERTY))

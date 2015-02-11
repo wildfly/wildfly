@@ -87,9 +87,7 @@ public class WebExtension extends AbstractLegacyExtension {
     protected static final PathElement REWRITECOND_PATH = PathElement.pathElement(Constants.CONDITION);
     protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 1, 0);
     private static final String extensionName = "org.jboss.as.web";
 
     static final SensitiveTargetAccessConstraintDefinition WEB_CONNECTOR_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
@@ -109,8 +107,7 @@ public class WebExtension extends AbstractLegacyExtension {
 
     @Override
     protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());

@@ -65,9 +65,7 @@ public class NamingExtension implements Extension {
     private static final String NAMESPACE_1_4 = "urn:jboss:domain:naming:1.4";
     static final String NAMESPACE_2_0 = "urn:jboss:domain:naming:2.0";
 
-    static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
     static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
@@ -95,8 +93,7 @@ public class NamingExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(NamingSubsystemRootResourceDefinition.INSTANCE);
 

@@ -76,9 +76,7 @@ public class JGroupsExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-
-        ModelVersion current = JGroupsModel.CURRENT.getVersion();
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, current.getMajor(), current.getMinor(), current.getMicro());
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
 
         registration.registerSubsystemModel(new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
