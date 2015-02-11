@@ -44,6 +44,7 @@ public class MappingResourceDefinition extends SimpleResourceDefinition {
         super(SecurityExtension.PATH_MAPPING_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.MAPPING),
                 LoginModuleStackResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

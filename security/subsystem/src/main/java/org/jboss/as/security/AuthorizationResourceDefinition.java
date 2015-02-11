@@ -43,6 +43,7 @@ public class AuthorizationResourceDefinition extends SimpleResourceDefinition {
         super(SecurityExtension.PATH_AUTHORIZATION_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHORIZATION),
                 AuthorizationResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

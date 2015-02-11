@@ -44,6 +44,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -101,8 +102,11 @@ import org.jboss.msc.service.ServiceName;
         }
     };
 
+    //deprecated in EAP 6.4
+    static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1,3,0);
+
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);
+        return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);
     }
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
@@ -113,7 +117,7 @@ import org.jboss.msc.service.ServiceName;
             }
             prefix.append(kp);
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, false);
+        return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, prefix.toString(), RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, false);
     }
 
     @Override

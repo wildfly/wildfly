@@ -87,6 +87,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
     private SecuritySubsystemRootResourceDefinition() {
         super(SecurityExtension.PATH_SUBSYSTEM,
                 SecurityExtension.getResourceDescriptionResolver(SecurityExtension.SUBSYSTEM_NAME), NewSecuritySubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
