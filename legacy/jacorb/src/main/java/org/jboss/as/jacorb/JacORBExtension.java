@@ -66,9 +66,7 @@ public class JacORBExtension extends AbstractLegacyExtension {
 
     private static final String RESOURCE_NAME = JacORBExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 4, 0);
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -86,8 +84,7 @@ public class JacORBExtension extends AbstractLegacyExtension {
 
     @Override
     protected Set<ManagementResourceRegistration> initializeLegacyModel(final ExtensionContext context) {
-        final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME,
-                MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         subsystemRegistration.registerXMLElementWriter(JacORBSubsystemParser.INSTANCE);
 

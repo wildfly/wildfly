@@ -22,8 +22,16 @@
 
 package org.jboss.as.jsf.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -38,12 +46,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * Domain extension used to initialize the jsf subsystem.
@@ -63,9 +65,7 @@ public class JSFExtension implements Extension {
 
     private static final String RESOURCE_NAME = JSFExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -81,8 +81,7 @@ public class JSFExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         JSFLogger.ROOT_LOGGER.debug("Activating JSF(Mojarra) Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerSubsystemModel(JSF_SUBSYSTEM_RESOURCE);
         subsystem.registerXMLElementWriter(PARSER);
     }

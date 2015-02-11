@@ -33,7 +33,6 @@ import static org.jboss.as.connector.subsystems.jca.Constants.TRACER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
-import static org.jboss.as.connector.subsystems.jca.JcaArchiveValidationDefinition.ArchiveValidationParameters;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -46,17 +45,20 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.EnumSet;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.connector.subsystems.jca.JcaArchiveValidationDefinition.ArchiveValidationParameters;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.threads.ThreadsParser;
@@ -76,9 +78,7 @@ public class JcaExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jca";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     private static final String RESOURCE_NAME = JcaExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -97,8 +97,7 @@ public class JcaExtension implements Extension {
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         subsystem.registerSubsystemModel(JcaSubsystemRootDefinition.createInstance(registerRuntimeOnly));
 

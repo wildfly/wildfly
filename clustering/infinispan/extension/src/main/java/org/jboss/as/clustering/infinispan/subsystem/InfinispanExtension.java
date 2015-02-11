@@ -58,8 +58,7 @@ public class InfinispanExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        ModelVersion current = InfinispanModel.CURRENT.getVersion();
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, current.getMajor(), current.getMinor(), current.getMicro());
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, InfinispanModel.CURRENT.getVersion());
 
         // Create the path resolver handler
         ResolvePathHandler resolvePathHandler = context.getProcessType().isServer() ? ResolvePathHandler.Builder.of(context.getPathManager())
