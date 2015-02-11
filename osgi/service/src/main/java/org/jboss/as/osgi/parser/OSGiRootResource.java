@@ -71,6 +71,7 @@ public class OSGiRootResource extends SimpleResourceDefinition {
         super(SUBSYSTEM_PATH, RESOLVER,
                 OSGiSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(OSGiExtension.DEPRECATED_SINCE);
     }
 
     @Override
