@@ -22,6 +22,23 @@
 
 package org.jboss.as.cmp.subsystem;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.HILO_KEY_GENERATOR;
 import static org.jboss.as.cmp.subsystem.CmpSubsystemModel.UUID_KEY_GENERATOR;
@@ -33,24 +50,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author John Bailey
@@ -155,7 +154,7 @@ class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElem
             final Element element = Element.forName(tag);
             required.remove(element);
 
-            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDefinition.getAttributeDefinition(tag);
+            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDefinition.ATTRIBUTE_MAP.get(tag);
             if(attribute == null) {
                 throw unexpectedElement(reader);
             }
@@ -196,10 +195,10 @@ class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElem
     private void writeHilo(final XMLExtendedStreamWriter writer, final String name, final ModelNode model) throws XMLStreamException {
         writer.writeStartElement(Element.HILO.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        CMPSubsystemRootResourceDefinition.JNDI_NAME.marshallAsAttribute(model, writer);
+        HiLoKeyGeneratorResourceDefinition.JNDI_NAME.marshallAsAttribute(model, writer);
 
-        for(AttributeDefinition attribute : HiLoKeyGeneratorResourceDefinition.ATTRIBUTES) {
-            if (!attribute.equals(CMPSubsystemRootResourceDefinition.JNDI_NAME))
+        for(SimpleAttributeDefinition attribute : HiLoKeyGeneratorResourceDefinition.ATTRIBUTES) {
+            if (!attribute.equals(HiLoKeyGeneratorResourceDefinition.JNDI_NAME))
                 attribute.marshallAsElement(model, writer);
         }
         writer.writeEndElement();
@@ -208,7 +207,7 @@ class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElem
     private void writeUuid(final XMLExtendedStreamWriter writer, final String name, final ModelNode model) throws XMLStreamException {
         writer.writeStartElement(Element.UUID.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        CMPSubsystemRootResourceDefinition.JNDI_NAME.marshallAsAttribute(model, writer);
+        UUIDKeyGeneratorResourceDefinition.JNDI_NAME.marshallAsAttribute(model, writer);
         writer.writeEndElement();
     }
 }

@@ -37,7 +37,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.Collections;
 import java.util.EnumSet;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
@@ -73,7 +72,7 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
                     break;
                 }
                 case JNDI_NAME: {
-                    CMPSubsystemRootResourceDefinition.JNDI_NAME.parseAndSetParameter(value, op, reader);
+                    HiLoKeyGeneratorResourceDefinition.JNDI_NAME.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 default:
@@ -93,7 +92,7 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
             final Element element = Element.forName(tag);
             required.remove(element);
 
-            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDefinition.getAttributeDefinition(tag);
+            SimpleAttributeDefinition attribute = HiLoKeyGeneratorResourceDefinition.ATTRIBUTE_MAP.get(tag);
             if(attribute == null) {
                 throw unexpectedElement(reader);
             }
@@ -120,7 +119,7 @@ public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
                     break;
                 }
                 case JNDI_NAME: {
-                    CMPSubsystemRootResourceDefinition.JNDI_NAME.parseAndSetParameter(value, op, reader);
+                    UUIDKeyGeneratorResourceDefinition.JNDI_NAME.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 default:

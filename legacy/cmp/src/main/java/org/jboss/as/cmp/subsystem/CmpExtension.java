@@ -28,8 +28,8 @@ import java.util.Set;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -49,6 +49,7 @@ public class CmpExtension extends AbstractLegacyExtension {
     private static final String RESOURCE_NAME = CmpExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 1, 0);
+    static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1,1,0);
 
     private static final String extensionName = "org.jboss.as.cmp";
 
@@ -66,6 +67,9 @@ public class CmpExtension extends AbstractLegacyExtension {
         final ManagementResourceRegistration subsystem =
                 subsystemRegistration.registerSubsystemModel(CMPSubsystemRootResourceDefinition.INSTANCE);
 
+        subsystem.registerSubModel(UUIDKeyGeneratorResourceDefinition.INSTANCE);
+
+        subsystem.registerSubModel(HiLoKeyGeneratorResourceDefinition.INSTANCE);
         if (context.isRegisterTransformers()){
             registerTransformers(subsystemRegistration);
         }
@@ -77,12 +81,12 @@ public class CmpExtension extends AbstractLegacyExtension {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         builder.addChildResource(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, CMPSubsystemRootResourceDefinition.JNDI_NAME)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, CMPSubsystemRootResourceDefinition.JNDI_NAME)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
                 .end();
         builder.addChildResource(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, CMPSubsystemRootResourceDefinition.JNDI_NAME)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, CMPSubsystemRootResourceDefinition.JNDI_NAME)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
                 .end();
 
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
@@ -97,8 +101,8 @@ public class CmpExtension extends AbstractLegacyExtension {
     }
 
 
-    static ResourceDescriptionResolver getResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, CmpExtension.class.getClassLoader(), true, true);
+    public static ResourceDescriptionResolver getResolver(final String keyPrefix) {
+        return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, keyPrefix, RESOURCE_NAME, CmpExtension.class.getClassLoader(), true, true);
     }
 
 }

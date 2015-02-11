@@ -29,24 +29,23 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
  * @author John Bailey
  */
 class CmpSubsystemModel {
-
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, CmpExtension.SUBSYSTEM_NAME);
-    public static String HILO_KEY_GENERATOR = "hilo-keygenerator";
-    public static String UUID_KEY_GENERATOR = "uuid-keygenerator";
+    static final String HILO_KEY_GENERATOR = "hilo-keygenerator";
+    static final String UUID_KEY_GENERATOR = "uuid-keygenerator";
 
-    public static String JNDI_NAME = "jndi-name";
-    public static String BLOCK_SIZE = "block-size";
-    public static String CREATE_TABLE = "create-table";
-    public static String CREATE_TABLE_DDL = "create-table-ddl";
-    public static String DATA_SOURCE = "data-source";
-    public static String DROP_TABLE = "drop-table";
-    public static String ID_COLUMN = "id-column";
-    public static String SELECT_HI_DDL = "select-hi-ddl";
-    public static String SEQUENCE_COLUMN = "sequence-column";
-    public static String SEQUENCE_NAME = "sequence-name";
-    public static String TABLE_NAME = "table-name";
+    static final String JNDI_NAME = "jndi-name";
+    static final String BLOCK_SIZE = "block-size";
+    static final String CREATE_TABLE = "create-table";
+    static final String CREATE_TABLE_DDL = "create-table-ddl";
+    static final String DATA_SOURCE = "data-source";
+    static final String DROP_TABLE = "drop-table";
+    static final String ID_COLUMN = "id-column";
+    static final String SELECT_HI_DDL = "select-hi-ddl";
+    static final String SEQUENCE_COLUMN = "sequence-column";
+    static final String SEQUENCE_NAME = "sequence-name";
+    static final String TABLE_NAME = "table-name";
 
-    public static final PathElement HILO_KEY_GENERATOR_PATH =  PathElement.pathElement(HILO_KEY_GENERATOR);
-    public static final PathElement UUID_KEY_GENERATOR_PATH =  PathElement.pathElement(UUID_KEY_GENERATOR);
+    static final PathElement HILO_KEY_GENERATOR_PATH =  PathElement.pathElement(HILO_KEY_GENERATOR);
+    static final PathElement UUID_KEY_GENERATOR_PATH =  PathElement.pathElement(UUID_KEY_GENERATOR);
 
 }
