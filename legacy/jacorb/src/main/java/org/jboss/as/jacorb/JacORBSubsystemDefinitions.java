@@ -355,7 +355,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition SECURITY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
