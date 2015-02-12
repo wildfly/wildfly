@@ -50,5 +50,6 @@
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.spi" />
         <module name="org.jboss.logging" />
+        <module name="sun.jdk" optional="true" />
     </dependencies>
 </module>
