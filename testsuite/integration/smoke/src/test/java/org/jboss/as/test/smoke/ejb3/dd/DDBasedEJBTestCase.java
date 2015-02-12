@@ -29,9 +29,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Jaikiran Pai
@@ -43,6 +46,18 @@ public class DDBasedEJBTestCase {
 
     private static final String JAR_NAME = MODULE_NAME + ".jar";
 
+    private ClassLoader oldTCCL;
+    
+    @Before 
+    public void before() {
+        oldTCCL = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(DDBasedEJBTestCase.class.getClassLoader());
+    }
+
+    @After 
+    public void after() {
+        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
+    }
+    
     @Deployment
     public static JavaArchive getDeployment() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
@@ -55,8 +70,6 @@ public class DDBasedEJBTestCase {
 
     /**
      * Tests that all possible local view bindings of a Stateless bean are available.
-     *
-     * @throws Exception
      */
     @Test
     public void testLocalBindingsOnSLSB() throws Exception {
@@ -73,8 +86,6 @@ public class DDBasedEJBTestCase {
     /**
      * Tests that the overrides in the ejb-jar.xml for a SLSB are honoured, and the bean is invokable through
      * its exposed views
-     *
-     * @throws Exception
      */
     @Test
     public void testDDOverrideOfSLSB() throws Exception {
@@ -91,8 +102,6 @@ public class DDBasedEJBTestCase {
     /**
      * Tests that the ejb-jar.xml and annotations are merged correctly for a SFSB, and the bean is invokable through
      * its exposed views
-     *
-     * @throws Exception
      */
     @Test
     public void testPartialDDSFSB() throws Exception {

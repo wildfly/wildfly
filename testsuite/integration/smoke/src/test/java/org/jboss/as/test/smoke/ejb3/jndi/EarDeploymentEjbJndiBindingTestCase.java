@@ -31,9 +31,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Tests that the session beans are bound to all the jndi binding names mandated by the EJB3.1 spec, when the EJBs are
@@ -79,10 +82,20 @@ public class EarDeploymentEjbJndiBindingTestCase {
      */
     private static final String JAVA_MODULE_NAMESPACE_PREFIX = "java:module/";
 
+    private ClassLoader oldTCCL;
+    
+    @Before 
+    public void before() {
+        oldTCCL = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(EarDeploymentEjbJndiBindingTestCase.class.getClassLoader());
+    }
+
+    @After 
+    public void after() {
+        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
+    }
+    
     /**
      * Create the deployment
-     *
-     * @return
      */
     @Deployment
     public static EnterpriseArchive createEar() {
@@ -101,8 +114,6 @@ public class EarDeploymentEjbJndiBindingTestCase {
 
     /**
      * Tests that all possible local view bindings of a Stateless bean are available, when deployed through a .ear
-     *
-     * @throws Exception
      */
     @Test
     public void testLocalBindingsOnSLSB() throws Exception {
@@ -137,8 +148,6 @@ public class EarDeploymentEjbJndiBindingTestCase {
 
     /**
      * Tests that all possible remote view bindings of a Stateless bean are available, when deployed through a .ear
-     *
-     * @throws Exception
      */
     @Test
     public void testRemoteBindingsOnSLSB() throws Exception {
@@ -163,8 +172,6 @@ public class EarDeploymentEjbJndiBindingTestCase {
 
     /**
      * Tests that all possible local view bindings of a Stateful bean are available, when deployed through a .ear
-     *
-     * @throws Exception
      */
     @Test
     public void testLocalBindingsOnSFSB() throws Exception {
@@ -199,8 +206,6 @@ public class EarDeploymentEjbJndiBindingTestCase {
 
     /**
      * Tests that all possible remote view bindings of a Stateful bean are available, when deployed through a .ear
-     *
-     * @throws Exception
      */
     @Test
     public void testRemoteBindingsOnSFSB() throws Exception {
