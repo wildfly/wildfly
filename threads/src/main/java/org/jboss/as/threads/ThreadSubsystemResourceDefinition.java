@@ -26,8 +26,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
@@ -36,16 +36,18 @@ import org.jboss.as.controller.registry.OperationEntry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@Deprecated
 class ThreadSubsystemResourceDefinition extends SimpleResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
     ThreadSubsystemResourceDefinition(boolean registerRuntimeOnly) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ThreadsExtension.SUBSYSTEM_NAME),
-                new StandardResourceDescriptionResolver(ThreadsExtension.SUBSYSTEM_NAME, ThreadsExtension.RESOURCE_NAME,
+                new DeprecatedResourceDescriptionResolver(ThreadsExtension.SUBSYSTEM_NAME, ThreadsExtension.SUBSYSTEM_NAME, ThreadsExtension.RESOURCE_NAME,
                         ThreadsExtension.class.getClassLoader(), true, false), ThreadsSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(ThreadsExtension.DEPRECATED_SINCE);
     }
 
     @Override

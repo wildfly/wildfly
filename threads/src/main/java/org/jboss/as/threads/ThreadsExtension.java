@@ -54,6 +54,7 @@ public class ThreadsExtension implements Extension {
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1, 1, 0);
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, boolean useUnprefixedChildTypes) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ThreadsExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
