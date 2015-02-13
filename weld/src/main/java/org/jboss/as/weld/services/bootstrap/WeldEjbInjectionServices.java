@@ -146,7 +146,10 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
     }
 
     private ComponentView getComponentView(ViewDescription viewDescription) {
-        final ServiceController<?> controller = serviceRegistry.getRequiredService(viewDescription.getServiceName());
+        final ServiceController<?> controller = serviceRegistry.getService(viewDescription.getServiceName());
+        if (controller == null) {
+            return null;
+        }
         return (ComponentView) controller.getValue();
     }
 
