@@ -111,7 +111,7 @@ objectClass: top
 objectClass: dcObject
 objectClass: organization
 dc: jboss
-o: JBoss
+o: example2
 
 dn: ou=Roles,o=example2,dc=jboss,dc=org
 objectClass: top
@@ -176,7 +176,7 @@ objectclass: top
 objectclass: dcObject
 objectclass: organization
 dc: jboss
-o: JBoss
+o: example3
 
 dn: ou=Roles,o=example3,dc=jboss,dc=org
 objectClass: top
@@ -210,7 +210,7 @@ objectclass: top
 objectclass: dcObject
 objectclass: organization
 dc: jboss
-o: JBoss
+o: example4
 
 dn: ou=Roles,o=example4,dc=jboss,dc=org
 objectClass: top
