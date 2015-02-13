@@ -118,6 +118,7 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
                         JacORBSubsystemConstants.IOR_TRANSPORT_CONFIG),
                 new ReloadRequiredAddStepHandler(ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(JacORBExtension.DEPRECATED_SINCE);
     }
 
     @Override

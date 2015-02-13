@@ -70,6 +70,7 @@ public class IORSASContextDefinition extends PersistentResourceDefinition {
                         JacORBSubsystemConstants.IOR_SAS_CONTEXT),
                 new ReloadRequiredAddStepHandler(ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(JacORBExtension.DEPRECATED_SINCE);
     }
 
     @Override

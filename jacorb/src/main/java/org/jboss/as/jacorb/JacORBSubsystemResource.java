@@ -49,6 +49,7 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
                 JacORBExtension.getResourceDescriptionResolver(),
                 JacORBSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(JacORBExtension.DEPRECATED_SINCE);
     }
 
 

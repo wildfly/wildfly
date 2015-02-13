@@ -85,6 +85,7 @@ public class IORASContextDefinition extends PersistentResourceDefinition {
                         JacORBSubsystemConstants.IOR_AS_CONTEXT),
                 new ReloadRequiredAddStepHandler(ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(JacORBExtension.DEPRECATED_SINCE);
     }
 
     @Override

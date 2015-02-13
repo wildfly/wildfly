@@ -29,6 +29,7 @@ class IORSettingsDefinition extends PersistentResourceDefinition {
         super(PathElement.pathElement(JacORBSubsystemConstants.IOR_SETTINGS, JacORBSubsystemConstants.DEFAULT),
                 JacORBExtension.getResourceDescriptionResolver(JacORBSubsystemConstants.IOR_SETTINGS),
                 new ReloadRequiredAddStepHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(JacORBExtension.DEPRECATED_SINCE);
     }
 
     @Override
