@@ -83,6 +83,7 @@ public class DivertDefinition extends SimpleResourceDefinition {
                 DivertAdd.INSTANCE,
                 DivertRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

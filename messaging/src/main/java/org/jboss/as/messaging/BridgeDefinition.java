@@ -140,6 +140,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
                 BridgeAdd.INSTANCE,
                 BridgeRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

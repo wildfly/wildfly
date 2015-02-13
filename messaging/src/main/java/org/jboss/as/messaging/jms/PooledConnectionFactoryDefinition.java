@@ -77,6 +77,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.DeprecatedAttributeWriteHandler;
 import org.jboss.as.messaging.MessagingDescriptions;
+import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.dmr.ModelNode;
@@ -146,6 +147,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
     public PooledConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
         super(PATH, DESC);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

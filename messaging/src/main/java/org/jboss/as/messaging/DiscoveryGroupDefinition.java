@@ -82,6 +82,7 @@ public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
                 DiscoveryGroupAdd.INSTANCE,
                 DiscoveryGroupRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

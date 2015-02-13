@@ -151,6 +151,7 @@ public class JMSTopicDefinition extends SimpleResourceDefinition {
         this.deployed = deployed;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MessagingExtension.SUBSYSTEM_NAME, CommonAttributes.JMS_TOPIC);
         accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

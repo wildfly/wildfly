@@ -50,6 +50,7 @@ public class ConnectorServiceDefinition extends SimpleResourceDefinition {
                 ConnectorServiceAdd.INSTANCE,
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

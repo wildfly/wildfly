@@ -120,6 +120,7 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
                 HornetQServerAdd.INSTANCE,
                 HornetQServerRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

@@ -62,6 +62,7 @@ public class TransportParamDefinition extends SimpleResourceDefinition {
                 MessagingExtension.getResourceDescriptionResolver("transport-config." + CommonAttributes.PARAM),
                 PARAM_ADD,
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

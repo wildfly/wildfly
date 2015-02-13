@@ -99,6 +99,7 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
                 GroupingHandlerAdd.INSTANCE,
                 GroupingHandlerRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override
