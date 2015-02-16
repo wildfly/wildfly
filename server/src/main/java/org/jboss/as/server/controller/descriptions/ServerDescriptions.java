@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.controller.descriptions;
 
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 
@@ -31,6 +32,17 @@ public final class ServerDescriptions {
     public static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        String prefix = getDotSeparatedPrefix(keyPrefix);
+        return new StandardResourceDescriptionResolver(prefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
+    }
+
+    @Deprecated
+    public static ResourceDescriptionResolver getDeprecatedResourceDescriptionResolver(final String... keyPrefix) {
+        String prefix = getDotSeparatedPrefix(keyPrefix);
+        return new DeprecatedResourceDescriptionResolver(prefix, prefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
+    }
+
+    private static String getDotSeparatedPrefix(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder();
         for (String kp : keyPrefix) {
             if (prefix.length() > 0) {
@@ -39,7 +51,7 @@ public final class ServerDescriptions {
                 prefix.append(kp);
             }
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
+        return prefix.toString();
     }
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {

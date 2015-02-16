@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.MapAttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -85,6 +86,7 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
                 new VaultAddHandler(vaultReader),
                 new VaultRemoveHandler(vaultReader));
         this.accessConstraints = SensitiveTargetAccessConstraintDefinition.SECURITY_VAULT.wrapAsList();
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override
