@@ -47,6 +47,7 @@ public class JacORBSubsystemResource extends ModelOnlyResourceDefinition {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME), JacORBExtension
                 .getResourceDescriptionResolver(), JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES
                 .toArray(new AttributeDefinition[0]));
+                setDeprecated(JacORBExtension.DEPRECATED_SINCE);
     }
 
 
