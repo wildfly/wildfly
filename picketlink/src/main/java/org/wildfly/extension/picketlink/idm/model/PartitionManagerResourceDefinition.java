@@ -50,6 +50,7 @@ public class PartitionManagerResourceDefinition extends AbstractIDMResourceDefin
     private PartitionManagerResourceDefinition() {
         super(ModelElement.PARTITION_MANAGER, PartitionManagerAddHandler.INSTANCE,
                  PartitionManagerRemoveHandler.INSTANCE, IDENTITY_MANAGEMENT_JNDI_URL);
+        setDeprecated(IDMExtension.DEPRECATED_SINCE);
     }
 
     @Override
