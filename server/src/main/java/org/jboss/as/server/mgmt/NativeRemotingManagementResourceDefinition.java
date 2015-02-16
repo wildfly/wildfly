@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAT
 
 import java.util.List;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -57,6 +58,7 @@ public class NativeRemotingManagementResourceDefinition extends SimpleResourceDe
                 NativeRemotingManagementAddHandler.INSTANCE, NativeRemotingManagementRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
         this.accessConstraints = SensitiveTargetAccessConstraintDefinition.MANAGEMENT_INTERFACES.wrapAsList();
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

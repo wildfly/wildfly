@@ -30,6 +30,7 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -120,6 +121,7 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
         this.hostControllerInfo = hostControllerInfo;
         this.environment = environment;
         this.accessConstraints = SensitiveTargetAccessConstraintDefinition.MANAGEMENT_INTERFACES.wrapAsList();
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

@@ -117,6 +117,7 @@ public class NativeManagementResourceDefinition extends SimpleResourceDefinition
                 NativeManagementAddHandler.INSTANCE, NativeManagementRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
         this.accessConstraints = SensitiveTargetAccessConstraintDefinition.MANAGEMENT_INTERFACES.wrapAsList();
+        setDeprecated(ModelVersion.create(3));
     }
 
     @Override
