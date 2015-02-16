@@ -55,7 +55,7 @@ class HostAdd extends AbstractAddStepHandler {
     static final HostAdd INSTANCE = new HostAdd();
 
     private HostAdd() {
-        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE);
+        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.CUSTOM_RESPONSE_CODE);
     }
 
     @Override
@@ -76,12 +76,14 @@ class HostAdd extends AbstractAddStepHandler {
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, subsystemModel).asString();
         final String defaultHostName = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, serverModel).asString();
         final String serverName = serverAddress.getLastElement().getValue();
-
-        boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
+        final boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
+        final ModelNode customResponseCode = HostDefinition.CUSTOM_RESPONSE_CODE.resolveModelAttribute(context, model);
 
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
         final ServiceName accessLogServiceName = UndertowService.accessLogServiceName(serverName, name);
-        final Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases, defaultWebModule);
+        final Host service = customResponseCode.isDefined() ? new Host(name, aliases == null ? new LinkedList<String>()
+                : aliases, defaultWebModule, customResponseCode.asInt()) : new Host(name,
+                aliases == null ? new LinkedList<String>() : aliases, defaultWebModule);
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
