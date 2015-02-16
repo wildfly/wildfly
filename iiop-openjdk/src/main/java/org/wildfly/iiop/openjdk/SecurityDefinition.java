@@ -54,7 +54,7 @@ public class SecurityDefinition extends PersistentResourceDefinition {
     public static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SECURITY_DOMAIN, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
             .build();
 
