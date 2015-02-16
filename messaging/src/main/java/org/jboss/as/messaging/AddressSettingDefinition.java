@@ -172,6 +172,7 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
                 AddressSettingAdd.INSTANCE,
                 AddressSettingRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

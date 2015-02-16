@@ -54,6 +54,7 @@ public class ConnectorServiceParamDefinition extends SimpleResourceDefinition {
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTOR_SERVICE, CommonAttributes.PARAM),
                 new HornetQReloadRequiredHandlers.AddStepHandler(ATTRIBUTES),
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

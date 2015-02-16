@@ -65,6 +65,7 @@ public class TransportParamDefinition extends SimpleResourceDefinition {
                     }
                 },
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

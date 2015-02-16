@@ -39,5 +39,6 @@ public class MessagingSubsystemRootResourceDefinition extends SimpleResourceDefi
                 MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
                 MessagingSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 }

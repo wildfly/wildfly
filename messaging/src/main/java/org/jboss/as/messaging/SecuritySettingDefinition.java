@@ -51,6 +51,7 @@ public class SecuritySettingDefinition extends SimpleResourceDefinition {
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MessagingExtension.SUBSYSTEM_NAME, CommonAttributes.SECURITY_SETTING);
         AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
         this.accessConstraints = Arrays.asList((AccessConstraintDefinition) CommonAttributes.MESSAGING_SECURITY_DEF, acd);
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

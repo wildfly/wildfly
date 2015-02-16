@@ -102,6 +102,7 @@ public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
                 ConnectionFactoryAdd.INSTANCE,
                 ConnectionFactoryRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

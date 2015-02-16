@@ -101,6 +101,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
                 BroadcastGroupAdd.INSTANCE,
                 BroadcastGroupRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

@@ -88,6 +88,7 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
     public CoreAddressDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CORE_ADDRESS));
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

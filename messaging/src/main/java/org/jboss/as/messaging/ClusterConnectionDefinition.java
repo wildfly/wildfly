@@ -241,6 +241,7 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
                 ClusterConnectionAdd.INSTANCE,
                 ClusterConnectionRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override
