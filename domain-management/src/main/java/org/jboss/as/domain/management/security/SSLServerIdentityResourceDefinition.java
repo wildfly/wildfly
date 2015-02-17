@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -83,11 +84,12 @@ public class SSLServerIdentityResourceDefinition extends SimpleResourceDefinitio
 
     public SSLServerIdentityResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SERVER_IDENTITY, ModelDescriptionConstants.SSL),
-                ControllerResolver.getResolver("core.management.security-realm.server-identity.ssl"),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY, "core.management.security-realm.server-identity.ssl"),
                 new SecurityRealmChildAddHandler(false, false, ATTRIBUTE_DEFINITIONS),
                 new SecurityRealmChildRemoveHandler(false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

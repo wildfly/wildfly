@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -43,7 +44,7 @@ import org.jboss.as.domain.management.DomainManagementMessages;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ResourceDefinition} for a management security realm's LDAP-based Authorization resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} for a management security realm's LDAP-based Authorization resource.
  *
  *  @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
  *  @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -57,9 +58,11 @@ public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition 
 
     public LdapAuthorizationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.LDAP),
-                ControllerResolver.getResolver("core.management.security-realm.authorization.ldap"),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                        "core.management.security-realm.authorization.ldap"),
                 new LdapAuthorizationChildAddHandler(true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
 

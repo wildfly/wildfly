@@ -26,6 +26,7 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.AUTHENTIC
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KERBEROS;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -55,9 +56,11 @@ public class KerberosAuthenticationResourceDefinition extends SimpleResourceDefi
 
     public KerberosAuthenticationResourceDefinition() {
         super(PathElement.pathElement(AUTHENTICATION, KERBEROS),
-                ControllerResolver.getResolver("core.management.security-realm.authentication.kerberos"),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                        "core.management.security-realm.authentication.kerberos"),
                 new SecurityRealmChildAddHandler(true, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

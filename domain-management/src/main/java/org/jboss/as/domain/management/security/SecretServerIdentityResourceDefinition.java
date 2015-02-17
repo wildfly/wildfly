@@ -22,6 +22,10 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -45,10 +49,12 @@ public class SecretServerIdentityResourceDefinition extends SimpleResourceDefini
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setAllowExpression(true).build();
 
     public SecretServerIdentityResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SERVER_IDENTITY, ModelDescriptionConstants.SECRET),
-                ControllerResolver.getResolver("core", "management", "security-realm", "server-identity", "secret"),
+        super(PathElement.pathElement(SERVER_IDENTITY, SECRET),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                        "core", "management", "security-realm", "server-identity", "secret"),
                 new SecurityRealmChildAddHandler(false, false, VALUE), new SecurityRealmChildRemoveHandler(false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

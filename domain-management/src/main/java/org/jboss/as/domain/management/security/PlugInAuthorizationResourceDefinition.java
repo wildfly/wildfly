@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -36,9 +37,11 @@ public class PlugInAuthorizationResourceDefinition extends AbstractPlugInAuthRes
 
     public PlugInAuthorizationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.PLUG_IN),
-                ControllerResolver.getResolver("core.management.security-realm.authorization.plug-in"),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                        "core.management.security-realm.authorization.plug-in"),
                 new SecurityRealmChildAddHandler(false, true, NAME), new SecurityRealmChildRemoveHandler(false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
 }

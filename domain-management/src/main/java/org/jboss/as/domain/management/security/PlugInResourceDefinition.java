@@ -24,6 +24,7 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
@@ -38,10 +39,11 @@ public class PlugInResourceDefinition extends SimpleResourceDefinition {
 
     public PlugInResourceDefinition() {
         super(PathElement.pathElement(PLUG_IN),
-                ControllerResolver.getResolver("core.management.security-realm.plug-in"),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY, "core.management.security-realm.plug-in"),
                 new SecurityRealmChildAddHandler(false, false),
                 new SecurityRealmChildRemoveHandler(true), OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
 }

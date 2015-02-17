@@ -74,7 +74,7 @@ public class GroupToPrincipalResourceDefinition extends BaseLdapGroupSearchResou
 
     private GroupToPrincipalResourceDefinition() {
         super(GroupSearchType.GROUP_TO_PRINCIPAL,
-                ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.group-search.group-to-principal"),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY, "core.management.security-realm.authorization.ldap.group-search.group-to-principal"),
                 new LdapAuthorizationChildAddHandler(false, ATTRIBUTE_DEFINITIONS), LdapAuthorizationResourceDefinition.REMOVE_INSTANCE);
     }
 

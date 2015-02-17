@@ -26,6 +26,7 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_
 
 import java.util.List;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -52,6 +53,8 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
 
     public static final SecurityRealmResourceDefinition INSTANCE = new SecurityRealmResourceDefinition();
 
+    static final String DEPRECATED_PARENT_CATEGORY = "core.management.security-realm";
+
     public static final SimpleAttributeDefinition MAP_GROUPS_TO_ROLES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MAP_GROUPS_TO_ROLES, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
@@ -62,12 +65,13 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
 
     private SecurityRealmResourceDefinition() {
         super(PathElement.pathElement(SECURITY_REALM),
-                ControllerResolver.getResolver("core.management.security-realm"),
+                ControllerResolver.getResolver(DEPRECATED_PARENT_CATEGORY),
                 SecurityRealmAddHandler.INSTANCE,
                 SecurityRealmRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         sensitivity = SensitiveTargetAccessConstraintDefinition.SECURITY_REALM.wrapAsList();
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

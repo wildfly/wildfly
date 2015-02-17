@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.security;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -84,6 +85,7 @@ public abstract class BaseLdapGroupSearchResource extends SimpleResourceDefiniti
         super(PathElement.pathElement(ModelDescriptionConstants.GROUP_SEARCH, searchType.getModelValue()),
                 descriptionResolver, addHandler, removeHandler, OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

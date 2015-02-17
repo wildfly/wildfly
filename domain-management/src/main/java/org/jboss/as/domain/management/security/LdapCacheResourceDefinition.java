@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.AttributeDefinition;
@@ -163,7 +164,9 @@ public class LdapCacheResourceDefinition extends SimpleResourceDefinition {
     private LdapCacheResourceDefinition(final PathElement pathElement,
             final SimpleAttributeDefinition[] configurationAttributes, final SimpleAttributeDefinition[] runtimeAttributes,
             final SimpleOperationDefinition[] runtimeOperations, final OperationStepHandler runtimeStepHandler) {
-        super(pathElement, ControllerResolver.getResolver("core.management.security-realm.ldap.cache"),
+        super(pathElement,
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                        "core.management.security-realm.ldap.cache"),
                 new CacheChildAddHandler(configurationAttributes), new SecurityRealmChildRemoveHandler(
                         false), OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
 
@@ -171,6 +174,7 @@ public class LdapCacheResourceDefinition extends SimpleResourceDefinition {
         this.runtimeAttributes = runtimeAttributes;
         this.runtimeOperations = runtimeOperations;
         this.runtimeStepHandler = runtimeStepHandler;
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     private static ResourceDefinition create(final PathElement pathElement, final CacheFor cacheFor) {

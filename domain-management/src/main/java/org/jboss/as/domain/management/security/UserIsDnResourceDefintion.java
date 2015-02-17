@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.security;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -43,8 +44,10 @@ public class UserIsDnResourceDefintion extends BaseLdapUserSearchResource {
 
     private UserIsDnResourceDefintion() {
         super(UserSearchType.USERNAME_IS_DN,
-              ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.username-to-dn"),
+              ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                      "core.management.security-realm.authorization.ldap.user-search.username-to-dn"),
               new LdapAuthorizationChildAddHandler(false, ATTRIBUTE_DEFINITIONS), LdapAuthorizationResourceDefinition.REMOVE_INSTANCE);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -45,7 +46,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * A {@link ResourceDefinition} for a single Keytab representing a single Kerberos Principal / identity.
+ * A {@link org.jboss.as.controller.ResourceDefinition} for a single Keytab representing a single Kerberos Principal / identity.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -99,11 +100,13 @@ public class KeytabResourceDefinition extends SimpleResourceDefinition {
 
     KeytabResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.KEYTAB),
-                ControllerResolver.getResolver("core.management.security-realm.server-identity.kerberos.keytab"),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                        "core.management.security-realm.server-identity.kerberos.keytab"),
                 new SecurityRealmChildAddHandler(false, false, ATTRIBUTES),
                 new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

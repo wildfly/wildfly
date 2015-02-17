@@ -25,7 +25,7 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KERBEROS;
 
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
@@ -33,7 +33,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
 /**
- * A {@link ResourceDefinition} for a servers Kerberos identity.
+ * A {@link org.jboss.as.controller.ResourceDefinition} for a server's Kerberos identity.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -42,11 +42,12 @@ public class KerberosServerIdentityResourceDefinition extends SimpleResourceDefi
 
     KerberosServerIdentityResourceDefinition() {
         super(PathElement.pathElement(SERVER_IDENTITY, KERBEROS),
-                ControllerResolver.getResolver("core.management.security-realm.server-identity.kerberos"),
-                new SecurityRealmChildAddHandler(false, false, new AttributeDefinition[0]),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY, "core.management.security-realm.server-identity.kerberos"),
+                new SecurityRealmChildAddHandler(false, false),
                 new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override

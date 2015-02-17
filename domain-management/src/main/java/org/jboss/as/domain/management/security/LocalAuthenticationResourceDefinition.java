@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.as.controller.AttributeDefinition;
@@ -68,9 +69,11 @@ public class LocalAuthenticationResourceDefinition extends SimpleResourceDefinit
 
     public LocalAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.LOCAL),
-                ControllerResolver.getResolver("core.management.security-realm.authentication.local"),
+                ControllerResolver.getDeprecatedResolver(SecurityRealmResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                        "core.management.security-realm.authentication.local"),
                 new SecurityRealmChildAddHandler(true, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override
