@@ -29,10 +29,9 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.domain.management.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -41,11 +40,13 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.operations.validation.URIValidator;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -58,6 +59,8 @@ public class LdapConnectionResourceDefinition extends SimpleResourceDefinition {
 
 
     public static final PathElement RESOURCE_PATH = PathElement.pathElement(LDAP_CONNECTION);
+
+    static final String DEPRECATED_PARENT_CATEGORY = "core.management.ldap-connection";
 
     private static final String DEFAULT_INITIAL_CONTEXT = "com.sun.jndi.ldap.LdapCtxFactory";
 
@@ -120,9 +123,10 @@ public class LdapConnectionResourceDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {URL, SEARCH_DN, SEARCH_CREDENTIAL, SECURITY_REALM, INITIAL_CONTEXT_FACTORY, REFERRALS, HANDLES_REFERRALS_FOR};
 
     private LdapConnectionResourceDefinition(OperationStepHandler add, OperationStepHandler remove) {
-        super(RESOURCE_PATH, ControllerResolver.getResolver("core.management.ldap-connection"),
+        super(RESOURCE_PATH, ControllerResolver.getResolver(DEPRECATED_PARENT_CATEGORY),
                 add, remove,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     public static LdapConnectionResourceDefinition newInstance() {

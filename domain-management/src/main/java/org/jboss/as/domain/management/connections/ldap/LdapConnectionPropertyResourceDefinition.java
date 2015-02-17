@@ -30,6 +30,7 @@ import java.util.List;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -66,9 +67,12 @@ public class LdapConnectionPropertyResourceDefinition extends SimpleResourceDefi
     static final ResourceDefinition INSTANCE = new LdapConnectionPropertyResourceDefinition();
 
     private LdapConnectionPropertyResourceDefinition() {
-        super(RESOURCE_PATH, ControllerResolver.getResolver("core.management.ldap-connection.property"),
+        super(RESOURCE_PATH,
+                ControllerResolver.getDeprecatedResolver(LdapConnectionResourceDefinition.DEPRECATED_PARENT_CATEGORY,
+                        "core.management.ldap-connection.property"),
                 new PropertyAddHandler(), new PropertyRemoveHandler(), OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override
