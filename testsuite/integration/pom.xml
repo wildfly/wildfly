@@ -181,6 +181,16 @@
                 <module>picketlink</module>
             </modules>
         </profile>
+
+        <profile>
+            <id>ts.integ.group.java8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>java8</module>
+            </modules>
+        </profile>
     </profiles>
 
 
