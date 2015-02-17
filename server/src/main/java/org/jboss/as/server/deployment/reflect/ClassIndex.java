@@ -21,10 +21,16 @@
  */
 package org.jboss.as.server.deployment.reflect;
 
+import static java.lang.reflect.Modifier.*;
+
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
+
+import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
  * Information about a class and its methods
@@ -47,11 +53,22 @@ public class ClassIndex {
         if (classMethods == null) {
             synchronized (this) {
                 if (classMethods == null) {
-                    final Set<Method> methods = Collections.newSetFromMap(new IdentityHashMap<Method, Boolean>());
+                    final Set<Method> methods = methodSet();
                     Class<?> clazz = this.moduleClass;
+                    final ClassReflectionIndex<?> classIndex = deploymentReflectionIndex.getClassIndex(clazz);
                     while (clazz != null) {
-                        methods.addAll(deploymentReflectionIndex.getClassIndex(clazz).getMethods());
+                        methods.addAll(classIndex.getMethods());
                         clazz = clazz.getSuperclass();
+                    }
+                    final Map<Class<?>, Set<Method>> defaultMethodsByInterface = new IdentityHashMap<Class<?>, Set<Method>>();
+                    clazz = this.moduleClass;
+                    final Set<MethodIdentifier> foundMethods = new HashSet<>();
+                    while (clazz != null) {
+                        addDefaultMethods(this.moduleClass, foundMethods, defaultMethodsByInterface, clazz.getInterfaces());
+                        clazz = clazz.getSuperclass();
+                    }
+                    for (Set<Method> methodSet : defaultMethodsByInterface.values()) {
+                        methods.addAll(methodSet);
                     }
                     this.classMethods = methods;
                 }
@@ -60,6 +77,30 @@ public class ClassIndex {
         return classMethods;
     }
 
+    private boolean classContains(final Class<?> clazz, final MethodIdentifier methodIdentifier) {
+        return clazz != null && (deploymentReflectionIndex.getClassIndex(clazz).getMethod(methodIdentifier) != null || classContains(clazz.getSuperclass(), methodIdentifier));
+    }
+
+    private void addDefaultMethods(final Class<?> componentClass, Set<MethodIdentifier> foundMethods, Map<Class<?>, Set<Method>> defaultMethodsByInterface, Class<?>[] interfaces) {
+        for (Class<?> i : interfaces) {
+            if (! defaultMethodsByInterface.containsKey(i)) {
+                Set<Method> set = methodSet();
+                defaultMethodsByInterface.put(i, set);
+                final ClassReflectionIndex<?> interfaceIndex = deploymentReflectionIndex.getClassIndex(i);
+                for (Method method : interfaceIndex.getMethods()) {
+                    final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
+                    if ((method.getModifiers() & (STATIC | PUBLIC | ABSTRACT)) == PUBLIC && ! classContains(componentClass, identifier) && foundMethods.add(identifier)) {
+                        set.add(method);
+                    }
+                }
+            }
+            addDefaultMethods(componentClass, foundMethods, defaultMethodsByInterface, i.getInterfaces());
+        }
+    }
+
+    private static Set<Method> methodSet() {
+        return Collections.newSetFromMap(new IdentityHashMap<Method, Boolean>());
+    }
 
     public Class<?> getModuleClass() {
         return moduleClass;
