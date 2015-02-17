@@ -33,6 +33,7 @@ import java.util.Set;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -94,6 +95,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
         this.pathManager = pathManager;
         this.attributes = attributes;
         this.environmentReader = environmentReader;
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     @Override
@@ -151,7 +153,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
 
         Udp(ManagedAuditLogger auditLogger, PathManagerService pathManager, EnvironmentNameReader environmentReader) {
             super(auditLogger, pathManager, ATTRIBUTES, PATH_ELEMENT,
-                    DomainManagementResolver.getResolver("core.management.syslog-udp"), environmentReader);
+                    DomainManagementResolver.getDeprecatedResolver(AccessAuditResourceDefinition.DEPRECATED_MESSAGE_CATEGORY, "core.management.syslog-udp"), environmentReader);
         }
 
         Udp(ManagedAuditLogger auditLogger, PathManagerService pathManager, AttributeDefinition[] attributes,
@@ -181,7 +183,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
 
         Tcp(ManagedAuditLogger auditLogger, PathManagerService pathManager, EnvironmentNameReader environmentReader) {
             super(auditLogger, pathManager, ATTRIBUTES, PATH_ELEMENT,
-                    DomainManagementResolver.getResolver("core.management.syslog-tcp"), environmentReader);
+                    DomainManagementResolver.getDeprecatedResolver(AccessAuditResourceDefinition.DEPRECATED_MESSAGE_CATEGORY, "core.management.syslog-tcp"), environmentReader);
         }
 
         Tcp(ManagedAuditLogger auditLogger, PathManagerService pathManager, AttributeDefinition[] attributes,
@@ -197,7 +199,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
 
         Tls(ManagedAuditLogger auditLogger, PathManagerService pathManager, EnvironmentNameReader environmentReader) {
             super(auditLogger, pathManager, ATTRIBUTES, PATH_ELEMENT,
-                    DomainManagementResolver.getResolver("core.management.syslog-tls"), environmentReader);
+                    DomainManagementResolver.getDeprecatedResolver(AccessAuditResourceDefinition.DEPRECATED_MESSAGE_CATEGORY, "core.management.syslog-tls"), environmentReader);
         }
 
         @Override

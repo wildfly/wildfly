@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -74,8 +75,10 @@ public class FileAuditLogHandlerResourceDefinition extends AuditLogHandlerResour
 
 
     public FileAuditLogHandlerResourceDefinition(ManagedAuditLogger auditLogger, PathManagerService pathManager) {
-        super(auditLogger, pathManager, PathElement.pathElement(FILE_HANDLER), DomainManagementResolver.getResolver("core.management.file-handler"),
+        super(auditLogger, pathManager, PathElement.pathElement(FILE_HANDLER),
+                DomainManagementResolver.getDeprecatedResolver(AccessAuditResourceDefinition.DEPRECATED_MESSAGE_CATEGORY, "core.management.file-handler"),
                 new FileAuditLogHandlerAddHandler(auditLogger, pathManager, ATTRIBUTES), new HandlerRemoveHandler(auditLogger));
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     public static ModelNode createServerAddOperation(final PathAddress address, final ModelNode fileHandler){

@@ -33,6 +33,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -104,9 +105,11 @@ public class JsonAuditLogFormatterResourceDefinition extends SimpleResourceDefin
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{INCLUDE_DATE, DATE_FORMAT, DATE_SEPARATOR, COMPACT, ESCAPE_NEW_LINE, ESCAPE_CONTROL_CHARACTERS};
 
     public JsonAuditLogFormatterResourceDefinition(ManagedAuditLogger auditLogger) {
-        super(PathElement.pathElement(JSON_FORMATTER), DomainManagementResolver.getResolver("core.management.json-formatter"),
+        super(PathElement.pathElement(JSON_FORMATTER),
+                DomainManagementResolver.getDeprecatedResolver(AccessAuditResourceDefinition.DEPRECATED_MESSAGE_CATEGORY, "core.management.json-formatter"),
                 new JsonAuditLogFormatterAddHandler(auditLogger), new JsonAuditLogFormatterRemoveHandler(auditLogger));
         this.auditLogger = auditLogger;
+        setDeprecated(ModelVersion.create(1, 7));
     }
 
     public static ModelNode createServerAddOperation(final PathAddress address, final ModelNode formatter){
