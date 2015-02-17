@@ -179,10 +179,9 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
 
         // process @PermitAll annotation
         if (webServiceClassInfo.annotations().containsKey(PERMIT_ALL_ANNOTATION)) {
-            final AnnotationInstance permitAll = webServiceClassInfo.annotations().get(PERMIT_ALL_ANNOTATION).iterator().next();
-            if (permitAll.target().equals(webServiceClassInfo)) {
-                securityRoles.add("*");
-            }
+            //Need to pick up method-level annotations as well
+            //Should be okay with the new auth interceptor to check method-level roles
+            securityRoles.add("*");
         }
 
         return (securityRoles.size() > 0) ? Collections.unmodifiableSet(securityRoles) : Collections.<String>emptySet();
