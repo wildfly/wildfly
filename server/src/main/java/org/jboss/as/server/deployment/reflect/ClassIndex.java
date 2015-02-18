@@ -21,8 +21,6 @@
  */
 package org.jboss.as.server.deployment.reflect;
 
-import static java.lang.reflect.Modifier.*;
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,6 +29,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.invocation.proxy.MethodIdentifier;
+
+import static java.lang.reflect.Modifier.ABSTRACT;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static java.lang.reflect.Modifier.STATIC;
 
 /**
  * Information about a class and its methods
@@ -55,14 +57,13 @@ public class ClassIndex {
                 if (classMethods == null) {
                     final Set<Method> methods = methodSet();
                     Class<?> clazz = this.moduleClass;
-                    final ClassReflectionIndex<?> classIndex = deploymentReflectionIndex.getClassIndex(clazz);
                     while (clazz != null) {
-                        methods.addAll(classIndex.getMethods());
+                        methods.addAll(deploymentReflectionIndex.getClassIndex(clazz).getMethods());
                         clazz = clazz.getSuperclass();
                     }
                     final Map<Class<?>, Set<Method>> defaultMethodsByInterface = new IdentityHashMap<Class<?>, Set<Method>>();
                     clazz = this.moduleClass;
-                    final Set<MethodIdentifier> foundMethods = new HashSet<>();
+                    final Set<MethodIdentifier> foundMethods = new HashSet<MethodIdentifier>();
                     while (clazz != null) {
                         addDefaultMethods(this.moduleClass, foundMethods, defaultMethodsByInterface, clazz.getInterfaces());
                         clazz = clazz.getSuperclass();
