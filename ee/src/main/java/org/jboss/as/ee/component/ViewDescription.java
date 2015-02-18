@@ -48,6 +48,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
+import static java.lang.reflect.Modifier.ABSTRACT;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static java.lang.reflect.Modifier.STATIC;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
@@ -195,6 +198,10 @@ public class ViewDescription {
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
                 Method componentMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, componentConfiguration.getComponentClass(), methodIdentifier);
 
+                if (componentMethod == null && method.getDeclaringClass().isInterface() && (method.getModifiers() & (ABSTRACT | PUBLIC | STATIC)) == PUBLIC) {
+                    // no component method and the interface method is defaulted, so we really do want to invoke on the interface method
+                    componentMethod = method;
+                }
                 if (componentMethod != null) {
 
                     if ((BRIDGE & componentMethod.getModifiers()) != 0) {
