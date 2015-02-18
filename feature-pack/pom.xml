@@ -198,11 +198,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.codemodel</groupId>
-            <artifactId>codemodel</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.sun.faces</groupId>
             <artifactId>jsf-impl</artifactId>
         </dependency>
@@ -224,7 +219,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
+            <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-core</artifactId>
             <exclusions>
                 <exclusion>
@@ -235,8 +230,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -246,7 +241,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
+            <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-xjc</artifactId>
             <exclusions>
                 <exclusion>
@@ -255,6 +250,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>codemodel</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>com.sun.xml.fastinfoset</groupId>
@@ -273,8 +273,13 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.txw2</groupId>
+            <groupId>org.glassfish.jaxb</groupId>
             <artifactId>txw2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.bind.external</groupId>
+            <artifactId>rngom</artifactId>
         </dependency>
 
         <dependency>
@@ -1222,11 +1227,6 @@
         <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.kohsuke.rngom</groupId>
-            <artifactId>rngom</artifactId>
         </dependency>
 
         <dependency>

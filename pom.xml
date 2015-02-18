@@ -84,12 +84,10 @@
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>17.0</version.com.google.guava>
         <version.com.h2database>1.3.173</version.com.h2database>
-        <version.com.sun.codemodel>2.6</version.com.sun.codemodel>
         <version.com.sun.faces>2.2.10-jbossorg-2</version.com.sun.faces>
-        <version.com.sun.istack>2.6.1</version.com.sun.istack>
+        <version.com.sun.istack>2.21</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
-        <version.com.sun.xml.txw2>20110809</version.com.sun.xml.txw2>
-        <version.com.sun.xsom>20110809</version.com.sun.xsom>
+        <version.com.sun.xsom>20140925</version.com.sun.xsom>
         <version.commons-beanutils-core>1.8.3</version.commons-beanutils-core>
         <version.commons-cli>1.2</version.commons-cli>
         <version.commons-codec>1.9</version.commons-codec>
@@ -205,7 +203,6 @@
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jgroups>3.6.2.Final</version.org.jgroups>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
-        <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.opensaml.opensaml>2.6.1</version.org.opensaml.opensaml>
         <version.org.opensaml.openws>1.5.1</version.org.opensaml.openws>
         <version.org.opensaml.xmltooling>1.4.1</version.org.opensaml.xmltooling>
@@ -222,7 +219,7 @@
         <version.org.wildfly.core>1.0.0.Alpha19</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.Alpha5</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.13</version.org.yaml.snakeyaml>
-        <version.sun.jaxb>2.2.7</version.sun.jaxb>
+        <version.sun.jaxb>2.2.11</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.3</version.wsdl4j>
@@ -446,6 +443,8 @@
                                             <exclude>com.google.gwt.inject:gin</exclude>
                                             <exclude>com.google.inject:guice</exclude>
                                             <exclude>com.gwtplatform:gwtp-all</exclude>
+                                            <exclude>com.sun.xml.bind:jaxb-impl</exclude>
+                                            <exclude>com.sun.xml.bind:jaxb-xjc</exclude>
                                             <exclude>commons-httpclient:commons-httpclient</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>commons-logging:commons-logging-api</exclude>
@@ -1618,12 +1617,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.codemodel</groupId>
-                <artifactId>codemodel</artifactId>
-                <version>${version.com.sun.codemodel}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.sun.faces</groupId>
                 <artifactId>jsf-impl</artifactId>
                 <version>${version.com.sun.faces}</version>
@@ -1658,7 +1651,7 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
+                <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-core</artifactId>
                 <version>${version.sun.jaxb}</version>
                 <exclusions>
@@ -1670,8 +1663,8 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
                 <version>${version.sun.jaxb}</version>
                 <exclusions>
                     <exclusion>
@@ -1682,7 +1675,7 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
+                <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-xjc</artifactId>
                 <version>${version.sun.jaxb}</version>
                 <exclusions>
@@ -1690,10 +1683,30 @@
                     <groupId>com.sun.xml.dtd-parser</groupId>
                     <artifactId>dtd-parser</artifactId>
                   </exclusion>
-                  <exclusion>
-                    <groupId>org.kohsuke.rngom</groupId>
-                    <artifactId>rngom</artifactId>
-                  </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>codemodel</artifactId>
+                <version>${version.sun.jaxb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>txw2</artifactId>
+                <version>${version.sun.jaxb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind.external</groupId>
+                <artifactId>rngom</artifactId>
+                <version>${version.sun.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>relaxngDatatype</groupId>
+                        <artifactId>relaxngDatatype</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1725,22 +1738,6 @@
                     <exclusion>
                         <groupId>org.jvnet.mimepull</groupId>
                         <artifactId>mimepull</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.xml.txw2</groupId>
-                <artifactId>txw2</artifactId>
-                <version>${version.com.sun.xml.txw2}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.xml.stream</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>relaxngDatatype</groupId>
-                        <artifactId>relaxngDatatype</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2262,6 +2259,10 @@
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>xalan</groupId>
@@ -2864,6 +2865,14 @@
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.velocity</groupId>
                         <artifactId>velocity</artifactId>
                     </exclusion>
@@ -2914,6 +2923,10 @@
                     <exclusion>
                         <groupId>wsdl4j</groupId>
                         <artifactId>wsdl4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>javax.xml.bind</groupId>
@@ -3020,6 +3033,14 @@
                         <artifactId>jaxb-api</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>javax.xml.soap</groupId>
                         <artifactId>saaj-api</artifactId>
                     </exclusion>
@@ -3071,6 +3092,14 @@
                 <artifactId>cxf-tools-wsdlto-core</artifactId>
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>javax.xml.soap</groupId>
                         <artifactId>saaj-api</artifactId>
@@ -3139,6 +3168,14 @@
                 <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-tools-common</artifactId>
@@ -5133,6 +5170,10 @@
                         <groupId>javax.servlet</groupId>
                         <artifactId>servlet-api</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -5140,6 +5181,12 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-atom-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5776,6 +5823,14 @@
                         <artifactId>jaxb-core</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>javax.xml.stream</groupId>
                         <artifactId>stax-api</artifactId>
                     </exclusion>
@@ -6000,6 +6055,10 @@
                         <artifactId>jaxb-impl</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>javax.xml.stream</groupId>
                         <artifactId>stax-api</artifactId>
                     </exclusion>
@@ -6172,22 +6231,6 @@
                 <groupId>org.jgroups</groupId>
                 <artifactId>jgroups</artifactId>
                 <version>${version.org.jgroups}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.kohsuke.rngom</groupId>
-                <artifactId>rngom</artifactId>
-                <version>${version.org.kohsuke.rngom}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.xml.stream</groupId>
-                        <artifactId>stax-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>relaxngDatatype</groupId>
-                        <artifactId>relaxngDatatype</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
