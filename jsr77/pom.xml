@@ -42,10 +42,6 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-common-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
         </dependency>
         <dependency>
