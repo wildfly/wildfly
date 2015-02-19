@@ -201,15 +201,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.hasDefined(StateTransferResourceDefinition.PATH.getKey())) {
-            ModelNode stateTransfer = cache.get(StateTransferResourceDefinition.PATH.getKeyValuePair());
-            writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
-            StateTransferResourceDefinition.ENABLED.marshallAsAttribute(stateTransfer, writer);
-            StateTransferResourceDefinition.TIMEOUT.marshallAsAttribute(stateTransfer, writer);
-            StateTransferResourceDefinition.CHUNK_SIZE.marshallAsAttribute(stateTransfer, writer);
-            writer.writeEndElement();
-        }
-
         if (cache.hasDefined(CustomStoreResourceDefinition.PATH.getKey())) {
             ModelNode store = cache.get(CustomStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.STORE.getLocalName());
@@ -277,6 +268,15 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(Element.INDEXING.getLocalName());
             CacheResourceDefinition.INDEXING.marshallAsAttribute(cache, writer);
             CacheResourceDefinition.INDEXING_PROPERTIES.marshallAsElement(cache, writer);
+            writer.writeEndElement();
+        }
+
+        if (cache.hasDefined(StateTransferResourceDefinition.PATH.getKey())) {
+            ModelNode stateTransfer = cache.get(StateTransferResourceDefinition.PATH.getKeyValuePair());
+            writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
+            StateTransferResourceDefinition.ENABLED.marshallAsAttribute(stateTransfer, writer);
+            StateTransferResourceDefinition.TIMEOUT.marshallAsAttribute(stateTransfer, writer);
+            StateTransferResourceDefinition.CHUNK_SIZE.marshallAsAttribute(stateTransfer, writer);
             writer.writeEndElement();
         }
 
