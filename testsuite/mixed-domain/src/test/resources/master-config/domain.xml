@@ -23,7 +23,6 @@
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
-        <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web"/>
         <extension module="org.jboss.as.webservices"/>
@@ -185,9 +184,9 @@
                 <default-security-domain value="other"/>
                 <default-missing-method-permissions-deny-access value="true"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:io:1.0">
-                <worker name="default" io-threads="3"/>
-                <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
+            <subsystem xmlns="urn:jboss:domain:io:1.1">
+                <worker name="default" />
+                <buffer-pool name="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:2.0">
                 <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
@@ -478,7 +477,6 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:2.0">
                 <core-environment>
                     <process-id>
@@ -552,12 +550,6 @@
                 </periodic-rotating-file-handler>
                 <logger category="com.arjuna">
                     <level name="WARN"/>
-                </logger>
-                <logger category="org.apache.tomcat.util.modeler">
-                    <level name="WARN"/>
-                </logger>
-                <logger category="org.jboss.as.config">
-                    <level name="DEBUG"/>
                 </logger>
                 <logger category="sun.rmi">
                     <level name="WARN"/>
@@ -994,7 +986,6 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:2.0">
                 <core-environment>
                     <process-id>
@@ -1060,12 +1051,6 @@
                 </periodic-rotating-file-handler>
                 <logger category="com.arjuna">
                     <level name="WARN"/>
-                </logger>
-                <logger category="org.apache.tomcat.util.modeler">
-                    <level name="WARN"/>
-                </logger>
-                <logger category="org.jboss.as.config">
-                    <level name="DEBUG"/>
                 </logger>
                 <logger category="sun.rmi">
                     <level name="WARN"/>
@@ -1479,7 +1464,6 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:2.0">
                 <core-environment>
                     <process-id>

@@ -25,7 +25,6 @@
 
     <extensions>
         <extension module="org.jboss.as.logging"/>
-        <extension module="org.jboss.as.threads"/>
     </extensions>
 
     <system-properties>

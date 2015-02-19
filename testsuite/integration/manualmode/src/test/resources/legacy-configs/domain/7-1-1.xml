@@ -24,7 +24,6 @@
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
-        <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web"/>
         <extension module="org.jboss.as.webservices"/>
@@ -210,7 +209,6 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
                 <core-environment>
                     <process-id>
@@ -490,7 +488,6 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
                 <core-environment>
                     <process-id>
@@ -789,7 +786,6 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
                 <core-environment>
                     <process-id>
@@ -1187,7 +1183,6 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.1">
                 <core-environment>
                     <process-id>

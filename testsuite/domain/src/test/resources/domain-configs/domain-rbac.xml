@@ -40,7 +40,6 @@
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
-        <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.weld"/>
         <extension module="org.jboss.as.webservices"/>
@@ -90,9 +89,9 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:io:1.0">
-                <worker name="default" io-threads="3"/>
-                <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
+            <subsystem xmlns="urn:jboss:domain:io:1.1">
+                <worker name="default" />
+                <buffer-pool name="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -274,9 +273,9 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:io:1.0">
-                <worker name="default" io-threads="3"/>
-                <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
+            <subsystem xmlns="urn:jboss:domain:io:1.1">
+                <worker name="default" />
+                <buffer-pool name="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
