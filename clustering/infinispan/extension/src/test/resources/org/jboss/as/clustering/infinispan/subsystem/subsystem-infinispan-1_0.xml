@@ -1,3 +1,24 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2015, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
 <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="minimal">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
@@ -19,8 +40,8 @@
             <eviction max-entries="20000" strategy="LRU"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <remote-store cache="default" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="true">
-                <remote-server outbound-socket-binding="hotrod-server-1" />
-                <remote-server outbound-socket-binding="hotrod-server-2" />
+                <remote-server outbound-socket-binding="hotrod-server-1"/>
+                <remote-server outbound-socket-binding="hotrod-server-2"/>
                 <property name="valueSizeEstimate">100</property>
             </remote-store>
         </invalidation-cache>
@@ -29,7 +50,7 @@
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000"/>
             <eviction max-entries="20000" strategy="FIFO"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <state-transfer enabled="true" timeout="60000" flush-timeout="60000" />
+            <state-transfer enabled="true" timeout="60000" flush-timeout="60000"/>
             <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
                 <property name="location">${java.io.tmpdir}</property>
             </store>
