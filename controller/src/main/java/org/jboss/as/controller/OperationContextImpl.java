@@ -1393,12 +1393,12 @@ final class OperationContextImpl extends AbstractOperationContext {
                 for (final Resource.ResourceEntry entry : children) {
                     model.registerChild(entry.getPathElement(), entry);
                 }
-            } else if (model.hasChild(element)) {
-                model = model.getChild(element);
             } else {
-                return Resource.Factory.create();
+                model = model.getChild(element);
+                if (model == null) {
+                    return Resource.Factory.create();
+                }
             }
-
         }
         return model;
     }
