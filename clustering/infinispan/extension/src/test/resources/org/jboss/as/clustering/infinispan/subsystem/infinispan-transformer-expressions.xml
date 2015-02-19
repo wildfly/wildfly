@@ -29,11 +29,11 @@
         <transport channel="${test.xxx:maximal-cluster}" executor="transport-executor" lock-timeout="${test.xxx:120000}"/>
         <local-cache name="local" start="${test.xxx:EAGER}" module="${test.xxx:org.infinispan}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:NONE}" striping="${test.xxx:true}"/>
-            <transaction mode="FULL_XA" stop-timeout="${test.xxx:60000}"  locking="${tst.xxx:OPTIMISTIC}"/>
+            <transaction mode="FULL_XA" stop-timeout="${test.xxx:60000}" locking="${tst.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:LIRS}"/>
             <expiration interval="${test.xxx:10000}" lifespan="${test.xxx:10}" max-idle="${test.xxx:10}"/>
             <file-store fetch-state="${test.xxx:false}" passivation="${test.xxx:false}" path="${test.xxx:path}" preload="${test.xxx:true}" purge="${test.xxx:false}" relative-to="jboss.server.temp.dir" shared="${test.xxx:true}" singleton="${tst.xxx:false}">
-                <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}" />
+                <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}"/>
             </file-store>
             <indexing index="${test.xxx:LOCAL}">
                 <property name="hibernate.search.default.directory_provider">${test.xxx:infinispan}</property>
@@ -43,37 +43,37 @@
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" start="${test.xxx:LAZY}" async-marshalling="${tst.xxx:true}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:READ_UNCOMMITTED}" striping="${test.xxx:true}"/>
-            <transaction mode="NON_XA" stop-timeout="${test.xxx:60000}"  locking="${test.xxx:OPTIMISTIC}"/>
+            <transaction mode="NON_XA" stop-timeout="${test.xxx:60000}" locking="${test.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:LRU}"/>
             <expiration interval="${test.xxx:10000}" lifespan="${tst.xxx:10}" max-idle="${test.xxx:10}"/>
             <remote-store cache="${test.xxx:default}" socket-timeout="${test.xxx:60000}" tcp-no-delay="${test.xxx:true}" fetch-state="${test.xxx:false}" passivation="${test.xxx:false}" preload="${test.xxx:true}" purge="${test.xxx:false}" shared="${test.xxx:false}" singleton="${test.xxx:true}">
-                <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}" />
+                <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}"/>
                 <property name="valueSizeEstimate">${test.xxx:value}</property>
-                <remote-server outbound-socket-binding="hotrod-server-1" />
-                <remote-server outbound-socket-binding="hotrod-server-2" />
+                <remote-server outbound-socket-binding="hotrod-server-1"/>
+                <remote-server outbound-socket-binding="hotrod-server-2"/>
             </remote-store>
-            <indexing index="${test.xxx:NONE}" />
+            <indexing index="${test.xxx:NONE}"/>
         </invalidation-cache>
-        <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" start="${test.xxx:EAGER}"  async-marshalling="${test.xxx:false}" statistics-enabled="true">
+        <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" start="${test.xxx:EAGER}" async-marshalling="${test.xxx:false}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:SERIALIZABLE}" striping="${test.xxx:true}"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="${test.xxx:60000}" locking="${test.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${tst.xxx:20000}" strategy="${test.xxx:FIFO}"/>
             <expiration interval="${test.xxx:10000}" lifespan="${test.xxx:10}" max-idle="${test.xxx:10}"/>
-            <state-transfer enabled="${test.xxx:true}" timeout="${test.xxx:60000}" chunk-size="${test.xxx:10000}" />
+            <state-transfer enabled="${test.xxx:true}" timeout="${test.xxx:60000}" chunk-size="${test.xxx:10000}"/>
             <store class="${test.xxx:org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder}" fetch-state="${test.xxx:true}" passivation="${test.xxx:true}" preload="${test.xxx:false}" purge="${test.xxx:true}" shared="${test.xxx:false}" singleton="${test.xxx:false}">
-                <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}" />
+                <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}"/>
                 <property name="location">${test.xxx:location}</property>
             </store>
-            <indexing index="${test.xxx:NONE}" />
+            <indexing index="${test.xxx:NONE}"/>
         </replicated-cache>
         <distributed-cache name="dist" mode="SYNC" l1-lifespan="${test.xxx:1200000}" owners="${test.xxx:4}" remote-timeout="${test.xxx:35000}" start="${test.xxx:EAGER}" segments="${test.xxx:2}" async-marshalling="${test.xxx:true}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:READ_COMMITTED}" striping="${test.xxx:true}"/>
-            <transaction mode="FULL_XA" stop-timeout="${test.xxx:60000}"  locking="${test.xxx:OPTIMISTIC}"/>
+            <transaction mode="FULL_XA" stop-timeout="${test.xxx:60000}" locking="${test.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:UNORDERED}"/>
             <expiration interval="${test.xxx:10000}" lifespan="${test.xxx:10}" max-idle="${test.xxx:10}"/>
-            <state-transfer enabled="${test.xxx:true}" timeout="${test.xxx:60000}" chunk-size="${test.xxx:10000}" />
+            <state-transfer enabled="${test.xxx:true}" timeout="${test.xxx:60000}" chunk-size="${test.xxx:10000}"/>
             <mixed-keyed-jdbc-store datasource="${test.xxx:java:jboss/jdbc/store}" fetch-state="${test.xxx:false}" passivation="${test.xxx:false}" preload="${test.xxx:true}" purge="${test.xxx:false}" shared="${tst.xxx:true}" singleton="${test.xxx:true}">
-                <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}" />
+                <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}"/>
                 <string-keyed-table prefix="${test.xxx:ispn_bucket}" batch-size="${tst.xxx:100}" fetch-size="${test.xxx:100}">
                     <id-column name="${test.xxx:id}" type="${test.xxx:VARCHAR}"/>
                     <data-column name="${test.xxx:datum}" type="${test.xxx:BINARY}"/>
@@ -85,7 +85,7 @@
                     <timestamp-column name="${test.xxx:version}" type="${test.xxx:BIGINT}"/>
                 </binary-keyed-table>
             </mixed-keyed-jdbc-store>
-            <indexing index="${test.xxx:ALL}" />
+            <indexing index="${test.xxx:ALL}"/>
         </distributed-cache>
     </cache-container>
 </subsystem>
