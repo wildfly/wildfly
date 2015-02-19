@@ -56,6 +56,9 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
+import org.jboss.as.jaxrs.JaxrsExtension;
+
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author Stuart Douglas
@@ -88,6 +91,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (resteasy == null)
             return;
 
+        deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
         //remove the resteasy.scan parameter
         //because it is not needed
         final List<ParamValueMetaData> params = webdata.getContextParams();

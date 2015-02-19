@@ -36,8 +36,6 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -86,11 +84,9 @@ public class JaxrsExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         JAXRS_LOGGER.debug("Activating JAX-RS Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new SimpleResourceDefinition(JaxrsExtension.SUBSYSTEM_PATH,
-                JaxrsExtension.getResolver(),
-                JaxrsSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE));
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JaxrsDeploymentDefinition.SUBSYSTEM_INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        subsystem.registerDeploymentModel(JaxrsDeploymentDefinition.DEPLOYMENT_INSTANCE);
         subsystem.registerXMLElementWriter(parser);
     }
 

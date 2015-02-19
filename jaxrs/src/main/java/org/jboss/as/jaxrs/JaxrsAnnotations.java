@@ -49,7 +49,8 @@ public enum JaxrsAnnotations {
     PUT("PUT"),
     QUERY_PARAM("QueryParam"),
     CONTEXT(Constants.JAVAX_WS_CORE,"Context"),
-    PROVIDER(Constants.JAVAX_WS_EXT,"Provider");
+    PROVIDER(Constants.JAVAX_WS_EXT,"Provider"),
+    APPLICATION_PATH("ApplicationPath");
 
     private final String simpleName;
     private final DotName dotName;
