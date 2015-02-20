@@ -420,7 +420,7 @@
         <profile>
             <id>tools-jar</id>
             <activation>
-                <jdk>[1.7,1.8)</jdk>
+                <jdk>[1.7,1.9)</jdk>
             </activation>
             <dependencies>
                 <dependency>
