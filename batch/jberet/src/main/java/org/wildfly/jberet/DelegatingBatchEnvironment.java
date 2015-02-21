@@ -30,6 +30,7 @@ import javax.transaction.TransactionManager;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.JobXmlResolver;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -75,6 +76,13 @@ public class DelegatingBatchEnvironment implements BatchEnvironment {
     @Override
     public JobRepository getJobRepository() {
         return delegate.getJobRepository();
+    }
+
+    // TODO (jrp) preparing for JBeret API changes
+    //@Override
+    public JobXmlResolver getJobXmlResolver() {
+        //return delegate.getJobXmlResolver();
+        return null;
     }
 
     /**

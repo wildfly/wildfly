@@ -38,7 +38,6 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -52,33 +51,19 @@ import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.batch.deployment.BatchDependencyProcessor;
+import org.wildfly.extension.batch.deployment.BatchDeploymentResourceProcessor;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.batch.job.repository.JobRepositoryType;
 
-class BatchSubsystemDefinition extends SimpleResourceDefinition {
+public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
     /**
      * The name of our subsystem within the model.
      */
     public static final String NAME = "batch";
-    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NAME);
+    public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NAME);
     static final PathElement THREAD_POOL_PATH = PathElement.pathElement(BatchConstants.THREAD_POOL, BatchConstants.THREAD_POOL_NAME);
-    private static final String RESOURCE_NAME = BatchSubsystemExtension.class.getPackage().getName() + ".LocalDescriptions";
-
-
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        String prefix = NAME + (keyPrefix == null ? "" : "." + keyPrefix);
-        return new StandardResourceDescriptionResolver(prefix, RESOURCE_NAME, BatchSubsystemExtension.class.getClassLoader(), true, false);
-    }
-
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... prefixes) {
-        final StringBuilder prefix = new StringBuilder(NAME);
-        for (String p : prefixes) {
-            prefix.append('.').append(p);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, BatchSubsystemExtension.class.getClassLoader(), true, false);
-    }
 
     static final SimpleAttributeDefinition JOB_REPOSITORY_TYPE = SimpleAttributeDefinitionBuilder.create("job-repository-type", ModelType.STRING, true)
             .setAllowExpression(false)
@@ -118,7 +103,7 @@ class BatchSubsystemDefinition extends SimpleResourceDefinition {
     public static final BatchSubsystemDefinition INSTANCE = new BatchSubsystemDefinition();
 
     private BatchSubsystemDefinition() {
-        super(SUBSYSTEM_PATH, getResourceDescriptionResolver((String) null), BatchSubsystemAdd.INSTANCE,
+        super(SUBSYSTEM_PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(), BatchSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
@@ -186,14 +171,10 @@ class BatchSubsystemDefinition extends SimpleResourceDefinition {
                 public void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
                             Phase.DEPENDENCIES, Phase.DEPENDENCIES_BATCH, new BatchDependencyProcessor());
-
-                }
-            }, OperationContext.Stage.RUNTIME);
-
-            context.addStep(new AbstractDeploymentChainStep() {
-                public void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
                             Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor());
+                    processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
+                            Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor());
 
                 }
             }, OperationContext.Stage.RUNTIME);

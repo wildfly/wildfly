@@ -32,6 +32,7 @@ import javax.transaction.TransactionManager;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.JobXmlResolver;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -55,6 +56,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<>();
     private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
+    private final InjectedValue<JobXmlResolver> jobXmlResolverInjector = new InjectedValue<>();
 
     private final JobRepository jobRepository;
     private final ClassLoader classLoader;
@@ -69,7 +71,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     public synchronized void start(final StartContext context) throws StartException {
         WildFlyBatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
-                executorServiceInjector.getValue(), transactionManagerInjector.getValue());
+                executorServiceInjector.getValue(), transactionManagerInjector.getValue(), jobXmlResolverInjector.getValue());
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -99,14 +101,20 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         return transactionManagerInjector;
     }
 
+    public InjectedValue<JobXmlResolver> getJobXmlResolverInjector() {
+        return jobXmlResolverInjector;
+    }
+
     private class WildFlyBatchEnvironment implements BatchEnvironment {
 
         private final ArtifactFactory artifactFactory;
         private final ExecutorService executorService;
         private final TransactionManager transactionManager;
+        private final JobXmlResolver jobXmlResolver;
 
         WildFlyBatchEnvironment(final BeanManager beanManager,
-                                final ExecutorService executorService, final TransactionManager transactionManager) {
+                                final ExecutorService executorService, final TransactionManager transactionManager, final JobXmlResolver jobXmlResolver) {
+            this.jobXmlResolver = jobXmlResolver;
             artifactFactory = new WildFlyArtifactFactory(beanManager);
             this.executorService = executorService;
             this.transactionManager = transactionManager;
@@ -178,6 +186,12 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         @Override
         public JobRepository getJobRepository() {
             return jobRepository;
+        }
+
+        // TODO (jrp) preparing for JBeret API changes
+        //@Override
+        public JobXmlResolver getJobXmlResolver() {
+            return jobXmlResolver;
         }
 
         /**
