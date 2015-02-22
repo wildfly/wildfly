@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -83,6 +82,11 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     @Override
+    public Configuration getDefaultCacheConfiguration() {
+        return this.cm.getCacheConfiguration(this.defaultCacheName);
+    }
+
+    @Override
     public Configuration getCacheConfiguration(String name) {
         return this.cm.getCacheConfiguration(this.getCacheName(name));
     }
@@ -113,15 +117,6 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
         Cache<K, V> cache = this.cm.<K, V>getCache(this.getCacheName(cacheName), createIfAbsent);
         return (cache != null) ? new DelegatingCache<>(this, this.batcherFactory, cache) : null;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.EmbeddedCacheManager#getCacheNames()
-     */
-    @Override
-    public Set<String> getCacheNames() {
-        return new HashSet<>(this.cm.getCacheNames());
     }
 
     /**
@@ -168,6 +163,11 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         }
         this.cm.startCaches(cacheNames.toArray(new String[cacheNames.size()]));
         return this;
+    }
+
+    @Override
+    public void addCacheDependency(String from, String to) {
+        this.cm.addCacheDependency(this.getCacheName(from), this.getCacheName(to));
     }
 
     private String getCacheName(String name) {

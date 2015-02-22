@@ -77,7 +77,7 @@ public class ForkChannelFactoryBuilder implements Builder<ChannelFactory>, Value
         for (Value<ProtocolConfiguration> protocol : this.protocols) {
             protocols.add(protocol.getValue());
         }
-        return new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue().getProtocolStackConfiguration(), protocols);
+        return new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue(), protocols);
     }
 
     public ProtocolConfigurationBuilder addProtocol(String type) {

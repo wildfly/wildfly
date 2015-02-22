@@ -24,12 +24,14 @@ package org.wildfly.clustering.server.dispatcher;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Buffer;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.marshalling.MarshallingContext;
 
 /**
@@ -40,9 +42,11 @@ import org.wildfly.clustering.marshalling.MarshallingContext;
  */
 public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
     private final MarshallingContext context;
+    private final ChannelFactory factory;
 
-    CommandResponseMarshaller(MarshallingContext context) {
-        this.context = context;
+    CommandResponseMarshaller(ChannelCommandDispatcherFactoryConfiguration config) {
+        this.context = config.getMarshallingContext();
+        this.factory = config.getChannelFactory();
     }
 
     @Override
@@ -61,6 +65,7 @@ public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
 
     @Override
     public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
+        if (this.factory.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length))) return NoSuchService.INSTANCE;
         try (InputStream input = new ByteArrayInputStream(buffer, offset, length)) {
             int version = input.read();
             try (Unmarshaller unmarshaller = this.context.createUnmarshaller(version)) {

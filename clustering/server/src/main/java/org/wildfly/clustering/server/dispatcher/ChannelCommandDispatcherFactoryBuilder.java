@@ -42,6 +42,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.marshalling.DynamicClassTable;
 import org.wildfly.clustering.marshalling.MarshallingContext;
@@ -60,6 +61,7 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
 
     private static final int CURRENT_VERSION = 1;
 
+    private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
     private final InjectedValue<Channel> channel = new InjectedValue<>();
     private final InjectedValue<JGroupsNodeFactory> nodeFactory = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
@@ -80,6 +82,7 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
         return new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
                 .addDependency(GroupServiceName.NODE_FACTORY.getServiceName(this.group), JGroupsNodeFactory.class, this.nodeFactory)
                 .addDependency(ChannelServiceName.CONNECTOR.getServiceName(this.group), Channel.class, this.channel)
+                .addDependency(ChannelServiceName.FACTORY.getServiceName(this.group), ChannelFactory.class, this.channelFactory)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
@@ -155,5 +158,10 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
     @Override
     public long getTimeout() {
         return this.timeout;
+    }
+
+    @Override
+    public ChannelFactory getChannelFactory() {
+        return this.channelFactory.getValue();
     }
 }

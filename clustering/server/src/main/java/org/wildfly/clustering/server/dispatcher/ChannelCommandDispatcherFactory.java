@@ -75,7 +75,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         this.nodeFactory = config.getNodeFactory();
         this.marshallingContext = config.getMarshallingContext();
         this.timeout = config.getTimeout();
-        final RpcDispatcher.Marshaller marshaller = new CommandResponseMarshaller(this.marshallingContext);
+        final RpcDispatcher.Marshaller marshaller = new CommandResponseMarshaller(config);
         this.dispatcher = new MessageDispatcher() {
             @Override
             protected RequestCorrelator createRequestCorrelator(Protocol transport, RequestHandler handler, Address localAddr) {
@@ -105,7 +105,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 AtomicReference<Object> context = this.contexts.get(clientId);
-                if (context == null) return new NoSuchService();
+                if (context == null) return NoSuchService.INSTANCE;
                 return command.execute(context.get());
             }
         }

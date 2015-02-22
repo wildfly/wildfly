@@ -22,7 +22,7 @@
   -->
 <!-- N.B. This is *not* meant to be a usable cache configuration -->
 <!-- This file supplies the internal configuration defaults per cache mode -->
-<infinispan xmlns="urn:infinispan:config:7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:7.0 http://infinispan.org/schemas/infinispan-config-7.0.xsd">
+<infinispan xmlns="urn:infinispan:config:7.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:7.1 http://infinispan.org/schemas/infinispan-config-7.1.xsd">
     <cache-container default-cache="LOCAL">
         <local-cache name="LOCAL">
             <locking isolation="REPEATABLE_READ" acquire-timeout="15000" concurrency-level="1000"/>

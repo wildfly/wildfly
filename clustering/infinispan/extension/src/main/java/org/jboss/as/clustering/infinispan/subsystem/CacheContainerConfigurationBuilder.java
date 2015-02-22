@@ -128,7 +128,7 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
         if (transport != null) {
             org.infinispan.configuration.global.TransportConfigurationBuilder transportBuilder = builder.transport()
                     .clusterName(this.name)
-                    .transport(new ChannelTransport(transport.getChannel()))
+                    .transport(new ChannelTransport(transport.getChannel(), transport.getChannelFactory()))
                     .distributedSyncTimeout(transport.getLockTimeout())
             ;
 
