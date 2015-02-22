@@ -125,7 +125,5 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
             FieldType type = FieldType.valueOf(attribute.getType());
             protocolRegistration.registerMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType()).setStorageRuntime().build(), handler);
         }
-
-        context.stepCompleted();
     }
 }

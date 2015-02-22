@@ -75,7 +75,6 @@ public class RemoveAliasHandler implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.stepCompleted();
     }
 
     /**

@@ -74,7 +74,6 @@ public class BackupSiteOperationHandler extends AbstractRuntimeOnlyHandler {
             if (result != null) {
                 context.getResult().set(result);
             }
-            context.stepCompleted();
         } catch(Exception e) {
             throw InfinispanLogger.ROOT_LOGGER.failedToInvokeOperation(e.getCause(), this.operation.getDefinition().getName());
         }

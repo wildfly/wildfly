@@ -73,7 +73,6 @@ public class AddAliasHandler implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.stepCompleted();
     }
 
     /**
