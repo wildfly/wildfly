@@ -74,7 +74,7 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
 
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addClasses(Incrementor.class, CdiIncrementorBean.class, CdiServlet.class );
+        war.addClasses(Incrementor.class, CdiIncrementorBean.class, CdiServlet.class, IncrementorDecorator.class);
         war.setWebXML(CdiFailoverTestCase.class.getPackage(), "web.xml");
         log.info(war.toString(true));
         return war;
