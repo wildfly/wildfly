@@ -20,25 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
+package org.jboss.as.cmp.subsystem;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author John Bailey
  */
-public class MessagingSubsystemRootResourceDefinition extends SimpleResourceDefinition {
+class HiLoKeyGeneratorAdd extends AbstractKeyGeneratorAdd {
+    static HiLoKeyGeneratorAdd INSTANCE = new HiLoKeyGeneratorAdd();
 
-    public static final MessagingSubsystemRootResourceDefinition INSTANCE = new MessagingSubsystemRootResourceDefinition();
-
-    private MessagingSubsystemRootResourceDefinition() {
-        super(MessagingExtension.SUBSYSTEM_PATH,
-                MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
-                MessagingSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
-        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        for(AttributeDefinition attribute : HiLoKeyGeneratorResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 }

@@ -60,6 +60,7 @@ public class ConnectorServiceDefinition extends SimpleResourceDefinition {
                 new HornetQReloadRequiredHandlers.AddStepHandler(ATTRIBUTES),
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     static void addConnectorServiceConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {

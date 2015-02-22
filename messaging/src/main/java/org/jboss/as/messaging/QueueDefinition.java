@@ -113,6 +113,7 @@ public class QueueDefinition extends SimpleResourceDefinition {
         } else {
             accessConstraints = Collections.emptyList();
         }
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

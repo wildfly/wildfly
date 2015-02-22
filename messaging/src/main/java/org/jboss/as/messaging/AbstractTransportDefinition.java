@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
@@ -56,7 +56,7 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
 
     protected AbstractTransportDefinition(final boolean registerRuntimeOnly, final boolean isAcceptor, final String specificType, AttributeDefinition... attrs) {
         super(PathElement.pathElement(specificType),
-                new StandardResourceDescriptionResolver((isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
+                new DeprecatedResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME, (isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
                         MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
                     @Override
                     public String getResourceDescription(Locale locale, ResourceBundle bundle) {
@@ -68,6 +68,7 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.isAcceptor = isAcceptor;
         this.attrs = attrs;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

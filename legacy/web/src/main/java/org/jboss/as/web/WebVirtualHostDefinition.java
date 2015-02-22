@@ -72,6 +72,7 @@ public class WebVirtualHostDefinition extends ModelOnlyResourceDefinition {
                 WebExtension.getResourceDescriptionResolver(Constants.VIRTUAL_SERVER),
                 new AddressToNameAddAdaptor(ALIAS, ENABLE_WELCOME_ROOT, DEFAULT_WEB_MODULE),
                 ALIAS);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

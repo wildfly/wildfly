@@ -69,6 +69,7 @@ public class InVMTransportDefinition extends AbstractTransportDefinition {
 
     private InVMTransportDefinition(final boolean registerRuntimeOnly, boolean isAcceptor, String specificType) {
         super(registerRuntimeOnly, isAcceptor, specificType, ATTRIBUTES);
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

@@ -206,6 +206,7 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_BRIDGE),
                 JMSBridgeAdd.INSTANCE,
                 JMSBridgeRemove.INSTANCE);
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override

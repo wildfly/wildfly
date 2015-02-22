@@ -77,6 +77,7 @@ public class WebContainerDefinition extends ModelOnlyResourceDefinition {
     private WebContainerDefinition() {
         super(WebExtension.CONTAINER_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.CONTAINER), WELCOME_FILES, MIME_MAPPINGS);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     /**

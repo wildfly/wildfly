@@ -172,6 +172,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
                 PooledConnectionFactoryAdd.INSTANCE,
                 PooledConnectionFactoryRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
         this.deployed = deployed;
     }
 

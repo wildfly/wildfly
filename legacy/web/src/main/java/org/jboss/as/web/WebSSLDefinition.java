@@ -195,6 +195,7 @@ public class WebSSLDefinition extends ModelOnlyResourceDefinition {
                 SSL_ATTRIBUTES);
         SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-ssl", false, true, true);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

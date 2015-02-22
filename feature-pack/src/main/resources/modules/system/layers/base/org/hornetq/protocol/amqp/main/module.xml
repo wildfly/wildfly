@@ -23,6 +23,9 @@
   -->
 
 <module xmlns="urn:jboss:module:1.3" name="org.hornetq.protocol.amqp">
+    <properties>
+        <property name="jboss.api" value="deprecated"/>
+    </properties>
     <resources>
         <artifact name="${org.hornetq:hornetq-amqp-protocol}"/>
     </resources>
