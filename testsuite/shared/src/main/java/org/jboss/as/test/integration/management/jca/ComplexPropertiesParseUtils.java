@@ -37,7 +37,7 @@ public class ComplexPropertiesParseUtils {
      *
      * @param jndiName
      */
-    public static Properties commonDsProperties(String jndiName) {
+    public static Properties commonDsProperties(String jndiName, boolean userName) {
         Properties params = new Properties();
         //attributes
         params.put("use-java-context", "true");
@@ -57,9 +57,12 @@ public class ComplexPropertiesParseUtils {
         params.put("pool-use-strict-min", "true");
         params.put("flush-strategy", "EntirePool");
         //security
-        params.put("user-name", "sa");
-        params.put("password", "sa");
-        params.put("security-domain", "HsqlDbRealm");
+        if (userName) {
+            params.put("user-name", "sa");
+            params.put("password", "sa");
+        } else {
+            params.put("security-domain", "HsqlDbRealm");
+        }
         params.put("reauth-plugin-class-name", "someClass1");
         //validation
         params.put("valid-connection-checker-class-name", "someClass2");
@@ -91,8 +94,8 @@ public class ComplexPropertiesParseUtils {
      *
      * @param jndiName
      */
-    public static Properties xaDsProperties(String jndiName) {
-        Properties params = commonDsProperties(jndiName);
+    public static Properties xaDsProperties(String jndiName, boolean userName) {
+        Properties params = commonDsProperties(jndiName, userName);
         //attributes
 
         //common
@@ -108,10 +111,12 @@ public class ComplexPropertiesParseUtils {
         //recovery
         params.put("no-recovery", "false");
         params.put("recovery-plugin-class-name", "someClass5");
-        params.put("recovery-username", "sa");
-        params.put("recovery-password", "sa");
-        params.put("recovery-security-domain", "HsqlDbRealm");
-
+        if (userName) {
+            params.put("recovery-username", "sa");
+            params.put("recovery-password", "sa");
+        } else {
+            params.put("recovery-security-domain", "HsqlDbRealm");
+        }
 
         return params;
     }
@@ -121,8 +126,8 @@ public class ComplexPropertiesParseUtils {
      *
      * @param jndiName
      */
-    public static Properties nonXaDsProperties(String jndiName) {
-        Properties params = commonDsProperties(jndiName);        //attributes
+    public static Properties nonXaDsProperties(String jndiName, boolean userName) {
+        Properties params = commonDsProperties(jndiName, userName);        //attributes
         params.put("jta", "false");
         //common
         params.put("driver-class", "org.hsqldb.jdbcDriver");
