@@ -39,7 +39,6 @@
         <module name="javax.xml.bind.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.servlet.api" />
-        <module name="org.jboss.common-core" />
         <module name="org.jboss.logging" />
         <module name="org.jboss.as.web-common" />
         <module name="org.jboss.security.xacml" />

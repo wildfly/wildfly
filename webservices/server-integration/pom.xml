@@ -79,12 +79,6 @@
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-web-common</artifactId>
     </dependency>
-    <!-- TODO remove when undertow is merged in-->
-    <dependency>
-       <groupId>org.wildfly</groupId>
-       <artifactId>wildfly-web</artifactId>
-       <scope>test</scope>
-    </dependency>
 
     <dependency>
        <groupId>org.jboss.ws</groupId>

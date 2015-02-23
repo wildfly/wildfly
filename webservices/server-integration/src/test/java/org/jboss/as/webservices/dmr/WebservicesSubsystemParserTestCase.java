@@ -30,11 +30,7 @@ import java.util.List;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -42,7 +38,6 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.web.WebDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -82,15 +77,6 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
             @Override
             protected RunningMode getRunningMode() {
                 return RunningMode.ADMIN_ONLY;
-            }
-
-            @Override
-            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration) {
-                super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
-                rootRegistration.registerSubModel(WebDefinition.INSTANCE);
-                Resource webSubsystem = Resource.Factory.create();
-                webSubsystem.getModel().get("default-virtual-server").set("default-host");
-                rootResource.registerChild(PathElement.pathElement("subsystem", "web"), webSubsystem);
             }
         };
     }
