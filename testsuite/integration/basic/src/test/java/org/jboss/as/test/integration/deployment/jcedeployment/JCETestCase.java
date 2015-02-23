@@ -55,26 +55,25 @@ import static org.junit.Assert.assertEquals;
 public class JCETestCase {
     private static final Logger log = Logger.getLogger(JCETestCase.class);
 
-    private static final String JAVA_VERSION        = "1.7";
-    private static final String JAVA_VENDOR         = "Oracle Corporation";
-    private static final String OPENJDK_VENDOR_TAG  = "OpenJDK";
-
     @Deployment
     public static Archive<?> deployment() throws Exception {
         final JavaArchive jce = ShrinkWrap.create(JavaArchive.class, "jcetest.jar")
                 .addPackage(DummyProvider.class.getPackage());
         final File jceJar = new File("target/jcetest.jar");
         jce.as(ZipExporter.class).exportTo(jceJar, true);
-
-        // see genkey-jcetest-keystore in pom.xml for the keystore creation
-        final JarSignerUtil signer = new JarSignerUtil(new File("../jcetest.keystore"), "password", "password", /* alias */"test");
         final File signedJceJar = new File("target/jcetestsigned.jar");
-        signer.sign(jceJar, signedJceJar);
-        signer.verify(signedJceJar);
-
-        final JavaArchive signedJce = ShrinkWrap.create(ZipImporter.class, "jcetestsigned.jar")
+        JavaArchive signedJce;
+        if (isOracleJVM())  {
+            // see genkey-jcetest-keystore in pom.xml for the keystore creation
+            final JarSignerUtil signer = new JarSignerUtil(new File("../jcetest.keystore"), "password", "password", /* alias */ "test");
+            signer.sign(jceJar, signedJceJar);
+            signer.verify(signedJceJar);
+            signedJce = ShrinkWrap.create(ZipImporter.class, "jcetestsigned.jar")
                 .importFrom(signedJceJar).as(JavaArchive.class);
-
+        } else {
+            log.info("skipping the test since it can run on Oracle JDK only");
+            signedJce = jce;
+        }
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war")
                 .addClasses(ControllerServlet.class);
 
@@ -90,24 +89,19 @@ public class JCETestCase {
 
     @Test
     public void testJCE() throws Exception {
-        final String javaVMVendor = System.getProperty("java.vm.vendor");
-        final String javaVMName = System.getProperty("java.vm.name");
-        final String javaSpecificationVersion = System.getProperty("java.specification.version");
-
-        if (JAVA_VENDOR.equalsIgnoreCase(javaVMVendor)
-                && JAVA_VERSION.equals(javaSpecificationVersion)
-                && javaVMName.indexOf(OPENJDK_VENDOR_TAG) == -1) {
-
+        if(isOracleJVM()) {
             String result = performCall(url, "controller");
             assertEquals("ok", result);
-
         } else {
-            log.info("skipping the test since it can run on Oracle JDK 7 only");
+            log.info("skipping the test since it can run on Oracle JDK only");
         }
     }
 
     private String performCall(final URL url, final String urlPattern) throws Exception {
         return HttpRequest.get(url.toExternalForm() + urlPattern, 1000, SECONDS);
     }
-
+    
+    private static boolean isOracleJVM() {
+        return "Oracle Corporation".equalsIgnoreCase(System.getProperty("java.vm.vendor"));
+    }
 }
