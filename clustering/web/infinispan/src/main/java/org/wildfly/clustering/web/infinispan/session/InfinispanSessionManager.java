@@ -120,7 +120,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         final List<Scheduler> schedulers = new ArrayList<>(2);
         schedulers.add(new SessionExpirationScheduler(this.batcher, new ExpiredSessionRemover<>(this.factory)));
         if (this.maxActiveSessions >= 0) {
-            schedulers.add(new SessionEvictionScheduler(this.cache.getName() + ".eviction", this.batcher, this.factory, this.dispatcherFactory, this.maxActiveSessions));
+            schedulers.add(new SessionEvictionScheduler(this.cache.getName() + ".eviction", this.factory, this.dispatcherFactory, this.maxActiveSessions));
         }
         this.scheduler = new Scheduler() {
             @Override
