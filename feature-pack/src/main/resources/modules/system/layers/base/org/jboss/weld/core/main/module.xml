@@ -51,5 +51,10 @@
         <module name="org.jboss.weld.spi" />
         <module name="org.jboss.logging" />
         <module name="sun.jdk" optional="true" />
+        <system export="false">
+            <paths>
+                <path name="com/sun/org/apache/bcel/internal/classfile"/>
+            </paths>
+        </system>
     </dependencies>
 </module>
