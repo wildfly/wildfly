@@ -47,6 +47,28 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         }
     };
 
+    private static final TransactionBatch NON_TX_BATCH = new TransactionBatch() {
+        @Override
+        public boolean isActive() {
+            return true;
+        }
+
+        @Override
+        public void close() {
+            // No-op
+        }
+
+        @Override
+        public void discard() {
+            // No-op
+        }
+
+        @Override
+        public Transaction getTransaction() {
+            return null;
+        }
+    };
+
     private final TransactionManager tm;
 
     public InfinispanBatcher(Cache<?, ?> cache) {
@@ -60,6 +82,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
     @SuppressWarnings("resource")
     @Override
     public TransactionBatch createBatch() {
+        if (this.tm == null) return NON_TX_BATCH;
         try {
             Transaction tx = this.tm.getTransaction();
             // Consolidate nested batches into a single operational batch
@@ -74,7 +97,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         if (batch == null) return PASSIVE_BATCH_CONTEXT;
         try {
             Transaction tx = batch.getTransaction();
-            return new InfinispanBatchContext(this.tm, tx);
+            return (tx != null) ? new InfinispanBatchContext(this.tm, tx) : PASSIVE_BATCH_CONTEXT;
         } catch (SystemException | InvalidTransactionException e) {
             throw new CacheException(e);
         }
@@ -82,6 +105,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
 
     @Override
     public TransactionBatch suspendBatch() {
+        if (this.tm == null) return null;
         try {
             Transaction tx = this.tm.suspend();
             return (tx != null) ? new ActiveTransactionBatch(this.tm, tx) : null;

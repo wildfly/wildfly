@@ -29,4 +29,10 @@ import java.io.Serializable;
  */
 public class NoSuchService implements Serializable {
     private static final long serialVersionUID = 557858072730039623L;
+
+    public static final NoSuchService INSTANCE = new NoSuchService();
+
+    private NoSuchService() {
+        // Hide
+    }
 }

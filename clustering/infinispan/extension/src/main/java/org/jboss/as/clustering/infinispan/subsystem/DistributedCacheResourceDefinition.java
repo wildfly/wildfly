@@ -232,7 +232,6 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
                         }, OperationContext.Stage.RUNTIME);
                     }
                 }
-                context.stepCompleted();
             }
 
             protected boolean requiresRuntime(OperationContext context) {

@@ -143,7 +143,6 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
             registration.registerSubModel(this.createProtocolResourceDefinition(RelayConfiguration.PROTOCOL_NAME, RELAY2.class)).setRuntimeOnly(true);
             resource.registerChild(ProtocolResourceDefinition.pathElement(RelayConfiguration.PROTOCOL_NAME), PlaceholderResource.INSTANCE);
         }
-        context.stepCompleted();
     }
 
     private ResourceDefinition createProtocolResourceDefinition(String protocolName, Class<? extends Protocol> protocolClass) {

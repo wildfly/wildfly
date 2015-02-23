@@ -22,8 +22,14 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.nio.ByteBuffer;
+
+import org.infinispan.remoting.responses.CacheNotFoundResponse;
+import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import org.infinispan.remoting.transport.jgroups.MarshallerAdapter;
 import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Custom {@link JGroupsTransport} that uses a provided channel.
@@ -31,8 +37,25 @@ import org.jgroups.Channel;
  */
 public class ChannelTransport extends JGroupsTransport {
 
-    public ChannelTransport(Channel channel) {
+    final ChannelFactory factory;
+
+    public ChannelTransport(Channel channel, ChannelFactory factory) {
         super(channel);
+        this.factory = factory;
+    }
+
+    @Override
+    protected void initRPCDispatcher() {
+        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.asyncExecutor, this.gcr, this.globalHandler);
+        MarshallerAdapter adapter = new MarshallerAdapter(this.marshaller) {
+            @Override
+            public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
+                return ChannelTransport.this.factory.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length)) ? CacheNotFoundResponse.INSTANCE : super.objectFromBuffer(buffer, offset, length);
+            }
+        };
+        this.dispatcher.setRequestMarshaller(adapter);
+        this.dispatcher.setResponseMarshaller(adapter);
+        this.dispatcher.start();
     }
 
     @Override

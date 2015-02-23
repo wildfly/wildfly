@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -46,10 +47,16 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jgroups.Channel;
+import org.jgroups.Event;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
+import org.jgroups.Message;
 import org.jgroups.annotations.Property;
+import org.jgroups.blocks.RequestCorrelator;
+import org.jgroups.blocks.RequestCorrelator.Header;
+import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.conf.ProtocolStackConfigurator;
+import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
 import org.jgroups.protocols.TP;
 import org.jgroups.protocols.relay.RELAY2;
@@ -72,6 +79,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurator {
 
+    static final ByteBuffer UNKNOWN_FORK_RESPONSE = ByteBuffer.allocate(0);
+
     private final ProtocolStackConfiguration configuration;
 
     public JChannelFactory(ProtocolStackConfiguration configuration) {
@@ -93,7 +102,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                 return new JChannel(JChannelFactory.this);
             }
         };
-        JChannel channel = WildFlySecurityManager.doChecked(action);
+        final JChannel channel = WildFlySecurityManager.doChecked(action);
         ProtocolStack stack = channel.getProtocolStack();
 
         // We need to synchronize on shared transport,
@@ -147,8 +156,38 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             relay.init();
         }
 
+        UnknownForkHandler unknownForkHandler = new UnknownForkHandler() {
+            private final short id = ClassConfigurator.getProtocolId(RequestCorrelator.class);
+
+            @Override
+            public Object handleUnknownForkStack(Message message, String forkStackId) {
+                return this.handle(message);
+            }
+
+            @Override
+            public Object handleUnknownForkChannel(Message message, String forkChannelId) {
+                return this.handle(message);
+            }
+
+            private Object handle(Message message) {
+                Header header = (Header) message.getHeader(this.id);
+                // If this is a request expecting a response, don't leave the requester hanging - send an identifiable response on which it can filter
+                if ((header != null) && (header.type == Header.REQ) && header.rsp_expected) {
+                    Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.SCOPED);
+
+                    response.putHeader(FORK.ID, message.getHeader(FORK.ID));
+                    response.putHeader(this.id, new Header(Header.RSP, header.id, false, this.id));
+                    response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
+
+                    channel.down(new Event(Event.MSG, response));
+                }
+                return null;
+            }
+        };
+
         // Add implicit FORK to the top of the stack
         FORK fork = new FORK();
+        fork.setUnknownForkHandler(unknownForkHandler);
         stack.addProtocol(fork);
         fork.init();
 
@@ -160,6 +199,11 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         }
 
         return channel;
+    }
+
+    @Override
+    public boolean isUnknownForkResponse(ByteBuffer buffer) {
+        return UNKNOWN_FORK_RESPONSE.equals(buffer);
     }
 
     private void init(TP transport) {
