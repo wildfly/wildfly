@@ -33,18 +33,12 @@ import static org.jboss.as.test.integration.management.jca.ComplexPropertiesPars
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.xaDsProperties;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 import java.util.List;
 import java.util.Properties;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -551,8 +545,16 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
      * @throws Exception
      */
     @Test
-    public void testAddComplexDs() throws Exception {
+    public void testAddComplexDsUsername() throws Exception {
+        testAddComplexDs(true);
+    }
 
+    @Test
+    public void testAddComplexDsSecurityDomain() throws Exception {
+        testAddComplexDs(false);
+    }
+
+    private void testAddComplexDs(boolean userName) throws Exception {
         final String complexDs = "complexDs";
         final String complexDsJndi = "java:jboss/datasources/" + complexDs;
         final ModelNode address = new ModelNode();
@@ -560,7 +562,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         address.add("data-source", complexDs);
         address.protect();
 
-        Properties params = nonXaDsProperties(complexDsJndi);
+        Properties params = nonXaDsProperties(complexDsJndi, userName);
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
@@ -607,8 +609,16 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
      * @throws Exception
      */
     @Test
-    public void testAddComplexXaDs() throws Exception {
+    public void testAddComplexXaDsUsername() throws Exception {
+        testAddComplexXaDs(true);
+    }
 
+    @Test
+    public void testAddComplexXaDsComplexDs() throws Exception {
+        testAddComplexXaDs(false);
+    }
+
+    private void testAddComplexXaDs(boolean userName) throws Exception {
         final String complexXaDs = "complexXaDs";
         final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
 
@@ -622,7 +632,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         operation.get(OP_ADDR).set(address);
         operation.get("enabled").set(false);
 
-        Properties params = xaDsProperties(complexXaDsJndi);
+        Properties params = xaDsProperties(complexXaDsJndi, userName);
         setOperationParams(operation, params);
         addExtensionProperties(operation);
         operation.get("recovery-plugin-properties", "name").set("Property5");
