@@ -157,12 +157,12 @@
             </security-domains>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:transactions:2.0">
-            <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment>
                 <process-id>
                     <uuid/>
                 </process-id>
             </core-environment>
+            <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <coordinator-environment default-timeout="300"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.2">
