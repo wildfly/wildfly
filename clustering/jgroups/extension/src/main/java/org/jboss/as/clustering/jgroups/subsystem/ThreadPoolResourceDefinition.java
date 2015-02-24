@@ -24,7 +24,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -39,11 +38,11 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -77,10 +76,9 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
     private final SimpleAttributeDefinition minThreads;
     private final SimpleAttributeDefinition maxThreads;
     private final SimpleAttributeDefinition queueLength;
-    private final SimpleAttributeDefinition keepAliveTime;
-    private final SimpleAttributeDefinition keepAliveTimeUnit;
+    private final SimpleAttributeDefinition keepaliveTime;
 
-    private ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime) {
+    private ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
         this.name = name;
         this.descriptionResolver = JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT, ModelKeys.THREAD_POOL);
         this.minThreads = new SimpleAttributeDefinitionBuilder(Attribute.MIN_THREADS.getLocalName(), ModelType.INT, true)
@@ -101,15 +99,10 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
                 .setAllowExpression(true)
                 .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                 .build();
-        this.keepAliveTime = new SimpleAttributeDefinitionBuilder(Attribute.KEEP_ALIVE_TIME.getLocalName(), ModelType.LONG, true)
-                .setDefaultValue(new ModelNode(defaultKeepAliveTime))
+        this.keepaliveTime = new SimpleAttributeDefinitionBuilder(Attribute.KEEPALIVE_TIME.getLocalName(), ModelType.LONG, true)
+                .setDefaultValue(new ModelNode(defaultKeepaliveTime))
                 .setValidator(new LongRangeValidator(0, Long.MAX_VALUE, false, true))
-                .setAllowExpression(true)
-                .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                .build();
-        this.keepAliveTimeUnit = new SimpleAttributeDefinitionBuilder(Attribute.KEEP_ALIVE_TIME_UNIT.getLocalName(), ModelType.STRING, true)
-                .setDefaultValue(new ModelNode(TimeUnit.SECONDS.name()))
-                .setValidator(new EnumValidator<>(TimeUnit.class, false, true))
+                .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                 .setAllowExpression(true)
                 .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                 .build();
@@ -156,7 +149,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
     }
 
     AttributeDefinition[] getAttributes() {
-        return new AttributeDefinition[] { this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime, this.keepAliveTimeUnit };
+        return new AttributeDefinition[] { this.minThreads, this.maxThreads, this.queueLength, this.keepaliveTime };
     }
 
     SimpleAttributeDefinition getMinThreads() {
@@ -171,12 +164,8 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
         return this.queueLength;
     }
 
-    SimpleAttributeDefinition getKeepAliveTime() {
-        return this.keepAliveTime;
-    }
-
-    SimpleAttributeDefinition getKeepAliveTimeUnit() {
-        return this.keepAliveTimeUnit;
+    SimpleAttributeDefinition getKeepaliveTime() {
+        return this.keepaliveTime;
     }
 
     void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {

@@ -21,8 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -170,11 +168,9 @@ public class StackAddHandler extends AbstractAddStepHandler {
                     .addProperty(propertyPrefix + ".queue_max_size", String.valueOf(queueSize));
         }
 
-        // keep_alive_*
-        long keepAliveTime = pool.getKeepAliveTime().resolveModelAttribute(context, threadModel).asLong();
-        TimeUnit unit = Enum.valueOf(TimeUnit.class, pool.getKeepAliveTimeUnit().resolveModelAttribute(context, threadModel).asString());
-        long keepAliveTimeInMillis = unit.toMillis(keepAliveTime);
-        builder.addProperty(propertyPrefix + ".keep_alive_time", String.valueOf(keepAliveTimeInMillis));
+        // keepalive_time in milliseconds
+        long keepaliveTime = pool.getKeepaliveTime().resolveModelAttribute(context, threadModel).asLong();
+        builder.addProperty(propertyPrefix + ".keep_alive_time", String.valueOf(keepaliveTime));
 
         return builder;
     }

@@ -26,23 +26,19 @@
                 <default-thread-pool min-threads="11"
                                      queue-length="12"
                                      max-threads="13"
-                                     keep-alive-time="14"
-                                     keep-alive-time-unit="SECONDS"/>
-                <oob-thread-pool min-threads="31"
-                                 queue-length="32"
-                                 max-threads="33"
-                                 keep-alive-time="34"
-                                 keep-alive-time-unit="HOURS"/>
+                                     keepalive-time="14"/>
                 <internal-thread-pool min-threads="21"
                                       queue-length="22"
                                       max-threads="23"
-                                      keep-alive-time="24"
-                                      keep-alive-time-unit="DAYS"/>
+                                      keepalive-time="24"/>
+                <oob-thread-pool min-threads="31"
+                                 queue-length="32"
+                                 max-threads="33"
+                                 keepalive-time="34"/>
                 <timer-thread-pool min-threads="41"
                                    queue-length="42"
                                    max-threads="43"
-                                   keep-alive-time="44"
-                                   keep-alive-time-unit="NANOSECONDS"/>
+                                   keepalive-time="44"/>
             </transport>
             <protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping">
                 <property name="name">${test.expr:value}</property>

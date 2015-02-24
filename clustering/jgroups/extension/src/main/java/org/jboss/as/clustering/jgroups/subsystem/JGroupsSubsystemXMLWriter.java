@@ -115,8 +115,8 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writeProtocolProperties(writer, transport);
         if (transport.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
             writeThreadPoolElements(Element.DEFAULT_THREAD_POOL, ThreadPoolResourceDefinition.DEFAULT, writer, transport);
-            writeThreadPoolElements(Element.OOB_THREAD_POOL, ThreadPoolResourceDefinition.OOB, writer, transport);
             writeThreadPoolElements(Element.INTERNAL_THREAD_POOL, ThreadPoolResourceDefinition.INTERNAL, writer, transport);
+            writeThreadPoolElements(Element.OOB_THREAD_POOL, ThreadPoolResourceDefinition.OOB, writer, transport);
             writeThreadPoolElements(Element.TIMER_THREAD_POOL, ThreadPoolResourceDefinition.TIMER, writer, transport);
         }
         writer.writeEndElement();
@@ -159,8 +159,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
             pool.getMinThreads().marshallAsAttribute(threadPool, writer);
             pool.getMaxThreads().marshallAsAttribute(threadPool, writer);
             pool.getQueueLength().marshallAsAttribute(threadPool, writer);
-            pool.getKeepAliveTime().marshallAsAttribute(threadPool, writer);
-            pool.getKeepAliveTimeUnit().marshallAsAttribute(threadPool, writer);
+            pool.getKeepaliveTime().marshallAsAttribute(threadPool, writer);
             writer.writeEndElement();
         }
     }

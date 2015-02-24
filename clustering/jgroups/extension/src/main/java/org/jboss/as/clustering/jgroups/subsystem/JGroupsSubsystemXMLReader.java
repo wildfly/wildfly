@@ -421,11 +421,8 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 case QUEUE_LENGTH:
                     pool.getQueueLength().parseAndSetParameter(value, operation, reader);
                     break;
-                case KEEP_ALIVE_TIME:
-                    pool.getKeepAliveTime().parseAndSetParameter(value, operation, reader);
-                    break;
-                case KEEP_ALIVE_TIME_UNIT:
-                    pool.getKeepAliveTimeUnit().parseAndSetParameter(value, operation, reader);
+                case KEEPALIVE_TIME:
+                    pool.getKeepaliveTime().parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw ParseUtils.unexpectedAttribute(reader, i);

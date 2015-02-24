@@ -179,22 +179,22 @@
         <xs:complexContent>
             <xs:extension base="tns:protocol">
                 <xs:sequence>
-                    <xs:element name="default-thread-pool" type="tns:thread-poolType" minOccurs="0" maxOccurs="1">
+                    <xs:element name="default-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                         <xs:annotation>
                             <xs:documentation>Defines the thread pool used for default messages received by this transport.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
-                    <xs:element name="internal-thread-pool" type="tns:thread-poolType" minOccurs="0" maxOccurs="1">
+                    <xs:element name="internal-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                         <xs:annotation>
                             <xs:documentation>Defines the thread pool used for internal messages used by this transport.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
-                    <xs:element name="oob-thread-pool" type="tns:thread-poolType" minOccurs="0" maxOccurs="1">
+                    <xs:element name="oob-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                         <xs:annotation>
                             <xs:documentation>Defines the thread pool used for OOB messages received by this transport.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
-                    <xs:element name="timer-thread-pool" type="tns:thread-poolType" minOccurs="0" maxOccurs="1">
+                    <xs:element name="timer-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                         <xs:annotation>
                             <xs:documentation>Defines the timer thread pool used by this transport.</xs:documentation>
                         </xs:annotation>
@@ -249,7 +249,7 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="thread-poolType">
+    <xs:complexType name="thread-pool">
         <xs:attribute name="min-threads" type="xs:int" use="optional">
             <xs:annotation>
                 <xs:documentation>Minimum thread pool size for the thread pool.</xs:documentation>
@@ -265,14 +265,9 @@
                 <xs:documentation>Maximum queue length for the thread pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="keep-alive-time" type="xs:int" use="optional">
+        <xs:attribute name="keepalive-time" type="xs:long" use="optional">
             <xs:annotation>
-                <xs:documentation>Timeout in given time unit to remove idle thread from the pool.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="keep-alive-time-unit" type="tns:time-unitType" use="optional" default="SECONDS">
-            <xs:annotation>
-                <xs:documentation>Time unit for the keepalive time.</xs:documentation>
+                <xs:documentation>Timeout in milliseconds to remove idle thread from the pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -316,19 +311,5 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-
-    <xs:simpleType name="time-unitType">
-        <xs:annotation>
-            <xs:documentation>The type of a unit of time.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="SECONDS"/>
-            <xs:enumeration value="MINUTES"/>
-            <xs:enumeration value="MILLISECONDS"/>
-            <xs:enumeration value="NANOSECONDS"/>
-            <xs:enumeration value="HOURS"/>
-            <xs:enumeration value="DAYS"/>
-        </xs:restriction>
-    </xs:simpleType>
 
 </xs:schema>
