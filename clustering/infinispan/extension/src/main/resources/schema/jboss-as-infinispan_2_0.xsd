@@ -406,18 +406,16 @@
                             <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
-                    <xs:choice minOccurs="0">
-                        <xs:element name="backups" type="tns:backups" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation>A list of backup sites for this cache (for use with cross-site replication).</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                        <xs:element name="backup-for" type="tns:backup-for" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation>Configures this cache as a backup for a cache on a remote site (for use with cross-site replication).</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                    </xs:choice>
+                    <xs:element name="backups" type="tns:backups" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>A list of backup sites for this cache (for use with cross-site replication).</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="backup-for" type="tns:backup-for" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Configures this cache as a backup for a cache on a remote site (for use with cross-site replication).</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -651,17 +649,17 @@
         <xs:complexContent>
             <xs:extension base="tns:jdbc-store">
                 <xs:sequence>
-                    <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Defines the table used to store cache buckets.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
                     <xs:element name="string-keyed-table" type="tns:string-keyed-table" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>
                                 Defines the table used to store cache entries.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Defines the table used to store cache buckets.
                             </xs:documentation>
                         </xs:annotation>
                     </xs:element>

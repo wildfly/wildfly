@@ -622,17 +622,17 @@
         <xs:complexContent>
             <xs:extension base="tns:store">
                 <xs:sequence>
-                    <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Defines the table used to store cache buckets.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
                     <xs:element name="string-keyed-table" type="tns:string-keyed-table" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>
                                 Defines the table used to store cache entries.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Defines the table used to store cache buckets.
                             </xs:documentation>
                         </xs:annotation>
                     </xs:element>

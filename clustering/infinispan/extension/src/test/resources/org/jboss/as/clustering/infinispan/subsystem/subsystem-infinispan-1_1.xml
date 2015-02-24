@@ -1,3 +1,24 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2015, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
 <subsystem xmlns="urn:jboss:domain:infinispan:1.1" default-cache-container="minimal">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
@@ -6,20 +27,20 @@
         <transport executor="transport-executor" lock-timeout="120000" stack="tcp"/>
         <local-cache name="local" batching="true" indexing="LOCAL" start="EAGER">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
-            <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
+            <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LIRS"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="false"/>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="LAZY">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
-            <transaction mode="NON_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
+            <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LRU"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <remote-store cache="default" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="true">
                 <property name="valueSizeEstimate">100</property>
-                <remote-server outbound-socket-binding="hotrod-server-1" />
-                <remote-server outbound-socket-binding="hotrod-server-2" />
+                <remote-server outbound-socket-binding="hotrod-server-1"/>
+                <remote-server outbound-socket-binding="hotrod-server-2"/>
             </remote-store>
         </invalidation-cache>
         <replicated-cache name="repl" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="EAGER">
@@ -27,17 +48,16 @@
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="FIFO"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
             <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
                 <property name="location">${java.io.tmpdir}</property>
             </store>
+            <state-transfer enabled="true" timeout="60000" chunk-size="10000"/>
         </replicated-cache>
         <distributed-cache name="dist" mode="SYNC" batching="true" indexing="ALL" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
-            <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
+            <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <state-transfer enabled="true" timeout="60000" chunk-size="10000" /> 
             <jdbc-store datasource="java:jboss/jdbc/store" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false">
                 <bucket-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
@@ -50,6 +70,7 @@
                     <timestamp-column name="version" type="BIGINT"/>
                 </entry-table>
             </jdbc-store>
+            <state-transfer enabled="true" timeout="60000" chunk-size="10000"/>
         </distributed-cache>
     </cache-container>
 </subsystem>
