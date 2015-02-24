@@ -743,10 +743,16 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 if (!found) {
                     activeTimer.setTimerState(TimerState.CANCELED);
                 } else {
+                    // ensure state switch to active if was TIMEOUT in the DB
+                    // if the persistence is shared it must be ensured to not update
+                    // timers of other nodes in the cluster
+                    activeTimer.setTimerState(TimerState.ACTIVE);
+                }
+                this.persistTimer(activeTimer, false);
+                if (found) {
                     startTimer(activeTimer);
                     ROOT_LOGGER.debugv("Started timer: {0}", activeTimer);
                 }
-                this.persistTimer(activeTimer, false);
             } else if (!ineligibleTimerStates.contains(activeTimer.getState())) {
                 startTimer(activeTimer);
             }
@@ -768,6 +774,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // Else, the timer will be scheduled on tx synchronization callback
         if (!transactionActive()) {
             this.timers.put(timer.getId(), timer);
+            // set active if the timer is started if it was read
+            // from persistence as current running to ensure correct schedule here
             timer.setTimerState(TimerState.ACTIVE);
             // create and schedule a timer task
             this.registerTimerResource(timer.getId());
