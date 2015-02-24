@@ -951,13 +951,12 @@ public class DeploymentManagementTestCase {
         final File db = new File(da, partB);
         final File content = new File(db, "content");
 
-        System.out.println("xx " + content.getAbsolutePath());
-
         Assert.assertFalse(content.getAbsolutePath(), content.exists());
         Assert.assertFalse(db.getAbsolutePath(), db.exists());
-        String[] children = da.list();
-        Assert.assertFalse(da.getAbsolutePath(), da.exists() && children != null && children.length > 0);
-
+        if (da.exists()) {
+            String[] children = da.list();
+            Assert.assertTrue(da.getAbsolutePath(), children != null && children.length > 0);
+        }
     }
 
 }
