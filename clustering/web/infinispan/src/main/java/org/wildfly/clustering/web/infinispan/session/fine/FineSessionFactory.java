@@ -132,7 +132,7 @@ public class FineSessionFactory<L> implements SessionFactory<MutableCacheEntry<F
 
     @Override
     public void evict(final String id) {
-        for (SessionAttributeCacheKey key: this.attributeCache.getAdvancedCache().getGroup(id).keySet()) {
+        for (SessionAttributeCacheKey key: this.attributeCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).getGroup(id).keySet()) {
             try {
                 this.attributeCache.evict(key);
             } catch (Throwable e) {

@@ -22,7 +22,6 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 
 /**
@@ -40,19 +39,8 @@ public class SessionEvictionCommand implements Command<Void, SessionEvictionCont
 
     @Override
     public Void execute(SessionEvictionContext context) throws Exception {
-        TransactionBatch batch = context.getBatcher().createBatch();
-        boolean success = false;
-        try {
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);
-            context.getEvictor().evict(this.id);
-            success = true;
-        } finally {
-            if (success) {
-                batch.close();
-            } else {
-                batch.discard();
-            }
-        }
+        InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);
+        context.getEvictor().evict(this.id);
         return null;
     }
 }
