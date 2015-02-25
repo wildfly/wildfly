@@ -109,9 +109,9 @@ public class CodecSessionConfigTestCase {
         String sessionId = "session";
 
         when(this.codec.encode(sessionId)).thenReturn(encodedSessionId);
-        when(this.config.rewriteUrl(url, encodedSessionId)).thenReturn(encodedUrl);
+        when(this.config.rewriteUrl(null, url, encodedSessionId)).thenReturn(encodedUrl);
 
-        String result = this.subject.rewriteUrl(url, sessionId);
+        String result = this.subject.rewriteUrl(null, url, sessionId);
 
         assertSame(encodedUrl, result);
     }

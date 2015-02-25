@@ -219,7 +219,7 @@ public class DistributableSingleSignOn implements SingleSignOn {
         }
 
         @Override
-        public String rewriteUrl(String originalUrl, String sessionId) {
+        public String rewriteUrl(HttpServerExchange exchange, String originalUrl, String sessionId) {
             throw new UnsupportedOperationException();
         }
     }
