@@ -25,6 +25,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -57,6 +58,7 @@ public class TransportResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.TYPE.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 3, 0))
                     .build();
 
     static SimpleAttributeDefinition SHARED =
@@ -65,6 +67,7 @@ public class TransportResource extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode().set(true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 3, 0))
                     .build();
 
     static SimpleAttributeDefinition SOCKET_BINDING =
@@ -134,9 +137,10 @@ public class TransportResource extends SimpleResourceDefinition {
 
     static SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
 
-    static SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY).
-            setAllowNull(true).
-            build();
+    static SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY)
+            .setAllowNull(true)
+            .setDeprecated(ModelVersion.create(1, 3, 0))
+            .build();
 
     // the list of attributes used by the transport resource
     static AttributeDefinition[] TRANSPORT_ATTRIBUTES = new AttributeDefinition[] {TYPE, SHARED, SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING, DEFAULT_EXECUTOR,

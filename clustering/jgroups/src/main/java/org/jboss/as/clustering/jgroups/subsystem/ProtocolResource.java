@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
@@ -56,6 +57,7 @@ public class ProtocolResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.TYPE.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 3, 0))
                     .build();
 
     static SimpleAttributeDefinition SOCKET_BINDING =
@@ -67,9 +69,10 @@ public class ProtocolResource extends SimpleResourceDefinition {
                     .build();
 
     static SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
-    static SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY).
-            setAllowNull(true).
-            build();
+    static SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY)
+            .setAllowNull(true)
+            .setDeprecated(ModelVersion.create(1, 3, 0))
+            .build();
 
     static AttributeDefinition[] PROTOCOL_ATTRIBUTES = new AttributeDefinition[] {TYPE, SOCKET_BINDING};
     static AttributeDefinition[] PROTOCOL_PARAMETERS = new AttributeDefinition[] {TYPE, SOCKET_BINDING, PROPERTIES};
@@ -81,18 +84,20 @@ public class ProtocolResource extends SimpleResourceDefinition {
                 setSuffix("protocol").
                 build();
 
-    static final ObjectListAttributeDefinition PROTOCOLS = ObjectListAttributeDefinition.
-            Builder.of(ModelKeys.PROTOCOLS, PROTOCOL).
-            setAllowNull(true).
-            build();
+    static final ObjectListAttributeDefinition PROTOCOLS = ObjectListAttributeDefinition.Builder.of(ModelKeys.PROTOCOLS, PROTOCOL)
+            .setAllowNull(true)
+            .setDeprecated(ModelVersion.create(1, 3, 0))
+            .build();
 
     // operations
     static final OperationDefinition PROTOCOL_ADD = new SimpleOperationDefinitionBuilder(ModelKeys.ADD_PROTOCOL, JGroupsExtension.getResourceDescriptionResolver("stack"))
             .setParameters(PROTOCOL_PARAMETERS)
+            .setDeprecated(ModelVersion.create(1, 3, 0))
             .build();
 
     static final OperationDefinition PROTOCOL_REMOVE = new SimpleOperationDefinitionBuilder(ModelKeys.REMOVE_PROTOCOL, JGroupsExtension.getResourceDescriptionResolver("stack"))
             .setParameters(TYPE)
+            .setDeprecated(ModelVersion.create(1, 3, 0))
             .build();
 
     static final OperationStepHandler PROTOCOL_ADD_HANDLER = new ProtocolLayerAdd(PROTOCOL_PARAMETERS);

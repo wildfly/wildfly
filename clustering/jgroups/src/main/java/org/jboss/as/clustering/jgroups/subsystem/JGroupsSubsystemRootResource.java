@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -43,6 +44,7 @@ public class JGroupsSubsystemRootResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.DEFAULT_STACK.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 3, 0))
                     .build();
 
     // registration
