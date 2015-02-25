@@ -1215,17 +1215,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jbossxb</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
         </dependency>

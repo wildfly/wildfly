@@ -40,7 +40,6 @@
         <module name="org.jboss.as.network"/>
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.ejb"/>

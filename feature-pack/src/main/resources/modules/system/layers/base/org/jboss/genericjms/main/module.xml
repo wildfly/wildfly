@@ -26,7 +26,6 @@
         <artifact name="${org.jboss.genericjms:generic-jms-ra-jar}"/>
     </resources>
     <dependencies>
-        <module name="org.jboss.common-core" slot="main"/>
         <module name="javax.api" slot="main"/>
         <module name="javax.jms.api" slot="main"/>
         <module name="javax.resource.api" slot="main"/>
