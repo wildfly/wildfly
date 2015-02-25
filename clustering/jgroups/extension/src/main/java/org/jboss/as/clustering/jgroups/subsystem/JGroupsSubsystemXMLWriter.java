@@ -113,6 +113,12 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         TransportResourceDefinition.RACK.marshallAsAttribute(transport, writer);
         TransportResourceDefinition.SITE.marshallAsAttribute(transport, writer);
         writeProtocolProperties(writer, transport);
+        if (transport.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
+            writeThreadPoolElements(Element.DEFAULT_THREAD_POOL, ThreadPoolResourceDefinition.DEFAULT, writer, transport);
+            writeThreadPoolElements(Element.INTERNAL_THREAD_POOL, ThreadPoolResourceDefinition.INTERNAL, writer, transport);
+            writeThreadPoolElements(Element.OOB_THREAD_POOL, ThreadPoolResourceDefinition.OOB, writer, transport);
+            writeThreadPoolElements(Element.TIMER_THREAD_POOL, ThreadPoolResourceDefinition.TIMER, writer, transport);
+        }
         writer.writeEndElement();
     }
 
@@ -143,6 +149,18 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                 writer.writeCharacters(complexValue.getValue().asString());
                 writer.writeEndElement();
             }
+        }
+    }
+
+    private static void writeThreadPoolElements(Element element, ThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode transport) throws XMLStreamException {
+        if (transport.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
+            ModelNode threadPool = transport.get(pool.getPathElement().getKeyValuePair());
+            writer.writeStartElement(element.getLocalName());
+            pool.getMinThreads().marshallAsAttribute(threadPool, writer);
+            pool.getMaxThreads().marshallAsAttribute(threadPool, writer);
+            pool.getQueueLength().marshallAsAttribute(threadPool, writer);
+            pool.getKeepaliveTime().marshallAsAttribute(threadPool, writer);
+            writer.writeEndElement();
         }
     }
 

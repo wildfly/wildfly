@@ -376,6 +376,18 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 this.parseProperty(reader, address, operations);
                 break;
             }
+            case DEFAULT_THREAD_POOL:
+                parseThreadPool(ThreadPoolResourceDefinition.DEFAULT, reader, address, operations);
+                break;
+            case INTERNAL_THREAD_POOL:
+                parseThreadPool(ThreadPoolResourceDefinition.INTERNAL, reader, address, operations);
+                break;
+            case OOB_THREAD_POOL:
+                parseThreadPool(ThreadPoolResourceDefinition.OOB, reader, address, operations);
+                break;
+            case TIMER_THREAD_POOL:
+                parseThreadPool(ThreadPoolResourceDefinition.TIMER, reader, address, operations);
+                break;
             default: {
                 throw ParseUtils.unexpectedElement(reader);
             }
@@ -389,6 +401,35 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         operations.put(address, operation);
 
         PropertyResourceDefinition.VALUE.parseAndSetParameter(reader.getElementText(), operation, reader);
+    }
+
+    private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        PathAddress address = parentAddress.append(pool.getPathElement());
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case MIN_THREADS:
+                    pool.getMinThreads().parseAndSetParameter(value, operation, reader);
+                    break;
+                case MAX_THREADS:
+                    pool.getMaxThreads().parseAndSetParameter(value, operation, reader);
+                    break;
+                case QUEUE_LENGTH:
+                    pool.getQueueLength().parseAndSetParameter(value, operation, reader);
+                    break;
+                case KEEPALIVE_TIME:
+                    pool.getKeepaliveTime().parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+        }
+
+        ParseUtils.requireNoContent(reader);
     }
 
     private void parseRelay(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
@@ -469,7 +510,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                         PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(value));
                         ModelNode channelOperation = operations.get(channelAddress);
                         if (channelOperation != null) {
-                            String stack = null;
+                            String stack;
                             if (channelOperation.hasDefined(ChannelResourceDefinition.STACK.getName())) {
                                 stack = channelOperation.get(ChannelResourceDefinition.STACK.getName()).asString();
                             } else {

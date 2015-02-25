@@ -77,25 +77,33 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition DEFAULT_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_EXECUTOR, ModelType.STRING, true)
+            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .setXmlName(Attribute.DEFAULT_EXECUTOR.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition OOB_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.OOB_EXECUTOR, ModelType.STRING, true)
+            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .setXmlName(Attribute.OOB_EXECUTOR.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition TIMER_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.TIMER_EXECUTOR, ModelType.STRING, true)
+            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .setXmlName(Attribute.TIMER_EXECUTOR.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition THREAD_FACTORY = new SimpleAttributeDefinitionBuilder(ModelKeys.THREAD_FACTORY, ModelType.STRING, true)
+            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .setXmlName(Attribute.THREAD_FACTORY.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -140,6 +148,13 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             builder.addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleWriteAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleUndefineAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.DESCRIBE).setCustomOperationTransformer(new SimpleDescribeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+
+            // Reject thread pool configuration, support EAP 6.x slaves using deprecated attributes
+            builder.rejectChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH);
+        } else {
+            for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
+                pool.buildTransformation(version, parent);
+            }
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
@@ -161,12 +176,20 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration registration) {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
+            if (attr.isDeprecated()) {
+                registration.registerReadWriteAttribute(attr, null, new ThreadsAttributesWriteHandler(attr));
+            } else {
+                registration.registerReadWriteAttribute(attr, null, writeHandler);
+            }
         }
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
         registration.registerSubModel(new PropertyResourceDefinition());
+
+        for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
+            registration.registerSubModel(pool);
+        }
     }
 }

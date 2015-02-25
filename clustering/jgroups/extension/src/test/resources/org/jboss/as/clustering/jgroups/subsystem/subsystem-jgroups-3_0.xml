@@ -14,10 +14,31 @@
             <transport type="UDP"/>
         </stack>
         <stack name="maximal">
-            <transport type="TCP" module="org.jgroups" socket-binding="some-binding" diagnostics-socket-binding="jgroups-diagnostics"
-                default-executor="jgroups" oob-executor="jgroups-oob" timer-executor="jgroups-timer" shared="${test.expr:false}"
-                thread-factory="jgroups-thread-factory" machine="${test.expr:machine1}" rack="${test.expr:rack1}" site="${test.expr:site1}" >
+            <transport type="TCP"
+                       module="org.jgroups"
+                       socket-binding="some-binding"
+                       diagnostics-socket-binding="jgroups-diagnostics"
+                       shared="${test.expr:false}"
+                       machine="${test.expr:machine1}"
+                       rack="${test.expr:rack1}"
+                       site="${test.expr:site1}">
                 <property name="enable_bundling">${test.expr:true}</property>
+                <default-thread-pool min-threads="11"
+                                     queue-length="12"
+                                     max-threads="13"
+                                     keepalive-time="14"/>
+                <internal-thread-pool min-threads="21"
+                                      queue-length="22"
+                                      max-threads="23"
+                                      keepalive-time="24"/>
+                <oob-thread-pool min-threads="31"
+                                 queue-length="32"
+                                 max-threads="33"
+                                 keepalive-time="34"/>
+                <timer-thread-pool min-threads="41"
+                                   queue-length="42"
+                                   max-threads="43"
+                                   keepalive-time="44"/>
             </transport>
             <protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping">
                 <property name="name">${test.expr:value}</property>

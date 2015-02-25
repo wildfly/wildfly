@@ -38,6 +38,8 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 
 /**
  * @author Paul Ferraro
+ * @author Richard Achmatowicz
+ * @author Radoslav Husar
  */
 public class StackAddHandler extends AbstractAddStepHandler {
 
@@ -70,13 +72,17 @@ public class StackAddHandler extends AbstractAddStepHandler {
                 .setShared(TransportResourceDefinition.SHARED.resolveModelAttribute(context, transport).asBoolean())
                 .setTopology(site, rack, machine)
                 .setSocketBinding(ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, transport)))
-                .setDiagnosticsSocket(ModelNodes.asString(TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)))
-                .setThreadFactory(ModelNodes.asString(TransportResourceDefinition.THREAD_FACTORY.resolveModelAttribute(context, transport)))
-                .setDefaultExecutor(ModelNodes.asString(TransportResourceDefinition.DEFAULT_EXECUTOR.resolveModelAttribute(context, transport)))
-                .setOOBExecutor(ModelNodes.asString(TransportResourceDefinition.OOB_EXECUTOR.resolveModelAttribute(context, transport)))
-                .setTimerExecutor(ModelNodes.asString(TransportResourceDefinition.TIMER_EXECUTOR.resolveModelAttribute(context, transport)));
+                .setDiagnosticsSocket(ModelNodes.asString(TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)));
 
-        addProtocolProperties(context, transport, transportBuilder).build(target).install();
+        addProtocolProperties(context, transport, transportBuilder);
+
+        // Setup thread pool configuration via JGroups properties
+        addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition.DEFAULT, "thread_pool", context, transport, transportBuilder);
+        addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition.INTERNAL, "internal_thread_pool", context, transport, transportBuilder);
+        addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition.OOB, "oob_thread_pool", context, transport, transportBuilder);
+        addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition.TIMER, "timer", context, transport, transportBuilder);
+
+        transportBuilder.build(target).install();
 
         if (model.hasDefined(RelayResourceDefinition.PATH.getKey())) {
             ModelNode relay = model.get(RelayResourceDefinition.PATH.getKeyValuePair());
@@ -141,6 +147,31 @@ public class StackAddHandler extends AbstractAddStepHandler {
                 builder.addProperty(property.getName(), PropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString());
             }
         }
+        return builder;
+    }
+
+    static <C extends ProtocolConfiguration, B extends AbstractProtocolConfigurationBuilder<C>> B addThreadPoolConfigurationProperties(ThreadPoolResourceDefinition pool, String propertyPrefix, OperationContext context, ModelNode transport, B builder) throws OperationFailedException {
+        ModelNode threadModel = transport.get(pool.getPathElement().getKeyValuePair());
+
+        builder.addProperty(propertyPrefix + ".min_threads", pool.getMinThreads().resolveModelAttribute(context, threadModel).asString())
+                .addProperty(propertyPrefix + ".max_threads", pool.getMaxThreads().resolveModelAttribute(context, threadModel).asString());
+
+        // queue_*
+        int queueSize = pool.getQueueLength().resolveModelAttribute(context, threadModel).asInt();
+        if (propertyPrefix.equals("timer")) {
+            // Timer pool doesn't accept queue_enabled property
+            builder.addProperty(propertyPrefix + ".queue_max_size", String.valueOf(queueSize));
+        } else if (queueSize == 0) {
+            builder.addProperty(propertyPrefix + ".queue_enabled", Boolean.FALSE.toString());
+        } else {
+            builder.addProperty(propertyPrefix + ".queue_enabled", Boolean.TRUE.toString())
+                    .addProperty(propertyPrefix + ".queue_max_size", String.valueOf(queueSize));
+        }
+
+        // keepalive_time in milliseconds
+        long keepaliveTime = pool.getKeepaliveTime().resolveModelAttribute(context, threadModel).asLong();
+        builder.addProperty(propertyPrefix + ".keep_alive_time", String.valueOf(keepaliveTime));
+
         return builder;
     }
 }
