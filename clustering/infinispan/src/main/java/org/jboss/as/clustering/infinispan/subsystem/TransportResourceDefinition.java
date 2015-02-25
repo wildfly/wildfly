@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -51,6 +52,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
                     .setXmlName(Attribute.CLUSTER.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 6, 0))
                     .build();
 
     static final SimpleAttributeDefinition EXECUTOR =
@@ -75,6 +77,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
                     .setXmlName(Attribute.STACK.getLocalName())
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 6, 0))
                     .build();
 
     static final AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT};
