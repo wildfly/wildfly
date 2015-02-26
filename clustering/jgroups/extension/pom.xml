@@ -103,10 +103,6 @@
             <artifactId>wildfly-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-threads</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
         </dependency>
