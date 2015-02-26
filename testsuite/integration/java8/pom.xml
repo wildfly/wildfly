@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>wildfly-ts-integ</artifactId>
+        <groupId>org.wildfly</groupId>
+        <version>9.0.0.Alpha2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-ts-integ-java8</artifactId>
+    <packaging>jar</packaging>
+    <name>WildFly Test Suite: Integration - Java 8</name>
+
+    <properties>
+        <!-- use java 8 for this module -->
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+
+
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions combine.children="append">
+                    <execution>
+                        <id>add-java8-config</id>
+                        <phase>process-test-resources</phase>
+                        <configuration>
+                            <target>
+                                <copy file="${project.build.testOutputDirectory}/standalone-java8.xml"
+                                      todir="${project.build.directory}/jbossas/standalone/configuration" overwrite="true"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+               Surefire test executions
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
