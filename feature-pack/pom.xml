@@ -108,7 +108,7 @@
             </exclusions>
         </dependency>
 
-        <!-- module and copy artifact dependencies -->		        
+        <!-- module and copy artifact dependencies -->
 
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -876,7 +876,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>    
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.mod_cluster</groupId>
@@ -1624,7 +1624,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-infinispan</artifactId>
@@ -1635,7 +1635,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
@@ -1668,7 +1668,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.hibernate.hql</groupId>
             <artifactId>hibernate-hql-parser</artifactId>
@@ -1880,7 +1880,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-version</artifactId>
@@ -2157,7 +2157,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jberet</artifactId>
@@ -2183,17 +2183,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb3</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-embedded</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
