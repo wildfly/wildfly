@@ -106,9 +106,6 @@ public class JcaExtension implements Extension {
         if (context.isRegisterTransformers()) {
             JcaSubsystemRootDefinition.registerTransformers(subsystem);
         }
-
-        // Workaround for WFLY-3619, until we have correct explicit ordering
-        System.setProperty("ironjacamar.no_delist_resource_all", "true");
     }
 
     @Override

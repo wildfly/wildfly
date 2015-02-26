@@ -27,6 +27,9 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
 
+import javax.transaction.Synchronization;
+import javax.transaction.Transaction;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -196,4 +199,16 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 25, value = "Either %s must be 'true' or  %s must be defined.")
     OperationFailedException eitherTrueOrDefined(String attrOne, String attrTwo);
+
+    @LogMessage(level = WARN)
+    @Message(id = 26, value = "The transaction %s could not be removed from the cache during cleanup.")
+    void transactionNotFound(Transaction tx);
+
+    @LogMessage(level = WARN)
+    @Message(id = 27, value = "The pre-jca synchronization %s associated with tx %s failed during after completion")
+    void preJcaSyncAfterCompletionFailed(Synchronization preJcaSync, Transaction tx, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 28, value = "The jca synchronization %s associated with tx %s failed during after completion")
+    void jcaSyncAfterCompletionFailed(Synchronization jcaSync, Transaction tx, @Cause Exception e);
 }
