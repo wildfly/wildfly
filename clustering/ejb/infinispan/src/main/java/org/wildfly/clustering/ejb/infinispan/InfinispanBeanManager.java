@@ -156,7 +156,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
             schedulers.add(new BeanExpirationScheduler<>(this.batcher, new ExpiredBeanRemover<>(this.beanFactory), this.expiration));
         }
         if (this.passivation.isEvictionAllowed()) {
-            schedulers.add(new BeanEvictionScheduler<>(this.beanName + ".eviction", this.batcher, this.beanFactory, this.dispatcherFactory, this.passivation));
+            schedulers.add(new BeanEvictionScheduler<>(this.beanName + ".eviction", this.beanFactory, this.dispatcherFactory, this.passivation));
         }
         this.scheduler = new Scheduler<I>() {
             @Override
