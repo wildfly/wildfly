@@ -32,6 +32,7 @@
             <paths>
                 <!-- todo create new nashorn/scripting module-->
                 <path name="com/sun/script/javascript"/>
+                <path name="sun/org/mozilla/javascript/internal"/>
                 <path name="jdk/nashorn/api/scripting"/>
                 <path name="jdk/nashorn/api/scripting/resources"/>
                 <path name="jdk/nashorn/internal/codegen"/>
