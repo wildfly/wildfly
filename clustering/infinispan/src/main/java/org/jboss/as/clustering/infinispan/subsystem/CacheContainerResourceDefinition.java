@@ -77,6 +77,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(Attribute.EVICTION_EXECUTOR.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(ModelVersion.create(1, 6, 0))
             .build()
     ;
     static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
@@ -89,6 +90,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(Attribute.LISTENER_EXECUTOR.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(ModelVersion.create(1, 6, 0))
             .build()
     ;
     static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
@@ -101,6 +103,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(Attribute.REPLICATION_QUEUE_EXECUTOR.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(ModelVersion.create(1, 6, 0))
             .build()
     ;
     static final SimpleAttributeDefinition START = new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)

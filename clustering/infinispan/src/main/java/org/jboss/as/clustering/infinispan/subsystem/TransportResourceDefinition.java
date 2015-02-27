@@ -60,6 +60,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
                     .setXmlName(Attribute.EXECUTOR.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 6, 0))
                     .build();
 
     static final SimpleAttributeDefinition LOCK_TIMEOUT =
