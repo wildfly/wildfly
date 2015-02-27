@@ -43,7 +43,7 @@ public class NamingDefinition extends PersistentResourceDefinition {
 
     protected static final AttributeDefinition ROOT_CONTEXT = new SimpleAttributeDefinitionBuilder(
             Constants.NAMING_ROOT_CONTEXT, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set(Constants.NAME_SERVICE_INIT_REF))
+            .setDefaultValue(new ModelNode().set(Constants.ROOT_CONTEXT_INIT_REF))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
 
     protected static final AttributeDefinition EXPORT_CORBALOC = new SimpleAttributeDefinitionBuilder(

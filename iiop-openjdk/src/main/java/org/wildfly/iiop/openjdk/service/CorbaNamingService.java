@@ -22,6 +22,8 @@
 
 package org.wildfly.iiop.openjdk.service;
 
+import java.util.Properties;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -33,6 +35,7 @@ import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.PortableServer.POA;
+import org.wildfly.iiop.openjdk.Constants;
 import org.wildfly.iiop.openjdk.IIOPExtension;
 import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 import org.wildfly.iiop.openjdk.naming.CorbaNamingContext;
@@ -49,18 +52,20 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(IIOPExtension.SUBSYSTEM_NAME, "naming-service");
 
+    private static final Properties properties = new Properties();
+
     private final InjectedValue<POA> rootPOAInjector = new InjectedValue<POA>();
 
     private final InjectedValue<POA> namingPOAInjector = new InjectedValue<POA>();
 
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
-    private final String rootContext;
-
     private volatile NamingContextExt namingService;
 
-    public CorbaNamingService(final String rootContext) {
-        this.rootContext = rootContext;
+    public CorbaNamingService(Properties props) {
+        if (props != null) {
+            properties.putAll(props);
+        }
     }
 
     @Override
@@ -85,9 +90,17 @@ public class CorbaNamingService implements Service<NamingContextExt> {
             namingService = NamingContextExtHelper.narrow(namingPOA.create_reference_with_id(rootContextId,
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
 
-            //exporting the name service initial reference
-            ((com.sun.corba.se.impl.orb.ORBImpl) orb).register_initial_reference(rootContext,
+            // exporting the NameService initial reference
+            ((com.sun.corba.se.impl.orb.ORBImpl) orb).register_initial_reference(Constants.NAME_SERVICE_INIT_REF,
                     namingPOA.servant_to_reference(ns));
+
+            // exporting root-context initial reference
+            final boolean exportCorbaloc = properties.getProperty(Constants.NAMING_EXPORT_CORBALOC).equals("true");
+            if (exportCorbaloc) {
+                final String rootContext = properties.getProperty(Constants.NAMING_ROOT_CONTEXT);
+                ((com.sun.corba.se.impl.orb.ORBImpl) orb).register_initial_reference(rootContext,
+                        namingPOA.servant_to_reference(ns));
+            }
 
         } catch (Exception e) {
             throw IIOPLogger.ROOT_LOGGER.failedToStartJBossCOSNaming(e);

@@ -192,8 +192,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the CORBA naming service.
-        final String rootContext = props.getProperty(Constants.NAMING_ROOT_CONTEXT);
-        final CorbaNamingService namingService = new CorbaNamingService(rootContext);
+        final CorbaNamingService namingService = new CorbaNamingService(props);
         context
                 .getServiceTarget()
                 .addService(CorbaNamingService.SERVICE_NAME, namingService)
