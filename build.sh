@@ -18,11 +18,12 @@ ROOT="/"
 # Ignore user's MAVEN_HOME if it is set
 M2_HOME=""
 MAVEN_HOME=""
+MAVEN_VERSION=3.2.5
 
 MAVEN_OPTS="$MAVEN_OPTS -Xmx768M"
 export MAVEN_OPTS
 
-./tools/download-maven.sh
+./tools/download-maven.sh "$MAVEN_VERSION"
 
 #  Default search path for maven.
 MAVEN_SEARCH_PATH="\
