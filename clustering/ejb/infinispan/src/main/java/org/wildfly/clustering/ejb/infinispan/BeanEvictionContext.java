@@ -21,17 +21,13 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
  * Encapsulates the context for session eviction.
  * @author Paul Ferraro
  */
 public interface BeanEvictionContext<I> {
-
-    Batcher<TransactionBatch> getBatcher();
 
     Evictor<I> getEvictor();
 }

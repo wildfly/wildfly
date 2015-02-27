@@ -112,7 +112,7 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
     @Override
     public void evict(I id) {
         BeanKey<I> key = this.createKey(id);
-        BeanEntry<G> entry = this.cache.get(key);
+        BeanEntry<G> entry = this.cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(key);
         if (entry != null) {
             try {
                 // This will trigger the @CacheEntryEvicted event in InfinispanBeanManager

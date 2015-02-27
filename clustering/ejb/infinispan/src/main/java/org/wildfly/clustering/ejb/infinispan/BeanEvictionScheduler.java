@@ -27,9 +27,7 @@ import java.util.Set;
 
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 
@@ -45,21 +43,14 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionContext<I> {
 
     private final Set<I> evictionQueue = new LinkedHashSet<>();
-    private final Batcher<TransactionBatch> batcher;
     private final Evictor<I> evictor;
     private final CommandDispatcher<BeanEvictionContext<I>> dispatcher;
     private final PassivationConfiguration<?> config;
 
-    public BeanEvictionScheduler(String name, Batcher<TransactionBatch> batcher, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
-        this.batcher = batcher;
+    public BeanEvictionScheduler(String name, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
         this.evictor = evictor;
         this.config = config;
         this.dispatcher = dispatcherFactory.<BeanEvictionContext<I>>createCommandDispatcher(name, this);
-    }
-
-    @Override
-    public Batcher<TransactionBatch> getBatcher() {
-        return this.batcher;
     }
 
     @Override

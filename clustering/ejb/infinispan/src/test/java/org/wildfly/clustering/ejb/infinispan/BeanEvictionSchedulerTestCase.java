@@ -29,9 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 
@@ -44,8 +42,6 @@ public class BeanEvictionSchedulerTestCase {
         String activeBeanId = "active";
         CommandDispatcherFactory dispatcherFactory = mock(CommandDispatcherFactory.class);
         CommandDispatcher<BeanEvictionContext<String>> dispatcher = mock(CommandDispatcher.class);
-        Batcher<TransactionBatch> batcher = mock(Batcher.class);
-        TransactionBatch batch = mock(TransactionBatch.class);
         Evictor<String> evictor = mock(Evictor.class);
         PassivationConfiguration<Bean<Object, String, Object>> config = mock(PassivationConfiguration.class);
         BeanPassivationConfiguration passivationConfig = mock(BeanPassivationConfiguration.class);
@@ -56,7 +52,7 @@ public class BeanEvictionSchedulerTestCase {
         when(config.getConfiguration()).thenReturn(passivationConfig);
         when(passivationConfig.getMaxSize()).thenReturn(1);
 
-        try (Scheduler<String> scheduler = new BeanEvictionScheduler<>(name, batcher, evictor, dispatcherFactory, config)) {
+        try (Scheduler<String> scheduler = new BeanEvictionScheduler<>(name, evictor, dispatcherFactory, config)) {
             BeanEvictionContext<String> context = capturedContext.getValue();
 
             assertSame(scheduler, context);
@@ -69,13 +65,10 @@ public class BeanEvictionSchedulerTestCase {
 
             verify(dispatcher).submitOnCluster(capturedCommand.capture());
 
-            when(batcher.createBatch()).thenReturn(batch);
-
             capturedCommand.getValue().execute(context);
 
             verify(evictor).evict(evictedBeanId);
             verify(evictor, never()).evict(activeBeanId);
-            verify(batch).close();
         }
 
         verify(dispatcher).close();
