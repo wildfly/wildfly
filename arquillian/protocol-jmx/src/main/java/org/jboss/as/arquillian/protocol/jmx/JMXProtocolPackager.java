@@ -16,6 +16,9 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -45,6 +48,7 @@ import org.jboss.arquillian.protocol.jmx.AbstractJMXProtocol;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.Authentication;
+import org.jboss.as.arquillian.container.CommonContainerConfiguration;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.container.NetworkUtils;
 import org.jboss.as.arquillian.container.OSGiApplicationArchiveProcessor;
@@ -94,9 +98,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
 
     private ServiceArchiveHolder archiveHolder;
+    private CommonContainerConfiguration containerConfig;
 
-    JMXProtocolPackager(ServiceArchiveHolder archiveHolder) {
+    JMXProtocolPackager(ServiceArchiveHolder archiveHolder, CommonContainerConfiguration containerConfig) {
         this.archiveHolder = archiveHolder;
+        this.containerConfig = containerConfig;
     }
 
     @Override
@@ -205,8 +211,29 @@ public class JMXProtocolPackager implements DeploymentPackager {
                 }
                 return new ByteArrayInputStream(baos.toByteArray());
             }
-
         }, "META-INF/jbosgi-xservice.properties");
+
+        // Add container configuration properties
+        archive.addAsResource(new Asset() {
+            public InputStream openStream() {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try {
+                    Properties props = new Properties();
+                    BeanInfo beanInfo = Introspector.getBeanInfo(containerConfig.getClass());
+                    for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
+                        String key = propertyDescriptor.getName();
+                        Object value = propertyDescriptor.getReadMethod().invoke(containerConfig);
+                        if (value != null) {
+                            props.setProperty(key, "" + value);
+                        }
+                    }
+                    props.store(baos, null);
+                } catch (Exception ex) {
+                    throw new IllegalStateException("Cannot store container configuration properties", ex);
+                }
+                return new ByteArrayInputStream(baos.toByteArray());
+            }
+        }, "META-INF/container-configuration.properties");
 
         // Replace the loadable extensions with the collected set
         archive.delete(ArchivePaths.create(loadableExtensionsPath));

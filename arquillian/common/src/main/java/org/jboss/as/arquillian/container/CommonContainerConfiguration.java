@@ -16,9 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
@@ -30,12 +27,16 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
  */
 public class CommonContainerConfiguration implements ContainerConfiguration {
 
+    private static final ThreadLocal<CommonContainerConfiguration> containerConfigurationAssociation = new ThreadLocal<>();
+
     private String managementProtocol = "http-remoting";
     private String managementAddress;
     private int managementPort;
 
     private String username;
     private String password;
+
+    private boolean enableThreadContextClassLoader = true;
 
     public CommonContainerConfiguration() {
         managementAddress = "127.0.0.1";
@@ -56,14 +57,6 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setManagementPort(int managementPort) {
         this.managementPort = managementPort;
-    }
-
-    private InetAddress getInetAddress(String name) {
-        try {
-            return InetAddress.getByName(name);
-        } catch (UnknownHostException e) {
-            throw new IllegalArgumentException("Unknown host: " + name);
-        }
     }
 
     public String getUsername() {
@@ -88,6 +81,22 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setManagementProtocol(final String managementProtocol) {
         this.managementProtocol = managementProtocol;
+    }
+
+    public boolean isEnableThreadContextClassLoader() {
+        return enableThreadContextClassLoader;
+    }
+
+    public void setEnableThreadContextClassLoader(boolean enableThreadContextClassLoader) {
+        this.enableThreadContextClassLoader = enableThreadContextClassLoader;
+    }
+
+    public static CommonContainerConfiguration getContainerConfiguration() {
+        return containerConfigurationAssociation.get();
+    }
+
+    public static void setContainerConfiguration(CommonContainerConfiguration containerConfiguration) {
+        containerConfigurationAssociation.set(containerConfiguration);
     }
 
     @Override

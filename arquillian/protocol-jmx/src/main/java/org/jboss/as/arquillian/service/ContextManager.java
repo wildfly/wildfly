@@ -23,7 +23,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.modules.Module;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Sets up and tears down a set of contexts, represented by a list of {@link SetupAction}s. If {@link #setup(java.util.Map)} completes
@@ -35,9 +39,11 @@ import org.jboss.as.server.deployment.SetupAction;
  */
 public class ContextManager {
 
+    private final ArquillianConfig config;
     private final List<SetupAction> setupActions;
 
-    ContextManager(final List<SetupAction> setupActions) {
+    ContextManager(final ArquillianConfig config, final List<SetupAction> setupActions) {
+        this.config = config;
         final List<SetupAction> actions = new ArrayList<SetupAction>(setupActions);
         Collections.sort(actions, new Comparator<SetupAction>() {
 
@@ -55,20 +61,27 @@ public class ContextManager {
      */
     public void setup(final Map<String, Object> properties) {
         final List<SetupAction> successfulActions = new ArrayList<SetupAction>();
-        for (final SetupAction action : setupActions) {
-            try {
-                action.setup(properties);
-                successfulActions.add(action);
-            } catch (final Throwable e) {
-                for (SetupAction s : successfulActions) {
-                    try {
-                        s.teardown(properties);
-                    } catch (final Throwable t) {
-                        // we ignore these, and just propagate the exception that caused the setup to fail
+        final DeploymentUnit depUnit = config.getDeploymentUnit();
+        final Module module = depUnit.getAttachment(Attachments.MODULE);
+        ClassLoader tccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
+        try {
+            for (final SetupAction action : setupActions) {
+                try {
+                    action.setup(properties);
+                    successfulActions.add(action);
+                } catch (final Throwable e) {
+                    for (SetupAction s : successfulActions) {
+                        try {
+                            s.teardown(properties);
+                        } catch (final Throwable t) {
+                            // we ignore these, and just propagate the exception that caused the setup to fail
+                        }
                     }
+                    throw new RuntimeException(e);
                 }
-                throw new RuntimeException(e);
             }
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
         }
     }
 
@@ -84,18 +97,25 @@ public class ContextManager {
     public void teardown(final Map<String, Object> properties) {
         Throwable exceptionToThrow = null;
         final ListIterator<SetupAction> itr = setupActions.listIterator(setupActions.size());
-        while (itr.hasPrevious()) {
-            final SetupAction action = itr.previous();
-            try {
-                action.teardown(properties);
-            } catch (Throwable e) {
-                if (exceptionToThrow == null) {
-                    exceptionToThrow = e;
+        final DeploymentUnit depUnit = config.getDeploymentUnit();
+        final Module module = depUnit.getAttachment(Attachments.MODULE);
+        ClassLoader tccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
+        try {
+            while (itr.hasPrevious()) {
+                final SetupAction action = itr.previous();
+                try {
+                    action.teardown(properties);
+                } catch (Throwable e) {
+                    if (exceptionToThrow == null) {
+                        exceptionToThrow = e;
+                    }
                 }
             }
-        }
-        if (exceptionToThrow != null) {
-            throw new RuntimeException(exceptionToThrow);
+            if (exceptionToThrow != null) {
+                throw new RuntimeException(exceptionToThrow);
+            }
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
         }
     }
 }
