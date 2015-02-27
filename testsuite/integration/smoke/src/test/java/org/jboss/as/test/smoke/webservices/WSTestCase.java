@@ -149,16 +149,26 @@ public class WSTestCase {
         }
     }
 
-    private void checkCountMetric(final ModelNode endpointResult, final ModelControllerClient client, final String metricName) throws IOException {
-    	final ModelNode readAttribute = new ModelNode();
+    private int checkCountMetric(final ModelNode endpointResult, final ModelControllerClient client, final String metricName) throws IOException {
+        final ModelNode readAttribute = new ModelNode();
         readAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
         readAttribute.get(ModelDescriptionConstants.OP_ADDR).set(endpointResult.get(ModelDescriptionConstants.OP_ADDR));
         readAttribute.get(ModelDescriptionConstants.NAME).set(metricName);
-
-        final ModelNode attribute = client.execute(readAttribute);
-        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, attribute.get(ModelDescriptionConstants.OUTCOME).asString());
-        Assert.assertTrue(attribute.get("result").asString().length() == 1);
-        Assert.assertTrue(attribute.get("result").asInt() > 0);
+        long timeout = 30_000L + System.currentTimeMillis();
+        String value = "-1";
+        while (System.currentTimeMillis() < timeout) {
+            ModelNode attribute = client.execute(readAttribute);
+            Assert.assertEquals(ModelDescriptionConstants.SUCCESS, attribute.get(ModelDescriptionConstants.OUTCOME).asString());
+            ModelNode result = attribute.get("result");
+            value = result.asString();
+            Assert.assertEquals("We have found " + result, value.length(), 1);
+            if (result.asInt() > 0) {
+                //We have found a valid metric
+                return result.asInt();
+            }
+        }
+        Assert.fail("We have found " + value + " for metric " + metricName + " instead of some positive value");
+        return -1;
     }
 
     @Test
