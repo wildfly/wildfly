@@ -21,8 +21,16 @@
  */
 package org.jboss.as.test.smoke.webservices;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.namespace.QName;
@@ -38,12 +46,12 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,9 +86,9 @@ public class WSTestCase {
     @Test
     @InSequence(1)
     public void testWSDL() throws Exception {
-        String s = performCall("?wsdl");
-        Assert.assertNotNull(s);
-        Assert.assertTrue(s.contains("wsdl:definitions"));
+        String wsdl = performCall("?wsdl");
+        assertNotNull(wsdl);
+        assertThat(wsdl, containsString("wsdl:definitions"));
     }
 
     @Test
@@ -98,16 +106,16 @@ public class WSTestCase {
         operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
 
         final ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
-
+        List<ModelNode> endpoints = DomainTestSupport.validateResponse(result).asList();
+        assertThat(endpoints.size() > 0, is(true));
         for (final ModelNode endpointResult : result.get("result").asList()) {
             final ModelNode endpoint = endpointResult.get("result");
-            Assert.assertTrue(endpoint.hasDefined("class"));
-            Assert.assertTrue(endpoint.hasDefined("name"));
-            Assert.assertTrue(endpoint.hasDefined("wsdl-url"));
-            Assert.assertTrue(endpoint.get("wsdl-url").asString().endsWith("?wsdl"));
-            Assert.assertTrue(endpoint.hasDefined("request-count"));
-            Assert.assertTrue(endpoint.get("request-count").asString().contains("No metrics available"));
+            assertThat(endpoint.hasDefined("class"), is(true));
+            assertThat(endpoint.hasDefined("name"), is(true));
+            assertThat(endpoint.hasDefined("wsdl-url"), is(true));
+            assertThat(endpoint.get("wsdl-url").asString().endsWith("?wsdl"), is(true));
+            assertThat(endpoint.hasDefined("request-count"), is(true));
+            assertThat(endpoint.get("request-count").asString(), containsString("No metrics available"));
         }
     }
 
@@ -127,12 +135,14 @@ public class WSTestCase {
         operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
 
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+        List<ModelNode> endpoints = DomainTestSupport.validateResponse(result).asList();
+        assertThat(endpoints.size() > 0, is(true) );
         for (final ModelNode endpointResult : result.get("result").asList()) {
             final ModelNode endpoint = endpointResult.get("result");
             // Get the wsdl again to be sure the endpoint has been hit at least once
-            final URL url = new URL(endpoint.get("wsdl-url").asString());
-            HttpRequest.get(url.toExternalForm(), 30, TimeUnit.SECONDS);
+            final URL wsdlUrl = new URL(endpoint.get("wsdl-url").asString());
+            String wsdl = HttpRequest.get(wsdlUrl.toExternalForm(), 30, TimeUnit.SECONDS);
+            assertThat(wsdl, is(notNullValue()));
 
             // Read metrics
             checkCountMetric(endpointResult, managementClient.getControllerClient(), "request-count");
@@ -141,24 +151,33 @@ public class WSTestCase {
 
         setStatisticsEnabled(false);
         result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
-        for (final ModelNode endpointResult : result.get("result").asList()) {
+        endpoints = DomainTestSupport.validateResponse(result).asList();
+        for (final ModelNode endpointResult : endpoints) {
             final ModelNode endpoint = endpointResult.get("result");
-            Assert.assertTrue(endpoint.hasDefined("request-count"));
-            Assert.assertTrue(endpoint.get("request-count").asString().contains("No metrics available"));
+            assertThat(endpoint.hasDefined("request-count"), is(true));
+            assertThat(endpoint.get("request-count").asString(), containsString("No metrics available"));
         }
     }
 
-    private void checkCountMetric(final ModelNode endpointResult, final ModelControllerClient client, final String metricName) throws IOException {
+    private int checkCountMetric(final ModelNode endpointResult, final ModelControllerClient client, final String metricName) throws IOException {
     	final ModelNode readAttribute = new ModelNode();
         readAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
         readAttribute.get(ModelDescriptionConstants.OP_ADDR).set(endpointResult.get(ModelDescriptionConstants.OP_ADDR));
         readAttribute.get(ModelDescriptionConstants.NAME).set(metricName);
-
-        final ModelNode attribute = client.execute(readAttribute);
-        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, attribute.get(ModelDescriptionConstants.OUTCOME).asString());
-        Assert.assertTrue(attribute.get("result").asString().length() == 1);
-        Assert.assertTrue(attribute.get("result").asInt() > 0);
+        long timeout = 30_000L + System.currentTimeMillis();
+        String value = "-1";
+        while(System.currentTimeMillis() < timeout) {
+            ModelNode attribute = client.execute(readAttribute);
+            ModelNode result = DomainTestSupport.validateResponse(attribute);
+            value = result.asString();
+            assertThat("We have found " + result, value.length(), is(1));
+            if(result.asInt() > 0) {
+                //We have found a valid metric
+                return result.asInt() ;
+            }
+        }
+        fail("We have found " + value + " for metric " + metricName + " instead of some positive value");
+        return -1;
     }
 
     @Test
@@ -168,12 +187,13 @@ public class WSTestCase {
         QName serviceName = new QName("http://webservices.smoke.test.as.jboss.org/", "EndpointService");
         Service service = Service.create(wsdlURL, serviceName);
         Endpoint port = (Endpoint) service.getPort(Endpoint.class);
-        Assert.assertEquals("Foo", port.echo("Foo"));
+        String echo = port.echo("Foo");
+        assertThat("Echoing Foo should return Foo not " + echo, echo, is("Foo"));
     }
 
     private String performCall(String params) throws Exception {
-        URL url = new URL(this.url.toExternalForm() + "ws-example/" + params);
-        return HttpRequest.get(url.toExternalForm(), 30, TimeUnit.SECONDS);
+        URL callUrl = new URL(this.url.toExternalForm() + "ws-example/" + params);
+        return HttpRequest.get(callUrl.toExternalForm(), 30, TimeUnit.SECONDS);
     }
 
 
@@ -184,6 +204,6 @@ public class WSTestCase {
         updateStatistics.get(ModelDescriptionConstants.NAME).set("statistics-enabled");
         updateStatistics.get(ModelDescriptionConstants.VALUE).set(enabled);
         final ModelNode result = managementClient.getControllerClient().execute(updateStatistics);
-        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+        DomainTestSupport.validateResponse(result, false);
     }
 }
