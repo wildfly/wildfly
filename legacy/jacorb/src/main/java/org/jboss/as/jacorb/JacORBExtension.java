@@ -54,6 +54,8 @@ public class JacORBExtension implements Extension {
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
+    static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(2, 0, 0);
+
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {

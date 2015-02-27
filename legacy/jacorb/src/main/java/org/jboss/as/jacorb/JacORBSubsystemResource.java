@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -48,16 +49,15 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
     public static final JacORBSubsystemResource INSTANCE = new JacORBSubsystemResource();
 
     private JacORBSubsystemResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME),
-                JacORBExtension.getResourceDescriptionResolver(),
-                JacORBSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME), JacORBExtension
+                .getResourceDescriptionResolver(), JacORBSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE, null,
+                null, new DeprecationData((JacORBExtension.DEPRECATED_SINCE)));
     }
-
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        OperationStepHandler attributeHander = new JacorbReloadRequiredWriteAttributeHandler(JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
+        OperationStepHandler attributeHander = new JacorbReloadRequiredWriteAttributeHandler(
+                JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
         for (AttributeDefinition attr : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr, null, attributeHander);
         }
