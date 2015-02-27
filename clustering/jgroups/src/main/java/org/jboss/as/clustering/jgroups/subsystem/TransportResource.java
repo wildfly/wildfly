@@ -91,6 +91,7 @@ public class TransportResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.DEFAULT_EXECUTOR.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 3, 0))
                     .build();
 
     static SimpleAttributeDefinition OOB_EXECUTOR =
@@ -98,6 +99,7 @@ public class TransportResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.OOB_EXECUTOR.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 3, 0))
                     .build();
 
     static SimpleAttributeDefinition TIMER_EXECUTOR =
@@ -105,6 +107,7 @@ public class TransportResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.TIMER_EXECUTOR.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 3, 0))
                     .build();
 
     static SimpleAttributeDefinition THREAD_FACTORY =
@@ -112,6 +115,7 @@ public class TransportResource extends SimpleResourceDefinition {
                     .setXmlName(Attribute.THREAD_FACTORY.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDeprecated(ModelVersion.create(1, 3, 0))
                     .build();
 
     static SimpleAttributeDefinition SITE =
@@ -173,7 +177,7 @@ public class TransportResource extends SimpleResourceDefinition {
     TransportResource() {
         super(TRANSPORT_PATH,
                 JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT),
-                null,  //we register it manualy in #  registerOperations
+                null,  //we register it manually in #  registerOperations
                 TRANSPORT_REMOVE);
     }
 
