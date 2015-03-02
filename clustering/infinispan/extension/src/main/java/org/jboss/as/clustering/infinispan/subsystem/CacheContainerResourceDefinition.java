@@ -114,6 +114,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(StartMode.class, true, false))
             .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
+            .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
     static final SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelKeys.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
