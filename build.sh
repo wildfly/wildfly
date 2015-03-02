@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 ### ====================================================================== ###
 ##                                                                          ##
 ##  This is the main entry point for the build system.                      ##
