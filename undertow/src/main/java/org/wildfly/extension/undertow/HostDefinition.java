@@ -91,6 +91,7 @@ class HostDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition DEFAULT_RESPONSE_CODE = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_RESPONSE_CODE, ModelType.INT, true)
     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
     .setValidator(new IntRangeValidator(400, 599, true, true))
+    .setDefaultValue(new ModelNode(404))
     .build();
 
     static final HostDefinition INSTANCE = new HostDefinition();

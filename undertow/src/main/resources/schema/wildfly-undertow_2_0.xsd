@@ -199,7 +199,12 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="alias" use="optional" type="xs:string"/>
         <xs:attribute name="default-web-module" use="optional" type="xs:string" default="ROOT.war"/>
-        <xs:attribute name="default-response-code" use="optional" type="xs:int"/>
+        <xs:attribute name="default-response-code" use="optional" type="xs:int">
+        	<xs:annotation> 
+            	<xs:documentation>Default response code should be set in case server should respond with nonstandard code( other than 404 ) for unavailable resource.
+            	For instance, server behind load balancer might want to respond with 5xx code to avoid being dropped by it. </xs:documentation> 
+            </xs:annotation> 
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="websocketsType">
