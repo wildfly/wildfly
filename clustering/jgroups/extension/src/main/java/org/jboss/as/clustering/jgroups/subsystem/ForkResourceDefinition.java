@@ -40,7 +40,7 @@ public class ForkResourceDefinition extends SimpleResourceDefinition {
     private final boolean allowRuntimeOnlyRegistration;
 
     ForkResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.FORK), new ForkAddHandler(), new ForkRemoveHandler(allowRuntimeOnlyRegistration));
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.FORK), new ForkAddHandler(), new ForkRemoveHandler(allowRuntimeOnlyRegistration));
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 

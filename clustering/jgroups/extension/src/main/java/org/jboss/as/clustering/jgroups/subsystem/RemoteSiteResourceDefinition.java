@@ -117,7 +117,7 @@ public class RemoteSiteResourceDefinition extends SimpleResourceDefinition {
     }
 
     RemoteSiteResourceDefinition() {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_SITE), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.REMOTE_SITE), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

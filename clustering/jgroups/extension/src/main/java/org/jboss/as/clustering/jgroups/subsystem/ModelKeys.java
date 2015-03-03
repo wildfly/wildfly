@@ -26,7 +26,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
  * @author Paul Ferraro
  */
 class ModelKeys {
-    static final String ADD_PROTOCOL = "add-protocol";
+    @Deprecated static final String ADD_PROTOCOL = "add-protocol";
     static final String CHANNEL = "channel";
     static final String CLUSTER = "cluster";
     static final String DEFAULT = "default";
@@ -51,7 +51,7 @@ class ModelKeys {
     static final String RELAY_NAME = "RELAY";
     static final String REMOTE_SITE = "remote-site";
     static final String REMOTE_SITES = "remote-sites";
-    static final String REMOVE_PROTOCOL = "remove-protocol";
+    @Deprecated static final String REMOVE_PROTOCOL = "remove-protocol";
     static final String SHARED = "shared";
     static final String SITE = "site";
     static final String SOCKET_BINDING = "socket-binding";

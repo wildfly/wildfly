@@ -108,23 +108,25 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Translate /subsystem=jgroups/stack=*/protocol=*:add() -> /subsystem=jgroups/stack=*:add-protocol()
             OperationTransformer addTransformer = new OperationTransformer() {
+                @SuppressWarnings("deprecation")
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
                     PathAddress stackAddress = address.subAddress(0, address.size() - 1);
-                    return Util.createOperation(StackResourceDefinition.ADD_PROTOCOL.getName(), stackAddress);
+                    return Util.createOperation(ModelKeys.ADD_PROTOCOL, stackAddress);
                 }
             };
             builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(addTransformer, ATTRIBUTES)).inheritResourceAttributeDefinitions();
 
             // Translate /subsystem=jgroups/stack=*/protocol=*:remove() -> /subsystem=jgroups/stack=*:remove-protocol()
             OperationTransformer removeTransformer = new OperationTransformer() {
+                @SuppressWarnings("deprecation")
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
                     String protocol = address.getLastElement().getValue();
                     PathAddress stackAddress = address.subAddress(0, address.size() - 1);
-                    ModelNode legacyOperation = Util.createOperation(StackResourceDefinition.REMOVE_PROTOCOL.getName(), stackAddress);
+                    ModelNode legacyOperation = Util.createOperation(ModelKeys.REMOVE_PROTOCOL, stackAddress);
                     legacyOperation.get(ProtocolResourceDefinition.TYPE.getName()).set(protocol);
                     return legacyOperation;
                 }
@@ -168,7 +170,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     }
 
     ProtocolResourceDefinition(OperationStepHandler addHandler) {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROTOCOL), addHandler, new ReloadRequiredRemoveStepHandler());
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.PROTOCOL), addHandler, new ReloadRequiredRemoveStepHandler());
     }
 
     @Override

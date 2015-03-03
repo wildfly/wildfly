@@ -109,7 +109,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
 
             @Override
             public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                StandardResourceDescriptionResolver resolver = JGroupsExtension.getResourceDescriptionResolver();
+                StandardResourceDescriptionResolver resolver = new JGroupsResourceDescriptionResolver();
                 String description = resolver.getChildTypeDescription(ProtocolResourceDefinition.WILDCARD_PATH.getKey(), locale, resolver.getResourceBundle(locale));
                 ModelNode result = new ModelNode();
                 result.get(ModelDescriptionConstants.DESCRIPTION).set(description);
