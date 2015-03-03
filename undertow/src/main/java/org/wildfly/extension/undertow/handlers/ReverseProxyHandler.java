@@ -49,7 +49,6 @@ import java.util.List;
 public class ReverseProxyHandler extends Handler {
 
 
-
     public static final AttributeDefinition PROBLEM_SERVER_RETRY = new SimpleAttributeDefinitionBuilder(Constants.PROBLEM_SERVER_RETRY, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -61,7 +60,6 @@ public class ReverseProxyHandler extends Handler {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("JSESSIONID"))
             .build();
-
     public static final AttributeDefinition CONNECTIONS_PER_THREAD = new SimpleAttributeDefinitionBuilder(Constants.CONNECTIONS_PER_THREAD, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -74,6 +72,27 @@ public class ReverseProxyHandler extends Handler {
             .setDefaultValue(new ModelNode(-1))
             .build();
 
+    public static final AttributeDefinition REQUEST_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(Constants.REQUEST_QUEUE_SIZE, ModelType.INT)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(10))
+            .build();
+
+
+    public static final AttributeDefinition CACHED_CONNECTIONS_PER_THREAD = new SimpleAttributeDefinitionBuilder(Constants.CACHED_CONNECTIONS_PER_THREAD, ModelType.INT)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(5))
+            .build();
+
+    public static final AttributeDefinition CONNECTION_IDLE_TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.CONNECTION_IDLE_TIMEOUT, ModelType.INT)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(60L))
+            .build();
+
+
+
     public static final ReverseProxyHandler INSTANCE = new ReverseProxyHandler();
 
     private ReverseProxyHandler() {
@@ -82,7 +101,7 @@ public class ReverseProxyHandler extends Handler {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY);
+        return Arrays.asList(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT);
     }
 
     @Override
@@ -97,6 +116,11 @@ public class ReverseProxyHandler extends Handler {
         int connectionsPerThread = CONNECTIONS_PER_THREAD.resolveModelAttribute(context, model).asInt();
         int problemServerRetry = PROBLEM_SERVER_RETRY.resolveModelAttribute(context, model).asInt();
         int maxTime = MAX_REQUEST_TIME.resolveModelAttribute(context, model).asInt();
+        int requestQueueSize = REQUEST_QUEUE_SIZE.resolveModelAttribute(context, model).asInt();
+        //TODO: these need a new version of Undertow to actually be wired up
+        int cachedConnectionsPerThread = CACHED_CONNECTIONS_PER_THREAD.resolveModelAttribute(context, model).asInt();
+        int connectionIdleTimeout = CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(context, model).asInt();
+
 
         final LoadBalancingProxyClient lb = new LoadBalancingProxyClient(new ExclusivityChecker() {
             @Override
@@ -106,6 +130,7 @@ public class ReverseProxyHandler extends Handler {
             }
         })
                 .setConnectionsPerThread(connectionsPerThread)
+                .setMaxQueueSize(requestQueueSize)
                 .setProblemServerRetry(problemServerRetry);
         String[] sessionIds = sessionCookieNames.split(",");
         for (String id : sessionIds) {
