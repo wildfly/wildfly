@@ -41,7 +41,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -166,12 +166,12 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
         CustomStoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResolvePathHandler resolvePathHandler;
+    private final PathManager pathManager;
     final boolean allowRuntimeOnlyRegistration;
 
-    public CacheResourceDefinition(CacheType type, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+    public CacheResourceDefinition(CacheType type, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
         super(type.pathElement(), type.getResourceDescriptionResolver(), type.getAddHandler(), type.getRemoveHandler());
-        this.resolvePathHandler = resolvePathHandler;
+        this.pathManager = pathManager;
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
@@ -198,7 +198,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
         registration.registerSubModel(new ExpirationResourceDefinition());
 
         registration.registerSubModel(new CustomStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
-        registration.registerSubModel(new FileStoreResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new FileStoreResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new StringKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new BinaryKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new MixedKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration));

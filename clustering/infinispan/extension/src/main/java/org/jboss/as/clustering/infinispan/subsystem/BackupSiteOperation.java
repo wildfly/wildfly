@@ -55,7 +55,7 @@ public enum BackupSiteOperation implements Operation<BackupSiteOperationContext>
     private final OperationDefinition definition;
 
     private BackupSiteOperation(String name, boolean readOnly) {
-        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, InfinispanExtension.getResourceDescriptionResolver("backup.ops"));
+        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, new InfinispanResourceDescriptionResolver(ModelKeys.BACKUP));
         if (readOnly) {
             builder.setReadOnly();
         }

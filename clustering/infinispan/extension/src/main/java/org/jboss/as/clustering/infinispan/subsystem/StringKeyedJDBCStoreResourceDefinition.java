@@ -50,7 +50,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { STRING_KEYED_TABLE };
 
     // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STRING_KEYED_JDBC_STORE))
+    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, new InfinispanResourceDescriptionResolver(ModelKeys.STRING_KEYED_JDBC_STORE))
             .setParameters(PARAMETERS)
             .addParameter(DATA_SOURCE)
             .addParameter(DIALECT)

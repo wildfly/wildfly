@@ -37,7 +37,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -128,11 +128,11 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, MODULE, STATISTICS_ENABLED
     };
 
-    static final OperationDefinition ALIAS_ADD = new SimpleOperationDefinitionBuilder("add-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container"))
+    static final OperationDefinition ALIAS_ADD = new SimpleOperationDefinitionBuilder("add-alias", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
             .setParameters(ALIAS)
             .build();
 
-    static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container"))
+    static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
             .setParameters(ALIAS)
             .build();
 
@@ -160,12 +160,12 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
         LocalCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResolvePathHandler resolvePathHandler;
+    private final PathManager pathManager;
     private final boolean allowRuntimeOnlyRegistration;
 
-    CacheContainerResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER), new CacheContainerAddHandler(), new CacheContainerRemoveHandler());
-        this.resolvePathHandler = resolvePathHandler;
+    CacheContainerResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER), new CacheContainerAddHandler(), new CacheContainerRemoveHandler());
+        this.pathManager = pathManager;
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
@@ -196,9 +196,9 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration registration) {
         // child resources
         registration.registerSubModel(new TransportResourceDefinition());
-        registration.registerSubModel(new LocalCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
-        registration.registerSubModel(new InvalidationCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
-        registration.registerSubModel(new ReplicatedCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
-        registration.registerSubModel(new DistributedCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new LocalCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new InvalidationCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new ReplicatedCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new DistributedCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));
     }
 }

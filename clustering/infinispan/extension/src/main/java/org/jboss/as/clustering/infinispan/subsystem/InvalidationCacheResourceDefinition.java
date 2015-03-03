@@ -23,7 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -39,7 +39,7 @@ public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceD
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    InvalidationCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(CacheType.INVALIDATION, resolvePathHandler, allowRuntimeOnlyRegistration);
+    InvalidationCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(CacheType.INVALIDATION, pathManager, allowRuntimeOnlyRegistration);
     }
 }

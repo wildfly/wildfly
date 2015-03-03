@@ -97,13 +97,12 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS };
 
     // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
+    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, new InfinispanResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
             .setParameters(PARAMETERS)
             .addParameter(CACHE)
             .addParameter(TCP_NO_DELAY)
             .addParameter(SOCKET_TIMEOUT)
             .addParameter(REMOTE_SERVERS)
-            .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
             .build();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {

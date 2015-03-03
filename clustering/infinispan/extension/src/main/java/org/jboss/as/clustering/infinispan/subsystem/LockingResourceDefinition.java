@@ -95,7 +95,7 @@ public class LockingResourceDefinition extends SimpleResourceDefinition {
     }
 
     LockingResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCKING), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.LOCKING), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 

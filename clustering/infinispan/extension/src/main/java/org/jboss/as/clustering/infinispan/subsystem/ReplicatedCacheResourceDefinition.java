@@ -23,7 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -39,7 +39,7 @@ public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceD
         SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    ReplicatedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(CacheType.REPLICATED, resolvePathHandler, allowRuntimeOnlyRegistration);
+    ReplicatedCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(CacheType.REPLICATED, pathManager, allowRuntimeOnlyRegistration);
     }
 }

@@ -23,7 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -39,7 +39,7 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition {
         CacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    LocalCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(CacheType.LOCAL, resolvePathHandler, allowRuntimeOnlyRegistration);
+    LocalCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(CacheType.LOCAL, pathManager, allowRuntimeOnlyRegistration);
     }
 }

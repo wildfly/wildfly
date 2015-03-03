@@ -66,7 +66,7 @@ public class BackupForResourceDefinition extends SimpleResourceDefinition {
     }
 
     BackupForResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP_FOR),
+        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.BACKUP_FOR),
                 new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

@@ -225,7 +225,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
     }
 
     TransactionResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSACTION), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.TRANSACTION), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 

@@ -65,7 +65,7 @@ public enum StoreType {
     }
 
     public ResourceDescriptionResolver getResourceDescriptionResolver() {
-        return InfinispanExtension.getResourceDescriptionResolver(this.path.getKey());
+        return new InfinispanResourceDescriptionResolver(this.path.getKey());
     }
 
     public PathElement pathElement() {

@@ -97,7 +97,7 @@ public class StoreWriteBehindResourceDefinition extends SimpleResourceDefinition
     }
 
     StoreWriteBehindResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.WRITE_BEHIND),
+        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.WRITE_BEHIND),
                 new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

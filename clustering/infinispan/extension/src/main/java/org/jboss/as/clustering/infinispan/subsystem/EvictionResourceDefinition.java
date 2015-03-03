@@ -79,7 +79,7 @@ public class EvictionResourceDefinition extends SimpleResourceDefinition {
     }
 
     EvictionResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.EVICTION), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.EVICTION), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
