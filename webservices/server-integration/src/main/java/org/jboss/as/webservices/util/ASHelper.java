@@ -198,6 +198,13 @@ public final class ASHelper {
         return false;
     }
 
+    public static boolean isJaxwsEndpointInterface(final ClassInfo clazz) {
+        final short flags = clazz.flags();
+        if (!Modifier.isInterface(flags)) return false;
+        if (!Modifier.isPublic(flags)) return false;
+        return clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
+    }
+
     public static boolean hasClassesFromPackage(final Index index, final String pck) {
         for (ClassInfo ci : index.getKnownClasses()) {
             if (ci.name().toString().startsWith(pck)) {
