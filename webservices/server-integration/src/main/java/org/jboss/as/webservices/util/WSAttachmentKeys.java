@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.util;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.webservices.deployers.WSEndpointConfigMapping;
 import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.webserviceref.WSRefRegistry;
@@ -51,6 +52,7 @@ public final class WSAttachmentKeys {
     public static final AttachmentKey<ClassLoader> CLASSLOADER_KEY = AttachmentKey.create(ClassLoader.class);
     public static final AttachmentKey<WSRefRegistry> WS_REFREGISTRY = AttachmentKey.create(WSRefRegistry.class);
     public static final AttachmentKey<WSEndpointHandlersMapping> WS_ENDPOINT_HANDLERS_MAPPING_KEY = AttachmentKey.create(WSEndpointHandlersMapping.class);
+    public static final AttachmentKey<WSEndpointConfigMapping> WS_ENDPOINT_CONFIG_MAPPING_KEY = AttachmentKey.create(WSEndpointConfigMapping.class);
     public static final AttachmentKey<ServerConfig> SERVER_CONFIG_KEY = AttachmentKey.create(ServerConfig.class);
 
     private WSAttachmentKeys() {
