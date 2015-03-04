@@ -98,8 +98,8 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             return; // Skip non web deployments
         }
 
-        if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
-            return; // skip non weld deployments
+        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+            return; // Skip non weld deployments
         }
 
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
