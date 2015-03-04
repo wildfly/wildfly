@@ -27,7 +27,7 @@
             xmlns="urn:jboss:pojo:7.0"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="1.1">
+            version="7.0">
 
     <xs:complexType name="deployment">
         <xs:sequence>
