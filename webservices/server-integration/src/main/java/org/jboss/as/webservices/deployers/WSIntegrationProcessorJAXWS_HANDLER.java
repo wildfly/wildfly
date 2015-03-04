@@ -93,7 +93,9 @@ public final class WSIntegrationProcessorJAXWS_HANDLER extends AbstractIntegrati
                 final String endpointClassName = classInfo.name().toString();
                 final ConfigResolver configResolver = new ConfigResolver(classInfo, jbossWebservicesMD, jwmd, root, war);
                 final EndpointConfig config = configResolver.resolveEndpointConfig();
-                registerConfigMapping(endpointClassName, config, unit);
+                if (config != null) {
+                    registerConfigMapping(endpointClassName, config, unit);
+                }
                 final Set<String> handlers = getHandlers(endpointClassName, config, configResolver, mapping);
                 if (!handlers.isEmpty()) {
                     if (isEjb3(classInfo)) {
