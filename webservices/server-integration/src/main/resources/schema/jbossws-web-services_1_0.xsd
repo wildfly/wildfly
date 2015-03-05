@@ -5,7 +5,7 @@
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   elementFormDefault="qualified"
   attributeFormDefault="unqualified"
-  version="1.1">
+  version="1.0">
 
   <xsd:element name="webservices" type="jboss:webservicesType"/>
 
