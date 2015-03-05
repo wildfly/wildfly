@@ -148,6 +148,11 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
         return Collections.emptyList();
     }
 
+    //@Override
+    public boolean isRuntime() {
+        return false;
+    }
+
     AttributeDefinition[] getAttributes() {
         return new AttributeDefinition[] { this.minThreads, this.maxThreads, this.queueLength, this.keepaliveTime };
     }
