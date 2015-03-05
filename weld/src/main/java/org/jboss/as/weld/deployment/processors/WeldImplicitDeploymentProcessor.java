@@ -3,6 +3,8 @@ package org.jboss.as.weld.deployment.processors;
 import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
 
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentDescription;
@@ -15,10 +17,13 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.discovery.AnnotationType;
 import org.jboss.as.weld.util.Utils;
+import org.jboss.jandex.Index;
 
 /**
  * Deployment processor that finds implicit bean archives (as defined by the CDI spec). If the deployment unit contains any such
@@ -44,15 +49,34 @@ public class WeldImplicitDeploymentProcessor implements DeploymentUnitProcessor 
         /*
          * look for classes with bean defining annotations
          */
-        final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         final Set<AnnotationType> beanDefiningAnnotations = new HashSet<>(getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS));
 
-        for (final AnnotationType annotation : beanDefiningAnnotations) {
-            if (!index.getAnnotations(annotation.getName()).isEmpty()) {
-                WeldDeploymentMarker.mark(deploymentUnit);
-                return;
+        final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
+        final ExplicitBeanArchiveMetadataContainer explicitBeanArchiveMetadata = deploymentUnit.getAttachment(ExplicitBeanArchiveMetadataContainer.ATTACHMENT_KEY);
+        final ResourceRoot classesRoot = deploymentUnit.getAttachment(WeldAttachments.CLASSES_RESOURCE_ROOT);
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+
+        for (Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
+            ResourceRoot resourceRoot = entry.getKey();
+            if (resourceRoot == classesRoot) {
+                // BDA for WEB-INF/classes is keyed under deploymentRoot in explicitBeanArchiveMetadata
+                resourceRoot = deploymentRoot;
+            }
+            /*
+             * Make sure bean defining annotations used in archives with bean-discovery-mode="none" are not considered here
+             * WFLY-4388
+             */
+            if (explicitBeanArchiveMetadata != null && explicitBeanArchiveMetadata.getBeanArchiveMetadata().containsKey(resourceRoot)) {
+                continue;
+            }
+            for (final AnnotationType annotation : beanDefiningAnnotations) {
+                if (!entry.getValue().getAnnotations(annotation.getName()).isEmpty()) {
+                    WeldDeploymentMarker.mark(deploymentUnit);
+                    return;
+                }
             }
         }
+
 
         /*
          * look for session beans and managed beans

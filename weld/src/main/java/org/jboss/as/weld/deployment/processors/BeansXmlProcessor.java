@@ -23,8 +23,10 @@ package org.jboss.as.weld.deployment.processors;
 
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -37,12 +39,13 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadata;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
 import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;
 import org.jboss.as.weld.deployment.WeldAttachments;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 
 /**
@@ -120,8 +123,14 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
         if (!beanArchiveMetadata.isEmpty()) {
             ExplicitBeanArchiveMetadataContainer deploymentMetadata = new ExplicitBeanArchiveMetadataContainer(beanArchiveMetadata);
             deploymentUnit.putAttachment(ExplicitBeanArchiveMetadataContainer.ATTACHMENT_KEY, deploymentMetadata);
-            // mark the deployment as requiring CDI integration
-            WeldDeploymentMarker.mark(deploymentUnit);
+
+            for (Iterator<Entry<ResourceRoot, ExplicitBeanArchiveMetadata>> iterator = beanArchiveMetadata.entrySet().iterator(); iterator.hasNext(); ) {
+                if (BeanDiscoveryMode.NONE != iterator.next().getValue().getBeansXml().getBeanDiscoveryMode()) {
+                    // mark the deployment as requiring CDI integration as long as it contains at least one bean archive with bean-discovery-mode other than "none"
+                    WeldDeploymentMarker.mark(deploymentUnit);
+                    break;
+                }
+            }
         }
     }
 
