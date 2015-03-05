@@ -9,8 +9,7 @@ fi
 
 if [ -d maven ]; then
   echo "Maven already exists"
-  version=`./maven/bin/mvn -version | grep "Apache Maven $MAVEN_VERSION"`
-  if [ "$version" ]; then
+  if version=`./maven/bin/mvn -version | grep "Apache Maven $MAVEN_VERSION"`; then
     echo "Maven is correct version"
     exit
   fi
