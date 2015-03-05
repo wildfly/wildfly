@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -44,6 +44,9 @@ public final class JacORBSubsystemConstants {
     public static final String CLIENT = "client";
     public static final String ORB = "orb";
     public static final String NAME = "name";
+    public static final String ON = "on";
+    public static final String OFF = "off";
+    public static final String ORB_PERSISTENT_SERVER_ID = "persistent-server-id";
     public static final String ORB_PRINT_VERSION = "print-version";
     public static final String ORB_USE_IMR = "use-imr";
     public static final String ORB_USE_BOM = "use-bom";

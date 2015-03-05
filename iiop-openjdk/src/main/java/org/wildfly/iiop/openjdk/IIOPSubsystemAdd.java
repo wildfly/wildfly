@@ -25,6 +25,7 @@ package org.wildfly.iiop.openjdk;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Collection;
 import java.util.Properties;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.InitialContext;
@@ -86,6 +88,13 @@ import com.sun.corba.se.impl.orbutil.ORBConstants;
 public class IIOPSubsystemAdd extends AbstractAddStepHandler {
 
     static final IIOPSubsystemAdd INSTANCE = new IIOPSubsystemAdd();
+
+    protected IIOPSubsystemAdd() {
+    }
+
+    protected IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
+        super(attributes);
+    }
 
     private static final ServiceName SECURITY_DOMAIN_SERVICE_NAME = ServiceName.JBOSS.append("security").append(
             "security-domain");
@@ -207,7 +216,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         final ModelNode configNode = model.get(Constants.CONFIGURATION);
         if (configNode.hasDefined(Constants.IOR_SETTINGS)) {
             securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
-                    model.get(IORSettingsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+                    model.get(getIORSettingsPath().getKeyValuePair()));
         }
         context.getServiceTarget().addService(IORSecConfigMetaDataService.SERVICE_NAME,
                 new IORSecConfigMetaDataService(securityConfigMetaData))
@@ -216,6 +225,10 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
 
         configureClientSecurity(props);
 
+    }
+
+    protected PathElement getIORSettingsPath() {
+        return IORSettingsDefinition.INSTANCE.getPathElement();
     }
 
     /**
@@ -229,7 +242,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
      * @return a {@code Properties} instance containing all configured subsystem properties.
      * @throws OperationFailedException if an error occurs while resolving the properties.
      */
-    private Properties getConfigurationProperties(OperationContext context, ModelNode model) throws OperationFailedException {
+    protected Properties getConfigurationProperties(OperationContext context, ModelNode model) throws OperationFailedException {
         Properties props = new Properties();
 
         getResourceProperties(props, ORBDefinition.INSTANCE, context,

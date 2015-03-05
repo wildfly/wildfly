@@ -1,0 +1,18 @@
+<subsystem xmlns="urn:jboss:domain:jacorb:2.0">
+    <orb persistent-server-id="1" giop-minor-version ="2" socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
+        <initializers security="off" transactions="spec"/>
+    </orb>
+    <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
+    <interop iona="off" />
+    <security support-ssl="off" add-component-via-interceptor="on" client-supports="MutualAuth"
+              client-requires="None" server-supports="MutualAuth" server-requires="None"/>
+    <properties>
+        <property name="some_property" value="some_value"/>
+    </properties>
+    <ior-settings>
+        <transport-config integrity="required" confidentiality="required" detect-replay="supported" detect-misordering="supported"
+                          trust-in-client="none" trust-in-target="none"/>
+        <as-context auth-method="username_password" realm="test_realm" required="true"/>
+        <sas-context caller-propagation="supported"/>
+    </ior-settings>
+</subsystem>

@@ -1,6 +1,6 @@
 /*
 * JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
+* Copyright 2014, Red Hat Middleware LLC, and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
 * distribution for a full listing of individual contributors.
 *
@@ -47,9 +47,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * <ṕ>
- * JacORB subsystem tests.
- * </ṕ>
+ * <ṕ> JacORB subsystem tests. </ṕ>
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
@@ -62,12 +60,12 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-1.2.xml");
+        return readResource("subsystem.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-jacorb_1_4.xsd";
+        return "schema/jboss-as-jacorb_2_0.xsd";
     }
 
     @Override
@@ -82,41 +80,16 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource(configId);
     }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization() {
-
-            @Override
-            protected ProcessType getProcessType() {
-                return ProcessType.HOST_CONTROLLER;
-            }
-
-            @Override
-            protected RunningMode getRunningMode() {
-                return RunningMode.ADMIN_ONLY;
-            }
-        };
-    }
-
-    @Override
-    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
-        final ModelNode operation = createDescribeOperation();
-        final ModelNode result = hc.executeOperation(operation);
-        Assert.assertTrue("The subsystem describe operation must fail",
-                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
-    }
-
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("expressions-1.2.xml");
+        standardSubsystemTest("expressions.xml");
     }
 
     @Test
     public void testParseEmptySubsystem() throws Exception {
         // parse the subsystem xml into operations.
-        String subsystemXml =
-                "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
-                "</subsystem>";
+        String subsystemXml = "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">"
+                + "</subsystem>";
         List<ModelNode> operations = super.parse(subsystemXml);
 
         // check that we have the expected number of operations.
@@ -135,10 +108,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testParseSubsystemWithBadChild() throws Exception {
         // try parsing a XML with an invalid element.
-        String subsystemXml =
-                "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
-                "   <invalid/>" +
-                "</subsystem>";
+        String subsystemXml = "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">"
+                + "   <invalid/>" + "</subsystem>";
         try {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad child");
@@ -146,12 +117,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
 
         // now try parsing a valid element in an invalid position.
-        subsystemXml =
-                "<subsystem xmlns=\"urn:jboss:domain:jacorb:1.0\">" +
-                "    <orb name=\"JBoss\" print-version=\"off\">" +
-                "        <poa/>" +
-                "    </orb>" +
-                "</subsystem>";
+        subsystemXml = "<subsystem xmlns=\"urn:jboss:domain:jacorb:1.0\">" + "    <orb name=\"JBoss\" print-version=\"off\">"
+                + "        <poa/>" + "    </orb>" + "</subsystem>";
         try {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad child");
@@ -162,9 +129,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testParseSubsystemWithBadAttribute() throws Exception {
-        String subsystemXml =
-                "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.CURRENT.getUriString() + "\" bad=\"very_bad\">" +
-                "</subsystem>";
+        String subsystemXml = "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.CURRENT.getUriString()
+                + "\" bad=\"very_bad\">" + "</subsystem>";
         try {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad attribute");
@@ -193,9 +159,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testParseEmptySubsystem_1_0() throws Exception {
         // parse the subsystem xml into operations.
-        String subsystemXml =
-                "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString() + "\">" +
-                "</subsystem>";
+        String subsystemXml = "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString() + "\">"
+                + "</subsystem>";
         List<ModelNode> operations = super.parse(subsystemXml);
 
         // check that we have the expected number of operations.
@@ -213,10 +178,8 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testParseSubsystemWithBadInitializer_1_0() throws Exception {
-        String subsystemXml =
-                "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString() + "\">" +
-                "   <initializers>invalid</initializers>" +
-                "</subsystem>";
+        String subsystemXml = "<subsystem xmlns=\"" + JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString() + "\">"
+                + "   <initializers>invalid</initializers>" + "</subsystem>";
         try {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad initializer");
@@ -226,17 +189,38 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testSubsystemWithSecurityIdentity() throws Exception {
-        super.standardSubsystemTest("subsystem-1.2-security-identity.xml");
+        super.standardSubsystemTest("subsystem-security-identity.xml");
     }
 
     @Test
     public void testSubsystemWithSecurityClient() throws Exception {
-        super.standardSubsystemTest("subsystem-1.2-security-client.xml");
+        super.standardSubsystemTest("subsystem-security-client.xml");
     }
 
     @Test
     public void testSubsystemWithIORSettings() throws Exception {
-        super.standardSubsystemTest("subsystem-1.4-ior-settings.xml");
+        super.standardSubsystemTest("subsystem-ior-settings.xml");
     }
 
+    @Test
+    public void testSubsystemWithRejectedOnOffAttributeTurnedOff() throws Exception {
+        super.standardSubsystemTest("subsystem-rejected-onoff-attribute-turned-off.xml");
+    }
+
+    @Test
+    public void testSubsystemWithRejectedOnOffAttribute() throws Exception {
+        testAttributeRejection("subsystem-rejected-onoff-attribute.xml");
+    }
+
+    @Test
+    public void testSubsystemWithRejectedAttribute() throws Exception {
+        testAttributeRejection("subsystem-rejected-onoff-attribute.xml");
+    }
+
+    public void testAttributeRejection(final String configId) throws Exception {
+        final String subsystemXml = getSubsystemXml(configId);
+        final KernelServices services = super.createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml).build();
+        Assert.assertFalse("Subsystem is supposed to fail", services.isSuccessfulBoot());
+    }
 }

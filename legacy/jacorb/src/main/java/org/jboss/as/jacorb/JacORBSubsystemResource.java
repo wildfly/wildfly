@@ -22,41 +22,51 @@
 
 package org.jboss.as.jacorb;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyResourceDefinition;
+import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Tomaz Cerar
- * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  */
-public class JacORBSubsystemResource extends ModelOnlyResourceDefinition {
+public class JacORBSubsystemResource extends SimpleResourceDefinition {
     public static final JacORBSubsystemResource INSTANCE = new JacORBSubsystemResource();
 
     private JacORBSubsystemResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME), JacORBExtension
-                .getResourceDescriptionResolver(), JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES
-                .toArray(new AttributeDefinition[0]));
-                setDeprecated(JacORBExtension.DEPRECATED_SINCE);
+                .getResourceDescriptionResolver(), JacORBSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE, null,
+                null, new DeprecationData((JacORBExtension.DEPRECATED_SINCE)));
     }
-
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        OperationStepHandler attributeHander = new JacorbReloadRequiredWriteAttributeHandler(JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
+        OperationStepHandler attributeHander = new JacorbReloadRequiredWriteAttributeHandler(
+                JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
         for (AttributeDefinition attr : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr, null, attributeHander);
         }
+    }
+
+    @Override
+    public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(IORSettingsDefinition.INSTANCE);
     }
 
     private static class JacorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
@@ -65,10 +75,34 @@ public class JacORBSubsystemResource extends ModelOnlyResourceDefinition {
         }
 
         @Override
-        protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
-                ModelNode oldValue, Resource model) throws OperationFailedException {
-            //Make sure that security=on becomes security=identity
-            if (attributeName.equals(JacORBSubsystemConstants.ORB_INIT_SECURITY) && newValue.asString().equals("on")) {
+        protected void validateUpdatedModel(final OperationContext context, final Resource resource)
+                throws OperationFailedException {
+            final ModelNode model = resource.getModel();
+            if (!context.getProcessType().equals(ProcessType.HOST_CONTROLLER)) {
+                final List<String> propertiesToReject = new LinkedList<String>();
+                for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ON_OFF_ATTRIBUTES_TO_REJECT) {
+                    if (model.hasDefined(attribute.getName())
+                            && model.get(attribute.getName()).equals(JacORBSubsystemDefinitions.DEFAULT_ENABLED_PROPERTY)) {
+                        propertiesToReject.add(attribute.getName());
+                    }
+                }
+                for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ATTRIBUTES_TO_REJECT) {
+                    if (model.hasDefined(attribute.getName())) {
+                        propertiesToReject.add(attribute.getName());
+                    }
+                }
+                if (!propertiesToReject.isEmpty()) {
+                    throw JacORBLogger.ROOT_LOGGER.cannotEmulateProperties(propertiesToReject);
+                }
+            }
+        }
+
+        @Override
+        protected void finishModelStage(final OperationContext context, final ModelNode operation, final String attributeName,
+                final ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+            // Make sure that security=on becomes security=identity
+            if (attributeName.equals(JacORBSubsystemConstants.ORB_INIT_SECURITY)
+                    && newValue.asString().equals(JacORBSubsystemConstants.ON)) {
                 newValue.set(JacORBSubsystemConstants.IDENTITY);
             }
             super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
