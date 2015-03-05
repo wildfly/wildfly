@@ -31,9 +31,6 @@ import org.jboss.as.clustering.controller.transform.SimpleResourceTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleUndefineAttributeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleWriteAttributeOperationTransformer;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -46,7 +43,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -105,26 +101,5 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         registration.registerReadWriteAttribute(VALUE, null, new ReloadRequiredWriteAttributeHandler(VALUE));
-    }
-
-    /**
-     * Add a step triggering the {@linkplain org.jboss.as.controller.OperationContext#reloadRequired()} in case the
-     * the cache service is installed, since the transport-config operations need a reload/restart and can't be
-     * applied to the runtime directly.
-     *
-     * @param context the operation context
-     */
-    static void reloadRequiredStep(final OperationContext context) {
-        if (context.getProcessType().isServer() &&  !context.isBooting()) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    // add some condition here if reload needs to be conditional on context
-                    // e.g. if a service is not installed, don't do a reload
-                    context.reloadRequired();
-                    context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
     }
 }
