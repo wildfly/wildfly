@@ -84,21 +84,6 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
             .setAllowNull(true)
             .build();
 
-    // operations
-    @Deprecated
-    static final OperationDefinition ADD_PROTOCOL = new SimpleOperationDefinitionBuilder(ModelKeys.ADD_PROTOCOL, JGroupsExtension.getResourceDescriptionResolver("stack"))
-            .setParameters(ProtocolResourceDefinition.SOCKET_BINDING)
-            .addParameter(ProtocolResourceDefinition.TYPE)
-            .addParameter(ProtocolResourceDefinition.PROPERTIES)
-            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .build();
-
-    @Deprecated
-    static final OperationDefinition REMOVE_PROTOCOL = new SimpleOperationDefinitionBuilder(ModelKeys.REMOVE_PROTOCOL, JGroupsExtension.getResourceDescriptionResolver("stack"))
-            .setParameters(ProtocolResourceDefinition.TYPE)
-            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .build();
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
@@ -128,7 +113,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
 
     // registration
     public StackResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK), null, new StackRemoveHandler());
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.STACK), null, new StackRemoveHandler());
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
@@ -136,10 +121,10 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registration) {
         super.registerOperations(registration);
 
-        OperationDefinition addOperation = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK))
+        OperationDefinition addOperation = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.getResourceDescriptionResolver())
                 .addParameter(TRANSPORT) // Deprecated
                 .addParameter(PROTOCOLS) // Deprecated
-                .setAttributeResolver(JGroupsExtension.getResourceDescriptionResolver("stack.add"))
+                .setAttributeResolver(new JGroupsResourceDescriptionResolver(ModelKeys.STACK, ModelDescriptionConstants.ADD))
                 .build();
 
         // Transform deprecated ADD parameters into individual add operations
@@ -202,6 +187,12 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
         };
         registration.registerOperationHandler(addOperation, addHandler);
 
+        OperationDefinition legacyAddProtocolOperation = new SimpleOperationDefinitionBuilder(ModelKeys.ADD_PROTOCOL, this.getResourceDescriptionResolver())
+                .setParameters(ProtocolResourceDefinition.SOCKET_BINDING)
+                .addParameter(ProtocolResourceDefinition.TYPE)
+                .addParameter(ProtocolResourceDefinition.PROPERTIES)
+                .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
+                .build();
         // Transform legacy /subsystem=jgroups/stack=*:add-protocol() operation -> /subsystem=jgroups/stack=*/protocol=*:add()
         OperationStepHandler legacyAddProtocolHandler = new OperationStepHandler() {
             @Override
@@ -226,8 +217,12 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
                 }
             }
         };
-        registration.registerOperationHandler(ADD_PROTOCOL, legacyAddProtocolHandler);
+        registration.registerOperationHandler(legacyAddProtocolOperation, legacyAddProtocolHandler);
 
+        OperationDefinition legacyRemoveProtocolOperation = new SimpleOperationDefinitionBuilder(ModelKeys.REMOVE_PROTOCOL, this.getResourceDescriptionResolver())
+                .setParameters(ProtocolResourceDefinition.TYPE)
+                .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
+                .build();
         // Transform legacy /subsystem=jgroups/stack=*:remove-protocol() operation -> /subsystem=jgroups/stack=*/protocol=*:remove()
         OperationStepHandler legacyRemoveProtocolHandler = new OperationStepHandler() {
             @Override
@@ -239,11 +234,11 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
                 context.addStep(removeOperation, ReloadRequiredRemoveStepHandler.INSTANCE, context.getCurrentStage());
             }
         };
-        registration.registerOperationHandler(REMOVE_PROTOCOL, legacyRemoveProtocolHandler);
+        registration.registerOperationHandler(legacyRemoveProtocolOperation, legacyRemoveProtocolHandler);
 
         // register export-native-configuration
         if (this.allowRuntimeOnlyRegistration) {
-            OperationDefinition exportOperation = new SimpleOperationDefinitionBuilder(ModelKeys.EXPORT_NATIVE_CONFIGURATION, JGroupsExtension.getResourceDescriptionResolver("stack")).setReplyType(ModelType.STRING).build();
+            OperationDefinition exportOperation = new SimpleOperationDefinitionBuilder(ModelKeys.EXPORT_NATIVE_CONFIGURATION, this.getResourceDescriptionResolver()).setReplyType(ModelType.STRING).build();
             registration.registerOperationHandler(exportOperation, new ExportNativeConfiguration());
         }
     }

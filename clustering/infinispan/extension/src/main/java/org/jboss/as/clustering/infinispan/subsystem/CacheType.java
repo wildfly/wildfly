@@ -62,7 +62,7 @@ enum CacheType {
     }
 
     public ResourceDescriptionResolver getResourceDescriptionResolver() {
-        return InfinispanExtension.getResourceDescriptionResolver(this.key);
+        return new InfinispanResourceDescriptionResolver(this.key);
     }
 
     public PathElement pathElement() {

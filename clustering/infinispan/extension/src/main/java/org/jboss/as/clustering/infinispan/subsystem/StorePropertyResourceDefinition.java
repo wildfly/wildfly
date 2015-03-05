@@ -66,7 +66,7 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
     }
 
     StorePropertyResourceDefinition() {
-        super(WILDCARD_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY),
+        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(ModelKeys.PROPERTY),
                 new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

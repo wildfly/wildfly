@@ -1,15 +1,39 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2015, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 
 /**
  * Custom resource description resolver to handle resources structured in a class hierarchy
@@ -17,12 +41,24 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class InfinispanResourceDescriptionResolver extends StandardResourceDescriptionResolver {
+public class InfinispanResourceDescriptionResolver extends SubsystemResourceDescriptionResolver {
 
-    private Map<String, String> sharedAttributeResolver = new HashMap<String, String>();
+    private Map<String, String> sharedAttributeResolver = new HashMap<>();
 
-    public InfinispanResourceDescriptionResolver(String keyPrefix, String bundleBaseName, ClassLoader bundleLoader) {
-        super(keyPrefix, bundleBaseName, bundleLoader, true, false);
+    InfinispanResourceDescriptionResolver() {
+        this(Collections.<String>emptyList());
+    }
+
+    InfinispanResourceDescriptionResolver(String keyPrefix) {
+        this(Collections.singletonList(keyPrefix));
+    }
+
+    InfinispanResourceDescriptionResolver(String... keyPrefixes) {
+        this(Arrays.asList(keyPrefixes));
+    }
+
+    private InfinispanResourceDescriptionResolver(List<String> keyPrefixes) {
+        super(InfinispanExtension.SUBSYSTEM_NAME, keyPrefixes, InfinispanExtension.class);
         initMap();
     }
 

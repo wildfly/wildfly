@@ -59,10 +59,9 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CLASS };
 
     // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
+    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, new InfinispanResourceDescriptionResolver(ModelKeys.STORE))
             .setParameters(PARAMETERS)
             .addParameter(CLASS)
-            .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
             .build();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {

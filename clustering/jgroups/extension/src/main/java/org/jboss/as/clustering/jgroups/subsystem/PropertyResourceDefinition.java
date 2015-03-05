@@ -99,7 +99,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
 
     // registration
     PropertyResourceDefinition() {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY), new ReloadRequiredAddStepHandler(VALUE), new ReloadRequiredRemoveStepHandler());
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.PROPERTY), new ReloadRequiredAddStepHandler(VALUE), new ReloadRequiredRemoveStepHandler());
     }
 
     @Override

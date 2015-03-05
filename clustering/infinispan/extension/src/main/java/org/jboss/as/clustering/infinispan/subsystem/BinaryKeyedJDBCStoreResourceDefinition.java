@@ -50,7 +50,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { BINARY_KEYED_TABLE };
 
     // operations
-    private static final OperationDefinition BINARY_KEYED_JDBC_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE))
+    private static final OperationDefinition BINARY_KEYED_JDBC_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, new InfinispanResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE))
             .setParameters(PARAMETERS)
             .addParameter(DATA_SOURCE)
             .addParameter(DIALECT)

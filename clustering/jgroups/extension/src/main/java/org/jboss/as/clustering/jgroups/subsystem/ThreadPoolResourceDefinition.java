@@ -80,7 +80,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
 
     private ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
         this.name = name;
-        this.descriptionResolver = JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT, ModelKeys.THREAD_POOL);
+        this.descriptionResolver = new JGroupsResourceDescriptionResolver(ModelKeys.TRANSPORT, ModelKeys.THREAD_POOL);
         this.minThreads = new SimpleAttributeDefinitionBuilder(Attribute.MIN_THREADS.getLocalName(), ModelType.INT, true)
                 .setDefaultValue(new ModelNode(defaultMinThreads))
                 .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true))

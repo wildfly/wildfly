@@ -85,7 +85,7 @@ public class ExpirationResourceDefinition extends SimpleResourceDefinition {
     }
 
     ExpirationResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.EXPIRATION),
+        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.EXPIRATION),
                 new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

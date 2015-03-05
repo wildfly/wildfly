@@ -42,7 +42,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DefaultCheckersAndConverter;
@@ -191,8 +191,8 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
         SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    DistributedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(CacheType.DISTRIBUTED, resolvePathHandler, allowRuntimeOnlyRegistration);
+    DistributedCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(CacheType.DISTRIBUTED, pathManager, allowRuntimeOnlyRegistration);
     }
 
     @Override

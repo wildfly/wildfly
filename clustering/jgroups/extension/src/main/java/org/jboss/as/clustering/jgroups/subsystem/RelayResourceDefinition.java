@@ -32,7 +32,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -46,7 +45,6 @@ import org.jboss.dmr.ModelType;
 public class RelayResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
-    private static final ResourceDescriptionResolver RESOLVER = JGroupsExtension.getResourceDescriptionResolver(ModelKeys.RELAY);
 
     static final SimpleAttributeDefinition SITE = new SimpleAttributeDefinitionBuilder(ModelKeys.SITE, ModelType.STRING, false)
             .setXmlName(Attribute.SITE.getLocalName())
@@ -76,7 +74,7 @@ public class RelayResourceDefinition extends SimpleResourceDefinition {
     }
 
     RelayResourceDefinition() {
-        super(PATH, RESOLVER, new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, new JGroupsResourceDescriptionResolver(ModelKeys.RELAY), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

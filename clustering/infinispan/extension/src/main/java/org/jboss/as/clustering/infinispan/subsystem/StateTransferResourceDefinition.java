@@ -83,7 +83,7 @@ public class StateTransferResourceDefinition extends SimpleResourceDefinition {
     }
 
     StateTransferResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STATE_TRANSFER),
+        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.STATE_TRANSFER),
                 new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

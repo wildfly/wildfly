@@ -106,7 +106,7 @@ public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
     private final boolean runtimeRegistration;
 
     BackupSiteResourceDefinition(final boolean runtimeRegistration) {
-        super(WILDCARD_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(ModelKeys.BACKUP), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.runtimeRegistration = runtimeRegistration;
     }
 

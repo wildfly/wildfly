@@ -36,6 +36,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -69,11 +70,10 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { RELATIVE_TO, RELATIVE_PATH };
 
     // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
+    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, new InfinispanResourceDescriptionResolver(ModelKeys.FILE_STORE))
             .setParameters(PARAMETERS)
             .addParameter(RELATIVE_TO)
             .addParameter(RELATIVE_PATH)
-            .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
             .build();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -86,11 +86,11 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResolvePathHandler resolvePathHandler;
+    private final PathManager pathManager;
 
-    FileStoreResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+    FileStoreResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
         super(StoreType.FILE, allowRuntimeOnlyRegistration);
-        this.resolvePathHandler = resolvePathHandler;
+        this.pathManager = pathManager;
     }
 
     @Override
@@ -107,8 +107,9 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     @Override
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
         registration.registerOperationHandler(ADD_DEFINITION, handler);
-        if (this.resolvePathHandler != null) {
-            registration.registerOperationHandler(this.resolvePathHandler.getOperationDefinition(), this.resolvePathHandler);
+        if (this.pathManager != null) {
+            ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(this.pathManager).setPathAttribute(RELATIVE_PATH).setRelativeToAttribute(RELATIVE_TO).build();
+            registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
         }
     }
 }
