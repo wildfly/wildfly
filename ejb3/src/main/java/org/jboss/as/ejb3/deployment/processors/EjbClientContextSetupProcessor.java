@@ -63,7 +63,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        RegistractionService registractionService = new RegistractionService(module);
+        RegistrationService registractionService = new RegistrationService(module);
         ServiceName registrationServiceName = deploymentUnit.getServiceName().append("ejb3","client-context","registration-service");
         phaseContext.getServiceTarget().addService(registrationServiceName, registractionService)
                 .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContext.class, registractionService.ejbClientContextInjectedValue)
@@ -102,14 +102,14 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         return DefaultEjbClientContextService.DEFAULT_SERVICE_NAME;
     }
 
-    private static final class RegistractionService implements Service<Void> {
+    private static final class RegistrationService implements Service<Void> {
 
         private final Module module;
 
         final InjectedValue<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelectorServiceController = new InjectedValue<TCCLEJBClientContextSelectorService>();
         final InjectedValue<EJBClientContext> ejbClientContextInjectedValue = new InjectedValue<EJBClientContext>();
 
-        private RegistractionService(Module module) {
+        private RegistrationService(Module module) {
             this.module = module;
         }
 
