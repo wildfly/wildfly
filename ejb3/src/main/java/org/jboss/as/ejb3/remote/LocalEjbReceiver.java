@@ -30,6 +30,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -226,10 +227,18 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                         setSecurityContextOnAssociation(securityContext);
                         try {
                             Object result = view.invoke(interceptorContext);
+                            // if the result is null, there is no cloning needed
+                            if(result == null) {
+                                return result;
+                            }
                             // WFLY-4331 - clone the result of an async task
-                            if(result instanceof AsyncResult) {
-                                  Object asyncValue = ((AsyncResult)result).get();
-                              return new AsyncResult(LocalEjbReceiver.clone(asyncValue.getClass(), resultCloner, asyncValue, allowPassByReference));
+                            if(result instanceof Future) {
+                                Object asyncValue = ((Future)result).get();
+                                // if the return value is null, there is no cloning needed
+                                if(asyncValue == null) {
+                                    return asyncValue;
+                                }
+                                return new AsyncResult(LocalEjbReceiver.clone(asyncValue.getClass(), resultCloner, asyncValue, allowPassByReference));
                             }
                             return LocalEjbReceiver.clone(result.getClass(), resultCloner, result, allowPassByReference);
                         } catch(ExecutionException e) {
