@@ -98,11 +98,8 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             return; // Skip non web deployments
         }
 
-        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            return; // Skip non weld deployments
-        }
-
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+
         if (warMetaData == null) {
             WeldLogger.DEPLOYMENT_LOGGER.debug("Not installing Weld web tier integration as no war metadata found");
             return;
@@ -112,9 +109,14 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             WeldLogger.DEPLOYMENT_LOGGER.debug("Not installing Weld web tier integration as no merged web metadata found");
             return;
         }
+        if(!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+            if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+                createDependency(deploymentUnit, warMetaData);
+            }
+            return;
+        }
 
-        final ServiceName weldStartService = (deploymentUnit.getParent() != null ? deploymentUnit.getParent() : deploymentUnit).getServiceName().append(WeldStartService.SERVICE_NAME);
-        warMetaData.addAdditionalDependency(weldStartService);
+        createDependency(deploymentUnit, warMetaData);
 
         List<ListenerMetaData> listeners = webMetaData.getListeners();
         if (listeners == null) {
@@ -179,6 +181,11 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             }
 
         }
+    }
+
+    private void createDependency(DeploymentUnit deploymentUnit, WarMetaData warMetaData) {
+        final ServiceName weldStartService = (deploymentUnit.getParent() != null ? deploymentUnit.getParent() : deploymentUnit).getServiceName().append(WeldStartService.SERVICE_NAME);
+        warMetaData.addAdditionalDependency(weldStartService);
     }
 
     private void setupWeldContextIgnores(List<ParamValueMetaData> contextParams, String parameterName) {
