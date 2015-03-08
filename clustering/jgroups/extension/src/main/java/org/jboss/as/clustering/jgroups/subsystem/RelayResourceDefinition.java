@@ -30,7 +30,6 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -50,18 +49,6 @@ public class RelayResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(Attribute.SITE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .build();
-
-    static final SimpleAttributeDefinition REMOTE_SITE = new SimpleAttributeDefinition(ModelKeys.REMOTE_SITE, ModelType.PROPERTY, true);
-
-    static final SimpleListAttributeDefinition REMOTE_SITES = new SimpleListAttributeDefinition.Builder(ModelKeys.REMOTE_SITES, REMOTE_SITE)
-            .setAllowNull(true)
-            .build();
-
-    static final SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
-
-    static final SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY)
-            .setAllowNull(true)
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SITE };

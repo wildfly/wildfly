@@ -50,7 +50,6 @@ class ModelKeys {
     static final String RELAY = "relay";
     static final String RELAY_NAME = "RELAY";
     static final String REMOTE_SITE = "remote-site";
-    static final String REMOTE_SITES = "remote-sites";
     @Deprecated static final String REMOVE_PROTOCOL = "remove-protocol";
     static final String SHARED = "shared";
     static final String SITE = "site";
