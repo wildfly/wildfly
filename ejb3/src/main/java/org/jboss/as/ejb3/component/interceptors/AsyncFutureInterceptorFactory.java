@@ -28,10 +28,12 @@ import java.security.PrivilegedAction;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.remoting3.Connection;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.plugins.JBossSecurityContext;
@@ -89,14 +91,20 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                     // we can't do anything if it isn't a JBossSecurityContext so just use the original one
                     clonedSecurityContext = securityContext;
                 }
+                final Connection remoteConnection = getConnection();
                 final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
                     @Override
                     protected Object runInvocation() throws Exception {
                         setSecurityContextOnAssociation(clonedSecurityContext);
+                        setConnection(remoteConnection);
                         try {
                             return asyncInterceptorContext.proceed();
                         } finally {
-                            clearSecurityContextOnAssociation();
+                            try {
+                                clearSecurityContextOnAssociation();
+                            } finally {
+                                clearConnection();
+                            }
                         }
                     }
                 };
@@ -115,6 +123,46 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                 return task;
             }
         };
+    }
+
+    private void setConnection(final Connection remoteConnection) {
+        if (WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+                @Override
+                public Void run() {
+                    RemotingContext.setConnection(remoteConnection);
+                    return null;
+                }
+            });
+        } else {
+            RemotingContext.setConnection(remoteConnection);
+        }
+    }
+
+    private void clearConnection() {
+        if (WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+                @Override
+                public Void run() {
+                    RemotingContext.clear();
+                    return null;
+                }
+            });
+        } else {
+            RemotingContext.clear();
+        }
+    }
+    private Connection getConnection() {
+        if(WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Connection>() {
+                @Override
+                public Connection run() {
+                    return RemotingContext.getConnection();
+                }
+            });
+        } else {
+            return RemotingContext.getConnection();
+        }
     }
 
     private static void setSecurityContextOnAssociation(final SecurityContext sc) {
