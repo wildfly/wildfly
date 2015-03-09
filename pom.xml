@@ -293,6 +293,7 @@
         <module>sar</module>
         <module>security</module>
         <module>security-manager</module>
+        <module>system-jmx</module>
         <module>spec-api</module>
         <module>transactions</module>
         <module>undertow</module>
@@ -1403,9 +1404,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly.core</groupId>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-system-jmx</artifactId>
-                <version>${version.org.wildfly.core}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
