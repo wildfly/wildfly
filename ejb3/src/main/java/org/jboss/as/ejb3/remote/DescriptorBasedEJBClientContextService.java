@@ -45,6 +45,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Connection;
 import org.xnio.IoFuture;
+import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 /**
@@ -112,6 +113,15 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
 
     @Override
     public synchronized void stop(StopContext context) {
+        final RemotingProfileService profileService=profileServiceValue.getValue();
+        final LocalEjbReceiver localEjbReceiver = profileService.getLocalEjbReceiverInjector().getOptionalValue();
+        if (localEjbReceiver != null) {
+            this.ejbClientContext.unregisterEJBReceiver(localEjbReceiver);
+            logger.debugf("Removed a local EJB receiver from descriptor based EJB client context named %s", context.getController().getName());
+        }
+        if(this.ejbClientContext != null) {
+            IoUtils.safeClose(this.ejbClientContext);
+        }
         this.ejbClientContext = null;
     }
 

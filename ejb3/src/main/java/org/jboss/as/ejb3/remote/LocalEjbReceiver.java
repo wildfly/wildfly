@@ -670,4 +670,49 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             this.cluster.removeListener(this);
         }
     }
+
+    @Override
+    protected void disassociate(EJBReceiverContext receiverContext) {
+        this.contexts.remove(receiverContext);
+
+        final RegistryCollector<String, List<ClientMapping>> clusters = this.clusterRegistryCollector.getOptionalValue();
+        if (clusters == null) {
+            return;
+        }
+
+        // for each cluster update the EJB client context with the current nodes in the cluster
+        for (final Registry<String, List<ClientMapping>> cluster : clusters.getRegistries()) {
+            this.removeClusterNodes(receiverContext.getClientContext(), cluster.getGroup().getName(), cluster.getEntries());
+        }
+    }
+
+    private void removeClusterNodes(final EJBClientContext ejbClientContext, final String clusterName, final Map<String, List<ClientMapping>> removedNodes) {
+        if (removedNodes == null || removedNodes.isEmpty()) {
+            return;
+        }
+        final EJBRemoteConnectorService ejbRemoteConnectorService = this.ejbRemoteConnectorServiceValue.getOptionalValue();
+        final Endpoint endpoint = this.endpointValue.getOptionalValue();
+        if(ejbRemoteConnectorService == null || endpoint == null) {
+            return;
+        }
+
+        final ClusterContext clusterContext = ejbClientContext.getClusterContext(clusterName);
+        // remove the nodes from the cluster context
+        for (Map.Entry<String, List<ClientMapping>> entry : removedNodes.entrySet()) {
+            final String removedNodeName = entry.getKey();
+            // if the current node is being removed, then let the local receiver handle it
+            if (LocalEjbReceiver.this.getNodeName().equals(removedNodeName)) {
+                clusterContext.removeClusterNode(removedNodeName);
+                continue;
+            }
+            // if the EJB client context is the default server level EJB client context
+            // which can only handle local receiver and no remote receivers (due to lack of configurations
+            // to connect to them), then skip that context
+            if (this.isLocalOnlyEJBClientContext(ejbClientContext)) {
+                logger.debug("Skipping cluster node removal to EJB client context " + ejbClientContext + " since it can only handle local node");
+                continue;
+            }
+            clusterContext.removeClusterNode(removedNodeName);
+        }
+    }
 }
