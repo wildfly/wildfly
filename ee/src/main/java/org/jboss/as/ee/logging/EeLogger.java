@@ -1064,8 +1064,8 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 106, value = "EE Concurrent Context %s service not installed.")
     IOException concurrentContextServiceNotInstalled(ServiceName serviceName);
 
-    //@Message(id = 107, value = "EE Concurrent Transaction Setup Provider service not installed.")
-    //IllegalStateException transactionSetupProviderServiceNotInstalled();
+    @Message(id = 107, value = "EE Concurrent Transaction Setup Provider service not installed.")
+    IllegalStateException transactionSetupProviderServiceNotInstalled();
 
     @Message(id = 108, value = "Instance data can only be set during construction")
     IllegalStateException instanceDataCanOnlyBeSetDuringConstruction();
