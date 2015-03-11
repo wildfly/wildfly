@@ -162,6 +162,9 @@ public class AnnotationAuthorizationTestCase {
             response = rolesAllowedOverridenBean.role2Echo("4");
             assertEquals("4", response);
 
+            response = rolesAllowedOverridenBean.role2EchoWithChar("4", null);
+            assertEquals("4", response);
+            
         } finally {
             lc.logout();
         }

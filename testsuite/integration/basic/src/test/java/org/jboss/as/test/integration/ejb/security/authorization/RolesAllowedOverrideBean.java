@@ -55,4 +55,9 @@ public class RolesAllowedOverrideBean {
         return message;
     }
 
+    @RolesAllowed("Role2")
+    public String role2EchoWithChar(final String message, char[] charParam) {
+        return message;
+    }
+    
 }

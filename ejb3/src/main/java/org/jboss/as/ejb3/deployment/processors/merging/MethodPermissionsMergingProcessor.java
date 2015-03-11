@@ -41,6 +41,7 @@ import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescripti
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EjbJaccConfigurator;
+import org.jboss.as.ejb3.util.MethodInfoHelper;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -84,8 +85,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
 
         for (Map.Entry<Method, List<Boolean>> entry : permitData.getMethodAnnotations().entrySet()) {
             final Method method = entry.getKey();
-            final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.permitAll(), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.permitAll(), method.getDeclaringClass().getName(), method.getName(), MethodInfoHelper.getCanonicalParameterTypes(method));
         }
 
         final RuntimeAnnotationInformation<String[]> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, RolesAllowed.class);
@@ -96,8 +96,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
 
         for (Map.Entry<Method, List<String[]>> entry : data.getMethodAnnotations().entrySet()) {
             final Method method = entry.getKey();
-            final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.rolesAllowed(new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0)))), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.rolesAllowed(new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0)))), method.getDeclaringClass().getName(), method.getName(), MethodInfoHelper.getCanonicalParameterTypes(method));
         }
 
         final RuntimeAnnotationInformation<Boolean> denyData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, DenyAll.class);
@@ -108,8 +107,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
 
         for (Map.Entry<Method, List<Boolean>> entry : denyData.getMethodAnnotations().entrySet()) {
             final Method method = entry.getKey();
-            final MethodIdentifier identifier = MethodIdentifier.getIdentifierForMethod(method);
-            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.denyAll(), method.getDeclaringClass().getName(), method.getName(), identifier.getParameterTypes());
+            description.getAnnotationMethodPermissions().setAttribute(null, EJBMethodSecurityAttribute.denyAll(), method.getDeclaringClass().getName(), method.getName(), MethodInfoHelper.getCanonicalParameterTypes(method));
         }
     }
 
