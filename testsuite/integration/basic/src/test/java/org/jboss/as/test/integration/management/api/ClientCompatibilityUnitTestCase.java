@@ -40,6 +40,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.test.integration.management.ManagementOperations;
@@ -70,11 +71,16 @@ public class ClientCompatibilityUnitTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
 
+            ModelNode socketBindingOp = Util.createAddOperation(PathAddress.parseCLIStyleAddress("/socket-binding-group=standard-sockets/socket-binding=management-native"));
+            socketBindingOp.get("interface").set("management");
+            socketBindingOp.get("port").set("9999");
+
+            ManagementOperations.executeOperation(managementClient.getControllerClient(),socketBindingOp);
+
             ModelNode op = new ModelNode();
             op.get(ModelDescriptionConstants.OP_ADDR).set(address());
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get(ModelDescriptionConstants.PORT).set(9999);
-            op.get(ModelDescriptionConstants.INTERFACE).set("management");
+            op.get(ModelDescriptionConstants.SOCKET_BINDING).set("management-native");
             op.get(ModelDescriptionConstants.SECURITY_REALM).set("ManagementRealm");
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
@@ -85,6 +91,9 @@ public class ClientCompatibilityUnitTestCase {
             op.get(ModelDescriptionConstants.OP_ADDR).set(address());
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            ManagementOperations.executeOperation(managementClient.getControllerClient(),
+                    Util.createRemoveOperation(PathAddress.parseCLIStyleAddress("/socket-binding-group=standard-sockets/socket-binding=management-native")));
         }
 
         private ModelNode address() {
@@ -103,6 +112,7 @@ public class ClientCompatibilityUnitTestCase {
     private static final String CONTROLLER_ADDRESS = System.getProperty("node0", "localhost");
 
     private static final String WF_CLIENT = "org.wildfly:wildfly-controller-client";
+    private static final String WF9_CLIENT = "org.wildfly.core:wildfly-controller-client";
     private static final String AS7_CLIENT = "org.jboss.as:jboss-as-controller-client";
 
     private static final String[] excludes = new String[]{"org.jboss.threads:jboss-threads", "org.jboss:jboss-dmr", "org.jboss.logging:jboss-logging"};
@@ -119,22 +129,6 @@ public class ClientCompatibilityUnitTestCase {
         deployment = archive;
     }
 
-    @Test
-    @Ignore // can't connect
-    public void test700Final() throws Exception {
-        testAS7("7.0.0.Final");
-    }
-
-    @Test
-    @Ignore // can't connect
-    public void test701Final() throws Exception {
-        testAS7("7.0.1.Final");
-    }
-
-    @Test
-    public void test710Final() throws Exception {
-        testAS7("7.1.0.Final");
-    }
 
     @Test
     public void test711Final() throws Exception {
@@ -147,19 +141,8 @@ public class ClientCompatibilityUnitTestCase {
     }
 
     @Test
-    @Ignore // can't connect
-    public void test800Alpha1() throws Exception {
-        testWF("8.0.0.Alpha1");
-    }
-
-    @Test
-    public void test800Alpha2() throws Exception {
-        testWF("8.0.0.Alpha2");
-    }
-
-    @Test
-    public void test800Alpha3() throws Exception {
-        testWF("8.0.0.Alpha3");
+    public void test800Final() throws Exception {
+        testWF("8.0.0.Final");
     }
 
     @Test
