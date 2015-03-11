@@ -22,12 +22,16 @@
 
 package org.jboss.as.ee.concurrent;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.RunResult;
 
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.concurrent.ManagedTask;
 import javax.enterprise.concurrent.ManagedTaskListener;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
@@ -37,35 +41,55 @@ import java.util.concurrent.RejectedExecutionException;
  */
 public class ControlPointUtils {
 
-    public static Runnable doWrap(Runnable runnable,ControlPoint controlPoint) {
-        if(controlPoint == null) {
+    public static Runnable doWrap(Runnable runnable, ControlPoint controlPoint) {
+        if (controlPoint == null || runnable == null) {
             return runnable;
         }
         try {
             controlPoint.forceBeginRequest();
-            return new ControlledRunnable(runnable, controlPoint);
+            final ControlledRunnable controlledRunnable = new ControlledRunnable(runnable, controlPoint);
+            return runnable instanceof ManagedTask ? new ControlledManagedRunnable(controlledRunnable, (ManagedTask) runnable) : controlledRunnable;
         } catch (Exception e) {
             throw new RejectedExecutionException(e);
         }
     }
 
     public static <T> Callable<T> doWrap(Callable<T> callable, ControlPoint controlPoint) {
-        if(controlPoint == null) {
+        if (controlPoint == null || callable == null) {
             return callable;
         }
         try {
             controlPoint.forceBeginRequest();
-            return new ControlledCallable<>(callable, controlPoint);
+            final ControlledCallable controlledCallable = new ControlledCallable(callable, controlPoint);
+            return callable instanceof ManagedTask ? new ControlledManagedCallable(controlledCallable, (ManagedTask) callable) : controlledCallable;
         } catch (Exception e) {
             throw new RejectedExecutionException(e);
         }
     }
 
+    public static Runnable doScheduledWrap(Runnable runnable, ControlPoint controlPoint) {
+        if (controlPoint == null || runnable == null) {
+            return runnable;
+        } else {
+            final ControlledScheduledRunnable controlledScheduledRunnable = new ControlledScheduledRunnable(runnable, controlPoint);
+            return runnable instanceof ManagedTask ? new ControlledManagedRunnable(controlledScheduledRunnable, (ManagedTask) runnable) : controlledScheduledRunnable;
+        }
+    }
+
+    public static <T> Callable<T> doScheduledWrap(Callable<T> callable, ControlPoint controlPoint) {
+        if (controlPoint == null || callable == null) {
+            return callable;
+        } else {
+            final ControlledScheduledCallable controlledScheduledCallable = new ControlledScheduledCallable(callable, controlPoint);
+            return callable instanceof ManagedTask ? new ControlledManagedCallable(controlledScheduledCallable, (ManagedTask) callable) : controlledScheduledCallable;
+        }
+    }
+
     /**
-     * Runnable that wraps a a runnable to allow server suspend/resume to work correctly.
+     * Runnable that wraps a runnable to allow server suspend/resume to work correctly.
      *
      */
-    static class ControlledRunnable implements Runnable, ManagedTask {
+    static class ControlledRunnable implements Runnable {
 
         private final Runnable runnable;
         private final ControlPoint controlPoint;
@@ -83,28 +107,13 @@ public class ControlPointUtils {
                 controlPoint.requestComplete();
             }
         }
-        @Override
-        public Map<String, String> getExecutionProperties() {
-            if(runnable instanceof ManagedTask) {
-                ((ManagedTask) runnable).getExecutionProperties();
-            }
-            return null;
-        }
-
-        @Override
-        public ManagedTaskListener getManagedTaskListener() {
-            if(runnable instanceof ManagedTask) {
-                ((ManagedTask) runnable).getManagedTaskListener();
-            }
-            return null;
-        }
     }
 
     /**
-     * Runnable that wraps a a runnable to allow server suspend/resume to work correctly.
+     * Runnable that wraps a callable to allow server suspend/resume to work correctly.
      *
      */
-    static class ControlledCallable<T> implements Callable<T>, ManagedTask {
+    static class ControlledCallable<T> implements Callable<T> {
 
         private final Callable<T> callable;
         private final ControlPoint controlPoint;
@@ -122,21 +131,170 @@ public class ControlPointUtils {
                 controlPoint.requestComplete();
             }
         }
+    }
+
+    /**
+     * Runnable that wraps a runnable to be scheduled, which allows server suspend/resume to work correctly.
+     *
+     */
+    static class ControlledScheduledRunnable implements Runnable {
+
+        private final Runnable runnable;
+        private final ControlPoint controlPoint;
+
+        ControlledScheduledRunnable(Runnable runnable, ControlPoint controlPoint) {
+            this.runnable = runnable;
+            this.controlPoint = controlPoint;
+        }
+
+        @Override
+        public void run() {
+            if (controlPoint == null) {
+                runnable.run();
+            } else
+                try {
+                    if (controlPoint.beginRequest() == RunResult.RUN) {
+                        try {
+                            runnable.run();
+                        } finally {
+                            controlPoint.requestComplete();
+                        }
+                        return;
+                    } else {
+                        throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(runnable);
+                    }
+                } catch (Exception e) {
+                    EeLogger.ROOT_LOGGER.failedToRunTask(e);
+                }
+        }
+    }
+
+    /**
+     * Runnable that wraps a callable to be scheduled, which allows server suspend/resume to work correctly.
+     *
+     */
+    static class ControlledScheduledCallable<T> implements Callable<T> {
+
+        private final Callable<T> callable;
+        private final ControlPoint controlPoint;
+
+        ControlledScheduledCallable(Callable<T> callable, ControlPoint controlPoint) {
+            this.callable = callable;
+            this.controlPoint = controlPoint;
+        }
+
+        @Override
+        public T call() throws Exception {
+            if (controlPoint == null) {
+                return callable.call();
+            } else  {
+                try {
+                    if (controlPoint.beginRequest() == RunResult.RUN) {
+                        try {
+                            return callable.call();
+                        } finally {
+                            controlPoint.requestComplete();
+                        }
+                    }
+                } catch (Exception e) {
+                    EeLogger.ROOT_LOGGER.failedToRunTask(e);
+                }
+                throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(callable);
+            }
+        }
+    }
+
+    /**
+     * A managed controlled task.
+     */
+    static class ControlledManagedTask implements ManagedTask {
+
+        private final ManagedTask managedTask;
+        private final ControlledManagedTaskListener managedTaskListenerWrapper;
+
+        ControlledManagedTask(ManagedTask managedTask) {
+            this.managedTask = managedTask;
+            this.managedTaskListenerWrapper = managedTask.getManagedTaskListener() != null ? new ControlledManagedTaskListener(managedTask.getManagedTaskListener()) : null;
+        }
 
         @Override
         public Map<String, String> getExecutionProperties() {
-            if(callable instanceof ManagedTask) {
-                ((ManagedTask) callable).getExecutionProperties();
-            }
-            return null;
+            return managedTask.getExecutionProperties();
         }
 
         @Override
         public ManagedTaskListener getManagedTaskListener() {
-            if(callable instanceof ManagedTask) {
-                ((ManagedTask) callable).getManagedTaskListener();
-            }
-            return null;
+            return managedTaskListenerWrapper;
+        }
+    }
+
+    /**
+     * A managed controlled task which is a runnable.
+     *
+     */
+    static class ControlledManagedRunnable extends ControlledManagedTask implements Runnable {
+
+        private final Runnable controlledTask;
+
+        ControlledManagedRunnable(Runnable controlledTask, ManagedTask managedTask) {
+            super(managedTask);
+            this.controlledTask = controlledTask;
+        }
+
+        @Override
+        public void run() {
+            controlledTask.run();
+        }
+    }
+
+    /**
+     * A managed controlled task which is a callable.
+     *
+     */
+    static class ControlledManagedCallable<T> extends ControlledManagedTask implements Callable<T> {
+
+        private final Callable<T> controlledTask;
+
+        ControlledManagedCallable(Callable<T> controlledTask, ManagedTask managedTask) {
+            super(managedTask);
+            this.controlledTask = controlledTask;
+        }
+
+        @Override
+        public T call() throws Exception {
+            return controlledTask.call();
+        }
+    }
+
+    /**
+     * A managed task listener for managed controlled tasks.
+     */
+    static class ControlledManagedTaskListener implements ManagedTaskListener {
+
+        private final ManagedTaskListener managedTaskListener;
+
+        ControlledManagedTaskListener(ManagedTaskListener managedTaskListener) {
+            this.managedTaskListener = managedTaskListener;
+        }
+
+        @Override
+        public void taskAborted(Future<?> future, ManagedExecutorService executor, Object task, Throwable exception) {
+            managedTaskListener.taskAborted(future, executor, ((ControlledManagedTask)task).managedTask, exception);
+        }
+
+        @Override
+        public void taskDone(Future<?> future, ManagedExecutorService executor, Object task, Throwable exception) {
+            managedTaskListener.taskDone(future, executor, ((ControlledManagedTask) task).managedTask, exception);
+        }
+
+        @Override
+        public void taskStarting(Future<?> future, ManagedExecutorService executor, Object task) {
+            managedTaskListener.taskStarting(future, executor, ((ControlledManagedTask) task).managedTask);
+        }
+
+        @Override
+        public void taskSubmitted(Future<?> future, ManagedExecutorService executor, Object task) {
+            managedTaskListener.taskSubmitted(future, executor, ((ControlledManagedTask) task).managedTask);
         }
     }
 }
