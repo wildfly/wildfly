@@ -23,17 +23,11 @@ package org.jboss.as.txn.ee.concurrency;
 
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
-import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.txn.logging.TransactionLogger;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 
 import javax.enterprise.concurrent.ManagedTask;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.io.ObjectStreamException;
-import java.security.AccessController;
 
 /**
  * The transaction setup provider handles transaction suspend/resume.
@@ -87,22 +81,5 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
         public Transaction getTransaction() {
             return transaction;
         }
-    }
-
-    // serialization
-
-    private Object readResolve() throws ObjectStreamException {
-        final ServiceController<?> serviceController = currentServiceContainer().getService(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME);
-        if(serviceController == null) {
-            throw TransactionLogger.ROOT_LOGGER.transactionSetupProviderServiceNotInstalled();
-        }
-        return serviceController.getValue();
-    }
-
-    private static ServiceContainer currentServiceContainer() {
-        if(System.getSecurityManager() == null) {
-            return CurrentServiceContainer.getServiceContainer();
-        }
-        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.txn.ee.concurrency;
 
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
+import org.jboss.as.ee.concurrent.ServiceTransactionSetupProvider;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -56,7 +57,7 @@ public class TransactionSetupProviderService implements Service<TransactionSetup
     }
 
     public void start(final StartContext context) throws StartException {
-        transactionSetupProvider = new TransactionSetupProviderImpl(transactionManagerInjectedValue.getValue());
+        transactionSetupProvider = new ServiceTransactionSetupProvider(new TransactionSetupProviderImpl(transactionManagerInjectedValue.getValue()), context.getController().getName());
     }
 
     public void stop(final StopContext context) {
