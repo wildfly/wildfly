@@ -48,7 +48,7 @@ class ServerDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode("default"))
             .build();
-    static final List<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(DEFAULT_HOST, SERVLET_CONTAINER);
+    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_HOST, SERVLET_CONTAINER};
     static final List<PersistentResourceDefinition> CHILDREN = Arrays.asList(
             AjpListenerResourceDefinition.INSTANCE,
             HttpListenerResourceDefinition.INSTANCE,
@@ -64,7 +64,7 @@ class ServerDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         //noinspection unchecked
-        return (Collection) ATTRIBUTES;
+        return Arrays.asList(ATTRIBUTES);
     }
 
     @Override

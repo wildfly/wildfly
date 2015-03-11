@@ -25,7 +25,6 @@ package org.wildfly.extension.undertow;
 import io.undertow.Version;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
@@ -73,16 +72,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final UndertowSubsystemAdd INSTANCE = new UndertowSubsystemAdd();
 
     private UndertowSubsystemAdd() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : UndertowRootDefinition.INSTANCE.getAttributes()) {
-            def.validateAndSet(operation, model);
-        }
+        super(UndertowRootDefinition.ATTRIBUTES);
     }
 
     /**

@@ -43,9 +43,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ServletContainerDefinition extends PersistentResourceDefinition {
-    static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
-
+class ServletContainerDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition ALLOW_NON_STANDARD_WRAPPERS =
             new SimpleAttributeDefinitionBuilder(Constants.ALLOW_NON_STANDARD_WRAPPERS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -114,7 +112,7 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
 
 
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
-    private static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
+    static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
             DEFAULT_BUFFER_CACHE,
             STACK_TRACE_ON_ERROR,
@@ -125,6 +123,8 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
             DEFAULT_SESSION_TIMEOUT,
             DISABLE_CACHING_FOR_SECURED_PAGES
             );
+
+    static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
 
     static {
         List<PersistentResourceDefinition>  children = new ArrayList<>();

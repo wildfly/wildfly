@@ -26,7 +26,6 @@ import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -40,8 +39,6 @@ import org.wildfly.extension.io.IOServices;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
@@ -49,26 +46,16 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
     static final ServletContainerAdd INSTANCE = new ServletContainerAdd();
 
     ServletContainerAdd() {
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : ServletContainerDefinition.INSTANCE.getAttributes()) {
-            def.validateAndSet(operation, model);
-        }
+        super(ServletContainerDefinition.ATTRIBUTES);
     }
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        installRuntimeServices(context, resource.getModel(), name);
-
+        installRuntimeServices(context, resource.getModel(), context.getCurrentAddressValue());
     }
 
     public void installRuntimeServices(OperationContext context, ModelNode model, String name) throws OperationFailedException {
-        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS), 2);
 
         final SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
