@@ -3,6 +3,7 @@
 <config>
    <subsystems>
        <subsystem>logging.xml</subsystem>
+       <subsystem>deployment-scanner.xml</subsystem>
        <subsystem supplement="web-build">ee.xml</subsystem>
        <subsystem>io.xml</subsystem>
        <subsystem>jmx.xml</subsystem>
