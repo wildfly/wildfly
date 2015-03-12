@@ -138,6 +138,15 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="enable-http2" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                              Enables HTTP2 upgrade and prior knowledge connections
+                               ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -149,6 +158,8 @@
                 <xs:attribute name="verify-client" use="optional" type="xs:string"/>
                 <xs:attribute name="enabled-cipher-suites" use="optional" type="xs:string"/>
                 <xs:attribute name="enabled-protocols" use="optional" type="xs:string"/>
+                <xs:attribute name="enable-http2" use="optional" type="xs:string"/>
+                <xs:attribute name="enable-spdy" use="optional" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
