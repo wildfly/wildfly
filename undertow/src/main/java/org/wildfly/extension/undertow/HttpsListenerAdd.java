@@ -47,7 +47,11 @@ public class HttpsListenerAdd extends ListenerAdd {
         HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model,builder);
         HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveOption(context, model, builder);
         HttpsListenerResourceDefinition.ENABLED_PROTOCOLS.resolveOption(context, model, builder);
-        return new HttpsListenerService(name, serverName, listenerOptions, builder.getMap());
+
+        OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
+        HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model,listenerBuilder);
+        HttpsListenerResourceDefinition.ENABLE_SPDY.resolveOption(context, model,listenerBuilder);
+        return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), builder.getMap());
     }
 
     @Override
