@@ -61,7 +61,7 @@ public class EJBComponentSuspendDeploymentUnitProcessor implements DeploymentUni
                                     interceptor = new EjbSuspendInterceptor();
                                     factory = new ImmediateInterceptorFactory(interceptor);
                                 }
-                                view.addViewInterceptor(factory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
+                                view.addViewInterceptor(factory, InterceptorOrder.View.GRACEFUL_SHUTDOWN);
                             }
                         }
 
