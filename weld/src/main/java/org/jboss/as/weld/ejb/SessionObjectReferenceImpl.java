@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.msc.service.ServiceContainer;
@@ -37,14 +38,17 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 
 /**
- * Implementation for non-stateful beans, a new view instance is looked up each time
+ * Implementation for non-stateful beans.
  *
  * @author Stuart Douglas
  */
 public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     private final Map<String, ServiceName> viewServices;
+
     private final String ejbName;
+
+    private transient volatile Map<String, ManagedReference> businessInterfaceToReference;
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {
         ejbName = descriptor.getEjbName();
@@ -83,22 +87,34 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     }
 
-
     @Override
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({ "unchecked" })
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        //TODO: this should be cached
-        if (viewServices.containsKey(businessInterfaceType.getName())) {
-            final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
-            final ComponentView view = (ComponentView) serviceController.getValue();
-            try {
-                return(S) view.createInstance().getInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        final String businessInterfaceName = businessInterfaceType.getName();
+        ManagedReference managedReference = null;
+
+        if (businessInterfaceToReference == null) {
+            businessInterfaceToReference = new HashMap<String, ManagedReference>();
         } else {
-            throw WeldLogger.ROOT_LOGGER.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbName);
+            managedReference = businessInterfaceToReference.get(businessInterfaceName);
         }
+
+        if (managedReference == null) {
+            if (viewServices.containsKey(businessInterfaceType.getName())) {
+                final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(
+                        viewServices.get(businessInterfaceType.getName()));
+                final ComponentView view = (ComponentView) serviceController.getValue();
+                try {
+                    managedReference = view.createInstance();
+                    businessInterfaceToReference.put(businessInterfaceType.getName(), managedReference);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                throw WeldLogger.ROOT_LOGGER.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbName);
+            }
+        }
+        return (S) managedReference.getInstance();
     }
 
     @Override
