@@ -39,6 +39,8 @@ import org.jboss.dmr.ModelNode;
 interface HornetQReloadRequiredHandlers {
     static class AddStepHandler extends AbstractAddStepHandler {
 
+        private boolean reloadRequired = false;
+
         public AddStepHandler(AttributeDefinition... attributes) {
             super(attributes);
         }
@@ -47,28 +49,32 @@ interface HornetQReloadRequiredHandlers {
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.reloadRequired();
+                reloadRequired = true;
             }
         }
 
         @Override
         protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-            if (HornetQService.isHornetQServiceInstalled(context, operation)) {
+            if (reloadRequired && HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.revertReloadRequired();
             }
         }
     }
 
     final class RemoveStepHandler extends AbstractRemoveStepHandler {
+        private boolean reloadRequired = false;
+
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.reloadRequired();
+                reloadRequired = true;
             }
         }
 
         @Override
         protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (HornetQService.isHornetQServiceInstalled(context, operation)) {
+            if (reloadRequired && HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.revertReloadRequired();
             }
         }
