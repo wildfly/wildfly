@@ -335,6 +335,9 @@
         <xs:attribute name="session-cookie-names" use="optional" type="xs:string"/>
         <xs:attribute name="problem-server-retry" use="optional" type="xs:integer"/>
         <xs:attribute name="max-request-time" use="optional" type="xs:integer"/>
+        <xs:attribute name="request-queue-size" use="optional" type="xs:integer"/>
+        <xs:attribute name="cached-connections-per-thread" use="optional" type="xs:integer"/>
+        <xs:attribute name="connection-idle-timeout" use="optional" type="xs:integer"/>
     </xs:complexType>
 
     <xs:complexType name="reverse-proxy-hostType">
@@ -458,6 +461,12 @@
         <xs:attribute name="advertise-frequency" type="xs:int" use="optional"/>
         <xs:attribute name="health-check-interval" type="xs:int" use="optional"/>
         <xs:attribute name="broken-node-timeout" type="xs:int" use="optional"/>
+        <xs:attribute name="worker" type="xs:string" use="optional" />
+        <xs:attribute name="max-request-time" type="xs:int" use="optional"/>
         <xs:attribute name="management-access-predicate" type="xs:string" use="optional"/>
+        <xs:attribute name="connections-per-thread" type="xs:int" use="optional" />
+        <xs:attribute name="cached-connections-per-thread" type="xs:int" use="optional" />
+        <xs:attribute name="connection-idle-timeout" type="xs:int" use="optional" />
+        <xs:attribute name="request-queue-size" type="xs:int" use="optional" />
     </xs:complexType>
 </xs:schema>

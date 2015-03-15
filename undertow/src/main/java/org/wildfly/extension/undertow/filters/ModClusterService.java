@@ -45,11 +45,15 @@ public class ModClusterService extends FilterService {
     private final String advertiseProtocol;
     private final String securityKey;
     private final Predicate managementAccessPredicate;
+    private final int connectionsPerThread;
+    private final int cachedConnections;
+    private final int connectionIdleTimeout;
+    private final int requestQueueSize;
 
     private ModCluster modCluster;
     private MCMPConfig config;
 
-    ModClusterService(ModelNode model, long healthCheckInterval, int maxRequestTime, long removeBrokenNodes, int advertiseFrequency, String advertisePath, String advertiseProtocol, String securityKey, Predicate managementAccessPredicate) {
+    ModClusterService(ModelNode model, long healthCheckInterval, int maxRequestTime, long removeBrokenNodes, int advertiseFrequency, String advertisePath, String advertiseProtocol, String securityKey, Predicate managementAccessPredicate, int connectionsPerThread, int cachedConnections, int connectionIdleTimeout, int requestQueueSize) {
         super(ModClusterDefinition.INSTANCE, model);
         this.healthCheckInterval = healthCheckInterval;
         this.maxRequestTime = maxRequestTime;
@@ -59,6 +63,10 @@ public class ModClusterService extends FilterService {
         this.advertiseProtocol = advertiseProtocol;
         this.securityKey = securityKey;
         this.managementAccessPredicate = managementAccessPredicate;
+        this.connectionsPerThread = connectionsPerThread;
+        this.cachedConnections = cachedConnections;
+        this.connectionIdleTimeout = connectionIdleTimeout;
+        this.requestQueueSize = requestQueueSize;
     }
 
     @Override
@@ -66,9 +74,13 @@ public class ModClusterService extends FilterService {
         super.start(context);
 
         //TODO: SSL support for the client
+        //TODO: wire up idle timeout when new version of undertow arrives
         modCluster = ModCluster.builder(workerInjectedValue.getValue())
                 .setHealthCheckInterval(healthCheckInterval)
                 .setMaxRequestTime(maxRequestTime)
+                .setCacheConnections(cachedConnections)
+                .setQueueNewRequests(requestQueueSize > 0)
+                .setRequestQueueSize(requestQueueSize)
                 .setRemoveBrokenNodes(removeBrokenNodes)
                 .build();
 
@@ -151,7 +163,11 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.ADVERTISE_FREQUENCY.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.ADVERTISE_PATH.resolveModelAttribute(operationContext, model).asString(),
                 ModClusterDefinition.ADVERTISE_PROTOCOL.resolveModelAttribute(operationContext, model).asString(),
-                securityKey, managementAccessPredicate);
+                securityKey, managementAccessPredicate,
+                ModClusterDefinition.CONNECTIONS_PER_THREAD.resolveModelAttribute(operationContext, model).asInt(),
+                ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD.resolveModelAttribute(operationContext, model).asInt(),
+                ModClusterDefinition.CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(operationContext, model).asInt(),
+                ModClusterDefinition.REQUEST_QUEUE_SIZE.resolveModelAttribute(operationContext, model).asInt());
         ServiceBuilder<FilterService> builder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.advertiseSocketBinding);

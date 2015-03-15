@@ -93,7 +93,8 @@
 
     <handlers>
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
-        <reverse-proxy name="reverse-proxy" connections-per-thread="30">
+        <reverse-proxy connection-idle-timeout="60"
+                       connections-per-thread="30" name="reverse-proxy">
             <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test"/>
             <!-- ajp://localhost:8080 -->
         </reverse-proxy>
@@ -104,7 +105,13 @@
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
         <gzip name="static-gzip"/>
         <error-page name="404-handler" code="404" path="/opt/data/404.html"/>
-        <mod-cluster management-socket-binding="test3" advertise-socket-binding="test2" name="mod-cluster" />
+        <mod-cluster advertise-frequency="1000"  advertise-protocol="ajp" advertise-path="/foo"
+                     advertise-socket-binding="test2" broken-node-timeout="1000"
+                     cached-connections-per-thread="10"
+                     connection-idle-timeout="10" health-check-interval="600"
+                     management-access-predicate="method[GET]"
+                     management-socket-binding="test3" max-request-time="1000"
+                     name="mod-cluster" security-key="password"/>
         <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
     </filters>
 

@@ -153,4 +153,7 @@ public interface Constants {
     String HEALTH_CHECK_INTERVAL = "health-check-interval";
     String BROKEN_NODE_TIMEOUT = "broken-node-timeout";
     String MANAGEMENT_ACCESS_PREDICATE = "management-access-predicate";
+    String REQUEST_QUEUE_SIZE = "request-queue-size";
+    String CACHED_CONNECTIONS_PER_THREAD = "cached-connections-per-thread";
+    String CONNECTION_IDLE_TIMEOUT = "connection-idle-timeout";
 }

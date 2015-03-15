@@ -195,7 +195,10 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ReverseProxyHandler.CONNECTIONS_PER_THREAD,
                                                         ReverseProxyHandler.SESSION_COOKIE_NAMES,
                                                         ReverseProxyHandler.PROBLEM_SERVER_RETRY,
-                                                        ReverseProxyHandler.MAX_REQUEST_TIME)
+                                                        ReverseProxyHandler.MAX_REQUEST_TIME,
+                                                        ReverseProxyHandler.REQUEST_QUEUE_SIZE,
+                                                        ReverseProxyHandler.CACHED_CONNECTIONS_PER_THREAD,
+                                                        ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
                                                         .setXmlElementName(Constants.HOST)
                                                         .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID, ReverseProxyHandlerHost.PATH, ReverseProxyHandlerHost.SCHEME, ReverseProxyHandlerHost.OUTBOUND_SOCKET_BINDING))
@@ -232,7 +235,13 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.ADVERTISE_FREQUENCY,
                                         ModClusterDefinition.HEALTH_CHECK_INTERVAL,
                                         ModClusterDefinition.BROKEN_NODE_TIMEOUT,
-                                        ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE)
+                                        ModClusterDefinition.WORKER,
+                                        ModClusterDefinition.MAX_REQUEST_TIME,
+                                        ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE,
+                                        ModClusterDefinition.CONNECTIONS_PER_THREAD,
+                                        ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD,
+                                        ModClusterDefinition.CONNECTION_IDLE_TIMEOUT,
+                                        ModClusterDefinition.REQUEST_QUEUE_SIZE)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)
