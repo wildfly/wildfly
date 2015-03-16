@@ -53,6 +53,7 @@ import org.jboss.vfs.VirtualFile;
  *
  * @author Jaikiran Pai
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProcessor {
 
@@ -111,11 +112,14 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
 
     private XMLMapper createMapper(final DeploymentUnit deploymentUnit) {
         final XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(ROOT_1_0, EJBClientDescriptor10Parser.INSTANCE);
-        mapper.registerRootElement(ROOT_1_1, EJBClientDescriptor11Parser.INSTANCE);
-        mapper.registerRootElement(ROOT_1_2, EJBClientDescriptor12Parser.INSTANCE);
 
         final PropertyReplacer propertyReplacer = EjbClientDescriptorPropertyReplacement.propertyReplacer(deploymentUnit);
+        final EJBClientDescriptor10Parser ejbClientDescriptor10Parser = new EJBClientDescriptor10Parser(propertyReplacer);
+        mapper.registerRootElement(ROOT_1_0, ejbClientDescriptor10Parser);
+        final EJBClientDescriptor11Parser ejbClientDescriptor11Parser = new EJBClientDescriptor11Parser(propertyReplacer);
+        mapper.registerRootElement(ROOT_1_1, ejbClientDescriptor11Parser);
+        final EJBClientDescriptor11Parser ejbClientDescriptor12Parser = new EJBClientDescriptor12Parser(propertyReplacer);
+        mapper.registerRootElement(ROOT_1_2, ejbClientDescriptor12Parser);
         final EJBClientDescriptor13Parser ejbClientDescriptor13Parser = new EJBClientDescriptor13Parser(propertyReplacer);
         mapper.registerRootElement(ROOT_1_3, ejbClientDescriptor13Parser);
         mapper.registerRootElement(ROOT_NO_NAMESPACE, ejbClientDescriptor13Parser);

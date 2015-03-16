@@ -47,6 +47,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -55,16 +56,18 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  *
  * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescriptorMetaData> {
 
     public static final String NAMESPACE_1_0 = "urn:jboss:ejb-client:1.0";
 
-    public static final EJBClientDescriptor10Parser INSTANCE = new EJBClientDescriptor10Parser();
+    protected final PropertyReplacer propertyReplacer;
 
-
-    protected EJBClientDescriptor10Parser() {
+    protected EJBClientDescriptor10Parser(final PropertyReplacer propertyReplacer) {
+        this.propertyReplacer = propertyReplacer;
     }
+
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
@@ -131,14 +134,14 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader.getAttributeLocalName(i));
-            final String val = reader.getAttributeValue(i);
+            final String value = readResolveValue(reader, i);
             switch (attribute) {
                 case EXCLUDE_LOCAL_RECEIVER:
-                    final boolean excludeLocalReceiver = Boolean.parseBoolean(val.trim());
+                    final boolean excludeLocalReceiver = Boolean.parseBoolean(value);
                     ejbClientDescriptorMetaData.setExcludeLocalReceiver(excludeLocalReceiver);
                     break;
                 case LOCAL_RECEIVER_PASS_BY_VALUE:
-                    localReceiverPassByValue = Boolean.parseBoolean(val.trim());
+                    localReceiverPassByValue = Boolean.parseBoolean(value);
                     break;
                 default:
                     unexpectedContent(reader);
@@ -179,7 +182,7 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
             required.remove(attribute);
             switch (attribute) {
                 case OUTBOUND_CONNECTION_REF:
-                    outboundConnectionRef = reader.getAttributeValue(i).trim();
+                    outboundConnectionRef = readResolveValue(reader, i);
                     ejbClientDescriptorMetaData.addRemotingReceiverConnectionRef(outboundConnectionRef);
                     break;
                 default:
@@ -278,6 +281,10 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
             b.append(", text is: '").append(reader.getText()).append('\'');
         }
         throw EeLogger.ROOT_LOGGER.errorParsingEJBClientDescriptor(b.toString(), reader.getLocation());
+    }
+
+    protected String readResolveValue(final XMLExtendedStreamReader reader, final int index) {
+        return propertyReplacer.replaceProperties(reader.getAttributeValue(index).trim());
     }
 
 }
