@@ -101,6 +101,11 @@ public class CustomFilterDefinition extends Filter {
         }
     }
 
+    @Override
+    protected Class[] getConstructorSignature() {
+        throw new IllegalStateException(); //should not be used, as the handler is constructed above
+    }
+
     protected Class<?> getHandlerClass(String className, String moduleName) {
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
         try {
