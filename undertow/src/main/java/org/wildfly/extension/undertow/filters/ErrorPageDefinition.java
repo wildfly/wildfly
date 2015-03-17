@@ -76,4 +76,9 @@ public class ErrorPageDefinition extends Filter{
         return Handlers.predicate(predicate, handler, next);
 
     }
+
+    @Override
+    protected Class[] getConstructorSignature() {
+        throw new IllegalStateException(); //should not be used, as the handler is constructed above
+    }
 }

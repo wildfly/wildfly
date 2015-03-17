@@ -32,6 +32,9 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
+ * TODO: This appears to be useless, we should probably get rid of it, or replace it with something useful
+ *
+ *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class BasicAuthHandler extends Filter {
@@ -56,4 +59,8 @@ public class BasicAuthHandler extends Filter {
         return AuthenticationCallHandler.class;
     }
 
+    @Override
+    protected Class[] getConstructorSignature() {
+        return new Class[] {HttpHandler.class};
+    }
 }

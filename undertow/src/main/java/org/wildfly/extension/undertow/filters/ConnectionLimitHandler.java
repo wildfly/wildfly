@@ -68,4 +68,9 @@ public class ConnectionLimitHandler extends Filter {
     public Class<? extends HttpHandler> getHandlerClass() {
         return RequestLimitingHandler.class;
     }
+
+    @Override
+    protected Class[] getConstructorSignature() {
+        return new Class[] {int.class, int.class, HttpHandler.class};
+    }
 }
