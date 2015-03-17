@@ -64,6 +64,7 @@ import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.naming.ContextInjectionSource;
+import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AdditionalSetupInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
@@ -250,6 +251,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     private String policyContextID;
 
+    private final ShutDownInterceptorFactory shutDownInterceptorFactory = new ShutDownInterceptorFactory();
+
     /**
      * Construct a new instance.
      *
@@ -305,6 +308,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if (!ejbSetupActions.isEmpty()) {
                         configuration.addTimeoutViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                     }
+                    configuration.addTimeoutViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
+
                     final ClassLoader classLoader = configuration.getModuleClassLoader();
                     configuration.addTimeoutViewInterceptor(PrivilegedWithCombinerInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
@@ -421,6 +426,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     viewConfiguration.addViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                 }
                 viewConfiguration.addViewInterceptor(WaitTimeInterceptor.FACTORY, InterceptorOrder.View.EJB_WAIT_TIME_INTERCEPTOR);
+                viewConfiguration.addViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
+
             }
         });
         this.addCurrentInvocationContextFactory(view);
@@ -1022,6 +1029,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setPolicyContextID(String policyContextID) {
         this.policyContextID = policyContextID;
+    }
+
+    public ShutDownInterceptorFactory getShutDownInterceptorFactory() {
+        return shutDownInterceptorFactory;
     }
 
     @Override

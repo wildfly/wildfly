@@ -45,6 +45,7 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
@@ -101,6 +102,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
+
+    private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
     /**
      * Construct a new instance.
@@ -199,6 +202,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
         this.moduleName = componentConfiguration.getModuleName();
         this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
+        this.shutDownInterceptorFactory = ejbComponentDescription.getShutDownInterceptorFactory();
     }
 
     @Override
@@ -378,5 +382,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public AtomicBoolean getExceptionLoggingEnabled() {
         return exceptionLoggingEnabled.getValue();
+    }
+
+    public ShutDownInterceptorFactory getShutDownInterceptorFactory() {
+        return shutDownInterceptorFactory;
     }
 }

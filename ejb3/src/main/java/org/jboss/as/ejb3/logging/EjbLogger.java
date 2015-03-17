@@ -2874,9 +2874,8 @@ public interface EjbLogger extends BasicLogger {
      */
     @Message(id = 420, value = "No EjbContext available as no EJB invocation is active")
     IllegalStateException noEjbContextAvailable();
-
-    @Message(id = 421, value = "The request was rejected as the container is suspended")
-    EJBComponentUnavailableException containerSuspended();
+    @Message(id = 421, value = "Invocation cannot proceed as component is shutting down")
+    EJBComponentUnavailableException componentIsShuttingDown();
 
     @Message(id = 422, value = "Could not open message outputstream for writing to Channel")
     IOException failedToOpenMessageOutputStream(@Cause Throwable e);
@@ -3034,4 +3033,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 466, value = "Failed to process business interfaces for EJB class %s")
     DeploymentUnitProcessingException failedToProcessBusinessInterfaces(Class<?> ejbClass, @Cause Exception e);
+
+    @Message(id = 467, value = "The request was rejected as the container is suspended")
+    EJBComponentUnavailableException containerSuspended();
 }
