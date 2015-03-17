@@ -96,31 +96,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <!-- TODO (jrp) This profile needs to be removed once WFLY-4179 is resolved -->
-        <profile>
-            <id>ts.web.security.manager</id>
-            <activation>
-                <property>
-                    <name>security.manager</name>
-                </property>
-            </activation>
-            <properties>
-                <jboss.args>-secmgr</jboss.args>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/CustomErrorsUnitTestCase.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
