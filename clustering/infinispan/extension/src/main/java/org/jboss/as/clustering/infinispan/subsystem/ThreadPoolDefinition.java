@@ -22,28 +22,19 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
+import org.jboss.as.clustering.controller.Attribute;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
 
 /**
- * Provides the service name for the configuration of a cache component
  * @author Paul Ferraro
  */
-public class CacheComponentServiceNameProvider implements ServiceNameProvider {
+public interface ThreadPoolDefinition extends GroupServiceNameFactory {
 
-    private final SubGroupServiceNameFactory factory;
-    private final String containerName;
-    private final String cacheName;
+    Attribute getMinThreads();
 
-    public CacheComponentServiceNameProvider(SubGroupServiceNameFactory factory, String containerName, String cacheName) {
-        this.factory = factory;
-        this.containerName = containerName;
-        this.cacheName = cacheName;
-    }
+    Attribute getMaxThreads();
 
-    @Override
-    public ServiceName getServiceName() {
-        return this.factory.getServiceName(this.containerName, this.cacheName);
-    }
+    Attribute getQueueLength();
+
+    Attribute getKeepAliveTime();
 }
