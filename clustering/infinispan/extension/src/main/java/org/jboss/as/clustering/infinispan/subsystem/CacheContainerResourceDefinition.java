@@ -21,9 +21,9 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,7 +66,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     // attributes
     static final SimpleListAttributeDefinition ALIASES = SimpleListAttributeDefinition.Builder.of(ModelKeys.ALIASES, ALIAS)
             .setAllowNull(true)
-            .setAttributeMarshaller(AttributeMarshallerFactory.createSimpleListAttributeMarshaller())
+            .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
             .build();
 
     static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)

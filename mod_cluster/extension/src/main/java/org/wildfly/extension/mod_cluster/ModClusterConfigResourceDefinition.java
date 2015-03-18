@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
@@ -92,7 +92,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             // We don't allow expressions for model references!
             .setAllowExpression(false)
             .setAllowNull(true)
-            .setAttributeMarshaller(AttributeMarshallerFactory.createSimpleListAttributeMarshaller())
+            .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
             .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
             .setRestartAllServices()
             .build();

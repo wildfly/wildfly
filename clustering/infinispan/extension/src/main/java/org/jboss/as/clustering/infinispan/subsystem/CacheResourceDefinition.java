@@ -25,7 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.NoSuchElementException;
 
 import org.infinispan.configuration.cache.Index;
-import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
+import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -83,7 +83,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleMapAttributeDefinition INDEXING_PROPERTIES = new SimpleMapAttributeDefinition.Builder(ModelKeys.INDEXING_PROPERTIES, true)
             .setAllowExpression(true)
-            .setAttributeMarshaller(AttributeMarshallerFactory.createPropertyListAttributeMarshaller())
+            .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
             .build();
 
     static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
