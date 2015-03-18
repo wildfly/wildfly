@@ -22,13 +22,15 @@
 
 package org.jboss.as.clustering.controller;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -40,13 +42,34 @@ import org.jboss.msc.service.ServiceName;
  */
 public class RestartParentRemoveHandler<T> extends RestartParentResourceRemoveHandler implements Registration {
 
-    private final ResourceDescriptionResolver resolver;
+    private final RemoveStepHandlerDescriptor descriptor;
     private final ResourceServiceBuilderFactory<T> builderFactory;
 
-    public RestartParentRemoveHandler(ResourceDescriptionResolver resolver, ResourceServiceBuilderFactory<T> builderFactory) {
+    public RestartParentRemoveHandler(RemoveStepHandlerDescriptor descriptor, ResourceServiceBuilderFactory<T> builderFactory) {
         super(null);
-        this.resolver = resolver;
+        this.descriptor = descriptor;
         this.builderFactory = builderFactory;
+    }
+
+    @Override
+    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        for (Capability capability : this.descriptor.getCapabilities()) {
+            context.deregisterCapability(capability.getRuntimeCapability(address).getName());
+        }
+        // Copied from AbstractRemoveStepHandler.recordCapabilitiesAndRequirements(...)
+        ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        for (String attributeName : registration.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
+            AttributeAccess attribute = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
+            if (attribute != null) {
+                AttributeDefinition definition = attribute.getAttributeDefinition();
+                if (definition != null && (model.hasDefined(definition.getName()) || definition.hasCapabilityRequirements())) {
+                    definition.removeCapabilityRequirements(context, model.get(definition.getName()));
+                }
+            }
+        }
+        super.updateModel(context, operation);
     }
 
     @Override
@@ -66,6 +89,6 @@ public class RestartParentRemoveHandler<T> extends RestartParentResourceRemoveHa
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.resolver).withFlag(OperationEntry.Flag.RESTART_RESOURCE_SERVICES).build(), this);
+        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.descriptor.getDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_RESOURCE_SERVICES).build(), this);
     }
 }

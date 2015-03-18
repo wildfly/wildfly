@@ -34,7 +34,6 @@ import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 import org.wildfly.clustering.spi.GroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
 
 /**
  * @author Paul Ferraro
@@ -44,7 +43,7 @@ public class CommandDispatcherFactoryAliasBuilderProvider implements GroupAliasB
     @Override
     public Collection<Builder<?>> getBuilders(String aliasGroup, String targetGroup) {
         Builder<CommandDispatcherFactory> builder = new AliasServiceBuilder<>(GroupServiceName.COMMAND_DISPATCHER.getServiceName(aliasGroup), GroupServiceName.COMMAND_DISPATCHER.getServiceName(targetGroup), CommandDispatcherFactory.class);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, GroupServiceName.COMMAND_DISPATCHER.toString(), aliasGroup).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.COMMAND_DISPATCHER.toString(), aliasGroup).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), CommandDispatcherFactory.class);
         return Arrays.asList(builder, bindingBuilder);
     }

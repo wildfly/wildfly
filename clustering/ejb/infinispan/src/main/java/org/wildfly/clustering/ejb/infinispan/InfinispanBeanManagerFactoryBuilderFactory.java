@@ -21,8 +21,7 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import static java.security.AccessController.doPrivileged;
-
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,9 +42,9 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.service.concurrent.CachedThreadPoolExecutorServiceBuilder;
 import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
-import org.wildfly.clustering.spi.CacheGroupServiceNameFactory;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.
@@ -61,7 +60,8 @@ public class InfinispanBeanManagerFactoryBuilderFactory<G, I> implements BeanMan
     private static final ThreadFactory EVICTION_THREAD_FACTORY = createThreadFactory();
 
     private static ThreadFactory createThreadFactory() {
-        return doPrivileged(new PrivilegedAction<ThreadFactory>() {
+        return AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
+            @Override
             public ThreadFactory run() {
                 return new JBossThreadFactory(new ThreadGroup(BeanEvictionScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
             }
@@ -89,7 +89,7 @@ public class InfinispanBeanManagerFactoryBuilderFactory<G, I> implements BeanMan
         String containerName = this.config.getContainerName();
         String templateCacheName = this.config.getCacheName();
         if (templateCacheName == null) {
-            templateCacheName = CacheGroupServiceNameFactory.DEFAULT_CACHE;
+            templateCacheName = SubGroupServiceNameFactory.DEFAULT_SUB_GROUP;
         }
 
         List<Builder<?>> builders = new ArrayList<>(4);

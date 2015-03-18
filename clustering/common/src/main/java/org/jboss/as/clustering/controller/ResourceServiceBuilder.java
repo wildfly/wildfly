@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -35,10 +35,10 @@ public interface ResourceServiceBuilder<T> extends Builder<T> {
 
     /**
      * Configures this builder using the specified expression resolver and model.
-     * @param resolver an expression resolver
+     * @param context an operation context, used to resolve capabilities and expressions
      * @param model the resource model
      * @return the reference to this builder
      * @throws OperationFailedException if there was a failure reading the model
      */
-    Builder<T> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException;
+    Builder<T> configure(OperationContext context, ModelNode model) throws OperationFailedException;
 }

@@ -34,7 +34,7 @@ import org.wildfly.clustering.server.CacheBuilderFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
+import org.wildfly.clustering.spi.GroupServiceName;
 
 /**
  * Provides the requisite builders for a clustered {@link RegistryFactory} created from the specified factory.
@@ -57,7 +57,7 @@ public class RegistryFactoryBuilderProvider implements CacheGroupBuilderProvider
     @Override
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         Builder<RegistryFactory<Object, Object>> builder = this.factory.createBuilder(containerName, cacheName);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, CacheGroupServiceName.REGISTRY.toString(), containerName, cacheName).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.REGISTRY.toString(), containerName, cacheName).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), RegistryFactory.class);
         Builder<Registry<Object, Object>> registryBuilder = new RegistryBuilder<>(containerName, cacheName);
         return Arrays.asList(builder, bindingBuilder, registryBuilder);

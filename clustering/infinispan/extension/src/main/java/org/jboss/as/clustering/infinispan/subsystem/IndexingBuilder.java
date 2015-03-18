@@ -31,7 +31,7 @@ import org.infinispan.configuration.cache.IndexingConfiguration;
 import org.infinispan.configuration.cache.IndexingConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -48,9 +48,9 @@ public class IndexingBuilder extends CacheComponentBuilder<IndexingConfiguration
     }
 
     @Override
-    public Builder<IndexingConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.builder.index(ModelNodes.asEnum(INDEX.getDefinition().resolveModelAttribute(resolver, model), Index.class));
-        this.builder.withProperties(ModelNodes.asProperties(PROPERTIES.getDefinition().resolveModelAttribute(resolver, model)));
+    public Builder<IndexingConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.builder.index(ModelNodes.asEnum(INDEX.getDefinition().resolveModelAttribute(context, model), Index.class));
+        this.builder.withProperties(ModelNodes.asProperties(PROPERTIES.getDefinition().resolveModelAttribute(context, model)));
         return this;
     }
 

@@ -26,7 +26,6 @@ import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,6 +36,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
 public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOManagerFactory<A, D, TransactionBatch>>, Value<SSOManagerFactory<A, D, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
@@ -61,7 +61,7 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOMana
     @Override
     public ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target) {
         String containerName = DEFAULT_CACHE_CONTAINER;
-        String templateCacheName = CacheServiceNameFactory.DEFAULT_CACHE;
+        String templateCacheName = SubGroupServiceNameFactory.DEFAULT_SUB_GROUP;
         String cacheName = this.host;
 
         new TemplateConfigurationBuilder(containerName, cacheName, templateCacheName).build(target).install();

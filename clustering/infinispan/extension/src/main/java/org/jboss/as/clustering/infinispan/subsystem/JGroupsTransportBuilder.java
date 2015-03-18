@@ -29,7 +29,7 @@ import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.ChannelTransport;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -66,8 +66,8 @@ public class JGroupsTransportBuilder extends CacheContainerComponentBuilder<Tran
     }
 
     @Override
-    public Builder<TransportConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.lockTimeout = LOCK_TIMEOUT.getDefinition().resolveModelAttribute(resolver, model).asLong();
+    public Builder<TransportConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.lockTimeout = LOCK_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong();
         return this;
     }
 

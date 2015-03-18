@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.infinispan.transaction.LockingMode;
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
@@ -228,9 +229,10 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransactionBuilderFactory());
-        new AddStepHandler(this.getResourceDescriptionResolver(), handler).addAttributes(Attribute.class).register(registration);
-        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     @Override

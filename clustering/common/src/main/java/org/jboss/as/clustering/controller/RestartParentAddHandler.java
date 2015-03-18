@@ -22,19 +22,13 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
-
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -46,33 +40,35 @@ import org.jboss.msc.service.ServiceName;
  */
 public class RestartParentAddHandler<T> extends RestartParentResourceAddHandler implements Registration {
 
-    private final ResourceDescriptionResolver resolver;
+    private final AddStepHandlerDescriptor descriptor;
     private final ResourceServiceBuilderFactory<T> builderFactory;
-    private final List<Attribute> attributes = new LinkedList<>();
 
-    public RestartParentAddHandler(ResourceDescriptionResolver resolver, ResourceServiceBuilderFactory<T> builderFactory) {
+    public RestartParentAddHandler(AddStepHandlerDescriptor descriptor, ResourceServiceBuilderFactory<T> builderFactory) {
         super(null);
-        this.resolver = resolver;
+        this.descriptor = descriptor;
         this.builderFactory = builderFactory;
     }
 
-    public <E extends Enum<E> & Attribute> RestartParentAddHandler<T> addAttributes(Class<E> enumClass) {
-        return this.addAttributes(EnumSet.allOf(enumClass));
-    }
-
-    public RestartParentAddHandler<T> addAttributes(Attribute... attributes) {
-        return this.addAttributes(Arrays.asList(attributes));
-    }
-
-    public RestartParentAddHandler<T> addAttributes(Collection<? extends Attribute> attributes) {
-        this.attributes.addAll(attributes);
-        return this;
+    @Override
+    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+        super.updateModel(context, operation);
+        PathAddress address = context.getCurrentAddress();
+        for (Capability capability : this.descriptor.getCapabilities()) {
+            context.registerCapability(capability.getRuntimeCapability(address), null);
+        }
+        // Copied from AbstractAddStepHandler.recordCapabilitiesAndRequirements(...)
+        ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
+            if (model.hasDefined(attribute.getName()) || attribute.hasCapabilityRequirements()) {
+                attribute.addCapabilityRequirements(context, model.get(attribute.getName()));
+            }
+        }
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (Attribute attribute : this.attributes) {
-            attribute.getDefinition().validateAndSet(operation, model);
+        for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
+            attribute.validateAndSet(operation, model);
         }
     }
 
@@ -93,9 +89,12 @@ public class RestartParentAddHandler<T> extends RestartParentResourceAddHandler 
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.resolver).withFlag(OperationEntry.Flag.RESTART_NONE);
-        for (Attribute attribute : this.attributes) {
-            builder.addParameter(attribute.getDefinition());
+        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.descriptor.getDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_NONE);
+        for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
+            builder.addParameter(attribute);
+        }
+        for (AttributeDefinition parameter : this.descriptor.getExtraParameters()) {
+            builder.addParameter(parameter);
         }
         registration.registerOperationHandler(builder.build(), this);
     }

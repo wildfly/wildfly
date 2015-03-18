@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
@@ -96,9 +97,10 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RemoteStoreBuilderFactory());
-        new AddStepHandler(this.getResourceDescriptionResolver(), handler).addAttributes(Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class).register(registration);
-        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     @Override

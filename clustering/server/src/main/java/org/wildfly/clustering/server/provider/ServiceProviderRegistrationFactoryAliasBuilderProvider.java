@@ -34,7 +34,7 @@ import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
+import org.wildfly.clustering.spi.GroupServiceName;
 
 /**
  * @author Paul Ferraro
@@ -44,7 +44,7 @@ public class ServiceProviderRegistrationFactoryAliasBuilderProvider implements C
     @Override
     public Collection<Builder<?>> getBuilders(String containerName, String aliasCacheName, String targetCacheName) {
         Builder<ServiceProviderRegistrationFactory> builder = new AliasServiceBuilder<>(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, targetCacheName), ServiceProviderRegistrationFactory.class);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.toString(), containerName, aliasCacheName).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.toString(), containerName, aliasCacheName).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), ServiceProviderRegistrationFactory.class);
         return Arrays.asList(builder, bindingBuilder);
     }

@@ -33,7 +33,6 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.GroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
 
 /**
  * @author Paul Ferraro
@@ -43,7 +42,7 @@ public class GroupAliasBuilderProvider implements org.wildfly.clustering.spi.Gro
     @Override
     public Collection<Builder<?>> getBuilders(String aliasGroup, String targetGroup) {
         Builder<Group> builder = new AliasServiceBuilder<>(GroupServiceName.GROUP.getServiceName(aliasGroup), GroupServiceName.GROUP.getServiceName(targetGroup), Group.class);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, GroupServiceName.GROUP.toString(), aliasGroup).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.GROUP.toString(), aliasGroup).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), Group.class);
         return Arrays.asList(builder, bindingBuilder);
     }

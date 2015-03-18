@@ -31,7 +31,7 @@ import org.infinispan.configuration.cache.EvictionConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -48,10 +48,10 @@ public class EvictionBuilder extends CacheComponentBuilder<EvictionConfiguration
     }
 
     @Override
-    public Builder<EvictionConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        EvictionStrategy strategy = ModelNodes.asEnum(STRATEGY.getDefinition().resolveModelAttribute(resolver, model), EvictionStrategy.class);
+    public Builder<EvictionConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        EvictionStrategy strategy = ModelNodes.asEnum(STRATEGY.getDefinition().resolveModelAttribute(context, model), EvictionStrategy.class);
         this.builder.strategy(strategy);
-        this.builder.maxEntries(strategy.isEnabled() ? MAX_ENTRIES.getDefinition().resolveModelAttribute(resolver, model).asLong() : -1L);
+        this.builder.maxEntries(strategy.isEnabled() ? MAX_ENTRIES.getDefinition().resolveModelAttribute(context, model).asLong() : -1L);
         return this;
     }
 

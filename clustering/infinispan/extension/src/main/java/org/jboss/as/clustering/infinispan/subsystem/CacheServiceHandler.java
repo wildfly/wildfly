@@ -39,8 +39,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
 
 /**
@@ -101,7 +101,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         context.removeService(InfinispanBindingFactory.createCacheBinding(containerName, cacheName).getBinderServiceName());
 
-        for (CacheServiceNameFactory factory : CacheServiceName.values()) {
+        for (SubGroupServiceNameFactory factory : CacheServiceName.values()) {
             context.removeService(factory.getServiceName(containerName, cacheName));
         }
 

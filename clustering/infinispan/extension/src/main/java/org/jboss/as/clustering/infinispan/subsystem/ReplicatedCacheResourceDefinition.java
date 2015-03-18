@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
@@ -55,8 +56,9 @@ public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceD
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(ClusteredCacheResourceDefinition.Attribute.class).addAttributes(CacheResourceDefinition.Attribute.class);
         ResourceServiceHandler handler = new ReplicatedCacheServiceHandler();
-        new AddStepHandler(this.getResourceDescriptionResolver(), handler).addAttributes(ClusteredCacheResourceDefinition.Attribute.class).addAttributes(CacheResourceDefinition.Attribute.class).register(registration);
-        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 }

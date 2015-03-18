@@ -28,6 +28,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleIdentifier;
 
+/**
+ * {@link ModelTypeValidator} that validates that a given value is a valid {@link ModuleIdentifier}.
+ */
 public class ModuleIdentifierValidator extends ModelTypeValidator {
 
     public ModuleIdentifierValidator(boolean nullable, boolean allowExpressions) {

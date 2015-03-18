@@ -33,7 +33,6 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.GroupBuilderFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
 import org.wildfly.clustering.spi.GroupServiceName;
 
 /**
@@ -54,7 +53,7 @@ public class CommandDispatcherFactoryBuilderProvider implements GroupBuilderProv
     @Override
     public Collection<Builder<?>> getBuilders(String group, ModuleIdentifier module) {
         Builder<CommandDispatcherFactory> builder = this.factory.createBuilder(group, module);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, GroupServiceName.COMMAND_DISPATCHER.toString(), group).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.COMMAND_DISPATCHER.toString(), group).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), CommandDispatcherFactory.class);
         return Arrays.asList(builder, bindingBuilder);
     }

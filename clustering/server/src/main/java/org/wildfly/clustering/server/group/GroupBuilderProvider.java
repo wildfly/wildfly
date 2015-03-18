@@ -34,7 +34,6 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.server.GroupBuilderFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.GroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
 
 /**
  * Provides the requisite builders for a {@link Group} service created from a specified factory.
@@ -54,7 +53,7 @@ public class GroupBuilderProvider implements org.wildfly.clustering.spi.GroupBui
     @Override
     public Collection<Builder<?>> getBuilders(String group, ModuleIdentifier module) {
         Builder<Group> builder = this.factory.createBuilder(group, module);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, GroupServiceName.GROUP.toString(), group).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.GROUP.toString(), group).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), Group.class);
         return Arrays.asList(builder, bindingBuilder);
     }

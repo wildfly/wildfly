@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:singleton-deployer:1.0">
+    <deployment-policies default="max">
+        <deployment-policy name="max" cache-container="container" cache="cache" quorum="2">
+            <simple-election-policy position="-1">
+                <name-preferences>node0 node1</name-preferences>
+            </simple-election-policy>
+        </deployment-policy>
+        <deployment-policy name="min" cache-container="container">
+            <random-election-policy>
+                <socket-binding-preferences>binding0 binding1</socket-binding-preferences>
+            </random-election-policy>
+        </deployment-policy>
+    </deployment-policies>
+</subsystem>

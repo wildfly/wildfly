@@ -29,7 +29,7 @@ import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -47,10 +47,10 @@ public class BackupForBuilder extends CacheComponentBuilder<BackupForConfigurati
     }
 
     @Override
-    public Builder<BackupForConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        String site = ModelNodes.asString(SITE.getDefinition().resolveModelAttribute(resolver, model));
+    public Builder<BackupForConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        String site = ModelNodes.asString(SITE.getDefinition().resolveModelAttribute(context, model));
         if (site != null) {
-            this.builder.remoteSite(site).remoteCache(CACHE.getDefinition().resolveModelAttribute(resolver, model).asString());
+            this.builder.remoteSite(site).remoteCache(CACHE.getDefinition().resolveModelAttribute(context, model).asString());
         }
         return this;
     }

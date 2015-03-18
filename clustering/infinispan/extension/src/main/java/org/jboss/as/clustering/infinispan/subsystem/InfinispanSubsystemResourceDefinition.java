@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.BoottimeAddStepHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -64,10 +65,11 @@ public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinit
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
-        new BoottimeAddStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
-        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
+        ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
+        new BoottimeAddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     @Override

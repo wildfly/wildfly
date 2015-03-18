@@ -58,6 +58,7 @@
       <subsystem>sar.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
+      <subsystem>singleton-deployer.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem supplement="ha">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
@@ -126,6 +127,7 @@
       <subsystem>sar.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
+      <subsystem>singleton-deployer.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem supplement="ha">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>

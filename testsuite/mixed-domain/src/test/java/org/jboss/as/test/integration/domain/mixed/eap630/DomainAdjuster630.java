@@ -50,6 +50,7 @@ import org.jboss.as.weld.WeldExtension;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.batch.BatchSubsystemExtension;
 import org.wildfly.extension.beanvalidation.BeanValidationExtension;
+import org.wildfly.extension.clustering.singleton.SingletonDeployerExtension;
 import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
@@ -81,7 +82,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.addAll(removeSecurityManager(profileAddress.append(SecurityManagerExtension.SUBSYSTEM_PATH)));
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
         list.addAll(replaceActiveMqWithMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
-
+        list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, SingletonDeployerExtension.SUBSYSTEM_NAME)));
 
         //Temporary workaround, something weird is going on in infinispan/jgroups so let's get rid of those for now
         //TODO Reenable these subsystems, it is important to see if we boot with them configured although the tests don't use clustering
@@ -90,7 +91,6 @@ public class DomainAdjuster630 extends DomainAdjuster {
 
         return list;
     }
-
 
 
     private Collection<? extends ModelNode> removeBatch(final PathAddress subsystem) {
@@ -107,6 +107,15 @@ public class DomainAdjuster630 extends DomainAdjuster {
         //bean-validation and extension don't exist
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.bean-validation")));
+        return list;
+    }
+
+
+    private Collection<? extends ModelNode> removeSingletonDeployer(PathAddress subsystem) {
+        List<ModelNode> list = new ArrayList<>(2);
+        //singleton subsystem and extension doesn't exist
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.singleton")));
         return list;
     }
 

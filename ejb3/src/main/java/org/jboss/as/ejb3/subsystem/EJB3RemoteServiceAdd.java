@@ -62,8 +62,8 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceNameFactory;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
@@ -131,7 +131,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 }
             }
             for (CacheGroupBuilderProvider provider : ServiceLoader.load(LocalCacheGroupBuilderProvider.class, LocalCacheGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, CacheGroupServiceNameFactory.DEFAULT_CACHE)) {
+                for (Builder<?> builder : provider.getBuilders(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) {
                     builder.build(target).install();
                 }
             }

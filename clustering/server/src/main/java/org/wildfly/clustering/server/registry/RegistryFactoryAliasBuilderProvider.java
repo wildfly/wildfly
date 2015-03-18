@@ -36,7 +36,7 @@ import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
+import org.wildfly.clustering.spi.GroupServiceName;
 
 /**
  * @author Paul Ferraro
@@ -49,7 +49,7 @@ public class RegistryFactoryAliasBuilderProvider implements CacheGroupAliasBuild
         Builder<RegistryFactory> factoryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY_FACTORY.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.REGISTRY_FACTORY.getServiceName(containerName, targetCacheName), RegistryFactory.class);
         Builder<Registry> registryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.REGISTRY.getServiceName(containerName, targetCacheName), Registry.class);
         Builder<RegistryEntryProvider> entryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(containerName, targetCacheName), CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(containerName, aliasCacheName), RegistryEntryProvider.class);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, CacheGroupServiceName.REGISTRY.toString(), containerName, aliasCacheName).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.REGISTRY.toString(), containerName, aliasCacheName).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, factoryBuilder.getServiceName(), RegistryFactory.class);
         return Arrays.asList(factoryBuilder, registryBuilder, entryBuilder, bindingBuilder);
     }

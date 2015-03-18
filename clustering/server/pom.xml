@@ -64,7 +64,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-singleton</artifactId>
+            <artifactId>wildfly-clustering-singleton-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

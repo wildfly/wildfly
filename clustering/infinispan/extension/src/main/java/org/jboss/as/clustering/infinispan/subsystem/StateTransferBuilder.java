@@ -29,7 +29,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StateTransferConfiguration;
 import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -51,10 +51,10 @@ public class StateTransferBuilder extends CacheComponentBuilder<StateTransferCon
     }
 
     @Override
-    public Builder<StateTransferConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.builder.chunkSize(CHUNK_SIZE.getDefinition().resolveModelAttribute(resolver, model).asInt())
+    public Builder<StateTransferConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.builder.chunkSize(CHUNK_SIZE.getDefinition().resolveModelAttribute(context, model).asInt())
                 .fetchInMemoryState(true)
-                .timeout(TIMEOUT.getDefinition().resolveModelAttribute(resolver, model).asLong())
+                .timeout(TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong())
         ;
         return this;
     }
