@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.infinispan.spi.service;
+
+package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 
 /**
- * Factory for generating service names for services associated with a cache.
- * @author Paul Ferraro
+ * Builder that provides implementation for a service name.
+ *
+ * @author Radoslav Husar
+ * @version Apr 2015
  */
-public interface CacheServiceNameFactory extends CacheContainerServiceNameFactory {
+abstract class ExecutorServiceNameBuilder {
 
-    /**
-     * The alias for the default cache of a cache container.
-     */
-    String DEFAULT_CACHE = "default";
+    private final String cacheContainerName;
 
-    /**
-     * Returns an appropriate service name for the specified container and cache names.
-     *
-     * @param container a container name
-     * @param cache     a cache name
-     * @return a service name
-     */
-    ServiceName getServiceName(String container, String cache);
+    ExecutorServiceNameBuilder(final String cacheContainerName) {
+        this.cacheContainerName = cacheContainerName;
+    }
+
+    ServiceName getServiceName() {
+        return CacheContainerServiceName.CACHE_CONTAINER.getServiceName(cacheContainerName).append("thread-pool");
+    }
+
 }

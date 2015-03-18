@@ -59,10 +59,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
 
                     writeAttribute(writer, container, CacheContainerResourceDefinition.DEFAULT_CACHE);
-                    writeAttribute(writer, container, CacheContainerResourceDefinition.EVICTION_EXECUTOR);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.JNDI_NAME);
-                    writeAttribute(writer, container, CacheContainerResourceDefinition.LISTENER_EXECUTOR);
-                    writeAttribute(writer, container, CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.START);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.MODULE);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.STATISTICS_ENABLED);
@@ -72,9 +69,16 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeStartElement(Element.TRANSPORT.getLocalName());
                         ModelNode transport = container.get(TransportResourceDefinition.PATH.getKeyValuePair());
                         writeAttribute(writer, transport, TransportResourceDefinition.CHANNEL);
-                        writeAttribute(writer, transport, TransportResourceDefinition.EXECUTOR);
                         writeAttribute(writer, transport, TransportResourceDefinition.LOCK_TIMEOUT);
                         writer.writeEndElement();
+                    }
+
+                    // write any configured thread pools
+                    if (container.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
+                        writeThreadPoolElements(Element.TRANSPORT_THREAD_POOL, ThreadPoolResourceDefinition.TRANSPORT, writer, container);
+                        writeThreadPoolElements(Element.LISTENER_THREAD_POOL, ThreadPoolResourceDefinition.LISTENER, writer, container);
+                        writeThreadPoolElements(Element.PERSISTENCE_THREAD_POOL, ThreadPoolResourceDefinition.PERSISTENCE, writer, container);
+                        writeScheduledThreadPoolElements(Element.EVICTION_THREAD_POOL, ScheduledThreadPoolResourceDefinition.EVICTION, writer, container);
                     }
 
                     // write any existent cache types
@@ -369,5 +373,27 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     private static void writeElement(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
         attribute.getAttributeMarshaller().marshallAsElement(attribute, model, true, writer);
+    }
+
+    private static void writeThreadPoolElements(Element element, ThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode container) throws XMLStreamException {
+        if (container.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
+            ModelNode threadPool = container.get(pool.getPathElement().getKeyValuePair());
+            writer.writeStartElement(element.getLocalName());
+            pool.getMinThreads().marshallAsAttribute(threadPool, writer);
+            pool.getMaxThreads().marshallAsAttribute(threadPool, writer);
+            pool.getQueueLength().marshallAsAttribute(threadPool, writer);
+            pool.getKeepaliveTime().marshallAsAttribute(threadPool, writer);
+            writer.writeEndElement();
+        }
+    }
+
+    private static void writeScheduledThreadPoolElements(Element element, ScheduledThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode container) throws XMLStreamException {
+        if (container.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
+            ModelNode threadPool = container.get(pool.getPathElement().getKeyValuePair());
+            writer.writeStartElement(element.getLocalName());
+            pool.getMaxThreads().marshallAsAttribute(threadPool, writer);
+            pool.getKeepaliveTime().marshallAsAttribute(threadPool, writer);
+            writer.writeEndElement();
+        }
     }
 }

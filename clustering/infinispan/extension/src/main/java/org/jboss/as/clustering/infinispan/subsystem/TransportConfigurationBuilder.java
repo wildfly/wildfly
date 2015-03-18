@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.threads.ThreadsServices;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -83,11 +82,10 @@ public class TransportConfigurationBuilder implements Builder<TransportConfigura
         return this;
     }
 
-    public TransportConfigurationBuilder setExecutor(String executorName) {
-        if (executorName != null) {
-            this.executor = new InjectedValueDependency<>(ThreadsServices.executorName(executorName), Executor.class);
-        }
-        return this;
+    public ExecutorServiceBuilder setExecutor() {
+        ExecutorServiceBuilder builder = new ExecutorServiceBuilder(this.name, ModelKeys.TRANSPORT);
+        this.executor = new InjectedValueDependency<>(builder, Executor.class);
+        return builder;
     }
 
     @Override

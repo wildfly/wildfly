@@ -184,7 +184,7 @@ public class CacheAddHandler extends AbstractAddStepHandler {
      * @param containerName  the name of the cache container
      * @param containerModel ModelNode representing cache container configuration
      * @param cache          ModelNode representing cache configuration
-     * @param builder        {@link ConfigurationBuilder} object to add data to
+     * @param configBuilder  {@link ConfigurationBuilder} object to add data to
      */
     void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, AdvancedCacheConfigurationBuilder configBuilder) throws OperationFailedException {
         ConfigurationBuilder builder = configBuilder.getConfigurationBuilder();

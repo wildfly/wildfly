@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-
 import javax.management.MBeanServer;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -38,7 +37,6 @@ import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
 import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.Services;
-import org.jboss.as.threads.ThreadsServices;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -72,7 +70,7 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
     private ValueDependency<TransportConfiguration> transport = null;
     private ValueDependency<Executor> listenerExecutor = null;
     private ValueDependency<ScheduledExecutorService> evictionExecutor = null;
-    private ValueDependency<ScheduledExecutorService> replicationQueueExecutor = null;
+    private ValueDependency<Executor> persistenceExecutor = null;
 
     public CacheContainerConfigurationBuilder(String name) {
         this.name = name;
@@ -98,8 +96,8 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
         if (this.evictionExecutor != null) {
             this.evictionExecutor.register(builder);
         }
-        if (this.replicationQueueExecutor != null) {
-            this.replicationQueueExecutor.register(builder);
+        if (this.persistenceExecutor != null) {
+            this.persistenceExecutor.register(builder);
         }
         return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
@@ -158,9 +156,9 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
         if (evictionExecutor != null) {
             builder.evictionThreadPool().threadPoolFactory(new ManagedScheduledExecutorFactory(evictionExecutor));
         }
-        ScheduledExecutorService replicationQueueExecutor = (this.replicationQueueExecutor != null) ? this.replicationQueueExecutor.getValue() : null;
-        if (replicationQueueExecutor != null) {
-            builder.replicationQueueThreadPool().threadPoolFactory(new ManagedExecutorFactory(replicationQueueExecutor));
+        Executor persistenceExecutor = (this.persistenceExecutor != null) ? this.persistenceExecutor.getValue() : null;
+        if (persistenceExecutor != null) {
+            builder.persistenceThreadPool().threadPoolFactory(new ManagedExecutorFactory(persistenceExecutor));
         }
 
         builder.globalJmxStatistics()
@@ -189,24 +187,21 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
         return builder;
     }
 
-    public CacheContainerConfigurationBuilder setListenerExecutor(String executorName) {
-        if (executorName != null) {
-            this.listenerExecutor = new InjectedValueDependency<>(ThreadsServices.executorName(executorName), Executor.class);
-        }
-        return this;
+    public ExecutorServiceBuilder setListenerExecutor() {
+        ExecutorServiceBuilder builder = new ExecutorServiceBuilder(this.name, ModelKeys.LISTENER);
+        this.listenerExecutor = new InjectedValueDependency<>(builder, Executor.class);
+        return builder;
     }
 
-    public CacheContainerConfigurationBuilder setEvictionExecutor(String executorName) {
-        if (executorName != null) {
-            this.evictionExecutor = new InjectedValueDependency<>(ThreadsServices.executorName(executorName), ScheduledExecutorService.class);
-        }
-        return this;
+    public ScheduledExecutorServiceBuilder setEvictionExecutor() {
+        ScheduledExecutorServiceBuilder builder = new ScheduledExecutorServiceBuilder(this.name, ModelKeys.EVICTION);
+        this.evictionExecutor = new InjectedValueDependency<>(builder, ScheduledExecutorService.class);
+        return builder;
     }
 
-    public CacheContainerConfigurationBuilder setReplicationQueueExecutor(String executorName) {
-        if (executorName != null) {
-            this.replicationQueueExecutor = new InjectedValueDependency<>(ThreadsServices.executorName(executorName), ScheduledExecutorService.class);
-        }
-        return this;
+    public ExecutorServiceBuilder setPersistenceExecutor() {
+        ExecutorServiceBuilder builder = new ExecutorServiceBuilder(this.name, ModelKeys.PERSISTENCE);
+        this.persistenceExecutor = new InjectedValueDependency<>(builder, Executor.class);
+        return builder;
     }
 }
