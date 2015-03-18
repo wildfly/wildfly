@@ -68,14 +68,14 @@ public class TransactionSynchronizationRegistryWrapper implements TransactionSyn
             Transaction tx = transactionManager.getTransaction();
             JCAOrderedLastSynchronizationList jcaOrderedLastSynchronization = interposedSyncs.get(tx);
             if (jcaOrderedLastSynchronization == null) {
-                JCAOrderedLastSynchronizationList toPut = new JCAOrderedLastSynchronizationList(tx, interposedSyncs);
+                JCAOrderedLastSynchronizationList toPut = new JCAOrderedLastSynchronizationList((com.arjuna.ats.jta.transaction.Transaction) tx, interposedSyncs);
                 jcaOrderedLastSynchronization = interposedSyncs.putIfAbsent(tx, toPut);
                 if (jcaOrderedLastSynchronization == null) {
                     jcaOrderedLastSynchronization = toPut;
                     delegate.registerInterposedSynchronization(jcaOrderedLastSynchronization);
                 }
             }
-            jcaOrderedLastSynchronization.addInterposedSynchronization(sync);
+            jcaOrderedLastSynchronization.registerInterposedSynchronization(sync);
         } catch (SystemException e) {
             throw new IllegalStateException(e);
         }
