@@ -141,7 +141,7 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
 
             Executor executor = transport.getExecutor();
             if (executor != null) {
-                transportBuilder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
+                transportBuilder.transportThreadPool().threadPoolFactory(new ManagedExecutorFactory(executor));
             }
 
             RelayConfiguration relay = stack.getRelay();
