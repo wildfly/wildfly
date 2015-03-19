@@ -69,34 +69,34 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        addDependency(moduleSpecification, moduleLoader, JAXRS_API);
-        addDependency(moduleSpecification, moduleLoader, JAXB_API);
-        addDependency(moduleSpecification, moduleLoader, JSON_API);
+        addDependency(moduleSpecification, moduleLoader, JAXRS_API, false);
+        addDependency(moduleSpecification, moduleLoader, JAXB_API, false);
+        addDependency(moduleSpecification, moduleLoader, JSON_API, false);
 
         //we need to add these from all deployments, as they could be using the JAX-RS client
 
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_ATOM);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR_11);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXB);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_JACKSON2);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_JSON_P_PROVIDER);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_ATOM, true);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR_11, true);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXRS, true);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXB, true);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JACKSON2, true);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JSON_P_PROVIDER, true);
         //addDependency(moduleSpecification, moduleLoader, RESTEASY_JETTISON);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_JSAPI);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_YAML);
-        addDependency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_CRYPTO);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_JSAPI, true);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART, true);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_YAML, true);
+        addDependency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL, true);
+        addDependency(moduleSpecification, moduleLoader, RESTEASY_CRYPTO, true);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI);
+            addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI, true);
         }
 
     }
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+                               ModuleIdentifier moduleIdentifier, boolean optional) {
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false));
     }
 
     @Override

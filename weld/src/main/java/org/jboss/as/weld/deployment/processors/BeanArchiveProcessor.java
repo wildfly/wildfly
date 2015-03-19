@@ -40,6 +40,7 @@ import javax.enterprise.inject.spi.Extension;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.weld.InjectionTargetDefiningAnnotations;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
@@ -215,7 +216,10 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             this.deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             this.classesResourceRoot = deploymentUnit.getAttachment(WeldAttachments.CLASSES_RESOURCE_ROOT);
             HashSet<AnnotationType> annotationTypes = new HashSet<>(getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS));
-            annotationTypes.addAll(getRootDeploymentUnit(deploymentUnit).getAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS));
+            List<DotName> definingAnnotations = getRootDeploymentUnit(deploymentUnit).getAttachmentList(InjectionTargetDefiningAnnotations.INJECTION_TARGET_DEFINING_ANNOTATIONS);
+            for(DotName annotation : definingAnnotations) {
+                annotationTypes.add(new AnnotationType(annotation, false));
+            }
             this.beanDefiningAnnotations = annotationTypes;
             this.requireBeanDescriptor = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY).isRequireBeanDescriptor();
         }
