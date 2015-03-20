@@ -1,0 +1,4 @@
+/subsystem=security/security-domain=SecuredDataSourceTestCase:add(cache-type=default)
+/subsystem=security/security-domain=SecuredDataSourceTestCase/authentication=classic:add
+/subsystem=security/security-domain=SecuredDataSourceTestCase/authentication=classic/login-module=CallerIdentity:add(code=org.picketbox.datasource.security.CallerIdentityLoginModule, flag=required, module-options=[("principal"=>"principal"), ("username"=>"username"), ("password"=>"password")])
+/subsystem=datasources/data-source=SecuredDataSourceTestCase:add(jndi-name="java:jboss/datasources/SecuredDataSourceTestCase",use-java-context=true,connection-url="jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",driver-name=h2,min-pool-size=15,max-pool-size=150,pool-prefill=true,security-domain=SecuredDataSourceTestCase)
