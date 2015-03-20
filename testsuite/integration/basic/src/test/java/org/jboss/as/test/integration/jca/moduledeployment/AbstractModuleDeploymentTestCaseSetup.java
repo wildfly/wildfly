@@ -36,8 +36,10 @@ import java.util.regex.Pattern;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -48,8 +50,14 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.xnio.IoUtils;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.junit.Assert.fail;
 
 /**
  * AS7-5768 -Support for RA module deployment
@@ -176,11 +184,57 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     }
 
     @Override
-    public void tearDown(ManagementClient managementClient, String containerId)
+    public void tearDown(final ManagementClient managementClient, final String containerId)
             throws Exception {
         takeSnapShot();
-        remove(address);
-        removeModule(defaultPath, true);
+        try {
+            remove(address, managementClient);
+        } finally {
+            removeModule(defaultPath, true);
+        }
+    }
+
+    protected void remove(final ModelNode address, final ManagementClient managementClient) throws IOException, MgmtOperationException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("remove");
+        operation.get(OP_ADDR).set(address);
+        final ModelNode result = executeOperation(operation, false);
+
+        if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
+            throw new MgmtOperationException("Module removal failed: " + result.get(FAILURE_DESCRIPTION), operation, result);
+        }
+        final ModelNode responseHeaders = result.get(RESPONSE_HEADERS);
+        if (responseHeaders.isDefined() && responseHeaders.get(PROCESS_STATE).isDefined()
+                && ControlledProcessState.State.RELOAD_REQUIRED.toString().equals(responseHeaders.get(PROCESS_STATE).asString())) {
+            reload(managementClient);
+        }
+    }
+
+    /**
+     * Provide reload operation on server
+     *
+     * @throws Exception
+     */
+    public void reload(final ManagementClient managementClient) throws IOException, MgmtOperationException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("reload");
+        executeOperation(operation);
+        boolean reloaded = false;
+        int i = 0;
+        while (!reloaded) {
+            try {
+                Thread.sleep(5000);
+                if (managementClient.isServerInRunningState()) {
+                    reloaded = true;
+                }
+            } catch (Throwable t) {
+                // nothing to do, just waiting
+            } finally {
+                if (!reloaded && i++ > 10) {
+                    fail("Server reloading failed");
+                }
+            }
+        }
     }
 
     @Override

@@ -72,8 +72,11 @@ public class TwoRaJarTestCase extends TwoRaFlatTestCase {
         @Override
         public void tearDown(ManagementClient managementClient,
                              String containerId) throws Exception {
-            remove(address1);
-            super.tearDown(managementClient, containerId);
+            try {
+                super.tearDown(managementClient, containerId);
+            } finally {
+                remove(address1, managementClient);
+            }
         }
 
         @Override
