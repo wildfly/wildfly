@@ -80,6 +80,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -138,6 +139,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             }
             sqlDataSource = new WildFlyDataSource((javax.sql.DataSource) deploymentMD.getCfs()[0], jndiName);
             DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
+            CommonDeploymentService cdService = new CommonDeploymentService(deploymentMD);
+            startContext.getController().getServiceContainer().addService(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName),cdService)
+                    .addDependency(SERVICE_NAME_BASE.append(jndiName))
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (Throwable t) {
             throw ConnectorLogger.ROOT_LOGGER.deploymentError(t, dsName);
         }
@@ -146,6 +151,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     protected abstract AS7DataSourceDeployer getDeployer() throws ValidateException ;
 
     public void stop(final StopContext stopContext) {
+        stopContext.getController().getServiceContainer().getService(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName)).setMode(ServiceController.Mode.REMOVE);
         ExecutorService executorService = executor.getValue();
         Runnable r = new Runnable() {
             @Override

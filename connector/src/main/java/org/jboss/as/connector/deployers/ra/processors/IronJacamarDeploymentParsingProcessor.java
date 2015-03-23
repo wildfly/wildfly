@@ -43,6 +43,7 @@ import org.jboss.vfs.VirtualFile;
  * DeploymentUnitProcessor responsible for parsing an iron-jacamar.xml descriptor
  * and attaching the corresponding IronJacamar metadata. It take care also to
  * register this metadata into IronJacamar0s MetadataRepository
+ *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
@@ -57,6 +58,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
     /**
      * Process a deployment for iron-jacamar.xml files. Will parse the xml file
      * and attach metadata discovered during processing.
+     *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
@@ -74,7 +76,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
     }
 
     public static IronJacamarXmlDescriptor process(VirtualFile deploymentRoot, boolean resolveProperties) throws DeploymentUnitProcessingException {
-        IronJacamarXmlDescriptor xmlDescriptor = null ;
+        IronJacamarXmlDescriptor xmlDescriptor = null;
         if (deploymentRoot == null || !deploymentRoot.exists())
             return null;
 

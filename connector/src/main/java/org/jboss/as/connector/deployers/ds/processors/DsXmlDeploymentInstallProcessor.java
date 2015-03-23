@@ -31,10 +31,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
+import org.jboss.as.connector.subsystems.datasources.CommonDeploymentService;
+import org.jboss.as.connector.subsystems.datasources.Constants;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
-import org.jboss.as.connector.subsystems.datasources.DataSourceStatisticsListener;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders;
 import org.jboss.as.connector.subsystems.datasources.LocalDataSourceService;
@@ -73,6 +75,7 @@ import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -298,8 +301,13 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             if (overrideRegistration == null || overrideRegistration.isAllowsOverride()) {
                 overrideRegistration = registration.registerOverrideModel(managementName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
             }
-            dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(overrideRegistration, false));
-            DataSourceStatisticsListener.registerStatisticsResources(resource);
+            DataSourceStatisticsService statsService = new DataSourceStatisticsService(registration, false );
+                            serviceTarget.addService(dataSourceServiceName.append(Constants.STATISTICS), statsService)
+                                    .addDependency(dataSourceServiceName)
+                                    .addDependency(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName), CommonDeployment.class, statsService.getCommonDeploymentInjector())
+                                    .setInitialMode(ServiceController.Mode.PASSIVE)
+                                    .install();
+            DataSourceStatisticsService.registerStatisticsResources(resource);
         } // else should probably throw an ISE or something
 
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
