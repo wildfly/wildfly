@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.common.jms;
 
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,6 +72,49 @@ public class JMSOperationsProvider {
         try {
             Class clazz = Class.forName(className);
             jmsOperationsInstance = clazz.getConstructor(ManagementClient.class).newInstance(client);
+        } catch (Exception e) {
+            throw new JMSOperationsException(e);
+        }
+        if(!(jmsOperationsInstance instanceof JMSOperations)) {
+            throw new JMSOperationsException("Class " + className + " does not implement interface JMSOperations");
+        }
+        return (JMSOperations)jmsOperationsInstance;
+    }
+
+    /**
+     * Gets an instance of a JMSOperations implementation for a particular JMS provider based on the classname
+     * given by property "jmsoperations.implementation.class" in jmsoperations.properties somewhere on the classpath
+     * The property should contain a fully qualified name of a class that implements JMSOperations interface
+     * The setting in that file can be overriden by a system property declaration
+     *
+     * @param client {@link ModelControllerClient} to pass to the JMSOperations implementation class' constructor
+     *
+     * @return a JMSOperations implementation that is JMS-provider-dependent
+     */
+    public static JMSOperations getInstance(ModelControllerClient client) {
+        String className;
+        // first try to get the property from system properties
+        className = System.getProperty(PROPERTY_NAME);
+        // if this was not defined, try to get it from jmsoperations.properties
+        if(className == null) {
+            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            InputStream stream = tccl.getResourceAsStream(FILE_NAME);
+            Properties propsFromFile = new Properties();
+            try {
+                propsFromFile.load(stream);
+                className = propsFromFile.getProperty(PROPERTY_NAME);
+            } catch(IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        if(className == null) {
+            throw new JMSOperationsException("Please specify a property " + PROPERTY_NAME + " in " + FILE_NAME);
+        }
+        System.out.println("Creating instance of class: " + className);
+        Object jmsOperationsInstance;
+        try {
+            Class clazz = Class.forName(className);
+            jmsOperationsInstance = clazz.getConstructor(ModelControllerClient.class).newInstance(client);
         } catch (Exception e) {
             throw new JMSOperationsException(e);
         }

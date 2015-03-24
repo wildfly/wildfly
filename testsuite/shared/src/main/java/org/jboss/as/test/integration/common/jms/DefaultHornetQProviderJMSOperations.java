@@ -43,11 +43,15 @@ import java.io.IOException;
  */
 public class DefaultHornetQProviderJMSOperations implements JMSOperations {
 
-    private final ManagementClient client;
+    private final ModelControllerClient client;
 
     private static final Logger logger = Logger.getLogger(DefaultHornetQProviderJMSOperations.class);
 
     public DefaultHornetQProviderJMSOperations(ManagementClient client) {
+        this.client = client.getControllerClient();
+    }
+
+    public DefaultHornetQProviderJMSOperations(ModelControllerClient client) {
         this.client = client;
     }
 
@@ -78,7 +82,7 @@ public class DefaultHornetQProviderJMSOperations implements JMSOperations {
     }
 
     private ModelControllerClient getModelControllerClient() {
-        return client.getControllerClient();
+        return client;
     }
 
     private void createJmsDestination(final String destinationType, final String destinationName, final String jndiName) {
