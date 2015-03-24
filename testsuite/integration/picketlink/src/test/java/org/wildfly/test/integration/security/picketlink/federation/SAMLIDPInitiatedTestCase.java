@@ -84,7 +84,7 @@ public class SAMLIDPInitiatedTestCase {
     @Deployment(name = "service-provider-1")
     public static WebArchive deploymentSP1() {
         WebArchive serviceProvider = serviceProvider("sp-post1.war");
-        serviceProvider.add(new StringAsset("Back to the original requested resource."), "savedRequest/savedRequest.html");
+        serviceProvider.add(new StringAsset("Back to the original requested resource."), "savedRequest/savedRequest.jsp");
         return serviceProvider;
     }
 
@@ -106,7 +106,7 @@ public class SAMLIDPInitiatedTestCase {
 
         webForm.getSubmitButtons()[0].click();
 
-        request = new GetMethodWebRequest(url + "?SAML_VERSION=2.0&TARGET=" + this.serviceProviderPostURL + "/savedRequest/savedRequest.html");
+        request = new GetMethodWebRequest(url + "?SAML_VERSION=2.0&TARGET=" + this.serviceProviderPostURL + "/savedRequest/savedRequest.jsp");
 
         response = conversation.getResponse(request);
 
