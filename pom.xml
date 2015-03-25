@@ -1522,6 +1522,34 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.narayana.txframework</groupId>
+                <artifactId>txframework</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.rts</groupId>
+                        <artifactId>restat-util</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.arquillian.junit</groupId>
+                        <artifactId>arquillian-junit-container</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate.javax.persistence</groupId>
+                        <artifactId>hibernate-jpa-2.0-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-testsuite-shared</artifactId>
                 <version>${project.version}</version>
