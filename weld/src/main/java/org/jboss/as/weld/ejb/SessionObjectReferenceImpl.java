@@ -48,7 +48,7 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     private final String ejbName;
 
-    private transient volatile Map<String, ManagedReference> businessInterfaceToReference;
+    private transient Map<String, ManagedReference> businessInterfaceToReference;
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {
         ejbName = descriptor.getEjbName();

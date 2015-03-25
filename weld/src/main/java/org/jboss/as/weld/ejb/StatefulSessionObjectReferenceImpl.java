@@ -57,7 +57,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     private final SessionID id;
     private final StatefulSessionComponent ejbComponent;
 
-    private transient volatile Map<String, ManagedReference> businessInterfaceToReference;
+    private transient Map<String, ManagedReference> businessInterfaceToReference;
 
     public StatefulSessionObjectReferenceImpl(final SessionID id, final ServiceName createServiceName, final Map<String, ServiceName> viewServices) {
         this.id = id;
