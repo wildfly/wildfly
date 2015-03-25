@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
 import org.jboss.as.txn.logging.TransactionLogger;
@@ -48,24 +49,40 @@ import org.jboss.as.txn.logging.TransactionLogger;
  * "Resources can be closed but no transactional work can be performed with them"
  */
 public class JCAOrderedLastSynchronizationList implements Synchronization {
-    private Transaction tx;
+    private com.arjuna.ats.jta.transaction.Transaction tx;
     private Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations;
     private List<Synchronization> preJcaSyncs = new ArrayList<Synchronization>();
     private List<Synchronization> jcaSyncs = new ArrayList<Synchronization>();
 
-    public JCAOrderedLastSynchronizationList(Transaction tx,
+    public JCAOrderedLastSynchronizationList(com.arjuna.ats.jta.transaction.Transaction tx,
         Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations) {
         this.tx = tx;
         this.jcaOrderedLastSynchronizations = jcaOrderedLastSynchronizations;
     }
 
-    public void addInterposedSynchronization(Synchronization synchronization) {
+    /**
+     * This is only allowed at various points of the transaction lifecycle.
+     *
+     * @param synchronization The synchronization to register
+     * @throws IllegalStateException In case the transaction was in a state that was not valid to register under
+     * @throws SystemException In case the transaction status was not known
+     */
+    public void registerInterposedSynchronization(Synchronization synchronization) throws IllegalStateException, SystemException {
+        int status = tx.getStatus();
+        switch (status) {
+            case javax.transaction.Status.STATUS_ACTIVE:
+            case javax.transaction.Status.STATUS_PREPARING:
+                break;
+            default:
+                throw TransactionLogger.ROOT_LOGGER.syncsnotallowed(status);
+        }
         if (synchronization.getClass().getName().startsWith("org.jboss.jca")) {
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
                 TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.jcaSyncs.add - Class: " + synchronization.getClass() + " HashCode: "
                     + synchronization.hashCode() + " toString: " + synchronization);
             }
             jcaSyncs.add(synchronization);
+
         } else {
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
                 TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.preJcaSyncs.add - Class: " + synchronization.getClass() + " HashCode: "
@@ -87,7 +104,10 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
      */
     @Override
     public void beforeCompletion() {
-        for (Synchronization preJcaSync : preJcaSyncs) {
+        // This is needed to guard against syncs being registered during the run, otherwise we could have used an iterator
+        int lastIndexProcessed = 0;
+        while ((lastIndexProcessed < preJcaSyncs.size())) {
+            Synchronization preJcaSync = preJcaSyncs.get(lastIndexProcessed);
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
                 TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.preJcaSyncs.before_completion - Class: " + preJcaSync.getClass() + " HashCode: "
                     + preJcaSync.hashCode()
@@ -95,8 +115,13 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
                     + preJcaSync);
             }
             preJcaSync.beforeCompletion();
+            lastIndexProcessed = lastIndexProcessed + 1;
         }
-        for (Synchronization jcaSync : jcaSyncs) {
+
+        // Do the same for the jca syncs
+        lastIndexProcessed = 0;
+        while ((lastIndexProcessed < jcaSyncs.size())) {
+            Synchronization jcaSync = jcaSyncs.get(lastIndexProcessed);
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
                 TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.jcaSyncs.before_completion - Class: " + jcaSync.getClass() + " HashCode: "
                     + jcaSync.hashCode()
@@ -104,6 +129,7 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
                     + jcaSync);
             }
             jcaSync.beforeCompletion();
+            lastIndexProcessed = lastIndexProcessed + 1;
         }
     }
 

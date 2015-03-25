@@ -211,4 +211,7 @@ public interface TransactionLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 28, value = "The jca synchronization %s associated with tx %s failed during after completion")
     void jcaSyncAfterCompletionFailed(Synchronization jcaSync, Transaction tx, @Cause Exception e);
+
+    @Message(id = 29, value = "Syncs are not allowed to be registered when the tx is in state %s")
+    IllegalStateException syncsnotallowed(int status);
 }
