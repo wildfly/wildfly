@@ -29,6 +29,8 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 
+import java.io.File;
+
 /**
  * Class defining {@link AttachmentKey}s for Undertow-specific attachments.
  *
@@ -51,6 +53,8 @@ public final class UndertowAttachments {
     public static final AttachmentKey<SharedSessionManagerConfig> SHARED_SESSION_MANAGER_CONFIG = AttachmentKey.create(SharedSessionManagerConfig.class);
 
     public static final AttachmentKey<WebSocketDeploymentInfo> WEB_SOCKET_DEPLOYMENT_INFO = AttachmentKey.create(WebSocketDeploymentInfo.class);
+
+    public static final AttachmentKey<AttachmentList<File>> EXTERNAL_RESOURCES = AttachmentKey.createList(File.class);
 
     private UndertowAttachments() {
     }
