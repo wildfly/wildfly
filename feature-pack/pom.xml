@@ -663,6 +663,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.narayana.txframework</groupId>
+            <artifactId>txframework</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
             <exclusions>
