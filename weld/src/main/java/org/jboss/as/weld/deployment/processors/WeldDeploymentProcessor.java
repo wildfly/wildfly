@@ -83,15 +83,15 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.weld.bootstrap.api.Environments;
-import org.jboss.weld.bootstrap.spi.BootstrapConfiguration;
 import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.bootstrap.spi.helpers.FileBasedBootstrapConfiguration;
+import org.jboss.weld.config.ConfigurationKey;
+import org.jboss.weld.configuration.spi.ExternalConfiguration;
+import org.jboss.weld.configuration.spi.helpers.ExternalConfigurationBuilder;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.resources.spi.ClassFileServices;
-import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -342,13 +342,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
     private void installBootstrapConfigurationService(WeldDeployment deployment, DeploymentUnit parentDeploymentUnit) {
         final boolean nonPortableMode = parentDeploymentUnit.getAttachment(WeldConfiguration.ATTACHMENT_KEY).isNonPortableMode();
-        final ResourceLoader resourceLoader = deployment.getServices().get(ResourceLoader.class);
-        deployment.getServices().add(BootstrapConfiguration.class, new FileBasedBootstrapConfiguration(resourceLoader) {
-            @Override
-            public boolean isNonPortableModeEnabled() {
-                return nonPortableMode;
-            }
-        });
+        deployment.getServices().add(ExternalConfiguration.class,
+                new ExternalConfigurationBuilder().add(ConfigurationKey.NON_PORTABLE_MODE.get(), nonPortableMode).build());
     }
 
     @Override
