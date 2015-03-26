@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>9.0.0.Beta1</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -14,7 +14,7 @@
     <!-- ********************************************************************************** -->
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-iiop</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
+    <version>9.0.0.Beta1</version>
 
     <name>WildFly Test Suite: Integration - IIOP</name>
 

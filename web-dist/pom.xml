@@ -30,12 +30,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>9.0.0.Beta1</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-web-dist</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
+    <version>9.0.0.Beta1</version>
     <name>WildFly: Web Distribution</name>
     <packaging>jar</packaging>
     <dependencies>
