@@ -7,7 +7,7 @@
     <parent>
         <artifactId>wildfly-ts-integ</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>9.0.0.CR1-SNAPSHOT</version>
+        <version>9.0.0.Beta2</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-java8</artifactId>
