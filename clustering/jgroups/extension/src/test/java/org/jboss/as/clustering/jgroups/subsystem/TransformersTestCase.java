@@ -22,16 +22,13 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -77,24 +74,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testTransformerAS712() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.V7_1_2_FINAL;
-        testTransformation(JGroupsModel.VERSION_1_1_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testTransformerAS713() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.V7_1_3_FINAL;
-        testTransformation(JGroupsModel.VERSION_1_1_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testTransformerAS720() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.V7_2_0_FINAL;
-        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
     public void testTransformerWF800() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
         testTransformation(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
@@ -104,30 +83,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
     public void testTransformerWF810() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
         testTransformation(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
-    }
-
-    @Test
-    public void testTransformerEAP600() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_0_0;
-        testTransformation(JGroupsModel.VERSION_1_1_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testTransformerEAP601() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_0_1;
-        testTransformation(JGroupsModel.VERSION_1_1_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testTransformerEAP610() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_1_0;
-        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testTransformerEAP611() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_1_1;
-        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
@@ -202,24 +157,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testRejectionsAS712() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.V7_1_2_FINAL;
-        testRejections_1_1_0(version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testRejectionsAS713() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.V7_1_3_FINAL;
-        testRejections_1_1_0(version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testRejectionsAS720() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.V7_2_0_FINAL;
-        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
     public void testRejectionsWF800() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
         this.testRejections(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
@@ -232,30 +169,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testRejectionsEAP600() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_0_0;
-        testRejections_1_1_0(version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testRejectionsEAP601() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_0_1;
-        testRejections_1_1_0(version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testRejectionsEAP610() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_1_0;
-        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
-    public void testRejectionsEAP611() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_1_1;
-        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    @Test
     public void testRejectionsEAP620() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
         this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
@@ -265,57 +178,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
     public void testRejectionsEAP630() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
         this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
-    }
-
-    /**
-     * Tests rejection of resources / attributes / operations in 1.1.0 model.
-     *
-     * @throws Exception
-     */
-    private void testRejections_1_1_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version = JGroupsModel.VERSION_1_1_0.getVersion();
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-
-        // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version).addMavenResourceURL(mavenResourceURLs).dontPersistXml().skipReverseControllerCheck();
-
-        KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(version);
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        //Use the real xml with expressions for testing all the attributes
-        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        ModelTestUtils.checkFailedTransformedBootOperations(
-                mainServices,
-                version,
-                builder.parseXmlResource(JGroupsSchema.CURRENT.format("subsystem-jgroups-%d_%d.xml")),
-                new FailedOperationTransformationConfig()
-                        // expect certain rejected expressions
-                        .addFailedAttribute(
-                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH)
-                                        .append(TransportResourceDefinition.WILDCARD_PATH),
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(ModelKeys.SHARED))
-                        .addFailedAttribute(
-                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH)
-                                        .append(TransportResourceDefinition.WILDCARD_PATH)
-                                        .append(PropertyResourceDefinition.WILDCARD_PATH),
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
-                        .addFailedAttribute(
-                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH)
-                                        .append(ProtocolResourceDefinition.WILDCARD_PATH)
-                                        .append(PropertyResourceDefinition.WILDCARD_PATH),
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
-                        // expect rejection of relay and child
-                        .addFailedAttribute(
-                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(RelayResourceDefinition.PATH),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                        .addFailedAttribute(
-                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(RelayResourceDefinition.PATH).append(RemoteSiteResourceDefinition.WILDCARD_PATH),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-        );
     }
 
     private void testRejections(JGroupsModel model, ModelTestControllerVersion controller, String... dependencies) throws Exception {
