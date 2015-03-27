@@ -189,10 +189,6 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
                     .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), STATISTICS_ENABLED);
         }
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, MODULE);
-        }
-
         TransportResourceDefinition.buildTransformation(version, builder);
 
         DistributedCacheResourceDefinition.buildTransformation(version, builder);

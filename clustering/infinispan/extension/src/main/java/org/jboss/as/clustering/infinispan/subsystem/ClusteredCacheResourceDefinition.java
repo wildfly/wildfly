@@ -33,7 +33,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -86,10 +85,6 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ASYNC_MARSHALLING, QUEUE_FLUSH_INTERVAL, QUEUE_SIZE, REMOTE_TIMEOUT);
-        }
 
         CacheResourceDefinition.buildTransformation(version, builder);
     }

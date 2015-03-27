@@ -154,7 +154,6 @@ public class ModelKeys {
     static final String TRANSPORT = "transport";
     static final String TRANSPORT_NAME = "TRANSPORT";
     static final String TYPE = "type";
-    @Deprecated static final String VIRTUAL_NODES = "virtual-nodes";
     static final String VALUE = "value";
     static final String WAIT = "wait";
     static final String WRITE_BEHIND = "write-behind";

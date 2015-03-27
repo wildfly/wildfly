@@ -323,8 +323,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case VIRTUAL_NODES: {
                     if (!this.schema.since(InfinispanSchema.VERSION_1_4)) {
                         // AS7-5753: convert any non-expression virtual nodes value to a segments value,
-                        String virtualNodes = DistributedCacheResourceDefinition.VIRTUAL_NODES.parse(value, reader).toString();
-                        String segments = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(virtualNodes);
+                        String segments = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(value);
                         DistributedCacheResourceDefinition.SEGMENTS.parseAndSetParameter(segments, operation, reader);
                         break;
                     }
