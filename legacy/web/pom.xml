@@ -30,7 +30,7 @@
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>9.0.0.Beta2</version>
+        <version>9.0.0.CR1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-web</artifactId>
