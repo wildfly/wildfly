@@ -113,7 +113,7 @@ public enum Attribute {
     THREAD_POOL_SIZE(ModelKeys.THREAD_POOL_SIZE),
     TIMEOUT(ModelKeys.TIMEOUT),
     TYPE(ModelKeys.TYPE),
-    @Deprecated VIRTUAL_NODES(ModelKeys.VIRTUAL_NODES),
+    @Deprecated VIRTUAL_NODES("virtual-nodes"),
     ;
 
     private final String name;
