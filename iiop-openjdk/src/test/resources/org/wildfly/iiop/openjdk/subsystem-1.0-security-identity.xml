@@ -1,12 +1,10 @@
 <subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.0">
-    <orb giop-version="1.2" socket-binding="iiop" ssl-socket-binding="iiop-ssl">
-        <tcp high-water-mark="500" number-to-reclaim="30" />
-        <!--  set security=client -->
-        <initializers security="client" transactions="spec"/>
-    </orb>
+    <orb giop-version="1.2" socket-binding="iiop" ssl-socket-binding="iiop-ssl"/>
+    <tcp high-water-mark="500" number-to-reclaim="30"/>
+    <initializers security="client" transactions="spec"/>
     <naming root-context="JBoss/Naming/root" export-corbaloc="true"/>
     <security support-ssl="false" add-component-via-interceptor="true" client-supports="MutualAuth"
-        client-requires="None" server-supports="MutualAuth" server-requires="None"/>
+              client-requires="None" server-supports="MutualAuth" server-requires="None"/>
     <properties>
         <property name="some_property" value="some_value"/>
     </properties>
