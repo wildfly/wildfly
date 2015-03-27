@@ -31,8 +31,6 @@ import org.jboss.as.controller.ModelVersion;
  */
 public enum ModClusterModel {
 
-    VERSION_1_2_0(1, 2, 0),
-    VERSION_1_3_0(1, 3, 0),
     VERSION_1_4_0(1, 4, 0),
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
@@ -41,7 +39,7 @@ public enum ModClusterModel {
 
     private final ModelVersion version;
 
-    private ModClusterModel(int major, int minor, int micro) {
+    ModClusterModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 

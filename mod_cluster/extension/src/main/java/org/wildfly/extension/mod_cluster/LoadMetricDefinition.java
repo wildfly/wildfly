@@ -33,7 +33,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -76,16 +75,7 @@ public class LoadMetricDefinition extends SimpleResourceDefinition {
     };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version)) {
-            builder.addChildResource(PATH)
-                    .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY, PROPERTY)
-                    .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
-                    .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
-                    .addRejectCheck(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
-                    .setValueConverter(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
-                    .end();
-        }
+        // Nothing to transform since 1.4.0
     }
 
     private LoadMetricDefinition() {
