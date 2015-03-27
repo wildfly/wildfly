@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -57,23 +58,22 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeStartElement(Element.CACHE_CONTAINER.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
 
-                    CacheContainerResourceDefinition.DEFAULT_CACHE.marshallAsAttribute(container, writer);
-                    CacheContainerResourceDefinition.EVICTION_EXECUTOR.marshallAsAttribute(container, writer);
-                    CacheContainerResourceDefinition.JNDI_NAME.marshallAsAttribute(container, writer);
-                    CacheContainerResourceDefinition.LISTENER_EXECUTOR.marshallAsAttribute(container, writer);
-                    CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.marshallAsAttribute(container, writer);
-                    CacheContainerResourceDefinition.START.marshallAsAttribute(container, writer);
-                    CacheContainerResourceDefinition.MODULE.marshallAsAttribute(container, writer);
-                    CacheContainerResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(container, writer);
-
-                    CacheContainerResourceDefinition.ALIASES.marshallAsElement(container, writer);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.DEFAULT_CACHE);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.EVICTION_EXECUTOR);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.JNDI_NAME);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.LISTENER_EXECUTOR);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.START);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.MODULE);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.STATISTICS_ENABLED);
+                    writeAttribute(writer, container, CacheContainerResourceDefinition.ALIASES);
 
                     if (container.hasDefined(TransportResourceDefinition.PATH.getKey())) {
                         writer.writeStartElement(Element.TRANSPORT.getLocalName());
                         ModelNode transport = container.get(TransportResourceDefinition.PATH.getKeyValuePair());
-                        TransportResourceDefinition.CHANNEL.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.EXECUTOR.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.LOCK_TIMEOUT.marshallAsAttribute(transport, writer);
+                        writeAttribute(writer, transport, TransportResourceDefinition.CHANNEL);
+                        writeAttribute(writer, transport, TransportResourceDefinition.EXECUTOR);
+                        writeAttribute(writer, transport, TransportResourceDefinition.LOCK_TIMEOUT);
                         writer.writeEndElement();
                     }
 
@@ -125,11 +125,11 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                             writeClusteredCacheAttributes(writer, property.getName(), cache);
 
-                            DistributedCacheResourceDefinition.OWNERS.marshallAsAttribute(cache, writer);
-                            DistributedCacheResourceDefinition.SEGMENTS.marshallAsAttribute(cache, writer);
-                            DistributedCacheResourceDefinition.L1_LIFESPAN.marshallAsAttribute(cache, writer);
-                            DistributedCacheResourceDefinition.CAPACITY_FACTOR.marshallAsAttribute(cache, writer);
-                            DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY.marshallAsAttribute(cache, writer);
+                            writeAttribute(writer, cache, DistributedCacheResourceDefinition.OWNERS);
+                            writeAttribute(writer, cache, DistributedCacheResourceDefinition.SEGMENTS);
+                            writeAttribute(writer, cache, DistributedCacheResourceDefinition.L1_LIFESPAN);
+                            writeAttribute(writer, cache, DistributedCacheResourceDefinition.CAPACITY_FACTOR);
+                            writeAttribute(writer, cache, DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY);
 
                             writeCacheElements(writer, cache);
 
@@ -146,21 +146,21 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     private static void writeCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
-        CacheResourceDefinition.START.marshallAsAttribute(cache, writer);
-        CacheResourceDefinition.JNDI_NAME.marshallAsAttribute(cache, writer);
-        CacheResourceDefinition.MODULE.marshallAsAttribute(cache, writer);
-        CacheResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(cache, writer);
+        writeAttribute(writer, cache, CacheResourceDefinition.START);
+        writeAttribute(writer, cache, CacheResourceDefinition.JNDI_NAME);
+        writeAttribute(writer, cache, CacheResourceDefinition.MODULE);
+        writeAttribute(writer, cache, CacheResourceDefinition.STATISTICS_ENABLED);
     }
 
     private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
 
         writeCacheAttributes(writer, name, cache);
 
-        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING.marshallAsAttribute(cache, writer);
-        ClusteredCacheResourceDefinition.MODE.marshallAsAttribute(cache, writer);
-        ClusteredCacheResourceDefinition.QUEUE_SIZE.marshallAsAttribute(cache, writer);
-        ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL.marshallAsAttribute(cache, writer);
-        ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.marshallAsAttribute(cache, writer);
+        writeAttribute(writer, cache, ClusteredCacheResourceDefinition.ASYNC_MARSHALLING);
+        writeAttribute(writer, cache, ClusteredCacheResourceDefinition.MODE);
+        writeAttribute(writer, cache, ClusteredCacheResourceDefinition.QUEUE_SIZE);
+        writeAttribute(writer, cache, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL);
+        writeAttribute(writer, cache, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT);
     }
 
     private static void writeCacheElements(XMLExtendedStreamWriter writer, ModelNode cache) throws XMLStreamException {
@@ -168,43 +168,43 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (cache.hasDefined(LockingResourceDefinition.PATH.getKey())) {
             writer.writeStartElement(Element.LOCKING.getLocalName());
             ModelNode locking = cache.get(LockingResourceDefinition.PATH.getKeyValuePair());
-            LockingResourceDefinition.ISOLATION.marshallAsAttribute(locking, writer);
-            LockingResourceDefinition.STRIPING.marshallAsAttribute(locking, writer);
-            LockingResourceDefinition.ACQUIRE_TIMEOUT.marshallAsAttribute(locking, writer);
-            LockingResourceDefinition.CONCURRENCY_LEVEL.marshallAsAttribute(locking, writer);
+            writeAttribute(writer, locking, LockingResourceDefinition.ISOLATION);
+            writeAttribute(writer, locking, LockingResourceDefinition.STRIPING);
+            writeAttribute(writer, locking, LockingResourceDefinition.ACQUIRE_TIMEOUT);
+            writeAttribute(writer, locking, LockingResourceDefinition.CONCURRENCY_LEVEL);
             writer.writeEndElement();
         }
 
         if (cache.hasDefined(TransactionResourceDefinition.PATH.getKey())) {
             writer.writeStartElement(Element.TRANSACTION.getLocalName());
             ModelNode transaction = cache.get(TransactionResourceDefinition.PATH.getKeyValuePair());
-            TransactionResourceDefinition.STOP_TIMEOUT.marshallAsAttribute(transaction, writer);
-            TransactionResourceDefinition.MODE.marshallAsAttribute(transaction, writer);
-            TransactionResourceDefinition.LOCKING.marshallAsAttribute(transaction, writer);
+            writeAttribute(writer, transaction, TransactionResourceDefinition.STOP_TIMEOUT);
+            writeAttribute(writer, transaction, TransactionResourceDefinition.MODE);
+            writeAttribute(writer, transaction, TransactionResourceDefinition.LOCKING);
             writer.writeEndElement();
         }
 
         if (cache.hasDefined(EvictionResourceDefinition.PATH.getKey())) {
             writer.writeStartElement(Element.EVICTION.getLocalName());
             ModelNode eviction = cache.get(EvictionResourceDefinition.PATH.getKeyValuePair());
-            EvictionResourceDefinition.STRATEGY.marshallAsAttribute(eviction, writer);
-            EvictionResourceDefinition.MAX_ENTRIES.marshallAsAttribute(eviction, writer);
+            writeAttribute(writer, eviction, EvictionResourceDefinition.STRATEGY);
+            writeAttribute(writer, eviction, EvictionResourceDefinition.MAX_ENTRIES);
             writer.writeEndElement();
         }
 
         if (cache.hasDefined(ExpirationResourceDefinition.PATH.getKey())) {
             writer.writeStartElement(Element.EXPIRATION.getLocalName());
             ModelNode expiration = cache.get(ExpirationResourceDefinition.PATH.getKeyValuePair());
-            ExpirationResourceDefinition.MAX_IDLE.marshallAsAttribute(expiration, writer);
-            ExpirationResourceDefinition.LIFESPAN.marshallAsAttribute(expiration, writer);
-            ExpirationResourceDefinition.INTERVAL.marshallAsAttribute(expiration, writer);
+            writeAttribute(writer, expiration, ExpirationResourceDefinition.MAX_IDLE);
+            writeAttribute(writer, expiration, ExpirationResourceDefinition.LIFESPAN);
+            writeAttribute(writer, expiration, ExpirationResourceDefinition.INTERVAL);
             writer.writeEndElement();
         }
 
         if (cache.hasDefined(CustomStoreResourceDefinition.PATH.getKey())) {
             ModelNode store = cache.get(CustomStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.STORE.getLocalName());
-            CustomStoreResourceDefinition.CLASS.marshallAsAttribute(store, writer);
+            writeAttribute(writer, store, CustomStoreResourceDefinition.CLASS);
             writeStoreAttributes(writer, store);
             writeStoreElements(writer, store);
             writer.writeEndElement();
@@ -214,8 +214,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             ModelNode store = cache.get(FileStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.FILE_STORE.getLocalName());
             writeStoreAttributes(writer, store);
-            FileStoreResourceDefinition.RELATIVE_TO.marshallAsAttribute(store, writer);
-            FileStoreResourceDefinition.RELATIVE_PATH.marshallAsAttribute(store, writer);
+            writeAttribute(writer, store, FileStoreResourceDefinition.RELATIVE_TO);
+            writeAttribute(writer, store, FileStoreResourceDefinition.RELATIVE_PATH);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }
@@ -252,13 +252,13 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             ModelNode store = cache.get(RemoteStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.REMOTE_STORE.getLocalName());
             writeStoreAttributes(writer, store);
-            RemoteStoreResourceDefinition.CACHE.marshallAsAttribute(store, writer);
-            RemoteStoreResourceDefinition.SOCKET_TIMEOUT.marshallAsAttribute(store, writer);
-            RemoteStoreResourceDefinition.TCP_NO_DELAY.marshallAsAttribute(store, writer);
+            writeAttribute(writer, store, RemoteStoreResourceDefinition.CACHE);
+            writeAttribute(writer, store, RemoteStoreResourceDefinition.SOCKET_TIMEOUT);
+            writeAttribute(writer, store, RemoteStoreResourceDefinition.TCP_NO_DELAY);
             writeStoreElements(writer, store);
             for (ModelNode remoteServer: store.get(ModelKeys.REMOTE_SERVERS).asList()) {
                 writer.writeStartElement(Element.REMOTE_SERVER.getLocalName());
-                RemoteStoreResourceDefinition.OUTBOUND_SOCKET_BINDING.marshallAsAttribute(remoteServer, writer);
+                writeAttribute(writer, remoteServer, RemoteStoreResourceDefinition.OUTBOUND_SOCKET_BINDING);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -266,17 +266,17 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
         if (cache.get(ModelKeys.INDEXING).isDefined() || cache.get(ModelKeys.INDEXING_PROPERTIES).isDefined()) {
             writer.writeStartElement(Element.INDEXING.getLocalName());
-            CacheResourceDefinition.INDEXING.marshallAsAttribute(cache, writer);
-            CacheResourceDefinition.INDEXING_PROPERTIES.marshallAsElement(cache, writer);
+            writeAttribute(writer, cache, CacheResourceDefinition.INDEXING);
+            writeElement(writer, cache, CacheResourceDefinition.INDEXING_PROPERTIES);
             writer.writeEndElement();
         }
 
         if (cache.hasDefined(StateTransferResourceDefinition.PATH.getKey())) {
             ModelNode stateTransfer = cache.get(StateTransferResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
-            StateTransferResourceDefinition.ENABLED.marshallAsAttribute(stateTransfer, writer);
-            StateTransferResourceDefinition.TIMEOUT.marshallAsAttribute(stateTransfer, writer);
-            StateTransferResourceDefinition.CHUNK_SIZE.marshallAsAttribute(stateTransfer, writer);
+            writeAttribute(writer, stateTransfer, StateTransferResourceDefinition.ENABLED);
+            writeAttribute(writer, stateTransfer, StateTransferResourceDefinition.TIMEOUT);
+            writeAttribute(writer, stateTransfer, StateTransferResourceDefinition.CHUNK_SIZE);
             writer.writeEndElement();
         }
 
@@ -286,14 +286,14 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 writer.writeStartElement(Element.BACKUP.getLocalName());
                 writer.writeAttribute(Attribute.SITE.getLocalName(), property.getName());
                 ModelNode backup = property.getValue();
-                BackupSiteResourceDefinition.FAILURE_POLICY.marshallAsAttribute(backup, writer);
-                BackupSiteResourceDefinition.STRATEGY.marshallAsAttribute(backup, writer);
-                BackupSiteResourceDefinition.REPLICATION_TIMEOUT.marshallAsAttribute(backup, writer);
-                BackupSiteResourceDefinition.ENABLED.marshallAsAttribute(backup, writer);
+                writeAttribute(writer, backup, BackupSiteResourceDefinition.FAILURE_POLICY);
+                writeAttribute(writer, backup, BackupSiteResourceDefinition.STRATEGY);
+                writeAttribute(writer, backup, BackupSiteResourceDefinition.REPLICATION_TIMEOUT);
+                writeAttribute(writer, backup, BackupSiteResourceDefinition.ENABLED);
                 if (backup.hasDefined(ModelKeys.TAKE_BACKUP_OFFLINE_AFTER_FAILURES) || backup.hasDefined(ModelKeys.TAKE_BACKUP_OFFLINE_MIN_WAIT)) {
                     writer.writeStartElement(Element.TAKE_OFFLINE.getLocalName());
-                    BackupSiteResourceDefinition.TAKE_OFFLINE_AFTER_FAILURES.marshallAsAttribute(backup, writer);
-                    BackupSiteResourceDefinition.TAKE_OFFLINE_MIN_WAIT.marshallAsAttribute(backup, writer);
+                    writeAttribute(writer, backup, BackupSiteResourceDefinition.TAKE_OFFLINE_AFTER_FAILURES);
+                    writeAttribute(writer, backup, BackupSiteResourceDefinition.TAKE_OFFLINE_MIN_WAIT);
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -304,8 +304,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (cache.hasDefined(BackupForResourceDefinition.PATH.getKey())) {
             ModelNode backupFor = cache.get(BackupForResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.BACKUP_FOR.getLocalName());
-            BackupForResourceDefinition.REMOTE_CACHE.marshallAsAttribute(backupFor, writer);
-            BackupForResourceDefinition.REMOTE_SITE.marshallAsAttribute(backupFor, writer);
+            writeAttribute(writer, backupFor, BackupForResourceDefinition.REMOTE_CACHE);
+            writeAttribute(writer, backupFor, BackupForResourceDefinition.REMOTE_SITE);
             writer.writeEndElement();
         }
     }
@@ -314,9 +314,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (store.hasDefined(key)) {
             ModelNode table = store.get(key);
             writer.writeStartElement(element.getLocalName());
-            JDBCStoreResourceDefinition.PREFIX.marshallAsAttribute(table, writer);
-            JDBCStoreResourceDefinition.BATCH_SIZE.marshallAsAttribute(table, writer);
-            JDBCStoreResourceDefinition.FETCH_SIZE.marshallAsAttribute(table, writer);
+            writeAttribute(writer, table, JDBCStoreResourceDefinition.PREFIX);
+            writeAttribute(writer, table, JDBCStoreResourceDefinition.BATCH_SIZE);
+            writeAttribute(writer, table, JDBCStoreResourceDefinition.FETCH_SIZE);
             writeJDBCStoreColumn(writer, Element.ID_COLUMN, table, ModelKeys.ID_COLUMN);
             writeJDBCStoreColumn(writer, Element.DATA_COLUMN, table, ModelKeys.DATA_COLUMN);
             writeJDBCStoreColumn(writer, Element.TIMESTAMP_COLUMN, table, ModelKeys.TIMESTAMP_COLUMN);
@@ -328,36 +328,36 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (table.hasDefined(key)) {
             ModelNode column = table.get(key);
             writer.writeStartElement(element.getLocalName());
-            JDBCStoreResourceDefinition.COLUMN_NAME.marshallAsAttribute(column, writer);
-            JDBCStoreResourceDefinition.COLUMN_TYPE.marshallAsAttribute(column, writer);
+            writeAttribute(writer, column, JDBCStoreResourceDefinition.COLUMN_NAME);
+            writeAttribute(writer, column, JDBCStoreResourceDefinition.COLUMN_TYPE);
             writer.writeEndElement();
         }
     }
 
     private static void writeStoreAttributes(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
-        StoreResourceDefinition.SHARED.marshallAsAttribute(store, writer);
-        StoreResourceDefinition.PRELOAD.marshallAsAttribute(store, writer);
-        StoreResourceDefinition.PASSIVATION.marshallAsAttribute(store, writer);
-        StoreResourceDefinition.FETCH_STATE.marshallAsAttribute(store, writer);
-        StoreResourceDefinition.PURGE.marshallAsAttribute(store, writer);
-        StoreResourceDefinition.SINGLETON.marshallAsAttribute(store, writer);
+        writeAttribute(writer, store, StoreResourceDefinition.SHARED);
+        writeAttribute(writer, store, StoreResourceDefinition.PRELOAD);
+        writeAttribute(writer, store, StoreResourceDefinition.PASSIVATION);
+        writeAttribute(writer, store, StoreResourceDefinition.FETCH_STATE);
+        writeAttribute(writer, store, StoreResourceDefinition.PURGE);
+        writeAttribute(writer, store, StoreResourceDefinition.SINGLETON);
     }
 
     private static void writeJDBCStoreAttributes(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
         writeStoreAttributes(writer, store);
 
-        JDBCStoreResourceDefinition.DATA_SOURCE.marshallAsAttribute(store, writer);
-        JDBCStoreResourceDefinition.DIALECT.marshallAsAttribute(store, writer);
+        writeAttribute(writer, store, JDBCStoreResourceDefinition.DATA_SOURCE);
+        writeAttribute(writer, store, JDBCStoreResourceDefinition.DIALECT);
     }
 
     private static void writeStoreElements(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
         if (store.hasDefined(StoreWriteBehindResourceDefinition.PATH.getKey())) {
             ModelNode writeBehind = store.get(StoreWriteBehindResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.WRITE_BEHIND.getLocalName());
-            StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT.marshallAsAttribute(writeBehind, writer);
-            StoreWriteBehindResourceDefinition.MODIFICATION_QUEUE_SIZE.marshallAsAttribute(writeBehind, writer);
-            StoreWriteBehindResourceDefinition.SHUTDOWN_TIMEOUT.marshallAsAttribute(writeBehind, writer);
-            StoreWriteBehindResourceDefinition.THREAD_POOL_SIZE.marshallAsAttribute(writeBehind, writer);
+            writeAttribute(writer, writeBehind, StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT);
+            writeAttribute(writer, writeBehind, StoreWriteBehindResourceDefinition.MODIFICATION_QUEUE_SIZE);
+            writeAttribute(writer, writeBehind, StoreWriteBehindResourceDefinition.SHUTDOWN_TIMEOUT);
+            writeAttribute(writer, writeBehind, StoreWriteBehindResourceDefinition.THREAD_POOL_SIZE);
             writer.writeEndElement();
         }
         if (store.hasDefined(StorePropertyResourceDefinition.WILDCARD_PATH.getKey())) {
@@ -373,5 +373,13 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 writer.writeEndElement();
             }
         }
+    }
+
+    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
+        attribute.getAttributeMarshaller().marshallAsAttribute(attribute, model, true, writer);
+    }
+
+    private static void writeElement(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
+        attribute.getAttributeMarshaller().marshallAsElement(attribute, model, true, writer);
     }
 }

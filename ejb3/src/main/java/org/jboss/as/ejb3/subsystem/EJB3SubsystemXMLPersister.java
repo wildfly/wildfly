@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.remoting.Attribute;
 import org.jboss.as.threads.ThreadsParser;
@@ -31,6 +32,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+
 import java.util.List;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
@@ -413,7 +415,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             ModelNode cache = property.getValue();
             writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
             CacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
-            CacheFactoryResourceDefinition.ALIASES.marshallAsElement(cache, writer);
+            writeAttribute(writer, cache, CacheFactoryResourceDefinition.ALIASES);
             writer.writeEndElement();
         }
     }
@@ -564,5 +566,9 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             }
             writer.writeEndElement();
         }
+    }
+
+    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
+        attribute.getAttributeMarshaller().marshallAsAttribute(attribute, model, true, writer);
     }
 }
