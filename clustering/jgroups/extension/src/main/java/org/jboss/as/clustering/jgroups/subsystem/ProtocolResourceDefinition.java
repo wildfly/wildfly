@@ -185,12 +185,6 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             };
             builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
         }
-
-        if (JGroupsModel.VERSION_1_2_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PROPERTIES)
-                    .end();
-        }
     }
 
     ProtocolResourceDefinition() {

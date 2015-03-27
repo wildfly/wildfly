@@ -29,7 +29,6 @@ import org.jboss.as.controller.ModelVersion;
  */
 public enum JGroupsModel {
 
-    VERSION_1_1_0(1, 1, 0),
     VERSION_1_2_0(1, 2, 0),
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),

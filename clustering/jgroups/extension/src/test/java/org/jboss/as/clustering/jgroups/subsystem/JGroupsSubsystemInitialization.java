@@ -31,6 +31,7 @@ import org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistryType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -59,7 +60,7 @@ public class JGroupsSubsystemInitialization extends AdditionalInitialization imp
 
     @Override
     protected void initializeExtraSubystemsAndModel(ExtensionRegistry registry, Resource root, ManagementResourceRegistration registration, RuntimeCapabilityRegistry capabilityRegistry) {
-        new JGroupsExtension().initialize(registry.getExtensionContext(this.module, registration, true));
+        new JGroupsExtension().initialize(registry.getExtensionContext(this.module, registration, ExtensionRegistryType.MASTER));
 
         Resource subsystem = Resource.Factory.create();
         subsystem.getModel().get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName()).set("tcp");
