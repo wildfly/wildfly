@@ -1,19 +1,17 @@
 <subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.0">
-    <orb persistent-server-id="wildfly" giop-version="1.2" socket-binding="iiop" ssl-socket-binding="iiop-ssl">
-        <tcp high-water-mark="500" number-to-reclaim="30" />
-        <!-- set security=client -->
-        <initializers security="client" transactions="spec" />
-    </orb>
-    <naming root-context="JBoss/Naming/root" export-corbaloc="true" />
-    <security support-ssl="false" add-component-via-interceptor="true" client-supports="MutualAuth" client-requires="None"
-        server-supports="MutualAuth" server-requires="None" />
-    <ior-settings>
-        <transport-config integrity="required" confidentiality="required" detect-replay="supported" detect-misordering="supported"
-                          trust-in-client="none" trust-in-target="none"/>
-        <as-context auth-method="username_password" realm="test_realm" required="true"/>
-        <sas-context caller-propagation="supported"/>
-    </ior-settings>
+   <orb persistent-server-id="wildfly" giop-version="1.2" socket-binding="iiop" ssl-socket-binding="iiop-ssl" />
+    <tcp high-water-mark="500" number-to-reclaim="30"/>
+    <initializers security="client" transactions="spec"/>
+    <naming root-context="JBoss/Naming/root" export-corbaloc="true"/>
+    <security support-ssl="false" add-component-via-interceptor="true" client-supports="MutualAuth"
+              client-requires="None"
+              server-supports="MutualAuth" server-requires="None"/>
+    <transport-config integrity="required" confidentiality="required" detect-replay="supported"
+                      detect-misordering="supported"
+                      trust-in-client="none" trust-in-target="none"/>
+    <as-context auth-method="username_password" realm="test_realm" required="true"/>
+    <sas-context caller-propagation="supported"/>
     <properties>
-        <property name="some_property" value="some_value" />
+        <property name="some_property" value="some_value"/>
     </properties>
 </subsystem>

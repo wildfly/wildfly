@@ -47,10 +47,13 @@
         </xs:annotation>
         <xs:sequence>
             <xs:element name="orb" minOccurs="0" maxOccurs="1" type="orbConfigType"/>
+            <xs:element name="tcp" minOccurs="0" maxOccurs="1" type="tcpConfigType"/>
+            <xs:element name="initializers" minOccurs="0" maxOccurs="1" type="initializersConfigType"/>
             <xs:element name="naming" minOccurs="0" maxOccurs="1" type="namingConfigType"/>
             <xs:element name="security" minOccurs="0" maxOccurs="1" type="securityConfigType"/>
-            <xs:element name="ior-settings" minOccurs="0" maxOccurs="1" type="iorSettingsType"/>
-            <xs:element name="client-transport" minOccurs="0" maxOccurs="1" type="clientTransportConfigType"/>
+            <xs:element name="client-transport" minOccurs="0" maxOccurs="1" type="iorClientTransportConfigType"/>
+            <xs:element name="as-context" minOccurs="0" maxOccurs="1" type="iorASContextType"/>
+            <xs:element name="sas-context" minOccurs="0" maxOccurs="1" type="iorSASContextType"/>
             <xs:element name="properties" minOccurs="0" maxOccurs="1" type="genericPropertiesType"/>
         </xs:sequence>
     </xs:complexType>
@@ -61,27 +64,20 @@
                 <![CDATA[
                 the orbConfigType specifies the elements and attributes that can be used to configure the behavior of the
                 Object Request Broker (ORB).
-
-                * tcp: this element allows for the configuration of the tcp connection properties.
-                * naming: this element allows for the configuration of the naming initial reference.
                 * giop-version-version: the GIOP version to be used.
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element name="tcp" minOccurs="0" maxOccurs="1" type="orbTCPConfigType"/>
-            <xs:element name="initializers" minOccurs="0" maxOccurs="1" type="orbInitializersConfigType"/>
-        </xs:sequence>
         <xs:attribute name="giop-version" type="xs:string" use="optional" default="1.2"/>
         <xs:attribute name="socket-binding" type="xs:string" use="optional" default="iiop"/>
         <xs:attribute name="ssl-socket-binding" type="xs:string" use="optional" default="iiop-ssl"/>
     </xs:complexType>
 
-    <xs:complexType name="orbTCPConfigType">
+    <xs:complexType name="tcpConfigType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                The orbTCPConfigType specifies the attributes used to configure the ORB tcp connections.
+                The orbTCPConfigType specifies the attributes used to configure the TCP connections.
 
                 * high-water-mark: each time the number of connections exceeds this value ORB tries to reclaim connections. 
                 * number-to-reclaim: number of reclaimed connections is specified by this property.
@@ -92,11 +88,11 @@
         <xs:attribute name="number-to-reclaim" type="xs:integer" use="optional"/>
     </xs:complexType>
 
-    <xs:complexType name="orbInitializersConfigType">
+    <xs:complexType name="initializersConfigType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                The orbInitializersConfigType specifies the attributes used to configure the ORB initializers.
+                The initializersConfigType specifies the attributes used to configure the ORB initializers.
 
                 * security: indicates whether the security (SAS and CSIv2) initializers should be installed. There are three possibilities:
                     identity - The server will just send the current username. The recieving server must trust this
@@ -191,26 +187,6 @@
         <xs:attribute name="value" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="iorSettingsType">
-        <xs:annotation>
-            <xs:documentation>
-                <![CDATA[
-                The iorSettingsType specifies the elements that can be used to configure settings that are to be applied
-                to all generated IORs.
-
-                - transport-config: holds the attributes used to configure the IOR transport settings.
-                - as-context: holds the attributes used to configure the IOR Authentication Service (AS) settings.
-                - sas-context: holds the attributes used to configure the IOR Secure Attribute Service (SAS) settings.
-                        ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:sequence>
-            <xs:element name="transport-config" minOccurs="0" maxOccurs="1" type="iorTransportConfigType"/>
-            <xs:element name="as-context" minOccurs="0" maxOccurs="1" type="iorASContextType"/>
-            <xs:element name="sas-context" minOccurs="0" maxOccurs="1" type="iorSASContextType"/>
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="iorTransportConfigType">
         <xs:annotation>
             <xs:documentation>
@@ -271,7 +247,7 @@
         <xs:attribute name="caller-propagation" type="xs:string" use="optional"/>
     </xs:complexType>
  
-    <xs:complexType name="clientTransportConfigType">
+    <xs:complexType name="iorClientTransportConfigType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[

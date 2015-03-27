@@ -22,12 +22,18 @@
         <xsl:copy>
             <xsl:attribute name="socket-binding"><xsl:value-of select="@socket-binding"/></xsl:attribute>
             <xsl:attribute name="ssl-socket-binding"><xsl:value-of select="@ssl-socket-binding"/></xsl:attribute>
-            <xsl:element name="initializers" namespace="{namespace-uri()}">
-                <xsl:attribute name="transactions">full</xsl:attribute>
-                <xsl:attribute name="security">client</xsl:attribute>
-            </xsl:element>
         </xsl:copy>
     </xsl:template>
+
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $iiop-openjdk)]
+                                          /*[local-name()='initializers']">
+        <xsl:copy>
+            <xsl:attribute name="transactions">full</xsl:attribute>
+            <xsl:attribute name="security">client</xsl:attribute>
+        </xsl:copy>
+    </xsl:template>
+
+
 
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $transactions)]">
         <xsl:choose>

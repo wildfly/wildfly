@@ -1,8 +1,7 @@
 <subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.0">
-    <orb giop-version ="${test.exp:1.2}" socket-binding="iiop" ssl-socket-binding="iiop-ssl">
-        <tcp high-water-mark="${test.exp:100}" number-to-reclaim="${test.exp:30}"/>
-        <initializers security="${test.exp:off}" transactions="${test.exp:spec}"/>
-    </orb>
+    <orb giop-version ="${test.exp:1.2}" socket-binding="iiop" ssl-socket-binding="iiop-ssl"/>
+    <tcp high-water-mark="${test.exp:100}" number-to-reclaim="${test.exp:30}"/>
+    <initializers security="${test.exp:off}" transactions="${test.exp:spec}"/>
     <naming root-context="${test.exp:JBoss/Naming/root}" export-corbaloc="${test.exp:false}"/>
     <security support-ssl="${test.exp:false}" add-component-via-interceptor="${test.exp:true}" client-supports="${test.exp:MutualAuth}"
         client-requires="${test.exp:None}" server-supports="${test.exp:MutualAuth}" server-requires="${test.exp:None}"/>
