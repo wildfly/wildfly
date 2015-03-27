@@ -180,12 +180,13 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                         }
                     }
                 }
+                if (resourceRoot == null) {
+                    implicitComponentDescriptions.add(component);
+                }
                 if (resourceRoot == null || isClassesRoot(resourceRoot)) {
                     // special handling
-                    implicitComponentDescriptions.add(component);
                     resourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
                 }
-
                 componentDescriptions.put(resourceRoot, component);
                 if (component instanceof EJBComponentDescription) {
                     ejbComponentDescriptions.put(resourceRoot, (EJBComponentDescription) component);
