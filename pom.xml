@@ -130,7 +130,7 @@
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.bouncycastle>1.52</version.org.bouncycastle>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
-        <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
+        <version.org.codehaus.jettison>1.3.3</version.org.codehaus.jettison>
         <version.org.codehaus.plexus.plexus-utils>3.0.15</version.org.codehaus.plexus.plexus-utils>
         <version.org.eclipse.jdt.core.compiler>4.4.2</version.org.eclipse.jdt.core.compiler>
         <version.org.glassfish.javax.el>3.0.1-b05-jbossorg-1</version.org.glassfish.javax.el>
