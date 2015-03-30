@@ -74,7 +74,7 @@ public abstract class BuildConfigurationTestBase {
 
     }
 
-    private static File hackFixHostConfig(File hostConfigFile, String hostName, String hostAddress) {
+    static File hackFixHostConfig(File hostConfigFile, String hostName, String hostAddress) {
         final File file;
         final BufferedWriter writer;
         try {
