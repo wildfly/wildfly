@@ -68,6 +68,12 @@
             <param name="cacheMode" value="SYNC" />
             <param name="stack" value="tcp" />
         </antcall>
+        <copy todir="target/wildfly-clustered-messaging-0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <copy todir="target/wildfly-clustered-messaging-1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
     </target>
 
     <!-- Build remaining configs for extended tests -->

@@ -101,7 +101,8 @@
        <replacement placeholder="BROADCAST-GROUPS">
            <broadcast-groups>
                <broadcast-group name="bg-group1">
-                   <socket-binding>messaging-group</socket-binding>
+                   <jgroups-stack>udp</jgroups-stack>
+                   <jgroups-channel>hq-cluster</jgroups-channel>
                    <connector-ref>http-connector</connector-ref>
                </broadcast-group>
            </broadcast-groups>
@@ -109,7 +110,8 @@
        <replacement placeholder="DISCOVERY-GROUPS">
            <discovery-groups>
                <discovery-group name="dg-group1">
-                   <socket-binding>messaging-group</socket-binding>
+                   <jgroups-stack>udp</jgroups-stack>
+                   <jgroups-channel>hq-cluster</jgroups-channel>
                </discovery-group>
            </discovery-groups>
        </replacement>
@@ -131,6 +133,4 @@
            <reconnect-attempts>-1</reconnect-attempts>
        </replacement>
    </supplement>
-
-   <socket-binding name="messaging-group" port="0" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
  </config>
