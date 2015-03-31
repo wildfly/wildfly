@@ -93,13 +93,12 @@
         <version.commons-codec>1.9</version.commons-codec>
         <version.commons-collections>3.2.1</version.commons-collections>
         <version.commons-digester>1.8</version.commons-digester>
-        <version.commons-configuration>1.6</version.commons-configuration>
         <version.commons-pool>1.6</version.commons-pool>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
-        <version.groovy-all>2.3.4</version.groovy-all>
+        <version.groovy-all>2.4.3</version.groovy-all>
         <version.httpunit>1.7</version.httpunit>
-        <version.io.netty>4.0.15.Final</version.io.netty>
+        <version.io.netty>4.0.26.Final</version.io.netty>
         <version.io.undertow.jastow>1.1.1.Final</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.2</version.javax.enterprise>
@@ -107,9 +106,9 @@
         <version.javax.mail>1.5.2</version.javax.mail>
         <version.javax.validation>1.1.0.Final</version.javax.validation>
         <version.org.jboss.spec.javax.websockets>1.1.1.Final</version.org.jboss.spec.javax.websockets>
-        <version.jaxen>1.1.3</version.jaxen>
+        <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
-        <version.joda-time>1.6.2</version.joda-time>
+        <version.joda-time>2.7</version.joda-time>
         <version.jsoup>1.7.1</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
@@ -121,7 +120,7 @@
         <version.org.apache.httpcomponents.httpcore>4.3.3</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.lucene>4.10.4</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
+        <version.org.apache.myfaces.core>2.1.17</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
         <version.org.apache.santuario>2.0.3</version.org.apache.santuario>
@@ -129,10 +128,10 @@
         <version.org.apache.ws.security>2.0.3</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0.2</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
-        <version.org.bouncycastle>1.50</version.org.bouncycastle>
+        <version.org.bouncycastle>1.52</version.org.bouncycastle>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
-        <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
-        <version.org.codehaus.plexus.plexus-utils>3.0.15</version.org.codehaus.plexus.plexus-utils>
+        <version.org.codehaus.jettison>1.3.3</version.org.codehaus.jettison>
+        <version.org.codehaus.plexus.plexus-utils>3.0.21</version.org.codehaus.plexus.plexus-utils>
         <version.org.eclipse.jdt.core.compiler>4.4.2</version.org.eclipse.jdt.core.compiler>
         <version.org.glassfish.javax.el>3.0.1-b05-jbossorg-1</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
@@ -145,7 +144,6 @@
         <version.org.hibernate.search>5.1.1.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.5.Final</version.org.hornetq>
         <version.org.infinispan>7.1.1.Final</version.org.infinispan>
-        <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
         <version.org.jasypt>1.9.1</version.org.jasypt>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
         <version.org.jberet>1.1.0.Beta1</version.org.jberet>
@@ -208,17 +206,15 @@
         <version.org.opensaml.xmltooling>1.4.1</version.org.opensaml.xmltooling>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.7.0.Final</version.org.picketlink>
-        <version.org.powermock>1.5</version.org.powermock>
         <version.org.scannotation>1.0.3</version.org.scannotation>
         <version.org.slf4j>1.7.7.jbossorg-1</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.build-tools>1.0.0.Alpha8</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.1.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>1.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.Alpha5</version.org.wildfly.arquillian>
-        <version.org.yaml.snakeyaml>1.13</version.org.yaml.snakeyaml>
+        <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
@@ -1780,26 +1776,6 @@
             </dependency>
 
             <dependency>
-                <groupId>commons-configuration</groupId>
-                <artifactId>commons-configuration</artifactId>
-                <version>${version.commons-configuration}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-beanutils</groupId>
-                        <artifactId>commons-beanutils-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-digester</groupId>
-                        <artifactId>commons-digester</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
                 <version>${version.commons-collections}</version>
@@ -1858,26 +1834,6 @@
                     <exclusion>
                         <groupId>javax.servlet</groupId>
                         <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jacorb</groupId>
-                <artifactId>jacorb</artifactId>
-                <version>${version.org.jacorb}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>antlr</groupId>
-                        <artifactId>antlr</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-jdk14</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3728,13 +3684,6 @@
                         <artifactId>woodstox-core-asl</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <!-- this could probably be removed when new version of maven-aether-provider comes with it-->
-            <dependency>
-                <groupId>org.eclipse.sisu</groupId>
-                <artifactId>org.eclipse.sisu.plexus</artifactId>
-                <version>${version.org.eclipse.sisu.plexus}</version>
             </dependency>
 
             <dependency>
@@ -6298,18 +6247,6 @@
                 <groupId>org.picketlink.distribution</groupId>
                 <artifactId>picketlink-wildfly8</artifactId>
                 <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4</artifactId>
-                <version>${version.org.powermock}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito</artifactId>
-                <version>${version.org.powermock}</version>
             </dependency>
 
             <dependency>
