@@ -70,6 +70,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
             { InfinispanSchema.VERSION_1_2, 38 },
             { InfinispanSchema.VERSION_1_3, 38 },
             { InfinispanSchema.VERSION_1_4, 78 },
+            { InfinispanSchema.VERSION_1_5, 78 },
             { InfinispanSchema.VERSION_2_0, 82 },
             { InfinispanSchema.VERSION_3_0, 79 },
         };
@@ -159,7 +160,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     private void checkLegacyParserStatisticsTrue(ModelNode subsystem) {
-        if (!this.schema.since(InfinispanSchema.VERSION_2_0)) {
+        if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
             for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
                         containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
