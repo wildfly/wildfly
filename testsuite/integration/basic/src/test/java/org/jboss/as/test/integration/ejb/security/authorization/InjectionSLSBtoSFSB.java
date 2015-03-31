@@ -56,4 +56,9 @@ public class InjectionSLSBtoSFSB implements SimpleAuthorizationRemote {
    public String denyAll(String message) {
       return injected.denyAll(message);
    }
+
+   public String starRoleAllowed(String message) {
+      return injected.starRoleAllowed(message);
+   }
+
 }
