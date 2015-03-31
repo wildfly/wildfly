@@ -1,0 +1,3 @@
+/subsystem=datasources/data-source=SecuredDataSourceTestCase:disable
+/subsystem=datasources/data-source=SecuredDataSourceTestCase:remove
+/subsystem=security/security-domain=SecuredDataSourceTestCase:remove
