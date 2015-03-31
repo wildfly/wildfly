@@ -233,12 +233,13 @@ public class DistributableSessionTestCase {
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
         SessionAttributes attributes = mock(SessionAttributes.class);
         Account account = mock(Account.class);
-        
+        AuthenticatedSession auth = new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
+
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getAttributes()).thenReturn(attributes);
-        when(attributes.getAttribute(name)).thenReturn(account);
+        when(attributes.getAttribute(name)).thenReturn(auth);
         
         AuthenticatedSession result = (AuthenticatedSession) this.adapter.getAttribute(name);
         
@@ -392,16 +393,17 @@ public class DistributableSessionTestCase {
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
         SessionAttributes attributes = mock(SessionAttributes.class);
         Account account = mock(Account.class);
-        AuthenticatedSession session = new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
+        AuthenticatedSession auth = new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
         Account oldAccount = mock(Account.class);
+        AuthenticatedSession oldAuth = new AuthenticatedSession(oldAccount, HttpServletRequest.FORM_AUTH);
 
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getAttributes()).thenReturn(attributes);
-        when(attributes.setAttribute(name, account)).thenReturn(oldAccount);
+        when(attributes.setAttribute(name, auth)).thenReturn(oldAuth);
         
-        AuthenticatedSession result = (AuthenticatedSession) this.adapter.setAttribute(name, session);
+        AuthenticatedSession result = (AuthenticatedSession) this.adapter.setAttribute(name, auth);
         
         assertSame(oldAccount, result.getAccount());
         assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
@@ -410,9 +412,9 @@ public class DistributableSessionTestCase {
         
         reset(context);
         
-        when(attributes.setAttribute(name, account)).thenReturn(null);
+        when(attributes.setAttribute(name, auth)).thenReturn(null);
         
-        result = (AuthenticatedSession) this.adapter.setAttribute(name, session);
+        result = (AuthenticatedSession) this.adapter.setAttribute(name, auth);
         
         assertNull(result);
         
@@ -420,7 +422,7 @@ public class DistributableSessionTestCase {
         
         reset(context);
         
-        session = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
+        auth = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
         AuthenticatedSession oldSession = new AuthenticatedSession(oldAccount, HttpServletRequest.BASIC_AUTH);
         
         LocalSessionContext localContext = mock(LocalSessionContext.class);
@@ -428,9 +430,9 @@ public class DistributableSessionTestCase {
         when(this.session.getLocalContext()).thenReturn(localContext);
         when(localContext.getAuthenticatedSession()).thenReturn(oldSession);
         
-        result = (AuthenticatedSession) this.adapter.setAttribute(name, session);
+        result = (AuthenticatedSession) this.adapter.setAttribute(name, auth);
 
-        verify(localContext).setAuthenticatedSession(same(session));
+        verify(localContext).setAuthenticatedSession(same(auth));
         verify(context).close();
     }
 
