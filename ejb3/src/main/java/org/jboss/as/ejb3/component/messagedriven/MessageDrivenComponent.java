@@ -257,13 +257,17 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     }
 
     public void startDelivery() {
-        this.deliveryActive = true;
-        activate();
+        if (!this.deliveryActive) {
+            this.deliveryActive = true;
+            activate();
+        }
     }
 
     public void stopDelivery() {
-        this.deactivate();
-        this.deliveryActive = false;
+        if (this.deliveryActive) {
+            this.deactivate();
+            this.deliveryActive = false;
+        }
     }
 
     public boolean isDeliveryActive() {

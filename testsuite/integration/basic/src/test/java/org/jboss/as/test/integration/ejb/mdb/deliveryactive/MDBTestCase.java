@@ -163,6 +163,8 @@ public class MDBTestCase {
 
             executeMDBOperation(mdbName, "start-delivery");
             assertMDBDeliveryIsActive(mdbName, true);
+            // WFLY-4470 check duplicate message when start delivery twice. Last assertNull(reply) should still be valid
+            executeMDBOperation(mdbName, "start-delivery");
 
             // the message was delivered to the MDB which replied
             reply = consumer.receive(TIMEOUT);
