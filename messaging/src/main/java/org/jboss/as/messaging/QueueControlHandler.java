@@ -25,12 +25,9 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.messaging.OperationDefinitionHelper.createNonEmptyStringAttribute;
-import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeReadOnlyOperation;
 import static org.jboss.as.messaging.QueueDefinition.forwardToRuntimeQueue;
 import static org.jboss.dmr.ModelType.INT;
-import static org.jboss.dmr.ModelType.LIST;
 import static org.jboss.dmr.ModelType.LONG;
-import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,14 +36,10 @@ import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -97,7 +90,7 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
 
     @Override
     protected AttributeDefinition[] getReplyMessageParameterDefinitions() {
-        return new AttributeDefinition[] {
+        return new AttributeDefinition[]{
                 createNonEmptyStringAttribute("messageID"),
                 createNonEmptyStringAttribute("userID"),
                 createNonEmptyStringAttribute("address"),
@@ -112,39 +105,6 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
                         .setValidator(PRIORITY_VALIDATOR)
                         .build()
         };
-    }
-
-    protected AttributeDefinition[] getReplyMapConsumerMessageParameterDefinition() {
-        return new AttributeDefinition[]{
-                createNonEmptyStringAttribute("consumerName"),
-                new ObjectListAttributeDefinition.Builder("elements",
-                            new ObjectTypeAttributeDefinition.Builder("element", getReplyMessageParameterDefinitions()).build())
-                        .build()
-        };
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
-        super.registerOperations(registry, resolver);
-
-        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES, resolver)
-                .setReplyType(LIST)
-                .setReplyParameters(getReplyMessageParameterDefinitions())
-                .build(),
-                this);
-        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES_AS_JSON, resolver)
-                .setReplyType(STRING)
-                .build(),
-                this);
-        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES, resolver)
-                .setReplyType(LIST)
-                .setReplyParameters(getReplyMapConsumerMessageParameterDefinition())
-                .build(),
-                this);
-        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES_AS_JSON, resolver)
-                .setReplyType(STRING)
-                .build(),
-                this);
     }
 
     /*
@@ -170,27 +130,7 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     @Override
     protected Object handleAdditionalOperation(String operationName, ModelNode operation, OperationContext context,
                                                QueueControl queueControl) throws OperationFailedException {
-        try {
-            if (LIST_SCHEDULED_MESSAGES.equals(operationName)) {
-                String json = queueControl.listScheduledMessagesAsJSON();
-                context.getResult().set(ModelNode.fromJSONString(json));
-            } else if (LIST_SCHEDULED_MESSAGES_AS_JSON.equals(operationName)) {
-                context.getResult().set(queueControl.listScheduledMessagesAsJSON());
-            } else if (LIST_DELIVERING_MESSAGES.equals(operationName)) {
-                String json = queueControl.listDeliveringMessagesAsJSON();
-                context.getResult().set(ModelNode.fromJSONString(json));
-            } else if (LIST_DELIVERING_MESSAGES_AS_JSON.equals(operationName)) {
-                context.getResult().set(queueControl.listDeliveringMessagesAsJSON());
-            } else {
-                // Bug
-                throwUnimplementedOperationException(operationName);
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            context.getFailureDescription().set(e.getLocalizedMessage());
-        }
-
+        throwUnimplementedOperationException(operationName);
         return null;
     }
 
@@ -318,6 +258,16 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
             @Override
             public String listConsumersAsJSON() throws Exception {
                 return control.listConsumersAsJSON();
+            }
+
+            @Override
+            public String listScheduledMessagesAsJSON() throws Exception {
+                return control.listScheduledMessagesAsJSON();
+            }
+
+            @Override
+            public String listDeliveringMessagesAsJSON() throws Exception {
+                return control.listDeliveringMessagesAsJSON();
             }
         };
     }

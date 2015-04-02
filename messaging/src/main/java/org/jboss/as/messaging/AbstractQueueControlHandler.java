@@ -40,6 +40,8 @@ import static org.jboss.dmr.ModelType.STRING;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -90,6 +92,10 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
     public static final String RESUME = "resume";
     public static final String LIST_CONSUMERS = "list-consumers";
     public static final String LIST_CONSUMERS_AS_JSON = "list-consumers-as-json";
+    public static final String LIST_SCHEDULED_MESSAGES = "list-scheduled-messages";
+    public static final String LIST_SCHEDULED_MESSAGES_AS_JSON = LIST_SCHEDULED_MESSAGES + "-as-json";
+    public static final String LIST_DELIVERING_MESSAGES = "list-delivering-messages";
+    public static final String LIST_DELIVERING_MESSAGES_AS_JSON = LIST_DELIVERING_MESSAGES + "-as-json";
 
     public static final ParameterValidator PRIORITY_VALIDATOR = new IntRangeValidator(0, 9, false, false);
 
@@ -115,6 +121,24 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGES_AS_JSON, RESOLVER)
                 .setParameters(FILTER)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES, resolver)
+                .setReplyType(LIST)
+                .setReplyParameters(getReplyMapConsumerMessageParameterDefinition())
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES, resolver)
+                .setReplyType(LIST)
+                .setReplyParameters(getReplyMessageParameterDefinitions())
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES_AS_JSON, resolver)
                 .setReplyType(STRING)
                 .build(),
                 this);
@@ -242,6 +266,16 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             } else if (LIST_MESSAGES_AS_JSON.equals(operationName)) {
                 String filter = resolveFilter(context, operation);
                 context.getResult().set(control.listMessagesAsJSON(filter));
+            } else if (LIST_DELIVERING_MESSAGES.equals(operationName)) {
+                String json = control.listDeliveringMessagesAsJSON();
+                context.getResult().set(ModelNode.fromJSONString(json));
+            } else if (LIST_DELIVERING_MESSAGES_AS_JSON.equals(operationName)) {
+                context.getResult().set(control.listDeliveringMessagesAsJSON());
+            } else if (LIST_SCHEDULED_MESSAGES.equals(operationName)) {
+                String json = control.listScheduledMessagesAsJSON();
+                context.getResult().set(ModelNode.fromJSONString(json));
+            } else if (LIST_SCHEDULED_MESSAGES_AS_JSON.equals(operationName)) {
+                context.getResult().set(control.listScheduledMessagesAsJSON());
             } else if (COUNT_MESSAGES.equals(operationName)) {
                 String filter = resolveFilter(context, operation);
                 context.getResult().set(control.countMessages(filter));
@@ -349,6 +383,15 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         context.completeStep(rh);
     }
 
+    protected AttributeDefinition[] getReplyMapConsumerMessageParameterDefinition() {
+        return new AttributeDefinition[]{
+                createNonEmptyStringAttribute("consumerName"),
+                new ObjectListAttributeDefinition.Builder("elements",
+                        new ObjectTypeAttributeDefinition.Builder("element", getReplyMessageParameterDefinitions()).build())
+                        .build()
+        };
+    }
+
     protected abstract DelegatingQueueControl<T> getQueueControl(HornetQServer hqServer, String queueName);
 
     protected abstract Object handleAdditionalOperation(final String operationName, final ModelNode operation,
@@ -413,5 +456,9 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         void resume() throws Exception;
 
         String listConsumersAsJSON() throws Exception;
+
+        String listScheduledMessagesAsJSON() throws  Exception;
+
+        String listDeliveringMessagesAsJSON() throws Exception;
     }
 }
