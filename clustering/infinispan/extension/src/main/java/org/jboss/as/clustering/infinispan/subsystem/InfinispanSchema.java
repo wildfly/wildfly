@@ -32,6 +32,7 @@ public enum InfinispanSchema {
     VERSION_1_2(1, 2),
     VERSION_1_3(1, 3),
     VERSION_1_4(1, 4),
+    VERSION_1_5(1, 5),
     VERSION_2_0(2, 0),
     VERSION_3_0(3, 0),
     ;

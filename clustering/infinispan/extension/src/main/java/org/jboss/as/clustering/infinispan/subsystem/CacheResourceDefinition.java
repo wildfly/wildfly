@@ -137,7 +137,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             builder.setCustomResourceTransformer(batchingTransformer);
         }
 
-        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_1_5_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
                     .addRejectCheck(RejectAttributeChecker.UNDEFINED, STATISTICS_ENABLED)

@@ -173,6 +173,24 @@ public class TransformersTestCase extends OperationTestCaseBase {
         );
     }
 
+    @Test
+    public void testTransformer620() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
+        this.testTransformation(InfinispanModel.VERSION_1_4_1, version, formatLegacySubsystemArtifact(version),
+                "org.infinispan:infinispan-core:5.2.7.Final-redhat-2",
+                "org.infinispan:infinispan-cachestore-jdbc:5.2.7.Final-redhat-2"
+        );
+    }
+
+    @Test
+    public void testTransformer630() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
+        this.testTransformation(InfinispanModel.VERSION_1_5_0, version, formatLegacySubsystemArtifact(version),
+                "org.infinispan:infinispan-core:5.2.10.Final-redhat-1",
+                "org.infinispan:infinispan-cachestore-jdbc:5.2.10.Final-redhat-1"
+        );
+    }
+
     private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
         return this.buildKernelServices(this.getSubsystemXml(), controllerVersion, version, mavenResourceURLs);
     }

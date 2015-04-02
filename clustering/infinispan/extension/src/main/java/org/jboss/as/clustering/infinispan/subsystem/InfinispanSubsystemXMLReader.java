@@ -137,7 +137,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     }
                 }
                 case STATISTICS_ENABLED: {
-                    if (this.schema.since(InfinispanSchema.VERSION_2_0)) {
+                    if (this.schema.since(InfinispanSchema.VERSION_1_5)) {
                         CacheContainerResourceDefinition.STATISTICS_ENABLED.parseAndSetParameter(value, operation, reader);
                         break;
                     }
@@ -147,7 +147,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
         }
-        if (!this.schema.since(InfinispanSchema.VERSION_2_0)) {
+        if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
             operation.get(CacheContainerResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
         }
 
@@ -436,7 +436,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
             case STATISTICS_ENABLED: {
-                if (this.schema.since(InfinispanSchema.VERSION_2_0)) {
+                if (this.schema.since(InfinispanSchema.VERSION_1_5)) {
                     CacheResourceDefinition.STATISTICS_ENABLED.parseAndSetParameter(value, operation, reader);
                     break;
                 }
@@ -445,7 +445,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 throw ParseUtils.unexpectedAttribute(reader, index);
             }
         }
-        if (!this.schema.since(InfinispanSchema.VERSION_2_0)) {
+        if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
             // We need to explicitly enable statistics (to reproduce old behavior), since the new attribute defaults to false.
             operation.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
         }
