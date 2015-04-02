@@ -48,12 +48,19 @@ import org.jboss.vfs.VirtualFileFilter;
 import org.wildfly.extension.batch.BatchServiceNames;
 import org.wildfly.extension.batch._private.BatchLogger;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
+import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.jberet.services.BatchEnvironmentService;
 
 /**
  * Deployment unit processor for javax.batch integration.
  */
 public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
+
+    private final boolean rcPresent;
+
+    public BatchEnvironmentProcessor(final boolean rcPresent) {
+        this.rcPresent = rcPresent;
+    }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -83,7 +90,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             }
 
             // Create the batch environment
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobRepository);
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, JobRepositoryFactory.getInstance().getJobRepository(moduleDescription), deploymentUnit.getName());
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
             // Register the required services
             serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
@@ -120,6 +127,10 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             serviceTarget.addService(BatchServiceNames.jobXmlResolverServiceName(deploymentUnit), jobXmlResolverService).install();
             // Add a dependency to the job XML resolver service
             serviceBuilder.addDependency(BatchServiceNames.jobXmlResolverServiceName(deploymentUnit), JobXmlResolver.class, service.getJobXmlResolverInjector());
+
+            if (rcPresent) {
+                serviceBuilder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestControllerInjector());
+            }
 
             serviceBuilder.install();
         }
