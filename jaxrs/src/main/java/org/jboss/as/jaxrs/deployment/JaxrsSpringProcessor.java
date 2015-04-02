@@ -53,6 +53,7 @@ import org.jboss.vfs.VirtualFile;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
     @Deprecated
     public static final String DISABLE_PROPERTY = "org.jboss.as.jaxrs.disableSpringIntegration";
     public static final String ENABLE_PROPERTY = "org.jboss.as.jaxrs.enableSpringIntegration";
-    public static final String SERVICE_NAME = "resteasy-spring-integration-resource-root";
+    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("resteasy-spring-integration-resource-root");
 
     private final ServiceTarget serviceTarget;
     private VirtualFile resourceRoot;
@@ -86,12 +87,21 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
     /**
      * Lookup Seam integration resource loader.
      *
+     * @param phaseContext
      * @return the Seam integration resource loader
      * @throws DeploymentUnitProcessingException
      *          for any error
      */
-    protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
+    protected synchronized VirtualFile getResteasySpringVirtualFile(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         try {
+            if (this.resourceRoot != null) {
+                if (phaseContext.getServiceRegistry().getServiceNames().contains(SERVICE_NAME)) {
+                    serviceTarget.addService(SERVICE_NAME, phaseContext.getServiceRegistry().getService(SERVICE_NAME).getService());
+                } else {
+                    installMountHandleService(resourceRoot.getPhysicalFile(), resourceRoot);
+                }
+                return resourceRoot;
+            }
             Module module = Module.getBootModuleLoader().loadModule(MODULE);
             URL fileUrl = module.getClassLoader().getResource(JAR_LOCATION);
 
@@ -109,29 +119,34 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             if (file == null) {
                 throw JaxrsLogger.JAXRS_LOGGER.noSpringIntegrationJar();
             }
-            VirtualFile vf = VFS.getChild(file.toURI());
-            final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
-            Service<Closeable> mountHandleService = new Service<Closeable>() {
-                public void start(StartContext startContext) throws StartException {
-                }
-
-                public void stop(StopContext stopContext) {
-                    VFSUtils.safeClose(mountHandle);
-                }
-
-                public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
-                    return mountHandle;
-                }
-            };
-            ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SERVICE_NAME),
-                    mountHandleService);
-            builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            final VirtualFile vf = VFS.getChild(file.toURI());
+            installMountHandleService(file, vf);
             resourceRoot = vf;
 
             return resourceRoot;
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
+    }
+
+    private void installMountHandleService(final File file,final VirtualFile vf) throws IOException {
+        final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
+        Service<Closeable> mountHandleService = new Service<Closeable>() {
+            public void start(StartContext startContext) throws StartException {
+                JaxrsLogger.JAXRS_LOGGER.warn("Service for managing handle on " + vf.getName() + " is starting");
+            }
+
+            public void stop(StopContext stopContext) {
+                JaxrsLogger.JAXRS_LOGGER.warn("Closing handle on " + vf.getName());
+                VFSUtils.safeClose(mountHandle);
+            }
+
+            public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
+                return mountHandle;
+            }
+        };
+        ServiceBuilder<Closeable> builder = serviceTarget.addService(SERVICE_NAME, mountHandleService);
+        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -196,7 +211,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             if (found) {
                 try {
                     MountHandle mh = new MountHandle(null); // actual close is done by the MSC service above
-                    ResourceRoot resourceRoot = new ResourceRoot(getResteasySpringVirtualFile(), mh);
+                    ResourceRoot resourceRoot = new ResourceRoot(getResteasySpringVirtualFile(phaseContext), mh);
                     ModuleRootMarker.mark(resourceRoot);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
                 } catch (Exception e) {
