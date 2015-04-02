@@ -23,6 +23,11 @@
 package org.jboss.as.test.integration.batch.chunk;
 
 import java.net.URL;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import javax.batch.operations.JobOperator;
+import javax.batch.operations.NoSuchJobExecutionException;
+import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
@@ -30,9 +35,13 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.JobExecutionMarshaller;
 import org.jboss.as.test.integration.batch.common.StartBatchServlet;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,19 +51,23 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class ChunkPartitionTestCase extends AbstractBatchTestCase {
+
+
     @ArquillianResource
-    private URL url;
+    private ManagementClient managementClient;
 
     @Deployment
     public static WebArchive createDeployment() {
-        return createDefaultWar("batch-chunk-partition.war", ChunkPartitionTestCase.class.getPackage(), "chunkPartition.xml")
-                .addPackage(ChunkPartitionTestCase.class.getPackage());
+        return createDefaultWar("batch-chunk-partition.war", ChunkPartitionTestCase.class.getPackage(), "chunkPartition.xml", "chunk-suspend.xml")
+                .addPackage(ChunkPartitionTestCase.class.getPackage())
+                .addClass(Operations.class)
+                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
     }
 
+    @RunAsClient
     @Test
-    public void chunks() throws Exception {
+    public void chunks(@ArquillianResource final URL url) throws Exception {
         for (int i = 10; i >= 8; i--) {
             final UrlBuilder builder = UrlBuilder.of(url, "start");
             builder.addParameter(StartBatchServlet.JOB_XML_PARAMETER, "chunkPartition");
@@ -78,6 +91,80 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
         final String result = performCall(builder.build());
         final JobExecution jobExecution = JobExecutionMarshaller.unmarshall(result);
         Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+    }
+
+    @Test
+    public void testSuspend() throws Exception {
+        try {
+            final Properties jobProperties = new Properties();
+            jobProperties.setProperty("reader.end", "10");
+            final JobOperator jobOperator = BatchRuntime.getJobOperator();
+
+            // Start the first job
+            long executionId = jobOperator.start("chunk-suspend", jobProperties);
+
+            JobExecution jobExecution = jobOperator.getJobExecution(executionId);
+
+            // Wait until the job is complete for a maximum of 5 seconds
+            waitForTermination(jobExecution, 5);
+            Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+
+            // Check that count
+            Assert.assertEquals(10, CountingItemWriter.WRITTEN_ITEMS.size());
+
+            // Suspend the server
+            managementClient.getControllerClient().execute(Operations.createOperation("suspend"));
+
+            // Submit another job which should be queued, should be safe with an InMemoryJobRepository (the default)
+            executionId = jobOperator.start("chunk-suspend", jobProperties);
+
+            // The job should not exist yet as the server is suspended
+            try {
+                jobOperator.getJobExecution(executionId);
+            } catch (NoSuchJobExecutionException expected) {
+                Assert.fail("Job should not exist as the server is suspended: " + executionId);
+            }
+
+            // Resume the server which should kick of queued jobs
+            managementClient.getControllerClient().execute(Operations.createOperation("resume"));
+
+            // Get the execution
+            jobExecution = jobOperator.getJobExecution(executionId);
+
+            // Wait until the job is complete for a maximum of 5 seconds
+            waitForTermination(jobExecution, 5);
+            Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+
+            // Check that count
+            Assert.assertEquals(20, CountingItemWriter.WRITTEN_ITEMS.size());
+        } finally {
+            managementClient.getControllerClient().execute(Operations.createOperation("resume"));
+        }
+    }
+
+    private static void waitForTermination(final JobExecution jobExecution, final int timeout) {
+        long waitTimeout = TimeoutUtil.adjust(timeout * 1000);
+        long sleep = 100L;
+        while (true) {
+            switch (jobExecution.getBatchStatus()) {
+                case STARTED:
+                case STARTING:
+                case STOPPING:
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(sleep);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    waitTimeout -= sleep;
+                    sleep = Math.max(sleep / 2, 100L);
+                    break;
+                default:
+                    return;
+            }
+            if (waitTimeout <= 0) {
+                throw new IllegalStateException("Batch job did not complete within allotted time.");
+            }
+        }
     }
 
 }
