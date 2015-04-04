@@ -77,6 +77,7 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.remote.CompressionHintViewConfigurator;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
@@ -428,8 +429,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 viewConfiguration.addViewInterceptor(WaitTimeInterceptor.FACTORY, InterceptorOrder.View.EJB_WAIT_TIME_INTERCEPTOR);
                 viewConfiguration.addViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
 
+
             }
         });
+        view.getConfigurators().add(CompressionHintViewConfigurator.INSTANCE);
         this.addCurrentInvocationContextFactory(view);
         this.setupSecurityInterceptors(view);
         this.setupRemoteViewInterceptors(view);
