@@ -26,10 +26,12 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FilePermission;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import io.undertow.util.FileUtils;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -71,6 +73,8 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
     public static final String WEB_INF_LIB = "WEB-INF/lib";
     public static final String WEB_INF_CLASSES = "WEB-INF/classes";
     public static final String META_INF = "META-INF";
+
+    private static final String WEB_INF_EXTERNAL_MOUNTS = "WEB-INF/undertow-external-mounts.conf";
 
     public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
@@ -153,6 +157,38 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         final TldsMetaData tldsMetaData = new TldsMetaData();
         tldsMetaData.setSharedTlds(sharedTldsMetaData);
         deploymentUnit.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
+
+        processExternalMounts(deploymentUnit, deploymentRoot);
+    }
+
+    private void processExternalMounts(DeploymentUnit deploymentUnit, VirtualFile deploymentRoot) throws DeploymentUnitProcessingException {
+        VirtualFile mounts = deploymentRoot.getChild(WEB_INF_EXTERNAL_MOUNTS);
+        if(!mounts.exists()) {
+            return;
+        }
+        try (InputStream data = mounts.openStream()) {
+            String contents = FileUtils.readFile(data);
+            String[] lines = contents.split("\n");
+            for(String line : lines) {
+                String trimmed = line;
+                int commentIndex = trimmed.indexOf("#");
+                if(commentIndex > -1) {
+                    trimmed = trimmed.substring(0, commentIndex);
+                }
+                trimmed = trimmed.trim();
+                if(trimmed.isEmpty()) {
+                    continue;
+                }
+                File path = new File(trimmed);
+                if(path.exists()) {
+                    deploymentUnit.addToAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES, path);
+                } else {
+                    throw UndertowLogger.ROOT_LOGGER.couldNotFindExternalPath(path);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

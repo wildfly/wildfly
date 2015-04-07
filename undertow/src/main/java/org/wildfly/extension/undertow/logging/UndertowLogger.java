@@ -309,4 +309,7 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 71, value = "Jetty ALPN not found. HTTP2 and SPDY are not available. Please make sure Jetty ALPN is on the boot class path.")
     void alpnNotFound();
+
+    @Message(id = 72, value = "Could not find configured external path %s")
+    DeploymentUnitProcessingException couldNotFindExternalPath(File path);
 }
