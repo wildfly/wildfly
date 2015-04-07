@@ -91,6 +91,9 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
      *          for any error
      */
     protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
+        if(resourceRoot != null) {
+            return resourceRoot;
+        }
         try {
             Module module = Module.getBootModuleLoader().loadModule(MODULE);
             URL fileUrl = module.getClassLoader().getResource(JAR_LOCATION);
