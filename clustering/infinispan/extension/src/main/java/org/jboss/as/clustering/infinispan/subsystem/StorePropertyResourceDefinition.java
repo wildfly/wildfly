@@ -22,20 +22,24 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -66,18 +70,61 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
     }
 
     StorePropertyResourceDefinition() {
-        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(ModelKeys.PROPERTY),
-                new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(ModelKeys.PROPERTY));
+        this.setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion());
     }
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { VALUE };
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        // do we need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attribute: ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attribute, null, writeHandler);
-        }
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        OperationStepHandler readHandler = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                PathAddress address = context.getCurrentAddress().getParent();
+                String key = context.getCurrentAddressValue();
+                ModelNode getOperation = Operations.createMapGetOperation(address, StoreResourceDefinition.PROPERTIES.getName(), key);
+                context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
+            }
+        };
+        OperationStepHandler writeHandler = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                PathAddress address = context.getCurrentAddress().getParent();
+                String key = context.getCurrentAddressValue();
+                String value = Operations.getAttributeValue(operation).asString();
+                ModelNode putOperation = Operations.createMapPutOperation(address, StoreResourceDefinition.PROPERTIES.getName(), key, value);
+                context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
+            }
+        };
+        registration.registerReadWriteAttribute(VALUE, readHandler, writeHandler);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        AbstractAddStepHandler addHandler = new AbstractAddStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                context.createResource(PathAddress.EMPTY_ADDRESS);
+                String name = context.getCurrentAddressValue();
+                String value = operation.get(VALUE.getName()).asString();
+                PathAddress storeAddress = context.getCurrentAddress().getParent();
+                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, StoreResourceDefinition.PROPERTIES.getName(), name, value);
+                context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
+            }
+        };
+        this.registerAddOperation(registration, addHandler);
+
+        AbstractRemoveStepHandler removeHandler = new AbstractRemoveStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                context.removeResource(PathAddress.EMPTY_ADDRESS);
+                String name = context.getCurrentAddressValue();
+                PathAddress storeAddress = context.getCurrentAddress().getParent();
+                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, StoreResourceDefinition.PROPERTIES.getName(), name);
+                context.addStep(putOperation, MapOperations.MAP_REMOVE_HANDLER, context.getCurrentStage());
+            }
+        };
+        this.registerRemoveOperation(registration, removeHandler);
     }
 }

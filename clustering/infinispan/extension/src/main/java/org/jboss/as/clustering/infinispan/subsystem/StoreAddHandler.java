@@ -21,15 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Base add operation handler for a cache store.
@@ -46,40 +38,7 @@ import org.jboss.dmr.Property;
  */
 public class StoreAddHandler extends AbstractAddStepHandler {
 
-    @Override
-    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-        PathAddress cacheAddress = address.subAddress(0, address.size() - 1);
-
-        ModelNode cache = Resource.Tools.readModel(context.readResourceFromRoot(cacheAddress));
-
-        for (StoreType type: StoreType.values()) {
-            if (cache.hasDefined(type.pathElement().getKey()) && cache.get(type.pathElement().getKeyValuePair()).isDefined()) {
-                throw InfinispanLogger.ROOT_LOGGER.cacheStoreAlreadyDefined(type.pathElement().getKey());
-            }
-        }
-
-        ModelNode model = resource.getModel();
-        // Process attributes
-        for (AttributeDefinition attribute: StoreResourceDefinition.PARAMETERS) {
-            // we use PROPERTIES only to allow the user to pass in a list of properties on store add commands
-            // don't copy these into the model
-            if (attribute.getName().equals(StoreResourceDefinition.PROPERTIES.getName())) continue;
-            attribute.validateAndSet(operation, model);
-        }
-
-        // The cache config parameters  <property name=>value</property>
-        if (operation.hasDefined(ModelKeys.PROPERTIES)) {
-            for (Property property: operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
-                // create a new property=name resource
-                Resource param = context.createResource(PathAddress.pathAddress(StorePropertyResourceDefinition.pathElement(property.getName())));
-                ModelNode value = property.getValue();
-                if (!value.isDefined()) {
-                    throw InfinispanLogger.ROOT_LOGGER.propertyValueNotDefined(property.getName());
-                }
-                // set the value of the property
-                StorePropertyResourceDefinition.VALUE.validateAndSet(value, param.getModel());
-            }
-        }
+    StoreAddHandler() {
+        super(StoreResourceDefinition.ATTRIBUTES);
     }
 }

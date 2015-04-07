@@ -119,7 +119,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case ALIASES: {
                     if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
                         for (String alias: reader.getListAttributeValue(i)) {
-                            operation.get(CacheContainerResourceDefinition.ALIASES.getName()).add(alias);
+                            CacheContainerResourceDefinition.ALIASES.parseAndAddParameterElement(alias, operation, reader);
                         }
                         break;
                     }
@@ -156,7 +156,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             switch (element) {
                 case ALIAS: {
                     if (InfinispanSchema.VERSION_1_0.since(this.schema)) {
-                        operation.get(CacheContainerResourceDefinition.ALIASES.getName()).add(reader.getElementText());
+                        CacheContainerResourceDefinition.ALIASES.parseAndAddParameterElement(reader.getElementText(), operation, reader);
                         break;
                     }
                 }
@@ -1047,7 +1047,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 default: {
-                    this.parseStoreProperty(reader, address, operations);
+                    this.parseStoreElement(reader, address, operations);
                 }
             }
         }
@@ -1250,10 +1250,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     }
 
     private void parseStoreElement(XMLExtendedStreamReader reader, PathAddress storeAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        ModelNode operation = operations.get(storeAddress);
+
         Element element = Element.forName(reader.getLocalName());
         switch (element) {
             case PROPERTY: {
-                this.parseStoreProperty(reader, storeAddress, operations);
+                ParseUtils.requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+                String name = require(reader, Attribute.NAME);
+                StoreResourceDefinition.PROPERTIES.parseAndAddParameterElement(name, reader.getElementText(), operation, reader);
                 break;
             }
             case WRITE_BEHIND: {
@@ -1300,16 +1304,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
         ParseUtils.requireNoContent(reader);
-    }
-
-    private void parseStoreProperty(XMLExtendedStreamReader reader, PathAddress storeAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
-
-        String name = require(reader, Attribute.NAME);
-        PathAddress address = storeAddress.append(StorePropertyResourceDefinition.pathElement(name));
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
-
-        StorePropertyResourceDefinition.VALUE.parseAndSetParameter(reader.getElementText(), operation, reader);
     }
 
     private static String require(XMLExtendedStreamReader reader, Attribute attribute) throws XMLStreamException {

@@ -21,21 +21,24 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
+import org.jboss.as.clustering.controller.AttributeMarshallers;
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.transform.OperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -91,27 +94,51 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode().set(false))
             .build();
 
-    // used to pass in a list of properties to the store add command
-    static final AttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
-    static final SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY)
-            .setAllowNull(true)
+    static final SimpleMapAttributeDefinition PROPERTIES = new SimpleMapAttributeDefinition.Builder(ModelKeys.PROPERTIES, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
+            .setDefaultValue(new ModelNode().setEmptyList())
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
-            SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON
-    };
-    static final AttributeDefinition[] PARAMETERS = new AttributeDefinition[] {
             SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES
     };
-
-    // operations
-    private static final OperationDefinition CACHE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, new InfinispanResourceDescriptionResolver(ModelKeys.STORE))
-            .setParameters(PARAMETERS)
-            .build();
 
     private final boolean allowRuntimeOnlyRegistration;
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            OperationTransformer putPropertyTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
+                        String key = operation.get("key").asString();
+                        ModelNode value = Operations.getAttributeValue(operation);
+                        PathAddress address = Operations.getPathAddress(operation);
+                        ModelNode transformedOperation = Util.createAddOperation(address.append(StorePropertyResourceDefinition.pathElement(key)));
+                        transformedOperation.get(StorePropertyResourceDefinition.VALUE.getName()).set(value);
+                        return transformedOperation;
+                    }
+                    return operation;
+                }
+            };
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(putPropertyTransformer));
+
+            OperationTransformer removePropertyTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
+                        String key = operation.get("key").asString();
+                        PathAddress address = Operations.getPathAddress(operation);
+                        return Util.createRemoveOperation(address.append(StorePropertyResourceDefinition.pathElement(key)));
+                    }
+                    return operation;
+                }
+            };
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+        }
+
         if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, FETCH_STATE, PASSIVATION, PRELOAD, PURGE, SHARED, SINGLETON);
         }
@@ -146,11 +173,5 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
         // child resources
         registration.registerSubModel(new StoreWriteBehindResourceDefinition());
         registration.registerSubModel(new StorePropertyResourceDefinition());
-    }
-
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
-    @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(CACHE_STORE_ADD_DEFINITION, handler);
     }
 }

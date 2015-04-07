@@ -22,20 +22,15 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -69,13 +64,6 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { RELATIVE_TO, RELATIVE_PATH };
 
-    // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, new InfinispanResourceDescriptionResolver(ModelKeys.FILE_STORE))
-            .setParameters(PARAMETERS)
-            .addParameter(RELATIVE_TO)
-            .addParameter(RELATIVE_PATH)
-            .build();
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
@@ -103,10 +91,9 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         }
     }
 
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
     @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(ADD_DEFINITION, handler);
+    public void registerOperations(ManagementResourceRegistration registration) {
+        super.registerOperations(registration);
         if (this.pathManager != null) {
             ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(this.pathManager).setPathAttribute(RELATIVE_PATH).setRelativeToAttribute(RELATIVE_TO).build();
             registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);

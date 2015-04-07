@@ -360,19 +360,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writeAttribute(writer, writeBehind, StoreWriteBehindResourceDefinition.THREAD_POOL_SIZE);
             writer.writeEndElement();
         }
-        if (store.hasDefined(StorePropertyResourceDefinition.WILDCARD_PATH.getKey())) {
-            // the format of the property elements
-            //  "property" => {
-            //       "relative-to" => {"value" => "fred"},
-            //   }
-            for (Property property: store.get(StorePropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                writer.writeStartElement(Element.PROPERTY.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                Property complexValue = property.getValue().asProperty();
-                writer.writeCharacters(complexValue.getValue().asString());
-                writer.writeEndElement();
-            }
-        }
+        writeElement(writer, store, StoreResourceDefinition.PROPERTIES);
     }
 
     private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
