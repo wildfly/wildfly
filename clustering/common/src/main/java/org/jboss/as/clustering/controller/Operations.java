@@ -24,9 +24,12 @@ package org.jboss.as.clustering.controller;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.ListOperations;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -77,7 +80,7 @@ public final class Operations {
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(List<ModelNode> operations) {
-        ModelNode operation = Util.createEmptyOperation(ModelDescriptionConstants.COMPOSITE, PathAddress.EMPTY_ADDRESS);
+        ModelNode operation = Util.createOperation(ModelDescriptionConstants.COMPOSITE, PathAddress.EMPTY_ADDRESS);
         ModelNode steps = operation.get(ModelDescriptionConstants.STEPS);
         for (ModelNode step: operations) {
             steps.add(step);
@@ -101,9 +104,7 @@ public final class Operations {
      * @return a read-attribute operation
      */
     public static ModelNode createReadAttributeOperation(PathAddress address, String name) {
-        ModelNode operation = Util.createEmptyOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address);
-        operation.get(ModelDescriptionConstants.NAME).set(name);
-        return operation;
+        return createAttributeOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address, name);
     }
 
     /**
@@ -114,8 +115,7 @@ public final class Operations {
      * @return a write-attribute operation
      */
     public static ModelNode createWriteAttributeOperation(PathAddress address, String name, ModelNode value) {
-        ModelNode operation = Util.createEmptyOperation(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, address);
-        operation.get(ModelDescriptionConstants.NAME).set(name);
+        ModelNode operation = createAttributeOperation(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, address, name);
         operation.get(ModelDescriptionConstants.VALUE).set(value);
         return operation;
     }
@@ -127,8 +127,12 @@ public final class Operations {
      * @return an undefine-attribute operation
      */
     public static ModelNode createUndefineAttributeOperation(PathAddress address, String name) {
-        ModelNode operation = Util.createEmptyOperation(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, address);
-        operation.get(ModelDescriptionConstants.NAME).set(name);
+        return createAttributeOperation(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, address, name);
+    }
+
+    private static ModelNode createAttributeOperation(String operationName, PathAddress address, String attributeName) {
+        ModelNode operation = Util.createOperation(operationName, address);
+        operation.get(ModelDescriptionConstants.NAME).set(attributeName);
         return operation;
     }
 
@@ -138,7 +142,55 @@ public final class Operations {
      * @return a describe operation
      */
     public static ModelNode createDescribeOperation(PathAddress address) {
-        return Util.createEmptyOperation(ModelDescriptionConstants.DESCRIBE, address);
+        return Util.createOperation(ModelDescriptionConstants.DESCRIBE, address);
+    }
+
+    public static ModelNode createListAddOperation(PathAddress address, String attributeName, String value) {
+        return createListElementOperation(ListOperations.LIST_ADD_DEFINITION, address, attributeName, value);
+    }
+
+    public static ModelNode createListRemoveOperation(PathAddress address, String attributeName, String value) {
+        return createListElementOperation(ListOperations.LIST_REMOVE_DEFINITION, address, attributeName, value);
+    }
+
+    public static ModelNode createListRemoveOperation(PathAddress address, String attributeName, int index) {
+        return createListElementOperation(ListOperations.LIST_REMOVE_DEFINITION, address, attributeName, index);
+    }
+
+    public static ModelNode createListGetOperation(PathAddress address, String attributeName, int index) {
+        return createListElementOperation(ListOperations.LIST_GET_DEFINITION, address, attributeName, index);
+    }
+
+    private static ModelNode createListElementOperation(OperationDefinition definition, PathAddress address, String attributeName, String value) {
+        ModelNode operation = createAttributeOperation(definition.getName(), address, attributeName);
+        operation.get(ModelDescriptionConstants.VALUE).set(value);
+        return operation;
+    }
+
+    private static ModelNode createListElementOperation(OperationDefinition definition, PathAddress address, String attributeName, int index) {
+        ModelNode operation = createAttributeOperation(definition.getName(), address, attributeName);
+        operation.get("index").set(new ModelNode(index));
+        return operation;
+    }
+
+    public static ModelNode createMapGetOperation(PathAddress address, String attributeName, String key) {
+        return createMapEntryOperation(MapOperations.MAP_GET_DEFINITION, address, attributeName, key);
+    }
+
+    public static ModelNode createMapPutOperation(PathAddress address, String attributeName, String key, String value) {
+        ModelNode operation = createMapEntryOperation(MapOperations.MAP_PUT_DEFINITION, address, attributeName, key);
+        operation.get(ModelDescriptionConstants.VALUE).set(value);
+        return operation;
+    }
+
+    public static ModelNode createMapRemoveOperation(PathAddress address, String attributeName, String key) {
+        return createMapEntryOperation(MapOperations.MAP_REMOVE_DEFINITION, address, attributeName, key);
+    }
+
+    private static ModelNode createMapEntryOperation(OperationDefinition definition, PathAddress address, String attributeName, String key) {
+        ModelNode operation = createAttributeOperation(definition.getName(), address, attributeName);
+        operation.get("key").set(key);
+        return operation;
     }
 
     private Operations() {
