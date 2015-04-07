@@ -130,7 +130,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     // the list of attributes used by the transport resource
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
             ProtocolResourceDefinition.TYPE, ProtocolResourceDefinition.MODULE, SHARED, ProtocolResourceDefinition.SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING,
-            DEFAULT_EXECUTOR, OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE
+            ProtocolResourceDefinition.PROPERTIES, DEFAULT_EXECUTOR, OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE
     };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {

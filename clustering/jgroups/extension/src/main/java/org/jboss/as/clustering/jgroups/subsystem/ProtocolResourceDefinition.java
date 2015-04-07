@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
@@ -37,11 +38,12 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -89,16 +91,13 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             .setValidator(new ModuleIdentifierValidator(true))
             .build();
 
-    @Deprecated
-    static final AttributeDefinition PROPERTY = new SimpleAttributeDefinitionBuilder(ModelKeys.PROPERTY, ModelType.PROPERTY, true).build();
-
-    @Deprecated
-    static final SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY)
-            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .setAllowNull(true)
+    static final SimpleMapAttributeDefinition PROPERTIES = new SimpleMapAttributeDefinition.Builder("properties", true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
+            .setDefaultValue(new ModelNode().setEmptyList())
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING, PROPERTIES };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
@@ -156,6 +155,35 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                     .addRejectCheck(RejectAttributeChecker.DEFINED, MODULE)
                     .setValueConverter(typeConverter, TYPE)
                     .end();
+
+            OperationTransformer putPropertyTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
+                        String key = operation.get("key").asString();
+                        ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
+                        PathAddress address = Operations.getPathAddress(operation);
+                        ModelNode transformedOperation = Util.createAddOperation(address.append(PropertyResourceDefinition.pathElement(key)));
+                        transformedOperation.get(PropertyResourceDefinition.VALUE.getName()).set(value);
+                        return transformedOperation;
+                    }
+                    return operation;
+                }
+            };
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(putPropertyTransformer));
+
+            OperationTransformer removePropertyTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
+                        String key = operation.get("key").asString();
+                        PathAddress address = Operations.getPathAddress(operation);
+                        return Util.createRemoveOperation(address.append(PropertyResourceDefinition.pathElement(key)));
+                    }
+                    return operation;
+                }
+            };
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
         }
 
         if (JGroupsModel.VERSION_1_2_0.requiresTransformation(version)) {

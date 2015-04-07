@@ -51,7 +51,7 @@ public class RelayResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SITE };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SITE, ProtocolResourceDefinition.PROPERTIES };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);

@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -53,8 +54,8 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                     writer.writeStartElement(Element.CHANNEL.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                     ModelNode channel = property.getValue();
-                    ChannelResourceDefinition.STACK.marshallAsAttribute(channel, writer);
-                    ChannelResourceDefinition.MODULE.marshallAsAttribute(channel, writer);
+                    writeAttribute(writer, channel, ChannelResourceDefinition.STACK);
+                    writeAttribute(writer, channel, ChannelResourceDefinition.MODULE);
 
                     if (channel.hasDefined(ForkResourceDefinition.WILDCARD_PATH.getKey())) {
                         for (Property forkProperty: channel.get(ForkResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
@@ -75,7 +76,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
             }
             if (model.hasDefined(StackResourceDefinition.WILDCARD_PATH.getKey())) {
                 writer.writeStartElement(Element.STACKS.getLocalName());
-                JGroupsSubsystemResourceDefinition.DEFAULT_STACK.marshallAsAttribute(model, writer);
+                writeAttribute(writer, model, JGroupsSubsystemResourceDefinition.DEFAULT_STACK);
                 for (Property property: model.get(StackResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                     writer.writeStartElement(Element.STACK.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
@@ -103,16 +104,16 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writer.writeStartElement(Element.TRANSPORT.getLocalName());
         writeProtocolAttributes(writer, property);
         ModelNode transport = property.getValue();
-        TransportResourceDefinition.SHARED.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.DEFAULT_EXECUTOR.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.OOB_EXECUTOR.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.TIMER_EXECUTOR.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.THREAD_FACTORY.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.MACHINE.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.RACK.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.SITE.marshallAsAttribute(transport, writer);
-        writeProtocolProperties(writer, transport);
+        writeAttribute(writer, transport, TransportResourceDefinition.SHARED);
+        writeAttribute(writer, transport, TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING);
+        writeAttribute(writer, transport, TransportResourceDefinition.DEFAULT_EXECUTOR);
+        writeAttribute(writer, transport, TransportResourceDefinition.OOB_EXECUTOR);
+        writeAttribute(writer, transport, TransportResourceDefinition.TIMER_EXECUTOR);
+        writeAttribute(writer, transport, TransportResourceDefinition.THREAD_FACTORY);
+        writeAttribute(writer, transport, TransportResourceDefinition.MACHINE);
+        writeAttribute(writer, transport, TransportResourceDefinition.RACK);
+        writeAttribute(writer, transport, TransportResourceDefinition.SITE);
+        writeElement(writer, transport, ProtocolResourceDefinition.PROPERTIES);
         if (transport.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
             writeThreadPoolElements(Element.DEFAULT_THREAD_POOL, ThreadPoolResourceDefinition.DEFAULT, writer, transport);
             writeThreadPoolElements(Element.INTERNAL_THREAD_POOL, ThreadPoolResourceDefinition.INTERNAL, writer, transport);
@@ -125,41 +126,25 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     private static void writeProtocol(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeStartElement(Element.PROTOCOL.getLocalName());
         writeProtocolAttributes(writer, property);
-        writeProtocolProperties(writer, property.getValue());
+        writeElement(writer, property.getValue(), ProtocolResourceDefinition.PROPERTIES);
         writer.writeEndElement();
     }
 
     private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeAttribute(Attribute.TYPE.getLocalName(), property.getName());
         ModelNode protocol = property.getValue();
-        ProtocolResourceDefinition.SOCKET_BINDING.marshallAsAttribute(protocol, writer);
-        ProtocolResourceDefinition.MODULE.marshallAsAttribute(protocol, writer);
-    }
-
-    private static void writeProtocolProperties(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
-        // the format of the property elements
-        //  "property" => {
-        //       "relative-to" => {"value" => "fred"},
-        //   }
-        if (protocol.hasDefined(PropertyResourceDefinition.WILDCARD_PATH.getKey())) {
-            for (Property property: protocol.get(PropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                writer.writeStartElement(Element.PROPERTY.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                Property complexValue = property.getValue().asProperty();
-                writer.writeCharacters(complexValue.getValue().asString());
-                writer.writeEndElement();
-            }
-        }
+        writeAttribute(writer, protocol, ProtocolResourceDefinition.SOCKET_BINDING);
+        writeAttribute(writer, protocol, ProtocolResourceDefinition.MODULE);
     }
 
     private static void writeThreadPoolElements(Element element, ThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode transport) throws XMLStreamException {
         if (transport.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
             ModelNode threadPool = transport.get(pool.getPathElement().getKeyValuePair());
             writer.writeStartElement(element.getLocalName());
-            pool.getMinThreads().marshallAsAttribute(threadPool, writer);
-            pool.getMaxThreads().marshallAsAttribute(threadPool, writer);
-            pool.getQueueLength().marshallAsAttribute(threadPool, writer);
-            pool.getKeepaliveTime().marshallAsAttribute(threadPool, writer);
+            writeAttribute(writer, threadPool, pool.getMinThreads());
+            writeAttribute(writer, threadPool, pool.getMaxThreads());
+            writeAttribute(writer, threadPool, pool.getQueueLength());
+            writeAttribute(writer, threadPool, pool.getKeepaliveTime());
             writer.writeEndElement();
         }
     }
@@ -172,10 +157,18 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                 writer.writeStartElement(Element.REMOTE_SITE.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 ModelNode remoteSite = property.getValue();
-                RemoteSiteResourceDefinition.CHANNEL.marshallAsAttribute(remoteSite, writer);
+                writeAttribute(writer, remoteSite, RemoteSiteResourceDefinition.CHANNEL);
                 writer.writeEndElement();
             }
         }
         writer.writeEndElement();
+    }
+
+    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
+        attribute.getAttributeMarshaller().marshallAsAttribute(attribute, model, true, writer);
+    }
+
+    private static void writeElement(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
+        attribute.getAttributeMarshaller().marshallAsElement(attribute, model, true, writer);
     }
 }
