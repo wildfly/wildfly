@@ -48,6 +48,7 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
     private final InjectedValue<InterceptorBindings> interceptorBindings = new InjectedValue<InterceptorBindings>();
     private final String beanArchiveId;
     private final String ejbName;
+    private volatile BeanManagerImpl beanManager;
 
     public Jsr299BindingsCreateInterceptor(String beanArchiveId, String ejbName) {
         this.beanArchiveId = beanArchiveId;
@@ -64,7 +65,12 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-        BeanManagerImpl beanManager = this.weldContainer.getValue().getBeanManager(beanArchiveId);
+
+        BeanManagerImpl beanManager = this.beanManager;
+        if(beanManager == null) {
+            //cache the BM lookup, as it is quite slow
+           beanManager = this.beanManager = this.weldContainer.getValue().getBeanManager(beanArchiveId);
+        }
         //this is not always called with the deployments TCCL set
         //which causes weld to blow up
         SessionBean<Object> bean = null;

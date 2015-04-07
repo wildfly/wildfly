@@ -242,7 +242,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                         if (weakAffinity != null) {
                             attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
                         }
-                        writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments, invokedMethod);
+                        writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments, invokedMethod, componentView);
                     } catch (Throwable ioe) {
                         boolean isAsyncVoid = componentView.isAsynchronous(invokedMethod) && invokedMethod.getReturnType().equals(Void.TYPE);
                         if (!isAsyncVoid)
@@ -355,7 +355,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         return null;
     }
 
-    private void writeMethodInvocationResponse(final ChannelAssociation channelAssociation, final short invocationId, final Object result, final Map<String, Object> attachments, Method invokedMethod) throws IOException {
+    private void writeMethodInvocationResponse(final ChannelAssociation channelAssociation, final short invocationId, final Object result, final Map<String, Object> attachments, Method invokedMethod, ComponentView componentView) throws IOException {
         final DataOutputStream outputStream;
         final MessageOutputStream messageOutputStream;
         try {
@@ -363,7 +363,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         } catch (Throwable e) {
             throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
-        outputStream = wrapMessageOutputStream(messageOutputStream, invokedMethod);
+        outputStream = wrapMessageOutputStream(messageOutputStream, invokedMethod, componentView);
         try {
             // write invocation response header
             outputStream.write(HEADER_METHOD_INVOCATION_RESPONSE);
@@ -383,7 +383,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         }
     }
 
-    protected DataOutputStream wrapMessageOutputStream(MessageOutputStream messageOutputStream, Method invokedMethod) throws IOException {
+    protected DataOutputStream wrapMessageOutputStream(MessageOutputStream messageOutputStream, Method invokedMethod, ComponentView componentView) throws IOException {
         return new DataOutputStream(messageOutputStream);
     }
 

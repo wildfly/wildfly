@@ -5,6 +5,8 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.remote.CompressedMethodsInformation;
+import org.jboss.as.ejb3.remote.CompressionHintViewConfigurator;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -203,6 +205,10 @@ public class CompressedMethodInvocationMessageHandlerTestCase {
         final Set<Method> viewMethods = new HashSet<Method>(); // list of view methods
         Collections.addAll(viewMethods, iface.getDeclaredMethods());
         Mockito.when(componentView.getViewMethods()).thenReturn(viewMethods);
+
+
+
+        Mockito.when(componentView.getPrivateData(CompressedMethodsInformation.class)).thenReturn(CompressionHintViewConfigurator.getCompressedMethodsInformation(iface));
 
         final InjectedValue<ComponentView> value = new InjectedValue<ComponentView>();
         value.setValue(new Value<ComponentView>() {
