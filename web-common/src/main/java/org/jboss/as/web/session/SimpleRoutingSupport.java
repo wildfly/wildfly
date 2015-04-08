@@ -26,6 +26,7 @@ import java.util.Map;
 
 /**
  * Implements logic for parsing/appending routing information from/to a session identifier.
+ *
  * @author Paul Ferraro
  */
 public class SimpleRoutingSupport implements RoutingSupport {
@@ -50,6 +51,14 @@ public class SimpleRoutingSupport implements RoutingSupport {
 
     @Override
     public String format(String sessionId, String routeId) {
-        return ((routeId != null) && !routeId.isEmpty()) ? String.format("%s%s%s", sessionId, this.delimiter, routeId) : sessionId;
+        if ((routeId != null) && !routeId.isEmpty()) {
+            StringBuilder sb = new StringBuilder(sessionId.length() + delimiter.length() + routeId.length());
+            sb.append(sessionId);
+            sb.append(this.delimiter);
+            sb.append(routeId);
+            return sb.toString();
+        } else {
+            return sessionId;
+        }
     }
 }
