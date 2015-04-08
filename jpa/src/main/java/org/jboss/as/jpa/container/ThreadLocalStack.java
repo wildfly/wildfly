@@ -21,65 +21,59 @@
  */
 package org.jboss.as.jpa.container;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.jpa.messages.JpaLogger;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
- * Comment
+ * A thread local stack data structure. In order to avoid memory churn the underlying
+ * ArrayDeque is never freed. If we remove the deque when it is empty then this results
+ * in excessive deque allocations.
  *
- * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
- * @author Scott Marlow
- * @version $Revision$
+ * @author Stuart Douglas
+ *
  */
-public class ThreadLocalStack<T> {
-    private ThreadLocal<ArrayList<T>> stack = new ThreadLocal<ArrayList<T>>();
+public class ThreadLocalStack<E> {
 
-    public void push(T obj) {
-        ArrayList<T> list = stack.get();
-        if (list == null) {
-            list = new ArrayList<T>(1);
-            stack.set(list);
+    private static final Object NULL_VALUE = new Object();
+
+    private final ThreadLocal<Deque<Object>> deque = new ThreadLocal<Deque<Object>>() {
+        @Override
+        protected ArrayDeque<Object> initialValue() {
+            return new ArrayDeque<>();
         }
-        list.add(obj);
+    };
+
+    public void push(E item) {
+        Deque<Object> st = deque.get();
+        if(item == null) {
+            st.push(NULL_VALUE);
+        } else {
+            st.push(item);
+        }
     }
 
-    public T pop() {
-        ArrayList<T> list = stack.get();
-        if (list == null) {
+    public E peek() {
+        Deque<Object> st = deque.get();
+        Object o =  st.peek();
+        if(o == NULL_VALUE) {
             return null;
+        } else {
+            return (E) o;
         }
-        T rtn = list.remove(list.size() - 1);
-        if (list.size() == 0) {
-            stack.set(null);
-            list.clear();
-        }
-        return rtn;
     }
 
-    /**
-     * Replace top of stack with the specified object.  This can be more optimal than calling "pop(); push(obj);"
-     *
-     * @return none
-     */
-    public void replace(T obj) {
-        ArrayList<T> list = stack.get();
-        if (list == null) {
-            throw JpaLogger.ROOT_LOGGER.cannotReplaceStack();
-        }
-        list.set(list.size() - 1, obj);  // replace top of stack item, with the specified time.
-    }
-
-    public T get() {
-        ArrayList<T> list = (ArrayList<T>) stack.get();
-        if (list == null) {
+    public E pop() {
+        Deque<Object> st = deque.get();
+        Object o =  st.pop();
+        if(o == NULL_VALUE) {
             return null;
+        } else {
+            return (E) o;
         }
-        return list.get(list.size() - 1);
     }
 
-    public List<T> getList() {
-        return stack.get();
+    public boolean isEmpty() {
+        return deque.get().isEmpty();
     }
+
 }

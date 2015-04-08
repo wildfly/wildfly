@@ -67,7 +67,7 @@ public class OwnableReentrantLock extends AbstractQueuedSynchronizer implements 
      *         otherwise.
      */
     protected Object currentRequestor() {
-        return currentRequestor.get();
+        return currentRequestor.peek();
     }
 
     public void pushOwner(Object owner) {

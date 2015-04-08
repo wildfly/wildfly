@@ -35,6 +35,7 @@ import javax.persistence.EntityManager;
  * @author Scott Marlow
  */
 public class NonTxEmCloser {
+
     /**
      * Each thread will have its own list of SB invocations in progress.
      * Key = scoped persistence unit name
@@ -80,7 +81,7 @@ public class NonTxEmCloser {
      * @return
      */
     public static EntityManager get(String puScopedName) {
-        Map<String, EntityManager> map = nonTxStack.get();
+        Map<String, EntityManager> map = nonTxStack.peek();
         if (map != null) {
             return map.get(puScopedName);
         }
@@ -88,11 +89,12 @@ public class NonTxEmCloser {
     }
 
     public static void add(String puScopedName, EntityManager entityManager) {
-        Map<String, EntityManager> map = nonTxStack.get();
-        if (map == null && nonTxStack.getList() != null) {
+        Map<String, EntityManager> map = nonTxStack.peek();
+        if (map == null && !nonTxStack.isEmpty()) {
             // replace null with a collection to hold the entity managers.
             map = new HashMap<String, EntityManager>();
-            nonTxStack.replace(map);    // replace top of stack (currently null) with new collection
+            nonTxStack.pop();
+            nonTxStack.push(map);    // replace top of stack (currently null) with new collection
         }
         if (map != null) {
             map.put(puScopedName, entityManager);
