@@ -64,12 +64,14 @@ public final class LogDiagnosticContextRecoveryInterceptor implements Intercepto
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        for (String str : MDC.getMap().keySet()) {
-            MDC.remove(str);
+        if (MDC.getMap() != null) {
+            for (String str : MDC.getMap().keySet()) {
+                MDC.remove(str);
+            }
         }
         final StoredLogDiagnosticContext data = (StoredLogDiagnosticContext) context.getPrivateData(KEY);
         context.putPrivateData(KEY, null);
-        if (data != null) {
+        if (data != null && data.getMdc() != null) {
             for (Map.Entry<String, Object> entry : data.getMdc().entrySet()) {
                 MDC.put(entry.getKey(), entry.getValue());
             }

@@ -62,11 +62,15 @@ public final class LogDiagnosticContextStorageInterceptor implements Interceptor
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        context.putPrivateData(KEY, new StoredLogDiagnosticContext(MDC.getMap(), NDC.get()));
-        try {
+        if(MDC.getMap() != null){
+            context.putPrivateData(KEY, new StoredLogDiagnosticContext(MDC.getMap(), NDC.get()));
+            try {
+                return context.proceed();
+            } finally {
+                context.putPrivateData(KEY, null);
+            }
+        } else {
             return context.proceed();
-        } finally {
-            context.putPrivateData(KEY, null);
         }
     }
 }
