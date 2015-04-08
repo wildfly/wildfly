@@ -66,6 +66,7 @@ public class EJBClientDescriptorTestCase {
     private static final String MODULE_NAME_TWO = "ejb-client-descriptor-with-no-receiver-test";
     private static final String MODULE_NAME_THREE = "ejb-client-descriptor-with-local-and-remote-receivers-test";
     private static final String JBOSS_EJB_CLIENT_1_2_MODULE_NAME = "ejb-client-descriptor-test-with-jboss-ejb-client_1_2_xml";
+    private static final String JBOSS_EJB_CLIENT_WITH_PROPERTIES_1_2_MODULE_NAME = "ejb-client-descriptor-test-with-jboss-ejb-client_with_properties_1_2_xml";
 
 
     private static final String outboundSocketName = "ejb-client-descriptor-test-outbound-socket";
@@ -134,6 +135,17 @@ public class EJBClientDescriptorTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_THREE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
         jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "local-and-remote-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        return jar;
+    }
+    
+    @Deployment(name = "jboss-ejb-client_with_properties_1_2_version", testable = false, managed = false)
+    public static JavaArchive createJBossEJBClientWithProperties12VersionDeployment() throws Exception {
+
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JBOSS_EJB_CLIENT_WITH_PROPERTIES_1_2_MODULE_NAME + ".jar");
+        jar.addPackage(EchoBean.class.getPackage());
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_with_properties_1_2.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_with_properties_1_2.properties", "jboss.properties");
+        
         return jar;
     }
 
@@ -241,5 +253,28 @@ public class EJBClientDescriptorTestCase {
             deployer.undeploy("jboss-ejb-client_1_2_version");
         }
     }
+    
+    /**
+     * Tests that a deployment containing jboss-ejb-client.xml with remoting EJB receivers configured and property placeholders,
+     * works as expected.
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment("jboss-ejb-client_with_properties_1_2_version")
+    public void testClientPropertiesReplacementInConfig() throws Exception {
+        deployer.deploy("jboss-ejb-client_with_properties_1_2_version");
+        try {
+            final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + JBOSS_EJB_CLIENT_WITH_PROPERTIES_1_2_MODULE_NAME + "/" + DISTINCT_NAME
+                    + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            final String msg = "Hello world from an EJB client descriptor test!!!";
+            remoteEcho.echo(JBOSS_EJB_CLIENT_WITH_PROPERTIES_1_2_MODULE_NAME, msg);
+        } finally {
+            deployer.undeploy("jboss-ejb-client_with_properties_1_2_version");
+        }
+    }
+    
+    
 
 }
