@@ -51,6 +51,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.connector.subsystems.jca.JcaArchiveValidationDefinition.ArchiveValidationParameters;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -542,12 +543,14 @@ public class JcaExtension implements Extension {
 
                     final int cnt = reader.getAttributeCount();
                     String name = null;
+                    final AttributeDefinition attributeDefinition = JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute();
+                    final String attributeName = attributeDefinition.getXmlName();
                     for (int i = 0; i < cnt; i++) {
                         final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case NAME: {
-                                name = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName());
-                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute()).parseAndSetParameter(name, distributedWorkManagerOperation, reader);
+                                name = rawAttributeText(reader, attributeName);
+                                ((SimpleAttributeDefinition) attributeDefinition).parseAndSetParameter(name, distributedWorkManagerOperation, reader);
                                 break;
                             }
                             default: {
@@ -557,7 +560,7 @@ public class JcaExtension implements Extension {
                     }
 
                     if (name == null) {
-                        throw ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(new StringBuilder(name), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(new StringBuilder(attributeName), reader.getLocation());
                     }
 
                     final ModelNode distributedWorkManagerAddress = parentAddress.clone();
