@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
@@ -30,19 +30,23 @@ import org.jboss.as.clustering.controller.transform.SimpleRemoveOperationTransfo
 import org.jboss.as.clustering.controller.transform.SimpleResourceTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleUndefineAttributeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleWriteAttributeOperationTransformer;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -93,13 +97,64 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
         }
     };
 
-    // registration
     PropertyResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.PROPERTY), new ReloadRequiredAddStepHandler(VALUE), new ReloadRequiredRemoveStepHandler());
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.PROPERTY));
+        this.setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion());
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        registration.registerReadWriteAttribute(VALUE, null, new ReloadRequiredWriteAttributeHandler(VALUE));
+        // Delegate read of property value to "properties" attribute of parent protocol
+        OperationStepHandler readHandler = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                PathAddress address = context.getCurrentAddress().getParent();
+                String key = context.getCurrentAddressValue();
+                ModelNode getOperation = Operations.createMapGetOperation(address, ProtocolResourceDefinition.PROPERTIES.getName(), key);
+                context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
+            }
+        };
+        // Delegate write of property value to "properties" attribute of parent protocol
+        OperationStepHandler writeHandler = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                PathAddress address = context.getCurrentAddress().getParent();
+                String key = context.getCurrentAddressValue();
+                String value = Operations.getAttributeValue(operation).asString();
+                ModelNode putOperation = Operations.createMapPutOperation(address, ProtocolResourceDefinition.PROPERTIES.getName(), key, value);
+                context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
+            }
+        };
+        registration.registerReadWriteAttribute(VALUE, readHandler, writeHandler);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        // Delegate add of property to "properties" attribute of parent protocol
+        AbstractAddStepHandler addHandler = new AbstractAddStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                this.createResource(context);
+                String name = context.getCurrentAddressValue();
+                String value = operation.get(VALUE.getName()).asString();
+                PathAddress storeAddress = context.getCurrentAddress().getParent();
+                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, ProtocolResourceDefinition.PROPERTIES.getName(), name, value);
+                context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
+            }
+        };
+        this.registerAddOperation(registration, addHandler);
+
+        // Delegate remove of property to "properties" attribute of parent protocol
+        AbstractRemoveStepHandler removeHandler = new AbstractRemoveStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                context.removeResource(PathAddress.EMPTY_ADDRESS);
+                String name = context.getCurrentAddressValue();
+                PathAddress storeAddress = context.getCurrentAddress().getParent();
+                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, ProtocolResourceDefinition.PROPERTIES.getName(), name);
+                context.addStep(putOperation, MapOperations.MAP_REMOVE_HANDLER, context.getCurrentStage());
+            }
+        };
+        this.registerRemoveOperation(registration, removeHandler);
     }
 }

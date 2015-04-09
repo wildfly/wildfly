@@ -22,17 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -48,15 +43,6 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
 
     // attributes
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { STRING_KEYED_TABLE, BINARY_KEYED_TABLE };
-
-    // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, new InfinispanResourceDescriptionResolver(ModelKeys.MIXED_KEYED_JDBC_STORE))
-            .setParameters(PARAMETERS)
-            .addParameter(DATA_SOURCE)
-            .addParameter(DIALECT)
-            .addParameter(STRING_KEYED_TABLE)
-            .addParameter(BINARY_KEYED_TABLE)
-            .build();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
@@ -76,11 +62,5 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
         for (AttributeDefinition attr : ATTRIBUTES) {
             registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
-    }
-
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
-    @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(ADD_DEFINITION, handler);
     }
 }

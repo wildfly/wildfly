@@ -18,41 +18,6 @@ import org.junit.Test;
 
 public class OperationsTestCase extends OperationTestCaseBase {
 
-    // subsystem test operations
-    static final ModelNode readSubsystemDefaultStackOp = getSubsystemReadOperation(ModelKeys.DEFAULT_STACK);
-    static final ModelNode writeSubsystemDefaultStackOp = getSubsystemWriteOperation(ModelKeys.DEFAULT_STACK, "new-default");
-
-    // stack test operations
-    static final ModelNode addStackOp = getProtocolStackAddOperation("maximal2");
-    // addStackOpWithParams calls the operation  below to check passing optional parameters
-    //  /subsystem=jgroups/stack=maximal2:add(transport={type=UDP},protocols=[{type=MPING},{type=FLUSH}])
-    static final ModelNode addStackOpWithParams = getProtocolStackAddOperationWithParameters("maximal2");
-    static final ModelNode removeStackOp = getProtocolStackRemoveOperation("maximal2");
-
-    // transport test operations
-    static final ModelNode readTransportRackOp = getTransportReadOperation("maximal", "TCP", ModelKeys.RACK);
-    static final ModelNode writeTransportRackOp = getTransportWriteOperation("maximal", "TCP", ModelKeys.RACK, "new-rack");
-    static final ModelNode readTransportPropertyOp = getTransportPropertyReadOperation("maximal", "TCP", "enable_bundling");
-    static final ModelNode writeTransportPropertyOp = getTransportPropertyWriteOperation("maximal", "TCP", "enable_bundling", "false");
-
-    static final ModelNode addTransportOp = getTransportAddOperation("maximal2", "UDP");
-    // addTransportOpWithProps calls the operation below to check passing optional parameters
-    //   /subsystem=jgroups/stack=maximal2/transport=UDP:add(properties=[{A=>a},{B=>b}])
-    static final ModelNode addTransportOpWithProps = getTransportAddOperationWithProperties("maximal2", "UDP");
-    static final ModelNode removeTransportOp = getTransportRemoveOperation("maximal2", "UDP");
-
-    // protocol test operations
-    static final ModelNode readProtocolSocketBindingOp = getProtocolReadOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING);
-    static final ModelNode writeProtocolSocketBindingOp = getProtocolWriteOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING, "new-socket-binding");
-    static final ModelNode readProtocolPropertyOp = getProtocolPropertyReadOperation("maximal", "MPING", "name");
-    static final ModelNode writeProtocolPropertyOp = getProtocolPropertyWriteOperation("maximal", "MPING", "name", "new-value");
-
-    static final ModelNode addProtocolOp = getProtocolAddOperation("maximal2", "MPING");
-    // addProtocolOpWithProps calls the operation below to check passing optional parameters
-    //   /subsystem=jgroups/stack=maximal2:add-protocol(type=MPING, properties=[{A=>a},{B=>b}])
-    static final ModelNode addProtocolOpWithProps = getProtocolAddOperationWithProperties("maximal2", "MPING");
-    static final ModelNode removeProtocolOp = getProtocolRemoveOperation("maximal2", "MPING");
-
     /*
      * Tests access to subsystem attributes
      */
@@ -62,16 +27,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices();
 
         // read the default stack
-        ModelNode result = services.executeOperation(readSubsystemDefaultStackOp);
+        ModelNode result = services.executeOperation(getSubsystemReadOperation(ModelKeys.DEFAULT_STACK));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("maximal", result.get(RESULT).resolve().asString());
 
         // write the default stack
-        result = services.executeOperation(writeSubsystemDefaultStackOp);
+        result = services.executeOperation(getSubsystemWriteOperation(ModelKeys.DEFAULT_STACK, "new-default"));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the default stack
-        result = services.executeOperation(readSubsystemDefaultStackOp);
+        result = services.executeOperation(getSubsystemReadOperation(ModelKeys.DEFAULT_STACK));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-default", result.get(RESULT).asString());
     }
@@ -85,16 +50,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices();
 
         // read the transport rack attribute
-        ModelNode result = services.executeOperation(readTransportRackOp);
+        ModelNode result = services.executeOperation(getTransportReadOperation("maximal", "TCP", ModelKeys.RACK));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("rack1", result.get(RESULT).resolve().asString());
 
         // write the rack attribute
-        result = services.executeOperation(writeTransportRackOp);
+        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", ModelKeys.RACK, "new-rack"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the rack attribute
-        result = services.executeOperation(readTransportRackOp);
+        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", ModelKeys.RACK));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
@@ -104,16 +69,17 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // Parse and install the XML into the controller
         KernelServices services = this.buildKernelServices();
         Assert.assertTrue("Could not create services",services.isSuccessfulBoot());
+
         // add a protocol stack specifying TRANSPORT and PROTOCOLS parameters
-        ModelNode result = services.executeOperation(addStackOpWithParams);
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
+        ModelNode result = services.executeOperation(getProtocolStackAddOperationWithParameters("maximal2"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // write the rack attribute
-        result = services.executeOperation(writeTransportRackOp);
+        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", ModelKeys.RACK, "new-rack"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the rack attribute
-        result = services.executeOperation(readTransportRackOp);
+        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", ModelKeys.RACK));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
@@ -122,19 +88,58 @@ public class OperationsTestCase extends OperationTestCaseBase {
     public void testTransportPropertyReadWriteOperation() throws Exception {
         KernelServices services = this.buildKernelServices();
 
-         // read the enable_bundling transport property
-        ModelNode result = services.executeOperation(readTransportPropertyOp);
+        // read the enable_bundling transport property
+        ModelNode result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "enable_bundling"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("true", result.get(RESULT).resolve().asString());
 
         // write the enable_bundling transport property
-        result = services.executeOperation(writeTransportPropertyOp);
+        result = services.executeOperation(getTransportPutPropertyOperation("maximal", "TCP", "enable_bundling", "false"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the enable_bundling transport property
-        result = services.executeOperation(readTransportPropertyOp);
+        result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "enable_bundling"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("false", result.get(RESULT).asString());
+
+        // remove the enable_bundling transport property
+        result = services.executeOperation(getTransportRemovePropertyOperation("maximal", "TCP", "enable_bundling"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        // re-read the enable_bundling transport property
+        result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "enable_bundling"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertFalse(result.get(RESULT).isDefined());
+
+        // Validate that add/read/write/remove via legacy property resource
+        result = services.executeOperation(getTransportPropertyAddOperation("maximal", "TCP", "shared", "false"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        result = services.executeOperation(getTransportPropertyReadOperation("maximal", "TCP", "shared"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("false", result.get(RESULT).asString());
+
+        result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "shared"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("false", result.get(RESULT).asString());
+
+        result = services.executeOperation(getTransportPropertyWriteOperation("maximal", "TCP", "shared", "true"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        result = services.executeOperation(getTransportPropertyReadOperation("maximal", "TCP", "shared"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("true", result.get(RESULT).asString());
+
+        result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "shared"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("true", result.get(RESULT).asString());
+
+        result = services.executeOperation(getTransportPropertyRemoveOperation("maximal", "TCP", "shared"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "shared"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertFalse(result.get(RESULT).isDefined());
     }
 
     @Test
@@ -142,20 +147,20 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices();
 
         // add a protocol stack specifying TRANSPORT and PROTOCOLS parameters
-        ModelNode result = services.executeOperation(addStackOpWithParams);
+        ModelNode result = services.executeOperation(getProtocolStackAddOperationWithParameters("maximal2"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // read the socket binding attribute
-        result = services.executeOperation(readProtocolSocketBindingOp);
+        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("jgroups-mping", result.get(RESULT).asString());
 
         // write the attribute
-        result = services.executeOperation(writeProtocolSocketBindingOp);
+        result = services.executeOperation(getProtocolWriteOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING, "new-socket-binding"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the attribute
-        result = services.executeOperation(readProtocolSocketBindingOp);
+        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-socket-binding", result.get(RESULT).asString());
     }
@@ -164,19 +169,57 @@ public class OperationsTestCase extends OperationTestCaseBase {
     public void testProtocolPropertyReadWriteOperation() throws Exception {
         KernelServices services = this.buildKernelServices();
 
-         // read the name protocol property
-        ModelNode result = services.executeOperation(readProtocolPropertyOp);
+        // read the name protocol property
+        ModelNode result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "name"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("value", result.get(RESULT).resolve().asString());
 
         // write the property
-        result = services.executeOperation(writeProtocolPropertyOp);
+        result = services.executeOperation(getProtocolPutPropertyOperation("maximal", "MPING", "name", "new-value"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the property
-        result = services.executeOperation(readProtocolPropertyOp);
+        result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "name"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-value", result.get(RESULT).asString());
-    }
 
+        // remove the property
+        result = services.executeOperation(getProtocolRemovePropertyOperation("maximal", "MPING", "name"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        // re-read the property
+        result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "name"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertFalse(result.get(RESULT).isDefined());
+
+        // Validate property add/read/write/remove via legacy property resource
+        result = services.executeOperation(getProtocolPropertyAddOperation("maximal", "MPING", "async_discovery", "false"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        result = services.executeOperation(getProtocolPropertyReadOperation("maximal", "MPING", "async_discovery"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("false", result.get(RESULT).asString());
+
+        result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "async_discovery"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("false", result.get(RESULT).asString());
+
+        result = services.executeOperation(getProtocolPropertyWriteOperation("maximal", "MPING", "async_discovery", "true"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        result = services.executeOperation(getProtocolPropertyReadOperation("maximal", "MPING", "async_discovery"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("true", result.get(RESULT).asString());
+
+        result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "async_discovery"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("true", result.get(RESULT).asString());
+
+        result = services.executeOperation(getProtocolPropertyRemoveOperation("maximal", "MPING", "async_discovery"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "async_discovery"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertFalse(result.get(RESULT).isDefined());
+    }
 }

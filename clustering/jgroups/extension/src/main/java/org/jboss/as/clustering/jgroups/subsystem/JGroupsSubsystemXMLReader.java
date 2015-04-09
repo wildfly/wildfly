@@ -394,13 +394,10 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
-    private void parseProperty(XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private void parseProperty(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        ModelNode operation = operations.get(address);
         String name = require(reader, Attribute.NAME);
-        PathAddress address = parentAddress.append(PropertyResourceDefinition.pathElement(name));
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
-
-        PropertyResourceDefinition.VALUE.parseAndSetParameter(reader.getElementText(), operation, reader);
+        ProtocolResourceDefinition.PROPERTIES.parseAndAddParameterElement(name, reader.getElementText(), operation, reader);
     }
 
     private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {

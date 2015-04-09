@@ -2,7 +2,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DEFAULT_CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.JNDI_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.IOException;
@@ -53,22 +52,6 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createReadAttributeOperation(getCacheContainerAddress(containerName), name);
     }
 
-    protected static ModelNode getCacheContainerAddAliasOperation(String containerName, String name) {
-        // create the address of the subsystem
-        ModelNode operation = Util.createOperation(CacheContainerResourceDefinition.ALIAS_ADD.getName(), getCacheContainerAddress(containerName));
-        // required attributes
-        operation.get(NAME).set(name);
-        return operation;
-    }
-
-    protected static ModelNode getCacheContainerRemoveAliasOperation(String containerName, String name) {
-        // create the address of the subsystem
-        ModelNode operation = Util.createOperation(CacheContainerResourceDefinition.ALIAS_REMOVE.getName(), getCacheContainerAddress(containerName));
-        // required attributes
-        operation.get(NAME).set(name);
-        return operation;
-    }
-
     protected static ModelNode getCacheContainerWriteOperation(String containerName, String name, String value) {
         // create the address of the subsystem
         PathAddress cacheAddress = getCacheContainerAddress(containerName);
@@ -107,11 +90,11 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     // cache store access
     protected static ModelNode getCacheStoreReadOperation(String containerName, String cacheType, String cacheName, String name) {
         // create the address of the subsystem
-        return Operations.createReadAttributeOperation(getCacheStoreAddress(containerName, cacheType, cacheName), name);
+        return Operations.createReadAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), name);
     }
 
     protected static ModelNode getCacheStoreWriteOperation(String containerName, String cacheName, String cacheType, String name, String value) {
-        return Util.getWriteAttributeOperation(getCacheStoreAddress(containerName,  cacheType, cacheName), name, new ModelNode().set(value));
+        return Util.getWriteAttributeOperation(getCustomCacheStoreAddress(containerName,  cacheType, cacheName), name, new ModelNode().set(value));
     }
 
     protected static ModelNode getMixedKeyedJDBCCacheStoreReadOperation(String containerName, String cacheType, String cacheName, String name) {
@@ -142,7 +125,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     // address generation
     protected static PathAddress getCacheStorePropertyAddress(String containerName, String cacheType, String cacheName, String propertyName) {
-        return getCacheStoreAddress(containerName, cacheType, cacheName).append(StorePropertyResourceDefinition.pathElement(propertyName));
+        return getCustomCacheStoreAddress(containerName, cacheType, cacheName).append(StorePropertyResourceDefinition.pathElement(propertyName));
     }
 
     protected static PathAddress getMixedKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
@@ -165,7 +148,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return getCacheAddress(containerName, cacheType, cacheName).append(FileStoreResourceDefinition.PATH);
     }
 
-    protected static PathAddress getCacheStoreAddress(String containerName, String cacheType, String cacheName) {
+    protected static PathAddress getCustomCacheStoreAddress(String containerName, String cacheType, String cacheName) {
         return getCacheAddress(containerName, cacheType, cacheName).append(CustomStoreResourceDefinition.PATH);
     }
 

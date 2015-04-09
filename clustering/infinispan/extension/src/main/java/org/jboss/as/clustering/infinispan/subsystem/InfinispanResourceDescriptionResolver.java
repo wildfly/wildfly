@@ -151,7 +151,7 @@ public class InfinispanResourceDescriptionResolver extends SubsystemResourceDesc
         for (AttributeDefinition attribute: ClusteredCacheResourceDefinition.ATTRIBUTES) {
             sharedAttributeResolver.put(attribute.getName(), "clustered-cache");
         }
-        for (AttributeDefinition attribute: StoreResourceDefinition.PARAMETERS) {
+        for (AttributeDefinition attribute: StoreResourceDefinition.ATTRIBUTES) {
             sharedAttributeResolver.put(attribute.getName(), "store");
         }
         for (AttributeDefinition attribute: JDBCStoreResourceDefinition.ATTRIBUTES) {

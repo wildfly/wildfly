@@ -92,12 +92,28 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return operation;
     }
 
+    protected static ModelNode getTransportPropertyRemoveOperation(String stackName, String type, String propertyName) {
+        return Util.createRemoveOperation(getTransportPropertyAddress(stackName, type, propertyName));
+    }
+
     protected static ModelNode getTransportPropertyReadOperation(String stackName, String type, String propertyName) {
         return Operations.createReadAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), PropertyResourceDefinition.VALUE.getName());
     }
 
     protected static ModelNode getTransportPropertyWriteOperation(String stackName, String type, String propertyName, String propertyValue) {
         return Operations.createWriteAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), PropertyResourceDefinition.VALUE.getName(), new ModelNode(propertyValue));
+    }
+
+    protected static ModelNode getTransportGetPropertyOperation(String stackName, String type, String propertyName) {
+        return Operations.createMapGetOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName);
+    }
+
+    protected static ModelNode getTransportPutPropertyOperation(String stackName, String type, String propertyName, String propertyValue) {
+        return Operations.createMapPutOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName, propertyValue);
+    }
+
+    protected static ModelNode getTransportRemovePropertyOperation(String stackName, String type, String propertyName) {
+        return Operations.createMapRemoveOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getProtocolAddOperation(String stackName, String type) {
@@ -127,12 +143,28 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return operation;
     }
 
+    protected static ModelNode getProtocolPropertyRemoveOperation(String stackName, String protocolName, String propertyName) {
+        return Util.createRemoveOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName));
+    }
+
     protected static ModelNode getProtocolPropertyReadOperation(String stackName, String protocolName, String propertyName) {
         return Operations.createReadAttributeOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName), PropertyResourceDefinition.VALUE.getName());
     }
 
     protected static ModelNode getProtocolPropertyWriteOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
         return Operations.createWriteAttributeOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName), PropertyResourceDefinition.VALUE.getName(), new ModelNode(propertyValue));
+    }
+
+    protected static ModelNode getProtocolGetPropertyOperation(String stackName, String protocolName, String propertyName) {
+        return Operations.createMapGetOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName);
+    }
+
+    protected static ModelNode getProtocolPutPropertyOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
+        return Operations.createMapPutOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName, propertyValue);
+    }
+
+    protected static ModelNode getProtocolRemovePropertyOperation(String stackName, String protocolName, String propertyName) {
+        return Operations.createMapRemoveOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getProtocolRemoveOperation(String stackName, String type) {
