@@ -159,8 +159,6 @@ public class DsParser extends AbstractParser {
 
     public void parse(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
 
-        DataSources dataSources = null;
-
         //iterate over tags
         int iterate;
         try {
@@ -196,7 +194,6 @@ public class DsParser extends AbstractParser {
 
     private void parseDataSources(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
-        boolean driversMatched = false;
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
@@ -240,7 +237,6 @@ public class DsParser extends AbstractParser {
 
                         }
                         case DRIVERS: {
-                            driversMatched = true;
                             break;
                         }
                         case DRIVER: {

@@ -113,12 +113,6 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
             final String deploymentUnitName = deploymentUnitPrefix + deploymentUnit.getName();
 
-            final String deployment;
-            if (deploymentUnitName.lastIndexOf('.') == -1) {
-                deployment = deploymentUnitName;
-            } else {
-                deployment = deploymentUnitName.substring(0, deploymentUnitName.lastIndexOf('.'));
-            }
             if (raxmls != null) {
                 for (Activation raxml : raxmls.getActivations()) {
 
