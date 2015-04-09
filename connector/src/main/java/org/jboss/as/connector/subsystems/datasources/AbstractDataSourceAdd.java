@@ -131,7 +131,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName, jndiName);
 
         final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
-
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(

@@ -400,6 +400,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     private void handleAuthManagerLogout(DeploymentInfo deploymentInfo, JBossWebMetaData mergedMetaData) {
+        if(securityDomain == null) {
+            return;
+        }
         AuthenticationManager manager = securityDomainContextValue.getValue().getAuthenticationManager();
         deploymentInfo.addNotificationReceiver(new LogoutNotificationReceiver(manager));
         if(mergedMetaData.isFlushOnSessionInvalidation()) {
@@ -411,9 +414,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     @Override
     public synchronized void stop(final StopContext stopContext) {
         IoUtils.safeClose(this.deploymentInfo.getResourceManager());
-        AuthenticationManager authManager = securityDomainContextValue.getValue().getAuthenticationManager();
-        if (authManager != null && authManager instanceof JBossCachedAuthenticationManager) {
-            ((JBossCachedAuthenticationManager)authManager).releaseModuleEntries(module.getClassLoader());
+        if (securityDomain != null) {
+            AuthenticationManager authManager = securityDomainContextValue.getValue().getAuthenticationManager();
+            if (authManager != null && authManager instanceof JBossCachedAuthenticationManager) {
+                ((JBossCachedAuthenticationManager) authManager).releaseModuleEntries(module.getClassLoader());
+            }
         }
         this.deploymentInfo.setConfidentialPortManager(null);
         this.deploymentInfo = null;
@@ -431,6 +436,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
      * @param deploymentInfo
      */
     private void handleJASPIMechanism(final DeploymentInfo deploymentInfo) {
+        if(securityDomain == null) {
+            return;
+        }
         ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
 
         if (applicationPolicy != null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
@@ -453,7 +461,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
      * @param deploymentInfo the {@link DeploymentInfo} instance.
      */
     private void handleJACCAuthorization(final DeploymentInfo deploymentInfo) {
-
+        if(securityDomain == null) {
+            return;
+        }
         // TODO make the authorization manager implementation configurable in Undertow or jboss-web.xml
         ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
         if (applicationPolicy != null) {
@@ -476,14 +486,15 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     private void handleIdentityManager(final DeploymentInfo deploymentInfo) {
-
-        SecurityDomainContext sdc = securityDomainContextValue.getValue();
-        deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc));
-        AuditManager auditManager = sdc.getAuditManager();
-        if (auditManager != null && !mergedMetaData.isDisableAudit()) {
-            deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));
-        }
         deploymentInfo.setConfidentialPortManager(getConfidentialPortManager());
+        if(securityDomain != null) {
+            SecurityDomainContext sdc = securityDomainContextValue.getValue();
+            deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc));
+            AuditManager auditManager = sdc.getAuditManager();
+            if (auditManager != null && !mergedMetaData.isDisableAudit()) {
+                deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));
+            }
+        }
     }
 
     private ConfidentialPortManager getConfidentialPortManager() {
@@ -900,11 +911,15 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
 
             Map<String, Set<String>> principalVersusRolesMap = mergedMetaData.getPrincipalVersusRolesMap();
-            d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));
-            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity()));
-            d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
+            if(securityDomain != null) {
+                d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));
 
-            d.addLifecycleInterceptor(new RunAsLifecycleInterceptor(mergedMetaData.getRunAsIdentity()));
+                d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity()));
+                d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
+
+                d.addLifecycleInterceptor(new RunAsLifecycleInterceptor(mergedMetaData.getRunAsIdentity()));
+
+            }
 
             if (principalVersusRolesMap != null) {
                 for (Map.Entry<String, Set<String>> entry : principalVersusRolesMap.entrySet()) {
