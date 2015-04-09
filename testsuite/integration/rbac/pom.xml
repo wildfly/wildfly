@@ -21,9 +21,7 @@
     <!-- ********************************************************************************** -->
     <!-- ********************** Role Based Access Control Integration ********************* -->
     <!-- ********************************************************************************** -->
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-rbac</artifactId>
-    <version>9.0.0.CR1-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - Role Based Access Control</name>
 

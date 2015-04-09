@@ -13,9 +13,7 @@
     <!-- ********************************************************************************** -->
     <!-- ************************* Multi-node Integration Tests *************************** -->
     <!-- ********************************************************************************** -->
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-multinode</artifactId>
-    <version>9.0.0.CR1-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - Multinode Tests</name>
 

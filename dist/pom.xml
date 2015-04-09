@@ -33,9 +33,7 @@
         <version>9.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-dist</artifactId>
-    <version>9.0.0.CR1-SNAPSHOT</version>
     <name>WildFly: Distribution</name>
     <packaging>jar</packaging>
     <dependencies>

@@ -21,9 +21,7 @@
     <!-- ********************************************************************************** -->
     <!-- ******************************** Smoke Integration ******************************* -->
     <!-- ********************************************************************************** -->
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-smoke</artifactId>
-    <version>9.0.0.CR1-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - Smoke</name>
 

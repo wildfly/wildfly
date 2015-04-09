@@ -33,7 +33,6 @@
     </parent>
 
     <artifactId>wildfly-webservices-server-integration</artifactId>
-    <version>9.0.0.CR1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>WildFly: Web Services Server Integration Subsystem</name>

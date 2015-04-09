@@ -33,7 +33,6 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ejb-client-bom</artifactId>
     <packaging>pom</packaging>
 

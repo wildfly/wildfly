@@ -11,10 +11,8 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-testsuite-shared</artifactId>
     <packaging>jar</packaging>
-    <version>9.0.0.CR1-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Shared</name>
 
