@@ -32,6 +32,7 @@ import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
 import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
+import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
 
 import javax.annotation.Resource;
 import javax.ejb.TimerService;
@@ -71,6 +72,8 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     private static final String EJB_MESSAGE_DRIVEN_CONTEXT_CLASS_NAME = "javax.ejb.MessageDrivenContext";
     private static final String EJB_ENTITY_CONTEXT_CLASS_NAME = "javax.ejb.EntityContext";
 
+    private static final String WEB_SERVICE_CONTEXT_CLASS_NAME = "javax.xml.ws.WebServiceContext";
+
     private final Context context;
 
     protected String getEJBResourceName(InjectionPoint injectionPoint, String proposedName) {
@@ -93,6 +96,11 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
                     EJB_MESSAGE_DRIVEN_CONTEXT_CLASS_NAME.equals(typeName) ||
                     EJB_ENTITY_CONTEXT_CLASS_NAME.equals(typeName)) {
                 return EJB_CONTEXT_LOCATION;
+            }  else if (WEB_SERVICE_CONTEXT_CLASS_NAME.equals(typeName)) {
+                //horrible hack
+                //there is not actually a binding we can use for this
+                //the whole CDI+bindings thing will likely be reviewed in EE8
+                return WEB_SERVICE_CONTEXT_CLASS_NAME;
             }  else {
                 // EE default bindings
                 EEDefaultResourceJndiNames eeDefaultResourceJndiNames = moduleDescription.getDefaultResourceJndiNames();
@@ -192,6 +200,11 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
             throw WeldLogger.ROOT_LOGGER.injectionPointNotAJavabean((Method) member);
         }
         String name = getResourceName(injectionPoint);
+        //horrible hack
+        //we don't have anywhere we can look this up
+        if(name.equals(WEB_SERVICE_CONTEXT_CLASS_NAME)) {
+            return ThreadLocalAwareWebServiceContext.getInstance();
+        }
         try {
             return context.lookup(name);
         } catch (NamingException e) {
