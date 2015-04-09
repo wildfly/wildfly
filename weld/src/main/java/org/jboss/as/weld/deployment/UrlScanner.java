@@ -117,14 +117,14 @@ public class UrlScanner {
         try {
             WeldLogger.DEPLOYMENT_LOGGER.trace("archive: " + file);
 
-            String archiveUrl = "jar:" + file.toURI().toURL().toExternalForm() + "!/";
-            ZipFile zip = new ZipFile(file);
-            Enumeration<? extends ZipEntry> entries = zip.entries();
+            try (ZipFile zip = new ZipFile(file)) {
+                Enumeration<? extends ZipEntry> entries = zip.entries();
 
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                String name = entry.getName();
-                handleFile(name, discoveredClasses);
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    handleFile(name, discoveredClasses);
+                }
             }
         } catch (ZipException e) {
             throw new RuntimeException("Error handling file " + file, e);
