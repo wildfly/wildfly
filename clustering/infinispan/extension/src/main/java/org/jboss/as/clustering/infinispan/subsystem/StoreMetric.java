@@ -50,7 +50,7 @@ public enum StoreMetric implements Metric<ActivationInterceptor> {
     ;
     private final AttributeDefinition definition;
 
-    private StoreMetric(String name, ModelType type) {
+    StoreMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

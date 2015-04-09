@@ -113,7 +113,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
 
     // registration
     public StackResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.STACK), null, new StackRemoveHandler());
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH), null, new StackRemoveHandler());
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
@@ -124,7 +124,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
         OperationDefinition addOperation = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.getResourceDescriptionResolver())
                 .addParameter(TRANSPORT) // Deprecated
                 .addParameter(PROTOCOLS) // Deprecated
-                .setAttributeResolver(new JGroupsResourceDescriptionResolver(ModelKeys.STACK, ModelDescriptionConstants.ADD))
+                .setAttributeResolver(new JGroupsResourceDescriptionResolver(WILDCARD_PATH))
                 .build();
 
         // Transform deprecated ADD parameters into individual add operations

@@ -22,7 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
@@ -33,13 +38,25 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class LocalCacheResourceDefinition extends CacheResourceDefinition {
 
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement("local-cache", name);
+    }
+
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(CacheType.LOCAL.pathElement());
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
         CacheResourceDefinition.buildTransformation(version, builder);
     }
 
     LocalCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(CacheType.LOCAL, pathManager, allowRuntimeOnlyRegistration);
+        super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceServiceHandler handler = new LocalCacheServiceHandler();
+        new AddStepHandler(this.getResourceDescriptionResolver(), handler).addAttributes(CacheResourceDefinition.Attribute.class).register(registration);
+        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
     }
 }

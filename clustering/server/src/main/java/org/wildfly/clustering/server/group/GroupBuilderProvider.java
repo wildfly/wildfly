@@ -58,4 +58,9 @@ public class GroupBuilderProvider implements org.wildfly.clustering.spi.GroupBui
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), Group.class);
         return Arrays.asList(builder, bindingBuilder);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

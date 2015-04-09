@@ -169,7 +169,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     };
 
     TransportResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.TRANSPORT), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

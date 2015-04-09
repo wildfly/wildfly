@@ -37,4 +37,9 @@ public class CacheSingletonServiceBuilderFactoryBuilderProvider implements Clust
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         return Collections.<Builder<?>>singleton(new CacheSingletonServiceBuilderFactoryBuilder(containerName, cacheName));
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

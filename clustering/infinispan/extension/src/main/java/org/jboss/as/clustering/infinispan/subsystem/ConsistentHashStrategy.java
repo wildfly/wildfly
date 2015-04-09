@@ -49,8 +49,6 @@ public enum ConsistentHashStrategy {
         }
     };
 
-    static final ConsistentHashStrategy DEFAULT = INTRA_CACHE;
-
     abstract ConsistentHashFactory<? extends ConsistentHash> createConsistentHashFactory(boolean topologyAware);
 
     public void buildHashConfiguration(HashConfigurationBuilder builder, CacheMode mode, boolean topologyAware) {

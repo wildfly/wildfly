@@ -22,60 +22,79 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.infinispan.commons.api.BasicCacheContainer;
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/state-transfer=STATE_TRANSFER
+ * Definition of the backup-for resource of a cache.
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Paul Ferraro
  */
-public class BackupForResourceDefinition extends SimpleResourceDefinition {
+public class BackupForResourceDefinition extends ComponentResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
+    static final PathElement PATH = pathElement("backup-for");
+    static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "BACKUP_FOR");
 
-    // attributes
-    static final SimpleAttributeDefinition REMOTE_CACHE = new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_CACHE, ModelType.STRING, true)
-            .setXmlName(Attribute.REMOTE_CACHE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        CACHE("remote-cache", ModelType.STRING, new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME)),
+        SITE("remote-site", ModelType.STRING, null),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition REMOTE_SITE = new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_SITE, ModelType.STRING, true)
-            .setXmlName(Attribute.REMOTE_SITE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { REMOTE_CACHE, REMOTE_SITE };
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            parent.addChildRedirection(PATH, LEGACY_PATH);
+        }
     }
 
     BackupForResourceDefinition() {
-        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.BACKUP_FOR),
-                new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BackupForBuilderFactory());
+        new AddStepHandler(this.getResourceDescriptionResolver(), handler).addAttributes(Attribute.class).register(registration);
+        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
     }
 }

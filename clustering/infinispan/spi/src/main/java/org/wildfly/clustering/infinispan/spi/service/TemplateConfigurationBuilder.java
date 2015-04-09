@@ -32,7 +32,7 @@ import org.wildfly.clustering.service.Builder;
  * Builds a cache configuration based on the configuration of a template cache.
  * @author Paul Ferraro
  */
-public class TemplateConfigurationBuilder implements Builder<Configuration>, ConfigurationFactory {
+public class TemplateConfigurationBuilder implements Builder<Configuration>, ConfigurationBuilderFactory {
 
     private final InjectedValue<Configuration> template = new InjectedValue<>();
     private final Builder<Configuration> builder;
@@ -62,7 +62,7 @@ public class TemplateConfigurationBuilder implements Builder<Configuration>, Con
     }
 
     @Override
-    public Configuration createConfiguration() {
-        return new org.infinispan.configuration.cache.ConfigurationBuilder().read(this.template.getValue()).build();
+    public org.infinispan.configuration.cache.ConfigurationBuilder createConfigurationBuilder() {
+        return new org.infinispan.configuration.cache.ConfigurationBuilder().read(this.template.getValue());
     }
 }

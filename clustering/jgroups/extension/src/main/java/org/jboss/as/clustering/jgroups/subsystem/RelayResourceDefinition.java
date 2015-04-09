@@ -61,7 +61,7 @@ public class RelayResourceDefinition extends SimpleResourceDefinition {
     }
 
     RelayResourceDefinition() {
-        super(PATH, new JGroupsResourceDescriptionResolver(ModelKeys.RELAY), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, new JGroupsResourceDescriptionResolver(PathElement.pathElement(PATH.getKey())), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

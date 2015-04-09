@@ -71,7 +71,7 @@ public enum CacheContainerMetric implements Metric<EmbeddedCacheManager> {
     ;
     private final AttributeDefinition definition;
 
-    private CacheContainerMetric(String name, ModelType type) {
+    CacheContainerMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

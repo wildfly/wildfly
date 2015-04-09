@@ -47,7 +47,7 @@ public class SimpleWriteAttributeOperationTransformer implements OperationTransf
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
         String name = Operations.getAttributeName(operation);
         ModelNode value = Operations.getAttributeValue(operation);
-        ModelNode legacyOperation = Operations.createWriteAttributeOperation(this.addressTransformer.transform(address), name, value);
+        ModelNode legacyOperation = org.jboss.as.controller.client.helpers.Operations.createWriteAttributeOperation(this.addressTransformer.transform(address).toModelNode(), name, value);
         return new TransformedOperation(legacyOperation, OperationResultTransformer.ORIGINAL_RESULT);
     }
 }

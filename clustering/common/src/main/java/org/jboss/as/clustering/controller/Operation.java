@@ -25,11 +25,5 @@ import org.jboss.as.controller.OperationDefinition;
  * @author Paul Ferraro
  * @param <C> operation context
  */
-public interface Operation<C> extends Executable<C> {
-
-    /**
-     * The definition of this operation.
-     * @return an operation definition
-     */
-    OperationDefinition getDefinition();
+public interface Operation<C> extends Definable<OperationDefinition>, Executable<C> {
 }

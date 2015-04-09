@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+import org.jboss.as.controller.PathElement;
 
 /**
  * Description resolver for JGroups subsystem resources.
@@ -35,18 +36,14 @@ import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescript
 public class JGroupsResourceDescriptionResolver extends SubsystemResourceDescriptionResolver {
 
     JGroupsResourceDescriptionResolver() {
-        this(Collections.<String>emptyList());
+        this(Collections.<PathElement>emptyList());
     }
 
-    JGroupsResourceDescriptionResolver(String keyPrefix) {
-        this(Collections.singletonList(keyPrefix));
+    JGroupsResourceDescriptionResolver(PathElement... paths) {
+        this(Arrays.asList(paths));
     }
 
-    JGroupsResourceDescriptionResolver(String... keyPrefixes) {
-        this(Arrays.asList(keyPrefixes));
-    }
-
-    private JGroupsResourceDescriptionResolver(List<String> keyPrefixes) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, keyPrefixes, JGroupsExtension.class);
+    JGroupsResourceDescriptionResolver(List<PathElement> paths) {
+        super(JGroupsExtension.SUBSYSTEM_NAME, JGroupsExtension.class, paths);
     }
 }

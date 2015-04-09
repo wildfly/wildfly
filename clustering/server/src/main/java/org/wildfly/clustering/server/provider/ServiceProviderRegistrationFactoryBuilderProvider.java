@@ -57,4 +57,9 @@ public class ServiceProviderRegistrationFactoryBuilderProvider implements CacheG
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), ServiceProviderRegistrationFactory.class);
         return Arrays.asList(builder, bindingBuilder);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

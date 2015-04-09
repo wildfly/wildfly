@@ -65,14 +65,15 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-            { InfinispanSchema.VERSION_1_0, 31 },
-            { InfinispanSchema.VERSION_1_1, 31 },
-            { InfinispanSchema.VERSION_1_2, 35 },
-            { InfinispanSchema.VERSION_1_3, 35 },
-            { InfinispanSchema.VERSION_1_4, 73 },
-            { InfinispanSchema.VERSION_1_5, 73 },
-            { InfinispanSchema.VERSION_2_0, 77 },
-            { InfinispanSchema.VERSION_3_0, 77 },
+            { InfinispanSchema.VERSION_1_0, 52 },
+            { InfinispanSchema.VERSION_1_1, 52 },
+            { InfinispanSchema.VERSION_1_2, 52 },
+            { InfinispanSchema.VERSION_1_3, 52 },
+            { InfinispanSchema.VERSION_1_4, 153 },
+            { InfinispanSchema.VERSION_1_5, 153 },
+            { InfinispanSchema.VERSION_2_0, 156 },
+            { InfinispanSchema.VERSION_3_0, 156 },
+            { InfinispanSchema.VERSION_4_0, 156 },
         };
         return Arrays.asList(data);
     }
@@ -163,7 +164,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
             for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
-                        containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
+                        containerProp.getValue().get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()).asBoolean());
 
                 for (String key : containerProp.getValue().keys()) {
                     if (key.endsWith("-cache") && !key.equals("default-cache")) {
@@ -171,7 +172,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                         if (caches.isDefined()) {
                             for (Property cacheProp : caches.asPropertyList()) {
                                 Assert.assertTrue("cache-container=" + containerProp.getName() + "," + key + "=" + cacheProp.getName(),
-                                        containerProp.getValue().get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
+                                        containerProp.getValue().get(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()).asBoolean());
                             }
                         }
                     }

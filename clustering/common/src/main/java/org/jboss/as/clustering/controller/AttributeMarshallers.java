@@ -26,6 +26,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -35,14 +36,18 @@ import org.jboss.dmr.Property;
  */
 public class AttributeMarshallers {
 
-    public static AttributeMarshaller PROPERTY_LIST = new AttributeMarshaller() {
+    public static final AttributeMarshaller PROPERTY_LIST = new AttributeMarshaller() {
         @Override
-        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-            ModelNode properties = resourceModel.get(attribute.getName());
-            if (properties.isDefined()) {
-                for (Property property : properties.asPropertyList()) {
-                    writer.writeStartElement(org.jboss.as.controller.parsing.Element.PROPERTY.getLocalName());
-                    writer.writeAttribute(org.jboss.as.controller.parsing.Element.NAME.getLocalName(), property.getName());
+        public boolean isMarshallableAsElement() {
+            return true;
+        }
+
+        @Override
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode model, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            if (model.hasDefined(attribute.getName())) {
+                for (Property property : model.get(attribute.getName()).asPropertyList()) {
+                    writer.writeStartElement(Element.PROPERTY.getLocalName());
+                    writer.writeAttribute(Element.NAME.getLocalName(), property.getName());
                     writer.writeCharacters(property.getValue().asString());
                     writer.writeEndElement();
                 }

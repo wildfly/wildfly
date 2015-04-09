@@ -24,7 +24,6 @@ package org.jboss.as.clustering.controller.transform;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -46,8 +45,8 @@ public class SimpleReadAttributeOperationTransformer implements OperationTransfo
      */
     @Override
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
-        String name = operation.require(ModelDescriptionConstants.NAME).asString();
-        ModelNode legacyOperation = Operations.createReadAttributeOperation(this.addressTransformer.transform(address), name);
+        String name = Operations.getAttributeName(operation);
+        ModelNode legacyOperation = org.jboss.as.controller.client.helpers.Operations.createReadAttributeOperation(this.addressTransformer.transform(address).toModelNode(), name);
         return new TransformedOperation(legacyOperation, OperationResultTransformer.ORIGINAL_RESULT);
     }
 }
