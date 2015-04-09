@@ -66,7 +66,7 @@ class JobRepositoryDefinition extends SimpleResourceDefinition {
     public static final JobRepositoryDefinition JDBC = new JobRepositoryDefinition(JobRepositoryType.JDBC.toString(), JNDI_NAME);
 
     private JobRepositoryDefinition(final String name, final AttributeDefinition... attributes) {
-        super(PathElement.pathElement(NAME, name), BatchSubsystemDefinition.getResourceDescriptionResolver(NAME, name),
+        super(PathElement.pathElement(NAME, name), BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME, name),
                 new JobRepositoryAdd(attributes), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

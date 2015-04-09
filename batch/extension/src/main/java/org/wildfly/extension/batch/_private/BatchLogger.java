@@ -22,18 +22,91 @@
 
 package org.wildfly.extension.batch._private;
 
+import javax.batch.operations.JobStartException;
+import javax.batch.operations.NoSuchJobException;
+
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * Log messages for WildFly batch module
  */
-@MessageLogger(projectCode = "<<none>>")
+@MessageLogger(projectCode = "WFLYBATCH")
 public interface BatchLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
      */
     BatchLogger LOGGER = Logger.getMessageLogger(BatchLogger.class, "org.wildfly.extension.batch");
+
+    /**
+     * Creates an exception indicating there was an error processing the batch jobs directory.
+     *
+     * @param cause the cause of the error
+     *
+     * @return a {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} for the error
+     */
+    @Message(id = 1, value = "Error processing META-INF/batch-jobs directory.")
+    DeploymentUnitProcessingException errorProcessingBatchJobsDir(@Cause Throwable cause);
+
+    /**
+     * Creates an exception indicating that the resource of given type can not be removed.
+     *
+     * @return an {@link UnsupportedOperationException} for the error
+     */
+    @Message(id = 2, value = "Resources of type %s cannot be removed")
+    UnsupportedOperationException cannotRemoveResourceOfType(String childType);
+
+    /**
+     * Creates an exception indicating the deployment name could not be found on the address.
+     *
+     * @return an {@link java.lang.IllegalArgumentException} for the error
+     */
+    @Message(id = 3, value = "Could not find deployment name: %s")
+    IllegalArgumentException couldNotFindDeploymentName(String address);
+
+    /**
+     * Creates an exception indicating the {@link org.wildfly.extension.batch.deployment.JobOperatorService
+     * JobOperatorService} has stopped.
+     *
+     * @return an {@link java.lang.IllegalStateException} for the error
+     */
+    @Message(id = 4, value = "The service JobOperatorService has been stopped and cannot execute operations.")
+    IllegalStateException jobOperatorServiceStopped();
+
+    /**
+     * Creates an exception indicating the job name was not found for the deployment.
+     *
+     * @param jobName the invalid job name
+     *
+     * @return a {@link javax.batch.operations.NoSuchJobException} for the error
+     */
+    @Message(id = 5, value = "The job name '%s' was not found for the deployment.")
+    NoSuchJobException noSuchJobException(String jobName);
+
+    /**
+     * Creates an exception indicating the job XML file could not be found in the deployment.
+     *
+     * @param xmlFile the invalid XML file
+     *
+     * @return a {@link javax.batch.operations.JobStartException} for the error
+     */
+    @Message(id = 6, value = "Could not find the job XML file in the deployment: %s")
+    JobStartException couldNotFindJobXml(String xmlFile);
+
+    /**
+     * Logs a warning message indicating the job XML file failed to be processed and attempting the run the job may
+     * result in errors.
+     *
+     * @param jobXmlFile the invalid job XML file name
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 7, value = "Failed processing the job XML file %s. Attempting to execute this job may result in errors.")
+    void invalidJobXmlFile(String jobXmlFile);
 
 }

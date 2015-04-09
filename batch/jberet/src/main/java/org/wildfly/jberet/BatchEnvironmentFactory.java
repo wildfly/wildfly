@@ -32,6 +32,7 @@ import javax.transaction.TransactionManager;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.JobXmlResolver;
 import org.wildfly.jberet._private.WildFlyBatchLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -76,6 +77,12 @@ public class BatchEnvironmentFactory {
         @Override
         public JobRepository getJobRepository() {
             throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
+        }
+
+        // TODO (jrp) preparing for JBeret API changes
+        //@Override
+        public JobXmlResolver getJobXmlResolver() {
+           throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
         /**
