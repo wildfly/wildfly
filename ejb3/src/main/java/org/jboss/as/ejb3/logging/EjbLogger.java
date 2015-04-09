@@ -1427,7 +1427,7 @@ public interface EjbLogger extends BasicLogger {
      * @return a {@link ConcurrentAccessTimeoutException} for the error.
      */
     @Message(id = 228, value = "EJB 3.1 FR 4.3.14.1 concurrent access timeout on %s - could not obtain lock within %s %s")
-    ConcurrentAccessTimeoutException failToObtainLock(InterceptorContext context, long value, TimeUnit timeUnit);
+    ConcurrentAccessTimeoutException failToObtainLock(String ejb, long value, TimeUnit timeUnit);
 
     /**
      * Creates an exception indicating it was unable to find method
@@ -1531,7 +1531,7 @@ public interface EjbLogger extends BasicLogger {
      * @return a {@link ConcurrentAccessTimeoutException} for the error.
      */
     @Message(id = 241, value = "EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on %s - could not obtain lock within %s")
-    ConcurrentAccessTimeoutException concurrentAccessTimeoutException(InvocationContext invocationContext, String s);
+    ConcurrentAccessTimeoutException concurrentAccessTimeoutException(String ejb, String s);
 
     /**
      * Creates an exception indicating Illegal lock type for component

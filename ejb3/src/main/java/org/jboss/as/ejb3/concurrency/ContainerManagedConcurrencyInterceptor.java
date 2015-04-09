@@ -95,7 +95,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         // try getting the lock
         boolean success = lock.tryLock(time, unit);
         if (!success) {
-            throw EjbLogger.ROOT_LOGGER.concurrentAccessTimeoutException(invocationContext, time + unit.name());
+            throw EjbLogger.ROOT_LOGGER.concurrentAccessTimeoutException(lockableComponent.getComponentName(), time + unit.name());
         }
         try {
             // lock obtained. now proceed!
