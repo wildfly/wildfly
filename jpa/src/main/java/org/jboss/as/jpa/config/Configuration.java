@@ -286,7 +286,7 @@ public class Configuration {
      * @param properties
      * @return
      */
-    public static boolean deferEntityDetachUntilClose(final Map properties) {
+    public static boolean deferEntityDetachUntilClose(final Map<String, Object> properties) {
         boolean result = false;
         if ( properties.containsKey(JPA_DEFER_DETACH))
             result = Boolean.parseBoolean((String)properties.get(JPA_DEFER_DETACH));

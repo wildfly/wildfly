@@ -45,10 +45,10 @@ import javax.persistence.TypedQuery;
  */
 public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
 
-    private final TypedQuery underlyingQuery;
+    private final TypedQuery<X> underlyingQuery;
     private final EntityManager underlyingEntityManager;
 
-    TypedQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, TypedQuery underlyingQuery) {
+    TypedQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, TypedQuery<X> underlyingQuery) {
         this.underlyingQuery = underlyingQuery;
         this.underlyingEntityManager = underlyingEntityManager;
     }
@@ -81,7 +81,7 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     }
 
     @Override
-    public TypedQuery setMaxResults(int maxResult) {
+    public TypedQuery<X> setMaxResults(int maxResult) {
         underlyingQuery.setMaxResults(maxResult);
         return this;
     }
@@ -92,7 +92,7 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     }
 
     @Override
-    public TypedQuery setFirstResult(int startPosition) {
+    public TypedQuery<X> setFirstResult(int startPosition) {
         underlyingQuery.setFirstResult(startPosition);
         return this;
     }
@@ -103,7 +103,7 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     }
 
     @Override
-    public TypedQuery setHint(String hintName, Object value) {
+    public TypedQuery<X> setHint(String hintName, Object value) {
         underlyingQuery.setHint(hintName, value);
         return this;
     }
@@ -131,37 +131,37 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
         return underlyingQuery.getHints();
     }
     @Override
-    public TypedQuery setParameter(String name, Object value) {
+    public TypedQuery<X> setParameter(String name, Object value) {
         underlyingQuery.setParameter(name, value);
         return this;
     }
 
     @Override
-    public TypedQuery setParameter(String name, Calendar value, TemporalType temporalType) {
+    public TypedQuery<X> setParameter(String name, Calendar value, TemporalType temporalType) {
         underlyingQuery.setParameter(name, value, temporalType);
         return this;
     }
 
     @Override
-    public TypedQuery setParameter(String name, Date value, TemporalType temporalType) {
+    public TypedQuery<X> setParameter(String name, Date value, TemporalType temporalType) {
         underlyingQuery.setParameter(name, value, temporalType);
         return this;
     }
 
     @Override
-    public TypedQuery setParameter(int position, Object value) {
+    public TypedQuery<X> setParameter(int position, Object value) {
         underlyingQuery.setParameter(position, value);
         return this;
     }
 
     @Override
-    public TypedQuery setParameter(int position, Calendar value, TemporalType temporalType) {
+    public TypedQuery<X> setParameter(int position, Calendar value, TemporalType temporalType) {
         underlyingQuery.setParameter(position, value, temporalType);
         return this;
     }
 
     @Override
-    public TypedQuery setParameter(int position, Date value, TemporalType temporalType) {
+    public TypedQuery<X> setParameter(int position, Date value, TemporalType temporalType) {
         underlyingQuery.setParameter(position, value, temporalType);
         return this;
     }
@@ -212,7 +212,7 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     }
 
     @Override
-    public TypedQuery setFlushMode(FlushModeType flushMode) {
+    public TypedQuery<X> setFlushMode(FlushModeType flushMode) {
         underlyingQuery.setFlushMode(flushMode);
         return this;
     }
@@ -223,7 +223,7 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     }
 
     @Override
-    public TypedQuery setLockMode(LockModeType lockMode) {
+    public TypedQuery<X> setLockMode(LockModeType lockMode) {
         underlyingQuery.setLockMode(lockMode);
         return this;
     }

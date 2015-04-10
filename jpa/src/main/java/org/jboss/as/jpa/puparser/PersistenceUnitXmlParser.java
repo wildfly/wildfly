@@ -99,7 +99,6 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
 
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
             final String attributeNamespace = reader.getAttributeNamespace(i);
             if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
                 continue;

@@ -176,7 +176,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                         bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                     } else {
                         PropertiesMetaData properties = puRef.getProperties();
-                        Map map = new HashMap();
+                        Map<String, String> map = new HashMap<>();
                         if (properties != null) {
                             for (PropertyMetaData prop : properties) {
                                 map.put(prop.getKey(), prop.getValue());

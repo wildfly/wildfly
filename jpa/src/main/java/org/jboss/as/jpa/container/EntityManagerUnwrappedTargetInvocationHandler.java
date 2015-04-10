@@ -40,14 +40,14 @@ public class EntityManagerUnwrappedTargetInvocationHandler implements Invocation
 
     private static final long serialVersionUID = 5254527687L;
 
-    private Class wrappedClass;
+    private Class<?> wrappedClass;
     private EntityManager targetEntityManager;
 
     public EntityManagerUnwrappedTargetInvocationHandler() {
 
     }
 
-    public EntityManagerUnwrappedTargetInvocationHandler(EntityManager targetEntityManager, Class wrappedClass) {
+    public EntityManagerUnwrappedTargetInvocationHandler(EntityManager targetEntityManager, Class<?> wrappedClass) {
         this.targetEntityManager = targetEntityManager;
         this.wrappedClass = wrappedClass;
     }

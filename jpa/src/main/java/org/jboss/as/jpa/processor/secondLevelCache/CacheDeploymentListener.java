@@ -38,7 +38,7 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 public class CacheDeploymentListener implements EventListener {
 
-    private static final ThreadLocal<ServiceBuilder> SERVICEBUILDER_TLS = new ThreadLocal<ServiceBuilder>();
+    private static final ThreadLocal<ServiceBuilder<?>> SERVICEBUILDER_TLS = new ThreadLocal<>();
 
     HashMap<String,EventListener> delegates = new HashMap<String,EventListener>();
 
@@ -46,7 +46,7 @@ public class CacheDeploymentListener implements EventListener {
         delegates.put(Classification.INFINISPAN.getLocalName(), new InfinispanCacheDeploymentListener());
     }
 
-    public static void setInternalDeploymentServiceBuilder(ServiceBuilder serviceBuilder) {
+    public static void setInternalDeploymentServiceBuilder(ServiceBuilder<?> serviceBuilder) {
         SERVICEBUILDER_TLS.set(serviceBuilder);
     }
 
@@ -54,7 +54,7 @@ public class CacheDeploymentListener implements EventListener {
         SERVICEBUILDER_TLS.remove();
     }
 
-    public static ServiceBuilder getInternalDeploymentServiceBuilder() {
+    public static ServiceBuilder<?> getInternalDeploymentServiceBuilder() {
         return SERVICEBUILDER_TLS.get();
     }
 

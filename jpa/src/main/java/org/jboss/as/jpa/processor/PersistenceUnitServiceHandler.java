@@ -332,7 +332,7 @@ public class PersistenceUnitServiceHandler {
         pu.setClassLoader(classLoader);
         try {
             ValidatorFactory validatorFactory = null;
-            final HashMap<String, ValidatorFactory> properties = new HashMap();
+            final HashMap<String, ValidatorFactory> properties = new HashMap<>();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 // Get the CDI-enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
@@ -465,8 +465,7 @@ public class PersistenceUnitServiceHandler {
             final PersistenceProviderAdaptor adaptor) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
-            ValidatorFactory validatorFactory = null;
-            final HashMap<String, ValidatorFactory> properties = new HashMap();
+            final HashMap<String, ValidatorFactory> properties = new HashMap<>();
 
             ProxyBeanManager proxyBeanManager = null;
             // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
@@ -589,7 +588,7 @@ public class PersistenceUnitServiceHandler {
         pu.setClassLoader(classLoader);
         try {
             ValidatorFactory validatorFactory = null;
-            final HashMap<String, ValidatorFactory> properties = new HashMap();
+            final HashMap<String, ValidatorFactory> properties = new HashMap<>();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 // Get the CDI-enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
@@ -784,7 +783,7 @@ public class PersistenceUnitServiceHandler {
             final PersistenceUnitMetadataHolder puHolder,
             DeploymentUnit deploymentUnit ) {
 
-        final Map<URL, Index> annotationIndexes = new HashMap();
+        final Map<URL, Index> annotationIndexes = new HashMap<>();
 
         do {
             for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
@@ -919,7 +918,7 @@ public class PersistenceUnitServiceHandler {
         synchronized (deploymentUnit) {
             Map<String,PersistenceProviderAdaptor> map = deploymentUnit.getAttachment(providerAdaptorMapKey);
             if( map == null) {
-                map = new HashMap();
+                map = new HashMap<>();
                 deploymentUnit.putAttachment(providerAdaptorMapKey, map);
             }
             String key;

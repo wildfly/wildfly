@@ -525,9 +525,6 @@ public abstract class AbstractEntityManager implements EntityManager {
     }
 
     public boolean isOpen() {
-        long start = 0;
-        if (isTraceEnabled)
-            start = System.currentTimeMillis();
         return getEntityManager().isOpen();
     }
 
@@ -854,9 +851,9 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     // for JPA 2.0 section 3.8.6
     // used by TransactionScopedEntityManager to detach entities loaded by a query in a non-jta invocation.
-    protected TypedQuery detachTypedQueryNonTxInvocation(EntityManager underlyingEntityManager, TypedQuery underLyingQuery) {
+    protected <T> TypedQuery<T> detachTypedQueryNonTxInvocation(EntityManager underlyingEntityManager, TypedQuery<T> underLyingQuery) {
         if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
-            return new TypedQueryNonTxInvocationDetacher(underlyingEntityManager, underLyingQuery);
+            return new TypedQueryNonTxInvocationDetacher<>(underlyingEntityManager, underLyingQuery);
         }
         return underLyingQuery;
     }
