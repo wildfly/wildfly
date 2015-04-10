@@ -58,9 +58,7 @@
         <version>9.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-testsuite</artifactId>
-    <version>9.0.0.CR1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>WildFly Test Suite: Aggregator</name>

@@ -33,7 +33,6 @@
     </parent>
 
     <artifactId>wildfly-security-parent</artifactId>
-    <version>9.0.0.CR1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>WildFly: Security Subsystem parent</name>

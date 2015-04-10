@@ -32,9 +32,7 @@
         <version>9.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jsf</artifactId>
-    <version>9.0.0.CR1-SNAPSHOT</version>
 
     <name>WildFly: JSF Subsystem</name>
 

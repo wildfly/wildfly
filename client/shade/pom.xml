@@ -33,7 +33,6 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-client-all</artifactId>
     <packaging>jar</packaging>
 
