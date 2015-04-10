@@ -102,10 +102,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
-            String name;
-            if (attr == Attribute.NAME) {
-                name = value;
-            } else if (attr == Attribute.JNDI_NAME) {
+            if (attr == Attribute.JNDI_NAME) {
                 jndiName = value;
                 JNDI_NAME.parseAndSetParameter(value, operation, reader);
             } else if (attr == Attribute.DEBUG) {

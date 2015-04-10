@@ -128,7 +128,7 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
         if (!mainServices.isSuccessfulBoot()) {
             Assert.fail(mainServices.getBootError().toString());
         }
-        ServiceController javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("defaultMail"));
+        ServiceController<?> javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("defaultMail"));
         javaMailService.setMode(ServiceController.Mode.ACTIVE);
         Session session = (Session) javaMailService.getValue();
         Assert.assertNotNull("session should not be null", session);
@@ -137,13 +137,13 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull("pop3 host should be set", properties.getProperty("mail.pop3.host"));
         Assert.assertNotNull("imap host should be set", properties.getProperty("mail.imap.host"));
 
-        ServiceController defaultMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("default2"));
+        ServiceController<?> defaultMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("default2"));
         session = (Session) defaultMailService.getValue();
         Assert.assertEquals("Debug should be true", true, session.getDebug());
 
 
-        ServiceController<Session> customMailService = (ServiceController<Session>) mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("custom"));
-        session = customMailService.getValue();
+        ServiceController<?> customMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("custom"));
+        session = (Session) customMailService.getValue();
         properties = session.getProperties();
         String host = properties.getProperty("mail.smtp.host");
         Assert.assertNotNull("smtp host should be set", host);
@@ -197,7 +197,7 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
         checkResult(result);
 
 
-        ServiceController javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("defaultMail"));
+        ServiceController<?> javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("defaultMail"));
         javaMailService.setMode(ServiceController.Mode.ACTIVE);
         Session session = (Session) javaMailService.getValue();
         Assert.assertNotNull("session should not be null", session);
