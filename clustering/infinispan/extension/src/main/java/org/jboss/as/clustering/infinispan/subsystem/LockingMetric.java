@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.util.concurrent.locks.LockManagerImpl;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
@@ -40,19 +37,19 @@ public enum LockingMetric implements Metric<LockManagerImpl> {
 
     CURRENT_CONCURRENCY_LEVEL(MetricKeys.CURRENT_CONCURRENCY_LEVEL, ModelType.INT) {
         @Override
-        public ModelNode getValue(LockManagerImpl manager) {
+        public ModelNode execute(LockManagerImpl manager) {
             return new ModelNode(manager.getConcurrencyLevel());
         }
     },
     NUMBER_OF_LOCKS_AVAILABLE(MetricKeys.NUMBER_OF_LOCKS_AVAILABLE, ModelType.INT) {
         @Override
-        public ModelNode getValue(LockManagerImpl manager) {
+        public ModelNode execute(LockManagerImpl manager) {
             return new ModelNode(manager.getNumberOfLocksAvailable());
         }
     },
     NUMBER_OF_LOCKS_HELD(MetricKeys.NUMBER_OF_LOCKS_HELD, ModelType.INT) {
         @Override
-        public ModelNode getValue(LockManagerImpl manager) {
+        public ModelNode execute(LockManagerImpl manager) {
             return new ModelNode(manager.getNumberOfLocksHeld());
         }
     },
@@ -66,17 +63,5 @@ public enum LockingMetric implements Metric<LockManagerImpl> {
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
-    }
-
-    private static final Map<String, LockingMetric> metrics = new HashMap<>();
-
-    static {
-        for (LockingMetric metric: LockingMetric.values()) {
-            metrics.put(metric.definition.getName(), metric);
-        }
-    }
-
-    public static LockingMetric forName(String name) {
-        return metrics.get(name);
     }
 }

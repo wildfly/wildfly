@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.Metric;
@@ -40,33 +37,33 @@ public enum CacheContainerMetric implements Metric<EmbeddedCacheManager> {
 
     CACHE_MANAGER_STATUS(MetricKeys.CACHE_MANAGER_STATUS, ModelType.STRING) {
         @Override
-        public ModelNode getValue(EmbeddedCacheManager manager) {
+        public ModelNode execute(EmbeddedCacheManager manager) {
             return new ModelNode(manager.getStatus().toString());
         }
     },
     CLUSTER_NAME(MetricKeys.CLUSTER_NAME, ModelType.STRING) {
         @Override
-        public ModelNode getValue(EmbeddedCacheManager manager) {
+        public ModelNode execute(EmbeddedCacheManager manager) {
             String clusterName = manager.getClusterName();
             return (clusterName != null) ? new ModelNode(clusterName) : null;
         }
     },
     COORDINATOR_ADDRESS(MetricKeys.COORDINATOR_ADDRESS, ModelType.STRING) {
         @Override
-        public ModelNode getValue(EmbeddedCacheManager manager) {
+        public ModelNode execute(EmbeddedCacheManager manager) {
             Address address = manager.getCoordinator();
             return (address != null) ? new ModelNode(address.toString()) : null;
         }
     },
     IS_COORDINATOR(MetricKeys.IS_COORDINATOR, ModelType.BOOLEAN) {
         @Override
-        public ModelNode getValue(EmbeddedCacheManager manager) {
+        public ModelNode execute(EmbeddedCacheManager manager) {
             return new ModelNode(manager.isCoordinator());
         }
     },
     LOCAL_ADDRESS(MetricKeys.LOCAL_ADDRESS, ModelType.STRING) {
         @Override
-        public ModelNode getValue(EmbeddedCacheManager manager) {
+        public ModelNode execute(EmbeddedCacheManager manager) {
             Address address = manager.getAddress();
             return (address != null) ? new ModelNode(address.toString()) : null;
         }
@@ -81,17 +78,5 @@ public enum CacheContainerMetric implements Metric<EmbeddedCacheManager> {
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
-    }
-
-    private static final Map<String, CacheContainerMetric> metrics = new HashMap<>();
-
-    static {
-        for (CacheContainerMetric metric: CacheContainerMetric.values()) {
-            metrics.put(metric.definition.getName(), metric);
-        }
-    }
-
-    public static CacheContainerMetric forName(String name) {
-        return metrics.get(name);
     }
 }

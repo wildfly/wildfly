@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @author tags. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -19,10 +19,9 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -30,30 +29,21 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
 /**
- * Handler for cache eviction metrics.
+ * Handler for cache metrics.
  *
+ * @author Tristan Tarrant
+ * @author Richard Achmatowicz
  * @author Paul Ferraro
  */
-public class EvictionMetricsHandler extends AbstractRuntimeOnlyHandler {
+public class CacheMetricExecutor implements MetricExecutor<Cache<?, ?>> {
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*/eviction=EVICTION
+    public ModelNode execute(OperationContext context, Metric<Cache<?, ?>> metric) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
-        String containerName = address.getElement(address.size() - 3).getValue();
-        String cacheName = address.getElement(address.size() - 2).getValue();
-        String name = Operations.getAttributeName(operation);
+        String containerName = address.getParent().getLastElement().getValue();
+        String cacheName = address.getLastElement().getValue();
 
-        EvictionMetric metric = EvictionMetric.forName(name);
-
-        if (metric == null) {
-            context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
-        } else {
-            Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
-            if (cache != null) {
-                context.getResult().set(metric.getValue(cache));
-            }
-        }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
+        return (cache != null) ? metric.execute(cache) : null;
     }
 }

@@ -20,13 +20,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
 import org.infinispan.interceptors.TxInterceptor;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
@@ -35,27 +34,21 @@ import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
  *
  * @author Paul Ferraro
  */
-public class TransactionMetricsHandler extends AbstractRuntimeOnlyHandler {
+public class TransactionMetricExecutor implements MetricExecutor<TxInterceptor> {
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*/transaction=TRANSACTION
-        PathAddress address = context.getCurrentAddress();
-        String containerName = address.getElement(address.size() - 3).getValue();
-        String cacheName = address.getElement(address.size() - 2).getValue();
-        String name = operation.require(ModelDescriptionConstants.NAME).asString();
+    public ModelNode execute(OperationContext context, Metric<TxInterceptor> metric) throws OperationFailedException {
+        PathAddress cacheAddress = context.getCurrentAddress().getParent();
+        String containerName = cacheAddress.getParent().getLastElement().getValue();
+        String cacheName = cacheAddress.getLastElement().getValue();
 
-        TransactionMetric metric = TransactionMetric.forName(name);
-
-        if (metric == null) {
-            context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
-        } else {
-            Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
-            if (cache != null) {
-                TxInterceptor interceptor = CacheMetric.findInterceptor(cache, TxInterceptor.class);
-                context.getResult().set((interceptor != null) ? metric.getValue(interceptor) : new ModelNode(0));
+        Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
+        if (cache != null) {
+            TxInterceptor interceptor = CacheMetric.findInterceptor(cache, TxInterceptor.class);
+            if (interceptor != null) {
+                return metric.execute(interceptor);
             }
         }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        return null;
     }
 }

@@ -18,11 +18,12 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
@@ -32,25 +33,12 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
  *
  * @author Paul Ferraro
  */
-public class CacheContainerMetricsHandler extends AbstractRuntimeOnlyHandler {
+public class CacheContainerMetricExecutor implements MetricExecutor<EmbeddedCacheManager> {
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
-        // Address is of the form: /subsystem=infinispan/cache-container=*
+    public ModelNode execute(OperationContext context, Metric<EmbeddedCacheManager> metric) throws OperationFailedException {
         String containerName = context.getCurrentAddressValue();
-        String name = Operations.getAttributeName(operation);
-
-        CacheContainerMetric metric = CacheContainerMetric.forName(name);
-
-        if (metric == null) {
-            context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
-        } else {
-            CacheContainer container = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheContainerServiceName.CACHE_CONTAINER.getServiceName(containerName));
-            if (container != null) {
-                ModelNode result = metric.getValue(container);
-                context.getResult().set((result != null) && result.isDefined() ? result : new ModelNode("N/A"));
-            }
-        }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        CacheContainer container = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheContainerServiceName.CACHE_CONTAINER.getServiceName(containerName));
+        return (container != null) ? metric.execute(container) : null;
     }
 }

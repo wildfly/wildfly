@@ -21,10 +21,9 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -37,23 +36,14 @@ import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
+public class ChannelMetricExecutor implements MetricExecutor<JChannel> {
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-
+    public ModelNode execute(OperationContext context, Metric<JChannel> metric) throws OperationFailedException {
         String channelName = context.getCurrentAddressValue();
-        String name = Operations.getAttributeName(operation);
-        ChannelMetric metric = ChannelMetric.forName(name);
 
-        if (metric == null) {
-            context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
-        } else {
-            JChannel channel = ServiceContainerHelper.findValue(context.getServiceRegistry(false), ChannelServiceName.CHANNEL.getServiceName(channelName));
-            if (channel != null) {
-                context.getResult().set(metric.getValue(channel));
-            }
-        }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        JChannel channel = ServiceContainerHelper.findValue(context.getServiceRegistry(false), ChannelServiceName.CHANNEL.getServiceName(channelName));
+
+        return (channel != null) ? metric.execute(channel) : null;
     }
 }

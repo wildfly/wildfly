@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 
 import org.infinispan.configuration.cache.Index;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
+import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -183,10 +184,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
         }
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler handler = new CacheMetricsHandler();
-            for (CacheMetric metric: CacheMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
         }
     }
 

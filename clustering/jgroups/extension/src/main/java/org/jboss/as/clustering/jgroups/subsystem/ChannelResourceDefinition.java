@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
@@ -88,10 +89,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition {
         }
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler metricsHandler = new ChannelMetricsHandler();
-            for (ChannelMetric metric: ChannelMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), metricsHandler);
-            }
+            new MetricHandler<>(new ChannelMetricExecutor(), ChannelMetric.class).register(registration);
         }
     }
 }

@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -39,79 +36,79 @@ public enum ChannelMetric implements Metric<JChannel> {
 
     ADDRESS(MetricKeys.ADDRESS, ModelType.STRING) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getAddressAsString());
         }
     },
     ADDRESS_AS_UUID(MetricKeys.ADDRESS_AS_UUID, ModelType.STRING) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getAddressAsUUID());
         }
     },
     DISCARD_OWN_MESSAGES(MetricKeys.DISCARD_OWN_MESSAGES, ModelType.BOOLEAN) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getDiscardOwnMessages());
         }
     },
     NUM_TASKS_IN_TIMER(MetricKeys.NUM_TASKS_IN_TIMER, ModelType.INT) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getNumberOfTasksInTimer());
         }
     },
     NUM_TIMER_THREADS(MetricKeys.NUM_TIMER_THREADS, ModelType.INT) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getTimerThreads());
         }
     },
     RECEIVED_BYTES(MetricKeys.RECEIVED_BYTES, ModelType.LONG) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getReceivedBytes());
         }
     },
     RECEIVED_MESSAGES(MetricKeys.RECEIVED_MESSAGES, ModelType.LONG) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getReceivedMessages());
         }
     },
     SENT_BYTES(MetricKeys.SENT_BYTES, ModelType.LONG) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getSentBytes());
         }
     },
     SENT_MESSAGES(MetricKeys.SENT_MESSAGES, ModelType.LONG) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getSentMessages());
         }
     },
     STATE(MetricKeys.STATE, ModelType.STRING) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getState());
         }
     },
     STATS_ENABLED(MetricKeys.STATS_ENABLED, ModelType.BOOLEAN) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.statsEnabled());
         }
     },
     VERSION(MetricKeys.VERSION, ModelType.STRING) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(JChannel.getVersion());
         }
     },
     VIEW(MetricKeys.VIEW, ModelType.STRING) {
         @Override
-        public ModelNode getValue(JChannel channel) {
+        public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getViewAsString());
         }
     },
@@ -125,17 +122,5 @@ public enum ChannelMetric implements Metric<JChannel> {
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
-    }
-
-    private static final Map<String, ChannelMetric> metrics = new HashMap<>();
-
-    static {
-        for (ChannelMetric metric: ChannelMetric.values()) {
-            metrics.put(metric.definition.getName(), metric);
-        }
-    }
-
-    public static ChannelMetric forName(String name) {
-        return metrics.get(name);
     }
 }

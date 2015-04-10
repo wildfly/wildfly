@@ -34,19 +34,19 @@ public enum BackupSiteOperation implements Operation<BackupSiteOperationContext>
 
     BRING_SITE_ONLINE(ModelKeys.BRING_SITE_ONLINE, false) {
         @Override
-        public ModelNode getValue(BackupSiteOperationContext context) {
+        public ModelNode execute(BackupSiteOperationContext context) {
             return new ModelNode(context.getOperations().bringSiteOnline(context.getSite()));
         }
     },
     TAKE_SITE_OFFLINE(ModelKeys.TAKE_SITE_OFFLINE, false) {
         @Override
-        public ModelNode getValue(BackupSiteOperationContext context) {
+        public ModelNode execute(BackupSiteOperationContext context) {
             return new ModelNode(context.getOperations().takeSiteOffline(context.getSite()));
         }
     },
     SITE_STATUS(ModelKeys.SITE_STATUS, true) {
         @Override
-        public ModelNode getValue(BackupSiteOperationContext context) {
+        public ModelNode execute(BackupSiteOperationContext context) {
             return new ModelNode(context.getOperations().siteStatus(context.getSite()));
         }
     },
