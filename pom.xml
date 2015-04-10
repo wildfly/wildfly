@@ -109,7 +109,7 @@
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
         <version.joda-time>2.7</version.joda-time>
-        <version.jsoup>1.7.1</version.jsoup>
+        <version.jsoup>1.8.1</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>3.0.4</version.org.apache.cxf>
