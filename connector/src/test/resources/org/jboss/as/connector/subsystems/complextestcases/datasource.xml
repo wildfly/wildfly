@@ -243,6 +243,11 @@
                             org.h2.jdbcx.JdbcDataSource
                         </xa-datasource-class>
                     </driver>
+                    <driver name="h2test" module="com.h2database.h2:test">
+                        <xa-datasource-class>
+                            org.h2.jdbcx.JdbcDataSource
+                        </xa-datasource-class>
+                    </driver>
                 </drivers>
             </datasources>
         </subsystem>

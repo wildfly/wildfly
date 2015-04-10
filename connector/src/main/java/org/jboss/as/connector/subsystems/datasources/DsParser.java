@@ -66,6 +66,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVI
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_TX_SEPARATE_POOL;
@@ -669,8 +670,16 @@ public class DsParser extends AbstractParser {
                     break;
                 }
                 case MODULE: {
-                    String value = rawAttributeText(reader, DRIVER_MODULE_NAME.getXmlName());
-                    DRIVER_MODULE_NAME.parseAndSetParameter(value, operation, reader);
+                    String moduleName = rawAttributeText(reader, DRIVER_MODULE_NAME.getXmlName());
+                    String slot = null;
+                    if (moduleName.contains(":")) {
+                        slot = moduleName.substring(moduleName.indexOf(":") + 1);
+                        moduleName = moduleName.substring(0, moduleName.indexOf(":"));
+                    }
+                    DRIVER_MODULE_NAME.parseAndSetParameter(moduleName, operation, reader);
+                    if (slot != null) {
+                        MODULE_SLOT.parseAndSetParameter(slot, operation, reader);
+                    }
                     break;
                 }
                 default:

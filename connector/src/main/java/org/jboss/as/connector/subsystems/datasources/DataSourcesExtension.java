@@ -65,6 +65,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVI
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_TX_SEPARATE_POOL;
@@ -225,7 +226,13 @@ public class DataSourcesExtension implements Extension {
                 for (Property driverProperty : node.get(JDBC_DRIVER_NAME).asPropertyList()) {
                     writer.writeStartElement(DataSources.Tag.DRIVER.getLocalName());
                     writer.writeAttribute(Driver.Attribute.NAME.getLocalName(), driverProperty.getValue().require(DRIVER_NAME.getName()).asString());
-                    writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MODULE, DRIVER_MODULE_NAME.getName());
+                    if (has(driverProperty.getValue(), DRIVER_MODULE_NAME.getName())) {
+                        String moduleName = driverProperty.getValue().get(DRIVER_MODULE_NAME.getName()).asString();
+                        if (has(driverProperty.getValue(), MODULE_SLOT.getName())) {
+                            moduleName = moduleName + ":" + driverProperty.getValue().get(MODULE_SLOT.getName()).asString();
+                        }
+                        writer.writeAttribute(Driver.Attribute.MODULE.getLocalName(), moduleName);
+                    }
                     writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MAJOR_VERSION, DRIVER_MAJOR_VERSION.getName());
                     writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MINOR_VERSION, DRIVER_MINOR_VERSION.getName());
                     writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.DRIVER_CLASS.getLocalName(), DRIVER_CLASS_NAME.getName());
