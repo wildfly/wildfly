@@ -147,7 +147,7 @@ public interface JaxrsLogger extends BasicLogger {
      * @return
      */
     @Message(id = 10, value = "JAX-RS resource %s does not correspond to a view on the EJB %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of an EJB.")
-    DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class> type, String ejbName);
+    DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class<?>> type, String ejbName);
 
     @Message(id = 11, value = "Invalid value for parameter %s: %s")
     DeploymentUnitProcessingException invalidParamValue(String param, String value);

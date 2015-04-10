@@ -182,7 +182,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             return;
 
         // ignore any non-annotated Application class that doesn't have a servlet mapping
-        Set<Class> applicationClassSet = new HashSet<>();
+        Set<Class<? extends Application>> applicationClassSet = new HashSet<>();
         for (Class<? extends Application> clazz : resteasy.getScannedApplicationClasses()) {
             if (clazz.isAnnotationPresent(ApplicationPath.class) || servletMappingsExist(webdata, clazz.getName())) {
                 applicationClassSet.add(clazz);
