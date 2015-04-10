@@ -22,16 +22,14 @@
 
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 
 public class ParticipantWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
@@ -45,8 +43,6 @@ public class ParticipantWriteAttributeHandler extends AbstractWriteAttributeHand
         ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         ModelNode onAttribute = subModel.get(LogStoreConstants.JMX_ON_ATTRIBUTE);
         String jmxName = onAttribute.asString();
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String name = address.getLastElement().getValue();
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
 
         try {

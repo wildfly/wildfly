@@ -14,8 +14,6 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.txn.service.internal.tsr.TransactionSynchronizationRegistryWrapper;
 import org.junit.Test;
 
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
 
 public class TestWildFlyTSR {

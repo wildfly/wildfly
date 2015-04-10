@@ -48,7 +48,7 @@ public class CompensationsDependenciesDeploymentProcessor implements DeploymentU
 
     private static final ModuleIdentifier COMPENSATIONS_MODULE = ModuleIdentifier.create("org.jboss.narayana.compensations");
 
-    private static final Class[] COMPENSATABLE_ANNOTATIONS = {
+    private static final Class<?>[] COMPENSATABLE_ANNOTATIONS = {
             Compensatable.class,
             CancelOnFailure.class,
             CompensationScoped.class,
@@ -77,7 +77,7 @@ public class CompensationsDependenciesDeploymentProcessor implements DeploymentU
     }
 
     private boolean isCompensationAnnotationPresent(final CompositeIndex compositeIndex) {
-        for (Class annotation : COMPENSATABLE_ANNOTATIONS) {
+        for (Class<?> annotation : COMPENSATABLE_ANNOTATIONS) {
             if (compositeIndex.getAnnotations(DotName.createSimple(annotation.getName())).size() > 1) {
                 return true;
             }
