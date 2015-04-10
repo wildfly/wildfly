@@ -23,6 +23,7 @@
 package org.jboss.as.jpa.container;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.jpa.messages.JpaLogger;
@@ -33,6 +34,8 @@ import org.jboss.as.jpa.messages.JpaLogger;
  * @author Scott Marlow
  */
 public class CreatedEntityManagers {
+
+    private static ExtendedEntityManager[] EMPTY = new ExtendedEntityManager[0];
 
     // at injection time, the SFSB that is being created isn't registered right away
     // that happens later at postConstruct time.
@@ -61,10 +64,14 @@ public class CreatedEntityManagers {
     /**
      * Called by postconstruct interceptor
      */
-    public static List<ExtendedEntityManager> getDeferredEntityManagers() {
+    public static ExtendedEntityManager[] getDeferredEntityManagers() {
         List<ExtendedEntityManager> store = deferToPostConstruct.get();
         try {
-            return new ArrayList<ExtendedEntityManager>(store);
+            if(store.isEmpty()) {
+                return EMPTY;
+            } else {
+                return store.toArray(new ExtendedEntityManager[store.size()]);
+            }
         } finally {
             store.clear();
         }
