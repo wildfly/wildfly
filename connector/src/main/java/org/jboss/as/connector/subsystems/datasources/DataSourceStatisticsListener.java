@@ -23,10 +23,12 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.as.connector.dynamicresource.StatisticsResourceDefinition;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -98,6 +100,15 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
         }
         if (!datasourceResource.hasChild(POOL_STATISTICS)) {
             datasourceResource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(POOL_STATISTICS));
+        }
+    }
+
+    public static void registerStatisticsResources(final DeploymentResourceSupport deploymentResourceSupport) {
+        if (!deploymentResourceSupport.hasDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, JDBC_STATISTICS)) {
+            deploymentResourceSupport.registerDeploymentSubResource(DataSourcesExtension.SUBSYSTEM_NAME, PathAddress.pathAddress(JDBC_STATISTICS), new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
+        }
+        if (!deploymentResourceSupport.hasDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, POOL_STATISTICS)) {
+            deploymentResourceSupport.registerDeploymentSubResource(DataSourcesExtension.SUBSYSTEM_NAME, PathAddress.pathAddress(POOL_STATISTICS), new PlaceholderResource.PlaceholderResourceEntry(POOL_STATISTICS));
         }
     }
 

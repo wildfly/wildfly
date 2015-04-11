@@ -57,7 +57,9 @@ import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -201,7 +203,8 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         //create the management registration
         String managementName = managementName(context, name);
         final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, getHornetQServerName());
-        deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         final PathElement pcfPath = PathElement.pathElement(POOLED_CONNECTION_FACTORY, managementName);
         PathAddress registration = PathAddress.pathAddress(serverElement, pcfPath);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
