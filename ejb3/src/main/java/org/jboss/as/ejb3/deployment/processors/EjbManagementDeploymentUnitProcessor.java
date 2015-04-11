@@ -43,7 +43,9 @@ import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -106,14 +108,15 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
         final AbstractEJBComponentRuntimeHandler<?> handler = type.getRuntimeHandler();
         handler.registerComponent(addr, configuration.getComponentDescription().getStartServiceName());
         deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.MANAGED_COMPONENTS, new InstalledComponent(type, addr));
-        deploymentUnit.createDeploymentSubModel(EJB3Extension.SUBSYSTEM_NAME, addr.getLastElement());
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(EJB3Extension.SUBSYSTEM_NAME, addr.getLastElement());
 
         final EJBComponentDescription description = (EJBComponentDescription) configuration.getComponentDescription();
         if (description.isTimerServiceRequired()) {
             final PathAddress timerServiceAddress = PathAddress.pathAddress(addr.getLastElement(),
                     EJB3SubsystemModel.TIMER_SERVICE_PATH);
             final TimerServiceResource timerServiceResource = ((TimerServiceImpl) description.getTimerService()).getResource();
-            deploymentUnit.createDeploymentSubModel(EJB3Extension.SUBSYSTEM_NAME, timerServiceAddress, timerServiceResource);
+            deploymentResourceSupport.registerDeploymentSubResource(EJB3Extension.SUBSYSTEM_NAME, timerServiceAddress, timerServiceResource);
         }
     }
 
