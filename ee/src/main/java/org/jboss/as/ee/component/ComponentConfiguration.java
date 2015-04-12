@@ -64,15 +64,15 @@ public class ComponentConfiguration {
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
 
     // Interceptor config
-    private final OrderedItemContainer<InterceptorFactory> aroundConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> postConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> preDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> prePassivateInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> postActivateInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final Map<Method, OrderedItemContainer<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
+    private final OrderedItemContainer<List<InterceptorFactory>> aroundConstructInterceptors = new OrderedItemContainer<>();
+    private final OrderedItemContainer<List<InterceptorFactory>> postConstructInterceptors = new OrderedItemContainer<>();
+    private final OrderedItemContainer<List<InterceptorFactory>> preDestroyInterceptors = new OrderedItemContainer<>();
+    private final OrderedItemContainer<List<InterceptorFactory>> prePassivateInterceptors = new OrderedItemContainer<>();
+    private final OrderedItemContainer<List<InterceptorFactory>> postActivateInterceptors = new OrderedItemContainer<>();
+    private final Map<Method, OrderedItemContainer<List<InterceptorFactory>>> componentInterceptors = new IdentityHashMap<>();
 
     //TODO: move this into an EJB specific configuration
-    private final Map<Method, OrderedItemContainer<InterceptorFactory>> timeoutInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
+    private final Map<Method, OrderedItemContainer<InterceptorFactory>> timeoutInterceptors = new IdentityHashMap<>();
 
     // Component instance management
     private ComponentFactory instanceFactory;
@@ -146,12 +146,17 @@ public class ComponentConfiguration {
      * @return the deque
      */
     public List<InterceptorFactory> getComponentInterceptors(Method method) {
-        Map<Method, OrderedItemContainer<InterceptorFactory>> map = componentInterceptors;
-        OrderedItemContainer<InterceptorFactory> interceptors = map.get(method);
+        Map<Method, OrderedItemContainer<List<InterceptorFactory>>> map = componentInterceptors;
+        OrderedItemContainer<List<InterceptorFactory>> interceptors = map.get(method);
         if (interceptors == null) {
             return Collections.emptyList();
         }
-        return interceptors.getSortedItems();
+        List<List<InterceptorFactory>> sortedItems = interceptors.getSortedItems();
+        List<InterceptorFactory> ret = new ArrayList<>();
+        for(List<InterceptorFactory> item : sortedItems) {
+            ret.addAll(item);
+        }
+        return ret;
     }
 
     /**
@@ -178,13 +183,23 @@ public class ComponentConfiguration {
      * @param publicOnly If true then then interceptor is only added to public methods
      */
     public void addComponentInterceptor(InterceptorFactory factory, int priority, boolean publicOnly) {
+        addComponentInterceptors(Collections.singletonList(factory), priority, publicOnly);
+    }
+    /**
+     * Adds an interceptor factory to every method on the component.
+     *
+     * @param factory    The interceptor factory to add
+     * @param priority   The interceptors relative order
+     * @param publicOnly If true then then interceptor is only added to public methods
+     */
+    public void addComponentInterceptors(List<InterceptorFactory> factory, int priority, boolean publicOnly) {
         for (Method method : classIndex.getClassMethods()) {
             if (publicOnly && !Modifier.isPublic(method.getModifiers())) {
                 continue;
             }
-            OrderedItemContainer<InterceptorFactory> interceptors = componentInterceptors.get(method);
+            OrderedItemContainer<List<InterceptorFactory>> interceptors = componentInterceptors.get(method);
             if (interceptors == null) {
-                componentInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+                componentInterceptors.put(method, interceptors = new OrderedItemContainer<List<InterceptorFactory>>());
             }
             interceptors.add(factory, priority);
         }
@@ -200,13 +215,25 @@ public class ComponentConfiguration {
      * @param priority The interceptors relative order
      */
     public void addComponentInterceptor(Method method, InterceptorFactory factory, int priority) {
-        OrderedItemContainer<InterceptorFactory> interceptors = componentInterceptors.get(method);
+        addComponentInterceptors(method, Collections.singletonList(factory), priority);
+    }
+
+    /**
+     * Adds an interceptor factory to a given method. The method parameter *must* be retrived from either the
+     * {@link org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex} or from {@link #getDefinedComponentMethods()},
+     * as the methods are stored in an identity hash map
+     *
+     * @param method   The method to add the interceptor to
+     * @param factory  The interceptor factory to add
+     * @param priority The interceptors relative order
+     */
+    public void addComponentInterceptors(Method method, List<InterceptorFactory> factory, int priority) {
+        OrderedItemContainer<List<InterceptorFactory>> interceptors = componentInterceptors.get(method);
         if (interceptors == null) {
-            componentInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+            componentInterceptors.put(method, interceptors = new OrderedItemContainer<List<InterceptorFactory>>());
         }
         interceptors.add(factory, priority);
     }
-
     /**
      * Adds a timeout interceptor factory to every method on the component.
      *
@@ -274,9 +301,23 @@ public class ComponentConfiguration {
      * @return the sorted interceptors
      */
     public List<InterceptorFactory> getAroundConstructInterceptors() {
-        return aroundConstructInterceptors.getSortedItems();
+        List<List<InterceptorFactory>> sortedItems = aroundConstructInterceptors.getSortedItems();
+        List<InterceptorFactory> interceptorFactories = new ArrayList<>();
+        for(List<InterceptorFactory> i : sortedItems) {
+            interceptorFactories.addAll(i);
+        }
+        return interceptorFactories;
     }
 
+    /**
+     * Adds an around-construct interceptor
+     *
+     * @param factories The interceptors to add
+     * @param priority           The priority
+     */
+    public void addAroundConstructInterceptors(List<InterceptorFactory> factories, int priority) {
+        aroundConstructInterceptors.add(factories, priority);
+    }
     /**
      * Adds an around-construct interceptor
      *
@@ -284,7 +325,7 @@ public class ComponentConfiguration {
      * @param priority           The priority
      */
     public void addAroundConstructInterceptor(InterceptorFactory interceptorFactory, int priority) {
-        aroundConstructInterceptors.add(interceptorFactory, priority);
+        aroundConstructInterceptors.add(Collections.singletonList(interceptorFactory), priority);
     }
 
     /**
@@ -295,7 +336,22 @@ public class ComponentConfiguration {
      * @return the sorted interceptors
      */
     public List<InterceptorFactory> getPostConstructInterceptors() {
-        return postConstructInterceptors.getSortedItems();
+        List<List<InterceptorFactory>> sortedItems = postConstructInterceptors.getSortedItems();
+        List<InterceptorFactory> interceptorFactories = new ArrayList<>();
+        for(List<InterceptorFactory> i : sortedItems) {
+            interceptorFactories.addAll(i);
+        }
+        return interceptorFactories;
+    }
+
+    /**
+     * Adds a post construct interceptor
+     *
+     * @param interceptorFactory The interceptor to add
+     * @param priority           The priority
+     */
+    public void addPostConstructInterceptors(List<InterceptorFactory> interceptorFactory, int priority) {
+        postConstructInterceptors.add(interceptorFactory, priority);
     }
 
     /**
@@ -305,9 +361,8 @@ public class ComponentConfiguration {
      * @param priority           The priority
      */
     public void addPostConstructInterceptor(InterceptorFactory interceptorFactory, int priority) {
-        postConstructInterceptors.add(interceptorFactory, priority);
+        postConstructInterceptors.add(Collections.singletonList(interceptorFactory), priority);
     }
-
     /**
      * Get the pre-destroy interceptors.
      * <p/>
@@ -316,9 +371,23 @@ public class ComponentConfiguration {
      * @return the sorted interceptor
      */
     public List<InterceptorFactory> getPreDestroyInterceptors() {
-        return preDestroyInterceptors.getSortedItems();
+        List<List<InterceptorFactory>> sortedItems = preDestroyInterceptors.getSortedItems();
+        List<InterceptorFactory> interceptorFactories = new ArrayList<>();
+        for(List<InterceptorFactory> i : sortedItems) {
+            interceptorFactories.addAll(i);
+        }
+        return interceptorFactories;
     }
 
+    /**
+     * Adds a pre destroy interceptor
+     *
+     * @param factories The interceptor factory to add
+     * @param priority           The factories priority
+     */
+    public void addPreDestroyInterceptors(List<InterceptorFactory> factories, int priority) {
+        preDestroyInterceptors.add(factories, priority);
+    }
     /**
      * Adds a pre destroy interceptor
      *
@@ -326,7 +395,7 @@ public class ComponentConfiguration {
      * @param priority           The factories priority
      */
     public void addPreDestroyInterceptor(InterceptorFactory interceptorFactory, int priority) {
-        preDestroyInterceptors.add(interceptorFactory, priority);
+        preDestroyInterceptors.add(Collections.singletonList(interceptorFactory), priority);
     }
 
     /**
@@ -337,7 +406,22 @@ public class ComponentConfiguration {
      * @return the sorted interceptors
      */
     public List<InterceptorFactory> getPrePassivateInterceptors() {
-        return prePassivateInterceptors.getSortedItems();
+        List<List<InterceptorFactory>> sortedItems = prePassivateInterceptors.getSortedItems();
+        List<InterceptorFactory> interceptorFactories = new ArrayList<>();
+        for(List<InterceptorFactory> i : sortedItems) {
+            interceptorFactories.addAll(i);
+        }
+        return interceptorFactories;
+    }
+
+    /**
+     * Adds a pre passivate interceptor
+     *
+     * @param factories The interceptor to add
+     * @param priority           The priority
+     */
+    public void addPrePassivateInterceptors(List<InterceptorFactory> factories, int priority) {
+        prePassivateInterceptors.add(factories, priority);
     }
 
     /**
@@ -347,7 +431,7 @@ public class ComponentConfiguration {
      * @param priority           The priority
      */
     public void addPrePassivateInterceptor(InterceptorFactory interceptorFactory, int priority) {
-        prePassivateInterceptors.add(interceptorFactory, priority);
+        prePassivateInterceptors.add(Collections.singletonList(interceptorFactory), priority);
     }
 
     /**
@@ -358,7 +442,22 @@ public class ComponentConfiguration {
      * @return the sorted interceptors
      */
     public List<InterceptorFactory> getPostActivateInterceptors() {
-        return postActivateInterceptors.getSortedItems();
+        List<List<InterceptorFactory>> sortedItems = postActivateInterceptors.getSortedItems();
+        List<InterceptorFactory> interceptorFactories = new ArrayList<>();
+        for(List<InterceptorFactory> i : sortedItems) {
+            interceptorFactories.addAll(i);
+        }
+        return interceptorFactories;
+    }
+
+    /**
+     * Adds a post activate interceptor
+     *
+     * @param interceptorFactory The interceptor to add
+     * @param priority           The priority
+     */
+    public void addPostActivateInterceptors(List<InterceptorFactory> interceptorFactory, int priority) {
+        postActivateInterceptors.add(interceptorFactory, priority);
     }
 
     /**
@@ -368,9 +467,8 @@ public class ComponentConfiguration {
      * @param priority           The priority
      */
     public void addPostActivateInterceptor(InterceptorFactory interceptorFactory, int priority) {
-        postActivateInterceptors.add(interceptorFactory, priority);
+        postActivateInterceptors.add(Collections.singletonList(interceptorFactory), priority);
     }
-
     /**
      * Get the application name.
      *

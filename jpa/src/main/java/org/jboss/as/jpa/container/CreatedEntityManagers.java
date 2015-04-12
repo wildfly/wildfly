@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.container;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.jpa.messages.JpaLogger;

@@ -218,41 +218,42 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         // Apply post-construct
 
         if (!injectors.isEmpty()) {
-            configuration.addPostConstructInterceptor(weaved(injectors), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_RESOURCE_INJECTION_INTERCEPTORS);
+            configuration.addPostConstructInterceptors(new ArrayList<>(injectors), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_RESOURCE_INJECTION_INTERCEPTORS);
         }
         if (!instantiators.isEmpty()) {
-            configuration.addPostConstructInterceptor(weaved(instantiators), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_INSTANTIATION_INTERCEPTORS);
+            configuration.addPostConstructInterceptors(new ArrayList<>(instantiators), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_INSTANTIATION_INTERCEPTORS);
         }
         if (!userAroundConstruct.isEmpty()) {
-            configuration.addAroundConstructInterceptor(weaved(userAroundConstruct), InterceptorOrder.AroundConstruct.INTERCEPTOR_AROUND_CONSTRUCT);
+            configuration.addAroundConstructInterceptors(userAroundConstruct, InterceptorOrder.AroundConstruct.INTERCEPTOR_AROUND_CONSTRUCT);
         }
         configuration.addAroundConstructInterceptor(instantiator, InterceptorOrder.AroundConstruct.CONSTRUCT_COMPONENT);
         configuration.addAroundConstructInterceptor(new ImmediateInterceptorFactory(Interceptors.getTerminalInterceptor()), InterceptorOrder.AroundConstruct.TERMINAL_INTERCEPTOR);
 
-        configuration.addPostConstructInterceptor(new AroundConstructInterceptorFactory(weaved(configuration.getAroundConstructInterceptors())), InterceptorOrder.ComponentPostConstruct.AROUND_CONSTRUCT_CHAIN);
-
+        if(!configuration.getAroundConstructInterceptors().isEmpty()) {
+            configuration.addPostConstructInterceptor(new AroundConstructInterceptorFactory(Interceptors.getChainedInterceptorFactory(configuration.getAroundConstructInterceptors())), InterceptorOrder.ComponentPostConstruct.AROUND_CONSTRUCT_CHAIN);
+        }
         if (!userPostConstruct.isEmpty()) {
-            configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_USER_INTERCEPTORS);
+            configuration.addPostConstructInterceptors(userPostConstruct, InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_USER_INTERCEPTORS);
         }
 
         // Apply pre-destroy
         if (!uninjectors.isEmpty()) {
-            configuration.addPreDestroyInterceptor(weaved(uninjectors), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_UNINJECTION_INTERCEPTORS);
+            configuration.addPreDestroyInterceptors(new ArrayList<>(uninjectors), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_UNINJECTION_INTERCEPTORS);
         }
         if (!destructors.isEmpty()) {
-            configuration.addPreDestroyInterceptor(weaved(destructors), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_DESTRUCTION_INTERCEPTORS);
+            configuration.addPreDestroyInterceptors(new ArrayList<>(destructors), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_DESTRUCTION_INTERCEPTORS);
         }
         if (!userPreDestroy.isEmpty()) {
-            configuration.addPreDestroyInterceptor(weaved(userPreDestroy), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_USER_INTERCEPTORS);
+            configuration.addPreDestroyInterceptors(userPreDestroy, InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_USER_INTERCEPTORS);
         }
 
         if (description.isPassivationApplicable()) {
             if (!userPrePassivate.isEmpty()) {
-                configuration.addPrePassivateInterceptor(weaved(userPrePassivate), InterceptorOrder.ComponentPassivation.INTERCEPTOR_USER_INTERCEPTORS);
+                configuration.addPrePassivateInterceptors(userPrePassivate, InterceptorOrder.ComponentPassivation.INTERCEPTOR_USER_INTERCEPTORS);
             }
 
             if (!userPostActivate.isEmpty()) {
-                configuration.addPostActivateInterceptor(weaved(userPostActivate), InterceptorOrder.ComponentPassivation.INTERCEPTOR_USER_INTERCEPTORS);
+                configuration.addPostActivateInterceptors(userPostActivate, InterceptorOrder.ComponentPassivation.INTERCEPTOR_USER_INTERCEPTORS);
             }
         }
 
@@ -322,7 +323,12 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                         }
                     }
                 }
-                configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.INTERCEPTOR_USER_INTERCEPTORS);
+                if(requiresTimerChain) {
+                    configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.INTERCEPTOR_USER_INTERCEPTORS);
+                } else {
+                    configuration.addComponentInterceptors(method, userAroundInvokes, InterceptorOrder.Component.INTERCEPTOR_USER_INTERCEPTORS);
+
+                }
             }
         }
     }
