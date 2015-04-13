@@ -23,10 +23,7 @@ package org.jboss.as.weld.ejb;
 
 import java.security.AccessController;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.naming.ManagedReference;
@@ -44,7 +41,7 @@ import org.jboss.weld.ejb.api.SessionObjectReference;
  */
 public class SessionObjectReferenceImpl implements SessionObjectReference {
 
-    private final Map<String, ServiceName> viewServices;
+    private final Map<Class<?>, ServiceName> viewServices;
 
     private final String ejbName;
 
@@ -52,38 +49,7 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {
         ejbName = descriptor.getEjbName();
-        final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-        for (Map.Entry<Class<?>, ServiceName> entry : descriptor.getViewServices().entrySet()) {
-            final Class<?> viewClass = entry.getKey();
-            if (viewClass != null) {
-                //see WELD-921
-                //this is horrible, but until it is fixed there is not much that can be done
-
-                final Set<Class<?>> seen = new HashSet<Class<?>>();
-                final Set<Class<?>> toProcess = new HashSet<Class<?>>();
-
-                toProcess.add(viewClass);
-
-                while (!toProcess.isEmpty()) {
-                    Iterator<Class<?>> it = toProcess.iterator();
-                    final Class<?> clazz = it.next();
-                    it.remove();
-                    seen.add(clazz);
-                    viewServices.put(clazz.getName(), entry.getValue());
-                    final Class<?> superclass = clazz.getSuperclass();
-                    if (superclass != Object.class && superclass != null && !seen.contains(superclass)) {
-                        toProcess.add(superclass);
-                    }
-                    for (Class<?> iface : clazz.getInterfaces()) {
-                        if (!seen.contains(iface)) {
-                            toProcess.add(iface);
-                        }
-                    }
-                }
-            }
-        }
-
-        this.viewServices = viewServices;
+        this.viewServices = descriptor.getViewServices();
 
     }
 
@@ -100,9 +66,9 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
         }
 
         if (managedReference == null) {
-            if (viewServices.containsKey(businessInterfaceType.getName())) {
+            if (viewServices.containsKey(businessInterfaceType)) {
                 final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(
-                        viewServices.get(businessInterfaceType.getName()));
+                        viewServices.get(businessInterfaceType));
                 final ComponentView view = (ComponentView) serviceController.getValue();
                 try {
                     managedReference = view.createInstance();
