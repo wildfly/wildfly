@@ -39,7 +39,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -107,7 +106,6 @@ public class LifecycleTestCase  {
     }
 
     @Test
-    @Ignore("AS7-1064")
     public void testStatefulBeanDependencyInjection() throws Exception {
         StringBuilder failureMessages = new StringBuilder();
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
@@ -146,7 +144,6 @@ public class LifecycleTestCase  {
     }
 
     @Test
-    @Ignore("AS7-1064")
     public void testStatelessBeanDependencyInjection() throws Exception {
         StringBuilder failureMessages = new StringBuilder();
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
@@ -168,7 +165,6 @@ public class LifecycleTestCase  {
     }
 
     @Test
-    @Ignore("AS7-1064")
     public void testStatelessBeanLifecyleCallback() throws Exception {
         StringBuilder failureMessages = new StringBuilder();
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");

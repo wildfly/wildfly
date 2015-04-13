@@ -23,9 +23,9 @@ package org.jboss.as.test.integration.ejb.security;
 
 import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;
+
 import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployer;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,6 +33,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.Caller;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerRunAsPrincipal;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerWithIdentity;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.SingletonBean;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.StatelessBBean;
@@ -51,7 +52,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -121,6 +121,11 @@ public class RunAsPrincipalTestCase  {
     private WhoAmI lookupCaller() throws Exception {
         return (WhoAmI)new InitialContext().lookup("java:module/" + Caller.class.getSimpleName() + "!" + WhoAmI.class.getName());
     }
+    
+    private WhoAmI lookupCallerRunAsPrincipal() throws Exception {
+        return (WhoAmI)new InitialContext().lookup("java:module/" + CallerRunAsPrincipal.class.getSimpleName() + "!" + WhoAmI.class.getName());
+    }
+
 
     private WhoAmI lookupSingletonUseBeanWithIdentity() throws Exception {
         return (WhoAmI) new InitialContext().lookup("java:module/" + StatelessSingletonUseBean.class.getSimpleName() + "!" + WhoAmI.class.getName());
@@ -154,10 +159,9 @@ public class RunAsPrincipalTestCase  {
         }
     }
 
-    @Ignore("AS7-2852")
     @Test
     public void testRunAsPrincipal() throws Exception {
-        WhoAmI bean = lookupCaller();
+        WhoAmI bean = lookupCallerRunAsPrincipal();
         try {
             String actual = bean.getCallerPrincipal();
             Assert.fail("Expected EJBAccessException and it was get identity: " + actual);
