@@ -36,7 +36,6 @@ public abstract class JCAMetrictsTestBase extends DsMgmtTestBase {
      */
     protected void setBadModel(String filename) throws Exception{
         setModel(filename);
-        takeSnapShot();
         removeDs();
     }
 
