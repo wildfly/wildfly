@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -37,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -49,7 +47,6 @@ import static org.junit.Assert.assertEquals;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
@@ -61,8 +58,6 @@ import org.jboss.as.security.Constants;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
-import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
-import org.jboss.as.test.integration.domain.mixed.util.MixedDomainTestSupport;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -81,6 +76,7 @@ import org.xnio.IoUtils;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class SimpleMixedDomainTest  {
 
+    private static final String ACTIVE_PROFILE = "full-ha";
     MixedDomainTestSupport support;
     Version.AsVersion version;
 
@@ -103,6 +99,11 @@ public abstract class SimpleMixedDomainTest  {
 
     @Test
     public void test2Versioning() throws Exception {
+        if (version == Version.AsVersion.EAP_6_2_0) {
+            //6.2.0 has the slave report back its own version, rather than the one from the DC,
+            //which is what happens in more recent slaves
+            return;
+        }
 
         DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
         ModelNode masterModel;
@@ -129,7 +130,7 @@ public abstract class SimpleMixedDomainTest  {
         final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
         final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
         try {
-            PathAddress  subsystem = PathAddress.pathAddress(PathElement.pathElement(PROFILE, getProfile()), PathElement.pathElement(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME));
+            PathAddress  subsystem = PathAddress.pathAddress(PathElement.pathElement(PROFILE, ACTIVE_PROFILE), PathElement.pathElement(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME));
             PathAddress webPolicy = subsystem.append(Constants.SECURITY_DOMAIN, "jboss-web-policy").append(Constants.AUTHORIZATION, Constants.CLASSIC);
             ModelNode options = new ModelNode();
             options.add("a", "b");
@@ -163,25 +164,7 @@ public abstract class SimpleMixedDomainTest  {
             ModelNode masterResource = DomainTestUtils.executeForResult(op, masterClient);
             ModelNode slaveResource = DomainTestUtils.executeForResult(op, slaveClient);
 
-            //TODO only check this for 7.1.x
-            if (version == Version.AsVersion.AS_7_1_2_FINAL || version == Version.AsVersion.AS_7_1_3_FINAL) {
-                ModelNode masterModules = masterResource.get(Constants.AUTH_MODULE);
-                Assert.assertFalse(slaveResource.hasDefined(Constants.AUTH_MODULE));
-                List<ModelNode> slaveModules = slaveResource.get(Constants.AUTH_MODULES).asList();
-                Assert.assertEquals(masterModules.keys().size(), slaveModules.size());
-                Set<ModelNode> masterSet = getAllChildren(masterModules);
-                Assert.assertTrue(slaveModules.containsAll(masterSet));
-
-                masterModules = masterResource.get(Constants.LOGIN_MODULE_STACK, "lm-stack", Constants.LOGIN_MODULE);
-                Assert.assertFalse(slaveResource.get(Constants.LOGIN_MODULE_STACK, "lm-stack").hasDefined(Constants.LOGIN_MODULE));
-                slaveModules = slaveResource.get(Constants.LOGIN_MODULE_STACK, "lm-stack", Constants.LOGIN_MODULES).asList();
-                Assert.assertEquals(masterModules.keys().size(), slaveModules.size());
-                masterSet = getAllChildren(masterModules);
-                Assert.assertTrue(slaveModules.containsAll(masterSet));
-            } else {
-                ModelTestUtils.compare(masterResource, slaveResource, true);
-            }
-
+            ModelTestUtils.compare(masterResource, slaveResource, true);
 
         } finally {
             try {
@@ -209,18 +192,6 @@ public abstract class SimpleMixedDomainTest  {
         //First get rid of any undefined crap
         cleanUndefinedNodes(masterModel);
         cleanUndefinedNodes(slaveModel);
-        if (version == AsVersion.AS_7_1_2_FINAL || version == AsVersion.AS_7_1_3_FINAL) {
-            if (masterModel.hasDefined(NAMESPACES) && masterModel.get(NAMESPACES).asList().isEmpty()) {
-                if (!slaveModel.hasDefined(NAMESPACES)) {
-                    masterModel.remove(NAMESPACES);
-                }
-            }
-            if (masterModel.hasDefined(SCHEMA_LOCATIONS) && masterModel.get(SCHEMA_LOCATIONS).asList().isEmpty()) {
-                if (!slaveModel.hasDefined(SCHEMA_LOCATIONS)) {
-                    masterModel.remove(SCHEMA_LOCATIONS);
-                }
-            }
-        }
     }
 
     private void cleanUndefinedNodes(ModelNode model) {
@@ -257,6 +228,4 @@ public abstract class SimpleMixedDomainTest  {
 
         return model;
     }
-
-    protected abstract String getProfile();
 }
