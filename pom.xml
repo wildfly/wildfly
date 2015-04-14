@@ -142,7 +142,7 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.hql>1.1.0.Final</version.org.hibernate.hql>
         <version.org.hibernate.search>5.1.1.Final</version.org.hibernate.search>
-        <version.org.hornetq>2.4.6.Final</version.org.hornetq>
+        <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <version.org.infinispan>7.1.1.Final</version.org.infinispan>
         <version.org.jasypt>1.9.1</version.org.jasypt>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
