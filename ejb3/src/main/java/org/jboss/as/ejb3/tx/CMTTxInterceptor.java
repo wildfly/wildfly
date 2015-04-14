@@ -49,7 +49,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.tm.TransactionTimeoutConfiguration;
-import org.jboss.util.deadlock.ApplicationDeadlockException;
 
 /**
  * Ensure the correct exceptions are thrown based on both caller
@@ -273,25 +272,11 @@ public class CMTTxInterceptor implements Interceptor {
             tm.begin();
             Transaction tx = tm.getTransaction();
             try {
-                try {
-                    return invocation.proceed();
-                } catch (Throwable t) {
-                    handleExceptionInOurTx(invocation, t, tx, component);
-                } finally {
-                    endTransaction(tm, tx);
-                }
-            } catch (Exception ex) {
-                ApplicationDeadlockException deadlock = ApplicationDeadlockException.isADE(ex);
-                if (deadlock != null) {
-                    if (!deadlock.retryable() || i + 1 >= MAX_RETRIES) {
-                        throw deadlock;
-                    }
-                    EjbLogger.ROOT_LOGGER.retrying(deadlock.getLocalizedMessage(), (i + 1));
-
-                    Thread.sleep(RANDOM.nextInt(1 + i), RANDOM.nextInt(1000));
-                } else {
-                    throw ex;
-                }
+                return invocation.proceed();
+            } catch (Throwable t) {
+                handleExceptionInOurTx(invocation, t, tx, component);
+            } finally {
+                endTransaction(tm, tx);
             }
         }
         throw new RuntimeException("UNREACHABLE");
