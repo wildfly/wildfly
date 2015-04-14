@@ -28,6 +28,7 @@ import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
@@ -35,6 +36,7 @@ import org.jboss.dmr.ModelNode;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.List;
@@ -65,7 +67,12 @@ public abstract class AbstractDsRemove extends ContainerResourceMgmtTestBase {
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            remove(datasourceAddress());
+            try {
+                remove(datasourceAddress());
+            } catch (Exception e) {
+                //ignore as this is here only as fail back if removal fails in test case
+            }
+
         }
     }
 
