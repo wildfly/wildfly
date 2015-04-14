@@ -26,7 +26,6 @@ import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -67,8 +65,7 @@ public class RaAdd extends AbstractAddStepHandler {
     @Override
     public void performRuntime(final OperationContext context, ModelNode operation, final Resource resource) throws OperationFailedException {
         // Compensating is remove
-        final ModelNode address = operation.require(OP_ADDR);
-        final String name = PathAddress.pathAddress(address).getLastElement().getValue();
+        final String name = context.getCurrentAddressValue();
         final String archiveOrModuleName;
         ModelNode model = resource.getModel();
         final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();

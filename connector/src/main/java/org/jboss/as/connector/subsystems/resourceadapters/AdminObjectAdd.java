@@ -70,7 +70,7 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
 
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
-        final String raName = path.getElement(path.size() - 2).getValue();
+        final String raName = context.getCurrentAddress().getParent().getLastElement().getValue();
         final String archiveOrModuleName;
         ModelNode raModel = context.readResourceFromRoot(path.subAddress(0, path.size() - 1)).getModel();
         final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, raModel).asBoolean();
@@ -79,9 +79,9 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
             throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
         }
         if (raModel.get(ARCHIVE.getName()).isDefined()) {
-            archiveOrModuleName = raModel.get(ARCHIVE.getName()).asString();
+            archiveOrModuleName = ARCHIVE.resolveModelAttribute(context, raModel).asString();
         } else {
-            archiveOrModuleName = raModel.get(MODULE.getName()).asString();
+            archiveOrModuleName = MODULE.resolveModelAttribute(context, raModel).asString();
         }
         final String poolName = PathAddress.pathAddress(address).getLastElement().getValue();
 

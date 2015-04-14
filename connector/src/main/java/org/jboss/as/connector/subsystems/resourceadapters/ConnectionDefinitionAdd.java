@@ -79,9 +79,9 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
         }
         if (raModel.get(ARCHIVE.getName()).isDefined()) {
-            archiveOrModuleName = raModel.get(ARCHIVE.getName()).asString();
+            archiveOrModuleName = ARCHIVE.resolveModelAttribute(context, raModel).asString();
         } else {
-            archiveOrModuleName = raModel.get(MODULE.getName()).asString();
+            archiveOrModuleName = MODULE.resolveModelAttribute(context, raModel).asString();
         }
         final String poolName = PathAddress.pathAddress(address).getLastElement().getValue();
 
