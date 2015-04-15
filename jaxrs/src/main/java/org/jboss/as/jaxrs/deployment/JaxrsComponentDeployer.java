@@ -102,7 +102,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                     }
                 }
 
-                Class[] jaxrsType = GetRestful.getSubResourceClasses(componentClass);
+                Class<?>[] jaxrsType = GetRestful.getSubResourceClasses(componentClass);
                 final String jndiName;
                 if (component.getViews().size() == 1) {
                     //only 1 view, just use the simple JNDI name
@@ -111,7 +111,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                     boolean found = false;
                     String foundType = null;
                     for (final ViewDescription view : component.getViews()) {
-                        for (Class subResource : jaxrsType) {
+                        for (Class<?> subResource : jaxrsType) {
                             if (view.getViewClassName().equals(subResource.getName())) {
                                 foundType = subResource.getName();
                                 found = true;
