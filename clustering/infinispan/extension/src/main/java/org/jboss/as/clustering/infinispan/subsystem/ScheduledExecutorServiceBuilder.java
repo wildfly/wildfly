@@ -32,7 +32,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -57,7 +56,8 @@ class ScheduledExecutorServiceBuilder extends ExecutorServiceNameBuilder impleme
     public ServiceBuilder<ManagedScheduledExecutorService> build(ServiceTarget target) {
         ScheduledThreadPoolService service = new ScheduledThreadPoolService(maxThreads, new TimeSpec(TimeUnit.MILLISECONDS, keepaliveTime));
 
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target)
+        // AsynchronousServiceBuilder cannot be used as the wrapped services are already stopped asynchronously.
+        return target.addService(this.getServiceName(), service)
                 .addDependency(threadFactoryServiceBuilder.getServiceName(), ThreadFactory.class, service.getThreadFactoryInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }

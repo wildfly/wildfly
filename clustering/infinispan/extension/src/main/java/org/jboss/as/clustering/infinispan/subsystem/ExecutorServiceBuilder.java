@@ -26,20 +26,24 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.threads.BoundedQueueThreadPoolService;
-import org.jboss.as.threads.ManagedQueueExecutorService;
+import org.jboss.as.threads.ManagedExecutorService;
+import org.jboss.as.threads.QueuelessThreadPoolService;
 import org.jboss.as.threads.TimeSpec;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 
 /**
+ * Builder wrapping threads subsystem {@link BoundedQueueThreadPoolService}.
+ *
  * @author Radoslav Husar
  * @version Mar 2015
  */
-class ExecutorServiceBuilder extends ExecutorServiceNameBuilder implements Builder<ManagedQueueExecutorService> {
+class ExecutorServiceBuilder extends ExecutorServiceNameBuilder implements Builder<ManagedExecutorService> {
 
     private final String executorName;
     private int minThreads;
@@ -54,11 +58,22 @@ class ExecutorServiceBuilder extends ExecutorServiceNameBuilder implements Build
     }
 
     @Override
-    public ServiceBuilder<ManagedQueueExecutorService> build(ServiceTarget target) {
-        BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(minThreads, maxThreads, queueLength, true, new TimeSpec(TimeUnit.MILLISECONDS, keepaliveTime), true);
+    @SuppressWarnings("unchecked")
+    public ServiceBuilder<ManagedExecutorService> build(ServiceTarget target) {
+        Service<? extends ManagedExecutorService> service;
+        Injector<ThreadFactory> injector;
 
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target)
-                .addDependency(threadFactoryServiceBuilder.getServiceName(), ThreadFactory.class, service.getThreadFactoryInjector())
+        if (queueLength != 0) {
+            service = new BoundedQueueThreadPoolService(minThreads, maxThreads, queueLength, true, new TimeSpec(TimeUnit.MILLISECONDS, keepaliveTime), true);
+            injector = ((BoundedQueueThreadPoolService) service).getThreadFactoryInjector();
+        } else {
+            service = new QueuelessThreadPoolService(maxThreads, true, new TimeSpec(TimeUnit.MILLISECONDS, keepaliveTime));
+            injector = ((QueuelessThreadPoolService) service).getThreadFactoryInjector();
+        }
+
+        // AsynchronousServiceBuilder cannot be used as the wrapped services are already stopped asynchronously.
+        return (ServiceBuilder<ManagedExecutorService>) target.addService(this.getServiceName(), service)
+                .addDependency(threadFactoryServiceBuilder.getServiceName(), ThreadFactory.class, injector)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
