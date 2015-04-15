@@ -80,14 +80,14 @@ public class DomainAdjuster640 extends DomainAdjuster {
         list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME)));
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustWeld(profileAddress.append(SUBSYSTEM, WeldExtension.SUBSYSTEM_NAME)));
+        list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
 
         //io must be removed after undertow due to capabilities/requirements
         list.addAll(removeIo(profileAddress.append(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME)));
 
-        //Temporary workaround, something weird is going on in infinispan/jgroups so let's get rid of those for now
-        //TODO Reenable these subsystems, it is important to see if we boot with them configured although the tests don't use clustering
+        //Temporary workaround, something weird is going on in infinispan so let's get rid of those for now
+        //TODO WFLY-4515 Reenable these subsystems, it is important to see if we boot with them configured although the tests don't use clustering
         list.add(createRemoveOperation(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
-        list.add(createRemoveOperation(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
 
         return list;
     }
@@ -181,6 +181,54 @@ public class DomainAdjuster640 extends DomainAdjuster {
     }
 
 
+    private List<ModelNode> adjustJGroups(final PathAddress subsystem) throws Exception {
+        final List<ModelNode> list = new ArrayList<>();
+
+        list.add(getWriteAttributeOperation(subsystem, "default-stack", new ModelNode("tcp")));
+
+        // pbcast.NAKACK2 does not exist, use pbcast.NAKACK instead
+        // UNICAST3 does not exist, use UNICAST2 instead
+        //All this code is to remove and re-add the protocols including the rename to preserve the order
+        //TODO once we support indexed adds, use those instead
+
+        // udp stack
+        PathAddress udp = subsystem.append("stack", "udp");
+        list.add(createRemoveOperation(udp.append("protocol", "pbcast.NAKACK2")));
+        list.add(createRemoveOperation(udp.append("protocol", "UNICAST3")));
+        list.add(createRemoveOperation(udp.append("protocol", "pbcast.STABLE")));
+        list.add(createRemoveOperation(udp.append("protocol", "pbcast.GMS")));
+        list.add(createRemoveOperation(udp.append("protocol", "UFC")));
+        list.add(createRemoveOperation(udp.append("protocol", "MFC")));
+        list.add(createRemoveOperation(udp.append("protocol", "FRAG2")));
+        list.add(createAddOperation(udp.append("protocol", "pbcast.NAKACK")));
+        list.add(createAddOperation(udp.append("protocol", "UNICAST2")));
+        list.add(createAddOperation(udp.append("protocol", "pbcast.STABLE")));
+        list.add(createAddOperation(udp.append("protocol", "pbcast.GMS")));
+        list.add(createAddOperation(udp.append("protocol", "UFC")));
+        list.add(createAddOperation(udp.append("protocol", "MFC")));
+        list.add(createAddOperation(udp.append("protocol", "FRAG2")));
+        list.add(createAddOperation(udp.append("protocol", "RSVP")));
+
+        // tcp stack
+        PathAddress tcp = subsystem.append("stack", "tcp");
+        list.add(createRemoveOperation(tcp.append("protocol", "pbcast.NAKACK2")));
+        list.add(createRemoveOperation(tcp.append("protocol", "UNICAST3")));
+        list.add(createRemoveOperation(tcp.append("protocol", "pbcast.STABLE")));
+        list.add(createRemoveOperation(tcp.append("protocol", "pbcast.GMS")));
+        list.add(createRemoveOperation(tcp.append("protocol", "MFC")));
+        list.add(createRemoveOperation(tcp.append("protocol", "FRAG2")));
+        list.add(createAddOperation(tcp.append("protocol", "pbcast.NAKACK")));
+        list.add(createAddOperation(tcp.append("protocol", "UNICAST2")));
+        list.add(createAddOperation(tcp.append("protocol", "pbcast.STABLE")));
+        list.add(createAddOperation(tcp.append("protocol", "pbcast.GMS")));
+        list.add(createAddOperation(tcp.append("protocol", "UFC")));
+        list.add(createAddOperation(tcp.append("protocol", "FRAG2")));
+        list.add(createAddOperation(tcp.append("protocol", "RSVP")));
+
+        return list;
+    }
+
+
     private Collection<? extends ModelNode> replaceActiveMqWithMessaging(PathAddress subsystem) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
         //messaging-activemq does not exist, remove it and the extension
@@ -267,7 +315,7 @@ public class DomainAdjuster640 extends DomainAdjuster {
         //Add the jacorb extension
         list.add(createAddOperation(PathAddress.pathAddress(EXTENSION, "org.jboss.as.jacorb")));
 
-        //This shoud be the same as in the iiop-openjdk.xml subsystem template
+        //This should be the same as in the iiop-openjdk.xml subsystem template
         ModelNode add = createAddOperation(subsystem.getParent().append(SUBSYSTEM, "jacorb"));
         add.get("socket-binding").set("iiop");
         add.get("ssl-socket-binding").set("iiop-ssl");

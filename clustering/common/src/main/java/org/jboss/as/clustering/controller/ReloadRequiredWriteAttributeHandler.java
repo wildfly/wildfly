@@ -22,7 +22,13 @@
 
 package org.jboss.as.clustering.controller;
 
+import org.jboss.as.clustering.controller.transform.PreviousAttributeValueOperationContextAttachment;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.TransformerOperationAttachment;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Convenience extension of {@link org.jboss.as.controller.ReloadRequiredWriteAttributeHandler} that can be initialized with an {@link Attribute} set.
@@ -41,4 +47,15 @@ public class ReloadRequiredWriteAttributeHandler extends org.jboss.as.controller
     public void register(ManagementResourceRegistration registration) {
         this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this));
     }
+
+    @Override
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+
+        if (!context.isBooting()) {
+            TransformerOperationAttachment attachment = TransformerOperationAttachment.getOrCreate(context);
+            attachment.attachIfAbsent(PreviousAttributeValueOperationContextAttachment.KEY, new PreviousAttributeValueOperationContextAttachment(oldValue.clone()));
+        }
+    }
+
 }

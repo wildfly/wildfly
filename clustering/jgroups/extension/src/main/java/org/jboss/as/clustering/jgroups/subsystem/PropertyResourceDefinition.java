@@ -21,10 +21,20 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.SimpleAttribute;
+import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
+import org.jboss.as.clustering.controller.transform.PreviousAttributeValueOperationContextAttachment;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleReadAttributeOperationTransformer;
@@ -36,18 +46,26 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Resource description for the addressable resources:
@@ -153,4 +171,127 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
         };
         registration.registerReadWriteAttribute(VALUE, readHandler, writeHandler);
     }
+
+    static ResourceTransformer PROPERTIES_RESOURCE_TRANSFORMER = new ResourceTransformer() {
+        @Override
+        @SuppressWarnings("deprecation")
+        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            final ModelNode model = resource.getModel();
+            final ModelNode properties = model.remove(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+            final ResourceTransformationContext childContext = context.addTransformedResourceFromRoot(address, resource);
+
+            if (properties.isDefined()) {
+                for (final Property property : properties.asPropertyList()) {
+                    String key = property.getName();
+                    ModelNode value = property.getValue();
+                    Resource propertyResource = Resource.Factory.create();
+                    propertyResource.getModel().get(VALUE.getName()).set(value);
+                    PathAddress absoluteAddress = address.append(pathElement(key).getKey(), pathElement(key).getValue());
+                    childContext.addTransformedResourceFromRoot(absoluteAddress, propertyResource);
+                }
+            }
+
+            context.processChildren(resource);
+        }
+    };
+
+    static OperationTransformer PROPERTIES_ADD_OP_TRANSFORMER = new OperationTransformer()  {
+        @Override
+        @SuppressWarnings("deprecation")
+        public ModelNode transformOperation(ModelNode operation) {
+            if (operation.hasDefined(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName())) {
+                final ModelNode addOp = operation.clone();
+                final ModelNode properties = addOp.remove(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+
+                final ModelNode composite = new ModelNode();
+                composite.get(OP).set(COMPOSITE);
+                composite.get(OP_ADDR).setEmptyList();
+                composite.get(STEPS).add(addOp);
+
+                // Handle odd legacy case, when :add operation for the protocol is :add-protocol on the parent
+                PathAddress propertyAddress = Operations.getName(addOp).equals("add-protocol") ? Operations.getPathAddress(addOp).append("protocol", addOp.get("type").asString()) : Operations.getPathAddress(addOp);
+
+                for (final Property property : properties.asPropertyList()) {
+                    String key = property.getName();
+                    ModelNode value = property.getValue();
+                    ModelNode propAddOp = Util.createAddOperation(propertyAddress.append(pathElement(key)));
+                    propAddOp.get(VALUE.getName()).set(value);
+                    composite.get(STEPS).add(propAddOp);
+                }
+                return composite;
+            }
+            return operation;
+        }
+    };
+
+    static org.jboss.as.controller.transform.OperationTransformer PROPERTIES_OP_TRANSFORMER = new org.jboss.as.controller.transform.OperationTransformer() {
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            if (operation.get(ModelDescriptionConstants.NAME).asString().equals(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName())) {
+
+                PreviousAttributeValueOperationContextAttachment attachment = context.getAttachment(PreviousAttributeValueOperationContextAttachment.KEY);
+                assert attachment != null;
+
+                ModelNode oldValue = attachment.getPreviousValue();
+                ModelNode newValue = context.readResourceFromRoot(address).getModel().get(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+
+                if (oldValue.equals(newValue) || (oldValue.isDefined() && oldValue.asPropertyList().isEmpty() && !newValue.isDefined())) {
+                    // There is nothing to do, discard this operation
+                    return new TransformedOperation(null, DEFAULT_REJECTION_POLICY, SUCCESSFUL_RESULT);
+                }
+
+                final Map<String, ModelNode> oldMap = new HashMap<>();
+                if (oldValue.isDefined()) {
+                    for (Property property : oldValue.asPropertyList()) {
+                        oldMap.put(property.getName(), property.getValue());
+                    }
+                }
+
+                // Transformed address for all operations
+                final PathAddress legacyAddress = Operations.getPathAddress(operation);
+
+                // This may result as multiple operations on the legacy node
+                final ModelNode composite = new ModelNode();
+                composite.get(OP).set(COMPOSITE);
+                composite.get(OP_ADDR).setEmptyList();
+
+                if (newValue.isDefined()) {
+                    for (Property property : newValue.asPropertyList()) {
+                        String key = property.getName();
+                        ModelNode value = property.getValue();
+
+                        if (!oldMap.containsKey(key)) {
+                            // This is a newly added property => :add operation
+                            ModelNode addOp = Util.createAddOperation(legacyAddress.append(pathElement(key)));
+                            addOp.get(VALUE.getName()).set(value);
+                            composite.get(STEPS).add(addOp);
+                        } else {
+                            final ModelNode oldPropValue = oldMap.get(key);
+                            if (!oldPropValue.equals(value)) {
+                                // Property value is different => :write-attribute operation
+                                ModelNode writeOp = Util.getWriteAttributeOperation(legacyAddress.append(pathElement(key)),
+                                        VALUE.getName(), value);
+                                composite.get(STEPS).add(writeOp);
+                            }
+                            // Otherwise both property name and value are the same => no operation
+
+                            // Remove this key
+                            oldMap.remove(key);
+                        }
+                    }
+                }
+
+                // Properties that were removed = :remove operation
+                for (Map.Entry<String, ModelNode> prop : oldMap.entrySet()) {
+                    ModelNode removeOperation = Util.createRemoveOperation(legacyAddress.append(pathElement(prop.getKey())));
+                    composite.get(STEPS).add(removeOperation);
+                }
+
+                return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
+            }
+            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+    };
 }
