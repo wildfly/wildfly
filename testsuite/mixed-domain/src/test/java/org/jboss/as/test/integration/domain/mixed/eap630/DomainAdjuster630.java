@@ -80,12 +80,6 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.addAll(removeSecurityManager(profileAddress.append(SecurityManagerExtension.SUBSYSTEM_PATH)));
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
 
-
-        //Temporary workaround, something weird is going on in infinispan/jgroups so let's get rid of those for now
-        //TODO Reenable these subsystems, it is important to see if we boot with them configured although the tests don't use clustering
-        list.add(createRemoveOperation(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
-        list.add(createRemoveOperation(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
-
         return list;
     }
 
@@ -188,18 +182,12 @@ public class DomainAdjuster630 extends DomainAdjuster {
 
     private List<ModelNode> adjustJGroups(final PathAddress subsystem) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
-        //default-channel is not understood
-        list.add(
-                getUndefineAttributeOperation(
-                        subsystem, "default-channel"));
-        //In fact channels don't work
-        list.add(createRemoveOperation(subsystem.append("channel", "ee")));
 
         // pbcast.NAKACK2 does not exist, use pbcast.NAKACK instead
         // UNICAST3 does not exist, use UNICAST2 instead
         //All this code is to remove and re-add the protocols including the rename to preserve the order
         //TODO once we support indexed adds, use those instead
-        //udp
+        // udp stack
         PathAddress udp = subsystem.append("stack", "udp");
         list.add(createRemoveOperation(udp.append("protocol", "pbcast.NAKACK2")));
         list.add(createRemoveOperation(udp.append("protocol", "UNICAST3")));
@@ -218,7 +206,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.add(createAddOperation(udp.append("protocol", "FRAG2")));
         list.add(createAddOperation(udp.append("protocol", "RSVP")));
 
-        //udp
+        // tcp stack
         PathAddress tcp = subsystem.append("stack", "tcp");
         list.add(createRemoveOperation(tcp.append("protocol", "pbcast.NAKACK2")));
         list.add(createRemoveOperation(tcp.append("protocol", "UNICAST3")));

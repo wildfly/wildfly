@@ -34,7 +34,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -73,12 +72,10 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, DEFAULT_CHANNEL)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, DEFAULT_CHANNEL)
-                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, DEFAULT_STACK)
+                    .setDiscard(DiscardAttributeChecker.ALWAYS, DEFAULT_CHANNEL)
                     .end();
 
-            builder.rejectChildResource(ChannelResourceDefinition.WILDCARD_PATH);
+            builder.discardChildResource(ChannelResourceDefinition.WILDCARD_PATH);
         } else {
             ChannelResourceDefinition.buildTransformation(version, builder);
         }

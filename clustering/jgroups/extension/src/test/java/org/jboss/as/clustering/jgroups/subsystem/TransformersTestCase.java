@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
@@ -29,8 +30,8 @@ import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -120,6 +121,31 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         // check that both versions of the legacy model are the same and valid
         checkSubsystemModelTransformation(services, version);
+
+        // Test properties operations
+        propertiesMapOperationsTest(services, version);
+    }
+
+    private void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
+
+        // Check operations on /transport=*
+        executeOpsInBothControllers(services, version, getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "true"));
+        List<ModelNode> results = executeOpsInBothControllers(services, version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
+        Assert.assertEquals(results.get(0), results.get(1));
+        executeOpsInBothControllers(services, version, getTransportRemovePropertyOperation("maximal", "TCP", "tcp_nodelay"));
+
+        // Check operations on /protocol=*
+
+        executeOpsInBothControllers(services, version, getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "true"));
+        results = executeOpsInBothControllers(services, version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
+        // just compare actual results since they differ in reload-required
+        Assert.assertEquals(results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
+        executeOpsInBothControllers(services, version, getProtocolRemovePropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
+
+        // FIXME when we can support transformation of a clear op
+        // executeOpsInBothControllers(services, version, getTransportClearPropertiesOperation("maximal", "TCP"));
+        // executeOpsInBothControllers(services, version, getProtocolClearPropertiesOperation("maximal", "MPING"));
+
     }
 
     /**
@@ -211,8 +237,9 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(subsystemAddress, new NewAttributesConfig(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL));
-            config.addFailedAttribute(subsystemAddress.append(ChannelResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            // Discard instead, otherwise we cannot transform legacy
+            //config.addFailedAttribute(subsystemAddress, new NewAttributesConfig(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL));
+            //config.addFailedAttribute(subsystemAddress.append(ChannelResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.WILDCARD_PATH).append(ThreadPoolResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 

@@ -54,6 +54,7 @@
             <remote-store cache="default" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="true">
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
                 <property name="valueSizeEstimate">100</property>
+                <property name="connectionTimeout">60000</property>
                 <remote-server outbound-socket-binding="hotrod-server-1"/>
                 <remote-server outbound-socket-binding="hotrod-server-2"/>
             </remote-store>

@@ -26,7 +26,6 @@ import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AttributeDefinition;
@@ -112,10 +111,17 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
                     PathAddress stackAddress = address.subAddress(0, address.size() - 1);
-                    return Util.createOperation(ModelKeys.ADD_PROTOCOL, stackAddress);
+
+                    ModelNode addProtocolOp = operation.clone();
+                    addProtocolOp.get(ModelDescriptionConstants.OP_ADDR).set(stackAddress.toModelNode());
+                    addProtocolOp.get(ModelDescriptionConstants.OP).set(ModelKeys.ADD_PROTOCOL);
+
+                    addProtocolOp = PropertyResourceDefinition.PROPERTIES_ADD_OP_TRANSFORMER.transformOperation(addProtocolOp);
+
+                    return addProtocolOp;
                 }
             };
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(addTransformer, ATTRIBUTES)).inheritResourceAttributeDefinitions();
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleOperationTransformer(addTransformer)).inheritResourceAttributeDefinitions();
 
             // Translate /subsystem=jgroups/stack=*/protocol=*:remove() -> /subsystem=jgroups/stack=*:remove-protocol()
             OperationTransformer removeTransformer = new OperationTransformer() {
@@ -131,12 +137,14 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                 }
             };
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleOperationTransformer(removeTransformer));
+
+            builder.setCustomResourceTransformer(PropertyResourceDefinition.PROPERTIES_RESOURCE_TRANSFORMER);
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
-    /*
+    /**
      * Builds transformations common to both protocols and transport.
      */
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
@@ -162,7 +170,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                     if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
                         String key = operation.get("key").asString();
                         ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
-                        PathAddress address = Operations.getPathAddress(operation);
+                        PathAddress address = TransportResourceDefinition.LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation));
                         ModelNode transformedOperation = Util.createAddOperation(address.append(PropertyResourceDefinition.pathElement(key)));
                         transformedOperation.get(PropertyResourceDefinition.VALUE.getName()).set(value);
                         return transformedOperation;
@@ -172,18 +180,43 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             };
             builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(putPropertyTransformer));
 
+            OperationTransformer getPropertyTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
+                        String key = operation.get("key").asString();
+                        PathAddress address = TransportResourceDefinition.LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation));
+                        ModelNode transformedOperation = Util.createOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address.append(PropertyResourceDefinition.pathElement(key)));
+                        transformedOperation.get(ModelDescriptionConstants.NAME).set(PropertyResourceDefinition.VALUE.getName());
+                        return transformedOperation;
+                    }
+                    return operation;
+                }
+            };
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(getPropertyTransformer));
+
             OperationTransformer removePropertyTransformer = new OperationTransformer() {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
                         String key = operation.get("key").asString();
-                        PathAddress address = Operations.getPathAddress(operation);
+                        PathAddress address = TransportResourceDefinition.LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation));
                         return Util.createRemoveOperation(address.append(PropertyResourceDefinition.pathElement(key)));
                     }
                     return operation;
                 }
             };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+
+//            // FIXME https://github.com/wildfly/wildfly-core/pull/669
+//            org.jboss.as.controller.transform.OperationTransformer clearPropertiesTransformer = new org.jboss.as.controller.transform.OperationTransformer() {
+//                @Override
+//                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+//                    return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+//                }
+//            };
+//            builder.addRawOperationTransformationOverride(MapOperations.MAP_CLEAR_DEFINITION.getName(), clearPropertiesTransformer);
+
         }
     }
 

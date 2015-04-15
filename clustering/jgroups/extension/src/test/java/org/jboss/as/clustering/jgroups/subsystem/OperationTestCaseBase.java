@@ -1,12 +1,15 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.io.IOException;
-
-import javax.xml.stream.XMLStreamException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -104,6 +107,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createWriteAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), PropertyResourceDefinition.VALUE.getName(), new ModelNode(propertyValue));
     }
 
+    // Transport property map operations
     protected static ModelNode getTransportGetPropertyOperation(String stackName, String type, String propertyName) {
         return Operations.createMapGetOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName);
     }
@@ -116,6 +120,16 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapRemoveOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName);
     }
 
+    protected static ModelNode getTransportClearPropertiesOperation(String stackName, String type) {
+        return Operations.createMapClearOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName());
+    }
+
+    // creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d})".
+    protected static ModelNode getTransportSetPropertiesOperation(String stackName, String type, ModelNode values) {
+        return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName(), values);
+    }
+
+    // Protocol operations
     protected static ModelNode getProtocolAddOperation(String stackName, String type) {
         return Util.createAddOperation(getProtocolAddress(stackName, type));
     }
@@ -167,6 +181,15 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapRemoveOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName(), propertyName);
     }
 
+    protected static ModelNode getProtocolClearPropertiesOperation(String stackName, String protocolName) {
+        return Operations.createMapClearOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName());
+    }
+
+    // creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
+    protected static ModelNode getProtocolSetPropertiesOperation(String stackName, String protocolName, ModelNode values) {
+        return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName(), values);
+    }
+
     protected static ModelNode getProtocolRemoveOperation(String stackName, String type) {
         return Util.createRemoveOperation(getProtocolAddress(stackName, type));
     }
@@ -199,7 +222,16 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return readResource(SUBSYSTEM_XML_FILE) ;
     }
 
-    protected KernelServices buildKernelServices() throws XMLStreamException, IOException, Exception {
+    protected KernelServices buildKernelServices() throws Exception {
         return createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(this.getSubsystemXml()).build();
+    }
+
+    protected List<ModelNode> executeOpsInBothControllers(KernelServices services, ModelVersion version, ModelNode... operations) throws Exception {
+        List<ModelNode> results = new LinkedList<>();
+        for (ModelNode op : operations) {
+            results.add(ModelTestUtils.checkOutcome(services.executeOperation(op.clone())));
+            results.add(ModelTestUtils.checkOutcome(services.executeOperation(version, services.transformOperation(version, op.clone()))));
+        }
+        return results;
     }
 }
