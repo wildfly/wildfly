@@ -68,15 +68,13 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
     private boolean coordinatorEnableStatistics;
     private int coordinatorDefaultTimeout;
     private final boolean jts;
-    private final String nodeIdentifier;
 
     public ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout,
-                                           final boolean transactionStatusManagerEnable, final boolean jts, final String nodeIdentifier) {
+                                           final boolean transactionStatusManagerEnable, final boolean jts) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
         this.transactionStatusManagerEnable = transactionStatusManagerEnable;
         this.jts = jts;
-        this.nodeIdentifier = nodeIdentifier;
     }
 
     @Override

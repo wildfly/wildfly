@@ -141,14 +141,14 @@ class TransactionSubsystem15Parser extends TransactionSubsystem14Parser {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (Element.CM_RESPOURCE.forName(reader.getLocalName()) == Element.CM_RESPOURCE) {
+                    if (Element.forName(reader.getLocalName()) == Element.CM_RESPOURCE) {
                         cmrAddress.protect();
                         cmrOperation.get(OP_ADDR).set(cmrAddress);
 
                         operations.add(cmrOperation);
                         return;
                     } else {
-                        if (Element.CM_RESPOURCE.forName(reader.getLocalName()) == Element.UNKNOWN) {
+                        if (Element.forName(reader.getLocalName()) == Element.UNKNOWN) {
                             throw unexpectedElement(reader);
                         }
                     }
