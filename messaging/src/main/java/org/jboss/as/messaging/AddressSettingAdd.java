@@ -30,6 +30,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.settings.impl.SlowConsumerPolicy;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -128,6 +129,16 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         }
         if (config.hasDefined(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.getName())) {
             settings.setSendToDLAOnNoRoute(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
+        }
+        if (config.hasDefined(AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD.getName())) {
+            settings.setSlowConsumerCheckPeriod(AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD.resolveModelAttribute(context, config).asLong());
+        }
+        if (config.hasDefined(AddressSettingDefinition.SLOW_CONSUMER_POLICY.getName())) {
+            final SlowConsumerPolicy slowConsumerPolicy = SlowConsumerPolicy.valueOf(AddressSettingDefinition.SLOW_CONSUMER_POLICY.resolveModelAttribute(context, config).asString());
+            settings.setSlowConsumerPolicy(slowConsumerPolicy);
+        }
+        if (config.hasDefined(AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD.getName())) {
+            settings.setSlowConsumerThreshold(AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD.resolveModelAttribute(context, config).asLong());
         }
         return settings;
     }

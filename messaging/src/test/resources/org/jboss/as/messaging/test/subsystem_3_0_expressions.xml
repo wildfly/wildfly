@@ -288,6 +288,9 @@
                 <last-value-queue>${last.value.queue:false}</last-value-queue>
                 <redistribution-delay>${redistribution.delay:0}</redistribution-delay>
                 <send-to-dla-on-no-route>${send.to.dla.on.no.route:false}</send-to-dla-on-no-route>
+                <slow-consumer-check-period>${slow.consumer.check.period:123}</slow-consumer-check-period>
+                <slow-consumer-policy>${slow.consumer.policy:KILL}</slow-consumer-policy>
+                <slow-consumer-threshold>${slow.consumer.threshold:456}</slow-consumer-threshold>
             </address-setting>
         </address-settings>
 

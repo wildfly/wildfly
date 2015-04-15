@@ -61,6 +61,9 @@ public class Messaging30SubsystemParser extends Messaging20SubsystemParser {
         switch (element) {
             case MAX_REDELIVERY_DELAY:
             case REDELIVERY_MULTIPLIER:
+            case SLOW_CONSUMER_CHECK_PERIOD:
+            case SLOW_CONSUMER_POLICY:
+            case SLOW_CONSUMER_THRESHOLD:
                 handleElementText(reader, element, addressSettingsAdd);
                 break;
             default:
