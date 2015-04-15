@@ -1,5 +1,27 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2015, Red Hat Middleware LLC, and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
 <host xmlns="urn:jboss:domain:1.3" name="slave">
 
     <management>
@@ -34,16 +56,15 @@
 
     <domain-controller>
        <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
+           <!-- The DomainAdjustors used in the test setup delete all the invalid extensions
             <ignored-resources type="extension">
+
                 <instance name="org.wildfly.extension.batch"/>
                 <instance name="org.wildfly.extension.bean-validation"/>
                 <instance name="org.wildfly.extension.io"/>
                 <instance name="org.wildfly.extension.undertow"/>
             </ignored-resources>
-            <ignored-resources type="profile">
-                <instance name="full-ha"/>
-                <instance name="full-ha-7.2.x"/>
-            </ignored-resources>
+            -->
        </remote>
     </domain-controller>
 
@@ -73,6 +94,6 @@
 
 
     <servers>
-        <server name="server-one" group="7.1.3-server-group"/>
+        <server name="server-one" group="other-server-group"/>
     </servers>
 </host>

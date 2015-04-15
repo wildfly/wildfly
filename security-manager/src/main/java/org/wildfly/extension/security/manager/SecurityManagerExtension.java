@@ -42,7 +42,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class SecurityManagerExtension implements Extension {
 
-    protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, Constants.SUBSYSTEM_NAME);
+    public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, Constants.SUBSYSTEM_NAME);
     protected static final String RESOURCE_NAME = SecurityManagerExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;

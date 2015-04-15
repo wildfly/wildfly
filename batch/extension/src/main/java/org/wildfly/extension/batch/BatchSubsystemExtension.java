@@ -38,6 +38,7 @@ public class BatchSubsystemExtension implements Extension {
      * Version numbers for batch subsystem management interface.
      */
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
+    public static final String SUBSYSTEM_NAME = BatchSubsystemDefinition.NAME;
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {

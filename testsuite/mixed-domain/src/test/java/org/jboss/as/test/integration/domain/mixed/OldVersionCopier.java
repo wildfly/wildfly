@@ -19,28 +19,21 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.test.integration.domain.mixed.util;
+package org.jboss.as.test.integration.domain.mixed;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.jboss.as.test.integration.domain.mixed.Version;
 import org.xnio.IoUtils;
 
 /**
@@ -90,92 +83,10 @@ public class OldVersionCopier {
         }
         try {
             File expanded = expandAsInstance(file);
-
-//                    if (file.getName().equals("jboss-as-7.1.2.Final.zip")) {
-//                        patchBadRemoting("jboss-as-7.1.2.Final");
-//                    } else if (file.getName().equals("jboss-as-7.1.3.Final.zip")) {
-//                        patchBadRemoting("jboss-as-7.1.3.Final");
-//                    }
             return expanded;
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void patchBadRemoting(String name) throws Exception {
-        File file = new File(targetOldVersions, name);
-        File modulesDir = new File(file, "modules");
-        if (!modulesDir.exists()) {
-            throw new RuntimeException("No modules dir " + modulesDir);
-        }
-//        File modulesZip = new File(file, "modules.zip");
-//        if (!modulesZip.exists()) {
-//            throw new RuntimeException("No modules zip " + modulesZip);
-//        }
-
-        //org/jboss/xnio/main/
-        File xnioDir = new File(modulesDir, "org");
-        xnioDir = new File(xnioDir, "jboss");
-        xnioDir = new File(xnioDir, "xnio");
-        xnioDir = new File(xnioDir, "main");
-        URL patchedXnioUrl = getClass().getResource("/patched-jars/xnio-api-3.0.7.GA.jar");
-        patchModule(xnioDir, patchedXnioUrl);
-
-        //org/jboss/remoting3/main
-        File remotingDir = new File(modulesDir, "org");
-        remotingDir = new File(remotingDir, "jboss");
-        remotingDir = new File(remotingDir, "remoting3");
-        remotingDir = new File(remotingDir, "main");
-        URL patchedRemotingUrl = getClass().getResource("/patched-jars/jboss-remoting-3.2.13.GA.jar");
-        patchModule(remotingDir, patchedRemotingUrl);
-    }
-
-    private void patchModule(File moduleMainDir, URL patchedJar) throws Exception {
-        assertTrue(moduleMainDir.exists());
-        assertNotNull(patchedJar);
-        String oldJarName = null;
-        for (String fileName : moduleMainDir.list()) {
-            if (fileName.endsWith(".jar")) {
-                if (oldJarName != null) {
-                    throw new RuntimeException("Could not determine old jar in " + moduleMainDir);
-                }
-                oldJarName = fileName;
-            }
-        }
-
-        if (oldJarName == null) {
-            throw new RuntimeException("Could not determine old jar in " + moduleMainDir);
-        }
-
-        File patchedJarFile = new File(patchedJar.toURI());
-
-        //Copy the patched jar to the module main directory
-        inputStreamToFile(new FileInputStream(patchedJarFile), new File(moduleMainDir, patchedJarFile.getName()));
-
-        //Replace the name of the jar with the patched jar in module.xml
-        File moduleXml = new File(moduleMainDir, "module.xml");
-        StringBuffer moduleXmlContents = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new FileReader(moduleXml));
-        try {
-            String line = reader.readLine();
-            while (line != null) {
-                moduleXmlContents.append(line);
-                moduleXmlContents.append("\n");
-                line = reader.readLine();
-            }
-        } finally {
-            IoUtils.safeClose(reader);
-        }
-        int index = moduleXmlContents.indexOf(oldJarName);
-        moduleXmlContents.replace(index, index + oldJarName.length(), patchedJarFile.getName());
-        moduleXml.delete();
-        BufferedWriter writer = new BufferedWriter(new FileWriter(moduleXml));
-        try {
-            writer.write(moduleXmlContents.toString());
-        } finally {
-            IoUtils.safeClose(writer);
-        }
-
     }
 
     private File expandAsInstance(final File file) throws Exception {
