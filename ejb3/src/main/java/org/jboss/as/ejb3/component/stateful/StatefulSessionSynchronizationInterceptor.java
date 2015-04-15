@@ -85,7 +85,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
             // so that it can released on the tx synchronization callbacks
             boolean acquired = lock.tryLock(timeout.getValue(), timeout.getTimeUnit());
             if (!acquired) {
-                throw EjbLogger.ROOT_LOGGER.failToObtainLock(context, timeout.getValue(), timeout.getTimeUnit());
+                throw EjbLogger.ROOT_LOGGER.failToObtainLock(component.getComponentName(), timeout.getValue(), timeout.getTimeUnit());
             }
             synchronized (threadLock) {
                 if (ROOT_LOGGER.isTraceEnabled()) {

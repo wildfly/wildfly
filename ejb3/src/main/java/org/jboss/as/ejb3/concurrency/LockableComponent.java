@@ -61,4 +61,10 @@ public interface LockableComponent {
      * @return
      */
     AccessTimeoutDetails getDefaultAccessTimeout();
+
+    /**
+     *
+     * @return The name of this component
+     */
+    String getComponentName();
 }
