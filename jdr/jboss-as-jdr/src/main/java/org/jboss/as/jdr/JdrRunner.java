@@ -92,7 +92,7 @@ public class JdrRunner implements JdrReportCollector {
             Properties plugins = new Properties();
             plugins.load(is);
             for (String pluginName : plugins.stringPropertyNames()) {
-                Class pluginClass = Class.forName(pluginName);
+                Class<?> pluginClass = Class.forName(pluginName);
                 JdrPlugin plugin = (JdrPlugin) pluginClass.newInstance();
                 commands.addAll(plugin.getCommands());
                 versionWriter.println(plugin.getPluginId());
