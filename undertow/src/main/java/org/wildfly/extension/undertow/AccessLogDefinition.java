@@ -74,6 +74,14 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(new ValueExpression("${jboss.server.log.dir}")))
             .setAllowExpression(true)
             .build();
+
+    protected static final SimpleAttributeDefinition USE_SERVER_LOG = new SimpleAttributeDefinitionBuilder(Constants.USE_SERVER_LOG, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
+
+
     static final Collection<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             WORKER,
@@ -81,7 +89,8 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             PREFIX,
             SUFFIX,
             ROTATE,
-            DIRECTORY
+            DIRECTORY,
+            USE_SERVER_LOG
     );
     static final AccessLogDefinition INSTANCE = new AccessLogDefinition();
     private final List<AccessConstraintDefinition> accessConstraints;
