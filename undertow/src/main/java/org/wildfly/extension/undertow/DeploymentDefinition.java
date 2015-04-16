@@ -68,6 +68,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(CONTEXT_ROOT, null);
         resourceRegistration.registerReadOnlyAttribute(VIRTUAL_HOST, null);
+        resourceRegistration.registerReadOnlyAttribute(SERVER, null);
         for (SessionStat stat : SessionStat.values()) {
             resourceRegistration.registerMetric(stat.definition, SessionManagerStatsHandler.getInstance());
         }
