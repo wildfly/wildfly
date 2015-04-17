@@ -65,7 +65,6 @@
             <include path="META-INF"/>
           </imports>
         </module>
-        <module name="org.jboss.common-core" />
         <module name="org.jboss.logging" />
         <module name="org.apache.ws.security" />
         <module name="org.picketbox" />
