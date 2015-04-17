@@ -88,7 +88,7 @@
                             <!-- Parameters to test cases. -->
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>manual-mode</arquillian.launch>
-                                <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                 <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
                                 <javax.net.ssl.trustStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
                                 <javax.net.ssl.keyStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>

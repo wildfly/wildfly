@@ -29,7 +29,14 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.manualmode.ejb.Util;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
@@ -44,13 +51,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.api.Authentication;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
+
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  * Tests that clustered EJB remote invocations between the server and client, where the client itself
@@ -138,12 +150,28 @@ public class EJBClientClusterConfigurationTestCase {
     public void testServerToServerClusterFormation() throws Exception {
         // First start the default server
         this.container.start(DEFAULT_JBOSSAS);
+
+        // remove local authentication for applications at the server B
+        final ModelControllerClient serverBClient = createModelControllerClient(DEFAULT_JBOSSAS);
+        LocalAuthenticationSetup.INSTANCE.setup(createManagementClient(serverBClient, DEFAULT_JBOSSAS), DEFAULT_JBOSSAS);
+
+        // the previous op needs a reload
+        this.container.stop(DEFAULT_JBOSSAS);
+        this.container.start(DEFAULT_JBOSSAS);
+
+        ModelControllerClient serverAClient = null;
+
         try {
             // deploy a deployment which contains a clustered EJB
             this.deployer.deploy(DEFAULT_AS_DEPLOYMENT);
 
             // start the other server
             this.container.start(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+
+            // setup system properties for jboss-ejb-client.xml before the deployment
+            serverAClient = createModelControllerClient(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+            SystemPropertySetup.INSTANCE.setup(createManagementClient(serverAClient, JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION), JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+
             // deploy the deployment containing a non-clustered EJB
             this.deployer.deploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
 
@@ -163,9 +191,11 @@ public class EJBClientClusterConfigurationTestCase {
         } finally {
             try {
                 this.deployer.undeploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
-                this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+                SystemPropertySetup.INSTANCE.tearDown(createManagementClient(serverAClient, JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION), JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
             } catch (Exception e) {
                 logger.debug("Exception during container shutdown", e);
+            } finally {
+                this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
             }
             try {
                 if (!this.container.isStarted(DEFAULT_JBOSSAS)) {
@@ -173,10 +203,16 @@ public class EJBClientClusterConfigurationTestCase {
                     this.container.start(DEFAULT_JBOSSAS);
                 }
                 this.deployer.undeploy(DEFAULT_AS_DEPLOYMENT);
-                this.container.stop(DEFAULT_JBOSSAS);
+                LocalAuthenticationSetup.INSTANCE.tearDown(createManagementClient(serverBClient, DEFAULT_JBOSSAS), DEFAULT_JBOSSAS);
             } catch (Exception e) {
                 logger.debug("Exception during container shutdown", e);
+            } finally {
+                this.container.stop(DEFAULT_JBOSSAS);
             }
+            if (serverAClient != null) {
+                serverAClient.close();
+            }
+            serverBClient.close();
         }
 
     }
@@ -190,8 +226,8 @@ public class EJBClientClusterConfigurationTestCase {
      */
     private static ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
         // setup the selector
-        final String clientPropertiesFile = "org/jboss/as/test/manualmode/ejb/client/cluster/jboss-ejb-client.properties";
-        final InputStream inputStream = EJBClientClusterConfigurationTestCase.class.getClassLoader().getResourceAsStream(clientPropertiesFile);
+        final String clientPropertiesFile = "jboss-ejb-client.properties";
+        final InputStream inputStream = EJBClientClusterConfigurationTestCase.class.getResourceAsStream(clientPropertiesFile);
         if (inputStream == null) {
             throw new IllegalStateException("Could not find " + clientPropertiesFile + " in classpath");
         }
@@ -202,4 +238,138 @@ public class EJBClientClusterConfigurationTestCase {
 
         return EJBClientContext.setSelector(selector);
     }
+
+    private static ModelControllerClient createModelControllerClient(final String container) throws UnknownHostException {
+
+        if (container == null) {
+            throw new IllegalArgumentException("container cannot be null");
+        }
+
+        final int portOffset = getContainerPortOffset(container);
+        final int managementPort = TestSuiteEnvironment.getServerPort() + portOffset;
+        final String managementAddress = TestSuiteEnvironment.getServerAddress();
+
+        return ModelControllerClient.Factory.create(InetAddress.getByName(managementAddress),
+                managementPort,
+                Authentication.getCallbackHandler());
+    }
+
+    private static ManagementClient createManagementClient(final ModelControllerClient client, final String container) throws UnknownHostException {
+
+        if (container == null) {
+            throw new IllegalArgumentException("container cannot be null");
+        }
+
+        final int portOffset = getContainerPortOffset(container);
+        final int managementPort = TestSuiteEnvironment.getServerPort() + portOffset;
+        final String managementAddress = TestSuiteEnvironment.getServerAddress();
+
+        return new ManagementClient(client, managementAddress, managementPort, "http-remoting");
+    }
+
+    private static int getContainerPortOffset(final String container) {
+        final int portOffset;
+        if (JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION.equals(container)) {
+            portOffset = 100;
+        } else {
+            portOffset = 0;
+        }
+        return portOffset;
+    }
+
+    static class SystemPropertySetup implements ServerSetupTask {
+
+        public static final SystemPropertySetup INSTANCE = new SystemPropertySetup();
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ModelControllerClient client = managementClient.getControllerClient();
+
+            ModelNode operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.outbound-connection-ref", ModelDescriptionConstants.ADD);
+            operation.get("value").set("remote-ejb-connection");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.exclude-local-receiver", ModelDescriptionConstants.ADD);
+            operation.get("value").set("true");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.cluster-name", ModelDescriptionConstants.ADD);
+            operation.get("value").set("ejb");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.max-allowed-connected-nodes", ModelDescriptionConstants.ADD);
+            operation.get("value").set("20");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.cluster-node-selector", ModelDescriptionConstants.ADD);
+            operation.get("value").set("org.jboss.as.test.manualmode.ejb.client.cluster.ApplicationSpecificClusterNodeSelector");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.connect-timeout", ModelDescriptionConstants.ADD);
+            operation.get("value").set("15000");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.username", ModelDescriptionConstants.ADD);
+            operation.get("value").set("user1");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.security-realm", ModelDescriptionConstants.ADD);
+            operation.get("value").set("PasswordRealm");
+            Utils.applyUpdate(operation, client);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ModelControllerClient client = managementClient.getControllerClient();
+
+            ModelNode operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.outbound-connection-ref", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.exclude-local-receiver", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.cluster-name", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.max-allowed-connected-nodes", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.cluster-node-selector", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.connect-timeout", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.username", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.security-realm", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+        }
+    }
+
+    static class LocalAuthenticationSetup implements ServerSetupTask {
+
+        public static final LocalAuthenticationSetup INSTANCE = new LocalAuthenticationSetup();
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ModelControllerClient client = managementClient.getControllerClient();
+
+            final ModelNode operation = createOpNode("core-service=management/security-realm=ApplicationRealm/authentication=local", ModelDescriptionConstants.REMOVE);
+            Utils.applyUpdate(operation, client);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ModelControllerClient client = managementClient.getControllerClient();
+
+            final ModelNode operation = createOpNode("core-service=management/security-realm=ApplicationRealm/authentication=local", ModelDescriptionConstants.ADD);
+            operation.get("allowed-users").set("*");
+            operation.get("default-user").set("$local");
+            operation.get("skip-group-loading").set(true);
+            Utils.applyUpdate(operation, client);
+        }
+    }
+
 }

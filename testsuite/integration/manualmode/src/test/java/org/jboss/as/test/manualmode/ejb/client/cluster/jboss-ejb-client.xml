@@ -21,12 +21,16 @@
   -->
 <jboss-ejb-client xmlns="urn:jboss:ejb-client:1.2">
     <client-context deployment-node-selector="org.jboss.as.test.manualmode.ejb.client.cluster.CustomDeploymentNodeSelector">
-        <ejb-receivers exclude-local-receiver="true">
-            <remoting-ejb-receiver outbound-connection-ref="remote-ejb-connection"/>
+        <ejb-receivers exclude-local-receiver="${EJBClientClusterConfigurationTestCase.exclude-local-receiver}">
+            <remoting-ejb-receiver outbound-connection-ref="${EJBClientClusterConfigurationTestCase.outbound-connection-ref}"/>
         </ejb-receivers>
         <clusters>
-            <cluster name="ejb" max-allowed-connected-nodes="20" cluster-node-selector="org.jboss.as.test.manualmode.ejb.client.cluster.ApplicationSpecificClusterNodeSelector"
-                     connect-timeout="15000" username="user1" security-realm="PasswordRealm">
+            <cluster name="${EJBClientClusterConfigurationTestCase.cluster-name}"
+                     max-allowed-connected-nodes="${EJBClientClusterConfigurationTestCase.max-allowed-connected-nodes}"
+                     cluster-node-selector="${EJBClientClusterConfigurationTestCase.cluster-node-selector}"
+                     connect-timeout="${EJBClientClusterConfigurationTestCase.connect-timeout}"
+                     username="${EJBClientClusterConfigurationTestCase.username}"
+                     security-realm="${EJBClientClusterConfigurationTestCase.security-realm}">
                 <connection-creation-options>
                     <property name="org.xnio.Options.SSL_ENABLED" value="false"/>
                     <property name="org.xnio.Options.SASL_POLICY_NOANONYMOUS" value="true"/>
