@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
@@ -107,10 +108,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         }
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler handler = new ClusteredCacheMetricsHandler();
-            for (ClusteredCacheMetric metric: ClusteredCacheMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
         }
     }
 }

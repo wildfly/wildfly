@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.util.concurrent.IsolationLevel;
+import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -108,10 +109,7 @@ public class LockingResourceDefinition extends SimpleResourceDefinition {
         }
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler handler = new LockingMetricsHandler();
-            for (LockingMetric metric: LockingMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new LockingMetricExecutor(), LockingMetric.class).register(registration);
         }
     }
 }

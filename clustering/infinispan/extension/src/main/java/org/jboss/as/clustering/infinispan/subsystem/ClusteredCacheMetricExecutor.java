@@ -19,11 +19,10 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.infinispan.util.concurrent.locks.LockManagerImpl;
-import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.infinispan.remoting.rpc.RpcManagerImpl;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -31,30 +30,20 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
 /**
- * A handler for cache locking metrics.
+ * Handler for clustered cache metrics.
  *
  * @author Paul Ferraro
  */
-public class LockingMetricsHandler extends AbstractRuntimeOnlyHandler {
+public class ClusteredCacheMetricExecutor implements MetricExecutor<RpcManagerImpl> {
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*/locking=LOCKING
+    public ModelNode execute(OperationContext context, Metric<RpcManagerImpl> metric) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
-        String containerName = address.getElement(address.size() - 3).getValue();
-        String cacheName = address.getElement(address.size() - 2).getValue();
-        String name = Operations.getAttributeName(operation);
+        String containerName = address.getParent().getLastElement().getValue();
+        String cacheName = address.getLastElement().getValue();
 
-        LockingMetric metric = LockingMetric.forName(name);
+        Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
 
-        if (metric == null) {
-            context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
-        } else {
-            Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
-            if (cache != null) {
-                context.getResult().set(metric.getValue((LockManagerImpl) cache.getAdvancedCache().getLockManager()));
-            }
-        }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        return (cache != null) ? metric.execute((RpcManagerImpl) cache.getAdvancedCache().getRpcManager()) : null;
     }
 }

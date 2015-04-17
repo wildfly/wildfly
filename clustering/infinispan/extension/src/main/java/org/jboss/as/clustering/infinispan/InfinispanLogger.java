@@ -237,16 +237,6 @@ public interface InfinispanLogger extends BasicLogger {
     IllegalStateException failedToParse(@Cause Throwable cause, URL url);
 
     /**
-     * Creates an exception indicating a singleton resource already exists.
-     *
-     * @param resourceName the name of the resource.
-     *
-     * @return an {@link OperationFailedException} for the error.
-     */
-    @Message(id = 20, value = "Add operation failed: singleton %s already exists.")
-    OperationFailedException singletonResourceAlreadyExists(String resourceName);
-
-    /**
      * Creates an exception indicating unable to remove an alias from an empty list of aliases.
      *
      * @param aliasName the name of the alias.
@@ -267,19 +257,6 @@ public interface InfinispanLogger extends BasicLogger {
 
     @Message(id = 23, value = "Attribute 'segments' is an expression and therefore cannot be translated to legacy attribute 'virtual-nodes'. This resource will need to be ignored on that host.")
     String virtualNodesDoesNotSupportExpressions();
-
-    @Message(id = 24, value = "Unknown metric %s")
-    String unknownMetric(String metricName);
-
-    /**
-     * Creates an exception indicating failure to invoke an operation.
-     *
-     * @param operation the operation name.
-     *
-     * @return an {@link OperationFailedException} for the error.
-     */
-    @Message(id = 25, value = "Failed to invoke operation: %s")
-    OperationFailedException failedToInvokeOperation(@Cause Throwable cause, String operation);
 
     @Message(id = 26, value = "Attribute 'virtual nodes' is an expression and therefore cannot be translated to attribute 'segments'.")
     String segmentsDoesNotSupportExpressions();

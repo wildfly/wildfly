@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.infinispan.transaction.LockingMode;
+import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.clustering.controller.transform.AttributeOperationTransformer;
@@ -238,11 +239,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
         }
 
         if (this.allowRuntimeOnlyRegistration) {
-            // register any metrics
-            OperationStepHandler handler = new TransactionMetricsHandler();
-            for (TransactionMetric metric: TransactionMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new TransactionMetricExecutor(), TransactionMetric.class).register(registration);
         }
     }
 }

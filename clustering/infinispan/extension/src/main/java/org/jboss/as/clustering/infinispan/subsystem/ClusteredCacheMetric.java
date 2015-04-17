@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.remoting.rpc.RpcManagerImpl;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
@@ -39,25 +36,25 @@ public enum ClusteredCacheMetric implements Metric<RpcManagerImpl> {
 
     AVERAGE_REPLICATION_TIME(MetricKeys.AVERAGE_REPLICATION_TIME, ModelType.LONG) {
         @Override
-        public ModelNode getValue(RpcManagerImpl manager) {
+        public ModelNode execute(RpcManagerImpl manager) {
             return new ModelNode(manager.getAverageReplicationTime());
         }
     },
     REPLICATION_COUNT(MetricKeys.REPLICATION_COUNT, ModelType.LONG) {
         @Override
-        public ModelNode getValue(RpcManagerImpl manager) {
+        public ModelNode execute(RpcManagerImpl manager) {
             return new ModelNode(manager.getReplicationCount());
         }
     },
     REPLICATION_FAILURES(MetricKeys.REPLICATION_FAILURES, ModelType.LONG) {
         @Override
-        public ModelNode getValue(RpcManagerImpl manager) {
+        public ModelNode execute(RpcManagerImpl manager) {
             return new ModelNode(manager.getReplicationFailures());
         }
     },
     SUCCESS_RATIO(MetricKeys.SUCCESS_RATIO, ModelType.DOUBLE) {
         @Override
-        public ModelNode getValue(RpcManagerImpl manager) {
+        public ModelNode execute(RpcManagerImpl manager) {
             return new ModelNode(manager.getSuccessRatio());
         }
     },
@@ -71,17 +68,5 @@ public enum ClusteredCacheMetric implements Metric<RpcManagerImpl> {
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
-    }
-
-    private static final Map<String, ClusteredCacheMetric> metrics = new HashMap<>();
-
-    static {
-        for (ClusteredCacheMetric metric: ClusteredCacheMetric.values()) {
-            metrics.put(metric.definition.getName(), metric);
-        }
-    }
-
-    public static ClusteredCacheMetric forName(String name) {
-        return metrics.get(name);
     }
 }

@@ -352,15 +352,6 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         }
     }
 
-    private static void setValue(Protocol protocol, String property, Object value) {
-        ROOT_LOGGER.setProtocolPropertyValue(protocol.getName(), property, value);
-        try {
-            protocol.setValue(property, value);
-        } catch (IllegalArgumentException e) {
-            ROOT_LOGGER.nonExistentProtocolPropertyValue(e, protocol.getName(), property, value);
-        }
-    }
-
     /*
      * Collects the configurable properties for a given protocol.
      * This includes all fields and methods annotated with @Property for a given protocol

@@ -20,10 +20,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
 import org.infinispan.interceptors.ActivationInterceptor;
-import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -35,27 +34,21 @@ import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
  *
  * @author Paul Ferraro
  */
-public class StoreMetricsHandler extends AbstractRuntimeOnlyHandler {
+public class StoreMetricExecutor implements MetricExecutor<ActivationInterceptor> {
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*/*-store=*
-        PathAddress address = context.getCurrentAddress();
-        String containerName = address.getElement(address.size() - 3).getValue();
-        String cacheName = address.getElement(address.size() - 2).getValue();
-        String name = Operations.getAttributeName(operation);
+    public ModelNode execute(OperationContext context, Metric<ActivationInterceptor> metric) throws OperationFailedException {
+        PathAddress cacheAddress = context.getCurrentAddress().getParent();
+        String containerName = cacheAddress.getParent().getLastElement().getValue();
+        String cacheName = cacheAddress.getLastElement().getValue();
 
-        StoreMetric metric = StoreMetric.forName(name);
-
-        if (metric == null) {
-            context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
-        } else {
-            Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
-            if (cache != null) {
-                ActivationInterceptor interceptor = CacheMetric.findInterceptor(cache, ActivationInterceptor.class);
-                context.getResult().set((interceptor != null) ? metric.getValue(interceptor) : new ModelNode(0));
+        Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
+        if (cache != null) {
+            ActivationInterceptor interceptor = CacheMetric.findInterceptor(cache, ActivationInterceptor.class);
+            if (interceptor != null) {
+                return metric.execute(interceptor);
             }
         }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        return null;
     }
 }

@@ -66,7 +66,6 @@ public class ThreadsAttributesWriteHandler extends ReloadRequiredWriteAttributeH
                     // That is not supported.
                     throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.threadsAttributesUsedInRuntime());
                 }
-                context.stepCompleted();
             }
         }, OperationContext.Stage.MODEL);
     }

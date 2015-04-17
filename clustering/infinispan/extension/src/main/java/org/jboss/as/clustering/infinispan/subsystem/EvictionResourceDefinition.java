@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.eviction.EvictionStrategy;
+import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -92,10 +93,7 @@ public class EvictionResourceDefinition extends SimpleResourceDefinition {
         }
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler handler = new EvictionMetricsHandler();
-            for (EvictionMetric metric: EvictionMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);
         }
     }
 }

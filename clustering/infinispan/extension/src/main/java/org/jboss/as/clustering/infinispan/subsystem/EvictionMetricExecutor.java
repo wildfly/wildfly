@@ -19,35 +19,29 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.infinispan.interceptors.CacheMgmtInterceptor;
 import org.jboss.as.clustering.controller.Metric;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.clustering.controller.MetricExecutor;
+import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
 /**
- * Enumeration of management metrics for cache eviction
+ * Handler for cache eviction metrics.
+ *
  * @author Paul Ferraro
  */
-public enum EvictionMetric implements Metric<Cache<?, ?>> {
-
-    EVICTIONS(MetricKeys.EVICTIONS, ModelType.LONG) {
-        @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = CacheMetric.findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getEvictions() : 0);
-        }
-    },
-    ;
-    private final AttributeDefinition definition;
-
-    private EvictionMetric(String name, ModelType type) {
-        this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
-    }
+public class EvictionMetricExecutor implements MetricExecutor<Cache<?, ?>> {
 
     @Override
-    public AttributeDefinition getDefinition() {
-        return this.definition;
+    public ModelNode execute(OperationContext context, Metric<Cache<?, ?>> metric) throws OperationFailedException {
+        PathAddress cacheAddress = context.getCurrentAddress().getParent();
+        String containerName = cacheAddress.getParent().getLastElement().getValue();
+        String cacheName = cacheAddress.getLastElement().getValue();
+
+        Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
+        return (cache != null) ? metric.execute(cache) : null;
     }
 }

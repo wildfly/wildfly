@@ -148,7 +148,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
         return Collections.emptyList();
     }
 
-    //@Override
+    @Override
     public boolean isRuntime() {
         return false;
     }

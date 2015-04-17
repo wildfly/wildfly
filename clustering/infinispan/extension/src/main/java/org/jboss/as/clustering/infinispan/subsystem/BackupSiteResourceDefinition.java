@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
+import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -122,9 +123,7 @@ public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registration) {
         super.registerOperations(registration);
         if (this.runtimeRegistration) {
-            for (BackupSiteOperation operation : BackupSiteOperation.values()) {
-                registration.registerOperationHandler(operation.getDefinition(), new BackupSiteOperationHandler(operation));
-            }
+            new OperationHandler<>(new BackupSiteOperationExecutor(), BackupSiteOperation.class).register(registration);
         }
     }
 }
