@@ -302,6 +302,7 @@
         <module>security-manager</module>
         <module>system-jmx</module>
         <module>spec-api</module>
+	<module>telemetry</module>
         <module>transactions</module>
         <module>undertow</module>
         <module>servlet-build</module>
@@ -344,6 +345,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <excludes>**/target/**</excludes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -1203,6 +1207,12 @@
                 <artifactId>wildfly-system-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+	    <dependency>
+		<groupId>org.wildfly</groupId>
+		<artifactId>wildfly-telemetry</artifactId>
+		<version>${project.version}</version>
+	    </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
