@@ -105,7 +105,7 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                                 )
                                                 ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
-                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
+                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE, AccessLogDefinition.USE_SERVER_LOG)
                                         ).addChild(
                                                 builder(FilterRefDefinition.INSTANCE)
                                                         .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
