@@ -48,6 +48,8 @@ import org.wildfly.extension.undertow.deployment.UndertowMetricsCollector;
 public class DeploymentServletDefinition extends SimpleResourceDefinition {
     public static final DeploymentServletDefinition INSTANCE = new DeploymentServletDefinition();
 
+    static final SimpleAttributeDefinition SERVLET_NAME = new SimpleAttributeDefinitionBuilder("servlet-name", ModelType.STRING, false).setStorageRuntime().build();
+    static final SimpleAttributeDefinition SERVLET_CLASS = new SimpleAttributeDefinitionBuilder("servlet-class", ModelType.STRING, false).setStorageRuntime().build();
     static final SimpleAttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("max-request-time", ModelType.LONG, true).setStorageRuntime().build();
     static final SimpleAttributeDefinition MIN_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("min-request-time", ModelType.LONG, true).setStorageRuntime().build();
     static final SimpleAttributeDefinition TOTAL_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("total-request-time", ModelType.LONG, true).setStorageRuntime().build();
@@ -61,6 +63,8 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
+        registration.registerReadOnlyAttribute(SERVLET_NAME, null);
+        registration.registerReadOnlyAttribute(SERVLET_CLASS, null);
         registration.registerMetric(MAX_REQUEST_TIME, new AbstractMetricsHandler() {
             @Override
             void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {

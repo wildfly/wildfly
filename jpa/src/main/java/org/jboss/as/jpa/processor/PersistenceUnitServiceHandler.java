@@ -41,7 +41,9 @@ import javax.sql.DataSource;
 import javax.validation.ValidatorFactory;
 
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
@@ -84,6 +86,7 @@ import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -120,7 +123,7 @@ public class PersistenceUnitServiceHandler {
     public static final ServiceName BEANMANAGER_NAME = ServiceName.of("beanmanager");
 
     private static final AttachmentKey<Map<String,PersistenceProviderAdaptor>> providerAdaptorMapKey = AttachmentKey.create(Map.class);
-    private static final String SCOPED_UNIT_NAME = "scoped-unit-name";
+    public static final AttributeDefinition SCOPED_UNIT_NAME = new SimpleAttributeDefinitionBuilder("scoped-unit-name", ModelType.STRING, true).setStorageRuntime().build();
     private static final String FIRST_PHASE = "__FIRST_PHASE__";
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
 
@@ -1114,7 +1117,7 @@ public class PersistenceUnitServiceHandler {
 
             // Resource providerResource = managementAdaptor.createPersistenceUnitResource(scopedPersistenceUnitName, providerLabel);
             ModelNode perPuNode = providerResource.getModel();
-            perPuNode.get(SCOPED_UNIT_NAME).set(pu.getScopedPersistenceUnitName());
+            perPuNode.get(SCOPED_UNIT_NAME.getName()).set(pu.getScopedPersistenceUnitName());
             // TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API
             final Resource deploymentResource = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
             Resource subsystemResource;

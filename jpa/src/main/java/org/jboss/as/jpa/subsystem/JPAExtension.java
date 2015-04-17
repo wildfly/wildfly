@@ -50,6 +50,7 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
+import org.jboss.as.jpa.processor.PersistenceUnitServiceHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLElementReader;
@@ -100,6 +101,7 @@ public class JPAExtension implements Extension {
 
         if (context.isRuntimeOnlyRegistrationValid()) {
             final ManagementResourceRegistration jpaSubsystemDeployments = registration.registerDeploymentModel(JPADefinition.INSTANCE);
+            jpaSubsystemDeployments.registerReadOnlyAttribute(PersistenceUnitServiceHandler.SCOPED_UNIT_NAME, null);
 
         }
     }
