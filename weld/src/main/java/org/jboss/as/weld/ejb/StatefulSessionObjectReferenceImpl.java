@@ -26,10 +26,7 @@ import java.io.Serializable;
 import java.security.AccessController;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
@@ -41,7 +38,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.api.SessionObjectReference;
-import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 
 /**
  * Implementation for SFSB's
@@ -52,14 +48,14 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
 
     private volatile boolean removed = false;
 
-    private final Map<String, ServiceName> viewServices;
     private final ServiceName createServiceName;
     private final SessionID id;
     private final StatefulSessionComponent ejbComponent;
+    private final Map<Class<?>, ServiceName> viewServices;
 
     private transient Map<String, ManagedReference> businessInterfaceToReference;
 
-    public StatefulSessionObjectReferenceImpl(final SessionID id, final ServiceName createServiceName, final Map<String, ServiceName> viewServices) {
+    public StatefulSessionObjectReferenceImpl(final SessionID id, final ServiceName createServiceName, final Map<Class<?>, ServiceName> viewServices) {
         this.id = id;
         this.createServiceName = createServiceName;
         this.viewServices = viewServices;
@@ -72,50 +68,8 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
         final ServiceController<?> controller = currentServiceContainer().getRequiredService(createServiceName);
         ejbComponent = (StatefulSessionComponent) controller.getValue();
         this.id = ejbComponent.createSession();
-        this.viewServices = buildViews(descriptor);
+        this.viewServices = descriptor.getViewServices();
 
-    }
-
-    private static Map<String, ServiceName> buildViews(final EjbDescriptorImpl<?> descriptor) {
-        final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-        final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
-        for (BusinessInterfaceDescriptor<?> view : descriptor.getRemoteBusinessInterfaces()) {
-            views.put(view.getInterface().getName(), view.getInterface());
-        }
-        for (BusinessInterfaceDescriptor<?> view : descriptor.getLocalBusinessInterfaces()) {
-            views.put(view.getInterface().getName(), view.getInterface());
-        }
-
-        for (Map.Entry<Class<?>, ServiceName> entry : descriptor.getViewServices().entrySet()) {
-            final Class<?> viewClass = entry.getKey();
-            if (viewClass != null) {
-                //see WELD-921
-                //this is horrible, but until it is fixed there is not much that can be done
-
-                final Set<Class<?>> seen = new HashSet<Class<?>>();
-                final Set<Class<?>> toProcess = new HashSet<Class<?>>();
-
-                toProcess.add(viewClass);
-
-                while (!toProcess.isEmpty()) {
-                    Iterator<Class<?>> it = toProcess.iterator();
-                    final Class<?> clazz = it.next();
-                    it.remove();
-                    seen.add(clazz);
-                    viewServices.put(clazz.getName(), entry.getValue());
-                    final Class<?> superclass = clazz.getSuperclass();
-                    if (superclass != Object.class && superclass != null && !seen.contains(superclass)) {
-                        toProcess.add(superclass);
-                    }
-                    for (Class<?> iface : clazz.getInterfaces()) {
-                        if (!seen.contains(iface)) {
-                            toProcess.add(iface);
-                        }
-                    }
-                }
-            }
-        }
-        return viewServices;
     }
 
 
@@ -136,9 +90,9 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
         }
 
         if (managedReference == null) {
-            if (viewServices.containsKey(businessInterfaceType.getName())) {
+            if (viewServices.containsKey(businessInterfaceType)) {
                 final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(
-                        viewServices.get(businessInterfaceType.getName()));
+                        viewServices.get(businessInterfaceType));
                 final ComponentView view = (ComponentView) serviceController.getValue();
                 try {
                     managedReference = view.createInstance(Collections.<Object, Object> singletonMap(SessionID.class, id));

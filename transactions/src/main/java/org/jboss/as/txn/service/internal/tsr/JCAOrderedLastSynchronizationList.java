@@ -22,7 +22,6 @@
 package org.jboss.as.txn.service.internal.tsr;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +48,10 @@ import org.jboss.as.txn.logging.TransactionLogger;
  * "Resources can be closed but no transactional work can be performed with them"
  */
 public class JCAOrderedLastSynchronizationList implements Synchronization {
-    private com.arjuna.ats.jta.transaction.Transaction tx;
-    private Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations;
-    private List<Synchronization> preJcaSyncs = new ArrayList<Synchronization>();
-    private List<Synchronization> jcaSyncs = new ArrayList<Synchronization>();
+    private final com.arjuna.ats.jta.transaction.Transaction tx;
+    private final Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations;
+    private final List<Synchronization> preJcaSyncs = new ArrayList<Synchronization>();
+    private final List<Synchronization> jcaSyncs = new ArrayList<Synchronization>();
 
     public JCAOrderedLastSynchronizationList(com.arjuna.ats.jta.transaction.Transaction tx,
         Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations) {
@@ -137,8 +136,8 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
     public void afterCompletion(int status) {
         // The list should be iterated in reverse order - has issues with EJB3 if not
         // https://github.com/jbosstm/narayana/blob/master/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/coordinator/TwoPhaseCoordinator.java#L509
-        Collections.reverse(preJcaSyncs);
-        for (Synchronization preJcaSync : preJcaSyncs) {
+        for (int i = preJcaSyncs.size() - 1; i>= 0; --i) {
+            Synchronization preJcaSync = preJcaSyncs.get(i);
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
                 TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.preJcaSyncs.afterCompletion - Class: " + preJcaSync.getClass() + " HashCode: "
                     + preJcaSync.hashCode()
@@ -152,8 +151,8 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
                 TransactionLogger.ROOT_LOGGER.preJcaSyncAfterCompletionFailed(preJcaSync, tx, e);
             }
         }
-        Collections.reverse(jcaSyncs);
-        for (Synchronization jcaSync : jcaSyncs) {
+        for (int i = jcaSyncs.size() - 1; i>= 0; --i) {
+            Synchronization jcaSync = jcaSyncs.get(i);
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
                 TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.jcaSyncs.afterCompletion - Class: " + jcaSync.getClass() + " HashCode: "
                     + jcaSync.hashCode()

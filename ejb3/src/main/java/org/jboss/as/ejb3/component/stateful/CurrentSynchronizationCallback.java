@@ -46,7 +46,8 @@ public class CurrentSynchronizationCallback {
     }
 
     public static void clear() {
-        type.remove();
+        //set to null instead of removing to prevent thread local entry churn
+        type.set(null);
     }
 
 }

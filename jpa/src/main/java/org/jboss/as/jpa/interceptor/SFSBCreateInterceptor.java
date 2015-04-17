@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.interceptor;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ee.component.ComponentInstance;
@@ -59,7 +58,7 @@ public class SFSBCreateInterceptor implements Interceptor {
             ManagedReference entityManagerRef = (ManagedReference) componentInstance.getInstanceData(SFSBInvocationInterceptor.CONTEXT_KEY);
             entityManagers = (Map<String, ExtendedEntityManager>)entityManagerRef.getInstance();
         }
-        final List<ExtendedEntityManager> ems = CreatedEntityManagers.getDeferredEntityManagers();
+        final ExtendedEntityManager[] ems = CreatedEntityManagers.getDeferredEntityManagers();
         for (ExtendedEntityManager e : ems) {
             entityManagers.put(e.getScopedPuName(), e);
         }

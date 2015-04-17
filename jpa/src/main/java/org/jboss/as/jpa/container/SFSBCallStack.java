@@ -37,75 +37,58 @@ import org.jboss.as.jpa.messages.JpaLogger;
  */
 public class SFSBCallStack {
 
-    /**
-     * Each thread will have its own list of SFSB invocations in progress.
-     */
-    private static ThreadLocal<ArrayList<Map<String, ExtendedEntityManager>>> SFSBInvocationStack = new ThreadLocal<ArrayList<Map<String, ExtendedEntityManager>>>() {
-        protected ArrayList<Map<String, ExtendedEntityManager>> initialValue() {
-            return new ArrayList<Map<String, ExtendedEntityManager>>();
-        }
-    };
-
-    /**
-     * During SFSB creation, track the injected extended persistence contexts
-     */
-    private static ThreadLocal<Map<String, ExtendedEntityManager>> sfsbCreationTimeXPCRegistration = new ThreadLocal<Map<String, ExtendedEntityManager>>();
-
-    private static ThreadLocal<SFSBInjectedXPCs> sfsbCreationTimeInjectedXPCs = new ThreadLocal<SFSBInjectedXPCs>();
-    /**
-     * Track the SFSB bean injection nesting level.  Zero indicates the top level bean, one is the first level of SFSBs injected,
-     * two is the second level of SFSBs injected...
-     */
-    private static ThreadLocal<Integer> sfsbCreationBeanNestingLevel = new ThreadLocal<Integer>() {
+    private static final ThreadLocal<SFSBCallStackThreadData> CURRENT = new ThreadLocal<SFSBCallStackThreadData>() {
         @Override
-        protected Integer initialValue() {
-            return 0;
+        protected SFSBCallStackThreadData initialValue() {
+            return new SFSBCallStackThreadData();
         }
     };
 
     public static int getSFSBCreationBeanNestingLevel() {
-        return sfsbCreationBeanNestingLevel.get();
+        return CURRENT.get().creationBeanNestingLevel;
     }
 
     /**
      * called from SFSBPreCreateInterceptor, before bean creation
      */
     public static void beginSfsbCreation() {
-        int no = sfsbCreationBeanNestingLevel.get();
+        SFSBCallStackThreadData data = CURRENT.get();
+        int no = data.creationBeanNestingLevel;
         if (no == 0) {
-            sfsbCreationTimeXPCRegistration.set(new HashMap<String, ExtendedEntityManager>());
+            data.creationTimeXPCRegistration = new HashMap<String, ExtendedEntityManager>();
             // create new tracking structure (passing in parent levels tracking structure or null if toplevel)
-            sfsbCreationTimeInjectedXPCs.set(new SFSBInjectedXPCs(sfsbCreationTimeInjectedXPCs.get(), null));
+            data.creationTimeInjectedXPCs = new SFSBInjectedXPCs(data.creationTimeInjectedXPCs, null);
         }
         else {
             // create new tracking structure (passing in parent levels tracking structure or null if toplevel)
-            SFSBInjectedXPCs parent = sfsbCreationTimeInjectedXPCs.get();
-            sfsbCreationTimeInjectedXPCs.set(new SFSBInjectedXPCs(parent, parent.getTopLevel()));
+            SFSBInjectedXPCs parent = data.creationTimeInjectedXPCs;
+            data.creationTimeInjectedXPCs = new SFSBInjectedXPCs(parent, parent.getTopLevel());
         }
-        sfsbCreationBeanNestingLevel.set(no + 1);
+        data.creationBeanNestingLevel++;
     }
 
     /**
      * called from SFSBPreCreateInterceptor, after bean creation
      */
     public static void endSfsbCreation() {
-        int no = sfsbCreationBeanNestingLevel.get();
+        SFSBCallStackThreadData data = CURRENT.get();
+        int no =  data.creationBeanNestingLevel;
         no--;
-        sfsbCreationBeanNestingLevel.set(no);
+        data.creationBeanNestingLevel = no;
 
         if (no == 0) {
             // Completed creating top level bean, remove 'xpc creation tracking' thread local
-            sfsbCreationTimeXPCRegistration.remove();
-            sfsbCreationTimeInjectedXPCs.remove();
+            data.creationTimeXPCRegistration = null;
+            data.creationTimeInjectedXPCs = null;
         }
         else {
             // finished creating a sub-bean, switch to parent level 'xpc creation tracking'
-            sfsbCreationTimeInjectedXPCs.set(sfsbCreationTimeInjectedXPCs.get().getParent());
+            data.creationTimeInjectedXPCs = data.creationTimeInjectedXPCs.getParent();
         }
     }
 
     static SFSBInjectedXPCs getSFSBCreationTimeInjectedXPCs(final String puScopedName) {
-        SFSBInjectedXPCs result = sfsbCreationTimeInjectedXPCs.get();
+        SFSBInjectedXPCs result = CURRENT.get().creationTimeInjectedXPCs;
         if (result == null) {
             throw JpaLogger.JPA_LOGGER.xpcOnlyFromSFSB(puScopedName);
         }
@@ -119,7 +102,7 @@ public class SFSBCallStack {
      * @return call stack (may be empty but never null)
      */
     public static ArrayList<Map<String, ExtendedEntityManager>> currentSFSBCallStack() {
-        return SFSBInvocationStack.get();
+        return CURRENT.get().invocationStack;
     }
 
     /**
@@ -128,7 +111,7 @@ public class SFSBCallStack {
      * @return
      */
     public static Map<String, ExtendedEntityManager> currentSFSBCallStackInvocation() {
-        ArrayList<Map<String, ExtendedEntityManager>> stack = SFSBInvocationStack.get();
+        ArrayList<Map<String, ExtendedEntityManager>> stack = CURRENT.get().invocationStack;
         if ( stack != null && stack.size() > 0) {
             return stack.get(stack.size() - 1);
         }
@@ -186,5 +169,24 @@ public class SFSBCallStack {
         return result;
     }
 
+
+    private static class SFSBCallStackThreadData {
+        /**
+         * Each thread will have its own list of SFSB invocations in progress.
+         */
+        private ArrayList<Map<String, ExtendedEntityManager>> invocationStack = new ArrayList<Map<String, ExtendedEntityManager>>();
+
+        /**
+         * During SFSB creation, track the injected extended persistence contexts
+         */
+        private Map<String, ExtendedEntityManager> creationTimeXPCRegistration = null;
+
+        private SFSBInjectedXPCs creationTimeInjectedXPCs;
+        /**
+         * Track the SFSB bean injection nesting level.  Zero indicates the top level bean, one is the first level of SFSBs injected,
+         * two is the second level of SFSBs injected...
+         */
+        private int creationBeanNestingLevel = 0;
+    }
 
 }

@@ -26,6 +26,13 @@ import static org.jboss.as.ee.logging.EeLogger.SERVER_DEPLOYMENT_LOGGER;
  * @author Stuart Douglas
  */
 public class AbstractComponentConfigurator {
+
+    /**
+     * The weaved interceptor factory results in a lot of runtime allocations, and should not be used
+     * @param interceptorFactories The interceptor factories
+     * @return
+     */
+    @Deprecated
     protected static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {
         if(interceptorFactories == null) {
             return null;
