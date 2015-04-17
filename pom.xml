@@ -299,6 +299,7 @@
         <module>security-manager</module>
         <module>system-jmx</module>
         <module>spec-api</module>
+	<module>telemetry</module>
         <module>transactions</module>
         <module>undertow</module>
         <module>web-build</module>
@@ -1424,6 +1425,12 @@
                 <artifactId>wildfly-system-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+	    <dependency>
+		<groupId>org.wildfly</groupId>
+		<artifactId>wildfly-telemetry</artifactId>
+		<version>${project.version}</version>
+	    </dependency>
 
             <dependency>
                 <groupId>org.wildfly.core</groupId>

@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:org.jboss.as.telemetry:1.0"
+            xmlns="urn:org.jboss.as.telemetry:1.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
+
+    <xs:element name="telemetry" type="subsystemType">
+        <xs:complexType name="telemetryType">
+            <xs:attribute name="frequency" type="xs:long" use="optional" default="1"/>
+            <xs:attribute name="enabled" type="xs:boolean" use="optional" default="false"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
