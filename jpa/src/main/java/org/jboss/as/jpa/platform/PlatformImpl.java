@@ -44,14 +44,14 @@ public class PlatformImpl implements Platform {
 
     public PlatformImpl(Classification defaultCacheClassification, Classification... supportedClassifications) {
         this.defaultCacheClassification = defaultCacheClassification;
-        ArrayList<Classification> includedClassifications = new ArrayList();
+        ArrayList<Classification> includedClassifications = new ArrayList<>();
         for(Classification eachClassification:supportedClassifications) {
             includedClassifications.add(eachClassification);
         }
 
         this.cacheClassfications = includedClassifications.size() > 0 ?
                 EnumSet.copyOf(includedClassifications):
-                Collections.EMPTY_SET;
+                Collections.<Classification>emptySet();
     }
 
     @Override

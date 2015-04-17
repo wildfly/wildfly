@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -313,7 +314,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
         sb.append("\tproperties[\n");
 
         if (props != null) {
-            for (Map.Entry elt : props.entrySet()) {
+            for (Entry<Object, Object> elt : props.entrySet()) {
                 sb.append("\t\t").append(elt.getKey()).append(": ").append(elt.getValue()).append("\n");
             }
         }

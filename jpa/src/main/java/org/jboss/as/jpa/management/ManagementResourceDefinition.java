@@ -73,7 +73,7 @@ public class ManagementResourceDefinition extends SimpleResourceDefinition {
         this.descriptionResolver = descriptionResolver;
     }
 
-    private ModelType getModelType(Class type) {
+    private ModelType getModelType(Class<?> type) {
 
         if(Integer.class.equals(type)) {
             return ModelType.INT;

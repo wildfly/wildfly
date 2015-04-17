@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.injectors;
 
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
@@ -53,8 +55,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
-
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 
 /**
  * Represents the PersistenceContext injected into a component.
@@ -208,7 +208,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                  * To accomplish this, we will create an instance of the (underlying provider's) entity manager and
                  * invoke the EntityManager.unwrap(TargetInjectionClass).
                  */
-                Class extensionClass;
+                Class<?> extensionClass;
                 try {
                     // provider classes should be on application classpath
                     extensionClass = pu.getClassLoader().loadClass(injectionTypeName);
@@ -219,11 +219,11 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 Object targetValueToInject = entityManager.unwrap(extensionClass);
 
                 // build array of classes that proxy will represent.
-                Class[] targetInterfaces = targetValueToInject.getClass().getInterfaces();
-                Class[] proxyInterfaces = new Class[targetInterfaces.length + 1];  // include extra element for extensionClass
+                Class<?>[] targetInterfaces = targetValueToInject.getClass().getInterfaces();
+                Class<?>[] proxyInterfaces = new Class[targetInterfaces.length + 1];  // include extra element for extensionClass
                 boolean alreadyHasInterfaceClass = false;
                 for (int interfaceIndex = 0; interfaceIndex < targetInterfaces.length; interfaceIndex++) {
-                    Class interfaceClass =  targetInterfaces[interfaceIndex];
+                    Class<?> interfaceClass =  targetInterfaces[interfaceIndex];
                     if (interfaceClass.equals(extensionClass)) {
                         proxyInterfaces = targetInterfaces;                     // targetInterfaces already has all interfaces
                         alreadyHasInterfaceClass = true;

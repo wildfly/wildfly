@@ -54,13 +54,11 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
 
     private final PersistenceUnitJndiInjectable injectable;
     private final ServiceName puServiceName;
-    private final PersistenceUnitMetadata pu;
 
     public PersistenceUnitInjectionSource(final ServiceName puServiceName, final ServiceRegistry serviceRegistry, final String injectionTypeName, final PersistenceUnitMetadata pu) {
 
         injectable = new PersistenceUnitJndiInjectable(puServiceName, serviceRegistry, injectionTypeName, pu);
         this.puServiceName = puServiceName;
-        this.pu = pu;
     }
 
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws
@@ -107,7 +105,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
             EntityManagerFactory emf = service.getEntityManagerFactory();
 
             if (!ENTITY_MANAGER_FACTORY_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.SessionFactory)
-                Class extensionClass;
+                Class<?> extensionClass;
                 try {
                     // make sure we can access the target class type
                     extensionClass = pu.getClassLoader().loadClass(injectionTypeName);
