@@ -176,18 +176,19 @@ public class AdvancedCacheConfigurationBuilder implements Builder<Configuration>
 
     @Override
     public Configuration createConfiguration() {
+        EmbeddedCacheManager container = this.container.getValue();
+
+        this.registerGroupers(container.getCacheManagerConfiguration().classLoader());
+
         if (this.module != null) {
             try {
                 Module module = this.loader.getValue().loadModule(this.module);
-
-                GroupsConfigurationBuilder groupsBuilder = this.configurationBuilder.clustering().hash().groups();
-                for (Grouper<?> grouper: ServiceLoader.load(Grouper.class, module.getClassLoader())) {
-                    groupsBuilder.addGrouper(grouper);
-                }
+                this.registerGroupers(module.getClassLoader());
             } catch (ModuleLoadException e) {
                 throw new IllegalArgumentException(e);
             }
         }
+
         TransactionManager tm = this.tm.getOptionalValue();
         if (tm != null) {
             this.configurationBuilder.transaction().transactionManagerLookup(new TransactionManagerProvider(tm));
@@ -196,9 +197,16 @@ public class AdvancedCacheConfigurationBuilder implements Builder<Configuration>
         if (tsr != null) {
             this.configurationBuilder.transaction().transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(tsr));
         }
-        boolean topologyAware = this.container.getValue().getCacheManagerConfiguration().transport().hasTopologyInfo();
+        boolean topologyAware = container.getCacheManagerConfiguration().transport().hasTopologyInfo();
         this.consistentHashStrategy.buildHashConfiguration(this.configurationBuilder.clustering().hash(), this.mode, topologyAware);
         return this.configurationBuilder.build();
+    }
+
+    private void registerGroupers(ClassLoader loader) {
+        GroupsConfigurationBuilder groupsBuilder = this.configurationBuilder.clustering().hash().groups();
+        for (Grouper<?> grouper: ServiceLoader.load(Grouper.class, loader)) {
+            groupsBuilder.addGrouper(grouper);
+        }
     }
 
     public ConfigurationBuilder getConfigurationBuilder() {
