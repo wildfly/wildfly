@@ -38,8 +38,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.requestcontroller.ControlPoint;
-import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.jberet.BatchEnvironmentFactory;
 import org.wildfly.jberet.WildFlyArtifactFactory;
 import org.wildfly.jberet._private.WildFlyBatchLogger;
@@ -59,32 +57,21 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<>();
     private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
     private final InjectedValue<JobXmlResolver> jobXmlResolverInjector = new InjectedValue<>();
-    private final InjectedValue<RequestController> requestControllerInjector = new InjectedValue<>();
 
     private final JobRepository jobRepository;
     private final ClassLoader classLoader;
-    private final String deploymentName;
     private BatchEnvironment batchEnvironment = null;
-    private ControlPoint controlPoint;
 
-    public BatchEnvironmentService(final ClassLoader classLoader, final JobRepository jobRepository, final String deploymentName) {
+    public BatchEnvironmentService(final ClassLoader classLoader, final JobRepository jobRepository) {
         this.classLoader = classLoader;
         this.jobRepository = jobRepository;
-        this.deploymentName = deploymentName;
     }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         WildFlyBatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
-        final RequestController requestController = requestControllerInjector.getOptionalValue();
-        if (requestController != null) {
-            // Create the entry point
-            controlPoint = requestController.getControlPoint(deploymentName, "batch-executor-service");
-        } else {
-            controlPoint = null;
-        }
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
-                executorServiceInjector.getValue(), transactionManagerInjector.getValue(), jobXmlResolverInjector.getValue(), controlPoint);
+                executorServiceInjector.getValue(), transactionManagerInjector.getValue(), jobXmlResolverInjector.getValue());
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -95,9 +82,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         WildFlyBatchLogger.LOGGER.debugf("Removing batch environment; %s", classLoader);
         BatchEnvironmentFactory.getInstance().remove(classLoader);
         batchEnvironment = null;
-        if (controlPoint != null) {
-            requestControllerInjector.getValue().removeControlPoint(controlPoint);
-        }
     }
 
     @Override
@@ -121,26 +105,19 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         return jobXmlResolverInjector;
     }
 
-    public InjectedValue<RequestController> getRequestControllerInjector() {
-        return requestControllerInjector;
-    }
-
     private class WildFlyBatchEnvironment implements BatchEnvironment {
 
         private final ArtifactFactory artifactFactory;
         private final ExecutorService executorService;
         private final TransactionManager transactionManager;
         private final JobXmlResolver jobXmlResolver;
-        private final ControlPoint controlPoint;
 
         WildFlyBatchEnvironment(final BeanManager beanManager,
-                                final ExecutorService executorService, final TransactionManager transactionManager, final JobXmlResolver jobXmlResolver,
-                                final ControlPoint controlPoint) {
+                                final ExecutorService executorService, final TransactionManager transactionManager, final JobXmlResolver jobXmlResolver) {
             this.jobXmlResolver = jobXmlResolver;
             artifactFactory = new WildFlyArtifactFactory(beanManager);
             this.executorService = executorService;
             this.transactionManager = transactionManager;
-            this.controlPoint = controlPoint;
         }
 
         @Override
@@ -155,11 +132,10 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         @Override
         public Future<?> submitTask(final Runnable task) {
-            // Wrap the runnable to setup the context for the thread
-            final Runnable r = new Runnable() {
+            final ContextHandle contextHandle = createContextHandle();
+            return executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    final ContextHandle contextHandle = createContextHandle();
                     final Handle handle = contextHandle.setup();
                     try {
                         task.run();
@@ -167,24 +143,39 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
                         handle.tearDown();
                     }
                 }
-            };
-            if (controlPoint == null) {
-                executorService.submit(r);
-            } else {
-                // Queue the task to run in the control point, if resume is executed the queued tasks will run
-                controlPoint.queueTask(r, executorService, -1, null, false);
-            }
-            return null;
+            });
         }
 
         @Override
         public <T> Future<T> submitTask(final Runnable task, final T result) {
-            throw new UnsupportedOperationException();
+            final ContextHandle contextHandle = createContextHandle();
+            return executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    final Handle handle = contextHandle.setup();
+                    try {
+                        task.run();
+                    } finally {
+                        handle.tearDown();
+                    }
+                }
+            }, result);
         }
 
         @Override
         public <T> Future<T> submitTask(final Callable<T> task) {
-            throw new UnsupportedOperationException();
+            final ContextHandle contextHandle = createContextHandle();
+            return executorService.submit(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    final Handle handle = contextHandle.setup();
+                    try {
+                        return task.call();
+                    } finally {
+                        handle.tearDown();
+                    }
+                }
+            });
         }
 
         @Override
@@ -205,7 +196,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         /**
          * {@inheritDoc}
-         *
          * @deprecated this is no longer used in jBeret and will be removed
          * @return
          */
