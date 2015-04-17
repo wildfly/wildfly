@@ -68,6 +68,7 @@
         <module name="org.apache.ws.security" />
         <module name="org.jboss.logging" />
         <module name="org.picketbox"/>
+        <module name="org.apache.commons.beanutils"/>
         <module name="org.springframework.spring" optional="true">
           <imports>
             <include path="META-INF"/>
