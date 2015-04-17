@@ -69,22 +69,6 @@ public abstract class AbstractBatchTestCase {
                                 .exportAsString()));
     }
 
-
-    public static WebArchive createDefaultWar(final String warName, final Package pkg, final String... jobXmls) {
-        final WebArchive deployment = ShrinkWrap.create(WebArchive.class, warName)
-                .addPackage(AbstractBatchTestCase.class.getPackage())
-                .addClasses(TimeoutUtil.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .setManifest(new StringAsset(
-                        Descriptors.create(ManifestDescriptor.class)
-                                .attribute("Dependencies", "org.jboss.msc,org.wildfly.security.manager")
-                                .exportAsString()));
-        for (String jobXml : jobXmls) {
-            deployment.addAsWebInfResource(pkg, jobXml, "classes/META-INF/batch-jobs/" + jobXml);
-        }
-        return deployment;
-    }
-
     protected static String performCall(final String url) throws ExecutionException, IOException, TimeoutException {
         return HttpRequest.get(url, 10, TimeUnit.MINUTES); // TODO (jrp) way to long only set for debugging
     }
