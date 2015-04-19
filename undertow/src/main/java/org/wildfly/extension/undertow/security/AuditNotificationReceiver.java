@@ -30,9 +30,13 @@ import io.undertow.security.idm.Account;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.undertow.servlet.handlers.ServletRequestContext;
 import org.jboss.security.audit.AuditEvent;
 import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * A {@link NotificationReceiver} implementation responsible for recording audit events for authentication attempts.
@@ -58,10 +62,14 @@ public class AuditNotificationReceiver implements NotificationReceiver {
                 ctxMap.put("principal", account.getPrincipal().getName());
             }
             ctxMap.put("message", notification.getMessage());
-            /*
-             * HttpServletRequest hsr = getServletRequest(); if (hsr != null) { ctxMap.put("request",
-             * WebUtil.deriveUsefulInfo(hsr)); }
-             */
+
+            ServletRequestContext src = notification.getExchange().getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+            if(src != null) {
+                ServletRequest hsr = src.getServletRequest();
+                if (hsr instanceof HttpServletRequest) {
+                    ctxMap.put("request", WebUtil.deriveUsefulInfo((HttpServletRequest) hsr));
+                }
+            }
             ctxMap.put("Source", getClass().getCanonicalName());
             auditEvent.setContextMap(ctxMap);
             auditManager.audit(auditEvent);
