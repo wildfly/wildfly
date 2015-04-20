@@ -202,25 +202,4 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         super.standardSubsystemTest("subsystem-ior-settings.xml");
     }
 
-    @Test
-    public void testSubsystemWithRejectedOnOffAttributeTurnedOff() throws Exception {
-        super.standardSubsystemTest("subsystem-rejected-onoff-attribute-turned-off.xml");
-    }
-
-    @Test
-    public void testSubsystemWithRejectedOnOffAttribute() throws Exception {
-        testAttributeRejection("subsystem-rejected-onoff-attribute.xml");
-    }
-
-    @Test
-    public void testSubsystemWithRejectedAttribute() throws Exception {
-        testAttributeRejection("subsystem-rejected-onoff-attribute.xml");
-    }
-
-    public void testAttributeRejection(final String configId) throws Exception {
-        final String subsystemXml = getSubsystemXml(configId);
-        final KernelServices services = super.createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml).build();
-        Assert.assertFalse("Subsystem is supposed to fail", services.isSuccessfulBoot());
-    }
 }

@@ -6,6 +6,7 @@
        <orb persistent-server-id="1" socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
            <initializers transactions="spec" security="identity"/>
        </orb>
+       <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
    </subsystem>
    <socket-binding name="jacorb" interface="unsecure" port="3528"/>
    <socket-binding name="jacorb-ssl" interface="unsecure" port="3529"/>
