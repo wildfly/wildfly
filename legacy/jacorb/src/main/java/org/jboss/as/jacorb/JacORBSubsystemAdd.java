@@ -22,8 +22,6 @@
 
 package org.jboss.as.jacorb;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -35,11 +33,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.wildfly.iiop.openjdk.AttributeConstants;
-import org.wildfly.iiop.openjdk.Constants;
 import org.wildfly.iiop.openjdk.IIOPSubsystemAdd;
-
-import com.sun.corba.se.impl.orbutil.ORBConstants;
+import org.wildfly.iiop.openjdk.PropertiesMap;
 
 /**
  *
@@ -55,10 +50,11 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode legacyModel)
             throws OperationFailedException {
         printJacORBEmulationWarningMessage();
-        super.performRuntime(context, operation, model);
+        TransformUtils.transformModel(legacyModel);
+        super.performRuntime(context, operation, legacyModel);
     }
 
     private void printJacORBEmulationWarningMessage() {
@@ -71,21 +67,7 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
         super.populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
         if (!context.getProcessType().equals(ProcessType.HOST_CONTROLLER)) {
-            final List<String> propertiesToReject = new LinkedList<String>();
-            for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ON_OFF_ATTRIBUTES_TO_REJECT) {
-                if (model.hasDefined(attribute.getName())
-                        && model.get(attribute.getName()).equals(JacORBSubsystemDefinitions.DEFAULT_ENABLED_PROPERTY)) {
-                    propertiesToReject.add(attribute.getName());
-                }
-            }
-            for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ATTRIBUTES_TO_REJECT) {
-                if (model.hasDefined(attribute.getName())) {
-                    propertiesToReject.add(attribute.getName());
-                }
-            }
-            if (!propertiesToReject.isEmpty()) {
-                throw JacORBLogger.ROOT_LOGGER.cannotEmulateProperties(propertiesToReject);
-            }
+            TransformUtils.checkLegacyModel(model);
         }
     }
 
@@ -103,7 +85,11 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
             if (resolvedModelAttribute.isDefined()) {
                 String name = attrDefinition.getName();
                 String value = resolvedModelAttribute.asString();
-                transformAndSetProperty(props, name, value);
+                String openjdkProperty = PropertiesMap.PROPS_MAP.get(name);
+                if (openjdkProperty != null) {
+                    name = openjdkProperty;
+                }
+                props.setProperty(name, value);
             }
         }
 
@@ -118,49 +104,6 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
             }
         }
         return props;
-    }
-
-    private void transformAndSetProperty(final Properties props, final String name, final String value) {
-        switch (name) {
-            case Constants.ORB_PERSISTENT_SERVER_ID:
-                props.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, value);
-                break;
-            case JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION:
-                props.setProperty(ORBConstants.GIOP_VERSION, new StringBuilder().append("1.").append(value).toString());
-                break;
-            case JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS:
-                if (value.equals(JacORBSubsystemConstants.ON)) {
-                    props.setProperty(name, Constants.FULL);
-                } else if (value.equals(JacORBSubsystemConstants.OFF)) {
-                    props.setProperty(name, Constants.NONE);
-                } else {
-                    props.setProperty(name, value);
-                }
-                break;
-            case JacORBSubsystemConstants.SECURITY_SUPPORT_SSL:
-                if (value.equals(JacORBSubsystemConstants.ON)) {
-                    props.setProperty(name, AttributeConstants.TrueFalse.TRUE.toString());
-                } else {
-                    props.setProperty(name, AttributeConstants.TrueFalse.FALSE.toString());
-                }
-                break;
-            case JacORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR:
-                if (value.equals(JacORBSubsystemConstants.ON)) {
-                    props.setProperty(name, AttributeConstants.TrueFalse.TRUE.toString());
-                } else {
-                    props.setProperty(name, AttributeConstants.TrueFalse.FALSE.toString());
-                }
-                break;
-            case JacORBSubsystemConstants.NAMING_EXPORT_CORBALOC:
-                if (value.equals(JacORBSubsystemConstants.ON)) {
-                    props.setProperty(name, AttributeConstants.TrueFalse.TRUE.toString());
-                } else {
-                    props.setProperty(name, AttributeConstants.TrueFalse.FALSE.toString());
-                }
-                break;
-            default:
-                props.setProperty(name, value);
-        }
     }
 
     @Override
