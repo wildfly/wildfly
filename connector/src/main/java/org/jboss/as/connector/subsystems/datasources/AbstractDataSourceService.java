@@ -201,21 +201,18 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 BootstrapContextCoordinator.getInstance().removeBootstrapContext(deploymentMD.getBootstrapContextIdentifier());
             }
 
+            if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
+                for (org.jboss.jca.core.api.management.DataSource mgtDs : deploymentMD.getDataSources()) {
+                    managementRepositoryValue.getValue().getDataSources().remove(mgtDs);
+                }
+            }
 
-        }
-
-        if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
-            for (org.jboss.jca.core.api.management.DataSource mgtDs : deploymentMD.getDataSources()) {
-                managementRepositoryValue.getValue().getDataSources().remove(mgtDs);
+            if (deploymentMD.getConnectionManagers() != null) {
+                for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+                    cm.shutdown();
+                }
             }
         }
-
-        if (deploymentMD.getConnectionManagers() != null) {
-            for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
-                cm.shutdown();
-            }
-        }
-
 
         sqlDataSource = null;
 
