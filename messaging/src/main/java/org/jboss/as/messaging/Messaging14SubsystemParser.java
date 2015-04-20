@@ -51,6 +51,11 @@ public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
             case MAX_SAVED_REPLICATED_JOURNAL_SIZE:
                 handleElementText(reader, element, operation);
                 break;
+            case OVERRIDE_IN_VM_SECURITY:
+                // this element was added to 1.4 XSD in EAP by error but is
+                // not actually handled by WildFly before its 3.0 schema
+                handleElementText(reader, element, operation);
+                break;
             default: {
                 super.handleUnknownConfigurationAttribute(reader, element, operation);
             }
@@ -66,6 +71,21 @@ public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
                 break;
             default:
                 super.handleUnknownGroupingHandlerAttribute(reader, element, operation);
+        }
+    }
+
+    @Override
+    protected void handleUnknownAddressSetting(XMLExtendedStreamReader reader, Element element, ModelNode addressSettingsAdd) throws XMLStreamException {
+        switch (element) {
+            case SLOW_CONSUMER_CHECK_PERIOD:
+            case SLOW_CONSUMER_POLICY:
+            case SLOW_CONSUMER_THRESHOLD:
+                // these elements were added to 1.4 XSD in EAP by error but are
+                // not actually handled by WildFly before its 3.0 schema
+                handleElementText(reader, element, addressSettingsAdd);
+                break;
+            default:
+                super.handleUnknownAddressSetting(reader, element, addressSettingsAdd);
         }
     }
 }

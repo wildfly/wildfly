@@ -41,6 +41,7 @@ public enum Namespace {
    MESSAGING_1_2("urn:jboss:domain:messaging:1.2"),
    MESSAGING_1_3("urn:jboss:domain:messaging:1.3"),
    MESSAGING_1_4("urn:jboss:domain:messaging:1.4"),
+   MESSAGING_1_5("urn:jboss:domain:messaging:1.5"),
    MESSAGING_2_0("urn:jboss:domain:messaging:2.0"),
    MESSAGING_3_0("urn:jboss:domain:messaging:3.0");
 

@@ -129,6 +129,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             case MESSAGING_1_2:
             case MESSAGING_1_3:
             case MESSAGING_1_4:
+            case MESSAGING_1_5:
             case MESSAGING_2_0:
             case MESSAGING_3_0:
                 processHornetQServers(reader, address, list);
