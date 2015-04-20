@@ -89,6 +89,11 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void test12() throws Exception {
+        standardSubsystemTest("subsystem_1_2.xml", false);
+    }
+
+    @Test
     public void testTransformersAS712() throws Exception {
         testTransformers110(ModelTestControllerVersion.V7_1_2_FINAL);
     }
