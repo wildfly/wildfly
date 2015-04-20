@@ -52,7 +52,8 @@ public enum BindingType {
     }
 
     public static BindingType forName(String localName) {
-        final BindingType directoryGrouping = localName != null ? MAP.get(localName.toLowerCase()) : null;
+        if (localName == null) return null;
+        final BindingType directoryGrouping = MAP.get(localName.toLowerCase());
         return directoryGrouping == null ? BindingType.valueOf(localName.toUpperCase()) : directoryGrouping;
     }
 
