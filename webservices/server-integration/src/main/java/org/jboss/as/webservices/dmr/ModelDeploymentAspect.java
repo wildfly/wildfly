@@ -60,19 +60,19 @@ public final class ModelDeploymentAspect extends AbstractDeploymentAspect {
         final DeploymentResourceSupport deploymentResourceSupport = unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
 
         for (final Endpoint endpoint : dep.getService().getEndpoints()) {
-            ModelNode op = null;
+            final ModelNode endpointModel;
             try {
-                op = deploymentResourceSupport.getDeploymentSubModel(WSExtension.SUBSYSTEM_NAME,
+                endpointModel = deploymentResourceSupport.getDeploymentSubModel(WSExtension.SUBSYSTEM_NAME,
                         PathElement.pathElement(ENDPOINT, URLEncoder.encode(getId(endpoint), "UTF-8")));
             } catch (final UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
             }
 
-            op.get(ENDPOINT_NAME).set(getName(endpoint));
-            op.get(ENDPOINT_CONTEXT).set(getContext(endpoint));
-            op.get(ENDPOINT_CLASS).set(endpoint.getTargetBeanName());
-            op.get(ENDPOINT_TYPE).set(endpoint.getType().toString());
-            op.get(ENDPOINT_WSDL).set(endpoint.getAddress() + "?wsdl");
+            endpointModel.get(ENDPOINT_NAME).set(getName(endpoint));
+            endpointModel.get(ENDPOINT_CONTEXT).set(getContext(endpoint));
+            endpointModel.get(ENDPOINT_CLASS).set(endpoint.getTargetBeanName());
+            endpointModel.get(ENDPOINT_TYPE).set(endpoint.getType().toString());
+            endpointModel.get(ENDPOINT_WSDL).set(endpoint.getAddress() + "?wsdl");
         }
     }
 
