@@ -137,7 +137,7 @@ public class RuntimeVaultReader extends AbstractVaultReader {
     private char[] getValue(String vaultString) throws SecurityVaultException {
         String[] tokens = tokens(vaultString);
         byte[] sharedKey = null;
-        if (tokens.length > 2) {
+        if (tokens.length > 3) {
             // only in case of conversion of old vault implementation
             sharedKey = tokens[3].getBytes(VaultSession.CHARSET);
         }
