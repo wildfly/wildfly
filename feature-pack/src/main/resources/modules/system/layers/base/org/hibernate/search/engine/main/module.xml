@@ -42,6 +42,9 @@
         <!-- optional JMS backend support -->
         <module name="org.hibernate.search.backend-jms" export="true" services="import" optional="true"/>
 
+        <!-- optional JGroups backend support -->
+        <module name="org.hibernate.search.backend-jgroups" export="true" services="import" optional="true"/>
+
         <!-- optional Avro serialization -->
         <module name="org.hibernate.search.serialization-avro" services="import" optional="true"/>
 
