@@ -31,6 +31,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.security.deployment.AbstractSecurityDeployer;
+import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -205,6 +206,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
 
+        boolean securityEnabled = deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED);
 
         String metaDataSecurityDomain = metaData.getSecurityDomain();
         if (metaDataSecurityDomain == null) {
@@ -214,8 +216,13 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             metaDataSecurityDomain = metaDataSecurityDomain.trim();
         }
 
-        String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
-                .unprefixSecurityDomain(metaDataSecurityDomain);
+        final String securityDomain;
+        if(securityEnabled) {
+            securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
+                    .unprefixSecurityDomain(metaDataSecurityDomain);
+        } else {
+            securityDomain = null;
+        }
 
         String serverInstanceName = metaData.getServerInstanceName() == null ? defaultServer : metaData.getServerInstanceName();
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
@@ -275,11 +282,13 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
         ServiceBuilder<DeploymentInfo> infoBuilder = serviceTarget.addService(deploymentInfoServiceName, undertowDeploymentInfoService)
                 .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, undertowDeploymentInfoService.getContainer())
-                .addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
                 .addDependencies(additionalDependencies);
+        if(securityDomain != null) {
+            infoBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue());
+        }
 
         if(RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit)){
             String topLevelName;

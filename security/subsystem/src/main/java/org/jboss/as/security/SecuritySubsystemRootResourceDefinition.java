@@ -42,6 +42,7 @@ import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
 import org.jboss.as.security.deployment.JaccEarDeploymentProcessor;
 import org.jboss.as.security.deployment.SecurityDependencyProcessor;
+import org.jboss.as.security.deployment.SecurityEnablementProcessor;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
@@ -139,12 +140,6 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, bootstrapService.getServiceModuleLoaderInjectedValue())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-
-                }
-            }, OperationContext.Stage.RUNTIME);
-
             // add service to bind SecurityDomainJndiInjectable to JNDI
             final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
             final BinderService binderService = new BinderService("jaas");
@@ -190,6 +185,9 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                             new JaccEarDeploymentProcessor());
                     processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SECURITY,
                             new SecurityDependencyProcessor());
+                    processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.PARSE, 0x0080,
+                            new SecurityEnablementProcessor());
+
                 }
             }, OperationContext.Stage.RUNTIME);
         }

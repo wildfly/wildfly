@@ -409,7 +409,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         @Override
         protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            if (securityDomain == null || securityDomain.trim().equals("")) {
+            if (securityDomain == null || securityDomain.trim().equals("") || subjectFactory.getOptionalValue() == null) {
                 return null;
             } else {
                 return new PicketBoxSubjectFactory(subjectFactory.getValue());
