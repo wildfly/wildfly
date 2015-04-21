@@ -21,40 +21,59 @@
  */
 package org.jboss.as.ejb3.util;
 
-import java.util.LinkedList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
-* @author Stuart Douglas
-*/
-public class ThreadLocalStack<T> {
-    private final ThreadLocal<LinkedList<T>> stack = new ThreadLocal<LinkedList<T>>();
+ * A thread local stack data structure. In order to avoid memory churn the underlying
+ * ArrayDeque is never freed. If we remove the deque when it is empty then this results
+ * in excessive deque allocations.
+ *
+ * @author Stuart Douglas
+ *
+ */
+public class ThreadLocalStack<E> {
 
-    public void push(T obj) {
-        LinkedList<T> list = stack.get();
-        if (list == null) {
-            list = new LinkedList<T>();
-            stack.set(list);
+    private static final Object NULL_VALUE = new Object();
+
+    private final ThreadLocal<Deque<Object>> deque = new ThreadLocal<Deque<Object>>() {
+        @Override
+        protected ArrayDeque<Object> initialValue() {
+            return new ArrayDeque<>();
         }
-        list.addLast(obj);
+    };
+
+    public void push(E item) {
+        Deque<Object> st = deque.get();
+        if(item == null) {
+            st.push(NULL_VALUE);
+        } else {
+            st.push(item);
+        }
     }
 
-    public T pop() {
-        LinkedList<T> list = stack.get();
-        if (list == null) {
+    public E peek() {
+        Deque<Object> st = deque.get();
+        Object o =  st.peek();
+        if(o == NULL_VALUE) {
             return null;
+        } else {
+            return (E) o;
         }
-        T rtn = list.removeLast();
-        if (list.size() == 0) {
-            stack.remove();
-        }
-        return rtn;
     }
 
-    public T get() {
-        LinkedList<T> list = stack.get();
-        if (list == null) {
+    public E pop() {
+        Deque<Object> st = deque.get();
+        Object o =  st.pop();
+        if(o == NULL_VALUE) {
             return null;
+        } else {
+            return (E) o;
         }
-        return list.getLast();
     }
+
+    public boolean isEmpty() {
+        return deque.get().isEmpty();
+    }
+
 }
