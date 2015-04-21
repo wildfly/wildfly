@@ -290,8 +290,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         private final XaDataSource xaDataSourceConfig;
         private final String profile;
 
-        private ServiceContainer serviceContainer;
-
         public AS7DataSourceDeployer(XaDataSource xaDataSourceConfig, final String profile) {
             super();
             this.xaDataSourceConfig = xaDataSourceConfig;
@@ -313,7 +311,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 if (serviceContainer == null) {
                     throw new DeployException(ConnectorLogger.ROOT_LOGGER.nullVar("ServiceContainer"));
                 }
-                this.serviceContainer = serviceContainer;
 
                 HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver> drivers = new HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver>(
                         1);

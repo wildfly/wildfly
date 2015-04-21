@@ -127,7 +127,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 registry.getValue().registerResourceAdapterDeployment(value);
                 context.getChildTarget()
                         .addService(raServiceName,
-                                new ResourceAdapterService(deploymentName, raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
+                                new ResourceAdapterService(raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                         .install();
             } else {
                 DEPLOYMENT_CONNECTOR_LOGGER.debugf("Not activating: %s", deploymentName);

@@ -27,10 +27,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.logging.Messages;
 
 
 public class ModifiableAdminObject implements AdminObject {
@@ -50,8 +48,6 @@ public class ModifiableAdminObject implements AdminObject {
     private final Boolean enabled;
 
     private final Boolean useJavaContext;
-
-    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
 
     /**

@@ -123,7 +123,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             registry.getValue().registerResourceAdapterDeployment(value);
             context.getChildTarget()
                 .addService(raServiceName,
-                        new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter()))
+                        new ResourceAdapterService(raServiceName, value.getDeployment().getResourceAdapter()))
                 .addDependency(deploymentServiceName)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (Throwable t) {

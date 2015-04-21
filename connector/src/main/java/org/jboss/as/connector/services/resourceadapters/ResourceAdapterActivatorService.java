@@ -124,8 +124,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
             context.getChildTarget()
                     .addService(raServiceName,
-                            new ResourceAdapterService(raName, raServiceName,
-                                    value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
+                            new ResourceAdapterService(raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                     .install();
             DEPLOYMENT_CONNECTOR_LOGGER.debugf("Started service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
         } catch (Throwable t) {

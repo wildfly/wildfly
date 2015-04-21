@@ -194,9 +194,6 @@ public class JcaExtension implements Extension {
 
         private void writeDistributedWorkManagers(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
             if (parentNode.hasDefined(DISTRIBUTED_WORKMANAGER) && parentNode.get(DISTRIBUTED_WORKMANAGER).asList().size() != 0) {
-                ModelNode channel = null;
-                ModelNode stack = null;
-                ModelNode timeout = null;
                 for (Property property : parentNode.get(DISTRIBUTED_WORKMANAGER).asPropertyList()) {
 
                     writer.writeStartElement(Element.DISTRIBUTED_WORKMANAGER.getLocalName());
@@ -680,7 +677,6 @@ public class JcaExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 final Element element = Element.forName(reader.getLocalName());
-                Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
                 switch (element) {
                     case OPTION: {
                         requireSingleAttribute(reader, "name");
@@ -720,7 +716,6 @@ public class JcaExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 final Element element = Element.forName(reader.getLocalName());
-                Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
                 switch (element) {
                     case OPTION: {
                         requireSingleAttribute(reader, "name");
