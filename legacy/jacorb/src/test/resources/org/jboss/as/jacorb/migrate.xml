@@ -1,0 +1,7 @@
+<subsystem xmlns="urn:jboss:domain:jacorb:2.0">
+    <orb giop-minor-version ="2">
+        <initializers security="off" transactions="on"/>
+    </orb>
+    <naming root-context="fooRoot" export-corbaloc="on"/>
+    <security support-ssl="on" add-component-via-interceptor="off"/>
+</subsystem>
