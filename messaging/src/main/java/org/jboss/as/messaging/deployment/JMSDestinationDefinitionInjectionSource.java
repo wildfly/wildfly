@@ -34,7 +34,9 @@ import org.jboss.as.messaging.jms.JMSTopicConfigurationRuntimeHandler;
 import org.jboss.as.messaging.jms.JMSTopicService;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -160,7 +162,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         //create the management registration
         final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, getHornetQServerName());
         final PathElement dest = PathElement.pathElement(JMS_QUEUE, queueName);
-        deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
         JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(getHornetQServerName(), queueName, destination);
@@ -182,7 +185,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         //create the management registration
         final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, getHornetQServerName());
         final PathElement dest = PathElement.pathElement(JMS_TOPIC, topicName);
-        deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
         JMSTopicConfigurationRuntimeHandler.INSTANCE.registerResource(getHornetQServerName(), topicName, destination);

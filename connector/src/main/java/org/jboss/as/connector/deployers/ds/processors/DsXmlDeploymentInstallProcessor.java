@@ -58,8 +58,10 @@ import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -176,11 +178,12 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
     private void installManagementModel(final DataSource ds, final DeploymentUnit deploymentUnit, final PathAddress addr) {
         XMLDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, ds);
-        deploymentUnit.createDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
         if (ds.getConnectionProperties() != null) {
             for (final Map.Entry<String, String> prop : ds.getConnectionProperties().entrySet()) {
                 PathAddress registration = PathAddress.pathAddress(addr.getLastElement(), PathElement.pathElement(CONNECTION_PROPERTIES, prop.getKey()));
-                createDeploymentSubModel(registration, deploymentUnit);
+                deploymentResourceSupport.getDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, registration);
             }
         }
     }
@@ -188,11 +191,12 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
     private void installManagementModel(final XaDataSource ds, final DeploymentUnit deploymentUnit, final PathAddress addr) {
         XMLXaDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, ds);
-        deploymentUnit.createDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
         if (ds.getXaDataSourceProperty() != null) {
             for (final Map.Entry<String, String> prop : ds.getXaDataSourceProperty().entrySet()) {
                 PathAddress registration = PathAddress.pathAddress(addr.getLastElement(), PathElement.pathElement(XA_CONNECTION_PROPERTIES, prop.getKey()));
-                createDeploymentSubModel(registration, deploymentUnit);
+                deploymentResourceSupport.getDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, registration);
             }
         }
     }
@@ -365,23 +369,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             elements.add(PathElement.pathElement(DATA_SOURCE, jndiName));
         }
         return PathAddress.pathAddress(elements);
-    }
-
-
-    static ManagementResourceRegistration createDeploymentSubModel(final PathAddress address, final DeploymentUnit unit) {
-        final Resource root = unit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
-        synchronized (root) {
-            final ManagementResourceRegistration registration = unit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
-            final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
-            final Resource subsystem = getOrCreate(root, subsystemAddress);
-
-            final ManagementResourceRegistration subModel = registration.getSubModel(subsystemAddress.append(address));
-            if (subModel == null) {
-                throw new IllegalStateException(address.toString());
-            }
-            getOrCreate(subsystem, address);
-            return subModel;
-        }
     }
 
     static Resource getOrCreate(final Resource parent, final PathAddress address) {

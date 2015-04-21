@@ -37,6 +37,7 @@ import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -377,7 +378,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Process the web related mgmt information
-        final ModelNode node = deploymentUnit.getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        final ModelNode node = deploymentResourceSupport.getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
         node.get(DeploymentDefinition.CONTEXT_ROOT.getName()).set("".equals(pathName) ? "/" : pathName);
         node.get(DeploymentDefinition.VIRTUAL_HOST.getName()).set(hostName);
         node.get(DeploymentDefinition.SERVER.getName()).set(serverInstanceName);
@@ -439,10 +441,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
     //todo move to UndertowDeploymentService and use all registered servlets from Deployment instead of just one found by metadata
     void processManagement(final DeploymentUnit unit, JBossWebMetaData metaData) {
+        final DeploymentResourceSupport deploymentResourceSupport = unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
         for (final JBossServletMetaData servlet : metaData.getServlets()) {
             try {
                 final String name = servlet.getName();
-                final ModelNode node = unit.createDeploymentSubModel(UndertowExtension.SUBSYSTEM_NAME, PathElement.pathElement("servlet", name));
+                final ModelNode node = deploymentResourceSupport.getDeploymentSubModel(UndertowExtension.SUBSYSTEM_NAME, PathElement.pathElement("servlet", name));
                 node.get("servlet-class").set(servlet.getServletClass());
                 node.get("servlet-name").set(servlet.getServletName());
             } catch (Exception e) {
