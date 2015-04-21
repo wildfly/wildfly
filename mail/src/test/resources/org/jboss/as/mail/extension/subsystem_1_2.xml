@@ -1,0 +1,29 @@
+<subsystem xmlns="urn:jboss:domain:mail:1.2">
+    <mail-session name="java:/Mail" jndi-name="java:/Mail" from="user dot name at domain dot tld">
+        <smtp-server outbound-socket-binding-ref="mail-smtp" tls="true">
+            <login name="nobody" password="pass"/>
+        </smtp-server>
+        <pop3-server outbound-socket-binding-ref="mail-pop3"/>
+        <imap-server outbound-socket-binding-ref="mail-imap">
+            <login name="nobody" password="pass"/>
+        </imap-server>
+    </mail-session>
+    <mail-session name="default" debug="true" jndi-name="java:jboss/mail/Default">
+        <smtp-server outbound-socket-binding-ref="mail-smtp"/>
+    </mail-session>
+    <mail-session name="custom" debug="true" jndi-name="java:jboss/mail/Custom">
+        <custom-server name="smtp">
+            <login name="username" password="password"/>
+            <property name="host" value="mail.example.com"/>
+        </custom-server>
+        <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3">
+            <property name="custom_prop" value="some-custom-prop-value"/>
+            <property name="some.fully.qualified.property" value="fully-qualified-prop-name"/>
+        </custom-server>
+    </mail-session>
+    <mail-session name="custom2" debug="true" jndi-name="java:jboss/mail/Custom2">
+        <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3">
+            <property name="custom_prop" value="some-custom-prop-value"/>
+        </custom-server>
+    </mail-session>
+</subsystem>
