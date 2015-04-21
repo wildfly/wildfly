@@ -178,7 +178,7 @@ public class PersistenceUnitServiceHandler {
                 holder.getPersistenceUnits().size() > 0) {
                 // assemble and install the PU service
                 puList.add(holder);
-                deploymentRootName = deploymentRoot.getRootName()
+                deploymentRootName = deploymentRoot.getRootName();
             }
 
             // look for persistence.xml in war files in the META-INF/persistence.xml directory
