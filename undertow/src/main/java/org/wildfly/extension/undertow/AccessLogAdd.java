@@ -24,12 +24,12 @@ package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.io.File;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -58,11 +58,13 @@ class AccessLogAdd extends AbstractAddStepHandler {
         final String filePrefix = AccessLogDefinition.PREFIX.resolveModelAttribute(context, model).asString();
         final String fileSuffix = AccessLogDefinition.SUFFIX.resolveModelAttribute(context, model).asString();
         final boolean useServerLog = AccessLogDefinition.USE_SERVER_LOG.resolveModelAttribute(context, model).asBoolean();
+        final ModelNode relativeToNode = AccessLogDefinition.RELATIVE_TO.resolveModelAttribute(context, model);
+        final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
         final AccessLogService service;
         if (useServerLog) {
             service = new AccessLogService(pattern);
         } else {
-            service = new AccessLogService(pattern, new File(directory), filePrefix, fileSuffix);
+            service = new AccessLogService(pattern, directory, relativeTo, filePrefix, fileSuffix);
         }
 
         final String serverName = serverAddress.getLastElement().getValue();
@@ -70,7 +72,8 @@ class AccessLogAdd extends AbstractAddStepHandler {
 
         final ServiceName serviceName = UndertowService.accessLogServiceName(serverName, hostName);
         final ServiceBuilder<AccessLogService> builder = context.getServiceTarget().addService(serviceName, service)
-                .addDependency(IOServices.WORKER.append(worker), XnioWorker.class, service.getWorker());
+                .addDependency(IOServices.WORKER.append(worker), XnioWorker.class, service.getWorker())
+                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager());
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
