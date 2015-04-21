@@ -192,7 +192,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     managementRepositoryValue.getValue().getDataSources().remove(mgtDs);
                 }
             }
-    
+
             if (deploymentMD.getConnectionManagers() != null) {
                 for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
                     cm.shutdown();
