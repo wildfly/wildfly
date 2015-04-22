@@ -135,7 +135,6 @@
                                 <delete file="${temp.file}" />
 
                                 <delete dir="target/module" />
-				<!-- <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir -->
                                 <property name="module.dir" value="target/module/${module.path}/main" />
 				<property name="wildfly_dir" value="../build/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/telemetry/main" />
 				<property name="dist_dir" value="../dist/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/telemetry/main" />
