@@ -3,8 +3,12 @@ package org.jboss.as.telemetry.extension;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+//import org.jboss.as.jdr.JdrReport;
+import org.jboss.as.jdr.JdrReportCollector;
+import org.jboss.as.jdr.JdrReportService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
@@ -35,6 +39,9 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
         boolean enabled = TelemetrySubsystemDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
         TelemetryService service = TelemetryService.getInstance(frequency, enabled);
         ServiceName name = TelemetryService.createServiceName();
+        ServiceRegistry registry = context.getServiceRegistry(false);
+        JdrReportCollector jdrCollector = JdrReportCollector.class.cast(registry.getRequiredService(JdrReportService.SERVICE_NAME).getValue());
+        service.setJdrReportCollector(jdrCollector);
         context.getServiceTarget()
                 .addService(name, service)
                 .setInitialMode(Mode.ACTIVE)

@@ -1,5 +1,7 @@
 package org.jboss.as.telemetry.extension;
 
+import org.jboss.as.jdr.JdrReport;
+import org.jboss.as.jdr.JdrReportCollector;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -12,8 +14,8 @@ import org.jboss.msc.service.StopContext;
  */
 public class TelemetryService implements Service<TelemetryService> {
 
-	public static final long MILLI_SECONDS_TO_DAY = 86400000;
-	
+    public static final long MILLISECOND_TO_DAY = 86400000;
+
     private static volatile TelemetryService instance;
 
     Logger log = Logger.getLogger(TelemetryService.class);
@@ -22,6 +24,8 @@ public class TelemetryService implements Service<TelemetryService> {
 
     // Frequency thread should run in days
     private long frequency = 1;
+
+    private JdrReportCollector jdrCollector;
 
     private Thread output = initializeOutput();
 
@@ -52,13 +56,20 @@ public class TelemetryService implements Service<TelemetryService> {
                 synchronized(output) {
                     while(enabled) {
                         try{
-                            System.out.println("Test Thread: Frequency is " + frequency);
-                            output.wait(frequency * MILLI_SECONDS_TO_DAY);
+                            JdrReport report = jdrCollector.collect();
+                            output.wait(frequency * MILLISECOND_TO_DAY);
                         } catch (InterruptedException e) {
-                            break;
+                            return;
                         } catch (Exception e) {
+                            // TODO: log.error
+                            // TODO: implement catch blocks for JDR exceptions that can be handled
                             e.printStackTrace();
-                            break;
+                            try {
+                                output.wait(frequency * MILLISECOND_TO_DAY);
+                            }
+                            catch (InterruptedException e2) {
+                                e2.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -121,5 +132,9 @@ public class TelemetryService implements Service<TelemetryService> {
         synchronized(output) {
             output.notify();
         }
+    }
+
+    public void setJdrReportCollector(JdrReportCollector jdrCollector) {
+        this.jdrCollector = jdrCollector;
     }
 }

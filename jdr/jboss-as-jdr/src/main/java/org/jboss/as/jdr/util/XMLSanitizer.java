@@ -22,6 +22,7 @@
 package org.jboss.as.jdr.util;
 
 import org.apache.commons.io.IOUtils;
+import org.jboss.as.jdr.JdrReportService;
 import org.jboss.vfs.VirtualFileFilter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -36,6 +37,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -63,7 +65,7 @@ public class XMLSanitizer extends AbstractSanitizer {
         builder = DBfactory.newDocumentBuilder();
         builder.setErrorHandler(null);
 
-        TransformerFactory transformerFactory = TransformerFactory.newInstance("org.apache.xalan.processor.TransformerFactoryImpl", null);
+        TransformerFactory transformerFactory = TransformerFactory.newInstance("org.apache.xalan.processor.TransformerFactoryImpl", JdrReportService.class.getClassLoader());
         transformer = transformerFactory.newTransformer();
     }
 
