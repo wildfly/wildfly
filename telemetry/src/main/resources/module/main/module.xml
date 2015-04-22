@@ -7,6 +7,7 @@
         <module name="javax.api"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
+	<module name="org.jboss.as.jdr"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
