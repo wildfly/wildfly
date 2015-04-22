@@ -23,9 +23,7 @@
 package org.wildfly.jberet.services;
 
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
@@ -131,46 +129,14 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         }
 
         @Override
-        public Future<?> submitTask(final Runnable task) {
+        public void submitTask(final Runnable task) {
             final ContextHandle contextHandle = createContextHandle();
-            return executorService.submit(new Runnable() {
+            executorService.submit(new Runnable() {
                 @Override
                 public void run() {
                     final Handle handle = contextHandle.setup();
                     try {
                         task.run();
-                    } finally {
-                        handle.tearDown();
-                    }
-                }
-            });
-        }
-
-        @Override
-        public <T> Future<T> submitTask(final Runnable task, final T result) {
-            final ContextHandle contextHandle = createContextHandle();
-            return executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    final Handle handle = contextHandle.setup();
-                    try {
-                        task.run();
-                    } finally {
-                        handle.tearDown();
-                    }
-                }
-            }, result);
-        }
-
-        @Override
-        public <T> Future<T> submitTask(final Callable<T> task) {
-            final ContextHandle contextHandle = createContextHandle();
-            return executorService.submit(new Callable<T>() {
-                @Override
-                public T call() throws Exception {
-                    final Handle handle = contextHandle.setup();
-                    try {
-                        return task.call();
                     } finally {
                         handle.tearDown();
                     }
@@ -188,8 +154,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
             return jobRepository;
         }
 
-        // TODO (jrp) preparing for JBeret API changes
-        //@Override
+        @Override
         public JobXmlResolver getJobXmlResolver() {
             return jobXmlResolver;
         }

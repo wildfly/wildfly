@@ -146,7 +146,7 @@
         <version.org.infinispan>7.1.1.Final</version.org.infinispan>
         <version.org.jasypt>1.9.1</version.org.jasypt>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
-        <version.org.jberet>1.1.0.Beta1</version.org.jberet>
+        <version.org.jberet>1.1.0.Final</version.org.jberet>
         <version.org.jdom>1.1.3</version.org.jdom>
         <version.org.jboss.hal.release-stream>2.6.7.Final</version.org.jboss.hal.release-stream>
         <version.org.jboss.ejb-client>2.0.3.Final</version.org.jboss.ejb-client>
