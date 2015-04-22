@@ -228,6 +228,7 @@
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
+                                        <exclude>**/*TestSuite.java</exclude>
                                     </excludes>
 
                                     <environmentVariables>
@@ -260,9 +261,6 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>none</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
 
@@ -276,7 +274,7 @@
                                 <configuration>
                                     <includes>
                                         <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</include>
+                                        <include>**/*TestSuite.java</include>
                                     </includes>
 
                                     <systemPropertyVariables combine.children="append">
