@@ -76,7 +76,7 @@ public final class Operations {
 
     /**
      * Creates a composite operation using the specified operation steps.
-     * @param operation steps
+     * @param operations steps
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(List<ModelNode> operations) {
@@ -90,7 +90,7 @@ public final class Operations {
 
     /**
      * Creates a composite operation using the specified operation steps.
-     * @param operation steps
+     * @param operations steps
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(ModelNode... operations) {
