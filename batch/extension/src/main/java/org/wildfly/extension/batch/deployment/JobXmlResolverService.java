@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 
 import org.jberet.job.model.Job;
@@ -89,8 +90,7 @@ class JobXmlResolverService implements Service<JobXmlResolver>, JobXmlResolver {
                     // Parsing the entire job XML seems excessive to just get the job name. There are two reasons for this:
                     //  1) If an error occurs during parsing there's no real need to register the job resource
                     //  2) Using the implementation parser seems less error prone for future-proofing
-                    // TODO (jrp) preparing for JBeret upgrade
-                    /*final Job job = JobParser.parseJob(entry.getValue().openStream(), classLoader, new XMLResolver() {
+                    final Job job = JobParser.parseJob(entry.getValue().openStream(), classLoader, new XMLResolver() {
                         // this is essentially what JBeret does, but it's ugly. JBeret might need an API to handle this
                         @Override
                         public Object resolveEntity(final String publicID, final String systemID, final String baseURI, final String namespace) throws XMLStreamException {
@@ -100,8 +100,7 @@ class JobXmlResolverService implements Service<JobXmlResolver>, JobXmlResolver {
                                 throw new XMLStreamException(e);
                             }
                         }
-                    });*/
-                    final Job job = JobParser.parseJob(entry.getValue().openStream(), classLoader);
+                    });
                     cachedJobInfo.put(entry.getKey(), job.getId());
                 } catch (XMLStreamException | IOException e) {
                     // Report the possible error as we don't want to fail the deployment. The job may never be run.
@@ -145,8 +144,6 @@ class JobXmlResolverService implements Service<JobXmlResolver>, JobXmlResolver {
         }
         if (WildFlySecurityManager.isChecking()) {
             return AccessController.doPrivileged(new PrivilegedAction<InputStream>() {
-                IOException error;
-
                 @Override
                 public InputStream run() {
                     try {

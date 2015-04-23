@@ -84,10 +84,10 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final VirtualFile root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
             VirtualFile jobsDir = null;
             // Only files in the META-INF/batch-jobs directory
-            if (DeploymentTypeMarker.isType(DeploymentType.EJB_JAR, deploymentUnit)) {
-                jobsDir = root.getChild("META-INF/batch-jobs");
-            } else if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
                 jobsDir = root.getChild("WEB-INF/classes/META-INF/batch-jobs");
+            } else {
+                jobsDir = root.getChild("META-INF/batch-jobs");
             }
             final JobXmlResolverService jobXmlResolverService;
             if (jobsDir != null && jobsDir.exists()) {
