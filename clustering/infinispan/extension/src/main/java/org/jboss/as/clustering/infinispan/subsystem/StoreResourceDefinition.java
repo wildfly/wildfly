@@ -21,6 +21,11 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
@@ -28,6 +33,7 @@ import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -40,10 +46,14 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Base class for store resources which require common store attributes only.
@@ -137,7 +147,57 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
                     return operation;
                 }
             };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+
+            OperationTransformer addTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    if (operation.hasDefined(PROPERTIES.getName())) {
+                        final ModelNode addOp = operation.clone();
+                        final ModelNode properties = addOp.remove(PROPERTIES.getName());
+
+                        final ModelNode composite = new ModelNode();
+                        composite.get(OP).set(COMPOSITE);
+                        composite.get(OP_ADDR).setEmptyList();
+                        composite.get(STEPS).add(addOp);
+
+                        for (final Property p : properties.asPropertyList()) {
+                            String key = p.getName();
+                            ModelNode value = p.getValue();
+                            PathAddress propertyAddr = Operations.getPathAddress(operation);
+                            ModelNode propAddOp = Util.createAddOperation(propertyAddr.append(StorePropertyResourceDefinition.pathElement(key)));
+                            propAddOp.get(StorePropertyResourceDefinition.VALUE.getName()).set(value);
+                            composite.get(STEPS).add(propAddOp);
+                        }
+                        return composite;
+                    }
+                    return operation;
+                }
+            };
+            builder.addRawOperationTransformationOverride(ModelDescriptionConstants.ADD, new SimpleOperationTransformer(addTransformer));
+
+            final ResourceTransformer propertiesTransformer = new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    ModelNode model = resource.getModel();
+                    final ModelNode properties = model.remove(PROPERTIES.getName());
+                    final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+
+                    if (properties.isDefined()) {
+                        for (final Property p : properties.asPropertyList()) {
+                            String key = p.getName();
+                            ModelNode value = p.getValue();
+                            Resource propertyResource = Resource.Factory.create();
+                            propertyResource.getModel().get(StorePropertyResourceDefinition.VALUE.getName()).set(value);
+                            PathAddress absoluteAddress = address.append(StorePropertyResourceDefinition.pathElement(key).getKey(), StorePropertyResourceDefinition.pathElement(key).getValue());
+                            childContext.addTransformedResourceFromRoot(absoluteAddress, propertyResource);
+                        }
+                    }
+
+                    context.processChildren(resource);
+                }
+            };
+            builder.setCustomResourceTransformer(propertiesTransformer);
         }
 
         if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {

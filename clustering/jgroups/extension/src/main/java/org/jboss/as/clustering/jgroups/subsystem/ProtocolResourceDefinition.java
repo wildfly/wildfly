@@ -131,6 +131,8 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                 }
             };
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleOperationTransformer(removeTransformer));
+
+            builder.setCustomResourceTransformer(PropertyResourceDefinition.PROPERTIES_RESOURCE_TRANSFORMER);
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
@@ -183,7 +185,8 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                     return operation;
                 }
             };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+
         }
 
         if (JGroupsModel.VERSION_1_2_0.requiresTransformation(version)) {
