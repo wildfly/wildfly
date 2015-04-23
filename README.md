@@ -13,7 +13,7 @@ To use the BOM, import into your dependency management. For example, if you want
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
                 <artifactId>jboss-javaee-7.0-with-tools</artifactId>
-                <version>8.2.1.Final</version>
+                <version>8.2.2.Final</version>
                 <scope>import</scope>
             </dependency>
         </dependencies>
