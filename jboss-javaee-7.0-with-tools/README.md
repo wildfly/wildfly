@@ -15,7 +15,7 @@ To use the BOM, import into your dependency management:
             <dependency>
                <groupId>org.wildfly.bom</groupId>
                <artifactId>jboss-javaee-7.0-with-tools</artifactId>
-               <version>8.2.2.Final</version>
+               <version>9.0.0.Beta2</version>
                <type>pom</type>
                <scope>import</scope>
             </dependency>

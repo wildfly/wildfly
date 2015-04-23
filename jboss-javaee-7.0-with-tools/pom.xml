@@ -129,18 +129,18 @@
             <!-- Note: Managed version of container allows Arquillian to
                 control startup and shutdown of the container -->
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.org.jboss.as.arquillian.container}</version>
+                <version>${version.org.wildfly.arquillian.container}</version>
             </dependency>
 
             <!-- Arquillian support for JBoss WildFly 8 container -->
             <!-- Note: Remote version of container allows Arquillian to connect
                 to already running container -->
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-container-remote</artifactId>
-                <version>${version.org.jboss.as.arquillian.container}</version>
+                <version>${version.org.wildfly.arquillian.container}</version>
             </dependency>
 
             <!-- Older versions of Shrinkwrap don't automatically manage
