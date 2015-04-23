@@ -95,6 +95,8 @@
                 <xs:attribute name="max-buffered-request-size" type="xs:long" default="16384"/>
                 <xs:attribute name="record-request-start-time" type="xs:boolean" default="false"/>
                 <xs:attribute name="allow-equals-in-cookie-value" type="xs:boolean" default="false"/>
+                <xs:attribute name="no-request-timeout" type="xs:integer" default="-1"/>
+                <xs:attribute name="request-parse-timeout" type="xs:integer" default="-1"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

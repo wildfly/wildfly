@@ -29,7 +29,7 @@
     <buffer-cache name="extra" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
 
     <server name="some-server" default-host="other-host" servlet-container="myContainer">
-        <ajp-listener name="ajp-connector" socket-binding="ajp" redirect-socket="ajps" max-parameters="5000" tcp-keep-alive="true" tcp-backlog="500" receive-buffer="5000" send-buffer="50000" resolve-peer-address="true"/>
+        <ajp-listener name="ajp-connector" socket-binding="ajp" redirect-socket="ajps" max-parameters="5000" tcp-keep-alive="true" tcp-backlog="500" receive-buffer="5000" send-buffer="50000" resolve-peer-address="true" no-request-timeout="10000" request-parse-timeout="2000"/>
         <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}" resolve-peer-address="true"/>
         <http-listener name="second" socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30" redirect-socket="https-non-default"/>
         <https-listener name="https" socket-binding="https-non-default" security-realm="UndertowRealm" verify-client="REQUESTED" record-request-start-time="true" max-buffered-request-size="50000" resolve-peer-address="true"/>
