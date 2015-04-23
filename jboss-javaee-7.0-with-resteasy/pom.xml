@@ -26,7 +26,7 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <version>8.2.2.Final</version>
+        <version>8.2.3.Final-SNAPSHOT</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
