@@ -6122,12 +6122,6 @@
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-spi</artifactId>
                 <version>${version.org.jboss.ws.spi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-annotations</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
