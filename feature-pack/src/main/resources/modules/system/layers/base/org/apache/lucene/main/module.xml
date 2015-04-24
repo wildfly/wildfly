@@ -33,6 +33,7 @@
         <artifact name="${org.apache.lucene:lucene-facet}"/>
         <artifact name="${org.apache.lucene:lucene-memory}"/>
         <artifact name="${org.apache.lucene:lucene-queries}"/>
+        <artifact name="${org.apache.lucene:lucene-queryparser}"/>
     </resources>
 
     <dependencies>

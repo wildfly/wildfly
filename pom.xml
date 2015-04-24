@@ -3521,6 +3521,17 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>${version.org.apache.lucene}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.lucene</groupId>
+                        <artifactId>lucene-sandbox</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-queries</artifactId>
                 <version>${version.org.apache.lucene}</version>
             </dependency>
