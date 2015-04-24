@@ -33,10 +33,8 @@
         <module name="javax.transaction.api" />
         <module name="org.hibernate" />
         <module name="org.hibernate.commons-annotations" />
-        <module name="org.apache.lucene" export="true" />
         <module name="org.hibernate.search.engine" export="true" services="import" />
         <module name="org.jboss.logging" />
         <module name="javax.persistence.api" />
-        <module name="javax.jms.api" optional="true" />
     </dependencies>
 </module>

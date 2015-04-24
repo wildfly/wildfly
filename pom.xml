@@ -110,6 +110,7 @@
         <version.joda-time>2.7</version.joda-time>
         <version.jsoup>1.8.1</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
+        <version.org.antlr-34>3.4</version.org.antlr-34>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>3.0.4</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.3</version.org.apache.cxf.xjcplugins>
@@ -4034,6 +4035,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr-runtime</artifactId>
+                <version>${version.org.antlr-34}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>stringtemplate</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
                 <artifactId>hibernate-jpa-2.1-api</artifactId>
                 <version>${version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api}</version>
@@ -4088,6 +4101,24 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-infinispan</artifactId>
+                <version>${version.org.hibernate.search}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-backend-jms</artifactId>
+                <version>${version.org.hibernate.search}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-backend-jgroups</artifactId>
+                <version>${version.org.hibernate.search}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-serialization-avro</artifactId>
                 <version>${version.org.hibernate.search}</version>
             </dependency>
 

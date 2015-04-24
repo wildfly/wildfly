@@ -26,23 +26,33 @@
      without the ORM integration bits. This is reused by several other project
      outside of the Hibernate group. -->
 <module xmlns="urn:jboss:module:1.3" name="org.hibernate.search.engine">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
     <resources>
         <artifact name="${org.hibernate:hibernate-search-engine}"/>
-        <artifact name="${org.hibernate:hibernate-search-infinispan}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.jms.api" optional="true"/>
-        <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>
-        <module name="org.apache.avro" optional="true"/>
-        <module name="org.apache.lucene"/>
         <module name="org.hibernate.commons-annotations"/>
-        <module name="org.infinispan" optional="true"/>
-        <module name="org.infinispan.commons" optional="true"/>
-        <module name="org.infinispan.lucene.directory" optional="true"/>
+        <module name="org.apache.lucene" export="true"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jgroups" optional="true"/>
+
+        <!-- optional JMS backend support -->
+        <module name="org.hibernate.search.backend-jms" export="true" services="import" optional="true"/>
+
+        <!-- optional JGroups backend support -->
+        <module name="org.hibernate.search.backend-jgroups" export="true" services="import" optional="true"/>
+
+        <!-- optional Avro serialization -->
+        <module name="org.hibernate.search.serialization-avro" services="import" optional="true"/>
+
+        <!-- optional Infinispan integrations -->
+        <module name="org.infinispan.hibernate-search.directory-provider" services="import" optional="true"/>
+
+        <!-- For naming -->
+        <module name="javax.api" />
+        <module name="org.jboss.as.naming" />
     </dependencies>
 </module>
