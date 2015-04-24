@@ -195,11 +195,11 @@
         <version.org.jboss.spec.javax.websockets>1.1.1.Final</version.org.jboss.spec.javax.websockets>
         <version.org.jboss.weld.weld>2.2.11.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>2.2.SP4</version.org.jboss.weld.weld-api>
-        <version.org.jboss.ws.api>1.0.3.CR4</version.org.jboss.ws.api>
-        <version.org.jboss.ws.spi>3.0.0.CR2</version.org.jboss.ws.spi>
-        <version.org.jboss.ws.common>3.0.0.CR1</version.org.jboss.ws.common>
-        <version.org.jboss.ws.common.tools>1.2.1.CR2</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>5.0.0.CR1</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.api>1.0.3.Final</version.org.jboss.ws.api>
+        <version.org.jboss.ws.spi>3.0.0.Final</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.common>3.0.0.Final</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common.tools>1.2.1.Final</version.org.jboss.ws.common.tools>
+        <version.org.jboss.ws.cxf>5.0.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jgroups>3.6.2.Final</version.org.jgroups>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
@@ -6153,12 +6153,6 @@
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-spi</artifactId>
                 <version>${version.org.jboss.ws.spi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-annotations</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
