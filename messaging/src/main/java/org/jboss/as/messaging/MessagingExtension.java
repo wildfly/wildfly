@@ -29,6 +29,7 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_4;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_5;
 import static org.jboss.as.messaging.Namespace.MESSAGING_2_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_3_0;
 
@@ -76,6 +77,13 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:2.0
  *       <li>Management model: 2.0.0
+ *     </ul>
+ *   </dd>
+ *   <dt>EAP 6.4</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging:1.5
+ *       <li>Management model: 1.4.0
  *     </ul>
  *   </dd>
  *   <dt>AS 7.3.0</dt>
@@ -266,6 +274,11 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_2.getUriString(), Messaging12SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_3.getUriString(), Messaging13SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_4.getUriString(), Messaging14SubsystemParser.getInstance());
+        // the 1.5 schema is port forwarded from EAP 6.4.
+        // The 1.4 schema was updated by mistake in EAP 6.4. The 1.4 parser in WildFly is updated to be able to parse these
+        // elements. There are no other changes in the 1.5 schema apart from these elements so we use the 1.4 parser to parse
+        // the 1.5 schema too.
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_5.getUriString(), Messaging14SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_2_0.getUriString(), Messaging20SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_3_0.getUriString(), Messaging30SubsystemParser.getInstance());
     }
