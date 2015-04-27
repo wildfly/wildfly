@@ -68,11 +68,6 @@ public interface EeLogger extends BasicLogger {
     EeLogger ROOT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.ee");
 
     /**
-     * A logger with a category of {@code org.jboss.as.server.deployment}.
-     */
-    EeLogger SERVER_DEPLOYMENT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.server.deployment");
-
-    /**
      * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
      * could not be proxied and will not be enlisted in the transactions automatically.
      *

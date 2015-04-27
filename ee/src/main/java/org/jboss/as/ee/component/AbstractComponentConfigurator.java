@@ -20,7 +20,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.ee.logging.EeLogger.SERVER_DEPLOYMENT_LOGGER;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * @author Stuart Douglas
@@ -78,7 +78,7 @@ public class AbstractComponentConfigurator {
 
         for (final ResourceInjectionConfiguration injectionConfiguration : mergedInjections.values()) {
             if(!moduleDescription.isAppClient() && injectionConfiguration.getTarget().isStatic(context.getDeploymentUnit())) {
-                SERVER_DEPLOYMENT_LOGGER.debugf("Injection for a member with static modifier is only acceptable on application clients, ignoring injection for target %s",injectionConfiguration.getTarget());
+                ROOT_LOGGER.debugf("Injection for a member with static modifier is only acceptable on application clients, ignoring injection for target %s",injectionConfiguration.getTarget());
                 continue;
             }
             if(injectionConfiguration.getTarget() instanceof MethodInjectionTarget) {
