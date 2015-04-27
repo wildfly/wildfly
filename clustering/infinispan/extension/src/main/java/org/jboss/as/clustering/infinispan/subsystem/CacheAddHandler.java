@@ -66,7 +66,6 @@ import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
@@ -115,7 +114,6 @@ public class CacheAddHandler extends AbstractAddStepHandler {
 
         // get model attributes
         String jndiName = ModelNodes.asString(CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel));
-        ServiceController.Mode initialMode = StartMode.valueOf(CacheResourceDefinition.START.resolveModelAttribute(context, cacheModel).asString()).getMode();
 
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(CacheResourceDefinition.MODULE.resolveModelAttribute(context, cacheModel));
         if ((module == null) && Index.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cacheModel).asString()).isEnabled()) {
@@ -134,7 +132,7 @@ public class CacheAddHandler extends AbstractAddStepHandler {
         builder.build(target).install();
 
         // Install cache service
-        new CacheBuilder<>(containerName, cacheName).build(target).setInitialMode(initialMode).install();
+        new CacheBuilder<>(containerName, cacheName).build(target).install();
 
         // Install jndi binding for cache
         @SuppressWarnings("rawtypes")

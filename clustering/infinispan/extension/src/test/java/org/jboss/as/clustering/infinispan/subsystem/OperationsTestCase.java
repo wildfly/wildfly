@@ -58,16 +58,14 @@ public class OperationsTestCase extends OperationTestCaseBase {
         String subsystemXml = getSubsystemXml();
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
 
-        String initialValue = "EAGER";
-        ModelNode readOperation = getCacheReadOperation("maximal", ModelKeys.LOCAL_CACHE, "local", ModelKeys.START);
+        ModelNode readOperation = getCacheReadOperation("maximal", ModelKeys.LOCAL_CACHE, "local", CacheResourceDefinition.STATISTICS_ENABLED.getName());
 
         // read the cache container batching attribute
         ModelNode result = servicesA.executeOperation(readOperation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(initialValue, result.get(RESULT).asString());
+        Assert.assertTrue(result.get(RESULT).asBoolean());
 
-        String newValue = "LAZY";
-        ModelNode writeOperation = getCacheWriteOperation("maximal", ModelKeys.LOCAL_CACHE, "local", ModelKeys.START, newValue);
+        ModelNode writeOperation = getCacheWriteOperation("maximal", ModelKeys.LOCAL_CACHE, "local", CacheResourceDefinition.STATISTICS_ENABLED.getName(), "false");
 
         // write the batching attribute
         result = servicesA.executeOperation(writeOperation);
@@ -76,7 +74,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // re-read the batching attribute
         result = servicesA.executeOperation(readOperation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(newValue, result.get(RESULT).asString());
+        Assert.assertFalse(result.get(RESULT).asBoolean());
     }
 
     /*
