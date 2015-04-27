@@ -47,6 +47,8 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.access.JmxAction;
+import org.jboss.as.controller.access.JmxTarget;
 import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.as.jsr77.managedobject.ManagedObjectHandlerRegistry;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
@@ -281,5 +283,13 @@ class JSR77ManagementMBeanServer implements MBeanServerPlugin {
 
     @Override
     public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException {
+    }
+
+    public JmxAction getJmxAction(ObjectName name, String method , String operation, JmxAction.Impact impact, String attribute) {
+        return new JmxAction(method, operation, impact);
+    }
+
+    public JmxTarget getJmxTarget(ObjectName name, String method, boolean isNonFacadeMBeansSensitive) {
+        return new JmxTarget(method, name, isNonFacadeMBeansSensitive);
     }
 }
