@@ -59,8 +59,8 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.threads.ThreadsParser;
 import org.jboss.dmr.ModelNode;
@@ -557,7 +557,7 @@ public class JcaExtension implements Extension {
                     }
 
                     if (name == null) {
-                        throw ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(new StringBuilder(attributeName), reader.getLocation());
+                        throw ParseUtils.missingRequired(reader, attributeName);
                     }
 
                     final ModelNode distributedWorkManagerAddress = parentAddress.clone();
