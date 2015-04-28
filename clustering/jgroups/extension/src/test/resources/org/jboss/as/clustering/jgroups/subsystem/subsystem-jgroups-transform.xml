@@ -1,10 +1,35 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2015, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
 <subsystem xmlns="urn:jboss:domain:jgroups:3.0">
     <stacks default="maximal">
         <stack name="maximal">
-            <transport type="TCP" module="org.jgroups" socket-binding="jgroups-tcp" diagnostics-socket-binding="jgroups-diagnostics" default-executor="jgroups" oob-executor="jgroups-oob" timer-executor="jgroups-timer" shared="false" thread-factory="jgroups-thread-factory" machine="machine1" rack="rack1" site="site1" >
+            <transport type="TCP" module="org.jgroups" socket-binding="jgroups-tcp" diagnostics-socket-binding="jgroups-diagnostics" default-executor="jgroups" oob-executor="jgroups-oob" timer-executor="jgroups-timer" shared="false" thread-factory="jgroups-thread-factory" machine="machine1" rack="rack1" site="site1">
                 <property name="enable_bundling">true</property>
             </transport>
-            <protocol type="MPING" module="org.jgroups"/>
+            <protocol type="MPING" module="org.jgroups">
+                <property name="ip_ttl">1</property>
+                <property name="receive_on_all_interfaces">true</property>
+            </protocol>
             <protocol type="MERGE2"/>
             <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
             <protocol type="FD"/>

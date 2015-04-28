@@ -182,10 +182,14 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
                 composite.get(OP_ADDR).setEmptyList();
                 composite.get(STEPS).add(addOp);
 
+                // Handle odd legacy case, when :add operation for the protocol is :add-protocol on the parent
+                PathAddress propertyAddress = Operations.getName(addOp).equals(ModelKeys.ADD_PROTOCOL)
+                        ? Operations.getPathAddress(addOp).append(ModelKeys.PROTOCOL, addOp.get(ModelKeys.TYPE).asString())
+                        : Operations.getPathAddress(addOp);
+
                 for (final Property property : properties.asPropertyList()) {
                     String key = property.getName();
                     ModelNode value = property.getValue();
-                    PathAddress propertyAddress = Operations.getPathAddress(operation);
                     ModelNode propAddOp = Util.createAddOperation(propertyAddress.append(PropertyResourceDefinition.pathElement(key)));
                     propAddOp.get(PropertyResourceDefinition.VALUE.getName()).set(value);
                     composite.get(STEPS).add(propAddOp);
