@@ -27,7 +27,6 @@ import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.common.beans.property.PropertiesValueResolver;
-import org.jboss.logging.Logger;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
@@ -45,10 +44,6 @@ import java.util.Collection;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class Configurator {
-    /**
-     * The log
-     */
-    protected static final Logger log = Logger.getLogger(Configurator.class);
 
     /**
      * No parameter types

@@ -24,7 +24,6 @@ package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.ParseResult;
 import org.jboss.as.pojo.logging.PojoLogger;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamException;
@@ -35,7 +34,6 @@ import javax.xml.stream.XMLStreamException;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class LegacyKernelDeploymentXmlDescriptorParser extends KernelDeploymentXmlDescriptorParser {
-    private static final Logger log = Logger.getLogger(LegacyKernelDeploymentXmlDescriptorParser.class);
 
     public static final String MC_NAMESPACE_1_0 = "urn:jboss:bean-deployer:1.0";
     public static final String MC_NAMESPACE_2_0 = "urn:jboss:bean-deployer:2.0";

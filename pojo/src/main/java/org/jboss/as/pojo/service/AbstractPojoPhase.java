@@ -37,7 +37,6 @@ import org.jboss.as.pojo.descriptor.DefaultConfigVisitor;
 import org.jboss.as.pojo.descriptor.InstallConfig;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -57,7 +56,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractPojoPhase implements Service<Object> {
-    protected final Logger log = Logger.getLogger(getClass());
 
     private Module module;
     private BeanMetaDataConfig beanConfig;
