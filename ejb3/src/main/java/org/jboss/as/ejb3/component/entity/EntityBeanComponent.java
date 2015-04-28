@@ -158,6 +158,15 @@ public class EntityBeanComponent extends EJBComponent implements PooledComponent
         }
     }
 
+    public void discardEntityBeanInstance(final EntityBeanComponentInstance instance) {
+        if (pool!=null) {
+            pool.discard(instance);
+        } else {
+            factory.destroy(instance);
+        }
+    }
+
+
     public ReadyEntityCache getCache() {
         return cache;
     }

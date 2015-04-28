@@ -94,7 +94,9 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
             final Object key = transactionSynchronizationRegistry.getTransactionKey();
             final Map<Object, CacheEntry> map = cache.get(key);
             if (map != null) {
-                map.remove(instance.getPrimaryKey());
+                if (map.remove(instance.getPrimaryKey())!=null) {
+                    component.discardEntityBeanInstance(instance);
+                }
             }
         }
     }

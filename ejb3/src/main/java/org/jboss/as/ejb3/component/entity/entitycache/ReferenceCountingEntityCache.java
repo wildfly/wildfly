@@ -151,6 +151,8 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
                 //if there is a new instance we cannot discard the entry entirely
                 cache.remove(instance.getPrimaryKey());
             }
+
+            component.discardEntityBeanInstance(instance);
         }
     }
 
