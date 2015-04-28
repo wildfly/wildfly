@@ -41,9 +41,7 @@ final class RTSSubsystemRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("RTSSubsystemRemove.performRuntime");
-        }
+        RTSLogger.ROOT_LOGGER.trace("RTSSubsystemRemove.performRuntime");
 
         context.removeService(RTSSubsystemExtension.COORDINATOR);
         context.removeService(RTSSubsystemExtension.PARTICIPANT);

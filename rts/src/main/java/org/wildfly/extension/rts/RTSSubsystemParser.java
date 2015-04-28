@@ -53,9 +53,7 @@ final class RTSSubsystemParser implements XMLStreamConstants, XMLElementReader<L
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("RTSSubsystemParser.writeContent");
-        }
+        RTSLogger.ROOT_LOGGER.trace("RTSSubsystemParser.writeContent");
 
         context.startSubsystemElement(RTSSubsystemExtension.NAMESPACE, false);
 
@@ -73,9 +71,7 @@ final class RTSSubsystemParser implements XMLStreamConstants, XMLElementReader<L
 
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("RTSSubsystemParser.readElement");
-        }
+        RTSLogger.ROOT_LOGGER.trace("RTSSubsystemParser.readElement");
 
         // no attributes
         if (reader.getAttributeCount() > 0) {
