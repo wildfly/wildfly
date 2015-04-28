@@ -24,7 +24,7 @@
   ~
   -->
 
-<domain xmlns="urn:jboss:domain:3.0">
+<domain xmlns="urn:jboss:domain:4.0">
     <!--
       A trimmed down domain.xml for use with the auto-ignore resources on slave tests.
 
