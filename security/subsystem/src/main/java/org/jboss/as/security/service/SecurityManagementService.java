@@ -44,8 +44,6 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("security-management");
 
-    private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
-
     private final String authenticationManagerClassName;
 
     private final boolean deepCopySubjectMode;
@@ -79,7 +77,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting SecurityManagementService");
+        SecurityLogger.ROOT_LOGGER.debugf("Starting SecurityManagementService");
         // set properties of JNDIBasedSecurityManagement
         JNDIBasedSecurityManagement securityManagement = new JNDIBasedSecurityManagement(serviceModuleLoaderValue.getValue());
         securityManagement.setAuthenticationManagerClassName(authenticationManagerClassName);

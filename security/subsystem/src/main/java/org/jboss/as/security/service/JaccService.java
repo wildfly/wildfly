@@ -45,8 +45,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 public abstract class JaccService<T> implements Service<PolicyConfiguration> {
 
-    protected static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
-
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("jacc");
 
     private final String contextId;
@@ -83,7 +81,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 if (metaData != null) {
                     createPermissions(metaData, policyConfiguration);
                 } else {
-                    log.debugf("Cannot create permissions with 'null' metaData for id=" + contextId);
+                    SecurityLogger.ROOT_LOGGER.debugf("Cannot create permissions with 'null' metaData for id=%s", contextId);
                 }
                 if (!standalone) {
                     PolicyConfiguration parent = parentPolicy.getValue();
@@ -93,7 +91,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                         policyConfiguration.commit();
                         parent.commit();
                     } else {
-                        log.debugf("Could not retrieve parent policy for policy " + contextId);
+                        SecurityLogger.ROOT_LOGGER.debugf("Could not retrieve parent policy for policy %s", contextId);
                     }
                 } else {
                     policyConfiguration.commit();
