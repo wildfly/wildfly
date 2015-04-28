@@ -33,6 +33,7 @@ import org.wildfly.clustering.ee.Invoker;
  */
 public class RetryingInvoker implements Invoker {
 
+    // No logger interface for this module and no reason to create one for this class only
     private static final Logger LOGGER = Logger.getLogger(RetryingInvoker.class);
 
     private final long[] backOffIntervals;

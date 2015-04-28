@@ -32,7 +32,6 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -50,8 +49,6 @@ import org.wildfly.clustering.service.Builder;
  */
 @Listener
 public class CacheContainerBuilder implements Builder<CacheContainer>, Service<CacheContainer> {
-
-    private static final Logger log = Logger.getLogger(CacheContainerBuilder.class.getPackage().getName());
 
     private final InjectedValue<GlobalConfiguration> configuration = new InjectedValue<>();
     private final List<String> aliases = new LinkedList<>();
@@ -97,7 +94,7 @@ public class CacheContainerBuilder implements Builder<CacheContainer>, Service<C
         this.container = new DefaultCacheContainer(config, this.defaultCache);
         this.container.addListener(this);
         this.container.start();
-        log.debugf("%s cache container started", this.name);
+        InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
     }
 
     @Override
@@ -105,7 +102,7 @@ public class CacheContainerBuilder implements Builder<CacheContainer>, Service<C
         if ((this.container != null) && this.container.getStatus().allowInvocations()) {
             this.container.stop();
             this.container.removeListener(this);
-            log.debugf("%s cache container stopped", this.name);
+            InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
         }
     }
 
