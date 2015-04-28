@@ -378,6 +378,70 @@ public class EJBManagementUtil {
         }
     }
 
+    public static void editEntityBeanInstancePool(final ModelControllerClient controllerClient, final String poolName, final boolean optimisticLocking) {
+        try {
+            // /subsystem=ejb3
+            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+
+            // /subsystem=ejb3:write-attribute(name="default-entity-bean-instance-pool", value=<poolName>)
+            final ModelNode defaultEntityBeanInstancePool = new ModelNode();
+            // set the operation
+            defaultEntityBeanInstancePool.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+            // set the address
+            defaultEntityBeanInstancePool.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
+            // setup the parameters for the write attribute operation
+            defaultEntityBeanInstancePool.get(NAME).set(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
+            defaultEntityBeanInstancePool.get(VALUE).set(poolName);
+            // execute the operation
+            execute(controllerClient, defaultEntityBeanInstancePool);
+
+            // /subsystem=ejb3:write-attribute(name="default-entity-bean-optimistic-locking", value=<optimisticLocking>)
+            final ModelNode defaultEntityBeanOptimisticLocking = new ModelNode();
+            // set the operation
+            defaultEntityBeanOptimisticLocking.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+            // set the address
+            defaultEntityBeanOptimisticLocking.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
+            // setup the parameters for the write attribute operation
+            defaultEntityBeanOptimisticLocking.get(NAME).set(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING);
+            defaultEntityBeanOptimisticLocking.get(VALUE).set(optimisticLocking);
+            // execute the operation
+            execute(controllerClient, defaultEntityBeanOptimisticLocking);
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+    }
+
+    public static void undefineEntityBeanInstancePool(final ModelControllerClient controllerClient) {
+        try {
+            // /subsystem=ejb3
+            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+
+            // /subsystem=ejb3:undefine-attribute(name="default-entity-bean-instance-pool")
+            final ModelNode defaultEntityBeanInstancePool = new ModelNode();
+            // set the operation
+            defaultEntityBeanInstancePool.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
+            // set the address
+            defaultEntityBeanInstancePool.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
+            // setup the parameters for the undefine attribute operation
+            defaultEntityBeanInstancePool.get(NAME).set(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
+            // execute the operation
+            execute(controllerClient, defaultEntityBeanInstancePool);
+
+            // /subsystem=ejb3:undefine-attribute(name="default-entity-bean-optimistic-locking")
+            final ModelNode defaultEntityBeanOptimisticLocking = new ModelNode();
+            // set the operation
+            defaultEntityBeanOptimisticLocking.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
+            // set the address
+            defaultEntityBeanOptimisticLocking.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
+            // setup the parameters for the undefine attribute operation
+            defaultEntityBeanOptimisticLocking.get(NAME).set(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING);
+            // execute the operation
+            execute(controllerClient, defaultEntityBeanOptimisticLocking);
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+    }
+
     public static void enablePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {
         editPassByValueForRemoteInterfaceInvocations(managementClient, true);
     }
