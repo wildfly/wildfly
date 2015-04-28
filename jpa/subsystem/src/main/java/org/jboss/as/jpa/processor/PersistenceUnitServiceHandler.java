@@ -107,7 +107,6 @@ import org.jipijapa.plugin.spi.Platform;
 import org.jipijapa.plugin.spi.TwoPhaseBootstrapCapable;
 
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 
@@ -157,7 +156,7 @@ public class PersistenceUnitServiceHandler {
                 holder.getPersistenceUnits().size() > 0) {
                 ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
                 puList.add(holder);
-                JPA_LOGGER.tracef("install persistence unit definition for jar %s", deploymentRoot.getRootName());
+                ROOT_LOGGER.tracef("install persistence unit definition for jar %s", deploymentRoot.getRootName());
                 // assemble and install the PU service
                 addPuService(phaseContext, puList, startEarly, platform);
             }
@@ -196,7 +195,7 @@ public class PersistenceUnitServiceHandler {
                 deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, new WebNonTxEmCloserAction());
             }
 
-            JPA_LOGGER.tracef("install persistence unit definitions for war %s", deploymentRoot.getRootName());
+            ROOT_LOGGER.tracef("install persistence unit definitions for war %s", deploymentRoot.getRootName());
             addPuService(phaseContext, puList, startEarly, platform);
         }
     }
@@ -218,7 +217,7 @@ public class PersistenceUnitServiceHandler {
                         puList.add(holder);
                     }
 
-                    JPA_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
+                    ROOT_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
                     addPuService(phaseContext, puList, startEarly, platform);
                 }
             }
@@ -274,7 +273,7 @@ public class PersistenceUnitServiceHandler {
                             }
                             else if (false == Configuration.needClassFileTransformer(pu)) {
                                 // will start later when startEarly == false
-                                JPA_LOGGER.tracef("persistence unit %s in deployment %s is configured to not need class transformer to be set, no class rewriting will be allowed",
+                                ROOT_LOGGER.tracef("persistence unit %s in deployment %s is configured to not need class transformer to be set, no class rewriting will be allowed",
                                     pu.getPersistenceUnitName(), deploymentUnit.getName());
                             }
                             else {
@@ -296,7 +295,7 @@ public class PersistenceUnitServiceHandler {
 
                     }
                     else {
-                        JPA_LOGGER.tracef("persistence unit %s in deployment %s is not container managed (%s is set to false)",
+                        ROOT_LOGGER.tracef("persistence unit %s in deployment %s is not container managed (%s is set to false)",
                                 pu.getPersistenceUnitName(), deploymentUnit.getName(), Configuration.JPA_CONTAINER_MANAGED);
                     }
                 }
@@ -399,7 +398,7 @@ public class PersistenceUnitServiceHandler {
                 if (defaultJtaDataSource != null &&
                     !defaultJtaDataSource.isEmpty()) {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
-                    JPA_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
+                    ROOT_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
 
@@ -436,7 +435,7 @@ public class PersistenceUnitServiceHandler {
 
             builder.install();
 
-            JPA_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
+            ROOT_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
             addManagementConsole(deploymentUnit, pu, adaptor);
 
         } catch (ServiceRegistryException e) {
@@ -537,7 +536,7 @@ public class PersistenceUnitServiceHandler {
                 if (defaultJtaDataSource != null &&
                     !defaultJtaDataSource.isEmpty()) {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
-                    JPA_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
+                    ROOT_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
 
@@ -558,7 +557,7 @@ public class PersistenceUnitServiceHandler {
 
             builder.install();
 
-            JPA_LOGGER.tracef("added PersistenceUnitService (phase 1 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
+            ROOT_LOGGER.tracef("added PersistenceUnitService (phase 1 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
         } catch (ServiceRegistryException e) {
             throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
         }
@@ -662,7 +661,7 @@ public class PersistenceUnitServiceHandler {
                 if (defaultJtaDataSource != null &&
                     !defaultJtaDataSource.isEmpty()) {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
-                    JPA_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
+                    ROOT_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
 
@@ -700,7 +699,7 @@ public class PersistenceUnitServiceHandler {
 
             builder.install();
 
-            JPA_LOGGER.tracef("added PersistenceUnitService (phase 2 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
+            ROOT_LOGGER.tracef("added PersistenceUnitService (phase 2 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
             addManagementConsole(deploymentUnit, pu, adaptor);
 
         } catch (ServiceRegistryException e) {
@@ -718,7 +717,7 @@ public class PersistenceUnitServiceHandler {
             else {
                 bindingInfo = ContextNames.bindInfoFor(jndiName);
             }
-            JPA_LOGGER.tracef("binding the transaction scoped entity manager to jndi name '%s'", bindingInfo.getAbsoluteJndiName());
+            ROOT_LOGGER.tracef("binding the transaction scoped entity manager to jndi name '%s'", bindingInfo.getAbsoluteJndiName());
             final BinderService binderService = new BinderService(bindingInfo.getBindName());
             serviceTarget.addService(bindingInfo.getBinderServiceName(), binderService)
                 .addDependency(bindingInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
@@ -753,7 +752,7 @@ public class PersistenceUnitServiceHandler {
             else {
                 bindingInfo = ContextNames.bindInfoFor(jndiName);
             }
-            JPA_LOGGER.tracef("binding the entity manager factory to jndi name '%s'", bindingInfo.getAbsoluteJndiName());
+            ROOT_LOGGER.tracef("binding the entity manager factory to jndi name '%s'", bindingInfo.getAbsoluteJndiName());
             final BinderService binderService = new BinderService(bindingInfo.getBindName());
             serviceTarget.addService(bindingInfo.getBinderServiceName(), binderService)
                 .addDependency(bindingInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
@@ -793,7 +792,7 @@ public class PersistenceUnitServiceHandler {
                 final Index index = root.getAttachment(Attachments.ANNOTATION_INDEX);
                 if (index != null) {
                     try {
-                        JPA_LOGGER.tracef("adding '%s' to annotation index map", root.getRoot().toURL());
+                        ROOT_LOGGER.tracef("adding '%s' to annotation index map", root.getRoot().toURL());
                         annotationIndexes.put(root.getRoot().toURL(), index);
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
@@ -957,7 +956,7 @@ public class PersistenceUnitServiceHandler {
         if (providerList != null) {
             for (PersistenceProvider persistenceProvider : providerList) {
                 if (persistenceProvider.getClass().getName().equals(pu.getPersistenceProviderClassName())) {
-                    JPA_LOGGER.tracef("deployment %s is using %s", deploymentUnit.getName(), pu.getPersistenceProviderClassName());
+                    ROOT_LOGGER.tracef("deployment %s is using %s", deploymentUnit.getName(), pu.getPersistenceProviderClassName());
                     return persistenceProvider;
                 }
             }

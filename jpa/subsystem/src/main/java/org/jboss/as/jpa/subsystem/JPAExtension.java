@@ -22,7 +22,7 @@
 package org.jboss.as.jpa.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.util.Collections;
 import java.util.List;
@@ -95,7 +95,7 @@ public class JPAExtension implements Extension {
         try {
             PersistenceProviderLoader.loadDefaultProvider();
         } catch (ModuleLoadException e) {
-            JPA_LOGGER.errorPreloadingDefaultProvider(e);
+            ROOT_LOGGER.errorPreloadingDefaultProvider(e);
         }
 
         if (context.isRuntimeOnlyRegistrationValid()) {

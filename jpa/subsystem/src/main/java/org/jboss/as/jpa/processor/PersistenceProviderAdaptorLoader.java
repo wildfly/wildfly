@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -116,7 +116,7 @@ public class PersistenceProviderAdaptorLoader {
                     throw JpaLogger.ROOT_LOGGER.multipleAdapters(adapterModule);
                 }
                 persistenceProviderAdaptor = adaptor;
-                JPA_LOGGER.debugf("loaded persistence provider adapter %s", adapterModule);
+                ROOT_LOGGER.debugf("loaded persistence provider adapter %s", adapterModule);
             }
             if (persistenceProviderAdaptor != null) {
                 persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
@@ -146,7 +146,7 @@ public class PersistenceProviderAdaptorLoader {
                     throw JpaLogger.ROOT_LOGGER.classloaderHasMultipleAdapters(persistenceProvider.getClass().getClassLoader().toString());
                 }
                 persistenceProviderAdaptor = adaptor;
-                JPA_LOGGER.debugf("loaded persistence provider adapter %s from classloader %s",
+                ROOT_LOGGER.debugf("loaded persistence provider adapter %s from classloader %s",
                         persistenceProviderAdaptor.getClass().getName(),
                         persistenceProvider.getClass().getClassLoader().toString());
             }

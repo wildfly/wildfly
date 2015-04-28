@@ -22,7 +22,6 @@
 
 package org.jboss.as.jpa.service;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.security.AccessControlContext;
@@ -105,7 +104,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                             @Override
                             public Void run() {
                                 try {
-                                    JPA_LOGGER.startingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
+                                    ROOT_LOGGER.startingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
                                     pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
                                     pu.setJtaDataSource(jtaDataSource.getOptionalValue());
                                     pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
@@ -156,7 +155,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                             @Override
                             public Void run() {
 
-                                JPA_LOGGER.stoppingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
+                                ROOT_LOGGER.stoppingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
                                 if (entityManagerFactoryBuilder != null) {
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                                     try {
@@ -166,7 +165,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                                             entityManagerFactoryBuilder.cancel();
                                         }
                                     } catch (Throwable t) {
-                                        JPA_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
+                                        ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
                                     } finally {
                                         entityManagerFactoryBuilder = null;
                                         pu.setTempClassLoaderFactory(null);
