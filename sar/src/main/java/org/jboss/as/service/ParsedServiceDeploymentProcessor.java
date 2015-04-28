@@ -280,7 +280,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     private static Object newValue(final Class<?> type, final String value) {
         final PropertyEditor editor = PropertyEditorFinder.getInstance().find(type);
         if (editor == null) {
-            SarLogger.DEPLOYMENT_SERVICE_LOGGER.propertyNotFound(type);
+            SarLogger.ROOT_LOGGER.propertyNotFound(type);
             return null;
         }
         editor.setAsText(value);
