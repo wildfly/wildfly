@@ -64,11 +64,6 @@ public interface MessagingLogger extends BasicLogger {
     MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.jboss.as.messaging");
 
     /**
-     * A logger with the category {@code org.jboss.messaging}.
-     */
-    MessagingLogger MESSAGING_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.jboss.messaging");
-
-    /**
      * Logs a warning message indicating AIO was not found.
      */
     @LogMessage(level = WARN)

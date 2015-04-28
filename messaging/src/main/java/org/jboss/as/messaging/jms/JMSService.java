@@ -42,7 +42,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
@@ -182,7 +182,7 @@ public class JMSService implements Service<JMSServerManager> {
             jmsServer.stop();
             jmsServer = null;
         } catch (Exception e) {
-            MESSAGING_LOGGER.errorStoppingJmsServer(e);
+            ROOT_LOGGER.errorStoppingJmsServer(e);
         }
     }
 }
