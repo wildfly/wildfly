@@ -96,9 +96,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             }
 
             Date now = new Date();
-            if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debug("Timer task invoked at: " + now + " for timer " + timer);
-            }
+            ROOT_LOGGER.debugf("Timer task invoked at: %s for timer %s", now, timer);
 
             // If a retry thread is in progress, we don't want to allow another
             // interval to execute until the retry is complete. See JIRA-1926.

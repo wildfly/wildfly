@@ -37,7 +37,6 @@ import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.MessageOutputStream;
@@ -49,8 +48,6 @@ import org.xnio.IoUtils;
  * @author Jaikiran Pai
  */
 class TransactionRecoverMessageHandler extends AbstractMessageHandler {
-
-    private static final Logger logger = Logger.getLogger(TransactionRecoverMessageHandler.class);
 
     private static final byte HEADER_TX_RECOVER_RESPONSE = 0x1A;
 
@@ -96,28 +93,28 @@ class TransactionRecoverMessageHandler extends AbstractMessageHandler {
                 xidsToRecover = transactionsRepository.getXidsToRecoverForParentNode(this.txParentNodeName, this.recoveryFlags);
             } catch (Throwable t) {
                 try {
-                    EjbLogger.ROOT_LOGGER.errorDuringTransactionRecovery(t);
+                    EjbLogger.REMOTE_LOGGER.errorDuringTransactionRecovery(t);
                     // write out a failure message to the channel to let the client know that
                     // the transaction operation failed
                     TransactionRecoverMessageHandler.this.writeException(channelAssociation, marshallerFactory, invocationId, t, null);
                 } catch (IOException e) {
-                    EjbLogger.ROOT_LOGGER.couldNotWriteOutToChannel(e);
+                    EjbLogger.REMOTE_LOGGER.couldNotWriteOutToChannel(e);
                     // close the channel
                     IoUtils.safeClose(channelAssociation.getChannel());
                 }
                 return;
             }
             try {
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Returning " + xidsToRecover.length + " Xid(s) to recover for parent node: " + txParentNodeName);
+                if (EjbLogger.REMOTE_LOGGER.isTraceEnabled()) {
+                    EjbLogger.REMOTE_LOGGER.trace("Returning " + xidsToRecover.length + " Xid(s) to recover for parent node: " + txParentNodeName);
                     for (final Xid xid : xidsToRecover) {
-                        logger.trace("EJB Xid to recover " + XAHelper.xidToString(xid));
+                        EjbLogger.REMOTE_LOGGER.trace("EJB Xid to recover " + XAHelper.xidToString(xid));
                     }
                 }
                 // write out invocation success message to the channel
                 this.writeResponse(xidsToRecover);
             } catch (IOException e) {
-                EjbLogger.ROOT_LOGGER.couldNotWriteInvocationSuccessMessage(e);
+                EjbLogger.REMOTE_LOGGER.couldNotWriteInvocationSuccessMessage(e);
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
             }

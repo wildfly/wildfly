@@ -178,19 +178,19 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         public void channelOpened(Channel channel) {
             final ChannelAssociation channelAssociation = new ChannelAssociation(channel);
 
-            EjbLogger.ROOT_LOGGER.tracef("Welcome %s to the " + EJB_CHANNEL_NAME + " channel", channel);
+            EjbLogger.REMOTE_LOGGER.tracef("Welcome %s to the %s channel", channel, EJB_CHANNEL_NAME);
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed, IOException exception) {
                     // do nothing
-                    EjbLogger.ROOT_LOGGER.tracef("channel %s closed", closed);
+                    EjbLogger.REMOTE_LOGGER.tracef("channel %s closed", closed);
                 }
             });
             // send the server version and supported marshalling types to the client
             try {
                 EJBRemoteConnectorService.this.sendVersionMessage(channelAssociation);
             } catch (IOException e) {
-                EjbLogger.ROOT_LOGGER.closingChannel(channel, e);
+                EjbLogger.REMOTE_LOGGER.closingChannel(channel, e);
                 IoUtils.safeClose(channel);
             }
 
@@ -213,7 +213,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
         @Override
         public void handleError(Channel channel, IOException error) {
-            EjbLogger.ROOT_LOGGER.closingChannel(channel, error);
+            EjbLogger.REMOTE_LOGGER.closingChannel(channel, error);
             try {
                 channel.close();
             } catch (IOException ioe) {
@@ -223,7 +223,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
         @Override
         public void handleEnd(Channel channel) {
-            EjbLogger.ROOT_LOGGER.closingChannelOnChannelEnd(channel);
+            EjbLogger.REMOTE_LOGGER.closingChannelOnChannelEnd(channel);
             try {
                 channel.close();
             } catch (IOException ioe) {
@@ -237,12 +237,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             try {
                 final byte version = dataInputStream.readByte();
                 final String clientMarshallingStrategy = dataInputStream.readUTF();
-                if (EjbLogger.ROOT_LOGGER.isDebugEnabled()) {
-                    EjbLogger.ROOT_LOGGER.debug("Client with protocol version " + version + " and marshalling strategy "
-                            + clientMarshallingStrategy + " trying to communicate on " + channel);
-                }
+                EjbLogger.REMOTE_LOGGER.debugf("Client with protocol version %s and marshalling strategy %s trying to communicate on %s",
+                        version, clientMarshallingStrategy, channel);
                 if (!EJBRemoteConnectorService.this.isSupportedMarshallingStrategy(clientMarshallingStrategy)) {
-                    EjbLogger.ROOT_LOGGER.unsupportedClientMarshallingStrategy(clientMarshallingStrategy, channel);
+                    EjbLogger.REMOTE_LOGGER.unsupportedClientMarshallingStrategy(clientMarshallingStrategy, channel);
                     channel.close();
                     return;
                 }
@@ -274,7 +272,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
             } catch (IOException e) {
                 // log it
-                EjbLogger.ROOT_LOGGER.exceptionOnChannel(e, channel, messageInputStream);
+                EjbLogger.REMOTE_LOGGER.exceptionOnChannel(e, channel, messageInputStream);
                 IoUtils.safeClose(channel);
             } finally {
                 IoUtils.safeClose(messageInputStream);

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.ClusterContext;
 import org.jboss.ejb.client.ClusterNodeManager;
 import org.jboss.ejb.client.EJBClientConfiguration;
@@ -30,7 +31,6 @@ import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.ejb.client.remoting.NetworkUtil;
 import org.jboss.ejb.client.remoting.ReconnectHandler;
 import org.jboss.ejb.client.remoting.RemotingConnectionEJBReceiver;
-import org.jboss.logging.Logger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
@@ -44,8 +44,6 @@ import java.util.concurrent.TimeUnit;
  * @author Jaikiran Pai
  */
 class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
-
-    private static final Logger logger = Logger.getLogger(RemotingConnectionClusterNodeManager.class);
 
     private final String nodeName;
     private final ClusterContext clusterContext;
@@ -117,7 +115,7 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
 
             }
         } catch (Exception e) {
-            logger.info("Could not create a connection for cluster node " + this.nodeName + " in cluster " + clusterContext.getClusterName(), e);
+            EjbLogger.REMOTE_LOGGER.couldNotCreateClusterConnection(e, this.nodeName, clusterContext.getClusterName());
             return null;
         }
         return new RemotingConnectionEJBReceiver(connection, reconnectHandler, channelCreationOptions, destinationProtocol);
@@ -148,10 +146,10 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
             try {
                 final IoFuture<Connection> futureConnection = NetworkUtil.connect(endpoint,"remote", destinationHost, destinationPort, null, connectionCreationOptions, callbackHandler, null);
                 connection = IoFutureHelper.get(futureConnection, connectionTimeout, TimeUnit.MILLISECONDS);
-                logger.debugf("Successfully reconnected to connection %s", connection);
+                EjbLogger.REMOTE_LOGGER.debugf("Successfully reconnected to connection %s", connection);
 
             } catch (Exception e) {
-                logger.debugf(e, "Failed to re-connect to %s:%d", this.destinationHost, this.destinationPort);
+                EjbLogger.REMOTE_LOGGER.debugf(e, "Failed to re-connect to %s:%d", this.destinationHost, this.destinationPort);
             }
             if (connection == null) {
                 return;

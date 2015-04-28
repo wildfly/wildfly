@@ -33,11 +33,11 @@ import javax.transaction.xa.XAResource;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBClientContextListener;
 import org.jboss.ejb.client.EJBClientManagedTransactionContext;
 import org.jboss.ejb.client.EJBReceiverContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -53,8 +53,6 @@ import org.jboss.tm.XAResourceRecovery;
  * @author Jaikiran Pai
  */
 public class EJBTransactionRecoveryService implements Service<EJBTransactionRecoveryService>, XAResourceRecovery, EJBClientContextListener {
-
-    private static final Logger logger = Logger.getLogger(EJBTransactionRecoveryService.class);
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("tx-recovery-service");
     public static final EJBTransactionRecoveryService INSTANCE = new EJBTransactionRecoveryService();
@@ -72,7 +70,7 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
     public void start(StartContext startContext) throws StartException {
         // register ourselves to the recovery manager service
         recoveryManagerService.getValue().addXAResourceRecovery(this);
-        logger.debugf("Registered %s with the transaction recovery manager", this);
+        EjbLogger.REMOTE_LOGGER.debugf("Registered %s with the transaction recovery manager", this);
     }
 
     @Override
@@ -86,7 +84,7 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
                     EJBTransactionRecoveryService.this.receiverContexts.clear();
                     // un-register ourselves from the recovery manager service
                     recoveryManagerService.getValue().removeXAResourceRecovery(EJBTransactionRecoveryService.this);
-                    logger.debugf("Un-registered %s from the transaction recovery manager", this);
+                    EjbLogger.REMOTE_LOGGER.debugf("Un-registered %s from the transaction recovery manager", this);
                 } finally {
                     stopContext.complete();
                 }

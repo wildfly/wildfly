@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.pool;
 
-import org.jboss.logging.Logger;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,8 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version $Revision$
  */
 public abstract class AbstractPool<T> implements Pool<T> {
-    @SuppressWarnings("unused")
-    private static final Logger log = Logger.getLogger(AbstractPool.class);
 
     private final StatelessObjectFactory<T> factory;
     private final AtomicInteger createCount = new AtomicInteger(0);

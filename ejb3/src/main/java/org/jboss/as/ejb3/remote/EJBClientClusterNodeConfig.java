@@ -23,8 +23,8 @@
 package org.jboss.as.ejb3.remote;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.EJBClientConfiguration;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceRegistry;
 import org.xnio.OptionMap;
 
@@ -34,8 +34,6 @@ import java.util.Properties;
  * @author Jaikiran Pai
  */
 public class EJBClientClusterNodeConfig extends EJBClientCommonConnectionConfig implements EJBClientConfiguration.ClusterNodeConfiguration {
-
-    private static final Logger logger = Logger.getLogger(EJBClientClusterNodeConfig.class);
 
     private final EJBClientDescriptorMetaData.ClusterNodeConfig delegate;
 
@@ -49,7 +47,7 @@ public class EJBClientClusterNodeConfig extends EJBClientCommonConnectionConfig 
             // we don't use the deployment CL here since the XNIO project isn't necessarily added as a dep on the deployment's
             // module CL
             final OptionMap channelOpts = getOptionMapFromProperties(channelProps, this.getClass().getClassLoader());
-            logger.debugf("Channel creation options for node %s are %s", clusterNodeConfig.getNodeName(), channelOpts);
+            EjbLogger.REMOTE_LOGGER.debugf("Channel creation options for node %s are %s", clusterNodeConfig.getNodeName(), channelOpts);
             this.setChannelCreationOptions(channelOpts);
         }
 
@@ -58,7 +56,7 @@ public class EJBClientClusterNodeConfig extends EJBClientCommonConnectionConfig 
             // we don't use the deployment CL here since the XNIO project isn't necessarily added as a dep on the deployment's
             // module CL
             final OptionMap connectOpts = getOptionMapFromProperties(connectionProps, this.getClass().getClassLoader());
-            logger.debugf("Connection creation options for node %s are %s", clusterNodeConfig.getNodeName(), connectOpts);
+            EjbLogger.REMOTE_LOGGER.debugf("Connection creation options for node %s are %s", clusterNodeConfig.getNodeName(), connectOpts);
             this.setConnectionCreationOptions(connectOpts);
         }
 

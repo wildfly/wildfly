@@ -30,9 +30,9 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.TransactionImporte
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.TransactionImporterImple;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -61,8 +61,6 @@ import java.util.Set;
  */
 public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransactionsRepository> {
 
-    private static final Logger logger = Logger.getLogger(EJBRemoteTransactionsRepository.class);
-
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remote-transactions-repository");
 
     private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<TransactionManager>();
@@ -76,7 +74,7 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
     @Override
     public void start(StartContext context) throws StartException {
         recoveryManagerService.getValue().addSerializableXAResourceDeserializer(EJBXAResourceDeserializer.INSTANCE);
-        logger.debugf("Registered EJB XA resource deserializer %s", EJBXAResourceDeserializer.INSTANCE);
+        EjbLogger.REMOTE_LOGGER.debugf("Registered EJB XA resource deserializer %s", EJBXAResourceDeserializer.INSTANCE);
     }
 
     @Override

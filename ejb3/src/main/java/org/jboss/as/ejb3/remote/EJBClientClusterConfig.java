@@ -26,7 +26,6 @@ import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceRegistry;
 import org.xnio.OptionMap;
 
@@ -38,8 +37,6 @@ import java.util.Properties;
  * @author Jaikiran Pai
  */
 public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig implements EJBClientConfiguration.ClusterConfiguration {
-
-    private static final Logger logger = Logger.getLogger(EJBClientClusterConfig.class);
 
     private final EJBClientDescriptorMetaData.ClusterConfig delegate;
     private final Map<String, EJBClientConfiguration.ClusterNodeConfiguration> nodes = new HashMap<String, EJBClientConfiguration.ClusterNodeConfiguration>();
@@ -54,7 +51,7 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
             // we don't use the deployment CL here since the XNIO project isn't necessarily added as a dep on the deployment's
             // module CL
             final OptionMap channelCreationOptions = getOptionMapFromProperties(channelProps, this.getClass().getClassLoader());
-            logger.debugf("Channel creation options for cluster %s are %s", clusterConfig.getClusterName(), channelCreationOptions);
+            EjbLogger.REMOTE_LOGGER.debugf("Channel creation options for cluster %s are %s", clusterConfig.getClusterName(), channelCreationOptions);
             this.setChannelCreationOptions(channelCreationOptions);
         }
 
@@ -64,7 +61,7 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
             // we don't use the deployment CL here since the XNIO project isn't necessarily added as a dep on the deployment's
             // module CL
             final OptionMap connectionCreationOptions = getOptionMapFromProperties(connectionProps, this.getClass().getClassLoader());
-            logger.debugf("Connection creation options for cluster %s are %s", clusterConfig.getClusterName(), connectionCreationOptions);
+            EjbLogger.REMOTE_LOGGER.debugf("Connection creation options for cluster %s are %s", clusterConfig.getClusterName(), connectionCreationOptions);
             this.setConnectionCreationOptions(connectionCreationOptions);
         }
 

@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
 import java.util.ArrayList;
@@ -51,8 +50,6 @@ import java.util.List;
  * @author Jaikiran Pai
  */
 public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor {
-
-    private static final Logger logger = Logger.getLogger(ImplicitLocalViewProcessor.class);
 
     @Override
     protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, CompositeIndex index, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
@@ -84,7 +81,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         }
         // check whether it's eligible for implicit no-interface view
         if (this.exposesNoInterfaceView(ejbClass)) {
-            logger.debugf("Bean: %s will be marked for (implicit) no-interface view", sessionBeanComponentDescription.getEJBName());
+            EjbLogger.DEPLOYMENT_LOGGER.debugf("Bean: %s will be marked for (implicit) no-interface view", sessionBeanComponentDescription.getEJBName());
             sessionBeanComponentDescription.addNoInterfaceView();
             return;
         }
@@ -92,7 +89,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         // check for default local view
         Class<?> defaultLocalView = this.getDefaultLocalView(ejbClass);
         if (defaultLocalView != null) {
-            logger.debugf("Bean: %s will be marked for default local view: %s", sessionBeanComponentDescription.getEJBName(), defaultLocalView.getName());
+            EjbLogger.DEPLOYMENT_LOGGER.debugf("Bean: %s will be marked for default local view: %s", sessionBeanComponentDescription.getEJBName(), defaultLocalView.getName());
             sessionBeanComponentDescription.addLocalBusinessInterfaceViews(Collections.singleton(defaultLocalView.getName()));
             return;
         }

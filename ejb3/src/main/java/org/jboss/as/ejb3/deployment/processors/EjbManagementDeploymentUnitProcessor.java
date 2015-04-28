@@ -97,7 +97,7 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
             try {
                 uninstallManagementResource(configuration);
             } catch (RuntimeException e) {
-                EjbLogger.ROOT_LOGGER.failedToRemoveManagementResources(configuration, e.getLocalizedMessage());
+                EjbLogger.DEPLOYMENT_LOGGER.failedToRemoveManagementResources(configuration, e.getLocalizedMessage());
             }
         }
     }

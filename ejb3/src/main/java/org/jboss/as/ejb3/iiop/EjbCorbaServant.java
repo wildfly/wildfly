@@ -42,12 +42,12 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.iiop.csiv2.SASCurrent;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.iiop.HandleImplIIOP;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.InputStreamByteInput;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -82,8 +82,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Stuart Douglas
  */
 public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOPInvoker {
-
-    private static final Logger logger = Logger.getLogger(EjbCorbaServant.class);
 
     /**
      * The injected component view
@@ -225,14 +223,11 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
      * <code>MBean</code> server.
      */
     public OutputStream _invoke(final String opName, final InputStream in, final ResponseHandler handler) {
-
-        if (logger.isTraceEnabled()) {
-            logger.trace("EJBObject invocation: " + opName);
-        }
+        EjbLogger.ROOT_LOGGER.tracef("EJBObject invocation: %s", opName);
 
         SkeletonStrategy op = methodInvokerMap.get(opName);
         if (op == null) {
-            logger.debugf("Unable to find opname '%s' valid operations:%s", opName, methodInvokerMap.keySet());
+            EjbLogger.ROOT_LOGGER.debugf("Unable to find opname '%s' valid operations:%s", opName, methodInvokerMap.keySet());
             throw new BAD_OPERATION(opName);
         }
         final NamespaceContextSelector selector = componentView.getComponent().getNamespaceContextSelector();
@@ -342,9 +337,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                     op.writeRetval(out, retVal);
                 }
             } catch (Exception e) {
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Exception in EJBObject invocation", e);
-                }
+                EjbLogger.ROOT_LOGGER.trace("Exception in EJBObject invocation", e);
                 if (e instanceof MBeanException) {
                     e = ((MBeanException) e).getTargetException();
                 }
@@ -410,9 +403,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                          Principal identity,
                          Object credential)
             throws Exception {
-        if (logger.isTraceEnabled()) {
-            logger.trace("EJBObject local invocation: " + opName);
-        }
+        EjbLogger.ROOT_LOGGER.tracef("EJBObject local invocation: %s", opName);
 
         SkeletonStrategy op = methodInvokerMap.get(opName);
         if (op == null) {

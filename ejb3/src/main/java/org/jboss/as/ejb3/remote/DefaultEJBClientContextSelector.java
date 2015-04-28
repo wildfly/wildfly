@@ -27,7 +27,6 @@ import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBClientContextIdentifier;
 import org.jboss.ejb.client.IdentityEJBClientContextSelector;
-import org.jboss.logging.Logger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -35,8 +34,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Jaikiran Pai
  */
 class DefaultEJBClientContextSelector implements ContextSelector<EJBClientContext>, IdentityEJBClientContextSelector {
-
-    private static final Logger logger = Logger.getLogger(DefaultEJBClientContextSelector.class);
 
     static final DefaultEJBClientContextSelector INSTANCE = new DefaultEJBClientContextSelector();
 
@@ -77,8 +74,9 @@ class DefaultEJBClientContextSelector implements ContextSelector<EJBClientContex
 
         // explicit isDebugEnabled() check to ensure that the SecurityActions.getContextClassLoader() isn't
         // unnecessarily executed when debug logging is disabled
-        if (logger.isDebugEnabled()) {
-            logger.debug("Returning default EJB client context " + this.defaultEJBClientContext + " since no EJB client context could be found for TCCL " + WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+        if (EjbLogger.REMOTE_LOGGER.isDebugEnabled()) {
+            EjbLogger.REMOTE_LOGGER.debugf("Returning default EJB client context %s since no EJB client context could be found for TCCL %s",
+                    this.defaultEJBClientContext, WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
         }
         return this.defaultEJBClientContext;
     }
