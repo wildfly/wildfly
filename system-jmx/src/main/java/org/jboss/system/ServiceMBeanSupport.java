@@ -82,9 +82,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
     public ServiceMBeanSupport() {
         // can not call this(Class) because we need to call getClass()
         this.log = Logger.getLogger(getClass().getName());
-        if (log.isTraceEnabled()) {
-            log.trace("Constructing");
-        }
+        log.trace("Constructing");
     }
 
     /**
@@ -118,9 +116,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
      */
     public ServiceMBeanSupport(final Logger log) {
         this.log = log;
-        if (log.isTraceEnabled()) {
-            log.trace("Constructing");
-        }
+        log.trace("Constructing");
     }
 
     /**
@@ -170,7 +166,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         try {
             jbossInternalStop();
         } catch (Throwable t) {
-            log.warn(ServiceMBeanLogger.ROOT_LOGGER.errorInStop(t, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.errorInStop(jbossInternalDescription()), t);
         }
     }
 
@@ -178,7 +174,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         try {
             jbossInternalDestroy();
         } catch (Throwable t) {
-            log.warn(ServiceMBeanLogger.ROOT_LOGGER.errorInDestroy(t, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.errorInDestroy(jbossInternalDescription()), t);
         }
     }
 
@@ -225,7 +221,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
             createService();
             state = CREATED;
         } catch (Exception e) {
-            log.warn(ServiceMBeanLogger.ROOT_LOGGER.initializationFailed(e, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.initializationFailed(jbossInternalDescription()), e);
             throw e;
         }
 
@@ -260,7 +256,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         } catch (Exception e) {
             state = FAILED;
             sendStateChangeNotification(STARTING, FAILED, getName() + " failed", e);
-            log.warn(ServiceMBeanLogger.ROOT_LOGGER.startingFailed(e, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.startingFailed(jbossInternalDescription()), e);
             throw e;
         }
 
@@ -296,7 +292,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         } catch (Throwable e) {
             state = FAILED;
             sendStateChangeNotification(STOPPING, FAILED, getName() + " failed", e);
-            log.warn(ServiceMBeanLogger.ROOT_LOGGER.stoppingFailed(e, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.stoppingFailed(jbossInternalDescription()), e);
             return;
         }
 
@@ -328,7 +324,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         try {
             destroyService();
         } catch (Throwable t) {
-            log.warn(ServiceMBeanLogger.ROOT_LOGGER.destroyingFailed(t, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.destroyingFailed(jbossInternalDescription()), t);
         }
         state = DESTROYED;
         if (log.isDebugEnabled()) {
@@ -367,9 +363,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
 
     public void postRegister(Boolean registrationDone) {
         if (!registrationDone.booleanValue()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Registration is not done -> stop");
-            }
+            log.debug("Registration is not done -> stop");
             stop();
         } else {
             state = REGISTERED;
