@@ -25,6 +25,8 @@ package org.jboss.as.jpa.service;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.util.HashSet;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.transaction.TransactionManager;
@@ -42,6 +44,7 @@ import org.jboss.as.jpa.management.DynamicManagementStatisticsResource;
 import org.jboss.as.jpa.management.EntityManagerFactoryLookup;
 import org.jboss.as.jpa.management.ManagementResourceDefinition;
 import org.jboss.as.jpa.processor.CacheDeploymentHelper;
+import org.jboss.as.jpa.processor.PersistenceUnitServiceHandler;
 import org.jboss.as.jpa.subsystem.JPAExtension;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.util.JPAServiceNames;
@@ -175,7 +178,18 @@ public class JPAService implements Service<Void> {
 
                 // setup statistics (this used to be part of JPA subsystem startup)
                 ResourceDescriptionResolver resourceDescriptionResolver = new StandardResourceDescriptionResolver(
-                        statistics.getResourceBundleKeyPrefix(), statistics.getResourceBundleName(), statistics.getClass().getClassLoader());
+                        statistics.getResourceBundleKeyPrefix(), statistics.getResourceBundleName(), statistics.getClass().getClassLoader()){
+                    private ResourceDescriptionResolver fallback = JPAExtension.getResourceDescriptionResolver();
+                    //add a fallback in case provider doesn't have all properties properly defined
+                    @Override
+                    public String getResourceAttributeDescription(String attributeName, Locale locale, ResourceBundle bundle) {
+                        if (bundle.containsKey(getBundleKey(attributeName))) {
+                            return super.getResourceAttributeDescription(attributeName, locale, bundle);
+                        }else{
+                            return fallback.getResourceAttributeDescription(attributeName, locale, fallback.getResourceBundle(locale));
+                        }
+                    }
+                };
 
                 PathElement subsystemPE = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME);
                 ManagementResourceRegistration deploymentResourceRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
@@ -184,11 +198,13 @@ public class JPAService implements Service<Void> {
                 ManagementResourceRegistration subdeploymentSubsystemRegistration =
                         deploymentResourceRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT), subsystemPE));
 
-                deploymentSubsystemRegistration.registerSubModel(
+                ManagementResourceRegistration providerResource = deploymentSubsystemRegistration.registerSubModel(
                         new ManagementResourceDefinition(PathElement.pathElement(managementAdaptor.getIdentificationLabel()), resourceDescriptionResolver, statistics, entityManagerFactoryLookup));
+                providerResource.registerReadOnlyAttribute(PersistenceUnitServiceHandler.SCOPED_UNIT_NAME, null);
 
-                subdeploymentSubsystemRegistration.registerSubModel(
+                providerResource = subdeploymentSubsystemRegistration.registerSubModel(
                         new ManagementResourceDefinition(PathElement.pathElement(managementAdaptor.getIdentificationLabel()), resourceDescriptionResolver, statistics, entityManagerFactoryLookup));
+                providerResource.registerReadOnlyAttribute(PersistenceUnitServiceHandler.SCOPED_UNIT_NAME, null);
 
                 existingResourceDescriptionResolver.add(managementAdaptor.getVersion());
             }

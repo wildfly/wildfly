@@ -50,7 +50,6 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
-import org.jboss.as.jpa.processor.PersistenceUnitServiceHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLElementReader;
@@ -72,7 +71,7 @@ public class JPAExtension implements Extension {
 
     private static final String RESOURCE_NAME = JPAExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+    public static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
@@ -100,9 +99,7 @@ public class JPAExtension implements Extension {
         }
 
         if (context.isRuntimeOnlyRegistrationValid()) {
-            final ManagementResourceRegistration jpaSubsystemDeployments = registration.registerDeploymentModel(JPADefinition.INSTANCE);
-            jpaSubsystemDeployments.registerReadOnlyAttribute(PersistenceUnitServiceHandler.SCOPED_UNIT_NAME, null);
-
+            registration.registerDeploymentModel(JPADefinition.INSTANCE);
         }
     }
 
