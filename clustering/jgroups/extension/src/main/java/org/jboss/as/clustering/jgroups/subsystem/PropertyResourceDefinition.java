@@ -21,7 +21,13 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
@@ -34,6 +40,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -41,13 +48,18 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Resource description for the addressable resources:
@@ -157,4 +169,56 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
         };
         this.registerRemoveOperation(registration, removeHandler);
     }
+
+    static OperationTransformer PROPERTIES_ADD_OP_TRANSFORMER = new OperationTransformer()  {
+        @Override
+        public ModelNode transformOperation(ModelNode operation) {
+            if (operation.hasDefined(ProtocolResourceDefinition.PROPERTIES.getName())) {
+                final ModelNode addOp = operation.clone();
+                final ModelNode properties = addOp.remove(ProtocolResourceDefinition.PROPERTIES.getName());
+
+                final ModelNode composite = new ModelNode();
+                composite.get(OP).set(COMPOSITE);
+                composite.get(OP_ADDR).setEmptyList();
+                composite.get(STEPS).add(addOp);
+
+                // Handle odd legacy case, when :add operation for the protocol is :add-protocol on the parent
+                PathAddress propertyAddress = Operations.getName(addOp).equals(ModelKeys.ADD_PROTOCOL)
+                        ? Operations.getPathAddress(addOp).append(ModelKeys.PROTOCOL, addOp.get(ModelKeys.TYPE).asString())
+                        : Operations.getPathAddress(addOp);
+
+                for (final Property property : properties.asPropertyList()) {
+                    String key = property.getName();
+                    ModelNode value = property.getValue();
+                    ModelNode propAddOp = Util.createAddOperation(propertyAddress.append(PropertyResourceDefinition.pathElement(key)));
+                    propAddOp.get(PropertyResourceDefinition.VALUE.getName()).set(value);
+                    composite.get(STEPS).add(propAddOp);
+                }
+                return composite;
+            }
+            return operation;
+        }
+    };
+
+    static ResourceTransformer PROPERTIES_RESOURCE_TRANSFORMER = new ResourceTransformer() {
+        @Override
+        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            final ModelNode model = resource.getModel();
+            final ModelNode properties = model.remove(ProtocolResourceDefinition.PROPERTIES.getName());
+            final ResourceTransformationContext childContext = context.addTransformedResourceFromRoot(address, resource);
+
+            if (properties.isDefined()) {
+                for (final Property property : properties.asPropertyList()) {
+                    String key = property.getName();
+                    ModelNode value = property.getValue();
+                    Resource propertyResource = Resource.Factory.create();
+                    propertyResource.getModel().get(PropertyResourceDefinition.VALUE.getName()).set(value);
+                    PathAddress absoluteAddress = address.append(PropertyResourceDefinition.pathElement(key).getKey(), PropertyResourceDefinition.pathElement(key).getValue());
+                    childContext.addTransformedResourceFromRoot(absoluteAddress, propertyResource);
+                }
+            }
+
+            context.processChildren(resource);
+        }
+    };
 }
