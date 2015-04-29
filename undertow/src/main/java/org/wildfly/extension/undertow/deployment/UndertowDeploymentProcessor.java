@@ -351,20 +351,22 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
 
         // adding JACC service
-        AbstractSecurityDeployer<WarMetaData> deployer = new WarJACCDeployer();
-        JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
-        if (jaccService != null) {
-            final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
-            ServiceBuilder<?> jaccBuilder = serviceTarget.addService(jaccServiceName, jaccService);
-            if (deploymentUnit.getParent() != null) {
-                // add dependency to parent policy
-                final DeploymentUnit parentDU = deploymentUnit.getParent();
-                jaccBuilder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
-                        jaccService.getParentPolicyInjector());
+        if(securityEnabled) {
+            AbstractSecurityDeployer<WarMetaData> deployer = new WarJACCDeployer();
+            JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
+            if (jaccService != null) {
+                final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
+                ServiceBuilder<?> jaccBuilder = serviceTarget.addService(jaccServiceName, jaccService);
+                if (deploymentUnit.getParent() != null) {
+                    // add dependency to parent policy
+                    final DeploymentUnit parentDU = deploymentUnit.getParent();
+                    jaccBuilder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
+                            jaccService.getParentPolicyInjector());
+                }
+                // add dependency to web deployment service
+                jaccBuilder.addDependency(deploymentServiceName);
+                jaccBuilder.setInitialMode(Mode.PASSIVE).install();
             }
-            // add dependency to web deployment service
-            jaccBuilder.addDependency(deploymentServiceName);
-            jaccBuilder.setInitialMode(Mode.PASSIVE).install();
         }
 
 
