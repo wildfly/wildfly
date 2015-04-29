@@ -4660,36 +4660,6 @@
                 <groupId>org.jboss.narayana.jts</groupId>
                 <artifactId>narayana-jts-idlj</artifactId>
                 <version>${version.org.jboss.narayana}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.byteman</groupId>
-                        <artifactId>byteman</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.byteman</groupId>
-                        <artifactId>byteman-submit</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logmanager</groupId>
-                        <artifactId>jboss-logmanager</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hornetq</groupId>
-                        <artifactId>hornetq-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jfree</groupId>
-                        <artifactId>jfreechart</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jfree</groupId>
-                        <artifactId>jcommon</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>tanukisoft</groupId>
-                        <artifactId>wrapper</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
