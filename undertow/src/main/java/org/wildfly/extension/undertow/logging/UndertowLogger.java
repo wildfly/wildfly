@@ -316,4 +316,8 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 73, value = "mod_cluster advertise socket binding requires multicast address to be set")
     StartException advertiseSocketBindingRequiresMulticastAddress();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 74, value = "Could not find TLD %s")
+    void tldNotFound(String location);
 }
