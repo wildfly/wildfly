@@ -85,7 +85,9 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
 
     private void verifyEndpoint(final AbstractEndpoint pojoEndpoint, final ClassLoader moduleClassLoader,
             final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-        WSLogger.ROOT_LOGGER.tracef("Verifying web service endpoint class %s", pojoEndpoint.getClassName());
+        if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+            WSLogger.ROOT_LOGGER.tracef("Verifying web service endpoint class %s", pojoEndpoint.getClassName());
+        }
         try {
             final Class<?> endpointClass = moduleClassLoader.loadClass(pojoEndpoint.getClassName());
             final WebService webServiceAnnotation = endpointClass.getAnnotation(WebService.class);

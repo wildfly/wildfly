@@ -83,7 +83,9 @@ final class WSDeploymentActivator {
         int index = 1;
         List<DeploymentAspect> aspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
         for (final DeploymentAspect da : aspects) {
-            WSLogger.ROOT_LOGGER.tracef("Installing aspect %s", da.getClass().getName());
+            if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+                WSLogger.ROOT_LOGGER.tracef("Installing aspect %s", da.getClass().getName());
+            }
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, phase, priority + index++, new AspectDeploymentProcessor(da));
         }
     }

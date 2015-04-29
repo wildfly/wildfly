@@ -49,7 +49,9 @@ abstract class AbstractMetaDataBuilderEJB {
      * @return universal EJB meta data model
      */
     final EJBArchiveMetaData create(final Deployment dep) {
-        WSLogger.ROOT_LOGGER.tracef("Building JBoss agnostic meta data for EJB webservice deployment: %s", dep.getSimpleName());
+        if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+            WSLogger.ROOT_LOGGER.tracef("Building JBoss agnostic meta data for EJB webservice deployment: %s", dep.getSimpleName());
+        }
         final EJBArchiveMetaData.Builder ejbArchiveMDBuilder = new EJBArchiveMetaData.Builder();
 
         this.buildEnterpriseBeansMetaData(dep, ejbArchiveMDBuilder);

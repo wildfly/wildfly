@@ -44,13 +44,17 @@ public final class ContainerMetaDataDeploymentAspect extends AbstractDeploymentA
     public void start(final Deployment dep) {
         if (WSHelper.isJaxwsJseDeployment(dep)) {
             if (WSHelper.hasAttachment(dep, JBossWebMetaData.class)) {
-                WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic JAXWS POJO meta data for deployment: %s", dep.getSimpleName());
+                if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+                    WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic JAXWS POJO meta data for deployment: %s", dep.getSimpleName());
+                }
                 final JSEArchiveMetaData jseMetaData = jaxwsPojoMDBuilder.create(dep);
                 dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
             }
         }
         if (WSHelper.isJaxwsEjbDeployment(dep)) {
-            WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic JAXWS EJB meta data for deployment: %s", dep.getSimpleName());
+            if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+                WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic JAXWS EJB meta data for deployment: %s", dep.getSimpleName());
+            }
             final EJBArchiveMetaData ejbMetaData = jaxwsEjbMDBuilder.create(dep);
             dep.addAttachment(EJBArchiveMetaData.class, ejbMetaData);
         }

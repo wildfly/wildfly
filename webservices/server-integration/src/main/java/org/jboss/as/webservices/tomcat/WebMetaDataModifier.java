@@ -109,7 +109,9 @@ final class WebMetaDataModifier {
      */
     private void modifyContextRoot(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         final String contextRoot = dep.getService().getContextRoot();
-        WSLogger.ROOT_LOGGER.tracef("Setting context root: %s for deployment: %s", contextRoot, dep.getSimpleName());
+        if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+            WSLogger.ROOT_LOGGER.tracef("Setting context root: %s for deployment: %s", contextRoot, dep.getSimpleName());
+        }
         jbossWebMD.setContextRoot(contextRoot);
     }
 
