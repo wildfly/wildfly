@@ -26,8 +26,8 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
+        <artifactId>jboss-javaee-7.0-wildfly</artifactId>
         <version>9.0.0.Beta3-SNAPSHOT</version>
-        <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
     <artifactId>jboss-javaee-7.0-with-tools</artifactId>
