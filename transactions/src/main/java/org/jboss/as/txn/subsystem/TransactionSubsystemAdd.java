@@ -326,9 +326,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (model.hasDefined(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.getName()))
             confiBuilder.setCommunicationTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString());
 
-        if (TransactionLogger.ROOT_LOGGER.isDebugEnabled()) {
-            TransactionLogger.ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s%n", objectStorePathRef, objectStorePath);
-        }
+        TransactionLogger.ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s%n", objectStorePathRef, objectStorePath);
 
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
@@ -356,10 +354,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, coreEnvModel).asString();
         final String varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, coreEnvModel).asString();
         final String varDirPath = TransactionSubsystemRootResourceDefinition.PATH.resolveModelAttribute(context, coreEnvModel).asString();
-        if (TransactionLogger.ROOT_LOGGER.isDebugEnabled()) {
-            TransactionLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", nodeIdentifier);
-            TransactionLogger.ROOT_LOGGER.debugf("varDirPathRef=%s, varDirPath=%s%n", varDirPathRef, varDirPath);
-        }
+        TransactionLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", nodeIdentifier);
+        TransactionLogger.ROOT_LOGGER.debugf("varDirPathRef=%s, varDirPath=%s%n", varDirPathRef, varDirPath);
         final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, varDirPath, varDirPathRef);
 
         String socketBindingName = null;
