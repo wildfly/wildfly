@@ -24,8 +24,8 @@ package org.wildfly.iiop.openjdk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -36,6 +36,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
@@ -87,12 +88,12 @@ import com.sun.corba.se.impl.orbutil.ORBConstants;
  */
 public class IIOPSubsystemAdd extends AbstractAddStepHandler {
 
-    static final IIOPSubsystemAdd INSTANCE = new IIOPSubsystemAdd();
+//    static final IIOPSubsystemAdd INSTANCE = new IIOPSubsystemAdd();
+//
+//    protected IIOPSubsystemAdd() {
+//    }
 
-    protected IIOPSubsystemAdd() {
-    }
-
-    protected IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
+    public IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
         super(attributes);
     }
 
@@ -211,20 +212,15 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
                         namingService.getNamingPOAInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-     // create the IOR security config metadata service.
-        IORSecurityConfigMetaData securityConfigMetaData = null;
-        final ModelNode configNode = model.get(Constants.CONFIGURATION);
-        if (configNode.hasDefined(Constants.IOR_SETTINGS)) {
-            securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
-                    model.get(getIORSettingsPath().getKeyValuePair()));
-        }
-        context.getServiceTarget().addService(IORSecConfigMetaDataService.SERVICE_NAME,
-                new IORSecConfigMetaDataService(securityConfigMetaData))
+        // create the IOR security config metadata service.
+        final IORSecurityConfigMetaData securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
+                model);
+
+        context.getServiceTarget()
+                .addService(IORSecConfigMetaDataService.SERVICE_NAME, new IORSecConfigMetaDataService(securityConfigMetaData))
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-
         configureClientSecurity(props);
-
     }
 
     protected PathElement getIORSettingsPath() {
@@ -245,24 +241,8 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
     protected Properties getConfigurationProperties(OperationContext context, ModelNode model) throws OperationFailedException {
         Properties props = new Properties();
 
-        getResourceProperties(props, ORBDefinition.INSTANCE, context,
-                model.get(ORBDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        getResourceProperties(
-                props,
-                TCPDefinition.INSTANCE,
-                context,
-                model.get(ORBDefinition.INSTANCE.getPathElement().getKeyValuePair()).get(
-                        TCPDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        getResourceProperties(
-                props,
-                InitializersDefinition.INSTANCE,
-                context,
-                model.get(ORBDefinition.INSTANCE.getPathElement().getKeyValuePair()).get(
-                        InitializersDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        getResourceProperties(props, NamingDefinition.INSTANCE, context,
-                model.get(NamingDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        getResourceProperties(props, SecurityDefinition.INSTANCE, context,
-                model.get(SecurityDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        getResourceProperties(props, IIOPRootDefinition.INSTANCE, context, model);
+
 
         // check if the node contains a list of generic properties.
         ModelNode configNode = model.get(Constants.CONFIGURATION);
@@ -280,7 +260,18 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
     private void getResourceProperties(final Properties properties, PersistentResourceDefinition resource,
             OperationContext context, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attrDefinition : resource.getAttributes()) {
+            if(attrDefinition instanceof PropertiesAttributeDefinition){
+                PropertiesAttributeDefinition pad=(PropertiesAttributeDefinition)attrDefinition;
+                ModelNode resolvedModelAttribute = attrDefinition.resolveModelAttribute(context, model);
+                if(resolvedModelAttribute.isDefined()) {
+                    for (final Property prop : resolvedModelAttribute.asPropertyList()) {
+                        properties.setProperty(prop.getName(), prop.getValue().asString());
+                    }
+                }
+                continue;
+            }
             ModelNode resolvedModelAttribute = attrDefinition.resolveModelAttribute(context, model);
+            //FIXME
             if (resolvedModelAttribute.isDefined()) {
                 String name = attrDefinition.getName();
                 String value = resolvedModelAttribute.asString();
@@ -349,25 +340,30 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         }
     }
 
-    private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode node)
+    private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode resourceModel)
             throws OperationFailedException {
-
         final IORSecurityConfigMetaData securityConfigMetaData = new IORSecurityConfigMetaData();
 
-        final IORTransportConfigMetaData transportConfigMetaData = IORTransportConfigDefinition.INSTANCE.getTransportConfigMetaData(
-                context, node.get(IORTransportConfigDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        if (transportConfigMetaData != null)
-            securityConfigMetaData.setTransportConfig(transportConfigMetaData);
+        final IORSASContextMetaData sasContextMetaData = new IORSASContextMetaData();
+        sasContextMetaData.setCallerPropagation(IIOPRootDefinition.CALLER_PROPAGATION.resolveModelAttribute(context, resourceModel).asString());
+        securityConfigMetaData.setSasContext(sasContextMetaData);
 
-        final IORASContextMetaData asContextMetaData = IORASContextDefinition.INSTANCE.getIORASContextMetaData(
-                context, node.get(IORASContextDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        if (asContextMetaData != null)
-            securityConfigMetaData.setAsContext(asContextMetaData);
+        final IORASContextMetaData asContextMetaData = new IORASContextMetaData();
+        asContextMetaData.setAuthMethod(IIOPRootDefinition.AUTH_METHOD.resolveModelAttribute(context, resourceModel).asString());
+        if (resourceModel.hasDefined(IIOPRootDefinition.REALM.getName())) {
+            asContextMetaData.setRealm(IIOPRootDefinition.REALM.resolveModelAttribute(context, resourceModel).asString());
+        }
+        asContextMetaData.setRequired(IIOPRootDefinition.REQUIRED.resolveModelAttribute(context, resourceModel).asBoolean());
+        securityConfigMetaData.setAsContext(asContextMetaData);
 
-        final IORSASContextMetaData sasContextMetaData = IORSASContextDefinition.INSTANCE.getIORSASContextMetaData(
-                context, node.get(IORSASContextDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        if (sasContextMetaData != null)
-            securityConfigMetaData.setSasContext(sasContextMetaData);
+        final IORTransportConfigMetaData transportConfigMetaData = new IORTransportConfigMetaData();
+        transportConfigMetaData.setIntegrity(IIOPRootDefinition.INTEGRITY.resolveModelAttribute(context, resourceModel).asString());
+        transportConfigMetaData.setConfidentiality(IIOPRootDefinition.CONFIDENTIALITY.resolveModelAttribute(context, resourceModel).asString());
+        transportConfigMetaData.setEstablishTrustInTarget(IIOPRootDefinition.TRUST_IN_TARGET.resolveModelAttribute(context, resourceModel).asString());
+        transportConfigMetaData.setEstablishTrustInClient(IIOPRootDefinition.TRUST_IN_CLIENT.resolveModelAttribute(context, resourceModel).asString());
+        transportConfigMetaData.setDetectMisordering(IIOPRootDefinition.DETECT_MISORDERING.resolveModelAttribute(context, resourceModel).asString());
+        transportConfigMetaData.setDetectReplay(IIOPRootDefinition.DETECT_REPLAY.resolveModelAttribute(context, resourceModel).asString());
+        securityConfigMetaData.setTransportConfig(transportConfigMetaData);
 
         return securityConfigMetaData;
     }
