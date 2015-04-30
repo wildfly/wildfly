@@ -26,16 +26,19 @@ import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -157,6 +160,30 @@ public class JMSResourceManagementTestCase {
         assertEquals("guest", result.get("password").asString());
         assertEquals("myClientID4", result.get("client-id").asString());
     }
+
+    @Test
+    public void testRuntimeQueues() throws Exception {
+        //Tests https://issues.jboss.org/browse/WFLY-2807
+        PathAddress addr = PathAddress.pathAddress("subsystem", "messaging");
+        addr = addr.append("hornetq-server", "default");
+        ModelNode readResource = Util.createEmptyOperation("read-resource", addr);
+        readResource.get("recursive").set(true);
+
+        ModelNode result = execute(readResource, true);
+        Assert.assertTrue(result.has("runtime-queue"));
+        Assert.assertFalse(result.hasDefined("runtime-queue"));
+
+        readResource.get("include-runtime").set(true);
+        result = execute(readResource, true);
+        Assert.assertTrue(result.hasDefined("runtime-queue"));
+        ModelNode queues = result.get("runtime-queue");
+        List<Property> propsList = queues.asPropertyList();
+        Assert.assertTrue(propsList.size() > 0);
+        for (Property prop : propsList) {
+            Assert.assertTrue(prop.getValue().isDefined());
+        }
+    }
+
 
     private ModelNode getOperation(String resourceType, String resourceName, String operationName) {
         final ModelNode address = new ModelNode();

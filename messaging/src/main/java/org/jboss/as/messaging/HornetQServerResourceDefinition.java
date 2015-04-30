@@ -140,6 +140,13 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
         // getTopicNames, getQueueNames, getConnectionFactoryNames,
     }
 
+
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+    }
+
     /**
      * {@inheritDoc}
      * <p/>

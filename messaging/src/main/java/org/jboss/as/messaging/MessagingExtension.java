@@ -190,7 +190,10 @@ public class MessagingExtension implements Extension {
         // getExpiryAddress, setExpiryAddress, getDeadLetterAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
 
         // Runtime core queues
-        serverRegistration.registerSubModel(QueueDefinition.newRuntimeQueueDefinition(registerRuntimeOnly));
+        if (registerRuntimeOnly) {
+            final ManagementResourceRegistration runtimeQueue = serverRegistration.registerSubModel(QueueDefinition.newRuntimeQueueDefinition(registerRuntimeOnly));
+            runtimeQueue.setRuntimeOnly(true);
+        }
 
         // Acceptors
         serverRegistration.registerSubModel(new HTTPAcceptorDefinition(registerRuntimeOnly));
