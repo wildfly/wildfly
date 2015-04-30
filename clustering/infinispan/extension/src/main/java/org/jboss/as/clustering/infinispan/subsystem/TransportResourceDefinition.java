@@ -68,12 +68,6 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .build()
     ;
 
-    static final SimpleAttributeDefinition EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.EXECUTOR, ModelType.STRING, true)
-            .setXmlName(Attribute.EXECUTOR.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
     static final SimpleAttributeDefinition LOCK_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)
             .setXmlName(Attribute.LOCK_TIMEOUT.getLocalName())
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
@@ -98,7 +92,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CHANNEL, STACK, EXECUTOR, LOCK_TIMEOUT };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CHANNEL, STACK, LOCK_TIMEOUT };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
@@ -201,7 +195,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
         }
 
         if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STACK, EXECUTOR, LOCK_TIMEOUT);
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STACK, LOCK_TIMEOUT);
         }
     }
 
@@ -216,5 +210,12 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+
+        resourceRegistration.registerSubModel(ThreadPoolResourceDefinition.TRANSPORT);
     }
 }

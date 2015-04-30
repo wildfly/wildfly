@@ -85,27 +85,9 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition EVICTION_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.EVICTION_EXECUTOR, ModelType.STRING, true)
-            .setXmlName(Attribute.EVICTION_EXECUTOR.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
     static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
             .setXmlName(Attribute.JNDI_NAME.getLocalName())
             .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    static final SimpleAttributeDefinition LISTENER_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.LISTENER_EXECUTOR, ModelType.STRING, true)
-            .setXmlName(Attribute.LISTENER_EXECUTOR.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    static final SimpleAttributeDefinition REPLICATION_QUEUE_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.REPLICATION_QUEUE_EXECUTOR, ModelType.STRING, true)
-            .setXmlName(Attribute.REPLICATION_QUEUE_EXECUTOR.getLocalName())
-            .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -126,7 +108,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
-            DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, MODULE, STATISTICS_ENABLED
+            DEFAULT_CACHE, ALIASES, JNDI_NAME, START, MODULE, STATISTICS_ENABLED
     };
 
 
@@ -179,6 +161,16 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
                 }
             };
             builder.addRawOperationTransformationOverride(ListOperations.LIST_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removeAliasTransformer));
+
+            // Reject if using embedded thread pool configuration
+            builder.rejectChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH);
+        } else {
+            for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
+                pool.buildTransformation(version, parent);
+            }
+            for (ScheduledThreadPoolResourceDefinition pool : ScheduledThreadPoolResourceDefinition.values()) {
+                pool.buildTransformation(version, parent);
+            }
         }
 
         if (InfinispanModel.VERSION_1_5_0.requiresTransformation(version)) {
@@ -191,7 +183,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
         }
 
         if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, MODULE);
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALIASES, JNDI_NAME, START, MODULE);
         }
 
         TransportResourceDefinition.buildTransformation(version, builder);
@@ -254,6 +246,12 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration registration) {
         // child resources
         registration.registerSubModel(new TransportResourceDefinition());
+        for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
+            registration.registerSubModel(pool);
+        }
+        for (ScheduledThreadPoolResourceDefinition pool : ScheduledThreadPoolResourceDefinition.values()) {
+            registration.registerSubModel(pool);
+        }
         registration.registerSubModel(new LocalCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new InvalidationCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new ReplicatedCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));

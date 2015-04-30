@@ -23,8 +23,22 @@
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="org.infinispan" statistics-enabled="true">
-        <transport channel="maximal-channel" executor="transport-executor" lock-timeout="120000"/>
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" jndi-name="java:global/infinispan/maximal" module="org.infinispan" statistics-enabled="true">
+        <transport channel="maximal-channel" lock-timeout="120000"/>
+        <transport-thread-pool min-threads="41"
+                               queue-length="42"
+                               max-threads="43"
+                               keepalive-time="44"/>
+        <listener-thread-pool min-threads="21"
+                              queue-length="22"
+                              max-threads="23"
+                              keepalive-time="24"/>
+        <persistence-thread-pool min-threads="31"
+                                 queue-length="32"
+                                 max-threads="33"
+                                 keepalive-time="34"/>
+        <eviction-thread-pool max-threads="13"
+                              keepalive-time="14"/>
         <local-cache name="local" start="EAGER" module="org.infinispan" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC"/>

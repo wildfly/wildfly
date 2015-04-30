@@ -40,11 +40,9 @@ public class ModelKeys {
     static final String BATCH_SIZE = "batch-size";
     @Deprecated static final String BATCHING = "batching";
     static final String BINARY_KEYED_TABLE = "binary-keyed-table";
-    static final String BINARY_KEYED_TABLE_NAME = "BINARY_KEYED_TABLE";
     static final String BRING_SITE_ONLINE = "bring-site-online";
     static final String BUCKET_TABLE = "bucket-table";
     static final String CACHE = "cache";
-    // static final String CACHE_MODE = "cache-mode";
     static final String CACHE_CONTAINER = "cache-container";
     static final String CAPACITY_FACTOR = "capacity-factor";
     static final String CHANNEL = "channel";
@@ -78,12 +76,9 @@ public class ModelKeys {
     static final String INTERVAL = "interval";
     static final String INVALIDATION_CACHE = "invalidation-cache";
     static final String ISOLATION = "isolation";
-    static final String JDBC_STORE = "jdbc-store";
-    static final String JDBC_STORE_NAME = "JDBC_STORE";
     static final String STRING_KEYED_JDBC_STORE = "string-keyed-jdbc-store";
     static final String STRING_KEYED_JDBC_STORE_NAME = "STRING_KEYED_JDBC_STORE";
     static final String STRING_KEYED_TABLE = "string-keyed-table";
-    static final String STRING_KEYED_TABLE_NAME = "STRING_KEYED_TABLE";
     static final String BINARY_KEYED_JDBC_STORE = "binary-keyed-jdbc-store";
     static final String BINARY_KEYED_JDBC_STORE_NAME = "BINARY_KEYED_JDBC_STORE";
     static final String MIXED_KEYED_JDBC_STORE = "mixed-keyed-jdbc-store";
@@ -91,6 +86,7 @@ public class ModelKeys {
     static final String JNDI_NAME = "jndi-name";
     static final String L1_LIFESPAN = "l1-lifespan";
     static final String LIFESPAN = "lifespan";
+    static final String LISTENER = "listener";
     static final String LISTENER_EXECUTOR = "listener-executor";
     static final String LOCAL_CACHE = "local-cache";
     static final String LOCK_TIMEOUT = "lock-timeout";
@@ -107,6 +103,7 @@ public class ModelKeys {
     static final String OWNERS = "owners";
     static final String PASSIVATION = "passivation";
     static final String PATH = "path";
+    static final String PERSISTENCE = "persistence";
     static final String PREFIX = "prefix";
     static final String PRELOAD = "preload";
     static final String PROPERTY = "property";
@@ -146,6 +143,7 @@ public class ModelKeys {
     static final String TAKE_BACKUP_OFFLINE_MIN_WAIT = "min-wait";
     static final String TAKE_SITE_OFFLINE = "take-site-offline";
     static final String TCP_NO_DELAY = "tcp-no-delay";
+    static final String THREAD_POOL = "thread-pool";
     static final String THREAD_POOL_SIZE = "thread-pool-size";
     static final String TIMEOUT = "timeout";
     static final String TIMESTAMP_COLUMN = "timestamp-column";
@@ -156,7 +154,6 @@ public class ModelKeys {
     static final String TYPE = "type";
     @Deprecated static final String VIRTUAL_NODES = "virtual-nodes";
     static final String VALUE = "value";
-    static final String WAIT = "wait";
     static final String WRITE_BEHIND = "write-behind";
     static final String WRITE_BEHIND_NAME = "WRITE_BEHIND";
 }

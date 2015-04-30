@@ -35,7 +35,8 @@ import javax.xml.XMLConstants;
  */
 public enum Attribute {
     // must be first
-    UNKNOWN((String) null),
+    UNKNOWN(null),
+
     ACQUIRE_TIMEOUT(ModelKeys.ACQUIRE_TIMEOUT),
     ALIASES(ModelKeys.ALIASES),
     ASYNC_MARSHALLING(ModelKeys.ASYNC_MARSHALLING),
@@ -56,8 +57,8 @@ public enum Attribute {
     DIALECT(ModelKeys.DIALECT),
     @Deprecated EAGER_LOCKING("eager-locking"),
     ENABLED(ModelKeys.ENABLED),
-    EVICTION_EXECUTOR(ModelKeys.EVICTION_EXECUTOR),
-    EXECUTOR(ModelKeys.EXECUTOR),
+    @Deprecated EVICTION_EXECUTOR(ModelKeys.EVICTION_EXECUTOR),
+    @Deprecated EXECUTOR(ModelKeys.EXECUTOR),
     FETCH_SIZE(ModelKeys.FETCH_SIZE),
     FETCH_STATE(ModelKeys.FETCH_STATE),
     FLUSH_LOCK_TIMEOUT(ModelKeys.FLUSH_LOCK_TIMEOUT),
@@ -67,14 +68,17 @@ public enum Attribute {
     INTERVAL(ModelKeys.INTERVAL),
     ISOLATION(ModelKeys.ISOLATION),
     JNDI_NAME(ModelKeys.JNDI_NAME),
+    KEEPALIVE_TIME("keepalive-time"),
     L1_LIFESPAN(ModelKeys.L1_LIFESPAN),
     LIFESPAN(ModelKeys.LIFESPAN),
-    LISTENER_EXECUTOR(ModelKeys.LISTENER_EXECUTOR),
+    @Deprecated LISTENER_EXECUTOR(ModelKeys.LISTENER_EXECUTOR),
     LOCK_TIMEOUT(ModelKeys.LOCK_TIMEOUT),
     LOCKING(ModelKeys.LOCKING),
     MACHINE(ModelKeys.MACHINE),
     MAX_ENTRIES(ModelKeys.MAX_ENTRIES),
     MAX_IDLE(ModelKeys.MAX_IDLE),
+    MAX_THREADS("max-threads"),
+    MIN_THREADS("min-threads"),
     MODE(ModelKeys.MODE),
     MODIFICATION_QUEUE_SIZE(ModelKeys.MODIFICATION_QUEUE_SIZE),
     MODULE(ModelKeys.MODULE),
@@ -89,12 +93,13 @@ public enum Attribute {
     PURGE(ModelKeys.PURGE),
     QUEUE_FLUSH_INTERVAL(ModelKeys.QUEUE_FLUSH_INTERVAL),
     QUEUE_SIZE(ModelKeys.QUEUE_SIZE),
+    QUEUE_LENGTH("queue-length"),
     RACK(ModelKeys.RACK),
     RELATIVE_TO(ModelKeys.RELATIVE_TO),
     REMOTE_CACHE(ModelKeys.REMOTE_CACHE),
     REMOTE_SITE(ModelKeys.REMOTE_SITE),
     REMOTE_TIMEOUT(ModelKeys.REMOTE_TIMEOUT),
-    REPLICATION_QUEUE_EXECUTOR(ModelKeys.REPLICATION_QUEUE_EXECUTOR),
+    @Deprecated REPLICATION_QUEUE_EXECUTOR(ModelKeys.REPLICATION_QUEUE_EXECUTOR),
     SEGMENTS(ModelKeys.SEGMENTS),
     SHARED(ModelKeys.SHARED),
     SHUTDOWN_TIMEOUT(ModelKeys.SHUTDOWN_TIMEOUT),
@@ -118,7 +123,7 @@ public enum Attribute {
 
     private final String name;
 
-    private Attribute(final String name) {
+    Attribute(final String name) {
         this.name = name;
     }
 

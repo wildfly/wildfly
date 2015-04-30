@@ -72,7 +72,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
             { InfinispanSchema.VERSION_1_4, 76 },
             { InfinispanSchema.VERSION_1_5, 76 },
             { InfinispanSchema.VERSION_2_0, 80 },
-            { InfinispanSchema.VERSION_3_0, 77 },
+            { InfinispanSchema.VERSION_3_0, 81 },
         };
         return Arrays.asList(data);
     }
@@ -191,7 +191,6 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Test
     public void testParseAndMarshalModel() throws Exception {
         // Parse the subsystem xml and install into the first controller
-
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
 
         // Get the model and the persisted xml from the first controller

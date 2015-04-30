@@ -40,13 +40,9 @@ public class InfinispanRejectedExpressions_1_3 {
     // attributes which never accept expressions
     public static final AttributeDefinition[] NEVER_CONTAINER_ATTRIBUTES = {
             CacheContainerResourceDefinition.ALIASES,
-            CacheContainerResourceDefinition.EVICTION_EXECUTOR,
-            CacheContainerResourceDefinition.LISTENER_EXECUTOR,
-            CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR
     };
 
     public static final AttributeDefinition[] NEVER_TRANSPORT_ATTRIBUTES = {
-            TransportResourceDefinition.EXECUTOR
     };
 
     public static final AttributeDefinition[] NEVER_CHILD_ATTRIBUTES = {

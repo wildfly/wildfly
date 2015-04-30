@@ -59,8 +59,8 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
-import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
 import org.wildfly.clustering.spi.ClusteredCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
@@ -115,19 +115,61 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
 
         CacheContainerConfigurationBuilder configBuilder = new CacheContainerConfigurationBuilder(name)
                 .setModule(module)
-                .setStatisticsEnabled(CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean())
-                .setListenerExecutor(ModelNodes.asString(CacheContainerResourceDefinition.LISTENER_EXECUTOR.resolveModelAttribute(context, model)))
-                .setEvictionExecutor(ModelNodes.asString(CacheContainerResourceDefinition.EVICTION_EXECUTOR.resolveModelAttribute(context, model)))
-                .setReplicationQueueExecutor(ModelNodes.asString(CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, model)));
+                .setStatisticsEnabled(CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
+
+        // The following will be moved to its respective children resources in subsequent PRs:
+
+        // Install thread factory
+        ThreadFactoryServiceBuilder threadFactoryBuilder = new ThreadFactoryServiceBuilder(name);
+        threadFactoryBuilder.setNamePattern("Infinispan Thread Pool -- %t")
+                .setPriority(1)
+                .setThreadGroupName("Infinispan ThreadGroup")
+                .build(target).install();
+
+        // Build EVICTION thread pool
+        ModelNode evictionThreadPool = model.get(ScheduledThreadPoolResourceDefinition.EVICTION.getPathElement().getKeyValuePair());
+        configBuilder.setEvictionExecutor()
+                .setThreadFactoryServiceBuilder(threadFactoryBuilder)
+                .setMaxThreads(ScheduledThreadPoolResourceDefinition.EVICTION.getMaxThreads().resolveModelAttribute(context, evictionThreadPool).asInt())
+                .setKeepaliveTime(ScheduledThreadPoolResourceDefinition.EVICTION.getKeepaliveTime().resolveModelAttribute(context, evictionThreadPool).asLong())
+                .build(target).install();
+
+        // Build LISTENER thread pool
+        ModelNode listenerThreadPool = model.get(ThreadPoolResourceDefinition.LISTENER.getPathElement().getKeyValuePair());
+        configBuilder.setListenerExecutor()
+                .setThreadFactoryServiceBuilder(threadFactoryBuilder)
+                .setMinThreads(ThreadPoolResourceDefinition.LISTENER.getMinThreads().resolveModelAttribute(context, listenerThreadPool).asInt())
+                .setMaxThreads(ThreadPoolResourceDefinition.LISTENER.getMaxThreads().resolveModelAttribute(context, listenerThreadPool).asInt())
+                .setQueueLength(ThreadPoolResourceDefinition.LISTENER.getQueueLength().resolveModelAttribute(context, listenerThreadPool).asInt())
+                .setKeepaliveTime(ThreadPoolResourceDefinition.LISTENER.getKeepaliveTime().resolveModelAttribute(context, listenerThreadPool).asLong())
+                .build(target).install();
+
+        // Build PERSISTENCE thread pool
+        ModelNode persistenceThreadPool = model.get(ThreadPoolResourceDefinition.PERSISTENCE.getPathElement().getKeyValuePair());
+        configBuilder.setPersistenceExecutor()
+                .setThreadFactoryServiceBuilder(threadFactoryBuilder)
+                .setMinThreads(ThreadPoolResourceDefinition.PERSISTENCE.getMinThreads().resolveModelAttribute(context, persistenceThreadPool).asInt())
+                .setMaxThreads(ThreadPoolResourceDefinition.PERSISTENCE.getMaxThreads().resolveModelAttribute(context, persistenceThreadPool).asInt())
+                .setQueueLength(ThreadPoolResourceDefinition.PERSISTENCE.getQueueLength().resolveModelAttribute(context, persistenceThreadPool).asInt())
+                .setKeepaliveTime(ThreadPoolResourceDefinition.PERSISTENCE.getKeepaliveTime().resolveModelAttribute(context, persistenceThreadPool).asLong())
+                .build(target).install();
 
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             ModelNode transport = model.get(TransportResourceDefinition.PATH.getKeyValuePair());
             String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport), ChannelServiceNameFactory.DEFAULT_CHANNEL);
 
-            configBuilder.setTransport()
-                    .setLockTimeout(TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong(), TimeUnit.MILLISECONDS)
-                    .setExecutor(ModelNodes.asString(TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport)))
+            // Build TRANSPORT thread pool
+            ModelNode transportThreadPool = model.get(ThreadPoolResourceDefinition.TRANSPORT.getPathElement().getKeyValuePair());
+            TransportConfigurationBuilder transportBuilder = configBuilder.setTransport();
+            transportBuilder.setLockTimeout(TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong(), TimeUnit.MILLISECONDS)
+            .setExecutor()
+                    .setThreadFactoryServiceBuilder(threadFactoryBuilder)
+                    .setMinThreads(ThreadPoolResourceDefinition.TRANSPORT.getMinThreads().resolveModelAttribute(context, transportThreadPool).asInt())
+                    .setMaxThreads(ThreadPoolResourceDefinition.TRANSPORT.getMaxThreads().resolveModelAttribute(context, transportThreadPool).asInt())
+                    .setQueueLength(ThreadPoolResourceDefinition.TRANSPORT.getQueueLength().resolveModelAttribute(context, transportThreadPool).asInt())
+                    .setKeepaliveTime(ThreadPoolResourceDefinition.TRANSPORT.getKeepaliveTime().resolveModelAttribute(context, transportThreadPool).asLong())
                     .build(target).install();
+            transportBuilder.build(target).install();
 
             if (!name.equals(channel)) {
                 new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
@@ -196,6 +238,13 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
+
+        // WTF
+        context.removeService(new ThreadFactoryServiceBuilder(name).getServiceName());
+        context.removeService(new ScheduledExecutorServiceBuilder(name, "eviction").getServiceName());
+        context.removeService(new ExecutorServiceBuilder(name, "transport").getServiceName());
+        context.removeService(new ExecutorServiceBuilder(name, "listener").getServiceName());
+        context.removeService(new ExecutorServiceBuilder(name, "persistence").getServiceName());
 
         // remove the BinderService entry
         context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());

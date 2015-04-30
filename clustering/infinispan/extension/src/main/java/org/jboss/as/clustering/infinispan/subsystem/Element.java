@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public enum Element {
     // must be first
-    UNKNOWN((String)null),
+    UNKNOWN(null),
 
     ALIAS(ModelKeys.ALIAS),
     BACKUP(ModelKeys.BACKUP),
@@ -47,6 +47,7 @@ public enum Element {
     DISTRIBUTED_CACHE(ModelKeys.DISTRIBUTED_CACHE),
     @Deprecated ENTRY_TABLE(ModelKeys.ENTRY_TABLE),
     EVICTION(ModelKeys.EVICTION),
+    EVICTION_THREAD_POOL("eviction-thread-pool"),
     EXPIRATION(ModelKeys.EXPIRATION),
     FILE_STORE(ModelKeys.FILE_STORE),
     ID_COLUMN(ModelKeys.ID_COLUMN),
@@ -56,8 +57,10 @@ public enum Element {
     BINARY_KEYED_JDBC_STORE(ModelKeys.BINARY_KEYED_JDBC_STORE),
     MIXED_KEYED_JDBC_STORE(ModelKeys.MIXED_KEYED_JDBC_STORE),
     INDEXING(ModelKeys.INDEXING),
+    LISTENER_THREAD_POOL("listener-thread-pool"),
     LOCAL_CACHE(ModelKeys.LOCAL_CACHE),
     LOCKING(ModelKeys.LOCKING),
+    PERSISTENCE_THREAD_POOL("persistence-thread-pool"),
     PROPERTY(ModelKeys.PROPERTY),
     @Deprecated REHASHING("rehashing"),
     REMOTE_SERVER(ModelKeys.REMOTE_SERVER),
@@ -67,9 +70,11 @@ public enum Element {
     STORE(ModelKeys.STORE),
     STRING_KEYED_TABLE(ModelKeys.STRING_KEYED_TABLE),
     TAKE_OFFLINE("take-offline"),
+    THREAD_POOL("thread-pool"),
     TIMESTAMP_COLUMN(ModelKeys.TIMESTAMP_COLUMN),
     TRANSACTION(ModelKeys.TRANSACTION),
     TRANSPORT(ModelKeys.TRANSPORT),
+    TRANSPORT_THREAD_POOL("transport-thread-pool"),
     WRITE_BEHIND(ModelKeys.WRITE_BEHIND)
     ;
 
