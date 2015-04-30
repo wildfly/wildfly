@@ -325,12 +325,6 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
                     .end();
         }
 
-        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
-                    .end();
-        }
-
         DynamicLoadProviderDefinition.buildTransformation(version, builder);
         ModClusterSSLResourceDefinition.buildTransformation(version, builder);
     }

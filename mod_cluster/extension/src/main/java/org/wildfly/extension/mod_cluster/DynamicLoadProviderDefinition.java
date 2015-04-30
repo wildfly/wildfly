@@ -31,7 +31,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -73,13 +72,6 @@ public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         ResourceTransformationDescriptionBuilder loadProviderBuilder = builder.addChildResource(PATH);
-
-        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version)) {
-            loadProviderBuilder
-                    .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DECAY, HISTORY)
-                    .end();
-        }
 
         LoadMetricDefinition.buildTransformation(version, loadProviderBuilder);
         CustomLoadMetricDefinition.buildTransformation(version, loadProviderBuilder);
