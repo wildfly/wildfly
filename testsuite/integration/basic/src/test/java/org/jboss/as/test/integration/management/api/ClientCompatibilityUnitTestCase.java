@@ -168,7 +168,7 @@ public class ClientCompatibilityUnitTestCase {
             operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
             operation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).set(true);
             final ModelNode result = client.execute(operation);
-            Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+            Assert.assertEquals(operation.toString(), ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
 
             final ModelNode deploy = new ModelNode();
             deploy.get(ModelDescriptionConstants.OP).set("add");

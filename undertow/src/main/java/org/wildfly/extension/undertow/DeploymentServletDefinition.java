@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.server.handlers.MetricsHandler;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.ServletInfo;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -31,6 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -54,6 +56,7 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition MIN_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("min-request-time", ModelType.LONG, true).setStorageRuntime().build();
     static final SimpleAttributeDefinition TOTAL_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("total-request-time", ModelType.LONG, true).setStorageRuntime().build();
     static final SimpleAttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG, true).setStorageRuntime().build();
+    static final SimpleListAttributeDefinition SERVLET_MAPPINGS = new SimpleListAttributeDefinition.Builder("mappings", new SimpleAttributeDefinitionBuilder("mapping", ModelType.STRING, false).build()).setStorageRuntime().build();
 
 
     private DeploymentServletDefinition() {
@@ -67,33 +70,41 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
         registration.registerReadOnlyAttribute(SERVLET_CLASS, null);
         registration.registerMetric(MAX_REQUEST_TIME, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult, final ServletInfo servlet) {
                 response.set(metricResult.getMaxRequestTime());
             }
         });
         registration.registerMetric(MIN_REQUEST_TIME, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult, final ServletInfo servlet) {
                 response.set(metricResult.getMinRequestTime());
             }
         });
         registration.registerMetric(TOTAL_REQUEST_TIME, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult, final ServletInfo servlet) {
                 response.set(metricResult.getTotalRequestTime());
             }
         });
         registration.registerMetric(REQUEST_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult, final ServletInfo servlet) {
                 response.set(metricResult.getTotalRequests());
+            }
+        });
+        registration.registerMetric(SERVLET_MAPPINGS, new AbstractMetricsHandler() {
+            @Override
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult, final ServletInfo servlet) {
+                for (String mapping : servlet.getMappings()) {
+                    response.add(mapping);
+                }
             }
         });
     }
 
     abstract static class AbstractMetricsHandler implements OperationStepHandler {
 
-        abstract void handle(ModelNode response, String name, MetricsHandler.MetricResult metricResult);
+        abstract void handle(ModelNode response, String name, MetricsHandler.MetricResult metricResult, ServletInfo infos);
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -116,12 +127,13 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
 
                     if (controller != null) {
                         final String name = address.getLastElement().getValue();
+                        final ServletInfo servlet = deploymentInfo.getServlets().get(name);
                         final ModelNode response = new ModelNode();
                         MetricsHandler.MetricResult result = collector != null ? collector.getMetrics(name) : null;
                         if (result == null) {
                             response.set(0);
                         } else {
-                            handle(response, name, result);
+                            handle(response, name, result, servlet);
                         }
                         context.getResult().set(response);
                     }
