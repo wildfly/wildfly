@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -43,19 +42,6 @@ public class DistributedCacheAddHandler extends SharedStateCacheAddHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         super.populateModel(operation, model);
-
-        @SuppressWarnings("deprecation")
-        final String deprecatedKey = ModelKeys.VIRTUAL_NODES;
-        if (operation.hasDefined(deprecatedKey)
-                && operation.get(deprecatedKey).asInt() != 1) {
-            // log a WARN
-            InfinispanLogger.ROOT_LOGGER.virtualNodesAttributeDeprecated();
-            // convert the virtual-nodes value to segments and update the incoming model
-            // TBD: what to do it both values are coded?
-            ModelNode convertedValue = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(operation.get(deprecatedKey));
-            operation.get(ModelKeys.SEGMENTS).set(convertedValue);
-            operation.remove(deprecatedKey);
-        }
 
         for (AttributeDefinition attribute: DistributedCacheResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);

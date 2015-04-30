@@ -58,16 +58,14 @@ public class OperationsTestCase extends OperationTestCaseBase {
         String subsystemXml = getSubsystemXml();
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
 
-        String initialValue = "EAGER";
-        ModelNode readOperation = getCacheReadOperation("maximal", ModelKeys.LOCAL_CACHE, "local", ModelKeys.START);
+        ModelNode readOperation = getCacheReadOperation("maximal", ModelKeys.LOCAL_CACHE, "local", CacheResourceDefinition.STATISTICS_ENABLED.getName());
 
         // read the cache container batching attribute
         ModelNode result = servicesA.executeOperation(readOperation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(initialValue, result.get(RESULT).asString());
+        Assert.assertTrue(result.get(RESULT).asBoolean());
 
-        String newValue = "LAZY";
-        ModelNode writeOperation = getCacheWriteOperation("maximal", ModelKeys.LOCAL_CACHE, "local", ModelKeys.START, newValue);
+        ModelNode writeOperation = getCacheWriteOperation("maximal", ModelKeys.LOCAL_CACHE, "local", CacheResourceDefinition.STATISTICS_ENABLED.getName(), "false");
 
         // write the batching attribute
         result = servicesA.executeOperation(writeOperation);
@@ -76,7 +74,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // re-read the batching attribute
         result = servicesA.executeOperation(readOperation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(newValue, result.get(RESULT).asString());
+        Assert.assertFalse(result.get(RESULT).asBoolean());
     }
 
     /*
@@ -132,30 +130,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
         timestampColumn.get(ModelKeys.TYPE).set("BIGINT");
 
         return stringKeyedTable;
-    }
-
-    /*
-     * Tests adding dist cache with deprecated virtual nodes attribute
-     */
-    @Test
-    public void testDistCacheAddOperationWithVirtualNodes() throws Exception {
-
-        // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml();
-        KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
-
-        // add the distributed cache with virtual-nodes = 6, should lead to segments value of 36 (6*6)
-        ModelNode distCacheAddOp = getCacheAddOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "new-dist-cache");
-        distCacheAddOp.get(ModelKeys.MODE).set("SYNC");
-        distCacheAddOp.get(ModelKeys.VIRTUAL_NODES).set(6);
-        ModelNode result = servicesA.executeOperation(distCacheAddOp);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-
-        // read the segments attribute
-        ModelNode readDistCacheSegmentsOp = getCacheReadOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "new-dist-cache", "segments");
-        result = servicesA.executeOperation(readDistCacheSegmentsOp);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("36", result.get(RESULT).asString());
     }
 
     @Test

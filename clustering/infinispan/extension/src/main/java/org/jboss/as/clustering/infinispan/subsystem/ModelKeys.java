@@ -133,7 +133,7 @@ public class ModelKeys {
     static final String SITE_STATUS = "site-status";
     static final String SOCKET_TIMEOUT = "socket-timeout";
     static final String STACK = "stack";
-    static final String START = "start";
+    @Deprecated static final String START = "start";
     static final String STATE_TRANSFER = "state-transfer";
     static final String STATE_TRANSFER_NAME = "STATE_TRANSFER";
     static final String STATISTICS_ENABLED = "statistics-enabled";
@@ -154,7 +154,6 @@ public class ModelKeys {
     static final String TRANSPORT = "transport";
     static final String TRANSPORT_NAME = "TRANSPORT";
     static final String TYPE = "type";
-    @Deprecated static final String VIRTUAL_NODES = "virtual-nodes";
     static final String VALUE = "value";
     static final String WAIT = "wait";
     static final String WRITE_BEHIND = "write-behind";

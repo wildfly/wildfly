@@ -102,7 +102,7 @@ public enum Attribute {
     SITE(ModelKeys.SITE),
     SOCKET_TIMEOUT(ModelKeys.SOCKET_TIMEOUT),
     STACK(ModelKeys.STACK),
-    START(ModelKeys.START),
+    @Deprecated START(ModelKeys.START),
     STATISTICS_ENABLED(ModelKeys.STATISTICS_ENABLED),
     STOP_TIMEOUT(ModelKeys.STOP_TIMEOUT),
     STRATEGY(ModelKeys.STRATEGY),
@@ -113,7 +113,7 @@ public enum Attribute {
     THREAD_POOL_SIZE(ModelKeys.THREAD_POOL_SIZE),
     TIMEOUT(ModelKeys.TIMEOUT),
     TYPE(ModelKeys.TYPE),
-    @Deprecated VIRTUAL_NODES(ModelKeys.VIRTUAL_NODES),
+    @Deprecated VIRTUAL_NODES("virtual-nodes"),
     ;
 
     private final String name;

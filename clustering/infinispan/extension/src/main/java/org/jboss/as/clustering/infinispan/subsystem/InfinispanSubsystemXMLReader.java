@@ -116,17 +116,19 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.parseAndSetParameter(value, operation, reader);
                     break;
                 }
+                case START: {
+                    if (this.schema.since(InfinispanSchema.VERSION_1_1) && !this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                        // Ignore - we no longer support EAGER mode
+                    } else {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    break;
+                }
                 case ALIASES: {
                     if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
                         for (String alias: reader.getListAttributeValue(i)) {
                             CacheContainerResourceDefinition.ALIASES.parseAndAddParameterElement(alias, operation, reader);
                         }
-                        break;
-                    }
-                }
-                case START: {
-                    if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
-                        CacheContainerResourceDefinition.START.parseAndSetParameter(value, operation, reader);
                         break;
                     }
                 }
@@ -323,8 +325,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case VIRTUAL_NODES: {
                     if (!this.schema.since(InfinispanSchema.VERSION_1_4)) {
                         // AS7-5753: convert any non-expression virtual nodes value to a segments value,
-                        String virtualNodes = DistributedCacheResourceDefinition.VIRTUAL_NODES.parse(value, reader).toString();
-                        String segments = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(virtualNodes);
+                        String segments = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(value);
                         DistributedCacheResourceDefinition.SEGMENTS.parseAndSetParameter(segments, operation, reader);
                         break;
                     }
@@ -405,7 +406,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case START: {
-                CacheResourceDefinition.START.parseAndSetParameter(value, operation, reader);
+                if (!this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    // Ignore - we no longer support EAGER mode
+                } else {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
+                }
                 break;
             }
             case BATCHING: {
@@ -414,14 +419,18 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     ModelNode transactionOperation = Util.createAddOperation(transactionAddress);
                     transactionOperation.get(TransactionResourceDefinition.MODE.getName()).set(new ModelNode(TransactionMode.BATCH.name()));
                     operations.put(transactionAddress, transactionOperation);
-                    break;
+                } else {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
                 }
+                break;
             }
             case INDEXING: {
                 if (!this.schema.since(InfinispanSchema.VERSION_1_4)) {
                     CacheResourceDefinition.INDEXING.parseAndSetParameter(value, operation, reader);
-                    break;
+                } else {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
                 }
+                break;
             }
             case JNDI_NAME: {
                 if (this.schema.since(InfinispanSchema.VERSION_1_1)) {

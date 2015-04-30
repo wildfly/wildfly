@@ -35,7 +35,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -77,11 +76,7 @@ public class ExpirationResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MAX_IDLE, LIFESPAN, INTERVAL };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, MAX_IDLE, LIFESPAN, INTERVAL);
-        }
+        // Do nothing
     }
 
     ExpirationResourceDefinition() {

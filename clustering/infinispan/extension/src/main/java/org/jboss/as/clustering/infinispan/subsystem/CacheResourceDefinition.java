@@ -93,6 +93,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition START = new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
             .setXmlName(Attribute.START.getLocalName())
             .setAllowExpression(true)
@@ -144,14 +145,6 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
                     .addRejectCheck(RejectAttributeChecker.UNDEFINED, STATISTICS_ENABLED)
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STATISTICS_ENABLED)
                     .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), STATISTICS_ENABLED);
-        }
-
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            // The following attributes now support expressions
-            builder.getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, BATCHING, INDEXING, JNDI_NAME, MODULE, START)
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, INDEXING_PROPERTIES)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, INDEXING_PROPERTIES);
         }
 
         LockingResourceDefinition.buildTransformation(version, builder);

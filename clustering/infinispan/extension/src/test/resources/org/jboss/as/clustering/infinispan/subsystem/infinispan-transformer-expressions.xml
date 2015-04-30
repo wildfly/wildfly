@@ -27,7 +27,7 @@
     </cache-container>
     <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="${test.xxx:java:global/infinispan/maximal}" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="${test.xxx:org.infinispan}" start="${test.xxx:EAGER}" statistics-enabled="true">
         <transport channel="${test.xxx:maximal-cluster}" executor="transport-executor" lock-timeout="${test.xxx:120000}"/>
-        <local-cache name="local" start="${test.xxx:EAGER}" module="${test.xxx:org.infinispan}" statistics-enabled="true">
+        <local-cache name="local" module="${test.xxx:org.infinispan}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:NONE}" striping="${test.xxx:true}"/>
             <transaction mode="FULL_XA" stop-timeout="${test.xxx:60000}" locking="${tst.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:LIRS}"/>
@@ -41,7 +41,7 @@
                 <property name="hibernate.search.default.worker.backend">${test.xxx:jgroups}</property>
             </indexing>
         </local-cache>
-        <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" start="${test.xxx:LAZY}" async-marshalling="${tst.xxx:true}" statistics-enabled="true">
+        <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" async-marshalling="${tst.xxx:true}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:READ_UNCOMMITTED}" striping="${test.xxx:true}"/>
             <transaction mode="NON_XA" stop-timeout="${test.xxx:60000}" locking="${test.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:LRU}"/>
@@ -54,7 +54,7 @@
             </remote-store>
             <indexing index="${test.xxx:NONE}"/>
         </invalidation-cache>
-        <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" start="${test.xxx:EAGER}" async-marshalling="${test.xxx:false}" statistics-enabled="true">
+        <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" async-marshalling="${test.xxx:false}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:SERIALIZABLE}" striping="${test.xxx:true}"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="${test.xxx:60000}" locking="${test.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${tst.xxx:20000}" strategy="${test.xxx:FIFO}"/>
@@ -66,7 +66,7 @@
             </store>
             <indexing index="${test.xxx:NONE}"/>
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" l1-lifespan="${test.xxx:1200000}" owners="${test.xxx:4}" remote-timeout="${test.xxx:35000}" start="${test.xxx:EAGER}" segments="${test.xxx:2}" async-marshalling="${test.xxx:true}" statistics-enabled="true">
+        <distributed-cache name="dist" mode="SYNC" l1-lifespan="${test.xxx:1200000}" owners="${test.xxx:4}" remote-timeout="${test.xxx:35000}" segments="${test.xxx:2}" async-marshalling="${test.xxx:true}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:READ_COMMITTED}" striping="${test.xxx:true}"/>
             <transaction mode="FULL_XA" stop-timeout="${test.xxx:60000}" locking="${test.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:UNORDERED}"/>

@@ -63,7 +63,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writeAttribute(writer, container, CacheContainerResourceDefinition.JNDI_NAME);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.LISTENER_EXECUTOR);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR);
-                    writeAttribute(writer, container, CacheContainerResourceDefinition.START);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.MODULE);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.STATISTICS_ENABLED);
                     writeAttribute(writer, container, CacheContainerResourceDefinition.ALIASES);
@@ -146,7 +145,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     private static void writeCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
-        writeAttribute(writer, cache, CacheResourceDefinition.START);
         writeAttribute(writer, cache, CacheResourceDefinition.JNDI_NAME);
         writeAttribute(writer, cache, CacheResourceDefinition.MODULE);
         writeAttribute(writer, cache, CacheResourceDefinition.STATISTICS_ENABLED);

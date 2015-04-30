@@ -42,7 +42,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
@@ -110,7 +109,6 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         // make default cache non required (AS7-3488)
         String defaultCache = ModelNodes.asString(CacheContainerResourceDefinition.DEFAULT_CACHE.resolveModelAttribute(context, model));
         String jndiName = ModelNodes.asString(CacheContainerResourceDefinition.JNDI_NAME.resolveModelAttribute(context, model));
-        ServiceController.Mode initialMode = StartMode.valueOf(CacheContainerResourceDefinition.START.resolveModelAttribute(context, model).asString()).getMode();
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(CacheContainerResourceDefinition.MODULE.resolveModelAttribute(context, model));
 
         CacheContainerConfigurationBuilder configBuilder = new CacheContainerConfigurationBuilder(name)
@@ -164,7 +162,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
             }
         }
 
-        containerBuilder.build(target).setInitialMode(initialMode).install();
+        containerBuilder.build(target).install();
 
         // Install cache container jndi binding
         ContextNames.BindInfo binding = InfinispanBindingFactory.createCacheContainerBinding(name);

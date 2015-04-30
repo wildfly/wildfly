@@ -109,13 +109,6 @@ public interface InfinispanLogger extends BasicLogger {
     void cacheContainerInstalled(String containerName);
 
     /**
-     * Logs a warning message stating that the 'virtual-nodes' attribute is deprecated.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 7, value = "Attribute 'virtual-nodes' has been deprecated - converting legacy 'virtual-nodes' value to 'segments' value")
-    void virtualNodesAttributeDeprecated();
-
-    /**
      * Creates an exception indicating a failure to resolve the outbound socket binding represented by the
      * {@code binding} parameter.
      *
