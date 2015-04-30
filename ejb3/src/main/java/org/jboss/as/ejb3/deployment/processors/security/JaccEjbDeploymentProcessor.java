@@ -26,6 +26,7 @@ import javax.security.jacc.PolicyConfiguration;
 
 import org.jboss.as.ejb3.deployment.EjbSecurityDeployer;
 import org.jboss.as.security.deployment.AbstractSecurityDeployer;
+import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,6 +50,10 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        boolean securityEnabled = deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED);
+        if(!securityEnabled) {
+            return;
+        }
         AbstractSecurityDeployer<?> deployer = null;
         deployer = new EjbSecurityDeployer();
         JaccService<?> service = deployer.deploy(deploymentUnit);
