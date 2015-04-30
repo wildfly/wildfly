@@ -55,7 +55,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -193,13 +192,6 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
                 }
             };
             builder.setCustomResourceTransformer(modeTransformer);
-        }
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, MODE)
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STOP_TIMEOUT)
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LOCKING)
-                    .end();
         }
 
         buildOperationTransformation(builder, ModelDescriptionConstants.ADD, addOperationTransformers);

@@ -22,9 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -145,26 +142,6 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
             builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, DIALECT)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, DIALECT);
-        }
-
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            Map<String, RejectAttributeChecker> columnCheckers = new HashMap<>();
-            columnCheckers.put(COLUMN_NAME.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            columnCheckers.put(COLUMN_TYPE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            RejectAttributeChecker columnChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(columnCheckers);
-
-            Map<String, RejectAttributeChecker> tableCheckers = new HashMap<>();
-            tableCheckers.put(PREFIX.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            tableCheckers.put(BATCH_SIZE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            tableCheckers.put(FETCH_SIZE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            tableCheckers.put(ID_COLUMN.getName(), columnChecker);
-            tableCheckers.put(DATA_COLUMN.getName(), columnChecker);
-            tableCheckers.put(TIMESTAMP_COLUMN.getName(), columnChecker);
-            RejectAttributeChecker tableChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(tableCheckers);
-
-            builder.getAttributeBuilder()
-                    .addRejectCheck(tableChecker, BINARY_KEYED_TABLE, STRING_KEYED_TABLE)
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATA_SOURCE);
         }
 
         StoreResourceDefinition.buildTransformation(version, builder);
