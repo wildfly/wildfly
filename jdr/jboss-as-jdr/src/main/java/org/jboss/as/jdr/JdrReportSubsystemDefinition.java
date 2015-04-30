@@ -35,5 +35,4 @@ public class JdrReportSubsystemDefinition extends SimpleResourceDefinition {
                 JdrReportSubsystemAdd.INSTANCE,
                 JdrReportSubsystemRemove.INSTANCE);
     }
-
 }

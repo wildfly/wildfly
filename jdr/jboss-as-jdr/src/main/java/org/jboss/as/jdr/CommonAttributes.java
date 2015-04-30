@@ -37,4 +37,5 @@ public interface CommonAttributes {
     SimpleAttributeDefinition START_TIME = new SimpleAttributeDefinitionBuilder("start-time", ModelType.STRING, false).build();
     SimpleAttributeDefinition END_TIME = new SimpleAttributeDefinitionBuilder("end-time", ModelType.STRING, false).build();
     SimpleAttributeDefinition REPORT_LOCATION = new SimpleAttributeDefinitionBuilder("report-location", ModelType.STRING, true).build();
+    SimpleAttributeDefinition JDR_UUID = new SimpleAttributeDefinitionBuilder("jdr-uuid", ModelType.STRING, true).build();
 }
