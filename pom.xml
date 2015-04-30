@@ -155,7 +155,7 @@
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.2.4.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.1.1.Final</version.org.jboss.jboss-transaction-spi>
-        <version.org.jboss.narayana>5.0.4.Final</version.org.jboss.narayana>
+        <version.org.jboss.narayana>5.1.0.Final</version.org.jboss.narayana>
         <version.org.jboss.metadata>9.0.0.Beta1</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.3.1.Beta1</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.0.2.Beta2</version.org.jboss.openjdk-orb>
@@ -1496,6 +1496,34 @@
             <dependency>
                 <groupId>org.jboss.narayana.compensations</groupId>
                 <artifactId>compensations</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.narayana.rts</groupId>
+                        <artifactId>restat-util</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.arquillian.junit</groupId>
+                        <artifactId>arquillian-junit-container</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate.javax.persistence</groupId>
+                        <artifactId>hibernate-jpa-2.0-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.txframework</groupId>
+                <artifactId>txframework</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
