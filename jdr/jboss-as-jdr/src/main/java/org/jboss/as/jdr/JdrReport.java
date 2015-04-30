@@ -22,7 +22,12 @@
 
 package org.jboss.as.jdr;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
+import java.util.Properties;
 
 /**
  * Provides metadata about and access to the data collected by a {@link JdrReportCollector}.
@@ -31,11 +36,22 @@ import java.util.Date;
  * @author Mike M. Clark
  */
 public class JdrReport {
+
+    public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
+
+    public static final String JDR_PROPERTY_FILE_NAME = "jdr.properties";
+
+    public static final String UUID_NAME = "UUID";
+
+    public static final String JDR_PROPERTIES_COMMENT = "JDR Properties";
+
     private Date startTime;
     private Date endTime;
     private String location;
+    private String jdrUuid;
 
     public JdrReport() {
+        setJdrUuid();
     }
 
     /**
@@ -79,5 +95,56 @@ public class JdrReport {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public void setJdrUuid(String jdrUuid) {
+        this.jdrUuid = jdrUuid;
+    }
+
+    private void setJdrUuid() {
+        String jbossConfig = System.getProperty(JBOSS_PROPERTY_DIR);
+        String jdrPropertiesFilePath = jbossConfig + File.separator + JdrReportExtension.SUBSYSTEM_NAME + File.separator + JDR_PROPERTY_FILE_NAME;
+        Properties jdrProperties = new Properties();
+        InputStream jdrIS = getClass().getClassLoader().getResourceAsStream(jdrPropertiesFilePath);
+        if(jdrIS != null) {
+            try {
+                jdrProperties.load(jdrIS);
+                jdrUuid = jdrProperties.getProperty(UUID_NAME);
+                if(jdrUuid == null) {
+                    jdrUuid = java.util.UUID.randomUUID().toString();
+                    jdrProperties.setProperty(UUID_NAME, jdrUuid);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            jdrUuid = java.util.UUID.randomUUID().toString();
+            jdrProperties.setProperty(UUID_NAME, java.util.UUID.randomUUID().toString());
+            FileOutputStream fileOut = null;
+            try {
+                File file = new File(jdrPropertiesFilePath);
+                file.getParentFile().mkdirs();
+                fileOut = new FileOutputStream(jdrPropertiesFilePath);
+                jdrProperties.store(fileOut, JDR_PROPERTIES_COMMENT);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            finally {
+                if(fileOut != null) {
+                    try {
+                        fileOut.close();
+                    }
+                    catch(IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    public String getJdrUuid() {
+        return jdrUuid;
     }
 }
