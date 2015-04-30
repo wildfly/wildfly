@@ -36,7 +36,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -50,11 +49,11 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.xnio.Options;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -216,11 +215,14 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         }
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String name = address.getLastElement().getValue();
-            ListenerService<?> service = (ListenerService<?>) context.getServiceRegistry(false).getService(UndertowService.listenerName(name)).getValue();
+            final String name = context.getCurrentAddressValue();
+            ServiceController<ListenerService> listenerSC = (ServiceController<ListenerService>) context.getServiceRegistry(false).getService(UndertowService.listenerName(name));
+            if (listenerSC ==null || listenerSC.getState() != ServiceController.State.UP){
+                context.getResult().set(0L);
+                return;
+            }
             String op = operation.get(NAME).asString();
+            ListenerService<?> service = listenerSC.getValue();
             ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
             if(stats != null) {
                 ConnectorStat element = ConnectorStat.getStat(op);
@@ -249,7 +251,5 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
-
     }
-
 }
