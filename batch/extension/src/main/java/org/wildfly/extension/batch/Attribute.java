@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-enum Attribute {
+public enum Attribute {
 
     UNKNOWN((String) null),
     JNDI_NAME("jndi-name"),

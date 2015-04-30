@@ -25,7 +25,7 @@ package org.wildfly.extension.batch;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-interface BatchConstants {
+public interface BatchConstants {
 
     String IN_MEMORY = "in-memory";
     String JDBC = "jdbc";

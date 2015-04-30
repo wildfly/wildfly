@@ -109,4 +109,13 @@ public interface BatchLogger extends BasicLogger {
     @Message(id = 7, value = "Failed processing the job XML file %s. Attempting to execute this job may result in errors.")
     void invalidJobXmlFile(String jobXmlFile);
 
+    /**
+     * Logs an warning message indicating en empty job-repository element was found in the deployment descriptor.
+     *
+     * @param deploymentName the name of the deployment
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 8, value = "Empty job-repository element found in deployment descriptor. Using the default job repository for deployment %s.")
+    void emptyJobRepositoryElement(String deploymentName);
+
 }
