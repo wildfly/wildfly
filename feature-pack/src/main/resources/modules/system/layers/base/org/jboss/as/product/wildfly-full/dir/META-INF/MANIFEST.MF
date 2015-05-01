@@ -1,2 +1,2 @@
 JBoss-Product-Release-Name: WildFly Full
-JBoss-Product-Release-Version: 9.0.0.CR1
+JBoss-Product-Release-Version: 9.0.0.CR2-SNAPSHOT
