@@ -33,7 +33,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>jboss-javaee-7.0-wildfly</artifactId>
-    <version>9.0.0.Beta3-SNAPSHOT</version>
+    <version>9.0.0.Beta3</version>
 
     <packaging>pom</packaging>
 
@@ -50,7 +50,7 @@
         <connection>scm:git:https://github.com/wildfly/boms.git</connection>
         <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
         <url>http://github.com/wildfly/boms</url>
-    <tag>HEAD</tag>
+    <tag>9.0.0.Beta3</tag>
   </scm>
 
     <developers>
