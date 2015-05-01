@@ -6,14 +6,14 @@ The WildFly JBoss BOM's project provides Maven BOM files enhancing Java EE 7 wit
 Usage
 -----
 
-To use the BOM, import into your dependency management. For example, if you wanted "Java EE with Tools recommended by WildFly", use:
+To use the BOM, import into your dependency management. For example, if you wanted "Java EE with WildFly", use:
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
-                <artifactId>jboss-javaee-7.0-with-tools</artifactId>
-                <version>9.0.0.Beta2</version>
+                <artifactId>jboss-javaee-7.0-wildfly</artifactId>
+                <version>9.0.0.Beta3</version>
                 <scope>import</scope>
             </dependency>
         </dependencies>
