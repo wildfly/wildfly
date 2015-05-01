@@ -37,7 +37,7 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. To u
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
-                <version>1.0.0.Beta1</version>
+                <version>1.0.2.Final</version>
             </plugin>
         </plugins>
     </pluginManagement>
@@ -49,7 +49,7 @@ You'll need to take a look at the POM source in order to find the latest version
 
 To be able to easily deploy (or undeploy) your application from the application server, include following in the ``<build>`` section of your pom.xml file:
 	
-    <plugins>    
+    <plugins>
         <plugin>
             <groupId>org.wildfly.plugins</groupId>
             <artifactId>wildfly-maven-plugin</artifactId>
@@ -173,5 +173,5 @@ frameworks or include all of them together. More information about binding can b
 
 *Note: Each of listed Arquillian Dependency Chains already contains a certified version of Selenium. Should you need to use a different version (for example to test your 
 application in a newer browser, compatible with the latest Selenium version only), you can get more information how to do that
-at <https://community.jboss.org/wiki/SpecifyingSeleniumVersionInArquillianDrone>*  
+at <https://community.jboss.org/wiki/SpecifyingSeleniumVersionInArquillianDrone>*
 

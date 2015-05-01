@@ -8,7 +8,7 @@ Usage
 
 To use the BOM, import into your dependency management. For example, if you wanted "Java EE with Tools recommended by WildFly", use:
 
-    <dependencyManagement>    
+    <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
