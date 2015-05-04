@@ -108,4 +108,10 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
             super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
         }
     }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        MigrateOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
+    }
 }

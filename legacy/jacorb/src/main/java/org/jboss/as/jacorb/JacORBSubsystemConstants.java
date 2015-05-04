@@ -138,4 +138,6 @@ public final class JacORBSubsystemConstants {
     // JacORB configuration properties that are built and set by the ORB service.
     public static final String JACORB_NAME_SERVICE_INIT_REF = "ORBInitRef.NameService";
     public static final String JACORB_NAME_SERVICE_MAP_KEY = "jacorb.orb.objectKeyMap.NameService";
+
+    public static final String MIGRATE = "migrate";
 }
