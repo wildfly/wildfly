@@ -32,6 +32,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -45,10 +46,19 @@ import org.jboss.dmr.ModelType;
  */
 class IIOPRootDefinition extends PersistentResourceDefinition {
 
-    static final ParameterValidator VALIDATOR = new EnumValidator<IORTransportConfigValues>(
-            IORTransportConfigValues.class, true, true);
+    static final ModelNode NONE = new ModelNode("none");
 
-    static final ModelNode DEFAULT_VALUE = new ModelNode(IORTransportConfigValues.NONE.toString());
+    static final ParameterValidator SSL_CONFIG_VALIDATOR = new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
+
+    static final SensitivityClassification IIOP_SECURITY = new SensitivityClassification(IIOPExtension.SUBSYSTEM_NAME,
+            "iiop-security", false, false, true);
+
+    static final SensitiveTargetAccessConstraintDefinition IIOP_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(
+            IIOP_SECURITY);
+
+    static final ParameterValidator VALIDATOR = new EnumValidator<IORTransportConfigValues>(IORTransportConfigValues.class,
+            true, true);
+
 
     //ORB attributes
 
@@ -85,40 +95,45 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     protected static final AttributeDefinition SECURITY = new SimpleAttributeDefinitionBuilder(
             Constants.ORB_INIT_SECURITY, ModelType.STRING, true)
             .setAttributeGroup(Constants.ORB_INIT)
-            .setDefaultValue(AttributeConstants.NONE_PROPERTY)
+            .setDefaultValue(NONE)
             .setValidator(new EnumValidator<>(SecurityAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true)
-            .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF).build();
+            .addAccessConstraint(IIOP_SECURITY_DEF).build();
 
     protected static final AttributeDefinition TRANSACTIONS = new SimpleAttributeDefinitionBuilder(
             Constants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
             .setAttributeGroup(Constants.ORB_INIT)
-            .setDefaultValue(AttributeConstants.NONE_PROPERTY)
+            .setDefaultValue(NONE)
             .setValidator(new EnumValidator<TransactionsAllowedValues>(TransactionsAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
 
     //Naming attributes
 
     protected static final AttributeDefinition ROOT_CONTEXT = new SimpleAttributeDefinitionBuilder(
-            Constants.NAMING_ROOT_CONTEXT, ModelType.STRING, true).setAttributeGroup(Constants.NAMING)
-            .setDefaultValue(new ModelNode().set(Constants.ROOT_CONTEXT_INIT_REF))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
+            Constants.NAMING_ROOT_CONTEXT, ModelType.STRING, true)
+            .setAttributeGroup(Constants.NAMING)
+            .setDefaultValue(new ModelNode(Constants.ROOT_CONTEXT_INIT_REF))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .build();
 
     protected static final AttributeDefinition EXPORT_CORBALOC = new SimpleAttributeDefinitionBuilder(
-            Constants.NAMING_EXPORT_CORBALOC, ModelType.STRING, true).setAttributeGroup(Constants.NAMING)
-            .setDefaultValue(AttributeConstants.TRUE_PROPERTY).setValidator(AttributeConstants.TRUE_FALSE_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
+            Constants.NAMING_EXPORT_CORBALOC, ModelType.BOOLEAN, true)
+            .setAttributeGroup(Constants.NAMING)
+            .setDefaultValue(new ModelNode(true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .build();
 
     //Security attributes
 
     public static final AttributeDefinition SUPPORT_SSL = new SimpleAttributeDefinitionBuilder(
-            Constants.SECURITY_SUPPORT_SSL, ModelType.STRING, true)
+            Constants.SECURITY_SUPPORT_SSL, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.SECURITY)
-            .setDefaultValue(AttributeConstants.FALSE_PROPERTY)
-            .setValidator(AttributeConstants.TRUE_FALSE_VALIDATOR)
+            .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
     public static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(
@@ -126,57 +141,56 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAttributeGroup(Constants.SECURITY)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
     public static final AttributeDefinition ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
-            Constants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.STRING, true)
+            Constants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.SECURITY)
-            .setDefaultValue(AttributeConstants.TRUE_PROPERTY)
-            .setValidator(AttributeConstants.TRUE_FALSE_VALIDATOR)
+            .setDefaultValue(new ModelNode(true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
     public static final AttributeDefinition CLIENT_SUPPORTS = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_CLIENT_SUPPORTS, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode().set(SSLConfigValue.MUTUALAUTH.toString()))
-            .setValidator(AttributeConstants.SSL_CONFIG_VALIDATOR)
+            .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
     public static final AttributeDefinition CLIENT_REQUIRES = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_CLIENT_REQUIRES, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode().set(SSLConfigValue.NONE.toString()))
-            .setValidator(AttributeConstants.SSL_CONFIG_VALIDATOR)
+            .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
     public static final AttributeDefinition SERVER_SUPPORTS = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SERVER_SUPPORTS, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode().set(SSLConfigValue.MUTUALAUTH.toString()))
-            .setValidator(AttributeConstants.SSL_CONFIG_VALIDATOR)
+            .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
     public static final AttributeDefinition SERVER_REQUIRES = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SERVER_REQUIRES, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode().set(SSLConfigValue.NONE.toString()))
-            .setValidator(AttributeConstants.SSL_CONFIG_VALIDATOR)
+            .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
-            .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(
@@ -208,7 +222,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_INTEGRITY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(DEFAULT_VALUE)
+            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -217,7 +231,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_CONFIDENTIALITY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(DEFAULT_VALUE)
+            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -226,7 +240,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_TRUST_IN_TARGET, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(DEFAULT_VALUE)
+            .setDefaultValue(NONE)
             .setValidator(new EnumValidator<IORTransportConfigValues>(IORTransportConfigValues.class, true, true,
                     IORTransportConfigValues.NONE, IORTransportConfigValues.SUPPORTED))
             .setAllowExpression(true)
@@ -236,7 +250,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_TRUST_IN_CLIENT, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(DEFAULT_VALUE)
+            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -245,7 +259,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_DETECT_REPLAY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(DEFAULT_VALUE)
+            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -254,7 +268,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_DETECT_MISORDERING, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(DEFAULT_VALUE)
+            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -274,7 +288,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_SAS_CONTEXT_CALLER_PROPAGATION, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_SAS_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(CallerPropagationValues.NONE.toString()))
+            .setDefaultValue(NONE)
             .setValidator(new EnumValidator<CallerPropagationValues>(CallerPropagationValues.class, true, true))
             .setAllowExpression(true)
             .build();

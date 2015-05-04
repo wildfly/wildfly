@@ -29,13 +29,11 @@ import java.util.Properties;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.wildfly.iiop.openjdk.AttributeConstants;
 import org.wildfly.iiop.openjdk.Constants;
 import org.wildfly.iiop.openjdk.IIOPSubsystemAdd;
 
@@ -139,32 +137,27 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
                 break;
             case JacORBSubsystemConstants.SECURITY_SUPPORT_SSL:
                 if (value.equals(JacORBSubsystemConstants.ON)) {
-                    props.setProperty(name, AttributeConstants.TrueFalse.TRUE.toString());
+                    props.setProperty(name, Boolean.TRUE.toString());
                 } else {
-                    props.setProperty(name, AttributeConstants.TrueFalse.FALSE.toString());
+                    props.setProperty(name, Boolean.FALSE.toString());
                 }
                 break;
             case JacORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR:
                 if (value.equals(JacORBSubsystemConstants.ON)) {
-                    props.setProperty(name, AttributeConstants.TrueFalse.TRUE.toString());
+                    props.setProperty(name, Boolean.TRUE.toString());
                 } else {
-                    props.setProperty(name, AttributeConstants.TrueFalse.FALSE.toString());
+                    props.setProperty(name, Boolean.FALSE.toString());
                 }
                 break;
             case JacORBSubsystemConstants.NAMING_EXPORT_CORBALOC:
                 if (value.equals(JacORBSubsystemConstants.ON)) {
-                    props.setProperty(name, AttributeConstants.TrueFalse.TRUE.toString());
+                    props.setProperty(name, Boolean.TRUE.toString());
                 } else {
-                    props.setProperty(name, AttributeConstants.TrueFalse.FALSE.toString());
+                    props.setProperty(name, Boolean.FALSE.toString());
                 }
                 break;
             default:
                 props.setProperty(name, value);
         }
-    }
-
-    @Override
-    protected PathElement getIORSettingsPath() {
-        return IORSettingsDefinition.INSTANCE.getPathElement();
     }
 }
