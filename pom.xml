@@ -396,7 +396,7 @@
                                   <value>${test.level}</value>
                               </property>
                           </systemProperties>
-                          <argLine>-Duser.region=US -Duser.language=en -XX:MaxPermSize=256m</argLine>
+                          <argLine>-Duser.region=US -Duser.language=en</argLine>
                     </configuration>
 
                 </plugin>
