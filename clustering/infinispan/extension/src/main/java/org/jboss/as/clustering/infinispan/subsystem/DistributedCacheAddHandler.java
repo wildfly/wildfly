@@ -71,7 +71,7 @@ public class DistributedCacheAddHandler extends SharedStateCacheAddHandler {
 
         long lifespan = DistributedCacheResourceDefinition.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
         if (lifespan > 0) {
-            builder.clustering().l1().lifespan(lifespan);
+            builder.clustering().l1().enable().lifespan(lifespan);
         } else {
             builder.clustering().l1().disable();
         }
