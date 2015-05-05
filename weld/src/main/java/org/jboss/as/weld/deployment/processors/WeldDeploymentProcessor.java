@@ -126,7 +126,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         //add a dependency on the weld service to web deployments
         final ServiceName weldBootstrapServiceName = parent.getServiceName().append(WeldBootstrapService.SERVICE_NAME);
-        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldBootstrapServiceName);
+        ServiceName weldStartServiceName = parent.getServiceName().append(WeldStartService.SERVICE_NAME);
+        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldStartServiceName);
 
         final Set<ServiceName> jpaServices = new HashSet<ServiceName>();
 
@@ -271,7 +272,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WeldStartService weldStartService = new WeldStartService(setupActions, module.getClassLoader(), Utils.getRootDeploymentUnit(deploymentUnit).getServiceName());
 
-        ServiceBuilder<WeldStartService> startService = serviceTarget.addService(deploymentUnit.getServiceName().append(WeldStartService.SERVICE_NAME), weldStartService)
+        ServiceBuilder<WeldStartService> startService = serviceTarget.addService(weldStartServiceName, weldStartService)
                 .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap())
                 .addDependencies(jpaServices);
 
