@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.weld.interceptor.packaging;
 
+import javax.annotation.PostConstruct;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -31,6 +32,16 @@ import javax.interceptor.InvocationContext;
 @Intercepted
 @Interceptor
 public class SimpleInterceptor {
+
+
+    public static final String POST_CONSTRUCT_MESSAGE = "Post Const Intercepted";
+
+    @PostConstruct
+    public void postConstruct(InvocationContext context) {
+        if(context.getTarget() instanceof SimpleEjb2) {
+            ((SimpleEjb2)context.getTarget()).setPostConstructMessage(POST_CONSTRUCT_MESSAGE);
+        }
+    }
 
     @AroundInvoke
     public Object invoke(final InvocationContext context) throws Exception {
