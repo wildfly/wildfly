@@ -87,7 +87,15 @@ public class EntityBeanRemoteViewInstanceFactory implements ViewInstanceFactory 
 
         //call the ejbCreate method
         final Object primaryKey;
-        primaryKey = invokeEjbCreate(contextData, ejbCreate, instance, params);
+        boolean exceptionOnCreate = true;
+        try {
+            primaryKey = invokeEjbCreate(contextData, ejbCreate, instance, params);
+            exceptionOnCreate = false;
+        } finally {
+            if (exceptionOnCreate) {
+                entityBeanComponent.releaseEntityBeanInstance(instance);
+            }
+        }
         instance.associate(primaryKey);
 
         //now add the instance to the cache, so it is usable

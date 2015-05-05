@@ -76,7 +76,16 @@ public class EntityBeanEjbCreateMethodInterceptor implements Interceptor {
         final EntityBeanComponentInstance instance = entityBeanComponent.acquireUnAssociatedInstance();
 
         //call the ejbCreate method
-        final Object primaryKey = invokeEjbCreate(context, ejbCreate, instance, params);
+        Object primaryKey;
+        boolean exceptionOnCreate = true;
+        try {
+            primaryKey = invokeEjbCreate(context, ejbCreate, instance, params);
+            exceptionOnCreate = false;
+        } finally {
+            if (exceptionOnCreate) {
+                entityBeanComponent.releaseEntityBeanInstance(instance);
+            }
+        }
         instance.associate(primaryKey);
         clientInstance.setViewInstanceData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
 
