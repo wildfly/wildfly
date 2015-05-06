@@ -32,6 +32,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.narayana.rest.integration.ParticipantResource;
 import org.jboss.narayana.rest.integration.api.ParticipantsManagerFactory;
+import org.wildfly.extension.rts.jaxrs.ParticipantApplication;
 import org.wildfly.extension.rts.logging.RTSLogger;
 
 /**
@@ -77,7 +78,7 @@ public final class ParticipantService extends AbstractRTSService implements Serv
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", "org.wildfly.extension.rts.jaxrs.ParticipantApplication");
+        initialParameters.put("javax.ws.rs.Application", ParticipantApplication.class.getName());
 
         final DeploymentInfo participantDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 

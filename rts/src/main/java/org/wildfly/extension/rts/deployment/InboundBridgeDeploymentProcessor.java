@@ -32,6 +32,9 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.narayana.rest.bridge.inbound.EJBExceptionMapper;
+import org.jboss.narayana.rest.bridge.inbound.InboundBridgeFilter;
+import org.jboss.narayana.rest.bridge.inbound.TransactionalExceptionMapper;
 
 import javax.ejb.TransactionAttribute;
 import javax.transaction.Transactional;
@@ -50,9 +53,9 @@ public class InboundBridgeDeploymentProcessor implements DeploymentUnitProcessor
     private static final DotName TRANSACTION_ATTRIBUTE_DOT_NAME = DotName.createSimple(TransactionAttribute.class.getName());
 
     private static final String[] PROVIDERS = new String[] {
-            "org.jboss.narayana.rest.bridge.inbound.InboundBridgeFilter",
-            "org.jboss.narayana.rest.bridge.inbound.TransactionalExceptionMapper",
-            "org.jboss.narayana.rest.bridge.inbound.EJBExceptionMapper",
+            InboundBridgeFilter.class.getName(),
+            TransactionalExceptionMapper.class.getName(),
+            EJBExceptionMapper.class.getName()
     };
 
     @Override

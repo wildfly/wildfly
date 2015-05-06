@@ -28,6 +28,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.narayana.rest.integration.VolatileParticipantResource;
 import org.jboss.narayana.rest.integration.api.ParticipantsManagerFactory;
+import org.wildfly.extension.rts.jaxrs.VolatileParticipantApplication;
 import org.wildfly.extension.rts.logging.RTSLogger;
 
 import java.util.HashMap;
@@ -76,7 +77,7 @@ public final class VolatileParticipantService extends AbstractRTSService impleme
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", "org.wildfly.extension.rts.jaxrs.VolatileParticipantApplication");
+        initialParameters.put("javax.ws.rs.Application", VolatileParticipantApplication.class.getName());
 
         final DeploymentInfo participantDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 
