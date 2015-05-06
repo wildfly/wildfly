@@ -57,6 +57,7 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -77,7 +78,6 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.util.Base64;
 
 /**
  * Parser for persistent EJB timers that are stored in XML.
@@ -176,7 +176,7 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
 
     private Object deserialize(final String info) throws IOException, ClassNotFoundException {
 
-        byte[] data = Base64.decode(info.trim());
+        byte[] data = Base64.getDecoder().decode(info.trim());
         Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
         unmarshaller.start(new ByteBufferInput(ByteBuffer.wrap(data)));
         try {

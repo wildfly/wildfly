@@ -38,6 +38,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,7 +82,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.util.Base64;
 
 /**
  * <p>
@@ -624,14 +624,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return Base64.encodeBytes(out.toByteArray());
+        return Base64.getEncoder().encodeToString(out.toByteArray());
     }
 
     public Object deSerialize(final String data) throws SQLException {
         if (data == null) {
             return null;
         }
-        InputStream in = new ByteArrayInputStream(Base64.decode(data));
+        InputStream in = new ByteArrayInputStream(Base64.getDecoder().decode(data));
         try {
             final Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
             unmarshaller.start(new InputStreamByteInput(in));
