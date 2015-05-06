@@ -33,7 +33,7 @@ import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
  * Executor factory that produces {@link ManagedScheduledExecutorService} instances.
  * @author Paul Ferraro
  */
-public class ManagedScheduledExecutorFactory implements ScheduledExecutorFactory, ThreadPoolExecutorFactory {
+public class ManagedScheduledExecutorFactory implements ScheduledExecutorFactory, ThreadPoolExecutorFactory<ScheduledExecutorService> {
 
     private final ScheduledExecutorService executor;
 
@@ -46,7 +46,6 @@ public class ManagedScheduledExecutorFactory implements ScheduledExecutorFactory
         return this.createExecutor();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public ScheduledExecutorService createExecutor(ThreadFactory factory) {
         return this.createExecutor();
