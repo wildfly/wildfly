@@ -70,7 +70,7 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getElapsedTime() : 0);
+            return new ModelNode((interceptor != null) ? interceptor.getTimeSinceStart() : 0);
         }
     },
     HIT_RATIO(MetricKeys.HIT_RATIO, ModelType.DOUBLE) {
