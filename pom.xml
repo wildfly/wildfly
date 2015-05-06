@@ -141,9 +141,9 @@
         <version.org.hibernate.validator>5.1.3.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.hql>1.1.0.Final</version.org.hibernate.hql>
-        <version.org.hibernate.search>5.1.2.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>5.2.0.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>7.1.1.Final</version.org.infinispan>
+        <version.org.infinispan>7.2.1.Final</version.org.infinispan>
         <version.org.jasypt>1.9.1</version.org.jasypt>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
         <version.org.jberet>1.1.0.Final</version.org.jberet>
@@ -4287,6 +4287,17 @@
                     <exclusion>
                         <groupId>org.jboss.marshalling</groupId>
                         <artifactId>jboss-marshalling-osgi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-directory-provider</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-engine</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

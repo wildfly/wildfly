@@ -156,7 +156,7 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
         }
         ScheduledExecutorService evictionExecutor = (this.evictionExecutor != null) ? this.evictionExecutor.getValue() : null;
         if (evictionExecutor != null) {
-            builder.evictionThreadPool().threadPoolFactory(new ManagedScheduledExecutorFactory(evictionExecutor));
+            builder.expirationThreadPool().threadPoolFactory(new ManagedScheduledExecutorFactory(evictionExecutor));
         }
         ScheduledExecutorService replicationQueueExecutor = (this.replicationQueueExecutor != null) ? this.replicationQueueExecutor.getValue() : null;
         if (replicationQueueExecutor != null) {
