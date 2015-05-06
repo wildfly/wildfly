@@ -30,6 +30,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.arjuna.schemas.ws._2005._10.wsarjtx.TerminationCoordinatorRPCService;
+import com.arjuna.schemas.ws._2005._10.wsarjtx.TerminationCoordinatorService;
+import com.arjuna.schemas.ws._2005._10.wsarjtx.TerminationParticipantService;
+import com.arjuna.webservices11.wsarjtx.sei.TerminationCoordinatorPortTypeImpl;
+import com.arjuna.webservices11.wsarjtx.sei.TerminationCoordinatorRPCPortTypeImpl;
+import com.arjuna.webservices11.wsarjtx.sei.TerminationParticipantPortTypeImpl;
+import com.arjuna.webservices11.wsat.sei.CompletionCoordinatorPortTypeImpl;
+import com.arjuna.webservices11.wsat.sei.CompletionCoordinatorRPCPortTypeImpl;
+import com.arjuna.webservices11.wsat.sei.CompletionInitiatorPortTypeImpl;
+import com.arjuna.webservices11.wsat.sei.CoordinatorPortTypeImpl;
+import com.arjuna.webservices11.wsat.sei.ParticipantPortTypeImpl;
+import com.arjuna.webservices11.wsba.sei.BusinessAgreementWithCoordinatorCompletionCoordinatorPortTypeImpl;
+import com.arjuna.webservices11.wsba.sei.BusinessAgreementWithCoordinatorCompletionParticipantPortTypeImpl;
+import com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionCoordinatorPortTypeImpl;
+import com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionParticipantPortTypeImpl;
+import com.arjuna.webservices11.wscoor.sei.ActivationPortTypeImpl;
+import com.arjuna.webservices11.wscoor.sei.RegistrationPortTypeImpl;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,6 +65,17 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.publish.Context;
+import org.oasis_open.docs.ws_tx.wsat._2006._06.CompletionCoordinatorRPCService;
+import org.oasis_open.docs.ws_tx.wsat._2006._06.CompletionCoordinatorService;
+import org.oasis_open.docs.ws_tx.wsat._2006._06.CompletionInitiatorService;
+import org.oasis_open.docs.ws_tx.wsat._2006._06.CoordinatorService;
+import org.oasis_open.docs.ws_tx.wsat._2006._06.ParticipantService;
+import org.oasis_open.docs.ws_tx.wsba._2006._06.BusinessAgreementWithCoordinatorCompletionCoordinatorService;
+import org.oasis_open.docs.ws_tx.wsba._2006._06.BusinessAgreementWithCoordinatorCompletionParticipantService;
+import org.oasis_open.docs.ws_tx.wsba._2006._06.BusinessAgreementWithParticipantCompletionCoordinatorService;
+import org.oasis_open.docs.ws_tx.wsba._2006._06.BusinessAgreementWithParticipantCompletionParticipantService;
+import org.oasis_open.docs.ws_tx.wscoor._2006._06.ActivationService;
+import org.oasis_open.docs.ws_tx.wscoor._2006._06.RegistrationService;
 
 
 /**
@@ -106,29 +134,29 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static final ContextInfo[] contextDefinitions = {
             new ContextInfo("ws-c11",
                     new EndpointInfo[]{
-                            new EndpointInfo("com.arjuna.webservices11.wscoor.sei.ActivationPortTypeImpl", "ActivationService"),
-                            new EndpointInfo("com.arjuna.webservices11.wscoor.sei.RegistrationPortTypeImpl", "RegistrationService")
+                            new EndpointInfo(ActivationPortTypeImpl.class.getName(), ActivationService.class.getSimpleName()),
+                            new EndpointInfo(RegistrationPortTypeImpl.class.getName(), RegistrationService.class.getSimpleName())
                     }),
             new ContextInfo("ws-t11-coordinator",
                     new EndpointInfo[]{
-                            new EndpointInfo("com.arjuna.webservices11.wsat.sei.CoordinatorPortTypeImpl", "CoordinatorService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsat.sei.CompletionCoordinatorPortTypeImpl", "CompletionCoordinatorService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsat.sei.CompletionCoordinatorRPCPortTypeImpl", "CompletionCoordinatorRPCService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsba.sei.BusinessAgreementWithCoordinatorCompletionCoordinatorPortTypeImpl", "BusinessAgreementWithCoordinatorCompletionCoordinatorService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionCoordinatorPortTypeImpl", "BusinessAgreementWithParticipantCompletionCoordinatorService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsarjtx.sei.TerminationCoordinatorPortTypeImpl", "TerminationCoordinatorService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsarjtx.sei.TerminationCoordinatorRPCPortTypeImpl", "TerminationCoordinatorRPCService")
+                            new EndpointInfo(CoordinatorPortTypeImpl.class.getName(), CoordinatorService.class.getSimpleName()),
+                            new EndpointInfo(CompletionCoordinatorPortTypeImpl.class.getName(), CompletionCoordinatorService.class.getSimpleName()),
+                            new EndpointInfo(CompletionCoordinatorRPCPortTypeImpl.class.getName(), CompletionCoordinatorRPCService.class.getSimpleName()),
+                            new EndpointInfo(BusinessAgreementWithCoordinatorCompletionCoordinatorPortTypeImpl.class.getName(), BusinessAgreementWithCoordinatorCompletionCoordinatorService.class.getSimpleName()),
+                            new EndpointInfo(BusinessAgreementWithParticipantCompletionCoordinatorPortTypeImpl.class.getName(), BusinessAgreementWithParticipantCompletionCoordinatorService.class.getSimpleName()),
+                            new EndpointInfo(TerminationCoordinatorPortTypeImpl.class.getName(), TerminationCoordinatorService.class.getSimpleName()),
+                            new EndpointInfo(TerminationCoordinatorRPCPortTypeImpl.class.getName(), TerminationCoordinatorRPCService.class.getSimpleName())
                     }),
             new ContextInfo("ws-t11-participant",
                     new EndpointInfo[]{
-                            new EndpointInfo("com.arjuna.webservices11.wsat.sei.ParticipantPortTypeImpl", "ParticipantService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsba.sei.BusinessAgreementWithCoordinatorCompletionParticipantPortTypeImpl", "BusinessAgreementWithCoordinatorCompletionParticipantService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionParticipantPortTypeImpl", "BusinessAgreementWithParticipantCompletionParticipantService"),
+                            new EndpointInfo(ParticipantPortTypeImpl.class.getName(), ParticipantService.class.getSimpleName()),
+                            new EndpointInfo(BusinessAgreementWithCoordinatorCompletionParticipantPortTypeImpl.class.getName(), BusinessAgreementWithCoordinatorCompletionParticipantService.class.getSimpleName()),
+                            new EndpointInfo(BusinessAgreementWithParticipantCompletionParticipantPortTypeImpl.class.getName(), BusinessAgreementWithParticipantCompletionParticipantService.class.getSimpleName()),
                     }),
             new ContextInfo("ws-t11-client",
                     new EndpointInfo[]{
-                            new EndpointInfo("com.arjuna.webservices11.wsat.sei.CompletionInitiatorPortTypeImpl", "CompletionInitiatorService"),
-                            new EndpointInfo("com.arjuna.webservices11.wsarjtx.sei.TerminationParticipantPortTypeImpl", "TerminationParticipantService")
+                            new EndpointInfo(CompletionInitiatorPortTypeImpl.class.getName(), CompletionInitiatorService.class.getSimpleName()),
+                            new EndpointInfo(TerminationParticipantPortTypeImpl.class.getName(), TerminationParticipantService.class.getSimpleName())
                     })
     };
 
