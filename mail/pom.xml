@@ -26,7 +26,7 @@
     <parent>
         <artifactId>wildfly-parent</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>9.0.0.CR2-SNAPSHOT</version>
+        <version>10.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-mail</artifactId>
