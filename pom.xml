@@ -4347,9 +4347,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jipijapa</groupId>
+                <groupId>org.wildfly</groupId>
                 <artifactId>jipijapa-spi</artifactId>
-                <version>${version.org.jipijapa}</version>
+                <version>${project.version}</version>
                 <exclusions>
                     <!-- TODO remove this exclusion once this supports JTA 1.2 -->
                     <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
@@ -4361,29 +4361,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jipijapa</groupId>
-                <artifactId>jipijapa-hibernate3</artifactId>
-                <version>${version.org.jipijapa}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-entitymanager</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-infinispan</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jipijapa</groupId>
+                <groupId>org.wildfly</groupId>
                 <artifactId>jipijapa-hibernate4-3</artifactId>
-                <version>${version.org.jipijapa}</version>
+		<version>${project.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
@@ -4401,9 +4381,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jipijapa</groupId>
+                <groupId>org.wildfly</groupId>
                 <artifactId>jipijapa-hibernate4-1</artifactId>
-                <version>${version.org.jipijapa}</version>
+                <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
@@ -4421,15 +4401,15 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jipijapa</groupId>
+                <groupId>org.wildfly</groupId>
                 <artifactId>jipijapa-eclipselink</artifactId>
-                <version>${version.org.jipijapa}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jipijapa</groupId>
+                <groupId>org.wildfly</groupId>
                 <artifactId>jipijapa-openjpa</artifactId>
-                <version>${version.org.jipijapa}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>

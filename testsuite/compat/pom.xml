@@ -97,13 +97,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
-            <artifactId>jipijapa-eclipselink</artifactId>
-            <version>1.0.0.Beta3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
             <version>${eclipselink.version}</version>
@@ -178,9 +171,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jipijapa</groupId>
+                <groupId>org.wildfly</groupId>
                 <artifactId>jipijapa-eclipselink</artifactId>
-                <version>1.0.0.Beta3</version>
+                <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
 

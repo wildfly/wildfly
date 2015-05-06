@@ -1376,68 +1376,52 @@
       </licenses>
     </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-eclipselink</artifactId>
           <licenses>
               <license>
-                  <name>Apache Software License, Version 2.0</name>
-                  <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                  <distribution>repo</distribution>
+                  <name>GNU Lesser General Public License, Version 2.1</name>
+                  <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
               </license>
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
-          <artifactId>jipijapa-hibernate3</artifactId>
-          <licenses>
-              <license>
-                  <name>Apache Software License, Version 2.0</name>
-                  <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                  <distribution>repo</distribution>
-              </license>
-          </licenses>
-      </dependency>
-      <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-hibernate4-1</artifactId>
           <licenses>
               <license>
-                  <name>Apache Software License, Version 2.0</name>
-                  <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                  <distribution>repo</distribution>
+                  <name>GNU Lesser General Public License, Version 2.1</name>
+                  <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
               </license>
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-hibernate4-3</artifactId>
           <licenses>
               <license>
-                  <name>Apache Software License, Version 2.0</name>
-                  <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                  <distribution>repo</distribution>
+                  <name>GNU Lesser General Public License, Version 2.1</name>
+                  <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
               </license>
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-openjpa</artifactId>
           <licenses>
               <license>
-                  <name>Apache Software License, Version 2.0</name>
-                  <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                  <distribution>repo</distribution>
+                  <name>GNU Lesser General Public License, Version 2.1</name>
+                  <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
               </license>
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-spi</artifactId>
           <licenses>
               <license>
-                  <name>Apache Software License, Version 2.0</name>
-                  <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                  <distribution>repo</distribution>
+                  <name>GNU Lesser General Public License, Version 2.1</name>
+                  <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
               </license>
           </licenses>
       </dependency>
@@ -1850,61 +1834,6 @@
     <dependency>
       <groupId>org.wildfly</groupId>
       <artifactId>wildfly-jpa</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.wildfly</groupId>
-      <artifactId>wildfly-jpa-hibernate3</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.wildfly</groupId>
-      <artifactId>wildfly-jpa-hibernate4</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.wildfly</groupId>
-      <artifactId>wildfly-jpa-openjpa</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.wildfly</groupId>
-      <artifactId>wildfly-jpa-spi</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.wildfly</groupId>
-      <artifactId>wildfly-jpa-util</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
