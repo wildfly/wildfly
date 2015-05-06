@@ -1376,7 +1376,7 @@
       </licenses>
     </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-eclipselink</artifactId>
           <licenses>
               <license>
@@ -1387,7 +1387,7 @@
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-hibernate3</artifactId>
           <licenses>
               <license>
@@ -1398,7 +1398,7 @@
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-hibernate4-1</artifactId>
           <licenses>
               <license>
@@ -1409,7 +1409,7 @@
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-hibernate4-3</artifactId>
           <licenses>
               <license>
@@ -1420,7 +1420,7 @@
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-openjpa</artifactId>
           <licenses>
               <license>
@@ -1431,7 +1431,7 @@
           </licenses>
       </dependency>
       <dependency>
-          <groupId>org.jipijapa</groupId>
+          <groupId>org.wildfly</groupId>
           <artifactId>jipijapa-spi</artifactId>
           <licenses>
               <license>

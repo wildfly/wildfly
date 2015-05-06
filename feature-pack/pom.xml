@@ -701,18 +701,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
-            <artifactId>jipijapa-hibernate3</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-hibernate4-3</artifactId>
             <exclusions>
                 <exclusion>
@@ -723,7 +712,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-hibernate4-1</artifactId>
             <exclusions>
                 <exclusion>
@@ -734,7 +723,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-eclipselink</artifactId>
             <exclusions>
                 <exclusion>
@@ -745,12 +734,12 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-openjpa</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-spi</artifactId>
             <exclusions>
                 <exclusion>
