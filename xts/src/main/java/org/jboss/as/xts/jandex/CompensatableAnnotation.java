@@ -23,6 +23,12 @@ package org.jboss.as.xts.jandex;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
+import org.jboss.narayana.compensations.api.CancelOnFailure;
+import org.jboss.narayana.compensations.api.Compensatable;
+import org.jboss.narayana.compensations.api.CompensationScoped;
+import org.jboss.narayana.compensations.api.TxCompensate;
+import org.jboss.narayana.compensations.api.TxConfirm;
+import org.jboss.narayana.compensations.api.TxLogged;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
@@ -31,12 +37,12 @@ import org.jboss.as.xts.XTSException;
 public class CompensatableAnnotation {
 
     public static final String[] COMPENSATABLE_ANNOTATIONS = {
-            "org.jboss.narayana.compensations.api.Compensatable",
-            "org.jboss.narayana.compensations.api.CancelOnFailure",
-            "org.jboss.narayana.compensations.api.CompensationScoped",
-            "org.jboss.narayana.compensations.api.TxCompensate",
-            "org.jboss.narayana.compensations.api.TxConfirm",
-            "org.jboss.narayana.compensations.api.TxLogged"
+            Compensatable.class.getName(),
+            CancelOnFailure.class.getName(),
+            CompensationScoped.class.getName(),
+            TxCompensate.class.getName(),
+            TxConfirm.class.getName(),
+            TxLogged.class.getName()
     };
 
     private CompensatableAnnotation() {

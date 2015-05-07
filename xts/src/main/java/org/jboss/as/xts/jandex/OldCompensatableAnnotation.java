@@ -23,6 +23,7 @@ package org.jboss.as.xts.jandex;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
+import org.jboss.narayana.txframework.api.annotation.transaction.Compensatable;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
@@ -30,7 +31,7 @@ import org.jboss.as.xts.XTSException;
 public class OldCompensatableAnnotation {
 
     public static final String[] COMPENSATABLE_ANNOTATIONS = {
-            "org.jboss.narayana.txframework.api.annotation.transaction.Compensatable"
+            Compensatable.class.getName()
     };
 
     private OldCompensatableAnnotation() {

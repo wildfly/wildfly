@@ -28,6 +28,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
+import org.jboss.narayana.compensations.impl.CompensationsCDIExtension;
+import org.jboss.narayana.txframework.impl.as.TXFrameworkCDIExtension;
 
 /**
  * @author paul.robinson@redhat.com, 2012-02-09
@@ -35,8 +37,10 @@ import org.jboss.as.weld.deployment.WeldPortableExtensions;
 public class CDIExtensionProcessor implements DeploymentUnitProcessor {
 
     private static final String[] EMPTY_STRING_ARRAY = {};
-    private static final String[] EXTENSIONS = {"org.jboss.narayana.txframework.impl.as.TXFrameworkCDIExtension",
-            "org.jboss.narayana.compensations.impl.CompensationsCDIExtension"};
+    private static final String[] EXTENSIONS = {
+            TXFrameworkCDIExtension.class.getName(),
+            CompensationsCDIExtension.class.getName()
+    };
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();

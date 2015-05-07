@@ -26,12 +26,14 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
 import org.jboss.jandex.AnnotationInstance;
 
+import javax.ejb.Stateless;
+
 /**
  * @author paul.robinson@redhat.com, 2012-02-06
  */
 public class StatelessAnnotation {
 
-    private static final String STATELESS_ANNOTATION = "javax.ejb.Stateless";
+    private static final String STATELESS_ANNOTATION = Stateless.class.getName();
 
 
     public static StatelessAnnotation build(DeploymentUnit unit, String endpoint) throws XTSException {

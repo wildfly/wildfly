@@ -24,6 +24,9 @@ package org.jboss.as.xts.jandex;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
 
+import javax.ejb.TransactionAttribute;
+import javax.transaction.Transactional;
+
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  * @author <a href="mailto:paul.robinson@redhat.com">Paul Robinson</a>
@@ -31,8 +34,8 @@ import org.jboss.as.xts.XTSException;
 public class TransactionalAnnotation {
 
     public static final String[] TRANSACTIONAL_ANNOTATIONS = {
-            "javax.ejb.TransactionAttribute",
-            "javax.transaction.Transactional",
+            TransactionAttribute.class.getName(),
+            Transactional.class.getName()
     };
 
     private TransactionalAnnotation() {

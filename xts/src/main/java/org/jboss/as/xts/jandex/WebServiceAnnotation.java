@@ -27,6 +27,7 @@ import org.jboss.as.xts.XTSException;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
+import javax.jws.WebService;
 import javax.xml.namespace.QName;
 
 /**
@@ -34,7 +35,7 @@ import javax.xml.namespace.QName;
  */
 public class WebServiceAnnotation {
 
-    private static final String WEBSERVICE_ANNOTATION = "javax.jws.WebService";
+    private static final String WEBSERVICE_ANNOTATION = WebService.class.getName();
 
     private final String portName;
 
