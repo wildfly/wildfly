@@ -23,6 +23,7 @@
 package org.jboss.as.jdr;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +45,10 @@ public class JdrReport {
     public static final String UUID_NAME = "UUID";
 
     public static final String JDR_PROPERTIES_COMMENT = "JDR Properties";
+
+    public static final String DEFAULT_PROPERTY_DIR = "$JBOSS_HOME/standalone";
+
+    public static final String DATA_DIR = "data";
 
     private Date startTime;
     private Date endTime;
@@ -101,8 +106,22 @@ public class JdrReport {
         this.jdrUuid = jdrUuid;
     }
 
+    /**
+     * sets JDR UUID using jdr.properties file
+     * if the JDR does not have a UUID, then generate one for them and store it in the jdr.properties file
+     */
     private void setJdrUuid() {
         String jbossConfig = System.getProperty(JBOSS_PROPERTY_DIR);
+        // JDR is being ran from command line
+        if(jbossConfig == null) {
+            // if JBoss standalone directory does not exist then go no further
+            if(!new File(DEFAULT_PROPERTY_DIR).exists()) {
+                FileNotFoundException e = new FileNotFoundException("Could not find JDR properties file");
+                e.printStackTrace();
+                return;
+            }
+            jbossConfig = DEFAULT_PROPERTY_DIR + File.separator + DATA_DIR;
+        }
         String jdrPropertiesFilePath = jbossConfig + File.separator + JdrReportExtension.SUBSYSTEM_NAME + File.separator + JDR_PROPERTY_FILE_NAME;
         Properties jdrProperties = new Properties();
         InputStream jdrIS = getClass().getClassLoader().getResourceAsStream(jdrPropertiesFilePath);
