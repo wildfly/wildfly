@@ -71,6 +71,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(Attribute.EXECUTOR.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
     static final SimpleAttributeDefinition LOCK_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)
