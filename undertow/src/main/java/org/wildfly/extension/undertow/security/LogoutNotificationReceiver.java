@@ -20,17 +20,16 @@
  * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow.deployment;
+package org.wildfly.extension.undertow.security;
 
 import io.undertow.security.api.NotificationReceiver;
 import io.undertow.security.api.SecurityNotification;
 import io.undertow.security.idm.Account;
 import org.jboss.security.AuthenticationManager;
-import org.wildfly.extension.undertow.security.AccountImpl;
-
-import java.security.Principal;
+import org.jboss.security.SecurityContextAssociation;
 
 import javax.security.auth.Subject;
+import java.security.Principal;
 
 /**
  * Undertow security listener that invokes {@code AuthenticationManager.logout()} on logout, flushing the principal from
@@ -41,22 +40,34 @@ import javax.security.auth.Subject;
 public class LogoutNotificationReceiver implements NotificationReceiver {
 
     private final AuthenticationManager manager;
+    private final String securityDomain;
 
-    public LogoutNotificationReceiver(AuthenticationManager manager) {
+    public LogoutNotificationReceiver(AuthenticationManager manager, String securityDomain) {
         this.manager = manager;
+        this.securityDomain = securityDomain;
     }
 
     @Override
     public void handleNotification(SecurityNotification notification) {
         if (notification.getEventType() == SecurityNotification.EventType.LOGGED_OUT) {
             Account account = notification.getAccount();
-            Principal principal =  (account instanceof AccountImpl) ?  ((AccountImpl) account).getOriginalPrincipal() :
-                account.getPrincipal();
+            Principal principal = (account instanceof AccountImpl) ? ((AccountImpl) account).getOriginalPrincipal() :
+                    account.getPrincipal();
             if (principal != null) {
                 // perform the logout of the principal using the subject currently set in the security context.
                 Subject subject = SecurityActions.getSubject();
                 this.manager.logout(principal, subject);
             }
+
+            // Clear old context
+            SecurityActions.clearSecurityContext();
+            SecurityActions.setSecurityRoles(null);
+
+            // Set a new one in case re-authentication is done within the same thread
+            org.jboss.security.SecurityContext securityContext = SecurityActions.createSecurityContext(securityDomain);
+            notification.getExchange().putAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT, securityContext);
+
+            SecurityContextAssociation.setSecurityContext(securityContext);
         }
     }
 }

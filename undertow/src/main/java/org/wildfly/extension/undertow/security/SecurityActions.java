@@ -24,13 +24,20 @@ package org.wildfly.extension.undertow.security;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Map;
+import java.util.Set;
 
 import org.jboss.security.RunAs;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
+import org.jboss.security.SecurityRolesAssociation;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import javax.security.auth.Subject;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * Privileged Actions
@@ -121,6 +128,20 @@ class SecurityActions {
         }
     }
 
+    static void setSecurityRoles(final Map<String, Set<String>> roles) {
+        if(WildFlySecurityManager.isChecking()) {
+
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+                public Void run() {
+                    SecurityRolesAssociation.setSecurityRoles(roles);
+                    return null;
+                }
+            });
+        } else {
+            SecurityRolesAssociation.setSecurityRoles(roles);
+        }
+    }
+
     /**
      * Sets the run as identity
      *
@@ -194,6 +215,27 @@ class SecurityActions {
                 throw UndertowLogger.ROOT_LOGGER.noSecurityContext();
             }
             return sc.getOutgoingRunAs();
+        }
+    }
+    static Subject getSubject() {
+        if (WildFlySecurityManager.isChecking()) {
+            return doPrivileged(new PrivilegedAction<Subject>() {
+                public Subject run() {
+                    Subject subject = null;
+                    SecurityContext sc = getSecurityContext();
+                    if (sc != null) {
+                        subject = sc.getUtil().getSubject();
+                    }
+                    return subject;
+                }
+            });
+        } else {
+            Subject subject = null;
+            SecurityContext sc = getSecurityContext();
+            if (sc != null) {
+                subject = sc.getUtil().getSubject();
+            }
+            return subject;
         }
     }
 }
