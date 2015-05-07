@@ -42,6 +42,7 @@
         <!-- For message inflow -->
         <module name="javax.resource.api"/>
         <module name="org.hibernate"/>
+        <module name="org.jboss.common-beans" services="import"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.spi"/>
@@ -72,7 +73,6 @@
         <module name="org.jboss.classfilewriter"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.ejb-client" services="import"/>
         <module name="org.jboss.ejb3"/>
         <module name="org.jboss.iiop-client"/>

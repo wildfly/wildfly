@@ -78,6 +78,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.common.beans.property.BeanUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
@@ -91,7 +92,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.util.propertyeditor.PropertyEditors;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 
 /**
@@ -349,7 +349,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         props.putAll(propertyMap);
 
                         try {
-                            PropertyEditors.mapJavaBeanProperties(metric, props, true);
+                            BeanUtils.mapJavaBeanProperties(metric, props, true);
                         } catch (Exception ex) {
                             ROOT_LOGGER.errorApplyingMetricProperties(ex, loadMetricClass.getCanonicalName());
 
@@ -359,9 +359,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     }
 
                     metrics.add(metric);
-                } catch (InstantiationException e) {
-                    ROOT_LOGGER.errorAddingMetrics(e);
-                } catch (IllegalAccessException e) {
+                } catch (InstantiationException | IllegalAccessException e) {
                     ROOT_LOGGER.errorAddingMetrics(e);
                 }
             }
