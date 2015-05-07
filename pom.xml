@@ -84,7 +84,7 @@
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>18.0</version.com.google.guava>
         <version.com.h2database>1.3.173</version.com.h2database>
-        <version.com.sun.faces>2.2.10-jbossorg-2</version.com.sun.faces>
+        <version.com.sun.faces>2.2.11-jbossorg-1</version.com.sun.faces>
         <version.com.sun.istack>2.21</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.com.sun.xsom>20140925</version.com.sun.xsom>
@@ -176,7 +176,7 @@
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>1.0.4.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
-        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.10</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
+        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.11</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
