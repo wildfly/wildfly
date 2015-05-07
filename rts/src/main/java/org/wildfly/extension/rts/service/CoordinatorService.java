@@ -30,6 +30,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.extension.rts.jaxrs.CoordinatorApplication;
 import org.wildfly.extension.rts.logging.RTSLogger;
 
 /**
@@ -74,7 +75,7 @@ public final class CoordinatorService extends AbstractRTSService implements Serv
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", "org.wildfly.extension.rts.jaxrs.CoordinatorApplication");
+        initialParameters.put("javax.ws.rs.Application", CoordinatorApplication.class.getName());
 
         final DeploymentInfo coordinatorDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 
