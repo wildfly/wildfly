@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>16</version>
+      <version>17</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -64,7 +64,15 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.2.1</maven.min.version>
-        <version.checkstyle.plugin>2.12.1</version.checkstyle.plugin>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+
+        <!-- sticking with 3.1 as 3.2 has problems with partial recompile -->
+        <version.compiler.plugin>3.1</version.compiler.plugin>
+        <version.checkstyle.plugin>2.15</version.checkstyle.plugin>
+        <version.checkstyle>6.3</version.checkstyle>
+        <version.enforcer.plugin>1.4</version.enforcer.plugin>
+        <version.surefire.plugin>2.17</version.surefire.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -213,7 +221,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.build-tools>1.0.0.Alpha8</version.org.wildfly.build-tools>
-        <version.org.wildfly.checkstyle-config>1.0.1.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.checkstyle-config>1.0.3.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>1.0.0.CR1</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.Alpha5</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
@@ -388,7 +396,7 @@
                                   <value>${test.level}</value>
                               </property>
                           </systemProperties>
-                          <argLine>-Duser.region=US -Duser.language=en -XX:MaxPermSize=256m</argLine>
+                          <argLine>-Duser.region=US -Duser.language=en</argLine>
                     </configuration>
 
                 </plugin>
@@ -398,7 +406,7 @@
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${version.checkstyle.plugin}</version>
                     <configuration>
-                        <configLocation>jboss-as-checkstyle/checkstyle.xml</configLocation>
+                        <configLocation>wildfly-checkstyle/checkstyle.xml</configLocation>
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <useFile/>
