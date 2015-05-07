@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
+import org.jberet.repository.JobRepository;
 import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.JobXmlResolver;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -67,8 +68,22 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
+            // Check the deployment for a job repository
+            JobRepository jobRepository = deploymentUnit.getAttachment(BatchDeploymentDescriptorParser.ATTACHMENT_KEY);
+            if (jobRepository == null) {
+                // If the parent has a job repository, is it
+                final DeploymentUnit parent = deploymentUnit.getParent();
+                if (parent != null) {
+                    jobRepository = deploymentUnit.getAttachment(BatchDeploymentDescriptorParser.ATTACHMENT_KEY);
+                }
+                // No repository found, use the default subsystem configured repository
+                if (jobRepository == null) {
+                    jobRepository = JobRepositoryFactory.getInstance().getJobRepository(moduleDescription);
+                }
+            }
+
             // Create the batch environment
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, JobRepositoryFactory.getInstance().getJobRepository(moduleDescription));
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobRepository);
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
             // Register the required services
             serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
