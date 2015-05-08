@@ -50,7 +50,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.util.Base64;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -84,7 +83,6 @@ public class RunAsPrincipalTestCase  {
                 .addClass(Util.class)
                 .addClass(Entry.class)
                 .addClass(RunAsPrincipalTestCase.class)
-                .addClass(Base64.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
@@ -102,7 +100,6 @@ public class RunAsPrincipalTestCase  {
                 .addClass(Util.class)
                 .addClass(Entry.class)
                 .addClass(RunAsPrincipalTestCase.class)
-                .addClass(Base64.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");

@@ -62,7 +62,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -185,7 +184,6 @@ public class GetCallerPrincipalTestCase {
     public static Archive<?> deployment()  {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "callerprincipal-test.jar")
                 .addClass(GetCallerPrincipalTestCase.class)
-                .addClass(Base64.class)
                 .addClass(SLSBWithoutSecurityDomain.class)
                 .addClass(ISLSBWithoutSecurityDomain.class)
                 .addClass(PollingUtils.class)
