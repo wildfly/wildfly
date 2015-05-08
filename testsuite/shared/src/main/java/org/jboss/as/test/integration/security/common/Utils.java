@@ -40,12 +40,12 @@ import java.security.Permission;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.security.auth.Subject;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
@@ -90,7 +90,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.util.Base64;
 
 /**
  * Common utilities for JBoss AS security tests.
@@ -153,7 +152,7 @@ public class Utils extends CoreUtils {
 
         switch (coding) {
             case BASE_64:
-                encodedHash = Base64.encodeBytes(byteHash);
+                encodedHash = Base64.getEncoder().encodeToString(byteHash);
                 break;
             case HEX:
                 encodedHash = toHex(byteHash);
@@ -394,8 +393,8 @@ public class Utils extends CoreUtils {
     /**
      * Requests given URL and checks if the returned HTTP status code is the expected one. Returns HTTP response body
      *
-     * @param URL url to which the request should be made
-     * @param DefaultHttpClient httpClient to test multiple access
+     * @param url URL to which the request should be made
+     * @param httpClient DefaultHttpClient to test multiple access
      * @param expectedStatusCode expected status code returned from the requested server
      * @return HTTP response body
      * @throws IOException

@@ -46,7 +46,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.util.Base64;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,7 +89,6 @@ public class RunAsTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
                 .addPackage(HttpRequest.class.getPackage()).addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
-                .addClasses(RunAsTestCase.class, Base64.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsResource(RunAsTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(RunAsTestCase.class.getPackage(), "roles.properties", "roles.properties")
