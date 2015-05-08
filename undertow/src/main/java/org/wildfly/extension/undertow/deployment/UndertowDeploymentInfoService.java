@@ -136,6 +136,7 @@ import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.JbossAuthorizationManager;
+import org.wildfly.extension.undertow.security.LogoutNotificationReceiver;
 import org.wildfly.extension.undertow.security.RunAsLifecycleInterceptor;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
@@ -404,7 +405,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return;
         }
         AuthenticationManager manager = securityDomainContextValue.getValue().getAuthenticationManager();
-        deploymentInfo.addNotificationReceiver(new LogoutNotificationReceiver(manager));
+        deploymentInfo.addNotificationReceiver(new LogoutNotificationReceiver(manager, securityDomain));
         if(mergedMetaData.isFlushOnSessionInvalidation()) {
             LogoutSessionListener listener = new LogoutSessionListener(manager);
             deploymentInfo.addListener(Servlets.listener(LogoutSessionListener.class, new ImmediateInstanceFactory<EventListener>(listener)));
