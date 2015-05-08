@@ -99,11 +99,13 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
         if (sessionManager != null) {
             AuthenticatedSessionManager.AuthenticatedSession authSession = sessionManager.lookupSession(exchange);
-            cachedAccount = authSession.getAccount();
-            // if there is a cached account we set it in the security context so that the principal is available to
-            // SAM modules via request.getUserPrincipal().
-            if (cachedAccount !=  null) {
-                jaspicSecurityContext.setCachedAuthenticatedAccount(cachedAccount);
+            if(authSession != null) {
+                cachedAccount = authSession.getAccount();
+                // if there is a cached account we set it in the security context so that the principal is available to
+                // SAM modules via request.getUserPrincipal().
+                if (cachedAccount != null) {
+                    jaspicSecurityContext.setCachedAuthenticatedAccount(cachedAccount);
+                }
             }
         }
 
