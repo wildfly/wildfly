@@ -36,6 +36,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -102,6 +103,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    @Ignore(value = "WFLY-4515")
     public void testTransformer620() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
         this.testTransformation(InfinispanModel.VERSION_1_4_1, version, formatLegacySubsystemArtifact(version),
@@ -111,6 +113,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    @Ignore(value = "WFLY-4515")
     public void testTransformer630() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
         this.testTransformation(InfinispanModel.VERSION_1_5_0, version, formatLegacySubsystemArtifact(version),
@@ -192,6 +195,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    @Ignore(value = "WFLY-4515")
     public void testRejections620() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
         this.testRejections(InfinispanModel.VERSION_1_4_1, version, formatLegacySubsystemArtifact(version),
