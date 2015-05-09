@@ -86,12 +86,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    @Ignore(value = "WFLY-4515")
     public void testTransformerEAP620() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
         testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
+    @Ignore(value = "WFLY-4515")
     public void testTransformerEAP630() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
         testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
@@ -169,12 +171,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    @Ignore(value = "WFLY-4515")
     public void testRejectionsEAP620() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
         this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
+    @Ignore(value = "WFLY-4515")
     public void testRejectionsEAP630() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
         this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
