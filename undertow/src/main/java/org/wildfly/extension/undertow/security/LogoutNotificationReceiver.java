@@ -26,7 +26,6 @@ import io.undertow.security.api.NotificationReceiver;
 import io.undertow.security.api.SecurityNotification;
 import io.undertow.security.idm.Account;
 import org.jboss.security.AuthenticationManager;
-import org.jboss.security.SecurityContextAssociation;
 
 import javax.security.auth.Subject;
 import java.security.Principal;
@@ -67,7 +66,7 @@ public class LogoutNotificationReceiver implements NotificationReceiver {
             org.jboss.security.SecurityContext securityContext = SecurityActions.createSecurityContext(securityDomain);
             notification.getExchange().putAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT, securityContext);
 
-            SecurityContextAssociation.setSecurityContext(securityContext);
+            SecurityActions.setSecurityContextOnAssociation(securityContext);
         }
     }
 }
