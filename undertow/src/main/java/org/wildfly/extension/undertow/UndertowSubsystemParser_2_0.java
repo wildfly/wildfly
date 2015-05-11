@@ -187,7 +187,11 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         FileHandler.PATH,
                                                         FileHandler.CACHE_BUFFER_SIZE,
                                                         FileHandler.CACHE_BUFFERS,
-                                                        FileHandler.DIRECTORY_LISTING)
+                                                        FileHandler.DIRECTORY_LISTING,
+                                                        FileHandler.FOLLOW_SYMLINK,
+                                                        FileHandler.SAFE_SYMLINK_PATHS,
+                                                        FileHandler.CASE_SENSITIVE
+                                                )
                                 )
                                 .addChild(
                                         builder(ReverseProxyHandler.INSTANCE)
