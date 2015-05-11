@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
@@ -56,7 +57,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.wildfly.extension.io.BufferPoolService;
 import org.wildfly.extension.io.IOServices;
@@ -71,7 +71,6 @@ import org.xnio.Options;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-@Ignore("needs ElementParser impl in core")
 public class UndertowSubsystem11TestCase extends AbstractSubsystemBaseTest {
 
     public UndertowSubsystem11TestCase() {
@@ -82,6 +81,21 @@ public class UndertowSubsystem11TestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return readResource("undertow-1.1.xml");
     }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-undertow_1_1.xsd";
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("jboss.home.dir", System.getProperty("java.io.tmpdir"));
+        properties.put("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
+        properties.put("server.data.dir", System.getProperty("java.io.tmpdir"));
+        return properties;
+    }
+
 
     @Override
     protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {

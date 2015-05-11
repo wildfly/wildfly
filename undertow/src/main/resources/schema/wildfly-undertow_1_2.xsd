@@ -54,9 +54,9 @@
     </xs:complexType>
     <xs:complexType name="serverType">
         <xs:sequence>
+            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="https-listener" type="https-listener-type" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="host" type="hostType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
