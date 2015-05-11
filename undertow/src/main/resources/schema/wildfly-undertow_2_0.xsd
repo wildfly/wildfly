@@ -331,8 +331,15 @@
         <xs:attribute name="path" use="required" type="xs:string"/>
         <xs:attribute name="cache-buffer-size" use="optional" type="xs:int" default="1024"/>
         <xs:attribute name="cache-buffers" use="optional" type="xs:int" default="1024"/>
-        <xs:attribute name="directory-listing" use="optional" type="xs:boolean" default="true"/>
+        <xs:attribute name="directory-listing" use="optional" type="xs:boolean" default="false"/>
+        <xs:attribute name="follow-symlink" use="optional" type="xs:boolean" default="false"/>
+        <xs:attribute name="safe-symlink-paths" use="optional" type="stringList" />
+        <xs:attribute name="case-sensitive" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
+
+    <xs:simpleType name="stringList">
+      <xs:list itemType="xs:string"/>
+    </xs:simpleType>
 
     <xs:complexType name="reverse-proxy-handlerType">
         <xs:sequence>

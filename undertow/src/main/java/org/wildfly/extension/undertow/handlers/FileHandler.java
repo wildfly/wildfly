@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow.handlers;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
@@ -66,21 +68,45 @@ public class FileHandler extends Handler {
             .setDefaultValue(new ModelNode(false))
             .build();
 
+    public static final AttributeDefinition FOLLOW_SYMLINK = new SimpleAttributeDefinitionBuilder("follow-symlink", ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    public static final StringListAttributeDefinition SAFE_SYMLINK_PATHS = new StringListAttributeDefinition.Builder("safe-symlink-paths")
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
+    public static final AttributeDefinition CASE_SENSITIVE = new SimpleAttributeDefinitionBuilder("case-sensitive", ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(true))
+            .build();
+
     private FileHandler() {
         super(Constants.FILE);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(PATH, CACHE_BUFFER_SIZE, CACHE_BUFFERS, DIRECTORY_LISTING);
+        return Arrays.asList(PATH, CACHE_BUFFER_SIZE, CACHE_BUFFERS, DIRECTORY_LISTING, FOLLOW_SYMLINK, CASE_SENSITIVE, SAFE_SYMLINK_PATHS);
     }
 
     @Override
     public HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException {
-        String path = PATH.resolveModelAttribute(context, model).asString();
-        boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
-        UndertowLogger.ROOT_LOGGER.creatingFileHandler(path);
-        FileResourceManager resourceManager = new FileResourceManager(new File(path), 1024 * 1024);
+        final String path = PATH.resolveModelAttribute(context, model).asString();
+        final boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
+        final boolean followSymlink = FOLLOW_SYMLINK.resolveModelAttribute(context, model).asBoolean();
+        final boolean caseSensitive = CASE_SENSITIVE.resolveModelAttribute(context, model).asBoolean();
+        final int cacheBufferSize = CACHE_BUFFER_SIZE.resolveModelAttribute(context, model).asInt();
+        final int cacheBuffers = CACHE_BUFFERS.resolveModelAttribute(context, model).asInt();
+        final List<String> safePaths = SAFE_SYMLINK_PATHS.unwrap(context, model);
+        final String[] paths = safePaths.toArray(new String[safePaths.size()]);
+
+        UndertowLogger.ROOT_LOGGER.creatingFileHandler(path, directoryListing, followSymlink, caseSensitive, safePaths);
+        FileResourceManager resourceManager = new FileResourceManager(new File(path), cacheBufferSize * cacheBuffers, caseSensitive, followSymlink, paths);
         ResourceHandler handler = new ResourceHandler(resourceManager);
         handler.setDirectoryListingEnabled(directoryListing);
         return handler;
