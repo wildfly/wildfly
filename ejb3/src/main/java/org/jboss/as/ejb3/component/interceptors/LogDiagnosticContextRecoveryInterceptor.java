@@ -64,8 +64,9 @@ public final class LogDiagnosticContextRecoveryInterceptor implements Intercepto
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        if (MDC.getMap() != null) {
-            for (String str : MDC.getMap().keySet()) {
+        final Map<String, Object> mdc = MDC.getMap();
+        if (mdc != null) {
+            for (String str : mdc.keySet()) {
                 MDC.remove(str);
             }
         }
