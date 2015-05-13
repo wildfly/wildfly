@@ -24,11 +24,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:web:2.1"
-           xmlns="urn:jboss:domain:web:2.1"
+           targetNamespace="urn:jboss:domain:web:2.2"
+           xmlns="urn:jboss:domain:web:2.2"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="2.1">
+           version="2.2">
 
     <!-- The web subsystem root element -->
     <xs:element name="subsystem" type="web-containerType" />
@@ -48,6 +48,7 @@
             <xs:element maxOccurs="unbounded" ref="virtual-server" />
             <xs:element minOccurs="0" maxOccurs="unbounded" ref="valve" />
         </xs:sequence>
+        <xs:attribute name="default-session-timeout" default="30" type="xs:int" />
         <xs:attribute name="default-virtual-server" />
         <xs:attribute name="instance-id" />
         <xs:attribute name="native" default="true" type="xs:boolean" />
@@ -219,6 +220,15 @@
                 <xs:documentation>
                 <![CDATA[
                   Each request should cause a reauthentication.
+                  ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="http-only" default="true" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                <![CDATA[
+                  Use a httponly cookie.
                   ]]>
                 </xs:documentation>
             </xs:annotation>
@@ -408,8 +418,11 @@
     <xs:simpleType name="SSlProtocolType">
         <xs:restriction base="xs:token">
             <xs:enumeration value="SSLv2" />
+            <xs:enumeration value="SSLv2Hello" />
             <xs:enumeration value="SSLv3" />
             <xs:enumeration value="TLSv1" />
+            <xs:enumeration value="TLSv1.1" />
+            <xs:enumeration value="TLSv1.2" />
             <xs:enumeration value="SSLv2+SSLv3" />
             <xs:enumeration value="ALL" />
         </xs:restriction>
