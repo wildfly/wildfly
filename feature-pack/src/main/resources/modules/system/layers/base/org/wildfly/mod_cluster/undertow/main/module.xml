@@ -48,7 +48,7 @@
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.extension.mod_cluster"/>
         <module name="org.wildfly.extension.undertow"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="sun.jdk"/>
     </dependencies>
 </module>

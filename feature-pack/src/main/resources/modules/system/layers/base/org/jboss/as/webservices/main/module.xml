@@ -58,7 +58,7 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.security"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.modules"/>

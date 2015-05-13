@@ -38,7 +38,7 @@
         <module name="org.jboss.jts"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.logging"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="com.google.guava"/>
         <module name="com.h2database.h2" optional="true"/>
 

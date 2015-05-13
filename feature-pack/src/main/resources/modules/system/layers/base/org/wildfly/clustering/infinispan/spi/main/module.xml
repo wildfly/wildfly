@@ -40,7 +40,7 @@
         <!--module name="org.wildfly.clustering.jgroups.api"/-->
         <module name="org.wildfly.clustering.marshalling"/>
         <module name="org.wildfly.clustering.service"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.msc"/>
     </dependencies>
 </module>
