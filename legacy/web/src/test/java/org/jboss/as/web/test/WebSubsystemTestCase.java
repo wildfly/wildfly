@@ -109,7 +109,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-2.1.0.xml");
+        return readResource("subsystem-2.2.0.xml");
     }
 
     @Override
