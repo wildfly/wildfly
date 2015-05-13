@@ -88,7 +88,7 @@ public class WebExtension extends AbstractLegacyExtension {
     protected static final PathElement REWRITECOND_PATH = PathElement.pathElement(Constants.CONDITION);
     protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 1, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 2, 0);
     static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1,5,0);
     private static final String extensionName = "org.jboss.as.web";
 
@@ -161,7 +161,8 @@ public class WebExtension extends AbstractLegacyExtension {
             registerTransformers_1_2_0(subsystem);
             registerTransformers_1_3_0(subsystem);
             registerTransformers_1_4_0(subsystem);
-            registerTransformers_2_0_0(subsystem);
+            registerTransformers_2_x_0(subsystem, 0);
+            registerTransformers_2_x_0(subsystem, 1);
         }
         return Collections.singleton(registration);
     }
@@ -360,7 +361,7 @@ public class WebExtension extends AbstractLegacyExtension {
         TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 4, 0));
     }
 
-    private void registerTransformers_2_0_0(SubsystemRegistration registration) {
+    private void registerTransformers_2_x_0(SubsystemRegistration registration, int minor) {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         subsystemRoot.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
@@ -374,17 +375,19 @@ public class WebExtension extends AbstractLegacyExtension {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
                 .end();
 
-        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
-        connectorBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
-                .end();
+        if (minor == 0) {
+            final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
+            connectorBuilder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                    .end();
 
-        connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebSSLDefinition.CIPHER_SUITE)
-                .end();
+            connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebSSLDefinition.CIPHER_SUITE)
+                    .end();
+        }
 
-        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(2, 0, 0));
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(2, minor, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {
