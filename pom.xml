@@ -6202,6 +6202,12 @@
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
                 <version>${version.org.wildfly.arquillian}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly.security</groupId>
+                        <artifactId>wildfly-security-manager</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
