@@ -38,7 +38,8 @@ public abstract class ExtendedClusterAbstractTestCase extends ClusterAbstractTes
     }
 
     @Override
-    public void afterTestMethod() {
+    public void afterTestMethod()
+    {
         this.start(EXTENDED_CONTAINERS);
         this.undeploy(EXTENDED_DEPLOYMENTS);
     }

@@ -117,6 +117,7 @@
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
+
         <attribute name="offset" default="0"/>
         <attribute name="nativePort" default="9999"/>
         <attribute name="httpPort" default="9990"/>
