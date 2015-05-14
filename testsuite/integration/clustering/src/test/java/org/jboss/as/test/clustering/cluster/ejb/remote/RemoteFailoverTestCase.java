@@ -275,7 +275,6 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         }
     }
 
-    @Ignore("re-enable when WFLY-3532 resoolved")
     @Test
     public void testConcurrentFailover() throws Exception {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
