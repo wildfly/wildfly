@@ -218,20 +218,24 @@
             <xs:element name="indexing" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>
-                        defined indexing options for cache
+                        Defined indexing options for cache
                     </xs:documentation>
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
                             <xs:annotation>
-                                <xs:documentation></xs:documentation>
+                                <xs:documentation>
+                                    Property to pass on to the indexing system.
+                                </xs:documentation>
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
                     <xs:attribute name="index" type="tns:indexing" default="NONE">
                         <xs:annotation>
-                            <xs:documentation></xs:documentation>
+                            <xs:documentation>
+                                The indexing mode of the cache. Defaults to NONE.
+                            </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                 </xs:complexType>
@@ -244,7 +248,9 @@
         </xs:attribute>
         <xs:attribute name="indexing" type="tns:indexing" default="NONE">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>
+                    The indexing mode of the cache. Defaults to NONE.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="jndi-name" type="xs:string">
@@ -271,7 +277,7 @@
 
     <xs:complexType name="local-cache">
         <xs:complexContent>
-            <xs:extension base="tns:cache"></xs:extension>
+            <xs:extension base="tns:cache"/>
         </xs:complexContent>
     </xs:complexType>
 
@@ -871,27 +877,37 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="NONE">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        No locking isolation will be performed. This is only valid in local mode. In clustered mode, READ_COMMITTED will be used instead.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="READ_UNCOMMITTED">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Unsupported. Actually configures READ_COMMITTED.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="READ_COMMITTED">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Read committed is an isolation level that guarantees that any data read is committed at the moment it is read. However, depending on the outcome of other transactions, successive reads may return different results.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="REPEATABLE_READ">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Repeatable read is an isolation level that guarantees that any data read is committed at the moment it is read and that, within a transaction, successive reads will always return the same data.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="SERIALIZABLE">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Unsupported. Actually configures REPEATABLE_READ.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
@@ -927,41 +943,27 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="eager-locking">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="NONE">
-                <xs:annotation>
-                    <xs:documentation></xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="SINGLE">
-                <xs:annotation>
-                    <xs:documentation></xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="ALL">
-                <xs:annotation>
-                    <xs:documentation></xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
-
     <xs:simpleType name="indexing">
         <xs:restriction base="xs:token">
             <xs:enumeration value="NONE">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Do not index data. This is the default.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="LOCAL">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Only index changes made locally, ignoring remote changes. This is useful if indexes are shared across a cluster to prevent redundant indexing of updates.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="ALL">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Index all data.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
@@ -971,27 +973,37 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="NONE">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Never evict entries. This is the default.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="UNORDERED">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Actually activates LRU.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="FIFO">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Deprecated. Actually activates LRU.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="LRU">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Least-Recently Used policy.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="LIRS">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Low Inter-reference Recency Set. An improved version of LRU which uses cache-locality access information to better decide which data to evict.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
@@ -1001,12 +1013,16 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="ASYNC">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Enables asynchronous mode.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="SYNC">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Enables synchronous mode.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
@@ -1016,12 +1032,16 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="OPTIMISTIC">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Enables Optimistic locking.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="PESSIMISTIC">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Enables Pessimistic locking.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
@@ -1038,17 +1058,23 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="IGNORE">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Ignore backup failures.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="WARN">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Warn of backup failures.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="FAIL">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>
+                        Fail local operations when a backup failure occurs.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
