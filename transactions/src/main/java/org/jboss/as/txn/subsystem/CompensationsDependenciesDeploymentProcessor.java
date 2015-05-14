@@ -78,7 +78,7 @@ public class CompensationsDependenciesDeploymentProcessor implements DeploymentU
 
     private boolean isCompensationAnnotationPresent(final CompositeIndex compositeIndex) {
         for (Class<?> annotation : COMPENSATABLE_ANNOTATIONS) {
-            if (compositeIndex.getAnnotations(DotName.createSimple(annotation.getName())).size() > 1) {
+            if (compositeIndex.getAnnotations(DotName.createSimple(annotation.getName())).size() > 0) {
                 return true;
             }
         }
@@ -89,7 +89,7 @@ public class CompensationsDependenciesDeploymentProcessor implements DeploymentU
     private void addCompensationsModuleDependency(final DeploymentUnit unit) {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, COMPENSATIONS_MODULE, false, false, false, false));
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, COMPENSATIONS_MODULE, false, false, true, false));
     }
 
 }
