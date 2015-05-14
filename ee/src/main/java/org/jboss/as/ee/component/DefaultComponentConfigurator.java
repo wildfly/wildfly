@@ -97,8 +97,8 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
 
 
                     if (description.isPassivationApplicable()) {
-                        handleClassMethod(clazz, interceptorConfig.getPrePassivate(), componentUserPrePassivate, false, false, configuration);
-                        handleClassMethod(clazz, interceptorConfig.getPostActivate(), componentUserPostActivate, false, false, configuration);
+                        handleClassMethod(clazz, interceptorConfig.getPrePassivate(), componentUserPrePassivate, false, true, configuration);
+                        handleClassMethod(clazz, interceptorConfig.getPostActivate(), componentUserPostActivate, false, true, configuration);
                     }
                 }
             }
