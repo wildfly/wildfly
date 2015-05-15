@@ -22,12 +22,23 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import java.nio.ByteBuffer;
+import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR;
+import static org.infinispan.factories.KnownComponentNames.GLOBAL_MARSHALLER;
 
+import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutorService;
+
+import org.infinispan.commons.marshall.StreamingMarshaller;
+import org.infinispan.factories.GlobalComponentRegistry;
+import org.infinispan.factories.annotations.ComponentName;
+import org.infinispan.factories.annotations.Inject;
+import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
+import org.infinispan.remoting.inboundhandler.InboundInvocationHandler;
 import org.infinispan.remoting.responses.CacheNotFoundResponse;
 import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.remoting.transport.jgroups.MarshallerAdapter;
+import org.infinispan.util.TimeService;
 import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
@@ -38,6 +49,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 public class ChannelTransport extends JGroupsTransport {
 
     final ChannelFactory factory;
+    private TimeService timeService;
 
     public ChannelTransport(Channel channel, ChannelFactory factory) {
         super(channel);
@@ -45,8 +57,18 @@ public class ChannelTransport extends JGroupsTransport {
     }
 
     @Override
+    @Inject
+    public void initialize(@ComponentName(GLOBAL_MARSHALLER) StreamingMarshaller marshaller,
+                           @ComponentName(ASYNC_TRANSPORT_EXECUTOR) ExecutorService asyncExecutor,
+                           CacheManagerNotifier notifier, GlobalComponentRegistry gcr,
+                           TimeService timeService, InboundInvocationHandler globalHandler) {
+        super.initialize(marshaller, asyncExecutor, notifier, gcr, timeService, globalHandler);
+        this.timeService = timeService;
+    }
+
+    @Override
     protected void initRPCDispatcher() {
-        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.asyncExecutor, this.gcr, this.globalHandler);
+        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.asyncExecutor, this.timeService, this.globalHandler);
         MarshallerAdapter adapter = new MarshallerAdapter(this.marshaller) {
             @Override
             public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {

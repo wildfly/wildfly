@@ -59,11 +59,11 @@ public class EvictionResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode().set(EvictionStrategy.NONE.name()))
             .build();
 
-    static final SimpleAttributeDefinition MAX_ENTRIES = new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_ENTRIES, ModelType.INT, true)
+    static final SimpleAttributeDefinition MAX_ENTRIES = new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_ENTRIES, ModelType.LONG, true)
             .setXmlName(Attribute.MAX_ENTRIES.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { STRATEGY, MAX_ENTRIES };
