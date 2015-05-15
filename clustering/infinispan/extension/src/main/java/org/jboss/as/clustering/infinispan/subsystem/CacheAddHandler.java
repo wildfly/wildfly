@@ -260,7 +260,7 @@ public class CacheAddHandler extends AbstractAddStepHandler {
                 builder.eviction().strategy(strategy);
 
                 if (strategy.isEnabled()) {
-                    final int maxEntries = EvictionResourceDefinition.MAX_ENTRIES.resolveModelAttribute(context, eviction).asInt();
+                    final long maxEntries = EvictionResourceDefinition.MAX_ENTRIES.resolveModelAttribute(context, eviction).asLong();
                     builder.eviction().maxEntries(maxEntries);
                 }
             }
