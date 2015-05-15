@@ -29,6 +29,7 @@
 
     <resources>
         <artifact name="${org.infinispan:infinispan-lucene-directory}"/>
+        <artifact name="${org.infinispan:infinispan-directory-provider}"/>
     </resources>
 
     <dependencies>
