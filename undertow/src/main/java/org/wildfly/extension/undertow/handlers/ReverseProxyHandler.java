@@ -117,7 +117,6 @@ public class ReverseProxyHandler extends Handler {
         int problemServerRetry = PROBLEM_SERVER_RETRY.resolveModelAttribute(context, model).asInt();
         int maxTime = MAX_REQUEST_TIME.resolveModelAttribute(context, model).asInt();
         int requestQueueSize = REQUEST_QUEUE_SIZE.resolveModelAttribute(context, model).asInt();
-        //TODO: these need a new version of Undertow to actually be wired up
         int cachedConnectionsPerThread = CACHED_CONNECTIONS_PER_THREAD.resolveModelAttribute(context, model).asInt();
         int connectionIdleTimeout = CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(context, model).asInt();
 
@@ -131,6 +130,8 @@ public class ReverseProxyHandler extends Handler {
         })
                 .setConnectionsPerThread(connectionsPerThread)
                 .setMaxQueueSize(requestQueueSize)
+                .setSoftMaxConnectionsPerThread(cachedConnectionsPerThread)
+                .setTtl(connectionIdleTimeout)
                 .setProblemServerRetry(problemServerRetry);
         String[] sessionIds = sessionCookieNames.split(",");
         for (String id : sessionIds) {
