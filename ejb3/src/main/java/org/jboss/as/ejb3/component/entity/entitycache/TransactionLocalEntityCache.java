@@ -200,8 +200,16 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
 
     private EntityBeanComponentInstance createInstance(Object pk) {
         final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
-        instance.activate(pk);
-        return instance;
+        boolean exceptionOnActivate = true;
+        try {
+            instance.activate(pk);
+            exceptionOnActivate = false;
+            return instance;
+        } finally {
+            if (exceptionOnActivate) {
+                component.discardEntityBeanInstance(instance);
+            }
+        }
     }
 
     private boolean isTransactionActive() {

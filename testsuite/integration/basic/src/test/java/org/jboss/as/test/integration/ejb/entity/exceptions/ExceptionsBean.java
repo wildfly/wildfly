@@ -26,9 +26,11 @@ import java.rmi.RemoteException;
 
 public class ExceptionsBean implements EntityBean {
 
+    private EntityContext ctx;
+
     @Override
     public void setEntityContext(EntityContext ctx) throws EJBException, RemoteException {
-
+        this.ctx = ctx;
     }
 
     @Override
@@ -48,7 +50,9 @@ public class ExceptionsBean implements EntityBean {
 
     @Override
     public void ejbLoad() throws EJBException, RemoteException {
-
+        if (((String)ctx.getPrimaryKey()).endsWith("exceptionOnLoad")) {
+            throw new EJBException("Expected exception on load");
+        }
     }
 
     @Override
