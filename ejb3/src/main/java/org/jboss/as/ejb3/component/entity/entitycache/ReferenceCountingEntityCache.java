@@ -164,8 +164,16 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
 
     private EntityBeanComponentInstance createInstance(final Object pk) {
         final EntityBeanComponentInstance instance = component.acquireUnAssociatedInstance();
-        instance.activate(pk);
-        return instance;
+        boolean exceptionOnActivate = true;
+        try {
+            instance.activate(pk);
+            exceptionOnActivate = false;
+            return instance;
+        } finally {
+            if (exceptionOnActivate) {
+                component.discardEntityBeanInstance(instance);
+            }
+        }
     }
 
     private class CacheEntry {
