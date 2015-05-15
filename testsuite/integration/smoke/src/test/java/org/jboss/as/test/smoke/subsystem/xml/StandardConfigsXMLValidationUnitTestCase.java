@@ -40,7 +40,6 @@ import javax.xml.validation.Validator;
 
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -50,7 +49,6 @@ import org.xml.sax.SAXException;
  * @author Brian Stansberry
  * @version $Revision: 1.1 $
  */
-@Ignore("WFCORE-645")
 public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidationUnitTest {
     private static Source[] SCHEMAS;
 
