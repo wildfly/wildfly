@@ -141,10 +141,9 @@ public class StackAddHandler extends AbstractAddStepHandler {
     }
 
     static <C extends ProtocolConfiguration, B extends AbstractProtocolConfigurationBuilder<C>> B addProtocolProperties(OperationContext context, ModelNode protocol, B builder) throws OperationFailedException {
-
-        if (protocol.hasDefined(PropertyResourceDefinition.WILDCARD_PATH.getKey())) {
-            for (Property property : protocol.get(PropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                builder.addProperty(property.getName(), PropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString());
+        if (protocol.hasDefined(ProtocolResourceDefinition.PROPERTIES.getName())) {
+            for (Property property : ProtocolResourceDefinition.PROPERTIES.resolveModelAttribute(context, protocol).asPropertyList()) {
+                builder.addProperty(property.getName(), property.getValue().asString());
             }
         }
         return builder;
