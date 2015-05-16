@@ -57,7 +57,7 @@
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.naming"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>

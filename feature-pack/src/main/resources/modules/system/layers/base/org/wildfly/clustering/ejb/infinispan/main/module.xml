@@ -57,6 +57,6 @@
         <module name="org.wildfly.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
     </dependencies>
 </module>

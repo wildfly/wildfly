@@ -45,7 +45,7 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming" />
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.as.server" />
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>

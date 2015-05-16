@@ -52,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-security-manager</artifactId>
+            <artifactId>wildfly-elytron</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>

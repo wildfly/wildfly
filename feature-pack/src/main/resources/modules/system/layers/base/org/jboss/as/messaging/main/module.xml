@@ -50,7 +50,7 @@
         <module name="org.jboss.as.network"/>
         <!-- required only to access the HttpListenerRegistryService used by http-acceptor -->
         <module name="org.jboss.as.remoting" optional="true"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.weld"/>
         <module name="org.jboss.jandex"/>
