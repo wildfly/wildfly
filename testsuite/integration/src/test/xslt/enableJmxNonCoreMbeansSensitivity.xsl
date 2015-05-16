@@ -22,7 +22,7 @@
   -->
 
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns="urn:jboss:domain:3.0"
+                xmlns="urn:jboss:domain:4.0"
         >
     <xsl:output indent="yes"/>
 
