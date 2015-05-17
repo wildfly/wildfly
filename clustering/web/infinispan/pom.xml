@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-clustering-web</artifactId>
-        <version>10.0.0.Alpha1-SNAPSHOT</version>
+        <version>10.0.0.Alpha1</version>
     </parent>
 
     <artifactId>wildfly-clustering-web-infinispan</artifactId>

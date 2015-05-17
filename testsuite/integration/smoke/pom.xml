@@ -4,7 +4,7 @@
   Set these VM properties in your IDE debugger 
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:wildfly-build}/target/wildfly-10.0.0.Alpha1-SNAPSHOT 
+  -Djboss.home=${workspace_loc:wildfly-build}/target/wildfly-10.0.0.Alpha1 
   -DallowConnectingToRunningServer=true
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>10.0.0.Alpha1-SNAPSHOT</version>
+        <version>10.0.0.Alpha1</version>
     </parent>
 
     <!-- ********************************************************************************** -->

@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>jdr</artifactId>
-        <version>10.0.0.Alpha1-SNAPSHOT</version>
+        <version>10.0.0.Alpha1</version>
     </parent>
 
     <artifactId>wildfly-jdr</artifactId>
