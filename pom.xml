@@ -223,7 +223,7 @@
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.build-tools>1.0.0.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.3.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>2.0.0.Alpha1</version.org.wildfly.core>
+        <version.org.wildfly.core>2.0.0.Alpha2</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.CR1</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11</version.sun.jaxb>
