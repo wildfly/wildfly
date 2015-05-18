@@ -1,0 +1,6 @@
+/target/
+src/test/java/rhsl.config
+.project
+.classpath
+.DS_Store
+.settings/

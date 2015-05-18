@@ -1,0 +1,21 @@
+<module xmlns="urn:jboss:module:1.0" name="com.redhat.gss.redhat-support-lib">
+    <resources>
+        <resource-root path="jboss-redhat-support-lib.jar"/>
+    </resources>
+    
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.ws.rs.api"/>
+        <module name="org.apache.commons.net"/>
+        <module name="org.apache.httpcomponents"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.resteasy.resteasy-multipart-provider"/>
+        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+        <module name="org.jboss.vfs"/>
+    </dependencies>
+</module>

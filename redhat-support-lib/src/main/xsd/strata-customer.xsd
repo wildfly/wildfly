@@ -1,0 +1,1122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- This document is used by JAXB to generate Java classes at project build 
+	time. Most entities can be the top-level payload of an REST API response 
+	or embedded in another entity. -->
+<xs:schema targetNamespace="http://www.redhat.com/gss/strata"
+	elementFormDefault="qualified" version="1.14.0-SNAPSHOT-SNAPSHOT"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:tns="http://www.redhat.com/gss/strata"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
+
+	<!-- ================================================================================================= -->
+
+	<xs:complexType name="accountType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     An account that may organizes users. It is represented in a simplified manner on the Strata API.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                          
+			<xs:documentation>An account that may organizes users. It is represented in a simplified manner on the Strata API.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="hasGroupACLs" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="isSecure" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1"/> 
+				</xs:sequence>
+
+				<xs:attribute name="number" type="xs:string"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="addressType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     Complex type for address
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                          
+			<xs:documentation>Complex type for address</xs:documentation>
+		</xs:annotation>            
+		<xs:sequence>
+			<xs:element name="address1" type="xs:string"/>
+			<xs:element name="address2" type="xs:string"/>
+			<xs:element name="address3" type="xs:string"/>
+			<xs:element name="address4" type="xs:string"/>
+			<xs:element name="county" type="xs:string"/>
+			<xs:element name="countryCode" type="xs:string"/>
+			<xs:element name="poBox" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="postalCode" type="xs:string"/>
+			<xs:element name="state" type="xs:string"/>
+			<xs:element name="city" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="attachmentType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     A file attachment and related meta data.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                       
+			<xs:documentation>A file attachment and related meta data.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="caseId" type="xs:string"/>
+					<xs:element name="uuid" type="xs:string"/>
+					<xs:element name="etag" type="xs:string"/>
+					<xs:element name="uri" type="xs:anyURI"/>
+					<xs:element name="fileDate" type="xs:dateTime"/>
+					<xs:element name="fileName" type="xs:string"/>
+					<xs:element name="description" type="xs:string"/>
+					<xs:element name="mimeType" type="xs:string"/>
+					<xs:element name="length" type="xs:long"/>
+					<xs:element name="active" type="xs:boolean"/>
+					<xs:element name="deprecated" type="xs:boolean"/>
+					<xs:element name="private" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+				</xs:sequence>
+
+				<xs:attribute name="caseNumber" type="xs:string" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="attachmentsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     A list of attachments.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A list of attachments.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:attachment" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="caseFilterType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     Complex Type for filtering cases.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Complex Type for filtering cases.</xs:documentation>
+		</xs:annotation>            
+		<xs:sequence>
+			<xs:element name="endDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="includeClosed" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="tns:groupNumbers"/>
+			<xs:element name="includePrivate" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="keyword" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="count" type="xs:int" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="start" type="xs:int" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="onlyUngrouped" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="ownerSSOName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="product" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="severity" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="sortField" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="sortOrder" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="startDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="status" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="type" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="createdBySSOName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="resourceType" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="uri" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="viewURI" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="associateSSOName" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>
+						We need to provide associateSSOName to get the cases for a particular associate,If it's not provided then it will set to the calling contact. 
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>	
+			<xs:element name="contributor" type="xs:boolean" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>
+							The contributor field will be used to get the cases where the associate is the contributor.
+						</xs:documentation>
+					</xs:annotation>
+			</xs:element>
+			<xs:element name="ftsRole" type="xs:boolean" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>
+							The ftsRole field will be used to get the cases where the associate is the  fts follower.
+						</xs:documentation>
+					</xs:annotation>
+			</xs:element>
+			<xs:element name="translator" type="xs:boolean" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>
+							The translator field will be used to get the cases where the associate is the translator.
+						</xs:documentation>
+					</xs:annotation>
+			</xs:element>
+			<xs:element name="owner" type="xs:boolean" minOccurs="0" maxOccurs="1">
+				 <xs:annotation>
+						<xs:documentation>
+							The owner field will be used to get the cases where the associate is the owner.
+						</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="view" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+						<xs:documentation>
+							The value for the field should be pass as "internal" to get the response from InternalAPI.
+						</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="bugzillaType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     A bugzilla associated with support case
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A bugzilla associated with support case</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="bugzillaNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="resourceViewURI" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="summary" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="bugzillasType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     A list of bugzillas linked with the case
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>A list of bugzillas linked with the case</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:bugzilla" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="caseType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     A support case.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                       
+			<xs:documentation>A support case.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Case identifier assigned by backing system.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI for this case resource.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="summary" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Title or short summary. This field is required by the model but the schema allows it to be
+								omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Description of the problem or question. This field is required by the model
+								but the schema allows it to be omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="status" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Case status. Valid values are available from the values service.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="product" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Product this case relates to. Valid products are available from the products resource. This
+								field is required by the model but the schema allows it to be omitted so that
+								field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="component" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Component this case relates to (optional).  Valid components for a given product are available
+								from the values service.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="version" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Version of the product this case relates to.  Valid versions for a given product are available
+								from the products resource.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="type" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation> Type of case, i.e. question, problem, etc.  Valid types are available from the values service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Account number this case belongs to. This field is required by the model but the schema allows
+								it to be omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Portal URI for this solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="reference" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="notes" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="escalated" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="contactName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="contactSsoUsername" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="origin" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="owner" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="internalPriority" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="internalStatus" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedPhone" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedEmail" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="severity" type="xs:string" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="tags" type="tns:tagsType">
+						<xs:annotation>
+							<xs:documentation>TAGs for this case.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="folderNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:comments" minOccurs="0"/>
+					<xs:element ref="tns:notified_users" minOccurs="0"/>
+					<xs:element ref="tns:entitlement" minOccurs="1" maxOccurs="1"/>
+					<xs:element ref="tns:recommendations" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="fts" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:bugzillas" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="explanation" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Lucene search result explanation of why and how well this document
+								matches the search query.  This field is only set when the case is part of search results
+								(or recommendations).  This field only is present when the 'explain=true' search query
+								parameter is used.  This field is only for debugging purposes.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+
+				<xs:attribute name="caseNumber" type="xs:string" use="optional"/>
+				<xs:attribute name="closed" type="xs:boolean" use="optional"/>
+				<xs:attribute name="alternateId" type="xs:string" use="optional"/>
+				<xs:attribute name="contactInfo24x7" type="xs:string" use="optional"/>					
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="casesType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of support cases. This type serves as both a top-level construct in the case that a query
+                                    returns a list of support cases as well as an embedded construct as part of a larger
+                                    item. This element is not required to contain any child case elements.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>
+				A list of support cases. This type serves as both a top-level construct in the case that a query
+				returns a list of support cases as well as an embedded construct as part of a larger
+				item. This element is not required to contain any child case elements.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:case" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="previous" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="next" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="totalCount" type="xs:int" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="confidentialType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Customer Data Detection Output, possible customer, confidential data
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Customer Data Detection Output, possible customer, confidential data</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="suspectTexts" type="tns:suspectTextsType"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="domainType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Complex Type for Domain
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Complex Type for Domain</xs:documentation>
+		</xs:annotation>            
+		<xs:sequence>
+			<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="aliases" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="tns:tags" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="domainsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of Domains.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A list of Domains.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:domain" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="groupNumbersType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Complex Type for group number.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Complex Type for group number.</xs:documentation>
+		</xs:annotation>            
+		<xs:sequence>
+			<xs:element name="groupNumber" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="groupType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A group that may contain zero or more cases.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A group that may contain zero or more cases.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="number" type="xs:string"/>
+					<xs:element name="contactSsoName" type="xs:string"/>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="uri" type="xs:anyURI"/>
+					<xs:element name="isPrivate" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="isDefault" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="groupsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of groups.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>A list of groups.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:group" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="permissionsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Complex Type for permissions.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Complex Type for permissions.</xs:documentation>
+		</xs:annotation>            
+		<xs:sequence>
+			<xs:element name="allowEmailContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="allowFaxContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="allowMailContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="allowPhoneContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="allowThirdPartyContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="productType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A product.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A product.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="code" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A short, unique, human-readable code identifying this product.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The formal product brand name.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="tns:suggested_artifacts" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A list of Artifacts.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="productsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of products.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>A list of products.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="tns:product" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="roleType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Complex Type for Role.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>Complex Type for Role.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string"/>
+			<xs:element name="roleLabel" type="xs:string"/>
+			<xs:element name="isRoleAccess" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="rolesType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of roles.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A list of roles.</xs:documentation>
+		</xs:annotation>            
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:role" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="systemProfileType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    systemProfile and related meta data.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>systemProfile and related meta data.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="caseNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="attachmentHash" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="deprecated" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="maturityLevel" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="hash" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:SystemProfileCategory" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="systemProfilesType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of systemProfiles.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A list of systemProfiles.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:systemProfile" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="userFilterType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Filter for searching users
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Filter for searching users</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="userName" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>sso user name that has to be searched</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="companyName" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>company name on which search has to be done</xs:documentation>
+				</xs:annotation>
+			</xs:element>   
+
+			<xs:element name="email" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>email on which search has to be done</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="ssoUserNameSearchType" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>search type for user name based search. Valid values are: exactMatch, startsWith,endsWith and contains</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="companyNameSearchType" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>search type for company name based search. Valid values are: exactMatch, startsWith,endsWith and contains</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="emailSearchType" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>search type for email based search. Valid values are: exactMatch, startsWith,endsWith and contains</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="accountNo" type="xs:long" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>account no. on which search has to be done</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="customerId" type="xs:long" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>customer id on which search has to be done</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="sortField" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>field on which sorting has to be done. Valid values are: userName, semail,companyName, accountNo and customerId</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="sortOrder" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>order of sort. Valid values are asc and desc</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="count" type="xs:int" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>the no. of records to be retrieved per request</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="start" type="xs:int" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>index from which records have to be retrieved  per request</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>    
+
+	<xs:complexType name="userGroupType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A user's group.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A user's group.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="role" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="userGroupsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A user's groups.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A user's groups.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="group" type="tns:userGroupType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="userType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    The user entity reflects a Red Hat Login user.  
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>The user entity reflects a Red Hat Login user.  </xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<!-- TODO Where does ID come from? -->
+					<!-- TODO Perhaps internal only? -->
+					<xs:element name="login" type="xs:string"/>
+					<xs:element name="userType" type="xs:string"/>
+					<xs:element name="oracleContactId" type="xs:string"/>
+					<xs:element name="isActive" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="company" type="xs:string"/>
+					<xs:element name="department" type="xs:string"/>
+					<xs:element name="phoneNumber" type="xs:string"/>
+					<xs:element name="faxNumber" type="xs:string"/>
+					<xs:element name="id" type="xs:string"/>
+					<xs:element name="firstName" type="xs:string"/>
+					<xs:element name="lastName" type="xs:string"/>
+					<xs:element name="orgId" type="xs:string"/>
+					<xs:element name="system" type="xs:string"/>
+					<xs:element name="password" type="xs:string"/>
+					<xs:element name="loginUppercase" type="xs:string"/>			
+					<xs:element name="email" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="emailConfirmed" type="xs:boolean" minOccurs="0" maxOccurs="1"/>                                        
+                                                                                <xs:element name="lastLoggedInDate" type= "xs:dateTime" minOccurs="0" maxOccurs="1">                                                                                    
+                                                                                    <xs:annotation>
+							<xs:documentation>This field is used to provide the date and time of user's last log-in.</xs:documentation>
+                                                                                    </xs:annotation>
+                                                                                </xs:element>
+					<xs:element name="accountId" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<!-- TODO Consider as enumerated type -->
+					<xs:element name="preferredLanguage" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="title" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suffix" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="greeting" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<!-- TODO Consider as enumerated type -->
+					<xs:element name="timezone" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="locale" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="orgAdmin" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="tamContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="access" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="write" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The field is use to provide read/write access to a particular case group.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="hasChat" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="sessionId" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:permissions" minOccurs="1" maxOccurs="1"/>
+					<xs:element ref="tns:roles" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="isInternal" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:address" minOccurs="0" maxOccurs="1"/>
+					<!-- TODO Add roles element -->
+					<!-- TODO Consider adding link/relation element to use for account -->
+					<xs:element name="groups" type="tns:userGroupsType" minOccurs="0"/>
+					<xs:element name="canAddAttachments" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+				<xs:attribute name="ssoUsername" type="xs:string" use="optional"/>
+				<xs:attribute name="uri" type="xs:anyURI"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="usersType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of users.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>A list of users.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:user" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="previous" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="next" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="valueType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Complex type for name value pair.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Complex type for name value pair.</xs:documentation>
+		</xs:annotation>            
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+
+		<xs:attribute name="type" type="xs:string"/>
+	</xs:complexType>
+
+	<xs:complexType name="valuesType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of name/value pairs. Both names and values are String typed. List can contain zero or more
+				elements. Values are nullable.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>
+				A list of name/value pairs. Both names and values are String typed. List can contain zero or more
+				elements. Values are nullable.
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="value" type="tns:valueType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="versionsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of product versions.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A list of product versions.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="version" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- ================================================================================================= -->
+
+	<xs:element name="account" type="tns:accountType">
+		<xs:annotation>
+			<xs:documentation>An account that may organizes users. It is represented in a simplified manner on the Strata API.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="address" type="tns:addressType"/>
+
+	<xs:element name="attachment" type="tns:attachmentType">
+		<xs:annotation>
+			<xs:documentation>A file attachment and related meta data.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="attachments" type="tns:attachmentsType">
+		<xs:annotation>
+			<xs:documentation>A list of attachments.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="bugzilla" type="tns:bugzillaType">
+		<xs:annotation>
+			<xs:documentation>A bugzilla associated with support case</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="bugzillas" type="tns:bugzillasType">
+		<xs:annotation>
+			<xs:documentation>A list of bugzillas linked with the case</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="case" type="tns:caseType">
+		<xs:annotation>
+			<xs:documentation>A support case.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="cases" type="tns:casesType">
+		<xs:annotation>
+			<xs:documentation>
+				A list of support cases. This type serves as both a top-level construct in the case that a query
+				returns a list of support cases as well as an embedded construct as part of a larger
+				item. This element is not required to contain any child case elements.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="caseFilter" type="tns:caseFilterType"/>
+
+	<xs:element name="confidential" type="tns:confidentialType"/>
+
+	<xs:element name="domain" type="tns:domainType"/>
+
+	<xs:element name="domains" type="tns:domainsType">
+		<xs:annotation>
+			<xs:documentation>A list of Domains.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="group" type="tns:groupType">
+		<xs:annotation>
+			<xs:documentation>A group that may contain zero or more cases.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="groups" type="tns:groupsType">
+		<xs:annotation>
+			<xs:documentation>A list of groups.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="groupNumbers" type="tns:groupNumbersType"/>
+
+	<xs:element name="permissions" type="tns:permissionsType"/>
+
+	<xs:element name="product" type="tns:productType">
+		<xs:annotation>
+			<xs:documentation>A product.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="products" type="tns:productsType">
+		<xs:annotation>
+			<xs:documentation>A list of products.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="role" type="tns:roleType"/>
+
+	<xs:element name="roles" type="tns:rolesType"/>
+
+	<xs:element name="systemProfile" type="tns:systemProfileType">
+		<xs:annotation>
+			<xs:documentation>systemProfile and related meta data.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="systemProfiles" type="tns:systemProfilesType">
+		<xs:annotation>
+			<xs:documentation>A list of systemProfiles.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="userFilter" type="tns:userFilterType">
+		<xs:annotation>
+			<xs:documentation>Filter for searching users</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="userGroup" type="tns:userGroupType">
+		<xs:annotation>
+			<xs:documentation>Concrete element of a user's group.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="userGroups" type="tns:userGroupsType">
+		<xs:annotation>
+			<xs:documentation>Concrete element of users groups.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="user" type="tns:userType">
+		<xs:annotation>
+			<xs:documentation>The user entity reflects a Red Hat Login user.  </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="users" type="tns:usersType">
+		<xs:annotation>
+			<xs:documentation>A list of users.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="values" type="tns:valuesType">
+		<xs:annotation>
+			<xs:documentation>
+				A list of name/value pairs. Both names and values are String typed. List can contain zero or more
+				elements. Values are nullable.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="versions" type="tns:versionsType">
+		<xs:annotation>
+			<xs:documentation>A list of product versions.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+</xs:schema>
