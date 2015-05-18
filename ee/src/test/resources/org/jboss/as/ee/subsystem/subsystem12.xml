@@ -1,0 +1,10 @@
+<subsystem xmlns="urn:jboss:domain:ee:1.2" >
+  <global-modules>
+    <module name="org.jboss.logging" slot="main"/>
+    <module name="org.apache.log4j" annotations="true" meta-inf="true" services="false"/>
+  </global-modules>
+  <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
+  <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
+  <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>
+  <annotation-property-replacement>false</annotation-property-replacement>
+</subsystem>
