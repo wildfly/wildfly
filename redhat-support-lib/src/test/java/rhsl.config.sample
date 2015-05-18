@@ -1,0 +1,5 @@
+# sample rhsl config file
+# running config.sh will populate the rhsl.config file
+username=
+password=
+url=

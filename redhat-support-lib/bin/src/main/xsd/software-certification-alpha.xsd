@@ -1,0 +1,460 @@
+<?xml version="1.0"?>
+
+<xs:schema targetNamespace="http://www.redhat.com/gss/strata"
+    elementFormDefault="qualified" version="1.14.0-SNAPSHOT-SNAPSHOT"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:tns="http://www.redhat.com/gss/strata"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
+
+    
+    <!--tns:certificationsType
+    tns:vendorType
+    -->
+
+    <xs:complexType name="certificationType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Information about specific certificaion held by certified software.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>
+            <xs:documentation>
+                Information about specific certificaion held by certified software.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>                    
+            <xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>The id of the certification.</xs:documentation>
+                </xs:annotation>
+            </xs:element>            
+            <xs:element name="productName" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Title of the certified entity</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="productMajorVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>The product's major version.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="productMinorVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>The product's minor version</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="productMinorEndVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>The product's minor version</xs:documentation>
+                </xs:annotation>
+            </xs:element>            
+            <xs:element name="productArchitecture" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Values: x86, x64, PPC</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="productHypervisor" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Values: xen, KVM</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="certificationLevel" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Values: certified, self-certified</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="format" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>The product's minor version</xs:documentation>
+                </xs:annotation>
+            </xs:element>            
+        </xs:sequence>
+    </xs:complexType>     
+
+    <xs:complexType name="certificationsType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Collection of "certificationType", holding multiple certification items for one piece of certified software.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Collection of "certificationType", holding multiple certification items for one piece of certified software.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="certification" type="tns:certificationType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Collection of certifications</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="certifiedBaseType" abstract="true">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Denotes a certified type for example software or hardware.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Denotes a certified type for example software or hardware.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="tns:knowledgeBaseType">
+                <xs:sequence>
+                    <xs:element name="vendor" type="tns:vendorType" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Reference to the vendor that it is associated with.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+
+                    <xs:element name="productDescription" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Description of the product</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>             
+
+                    <xs:element name="productUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Product URL</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>           
+
+                    <xs:element name="purchaseUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Purchase url of the product.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>         
+
+                    <xs:element name="certifications" type="tns:certificationsType" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation></xs:documentation>
+                        </xs:annotation>
+                    </xs:element>    
+
+                    <xs:element name="redhatEcosystem" type="tns:certifiedTaxonomyValueType" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Taxonomy list put together that contains all the ecosystem tags.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>          
+
+                    <xs:element name="industries" type="tns:certifiedTaxonomyValuesType" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Taxonomy list put together that contains all the industry tags.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>     
+                    <xs:element name="supportUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation></xs:documentation>
+                        </xs:annotation>
+                    </xs:element>                            
+                </xs:sequence>                
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="certifiedHardwareType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Certified hardware model.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Certified hardware model.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="tns:certifiedBaseType">
+                <xs:sequence>
+                    <xs:element name="productMake" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Make of the product.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+
+                    <xs:element name="productModel" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Model of the product.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    
+                    <xs:element name="categories" type="tns:certifiedTaxonomyValueType" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Taxonomy list put together that contains all the category tags.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>   
+                    <xs:element name="regions" type="tns:certifiedTaxonomyValuesType" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Taxonomy list put together that contains all the category tags.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>                     
+                                                      
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="certifiedHardwaresType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Collection of certified hardware data model.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Collection of certified hardware data model.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="certifiedHardware" type="tns:certifiedHardwareType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>The certified hardware.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="certifiedSoftwareType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Certified Software data model.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Certified Software data model.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="tns:certifiedBaseType">
+                <xs:sequence>
+                    <xs:element name="productVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Product Version</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+
+                    <xs:element name="productSummary" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>One or two sentences describing the product</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+
+                    <xs:element name="categories" type="tns:certifiedTaxonomyValuesType" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Taxonomy list put together that contains all the category tags.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+
+                    <xs:element name="published" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>read-only field currnetly to show the state of the software</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>           
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="certifiedSoftwaresType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Collection of certified software data model.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Collection of certified software data model.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="certifiedSoftware" type="tns:certifiedSoftwareType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>The certified software.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="certifiedTaxonomyValuesType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Collection of taxonomy values.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Collection of taxonomy values.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Collection of taxonomy values</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="certifiedTaxonomyValueType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Collection of taxonomy values in the situation where only one is allowed.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Collection of taxonomy values in the situation where only one is allowed.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Collection of taxonomy values</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>        
+    
+
+    <xs:complexType name="vendorType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Vendor data model.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Vendor data model.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="tns:knowledgeBaseType">
+                <xs:sequence>
+                    <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Description for the vendor.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="homePageUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Url for the vendor's Home Page.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="softwarePartnerLevel" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Softwarte Parner level, such as:Premier, Advanced, etc.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="tsaNetMemberLevel" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>TSANet Member Level</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:documentation>Account Number.</xs:documentation>
+                        </xs:annotation>                        
+                    </xs:element>
+                </xs:sequence>            
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>    
+
+    <xs:complexType name="vendorsType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:class>
+                    <jaxb:javadoc>
+                        Collection of vendors.
+                    </jaxb:javadoc>
+                </jaxb:class>
+            </xs:appinfo>               
+            <xs:documentation>
+                Collection of vendors.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="vendor" type="tns:vendorType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>The vendor.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ELEMENTS -->
+
+    <xs:element name="certifiedSoftware" type="tns:certifiedSoftwareType">
+        <xs:annotation>
+            <xs:documentation>Certified Software.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="certifiedSoftwares" type="tns:certifiedSoftwaresType">
+        <xs:annotation>
+            <xs:documentation>Certified Softwares.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="certifiedHardware" type="tns:certifiedHardwareType">
+        <xs:annotation>
+            <xs:documentation>Certified Hardware.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="certifiedHardwares" type="tns:certifiedHardwaresType">
+        <xs:annotation>
+            <xs:documentation>Certified Hardwares.</xs:documentation>
+        </xs:annotation>
+    </xs:element>    
+            
+    <xs:element name="vendor" type="tns:vendorType">
+        <xs:annotation>
+            <xs:documentation>Vendor.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="vendors" type="tns:vendorsType">
+        <xs:annotation>
+            <xs:documentation>Vendors.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="certification" type="tns:certificationType">
+        <xs:annotation>
+            <xs:documentation>Certification.</xs:documentation>
+        </xs:annotation>
+    </xs:element>    
+
+    <xs:element name="certifications" type="tns:certificationsType">
+        <xs:annotation>
+            <xs:documentation>Certifications.</xs:documentation>
+        </xs:annotation>
+    </xs:element>        
+            
+</xs:schema>
