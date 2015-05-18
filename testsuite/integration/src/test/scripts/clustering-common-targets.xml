@@ -239,7 +239,7 @@
         <attribute name="mcast.ttl" default="0"/>
 
         <sequential>
-            <echo message="Configuring TTL for all multicast messages to @{ip_ttl} in JGroups subsystem"/>
+            <echo message="Configuring TTL for all multicast messages to @{mcast.ttl} in JGroups subsystem"/>
             <execute-xslt-transform transform="changeMulticastTTL.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="mcast.ttl" expression="@{mcast.ttl}"/>
