@@ -70,6 +70,16 @@
         	<groupId>org.wildfly</groupId>
         	<artifactId>wildfly-jdr</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.redhat.gss</groupId>
+            <artifactId>wildfly-redhat-support-lib</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
