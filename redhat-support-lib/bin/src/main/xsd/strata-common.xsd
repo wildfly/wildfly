@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- This document is used by JAXB to generate Java classes at project build 
+	time. Most entities can be the top-level payload of an REST API response 
+	or embedded in another entity. -->
+<xs:schema targetNamespace="http://www.redhat.com/gss/strata"
+	elementFormDefault="qualified" version="1.14.0-SNAPSHOT-SNAPSHOT"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:tns="http://www.redhat.com/gss/strata"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
+
+	<!-- ================================================================================================= -->
+
+	<xs:complexType name="strataEntityType" abstract="true">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    The base type for all API entities.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                      
+			<xs:documentation>The base type for all API entities.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="label" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>
+						This is a repeat of the containing element name for JSON,
+						since JSON doesn't include this for top level elements.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="trackedEntityType" abstract="true">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    The base type for entities that maintain create and update information.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                      
+			<xs:documentation>The base type for entities that maintain create and update information.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="createdBy" type="xs:string"   minOccurs="0" maxOccurs="1"/>
+					<xs:element name="createdDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="lastModifiedBy" type="xs:string"   minOccurs="0" maxOccurs="1"/>
+					<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="linked" type="xs:boolean"  minOccurs="0" maxOccurs="1"/>
+					<xs:element name="linkedBy" type="xs:string"   minOccurs="0" maxOccurs="1"/>	
+					<xs:element name="linkedAt" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>			
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<!-- ================================================================================================= -->
+
+	<xs:complexType name="base_linkType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    ATOM link type.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                         
+			<xs:documentation>ATOM link type.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+
+				<xs:attribute name="title" type="xs:string" use="optional"/>
+				<xs:attribute name="rel" type="xs:string" use="optional"/>
+				<xs:attribute name="href" type="xs:string" use="optional"/>
+				<xs:attribute name="type" type="xs:string" use="optional"/>
+				<!-- This is not standard and is for backwards compatibility only -->
+				<xs:attribute name="uri" type="xs:string" use="optional"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+
+	<xs:complexType name="commentType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A support case comment and associated metadata.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                     
+			<xs:documentation>A support case comment and associated metadata.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="text" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="public" type="xs:boolean" minOccurs="0" maxOccurs="1" default="true"/>
+					<xs:element name="draft" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+					<xs:element name="publishedDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Portal URI for this comment.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+
+				<xs:attribute name="id" type="xs:string"/>
+				<xs:attribute name="caseNumber" type="xs:string" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="commentsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of comments
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                         
+			<xs:documentation>A list of comments</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:comment" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="entitlementType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    entitlement and related meta data.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>entitlement and related meta data.  </xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI for SLA.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="sla" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="supportLevel" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="serviceLevel" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="startDate" type="xs:date"/>
+					<xs:element name="endDate" type="xs:date"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="entitlementsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of Entitlements.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>A list of Entitlements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:entitlement" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="errorType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Provides error code and description for Strata API 
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Provides error code and description for Strata API </xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="code" type="xs:string"/>
+			<xs:element name="message" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="healthType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of upstreamSystem
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>A list of upstreamSystem</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="tns:upstreamSystem" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="languageType">
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="name" type="xs:string" minOccurs="1"/>
+					<xs:element name="code" type="xs:string" minOccurs="1"/>
+					<xs:element name="definedForCase" type="xs:boolean" minOccurs="1"/>
+					<xs:element name="definedForSolution" type="xs:boolean" minOccurs="1"/>
+					<xs:element name="probability" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="linkType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Simple ATOM link type.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                       
+			<xs:documentation>Simple ATOM link type.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:base_linkType">
+				<!-- The following are non-standard fields and attributes not dictated 
+				by ATOM -->
+				<xs:attribute name="ssoUsername" type="xs:string" use="optional"/>
+				<xs:attribute name="explanation" type="xs:string" use="optional"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="languagesType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of languages
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                        
+			<xs:documentation>A list of languages</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:language" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="notified_usersType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of users notified by email when the parent case is modified
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A list of users notified by email when the parent case is modified</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:link" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="tagsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    A list of Tags.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>A list of Tags.</xs:documentation>        
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:tag" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="upstreamSystemType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                     upstreamSystem consist of field name and status
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation> upstreamSystem consist of field name and status</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="status" type="xs:boolean" minOccurs="0" maxOccurs="1"/>				
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- ================================================================================================= -->
+
+	<xs:element name="comment" type="tns:commentType">
+		<xs:annotation>
+			<xs:documentation>A support case comment and associated metadata.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="comments" type="tns:commentsType">
+		<xs:annotation>
+			<xs:documentation>A list of comments</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="entitlement" type="tns:entitlementType">
+		<xs:annotation>
+			<xs:documentation>entitlement and related meta data.  </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="entitlements" type="tns:entitlementsType">
+		<xs:annotation>
+			<xs:documentation>A list of Entitlements.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="error" type="tns:errorType">
+		<xs:annotation>
+			<xs:documentation>Provides error code and description for Starta API </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="health" type="tns:healthType">
+		<xs:annotation>
+			<xs:documentation>A list of upstreamSystem</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="language" type="tns:languageType"/>
+
+	<xs:element name="languages" type="tns:languagesType">
+		<xs:annotation>
+			<xs:documentation>A list of languages</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="link" type="tns:linkType">
+		<xs:annotation>
+			<xs:documentation>Simple ATOM link type.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="notified_users" type="tns:notified_usersType">
+		<xs:annotation>
+                                    
+			<xs:documentation>A list of users notified by email when the parent case is modified</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="upstreamSystem" type="tns:upstreamSystemType">
+		<xs:annotation>
+			<xs:documentation> upstreamSystem consist of field name and status</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+</xs:schema>
