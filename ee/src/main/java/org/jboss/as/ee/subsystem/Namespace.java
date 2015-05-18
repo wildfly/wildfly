@@ -33,6 +33,7 @@ enum Namespace {
 
     EE_1_0("urn:jboss:domain:ee:1.0", true),
     EE_1_1("urn:jboss:domain:ee:1.1", true),
+    EE_1_2("urn:jboss:domain:ee:1.2", false),
     EE_2_0("urn:jboss:domain:ee:2.0", true),
     EE_3_0("urn:jboss:domain:ee:3.0", false),
     ;
