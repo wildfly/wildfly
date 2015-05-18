@@ -56,7 +56,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.wildfly.extension.io.BufferPoolService;
 import org.wildfly.extension.io.IOServices;

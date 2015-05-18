@@ -38,12 +38,10 @@ import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.undertow.filters.FilterRef;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -63,14 +61,11 @@ class HostAdd extends AbstractAddStepHandler {
         final PathAddress subsystemAddress = serverAddress.subAddress(0, address.size() - 2);
         final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(subsystemAddress, false), 1);
         final ModelNode serverModel = Resource.Tools.readModel(context.readResourceFromRoot(serverAddress, false), 1);
-        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-
 
         final String name = address.getLastElement().getValue();
         final List<String> aliases = HostDefinition.ALIAS.unwrap(context, model);
         final String defaultWebModule = HostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, model).asString();
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        final Resource accessLog = resource.getChild(UndertowExtension.PATH_ACCESS_LOG);
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, subsystemModel).asString();
         final String defaultHostName = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, serverModel).asString();
         final String serverName = serverAddress.getLastElement().getValue();
@@ -84,8 +79,6 @@ class HostAdd extends AbstractAddStepHandler {
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService());
 
         builder.setInitialMode(Mode.ON_DEMAND);
-
-        configureFilterRef(fullModel, builder, service,address);
 
         if (isDefaultHost) {
             addCommonHost(context, name, aliases, serverName, virtualHostServiceName);
@@ -131,14 +124,5 @@ class HostAdd extends AbstractAddStepHandler {
 
         builder.setInitialMode(Mode.PASSIVE);
         return builder.install();
-    }
-
-    private static void configureFilterRef(final ModelNode model, ServiceBuilder<Host> builder, Host service, PathAddress address) {
-        if (model.hasDefined(Constants.FILTER_REF)) {
-            for (Property property : model.get(Constants.FILTER_REF).asPropertyList()) {
-                String name = property.getName();
-                LocationAdd.addDep(builder, UndertowService.getFilterRefServiceName(address, name), FilterRef.class, service.getFilters());
-            }
-        }
     }
 }
