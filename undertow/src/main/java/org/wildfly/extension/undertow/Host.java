@@ -55,16 +55,17 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class Host implements Service<Host> {
     private final PathHandler pathHandler = new PathHandler();
-    private volatile HttpHandler rootHandler = pathHandler;
+    private volatile HttpHandler rootHandler = null;
     private final Set<String> allAliases;
     private final String name;
     private final String defaultWebModule;
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private final InjectedValue<AccessLogService> accessLogService = new InjectedValue<>();
+    private volatile AccessLogService  accessLogService;
     private final List<InjectedValue<FilterRef>> filters = new CopyOnWriteArrayList<>();
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
+    private final HostRootHandler hostRootHandler = new HostRootHandler();
 
     protected Host(String name, List<String> aliases, String defaultWebModule) {
         this.name = name;
@@ -81,13 +82,13 @@ public class Host implements Service<Host> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        rootHandler = configureRootHandler();
         server.getValue().registerHost(this);
         UndertowLogger.ROOT_LOGGER.hostStarting(name);
     }
 
     private HttpHandler configureRootHandler() {
-        AccessLogService logService = accessLogService.getOptionalValue();
+        AccessLogService logService = accessLogService;
+        HttpHandler rootHandler = pathHandler;
         if (logService != null) {
             rootHandler = logService.configureAccessLogHandler(pathHandler);
         }
@@ -122,8 +123,9 @@ public class Host implements Service<Host> {
         return server;
     }
 
-    protected InjectedValue<AccessLogService> getAccessLogService() {
-        return accessLogService;
+    void setAccessLogService(AccessLogService service) {
+        this.accessLogService = service;
+        rootHandler = null;
     }
 
     public Server getServer() {
@@ -143,7 +145,20 @@ public class Host implements Service<Host> {
     }
 
     protected HttpHandler getRootHandler() {
-        return rootHandler;
+        return hostRootHandler;
+    }
+
+    protected HttpHandler getOrCreateRootHandler() {
+        HttpHandler root = rootHandler;
+        if(root == null) {
+            synchronized (this) {
+                root = rootHandler;
+                if(root == null) {
+                    return rootHandler = configureRootHandler();
+                }
+            }
+        }
+        return root;
     }
 
     public String getDefaultWebModule() {
@@ -227,6 +242,14 @@ public class Host implements Service<Host> {
                 return;
             }
             next.handleRequest(exchange);
+        }
+    }
+
+    private class HostRootHandler implements HttpHandler {
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            getOrCreateRootHandler().handleRequest(exchange);
         }
     }
 }

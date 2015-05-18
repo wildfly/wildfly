@@ -44,6 +44,7 @@ import java.io.File;
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 class AccessLogService implements Service<AccessLogService> {
+    private final InjectedValue<Host> host = new InjectedValue<>();
     protected final InjectedValue<XnioWorker> worker = new InjectedValue<>();
     private final String pattern;
     private final String path;
@@ -99,10 +100,12 @@ class AccessLogService implements Service<AccessLogService> {
                 throw new StartException(e);
             }
         }
+        host.getValue().setAccessLogService(this);
     }
 
     @Override
     public void stop(StopContext context) {
+        host.getValue().setAccessLogService(null);
         if (callbackHandle != null) {
             callbackHandle.remove();
             callbackHandle = null;
@@ -126,4 +129,7 @@ class AccessLogService implements Service<AccessLogService> {
         return new AccessLogHandler(handler, logReceiver, pattern, AccessLogService.class.getClassLoader());
     }
 
+    public InjectedValue<Host> getHost() {
+        return host;
+    }
 }

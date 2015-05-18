@@ -23,8 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
-import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -80,28 +78,24 @@ class HostAdd extends AbstractAddStepHandler {
         boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
 
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
-        final ServiceName accessLogServiceName = UndertowService.accessLogServiceName(serverName, name);
         final Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases, defaultWebModule);
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
-                .addDependency(accessLog != null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService());
+                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService());
 
         builder.setInitialMode(Mode.ON_DEMAND);
 
         configureFilterRef(fullModel, builder, service,address);
 
-        ServiceController<WebHost> commonController = null;
         if (isDefaultHost) {
-            commonController = addCommonHost(context, name, aliases, serverName, virtualHostServiceName);
+            addCommonHost(context, name, aliases, serverName, virtualHostServiceName);
             builder.addAliases(UndertowService.DEFAULT_HOST);//add alias for default host of default server service
         }
 
-        final ServiceController<Host> serviceController = builder.install();
+        builder.install();
 
         // Setup the web console redirect
         final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
-        final ServiceController<ConsoleRedirectService> consoleServiceServiceController;
         // A standalone server is the only process type with a console redirect
         if (context.getProcessType() == ProcessType.STANDALONE_SERVER) {
             final ConsoleRedirectService redirectService = new ConsoleRedirectService();
@@ -109,7 +103,7 @@ class HostAdd extends AbstractAddStepHandler {
                     .addDependency(UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, redirectService.getHttpManagementInjector())
                     .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
                     .setInitialMode(Mode.PASSIVE);
-            consoleServiceServiceController = redirectBuilder.install();
+            redirectBuilder.install();
         } else {
             // Other process types don't have a console, not depending on the UndertowHttpManagementService should
             // result in a null dependency in the service and redirect accordingly
@@ -117,7 +111,7 @@ class HostAdd extends AbstractAddStepHandler {
             final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
                     .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
                     .setInitialMode(Mode.PASSIVE);
-            consoleServiceServiceController = redirectBuilder.install();
+            redirectBuilder.install();
         }
     }
 
