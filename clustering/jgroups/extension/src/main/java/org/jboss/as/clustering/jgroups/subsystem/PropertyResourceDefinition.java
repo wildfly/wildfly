@@ -54,9 +54,9 @@ import org.jboss.dmr.ModelType;
  *   /subsystem=jgroups/stack=X/transport=TRANSPORT/property=Z
  *   /subsystem=jgroups/stack=X/protocol=Y/property=Z
  *
+ * This resource is deprecated - replaced by a map attribute of the transport/protocol.
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-@Deprecated
 public class PropertyResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);

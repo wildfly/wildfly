@@ -25,7 +25,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
@@ -36,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -48,7 +46,6 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 
 /**
  * Resource description for the addressable resource /subsystem=jgroups/stack=X
@@ -143,7 +140,8 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
 
                 if (transport != null) {
                     String type = ProtocolResourceDefinition.TYPE.resolveModelAttribute(context, transport).asString();
-                    PathAddress transportAddress = address.append(TransportResourceDefinition.pathElement(type));
+                    PathElement transportPath = TransportResourceDefinition.pathElement(type);
+                    PathAddress transportAddress = address.append(transportPath);
                     ModelNode transportOperation = Util.createAddOperation(transportAddress);
                     for (AttributeDefinition attribute : TransportResourceDefinition.ATTRIBUTES) {
                         String name = attribute.getName();
@@ -151,20 +149,13 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
                             transportOperation.get(name).set(transport.get(name));
                         }
                     }
-                    context.addStep(transportOperation, new ReloadRequiredAddStepHandler(TransportResourceDefinition.ATTRIBUTES), OperationContext.Stage.MODEL);
-
-                    if (transport.hasDefined(ProtocolResourceDefinition.PROPERTIES.getName())) {
-                        for (Property property : operation.get(ProtocolResourceDefinition.PROPERTIES.getName()).asPropertyList()) {
-                            ModelNode propertyOperation = Util.createAddOperation(transportAddress.append(property.getName()));
-                            propertyOperation.set(PropertyResourceDefinition.VALUE.getName()).set(property.getValue());
-                            context.addStep(propertyOperation, new ReloadRequiredAddStepHandler(PropertyResourceDefinition.VALUE), OperationContext.Stage.MODEL);
-                        }
-                    }
+                    context.addStep(transportOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(transportPath), ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL);
                 }
                 if (!protocols.isEmpty()) {
                     for (ModelNode protocol : protocols) {
                         String type = ProtocolResourceDefinition.TYPE.resolveModelAttribute(context, protocol).asString();
-                        PathAddress protocolAddress = address.append(ProtocolResourceDefinition.pathElement(type));
+                        PathElement protocolPath = ProtocolResourceDefinition.pathElement(type);
+                        PathAddress protocolAddress = address.append(protocolPath);
                         ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
                         for (AttributeDefinition attribute : ProtocolResourceDefinition.ATTRIBUTES) {
                             String name = attribute.getName();
@@ -172,15 +163,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
                                 protocolOperation.get(name).set(protocol.get(name));
                             }
                         }
-                        context.addStep(protocolOperation, new ReloadRequiredAddStepHandler(ProtocolResourceDefinition.ATTRIBUTES), OperationContext.Stage.MODEL);
-
-                        if (protocol.hasDefined(ProtocolResourceDefinition.PROPERTIES.getName())) {
-                            for (Property property : operation.get(ProtocolResourceDefinition.PROPERTIES.getName()).asPropertyList()) {
-                                ModelNode propertyOperation = Util.createAddOperation(protocolAddress.append(property.getName()));
-                                propertyOperation.set(PropertyResourceDefinition.VALUE.getName()).set(property.getValue());
-                                context.addStep(propertyOperation, new ReloadRequiredAddStepHandler(PropertyResourceDefinition.VALUE), OperationContext.Stage.MODEL);
-                            }
-                        }
+                        context.addStep(protocolOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(protocolPath), ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL);
                     }
                 }
             }
@@ -199,7 +182,8 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) {
                 PathAddress address = context.getCurrentAddress();
                 String protocol = operation.require(ProtocolResourceDefinition.TYPE.getName()).asString();
-                PathAddress protocolAddress = address.append(ProtocolResourceDefinition.pathElement(protocol));
+                PathElement protocolPath = ProtocolResourceDefinition.pathElement(protocol);
+                PathAddress protocolAddress = address.append(protocolPath);
                 ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
                 for (AttributeDefinition attribute : ProtocolResourceDefinition.ATTRIBUTES) {
                     String name = attribute.getName();
@@ -207,14 +191,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
                         protocolOperation.get(name).set(operation.get(name));
                     }
                 }
-                context.addStep(protocolOperation, new ReloadRequiredAddStepHandler(ProtocolResourceDefinition.ATTRIBUTES), OperationContext.Stage.MODEL);
-                if (operation.hasDefined(ProtocolResourceDefinition.PROPERTIES.getName())) {
-                    for (Property property : operation.get(ProtocolResourceDefinition.PROPERTIES.getName()).asPropertyList()) {
-                        ModelNode addPropertyOperation = Util.createAddOperation(protocolAddress.append(PropertyResourceDefinition.pathElement(property.getName())));
-                        addPropertyOperation.get(PropertyResourceDefinition.VALUE.getName()).set(property.getValue());
-                        context.addStep(addPropertyOperation, new ReloadRequiredAddStepHandler(PropertyResourceDefinition.VALUE), OperationContext.Stage.MODEL);
-                    }
-                }
+                context.addStep(protocolOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(protocolPath), ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL);
             }
         };
         registration.registerOperationHandler(legacyAddProtocolOperation, legacyAddProtocolHandler);
@@ -229,9 +206,10 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) {
                 PathAddress address = context.getCurrentAddress();
                 String protocol = operation.require(ProtocolResourceDefinition.TYPE.getName()).asString();
-                PathAddress protocolAddress = address.append(ProtocolResourceDefinition.pathElement(protocol));
+                PathElement protocolPath = ProtocolResourceDefinition.pathElement(protocol);
+                PathAddress protocolAddress = address.append(protocolPath);
                 ModelNode removeOperation = Util.createRemoveOperation(protocolAddress);
-                context.addStep(removeOperation, ReloadRequiredRemoveStepHandler.INSTANCE, context.getCurrentStage());
+                context.addStep(removeOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(protocolPath), ModelDescriptionConstants.REMOVE), context.getCurrentStage());
             }
         };
         registration.registerOperationHandler(legacyRemoveProtocolOperation, legacyRemoveProtocolHandler);

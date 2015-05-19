@@ -31,6 +31,8 @@ import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -53,6 +55,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
@@ -72,7 +75,6 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, true)
             .setXmlName(Attribute.TYPE.getLocalName())
             .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .build();
 
@@ -97,7 +99,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode().setEmptyList())
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING, PROPERTIES };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MODULE, SOCKET_BINDING, PROPERTIES };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
@@ -192,7 +194,11 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     }
 
     ProtocolResourceDefinition(OperationStepHandler addHandler) {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.PROTOCOL), addHandler, new ReloadRequiredRemoveStepHandler());
+        this(WILDCARD_PATH, addHandler);
+    }
+
+    ProtocolResourceDefinition(PathElement path, OperationStepHandler addHandler) {
+        super(path, new JGroupsResourceDescriptionResolver(path.getKey()), addHandler, new ReloadRequiredRemoveStepHandler());
     }
 
     @Override
@@ -201,6 +207,33 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES) {
             registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
+
+        OperationStepHandler typeReadHandler = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(context.getCurrentAddressValue());
+            }
+        };
+        OperationStepHandler typeWriteHandler = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // Issue remove operation for old resource address
+                // Followed by add operation for new resource address
+                String type = Operations.getAttributeValue(operation).asString();
+                PathAddress address = context.getCurrentAddress();
+                PathAddress newAddress = address.getParent().append(PathElement.pathElement(address.getLastElement().getKey(), type));
+
+                ModelNode addOperation = Util.createAddOperation(newAddress);
+                for (Property property : context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel().asPropertyList()) {
+                    addOperation.get(property.getName()).set(property.getValue());
+                }
+                context.addStep(addOperation, context.getRootResourceRegistration().getOperationHandler(newAddress, ModelDescriptionConstants.ADD), context.getCurrentStage(), true);
+
+                ModelNode removeOperation = Util.createRemoveOperation(address);
+                context.addStep(removeOperation, context.getResourceRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.REMOVE), context.getCurrentStage(), true);
+            }
+        };
+        registration.registerReadWriteAttribute(TYPE, typeReadHandler, typeWriteHandler);
     }
 
     @Override
