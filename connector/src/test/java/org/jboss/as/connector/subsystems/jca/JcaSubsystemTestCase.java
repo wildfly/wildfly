@@ -21,27 +21,17 @@
 */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
-
 import java.io.IOException;
-import java.util.List;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
-
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -85,26 +75,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformer(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0), "jca-full.xml");
-    }
-
-    @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformer(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 0), "jca-full.xml");
-    }
-
-    @Test
-    public void testTransformerAS72() throws Exception {
-        testTransformer(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0), "jca-full.xml");
-    }
-
-    @Test
-    public void testTransformerAS72WithExpressions() throws Exception {
-        testTransformer(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0), "jca-full-expression.xml");
-    }
-
-    @Test
     public void testTransformerWF8() throws Exception {
         testTransformerWF(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, ModelVersion.create(2, 0, 0), "jca-full.xml");
     }
@@ -112,40 +82,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformerWF8WithExpressions() throws Exception {
         testTransformerWF(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, ModelVersion.create(2, 0, 0), "jca-full-expression.xml");
-    }
-
-    /**
-     * Tests transformation of model from 1.2.0 version into 1.1.0 version.
-     *
-     * @throws Exception
-     */
-    private void testTransformer(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, String xmlResourceName) throws Exception {
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
-                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        List<ModelNode> xmlOps = builder.parseXmlResource(xmlResourceName);
-
-
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps,
-                new FailedOperationTransformationConfig()
-                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER, PathElement.pathElement(WORKMANAGER_SHORT_RUNNING)),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
     /**
@@ -184,51 +120,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    private void testRejectExpressions1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        // create builder for legacy subsystem version
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
-                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
-
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        List<ModelNode> xmlOps = builder.parseXmlResource("jca-full-expression.xml");
-
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps,
-                new FailedOperationTransformationConfig()
-                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaWorkManagerDefinition.PATH_WORK_MANAGER,
-                                PathElement.pathElement(WORKMANAGER_SHORT_RUNNING)),
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.KEEPALIVE_TIME))
-                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaWorkManagerDefinition.PATH_WORK_MANAGER,
-                                PathElement.pathElement(WORKMANAGER_LONG_RUNNING)),
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.KEEPALIVE_TIME))
-                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER, PathElement.pathElement(WORKMANAGER_SHORT_RUNNING)),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
     @Override
