@@ -132,9 +132,13 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         } else if (TEMPORARY.getName().equals(attributeName)) {
             context.getResult().set(control.isTemporary());
         } else if (EXPIRY_ADDRESS.getName().equals(attributeName)) {
-            context.getResult().set(control.getExpiryAddress());
+            if (control.getExpiryAddress() != null) {
+                context.getResult().set(control.getExpiryAddress());
+            }
         } else if (DEAD_LETTER_ADDRESS.getName().equals(attributeName)) {
-            context.getResult().set(control.getDeadLetterAddress());
+            if (control.getDeadLetterAddress() != null) {
+                context.getResult().set(control.getDeadLetterAddress());
+            }
         } else if (readStorageAttributes && getStorageAttributeNames().contains(attributeName)) {
             if (ADDRESS.getName().equals(attributeName)) {
                 context.getResult().set(control.getAddress());

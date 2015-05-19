@@ -80,6 +80,12 @@
         <copy todir="target/jbossas-messaging-ha-server2">
             <fileset dir="target/jbossas"/>
         </copy>
+
+        <delete dir="target/jbossas-messaging-hornetq-server-full-ha"/>
+        <echo message="Copying and configuring instance jbossas-messaging-hornetq-server-full-ha"/>
+        <copy todir="target/jbossas-messaging-hornetq-server-full-ha">
+            <fileset dir="target/jbossas"/>
+        </copy>
     </target>
 
 </project>

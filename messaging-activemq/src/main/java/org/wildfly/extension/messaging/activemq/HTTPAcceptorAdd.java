@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -47,20 +45,27 @@ public class HTTPAcceptorAdd extends ActiveMQReloadRequiredHandlers.AddStepHandl
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         super.performRuntime(context, operation, model);
 
-        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String activemqServerName = address.getElement(address.size() - 2).getValue();
-        String acceptorName = address.getLastElement().getValue();
+        String acceptorName = context.getCurrentAddressValue();
+        String activeMQServerName = context.getCurrentAddress().getParent().getLastElement().getValue();
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
-        launchServices(context, activemqServerName, acceptorName, fullModel);
+        launchServices(context, activeMQServerName, acceptorName, fullModel);
     }
 
-    void launchServices(OperationContext context, String activemqServerName, String acceptorName, ModelNode model) throws OperationFailedException {
+    void launchServices(OperationContext context, String activeMQServerName, String acceptorName, ModelNode model) throws OperationFailedException {
         String httpConnectorName = HTTPAcceptorDefinition.HTTP_LISTENER.resolveModelAttribute(context, model).asString();
 
         HTTPUpgradeService.installService(context.getServiceTarget(),
-                activemqServerName,
+                activeMQServerName,
                 acceptorName,
                 httpConnectorName);
+
+        boolean upgradeLegacy = HTTPAcceptorDefinition.UPGRADE_LEGACY.resolveModelAttribute(context, model).asBoolean();
+        if (upgradeLegacy) {
+            HTTPUpgradeService.LegacyHttpUpgradeService.installService(context.getServiceTarget(),
+                    activeMQServerName,
+                    acceptorName,
+                    httpConnectorName);
+        }
     }
 }

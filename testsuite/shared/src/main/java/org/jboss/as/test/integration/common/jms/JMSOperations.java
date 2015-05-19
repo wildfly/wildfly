@@ -43,7 +43,11 @@ public interface JMSOperations {
 
     void createJmsQueue(final String queueName, final String jndiName);
 
+    void createJmsQueue(final String queueName, final String jndiName, ModelNode attributes);
+
     void createJmsTopic(final String topicName, final String jndiName);
+
+    void createJmsTopic(final String topicName, final String jndiName, ModelNode attributes);
 
     void removeJmsQueue(final String queueName);
 

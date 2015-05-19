@@ -91,13 +91,12 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
     static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final ModelNode entries = Common.ENTRIES.resolveModelAttribute(context, model);
-        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
+        final List<String> entries = Common.ENTRIES.unwrap(context, model);
 
         final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl()
                 .setName(name)
                 .setHA(ActiveMQClient.DEFAULT_HA)
-                .setBindings(jndiBindings);
+                .setBindings(entries.toArray(new String[entries.size()]));
 
         config.setHA(HA.resolveModelAttribute(context, model).asBoolean());
         config.setAutoGroup(Common.AUTO_GROUP.resolveModelAttribute(context, model).asBoolean());

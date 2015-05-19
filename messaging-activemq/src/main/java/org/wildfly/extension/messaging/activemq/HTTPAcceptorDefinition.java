@@ -39,6 +39,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -51,8 +52,13 @@ public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition HTTP_LISTENER = create(CommonAttributes.HTTP_LISTENER, ModelType.STRING)
             .setAllowNull(false)
             .build();
+    static final SimpleAttributeDefinition UPGRADE_LEGACY = create("upgrade-legacy", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
-    static AttributeDefinition[] ATTRIBUTES = { HTTP_LISTENER, PARAMS };
+    static AttributeDefinition[] ATTRIBUTES = { HTTP_LISTENER, PARAMS, UPGRADE_LEGACY };
 
     static final HTTPAcceptorDefinition INSTANCE = new HTTPAcceptorDefinition();
 
