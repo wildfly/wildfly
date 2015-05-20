@@ -86,6 +86,11 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void test15() throws Exception {
+        standardSubsystemTest("subsystem15.xml", false);
+    }
+
+    @Test
     public void testTransformerAS712() throws Exception {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
