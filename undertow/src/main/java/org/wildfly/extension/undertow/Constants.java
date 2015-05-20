@@ -158,5 +158,6 @@ public interface Constants {
     String CONNECTION_IDLE_TIMEOUT = "connection-idle-timeout";
 
     String USE_SERVER_LOG = "use-server-log";
+    String VALUE = "value";
 
 }

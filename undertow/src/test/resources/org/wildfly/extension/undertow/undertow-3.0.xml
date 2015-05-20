@@ -59,7 +59,7 @@
 
 
     <servlet-container name="myContainer" default-buffer-cache="extra" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true"
-                       eager-filter-initialization="true" default-session-timeout="100">
+                       eager-filter-initialization="true" default-session-timeout="100" directory-listing="true">
         <jsp-config
                 disabled="${prop.disabled:false}"
                 keep-generated="${prop.keep-generated:true}"
@@ -87,6 +87,12 @@
                         max-age="1000"/>
         <!--<persistent-sessions relative-to="${server.data.dir}" path="web-sessions"/>-->
         <websockets dispatch-to-worker="true" buffer-pool="default" worker="default" />
+        <mime-mappings>
+            <mime-mapping name="txt" value="text/plain" />
+        </mime-mappings>
+        <welcome-files>
+            <welcome-file name="index.seam" />
+        </welcome-files>
     </servlet-container>
 
     <handlers>

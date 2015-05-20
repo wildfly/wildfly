@@ -186,6 +186,8 @@
             <xs:element name="session-cookie" type="session-cookieType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="persistent-sessions" type="persistent-sessionsType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="websockets" type="websocketsType" maxOccurs="1" minOccurs="0" />
+            <xs:element name="mime-mappings" type="mime-mappingsType" maxOccurs="1" minOccurs="0" />
+            <xs:element name="welcome-files" type="welcome-filesType" maxOccurs="1" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
@@ -197,7 +199,30 @@
         <xs:attribute name="eager-filter-initialization" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="default-session-timeout" type="xs:integer" use="optional" default="30"/>
         <xs:attribute name="disable-caching-for-secured-pages" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="directory-listing" type="xs:boolean" use="optional" />
     </xs:complexType>
+
+    <xs:complexType name="mime-mappingsType">
+        <xs:sequence>
+            <xs:element name="mime-mapping" type="mime-mappingType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="mime-mappingType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="welcome-filesType">
+        <xs:sequence>
+            <xs:element name="welcome-file" type="welcome-fileType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="welcome-fileType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+    </xs:complexType>
+
     <xs:complexType name="hostType">
         <xs:sequence>
             <xs:element name="location" type="locationType" minOccurs="0" maxOccurs="unbounded"/>
