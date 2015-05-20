@@ -18,4 +18,6 @@ public interface SimpleAuthorizationRemote {
 
     public String denyAll(String message);
 
+    public String starRoleAllowed(String message);
+
 }

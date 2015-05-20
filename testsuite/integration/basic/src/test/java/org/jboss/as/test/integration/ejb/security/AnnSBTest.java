@@ -212,6 +212,14 @@ public abstract class AnnSBTest {
                 Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
             }
 
+            try {
+                String echoValue = getBean(MODULE, log, SB_CLASS, ctx).starRoleAllowed("alohomora");
+                Assert.assertEquals(echoValue, "alohomora");
+            } catch (Exception e) {
+                Assert.fail(
+                        "@RolesAllowed(\"**\") annotation must allow all authenticated users to the method.");
+            }
+
         } finally {
             safeClose((Closeable) EJBClientContext.setSelector(old));
         }
@@ -226,7 +234,6 @@ public abstract class AnnSBTest {
      * Expected results:
      * Test has to finish without any exception or error.
      * <p/>
-     * TODO: remove @Ignore after the JIRA is fixed
      *
      * @throws Exception
      */

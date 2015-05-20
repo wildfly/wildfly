@@ -60,4 +60,9 @@ public class SingleMethodsAnnOnlyCheckSLSB implements SimpleAuthorizationRemote 
         return message;
     }
 
+    @RolesAllowed("**")
+    public String starRoleAllowed(final String message) {
+        return message;
+    }
+
 }
