@@ -35,6 +35,11 @@ import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Central Undertow 'Container' HTTP listeners will make this container accessible whilst deployers will add content.
@@ -56,15 +61,18 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final boolean eagerFilterInit;
     private final int defaultSessionTimeout;
     private final boolean disableCachingForSecuredPages;
+    private final Boolean directoryListingEnabled;
 
     private final boolean websocketsEnabled;
     private final InjectedValue<Pool<ByteBuffer>> websocketsBufferPool = new InjectedValue<>();
     private final InjectedValue<XnioWorker> websocketsWorker = new InjectedValue<>();
     private final boolean dispatchWebsocketInvocationToWorker;
+    private final Map<String, String> mimeMappings;
+    private final List<String> welcomeFiles;
 
     public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig,
                                    String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
-                                   boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker) {
+                                   boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, Map<String, String> mimeMappings, List<String> welcomeFiles, Boolean directoryListingEnabled) {
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
         this.sessionCookieConfig = sessionCookieConfig;
@@ -77,6 +85,9 @@ public class ServletContainerService implements Service<ServletContainerService>
         this.disableCachingForSecuredPages = disableCachingForSecuredPages;
         this.websocketsEnabled = websocketsEnabled;
         this.dispatchWebsocketInvocationToWorker = dispatchWebsocketInvocationToWorker;
+        this.directoryListingEnabled = directoryListingEnabled;
+        this.welcomeFiles = new ArrayList<>(welcomeFiles);
+        this.mimeMappings = new HashMap<>(mimeMappings);
     }
 
     public void start(StartContext context) throws StartException {
@@ -165,5 +176,17 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public int getDefaultSessionTimeout() {
         return defaultSessionTimeout;
+    }
+
+    public Map<String, String> getMimeMappings() {
+        return Collections.unmodifiableMap(mimeMappings);
+    }
+
+    public List<String> getWelcomeFiles() {
+        return welcomeFiles;
+    }
+
+    public Boolean getDirectoryListingEnabled() {
+        return directoryListingEnabled;
     }
 }

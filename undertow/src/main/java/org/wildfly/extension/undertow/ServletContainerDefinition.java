@@ -110,6 +110,11 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .build(); //30 minutes
 
+    protected static final AttributeDefinition DIRECTORY_LISTING =
+            new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY_LISTING, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .build(); //30 minutes
 
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
@@ -121,7 +126,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             IGNORE_FLUSH,
             EAGER_FILTER_INIT,
             DEFAULT_SESSION_TIMEOUT,
-            DISABLE_CACHING_FOR_SECURED_PAGES
+            DISABLE_CACHING_FOR_SECURED_PAGES,
+            DIRECTORY_LISTING
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
@@ -132,6 +138,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
         children.add(SessionCookieDefinition.INSTANCE);
         children.add(PersistentSessionsDefinition.INSTANCE);
         children.add(WebsocketsDefinition.INSTANCE);
+        children.add(MimeMappingDefinition.INSTANCE);
+        children.add(WelcomeFileDefinition.INSTANCE);
         CHILDREN = Collections.unmodifiableList(children);
     }
 
