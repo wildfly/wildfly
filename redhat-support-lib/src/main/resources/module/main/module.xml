@@ -6,6 +6,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.ws.rs.api"/>
+        <module name="javax.net.ssl"/>
         <module name="org.apache.commons.net"/>
         <module name="org.apache.httpcomponents"/>
         <module name="org.jboss.staxmapper"/>
