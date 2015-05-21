@@ -111,8 +111,12 @@ public abstract class EntityExceptionsBase {
         return localFind("find-test-local");
     }
 
+    protected ExceptionsRemoteInterface remoteFind(String key) throws Exception {
+        return getRemoteHome().findByPrimaryKey(key);
+    }
+
     protected ExceptionsRemoteInterface remoteFind() throws Exception {
-        return getRemoteHome().findByPrimaryKey("find-test-remote");
+        return remoteFind("find-test-remote");
     }
 
     protected UserTransaction getUserTransaction() throws NamingException {
@@ -189,6 +193,40 @@ public abstract class EntityExceptionsBase {
             fail("business method should throw exception");
         } catch (RemoteException e) {
             // Expected exception
+        }
+
+        // There should be no exception here
+        remoteFind();
+    }
+
+    @Test
+    public void shouldReleaseInstanceToPoolOnLocalLoadException() throws Exception {
+        UserTransaction ut = getUserTransaction();
+        ut.begin();
+        try {
+            localFind("key1-exceptionOnLoad").test();
+            fail("onLoad should throw exception");
+        } catch (Exception e) {
+            // Expected exception
+        } finally {
+            ut.rollback();
+        }
+
+        // There should be no exception here
+        localFind();
+    }
+
+    @Test
+    public void shouldReleaseInstanceToPoolOnRemoteLoadException() throws Exception {
+        UserTransaction ut = getUserTransaction();
+        ut.begin();
+        try {
+            remoteFind("key1-exceptionOnLoad").test();
+            fail("onLoad should throw exception");
+        } catch (Exception e) {
+            // Expected exception
+        } finally {
+            ut.rollback();
         }
 
         // There should be no exception here
