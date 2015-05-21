@@ -24,7 +24,11 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.util.Map;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.context.Flag;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.transaction.LockingMode;
+import org.infinispan.util.concurrent.IsolationLevel;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.MarshalledValueMarshaller;
@@ -119,13 +123,13 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
 
         switch (config.getAttributePersistenceStrategy()) {
             case FINE: {
-                Cache<String, FineSessionCacheEntry<L>> sessionCache = this.config.getCache();
+                Cache<String, FineSessionCacheEntry<L>> sessionCache = this.getSessionCache();
                 Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache = this.config.getCache();
                 Marshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
                 return new FineSessionFactory<>(sessionCache, attributeCache, context, marshaller, localContextFactory);
             }
             case COARSE: {
-                Cache<String, CoarseSessionCacheEntry<L>> sessionCache = this.config.getCache();
+                Cache<String, CoarseSessionCacheEntry<L>> sessionCache = this.getSessionCache();
                 Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache = this.config.getCache();
                 Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
                 return new CoarseSessionFactory<>(sessionCache, attributesCache, context, marshaller, localContextFactory);
@@ -135,5 +139,12 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
                 throw new IllegalStateException();
             }
         }
+    }
+
+    private <V> Cache<String, V> getSessionCache() {
+        Cache<String, V> cache = this.config.getCache();
+        Configuration cacheConfig = cache.getCacheConfiguration();
+        boolean lockOnRead = cacheConfig.transaction().transactionMode().isTransactional() && (cacheConfig.transaction().lockingMode() == LockingMode.PESSIMISTIC) && cacheConfig.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
+        return lockOnRead ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
     }
 }
