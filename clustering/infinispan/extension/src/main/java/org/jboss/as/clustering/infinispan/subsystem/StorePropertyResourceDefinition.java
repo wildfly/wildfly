@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/eviction=EVICTION
+ * Resource description only handling legacy operations on the legacy addressable resource /subsystem=infinispan/cache-container=A/cache=B/store=C/property=D
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
