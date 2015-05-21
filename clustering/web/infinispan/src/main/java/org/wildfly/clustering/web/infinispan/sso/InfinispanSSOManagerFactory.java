@@ -24,6 +24,10 @@ package org.wildfly.clustering.web.infinispan.sso;
 import java.util.Map;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.context.Flag;
+import org.infinispan.transaction.LockingMode;
+import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.msc.service.AbstractService;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
@@ -59,8 +63,10 @@ public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManage
         MarshalledValueFactory<MarshallingContext> marshalledValueFactory = new SimpleMarshalledValueFactory(marshallingContext);
         Marshaller<A, MarshalledValue<A, MarshallingContext>> marshaller = new MarshalledValueMarshaller<>(marshalledValueFactory, marshallingContext);
         Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache = this.configuration.getCache();
+        Configuration config = authenticationCache.getCacheConfiguration();
+        boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
         Cache<CoarseSessionsKey, Map<D, String>> sessionsCache = this.configuration.getCache();
-        SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(authenticationCache, sessionsCache, marshaller, localContextFactory);
+        SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(lockOnRead ? authenticationCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : authenticationCache, sessionsCache, marshaller, localContextFactory);
         IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, authenticationCache, this.configuration.getKeyAffinityServiceFactory());
         Batcher<TransactionBatch> batcher = new InfinispanBatcher(authenticationCache);
         return new InfinispanSSOManager<>(factory, idFactory, batcher);
