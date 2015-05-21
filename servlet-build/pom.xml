@@ -33,9 +33,9 @@
         <version>9.0.0.CR2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-web-build</artifactId>
+    <artifactId>wildfly-servlet-build</artifactId>
 
-    <name>WildFly: Build Web</name>
+    <name>WildFly: Servlet Build</name>
     <packaging>pom</packaging>
 
     <dependencies>
@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-web-feature-pack</artifactId>
+            <artifactId>wildfly-servlet-feature-pack</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -57,7 +57,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-web-${project.version}</finalName>
+        <finalName>${server.output.dir.prefix}-servlet-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.build</groupId>
