@@ -22,7 +22,7 @@
 
 <build xmlns="urn:wildfly:feature-pack-build:1.0">
     <dependencies>
-    	<artifact name="org.wildfly:wildfly-web-feature-pack" />        
+    	<artifact name="org.wildfly:wildfly-servlet-feature-pack" />
     </dependencies>
     <config>
         <!-- Core configs -->
