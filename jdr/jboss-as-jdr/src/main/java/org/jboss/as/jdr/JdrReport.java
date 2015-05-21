@@ -19,10 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.jdr;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Date;
+import java.util.Properties;
+import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
 /**
  * Provides metadata about and access to the data collected by a {@link JdrReportCollector}.
@@ -31,9 +39,25 @@ import java.util.Date;
  * @author Mike M. Clark
  */
 public class JdrReport {
+
+    public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
+
+    public static final String JDR_PROPERTY_FILE_NAME = "jdr.properties";
+
+    public static final String UUID_NAME = "UUID";
+
+    public static final String JDR_PROPERTIES_COMMENT = "JDR Properties";
+
+    public static final String JBOSS_HOME_DIR = "jboss.home.dir";
+
+    public static final String DEFAULT_PROPERTY_DIR = "standalone";
+
+    public static final String DATA_DIR = "data";
+
     private Date startTime;
     private Date endTime;
     private String location;
+    private String jdrUuid;
 
     public JdrReport() {
     }
@@ -79,5 +103,49 @@ public class JdrReport {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public void setJdrUuid(String jdrUuid) {
+        this.jdrUuid = jdrUuid;
+        String jbossConfig = System.getProperty(JBOSS_PROPERTY_DIR);
+        Path jbossConfigPath;
+        // JDR is being ran from command line
+        if (jbossConfig == null) {
+            String jbossHome = System.getProperty(JBOSS_HOME_DIR);
+            // if JBoss standalone directory does not exist then go no further
+            Path defaultDir = new File(jbossHome, DEFAULT_PROPERTY_DIR).toPath();
+            if (Files.notExists(defaultDir)) {
+                ROOT_LOGGER.couldNotFindJDRPropertiesFile();
+            }
+            jbossConfigPath = defaultDir.resolve(DATA_DIR);
+        } else {
+            jbossConfigPath = new File(jbossConfig).toPath();
+        }
+        Path jdrPropertiesFilePath = jbossConfigPath.resolve(JdrReportExtension.SUBSYSTEM_NAME).resolve(JDR_PROPERTY_FILE_NAME);
+        Properties jdrProperties = new Properties();
+        try {
+            Files.createDirectories(jdrPropertiesFilePath.getParent());
+        } catch (IOException e) {
+            ROOT_LOGGER.couldNotCreateJDRPropertiesFile(e, jdrPropertiesFilePath);
+        }
+        if (jdrUuid == null && Files.exists(jdrPropertiesFilePath)) {
+            try (InputStream in = Files.newInputStream(jdrPropertiesFilePath)) {
+                jdrProperties.load(in);
+                this.jdrUuid = jdrProperties.getProperty(UUID_NAME);
+            } catch (IOException e) {
+                ROOT_LOGGER.couldNotFindJDRPropertiesFile();
+            }
+        } else {
+            try (OutputStream fileOut = Files.newOutputStream(jdrPropertiesFilePath, StandardOpenOption.CREATE)) {
+                jdrProperties.setProperty(UUID_NAME, jdrUuid);
+                jdrProperties.store(fileOut, JDR_PROPERTIES_COMMENT);
+            } catch (IOException e) {
+                ROOT_LOGGER.couldNotCreateJDRPropertiesFile(e, jdrPropertiesFilePath);
+            }
+        }
+    }
+
+    public String getJdrUuid() {
+        return jdrUuid;
     }
 }

@@ -22,17 +22,20 @@
 package org.jboss.as.jdr;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandContextFactory;
+import org.jboss.as.cli.scriptsupport.CLI;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.jdr.commands.JdrCommand;
 import org.jboss.as.jdr.commands.JdrEnvironment;
 import org.jboss.as.jdr.logger.JdrLogger;
 import org.jboss.as.jdr.plugins.JdrPlugin;
 import org.jboss.as.jdr.util.JdrZipFile;
+import org.jboss.dmr.ModelNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -42,7 +45,10 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.jboss.as.cli.CommandContextFactory;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UUID;
 import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
 public class JdrRunner implements JdrReportCollector {
@@ -54,29 +60,29 @@ public class JdrRunner implements JdrReportCollector {
         this.env.setServerRunning(serverRunning);
     }
 
-    public JdrRunner(String protocol, String user, String pass, String host, String port) {
+    public JdrRunner(CLI cli, String protocol, String host, int port, String user, String pass) {
         this.env.setServerRunning(false);
         this.env.setUsername(user);
         this.env.setPassword(pass);
-        this.env.setHost(host);
-        this.env.setPort(port);
+        this.env.setHost(cli.getCommandContext().getControllerHost());
+        this.env.setPort("" + cli.getCommandContext().getControllerPort());
+        this.env.setCli(cli);
         try {
-            ctx = CommandContextFactory.getInstance().newCommandContext(constructUri(protocol, host, Integer.parseInt(port)), null, null);
+            ctx = CommandContextFactory.getInstance().newCommandContext(constructUri(protocol, host, port), user, pass == null ? new char[0] : pass.toCharArray());
             ctx.connectController();
             this.env.setClient(ctx.getModelControllerClient());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             ctx.terminateSession();
             // the server isn't available, carry on
         }
     }
 
+    @Override
     public JdrReport collect() throws OperationFailedException {
 
         try {
             this.env.setZip(new JdrZipFile(new JdrEnvironment(this.env)));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             ROOT_LOGGER.error(ROOT_LOGGER.couldNotCreateZipfile(), e);
             throw new OperationFailedException(JdrLogger.ROOT_LOGGER.couldNotCreateZipfile());
         }
@@ -113,8 +119,8 @@ public class JdrRunner implements JdrReportCollector {
         JdrReport report = new JdrReport();
         StringBuilder skips = new StringBuilder();
         report.setStartTime();
-
-        for( JdrCommand command : commands ) {
+        report.setJdrUuid(obtainServerUUID());
+        for (JdrCommand command : commands) {
             command.setEnvironment(new JdrEnvironment(this.env));
             try {
                 command.execute();
@@ -171,6 +177,24 @@ public class JdrRunner implements JdrReportCollector {
 
     public void setServerName(String name) {
         this.env.setServerName(name);
+    }
+
+    private String obtainServerUUID() throws OperationFailedException {
+        try {
+            ModelNode operation = Operations.createReadAttributeOperation(new ModelNode().setEmptyList(), UUID);
+            operation.get(INCLUDE_RUNTIME).set(true);
+            ModelControllerClient client = env.getClient();
+            if (client == null) {
+                client = env.getCli().getCommandContext().getModelControllerClient();
+            }
+            ModelNode result = client.execute(operation);
+            if (Operations.isSuccessfulOutcome(result)) {
+                return Operations.readResult(result).asString();
+            }
+            return null;
+        } catch (IOException ex) {
+            return null;
+        }
     }
 
     private String constructUri(final String protocol, final String host, final int port) throws URISyntaxException {

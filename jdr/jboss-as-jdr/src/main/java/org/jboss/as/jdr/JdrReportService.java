@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import static java.security.AccessController.doPrivileged;
+import org.jboss.as.cli.scriptsupport.CLI;
 
 /**
  * Service that provides a {@link JdrReportCollector}.
@@ -74,22 +75,10 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
 
     /**
      * Collect a JDR report when run outside the Application Server.
+     * @param cli
      */
-    public JdrReport standaloneCollect(String protocol, String host, String port) throws OperationFailedException {
-        String username = null;
-        String password = null;
-
-        if (host == null) {
-            host = "localhost";
-        }
-        if (port == null) {
-            port = "9990";
-        }
-        if(protocol == null) {
-            protocol = "http-remoting";
-        }
-
-        return new JdrRunner(protocol, username, password, host, port).collect();
+    public JdrReport standaloneCollect(CLI cli, String protocol, String host, int port) throws OperationFailedException {
+        return new JdrRunner(cli, protocol, host, port, null, null).collect();
     }
 
     /**

@@ -22,6 +22,8 @@
 package org.jboss.as.jdr.logger;
 
 
+import java.io.IOException;
+import java.nio.file.Path;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -114,6 +116,17 @@ public interface JdrLogger extends BasicLogger {
     @Message(id = 10, value = "Parameter %s may not be null.")
     IllegalArgumentException varNull(String var);
 
+    /**
+     * Standalone property directory could not be located which is needed to find/create the JDR properties file.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11, value = "Could not find JDR properties file.")
+    void couldNotFindJDRPropertiesFile();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 12, value = "Could not create JDR properties file at %s")
+    void couldNotCreateJDRPropertiesFile(@Cause IOException ioex, Path path);
+
     @Message(id = Message.NONE, value = "Display this message and exit")
     String jdrHelpMessage();
 
@@ -125,4 +138,7 @@ public interface JdrLogger extends BasicLogger {
 
     @Message(id = Message.NONE, value = "Protocol that is used to connect. Can be remote, http or https (default: http)")
     String jdrProtocolMessage();
+
+    @Message(id = Message.NONE, value = "Configuration file of the server if it is not running.")
+    String jdrConfigMessage();
 }
