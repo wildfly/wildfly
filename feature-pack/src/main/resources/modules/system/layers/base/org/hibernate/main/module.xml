@@ -50,6 +50,6 @@
         <module name="org.jboss.vfs"/>
         <module name="org.hibernate.commons-annotations"/>
         <module name="org.hibernate.infinispan" services="import" optional="true"/>
-        <module name="org.hibernate.jipijapa-hibernate4-3" services="import"/>
+        <module name="org.hibernate.jipijapa-hibernate5" services="import"/>
     </dependencies>
 </module>
