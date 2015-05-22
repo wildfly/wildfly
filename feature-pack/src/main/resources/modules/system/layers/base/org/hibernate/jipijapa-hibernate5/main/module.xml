@@ -2,7 +2,7 @@
 
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ Copyright 2015, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -22,15 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!-- Represents the Hibernate 4.3.x module-->
-<module xmlns="urn:jboss:module:1.3" name="org.hibernate">
+<module xmlns="urn:jboss:module:1.3" name="org.hibernate.jipijapa-hibernate5">
     <resources>
-        <artifact name="${org.hibernate:hibernate-core}"/>
-        <artifact name="${org.hibernate:hibernate-envers}"/>
-        <artifact name="${org.hibernate:hibernate-entitymanager}"/>
+        <artifact name="${org.wildfly:jipijapa-hibernate5}"/>
     </resources>
 
     <dependencies>
+        <module name="org.hibernate"/>
         <module name="asm.asm"/>
         <module name="com.fasterxml.classmate"/>
         <module name="javax.api"/>
@@ -49,7 +47,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
         <module name="org.hibernate.commons-annotations"/>
-        <module name="org.hibernate.infinispan" services="import" optional="true"/>
-        <module name="org.hibernate.jipijapa-hibernate5" services="import"/>
+        <module name="org.hibernate.infinispan" services="import"/>
+        <module name="org.infinispan" services="import"/>
     </dependencies>
 </module>

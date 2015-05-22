@@ -702,6 +702,17 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>jipijapa-hibernate5</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-hibernate4-3</artifactId>
             <exclusions>
                 <exclusion>

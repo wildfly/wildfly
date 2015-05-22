@@ -20,6 +20,7 @@
         <module>spi</module>
         <module>hibernate4_1</module>
         <module>hibernate4_3</module>
+        <module>hibernate5</module>
         <module>eclipselink</module>
         <module>openjpa</module>
     </modules>
