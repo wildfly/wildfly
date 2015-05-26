@@ -315,9 +315,9 @@ public class CacheAddHandler extends AbstractAddStepHandler {
                 }
 
                 Properties properties = new TypedProperties();
-                if (store.hasDefined(StorePropertyResourceDefinition.WILDCARD_PATH.getKey())) {
-                    for (Property property : store.get(StorePropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                        properties.setProperty(property.getName(), StorePropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString());
+                if (store.hasDefined(StoreResourceDefinition.PROPERTIES.getName())) {
+                    for (Property property : StoreResourceDefinition.PROPERTIES.resolveModelAttribute(context, store).asPropertyList()) {
+                        properties.setProperty(property.getName(), property.getValue().asString());
                     }
                 }
                 storeBuilder.withProperties(properties);
