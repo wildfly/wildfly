@@ -11,9 +11,12 @@
         <version>10.0.0.Alpha5-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <version.org.hibernate4_3>4.3.10.Final</version.org.hibernate4_3>
+    </properties>    
+
     <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-hibernate4-3</artifactId>
-    
     <name>jipijapa Hibernate 4.3.x (JPA 2.1) integration</name>
 
     <dependencies>
@@ -39,10 +42,10 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-spi</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- External -->
-
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
@@ -51,6 +54,7 @@
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -62,6 +66,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
+            <version>${version.org.hibernate4_3}</version>
             <scope>provided</scope>
             <exclusions>
               <exclusion>
@@ -74,6 +79,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
+            <version>${version.org.hibernate4_3}</version>
             <scope>provided</scope>
             <exclusions>
               <exclusion>
@@ -87,14 +93,10 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-infinispan</artifactId>
+            <version>${version.org.hibernate4_3}</version>
             <scope>provided</scope>
         </dependency>
  
-        <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.1-api</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-vfs</artifactId>

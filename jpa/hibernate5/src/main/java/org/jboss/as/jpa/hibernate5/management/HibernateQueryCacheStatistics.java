@@ -25,7 +25,6 @@ import java.util.Set;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.management.spi.Operation;
 import org.jipijapa.management.spi.PathAddress;
@@ -92,8 +91,7 @@ public class HibernateQueryCacheStatistics extends HibernateAbstractStatistics {
     }
 
     private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
-        HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
-        SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
             return sessionFactory.getStatistics();
         }
@@ -101,8 +99,7 @@ public class HibernateQueryCacheStatistics extends HibernateAbstractStatistics {
     }
 
     private org.hibernate.stat.QueryStatistics getStatistics(EntityManagerFactory entityManagerFactory, String displayQueryName) {
-        HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
-        SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         // convert displayed (transformed by QueryNames) query name to original query name to look up query statistics
         if (sessionFactory != null) {
             String[] originalQueryNames = sessionFactory.getStatistics().getQueries();
@@ -187,8 +184,7 @@ public class HibernateQueryCacheStatistics extends HibernateAbstractStatistics {
             String displayQueryName = getQueryName(args);
             EntityManagerFactory entityManagerFactory = getEntityManagerFactory(args);
             if (displayQueryName != null && entityManagerFactory != null) {
-                HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
-                SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
+                SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
                 // convert displayed (transformed by QueryNames) query name to original query name
                 if (sessionFactory != null) {
                     String[] originalQueryNames = sessionFactory.getStatistics().getQueries();

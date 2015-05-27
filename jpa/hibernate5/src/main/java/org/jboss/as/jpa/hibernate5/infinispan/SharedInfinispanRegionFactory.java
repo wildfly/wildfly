@@ -20,6 +20,7 @@ package org.jboss.as.jpa.hibernate5.infinispan;
 import java.util.Properties;
 
 import org.hibernate.cache.CacheException;
+import org.hibernate.service.ServiceRegistry;
 import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.jpa.hibernate5.HibernateSecondLevelCache;
@@ -47,7 +48,7 @@ public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
     }
 
     @Override
-    protected EmbeddedCacheManager createCacheManager(Properties properties) {
+    protected EmbeddedCacheManager createCacheManager(Properties properties, final ServiceRegistry serviceRegistry) {
         String container = properties.getProperty(CACHE_CONTAINER, DEFAULT_CACHE_CONTAINER);
         Properties cacheSettings = new Properties();
         cacheSettings.put(HibernateSecondLevelCache.CONTAINER, container);

@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.hibernate.cache.CacheException;
 import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.service.ServiceRegistry;
 import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.jpa.hibernate5.HibernateSecondLevelCache;
@@ -51,7 +52,7 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
     }
 
     @Override
-    protected EmbeddedCacheManager createCacheManager(Properties properties) throws CacheException {
+    protected EmbeddedCacheManager createCacheManager(Properties properties, final ServiceRegistry serviceRegistry) throws CacheException {
         // Find a suitable service name to represent this session factory instance
         String name = properties.getProperty(AvailableSettings.SESSION_FACTORY_NAME);
         String container = properties.getProperty(CACHE_CONTAINER, DEFAULT_CACHE_CONTAINER);

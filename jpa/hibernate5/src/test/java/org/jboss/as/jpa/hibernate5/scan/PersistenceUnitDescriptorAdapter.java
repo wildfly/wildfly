@@ -24,6 +24,7 @@ import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -119,6 +120,6 @@ public class PersistenceUnitDescriptorAdapter implements PersistenceUnitDescript
 	}
 
 	@Override
-	public void pushClassTransformer(List<String> entityClassNames) {
+	public void pushClassTransformer(Collection<String> entityClassNames) {
 	}
 }

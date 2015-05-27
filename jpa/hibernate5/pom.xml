@@ -25,14 +25,8 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-jpa-parent</artifactId>
-        <version>10.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.Alpha5-SNAPSHOT</version>
     </parent>
-
-    <properties>
-        <version.org.hibernate5>5.0.0-SNAPSHOT</version.org.hibernate5>
-        <version.org.hibernate5.commons.annotations>4.0.5.Final</version.org.hibernate5.commons.annotations>
-        <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
-    </properties>    
 
     <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-hibernate5</artifactId>
@@ -79,14 +73,14 @@
         <dependency>
             <groupId>org.hibernate.common</groupId>
             <artifactId>hibernate-commons-annotations</artifactId>
-            <version>${version.org.hibernate5.commons.annotations}</version>
+            <version>${version.org.hibernate.commons.annotations}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>${version.org.hibernate5}</version>
+            <version>${version.org.hibernate}</version>
             <scope>provided</scope>
             <exclusions>
               <exclusion>
@@ -100,7 +94,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
-            <version>${version.org.hibernate5}</version>
+            <version>${version.org.hibernate}</version>
             <scope>provided</scope>
             <exclusions>
               <exclusion>
@@ -114,7 +108,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-infinispan</artifactId>
-            <version>${version.org.hibernate5}</version>
+            <version>${version.org.hibernate}</version>
             <scope>provided</scope>
         </dependency>
 

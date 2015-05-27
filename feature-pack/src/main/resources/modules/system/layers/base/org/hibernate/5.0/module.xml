@@ -2,7 +2,7 @@
 
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2015, Red Hat, Inc., and individual contributors
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -22,17 +22,6 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.3" name="org.hibernate.infinispan">
-    <resources>
-        <artifact name="${org.hibernate:hibernate-infinispan}"/>
-    </resources>
+<!-- Represents the Hibernate 5.0.x module-->
+<module-alias xmlns="urn:jboss:module:1.3" name="org.hibernate" slot="5.0"  target-name="org.hibernate"/>
 
-    <dependencies>
-        <module name="org.hibernate"/>
-        <module name="javax.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="org.infinispan" services="import"/>
-        <module name="org.infinispan.commons"/>
-        <module name="org.jboss.logging"/>
-    </dependencies>
-</module>
