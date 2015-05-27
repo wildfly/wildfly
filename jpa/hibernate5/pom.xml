@@ -29,7 +29,7 @@
     </parent>
 
     <properties>
-        <version.org.hibernate5>5.0.0-SNAPSHOT</version.org.hibernate5>
+        <version.org.hibernate5>5.0.0.Beta2</version.org.hibernate5>
         <version.org.hibernate5.commons.annotations>4.0.5.Final</version.org.hibernate5.commons.annotations>
         <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
     </properties>    
