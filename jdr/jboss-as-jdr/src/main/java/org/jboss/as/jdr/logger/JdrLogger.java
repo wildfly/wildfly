@@ -114,6 +114,12 @@ public interface JdrLogger extends BasicLogger {
     @Message(id = 10, value = "Parameter %s may not be null.")
     IllegalArgumentException varNull(String var);
 
+    /**
+     * Standalone property directory could not be located which is needed to find/create the JDR properties file.
+     */
+    @Message(id = 11, value = "Could not find JDR properties file.")
+    String couldNotFindJDRPropertiesFile();
+
     @Message(id = Message.NONE, value = "Display this message and exit")
     String jdrHelpMessage();
 
