@@ -15,6 +15,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.XnioWorker;
 
 import io.undertow.predicate.Predicate;
@@ -132,7 +133,8 @@ public class ModClusterService extends FilterService {
                 }
             }
         };
-        if(predicate != null) {
+        UndertowLogger.ROOT_LOGGER.debug("HttpHandler for mod_cluster MCMP created.");
+        if (predicate != null) {
             return new PredicateHandler(predicate, theHandler, next);
         } else {
             return theHandler;
