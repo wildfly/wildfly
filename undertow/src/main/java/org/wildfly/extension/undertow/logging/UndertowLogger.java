@@ -305,7 +305,7 @@ public interface UndertowLogger extends BasicLogger {
     void sharedSessionConfigNotInRootDeployment(String deployment);
 
     @Message(id = 70, value = "Could not load handler %s from %s module")
-    RuntimeException couldNotLoadHandlerFromModule(String className,String moduleName, @Cause Exception e);
+    RuntimeException couldNotLoadHandlerFromModule(String className, String moduleName, @Cause Exception e);
 
     @LogMessage(level = ERROR)
     @Message(id = 71, value = "Jetty ALPN not found. HTTP2 and SPDY are not available. Please make sure Jetty ALPN is on the boot class path.")
