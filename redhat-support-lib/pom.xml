@@ -42,8 +42,8 @@
 			<artifactId>junit</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>javax.ws.rs-api</artifactId>
+			<groupId>org.jboss.spec.javax.ws.rs</groupId>
+			<artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
@@ -70,8 +70,8 @@
 				<exclusions>
 					<exclusion>
 						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
+                                                <artifactId>commons-logging</artifactId>
+                                        </exclusion>
 				</exclusions>
 			</dependency>
 			<dependency>
@@ -82,19 +82,15 @@
 		</dependencies>
 	</dependencyManagement>
 	<build>
-		<pluginManagement>
+	        <pluginManagement>
 			<plugins>                                
-				<!-- Need Java 5, which is the default since v2.3 of the maven-compiler-plugin. -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.5.1</version>
-				</plugin>
-                                <plugin>
+                               <plugin>
                                     <groupId>org.apache.maven.plugins</groupId>
                                     <artifactId>maven-checkstyle-plugin</artifactId>
                                     <configuration>
-                                        <excludes>**/target/generated-sources/**</excludes>
+                                        <sourceDirectories>
+                                            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                                        </sourceDirectories>
                                     </configuration>
                                 </plugin>
 				<plugin>
@@ -108,7 +104,7 @@
 									<pluginExecutionFilter>
 										<groupId>org.codehaus.mojo</groupId>
 										<artifactId>jaxb2-maven-plugin</artifactId>
-										<versionRange>[1.5,)</versionRange>
+										<versionRange>[2.1,)</versionRange>
 										<goals>
 											<goal>xjc</goal>
 										</goals>
@@ -144,7 +140,7 @@
 					<bindingDirectory>binding.xjb</bindingDirectory>
 				</configuration>
 			</plugin>
-			<plugin>
+		<!--	<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<version>1.2</version>
@@ -159,7 +155,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -207,6 +203,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<finalName>wildfly-redhat-support-lib</finalName>
+		<finalName>wildfly-redhat-support-lib</finalName> 
 	</build>
 </project>

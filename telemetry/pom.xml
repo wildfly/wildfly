@@ -87,7 +87,7 @@
            given to the generated war, and hence the context root) -->
         <finalName>${project.artifactId}</finalName>
         <plugins>
-	    <plugin>
+	    <!-- <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>1.7</source>
@@ -123,8 +123,8 @@
                         <descriptor>src/assemble/distribution.xml</descriptor>
                     </descriptors>
                 </configuration>
-            </plugin>
-            <plugin>
+            </plugin> -->
+            <plugin> 
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <inherited>false</inherited>
