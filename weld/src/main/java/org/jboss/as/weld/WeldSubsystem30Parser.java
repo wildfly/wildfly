@@ -27,24 +27,37 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-class WeldSubsystem20Parser implements XMLElementReader<List<ModelNode>> {
+class WeldSubsystem30Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    public static final String NAMESPACE = "urn:jboss:domain:weld:2.0";
-    static final WeldSubsystem20Parser INSTANCE = new WeldSubsystem20Parser();
+    public static final String NAMESPACE = "urn:jboss:domain:weld:3.0";
+    static final WeldSubsystem30Parser INSTANCE = new WeldSubsystem30Parser();
     private static final PersistentResourceXMLDescription xmlDescription;
 
 
     static {
         xmlDescription = PersistentResourceXMLDescription.builder(WeldResourceDefinition.INSTANCE)
-                .addAttributes(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                .addAttributes(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
                 .build();
     }
 
-    private WeldSubsystem20Parser() {
+    private WeldSubsystem30Parser() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+        ModelNode model = new ModelNode();
+        model.get(WeldResourceDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
+        xmlDescription.persist(writer, model, NAMESPACE);
     }
 
     /**

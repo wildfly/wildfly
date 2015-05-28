@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld;
 
+import static org.jboss.as.weld.WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE_NAME;
 import static org.jboss.as.weld.WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE_NAME;
 import static org.jboss.as.weld.WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME;
 
@@ -51,6 +52,7 @@ class WeldJBossAllParser implements JBossAllXMLParser<WeldJBossAllConfiguration>
     public WeldJBossAllConfiguration parse(XMLExtendedStreamReader reader, DeploymentUnit deploymentUnit) throws XMLStreamException {
         Boolean requireBeanDescriptor = null;
         Boolean nonPortableMode = null;
+        Boolean developmentMode = null;
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             final String name = reader.getAttributeLocalName(i);
@@ -64,12 +66,16 @@ class WeldJBossAllParser implements JBossAllXMLParser<WeldJBossAllConfiguration>
                     nonPortableMode = Boolean.valueOf(value);
                     break;
                 }
+                case DEVELOPMENT_MODE_ATTRIBUTE_NAME: {
+                    developmentMode = Boolean.valueOf(value);
+                    break;
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
-        return new WeldJBossAllConfiguration(requireBeanDescriptor, nonPortableMode);
+        return new WeldJBossAllConfiguration(requireBeanDescriptor, nonPortableMode, developmentMode);
     }
 
 }
