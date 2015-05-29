@@ -24,7 +24,6 @@ import java.util.Collections;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.management.spi.Operation;
 import org.jipijapa.management.spi.PathAddress;
@@ -74,8 +73,7 @@ public class HibernateEntityCacheStatistics extends HibernateAbstractStatistics 
     }
 
     private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
-        HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
-        SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
             return sessionFactory.getStatistics();
         }
@@ -84,8 +82,7 @@ public class HibernateEntityCacheStatistics extends HibernateAbstractStatistics 
 
     org.hibernate.stat.SecondLevelCacheStatistics getStatistics(EntityManagerFactoryAccess entityManagerFactoryaccess, PathAddress pathAddress) {
         String scopedPersistenceUnitName = pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL);
-        HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactoryaccess.entityManagerFactory(scopedPersistenceUnitName);
-        SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
+        SessionFactory sessionFactory = entityManagerFactoryaccess.entityManagerFactory(scopedPersistenceUnitName).unwrap(SessionFactory.class);
         if (sessionFactory != null) {
             // The entity class name is prefixed by the application scoped persistence unit name
 
