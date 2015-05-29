@@ -24,7 +24,6 @@ import java.util.Collections;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.stat.CollectionStatistics;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.management.spi.Operation;
@@ -74,8 +73,7 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
     }
 
     private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
-        HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
-        SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
             return sessionFactory.getStatistics();
         }
@@ -83,8 +81,7 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
     }
 
     private CollectionStatistics getStatistics(final EntityManagerFactory entityManagerFactory, String collectionName) {
-        HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
-        SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
             return sessionFactory.getStatistics().getCollectionStatistics(collectionName);
         }
