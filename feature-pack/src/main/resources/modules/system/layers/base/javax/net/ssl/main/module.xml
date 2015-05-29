@@ -26,8 +26,4 @@
     <dependencies>
         <module name="javax.net.ssl" export="true"/>
     </dependencies>
-
-    <resources>
-        <resource-root path="jnet-3.2.1.jar"/>
-    </resources>
 </module>
