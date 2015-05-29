@@ -33,9 +33,9 @@
         <version>9.0.0.CR2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-web-feature-pack</artifactId>
+    <artifactId>wildfly-servlet-feature-pack</artifactId>
 
-    <name>WildFly: Web Feature Pack</name>
+    <name>WildFly: Servlet Feature Pack</name>
     <packaging>pom</packaging>
 
     <dependencies>
@@ -385,7 +385,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-web-${project.version}</finalName>
+        <finalName>${server.output.dir.prefix}-servlet-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -424,7 +424,7 @@
                                 <descriptor>assembly.xml</descriptor>
                             </descriptors>
                             <recompressZippedFiles>true</recompressZippedFiles>
-                            <finalName>${server.output.dir.prefix}-web-feature-pack-${project.version}</finalName>
+                            <finalName>${server.output.dir.prefix}-servlet-feature-pack-${project.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <workDirectory>${project.build.directory}/assembly/work</workDirectory>
