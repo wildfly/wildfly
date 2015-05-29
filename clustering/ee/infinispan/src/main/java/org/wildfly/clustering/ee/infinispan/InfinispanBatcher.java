@@ -22,6 +22,7 @@
 package org.wildfly.clustering.ee.infinispan;
 
 import javax.transaction.InvalidTransactionException;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -79,14 +80,18 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         this.tm = tm;
     }
 
-    @SuppressWarnings("resource")
     @Override
     public TransactionBatch createBatch() {
         if (this.tm == null) return NON_TX_BATCH;
         try {
             Transaction tx = this.tm.getTransaction();
-            // Consolidate nested batches into a single operational batch
-            return (tx == null) ? new NewTransactionBatch(this.tm) : new NestedTransactionBatch(tx);
+            if (tx != null) {
+                // Consolidate nested batches into a single operational batch
+                if (tx.getStatus() == Status.STATUS_ACTIVE) return new NestedTransactionBatch(tx);
+                // If associated tx is not active, suspend it so we can start a new one.
+                this.tm.suspend();
+            }
+            return new NewTransactionBatch(this.tm);
         } catch (SystemException e) {
             throw new CacheException(e);
         }
