@@ -40,8 +40,6 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.internal.util.config.ConfigurationHelper;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 
 /**
  * Test that Hibernate Envers is working over Native Hibernate API in AS7 container without any JPA assistance
@@ -53,12 +51,6 @@ import org.hibernate.service.ServiceRegistryBuilder;
 public class SFSBHibernateEnversSessionFactory {
 
     private static SessionFactory sessionFactory;
-    private static ServiceRegistryBuilder builder;
-    private static ServiceRegistry serviceRegistry;
-
-    protected static final Class[] NO_CLASSES = new Class[0];
-    protected static final String NO_MAPPINGS = new String();
-
 
     public void cleanup() {
         sessionFactory.close();

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-jpa-parent</artifactId>
+        <version>10.0.0.Alpha2-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.wildfly</groupId>
+    <artifactId>jipijapa-openjpa</artifactId>
+    
+    <name>jipijapa OpenJPA integration</name>
+    
+    <properties>
+        <version.org.apache.openjpa>2.1.1</version.org.apache.openjpa>
+    </properties>    
+
+    <dependencies>
+
+        <!-- Internal -->
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>jipijapa-spi</artifactId>
+        </dependency>
+
+        <!-- External -->
+
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa-kernel</artifactId>
+            <version>${version.org.apache.openjpa}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa-lib</artifactId>
+            <version>${version.org.apache.openjpa}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa-persistence</artifactId>
+            <version>${version.org.apache.openjpa}</version>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
+</project>
