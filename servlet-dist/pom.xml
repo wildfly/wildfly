@@ -33,19 +33,19 @@
         <version>10.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-web-dist</artifactId>
-    <name>WildFly: Web Distribution</name>
+    <artifactId>wildfly-servlet-dist</artifactId>
+    <name>WildFly: Servlet Distribution</name>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-web-feature-pack</artifactId>
+            <artifactId>wildfly-servlet-feature-pack</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-web-feature-pack</artifactId>
+            <artifactId>wildfly-servlet-feature-pack</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -58,7 +58,7 @@
 
 
     <build>
-        <finalName>${server.output.dir.prefix}-web-${project.version}</finalName>
+        <finalName>${server.output.dir.prefix}-servlet-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.build</groupId>
