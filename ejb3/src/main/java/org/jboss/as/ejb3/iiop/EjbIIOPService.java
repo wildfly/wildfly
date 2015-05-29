@@ -206,7 +206,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     private final InjectedValue<POA> irPoa = new InjectedValue<POA>();
 
     /**
-     * Default IOR security config metadata (defined in the jacorb subsystem).
+     * Default IOR security config metadata (defined in the iiop subsystem).
      */
     private final InjectedValue<IORSecurityConfigMetaData> iorSecConfigMetaData = new InjectedValue<IORSecurityConfigMetaData>();
 
