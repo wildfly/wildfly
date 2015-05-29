@@ -250,7 +250,7 @@
 
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
-        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-web-${jboss.as.release.version}</wildfly.web.build.output.dir>
+        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}</wildfly.web.build.output.dir>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
