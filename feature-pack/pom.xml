@@ -98,7 +98,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-web-feature-pack</artifactId>
+            <artifactId>wildfly-servlet-feature-pack</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
