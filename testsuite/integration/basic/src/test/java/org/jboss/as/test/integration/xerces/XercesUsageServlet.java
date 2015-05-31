@@ -22,22 +22,24 @@
 
 package org.jboss.as.test.integration.xerces;
 
-import org.apache.xerces.parsers.DOMParser;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
+import java.io.IOException;
+import java.io.InputStream;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * User: jpai
  */
-@WebServlet (urlPatterns = XercesUsageServlet.URL_PATTERN)
+@WebServlet(urlPatterns = XercesUsageServlet.URL_PATTERN)
 public class XercesUsageServlet extends HttpServlet {
 
     public static final String URL_PATTERN = "/xercesServlet";
@@ -56,14 +58,18 @@ public class XercesUsageServlet extends HttpServlet {
         try {
             this.parse(inputStream);
             resp.getOutputStream().print(SUCCESS_MESSAGE);
-        } catch (SAXException saxe) {
-            throw new ServletException(saxe);
+        } catch (SAXException | ParserConfigurationException e) {
+            throw new ServletException(e);
         }
     }
 
-    private void parse(final InputStream inputStream) throws IOException, SAXException {
-        DOMParser domParser = new DOMParser();
+    private void parse(final InputStream inputStream) throws IOException, SAXException, ParserConfigurationException {
+        DocumentBuilder domParser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         domParser.parse(new InputSource(inputStream));
+        boolean usingXerces = domParser.getClass().toString().contains("xerces");
+        if (!usingXerces){
+            throw new IOException("Should load xerces parser but got: "+domParser.getClass());
+        }
     }
 
 

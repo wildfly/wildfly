@@ -22,17 +22,19 @@
 
 package org.jboss.as.test.integration.xerces.ws;
 
-import org.apache.xerces.parsers.DOMParser;
-import org.xml.sax.InputSource;
-
+import java.io.IOException;
+import java.io.InputStream;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
-import java.io.InputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.xml.sax.InputSource;
 
 /**
  * User: jpai
  */
-@WebService (serviceName = "XercesUsageWebService", targetNamespace = "org.jboss.as.test.integration.xerces.ws")
+@WebService(serviceName = "XercesUsageWebService", targetNamespace = "org.jboss.as.test.integration.xerces.ws")
 @SOAPBinding
 public class XercesUsageWebService implements XercesUsageWSEndpoint {
 
@@ -44,9 +46,13 @@ public class XercesUsageWebService implements XercesUsageWSEndpoint {
         if (inputStream == null) {
             throw new RuntimeException(xmlResource + " could not be found");
         }
-        DOMParser domParser = new DOMParser();
         try {
+            DocumentBuilder domParser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             domParser.parse(new InputSource(inputStream));
+            boolean usingXerces = domParser.getClass().toString().contains("xerces");
+            if (!usingXerces) {
+                throw new IOException("Should load xerces parser but got: " + domParser.getClass());
+            }
             return SUCCESS_MESSAGE;
         } catch (Exception e) {
             throw new RuntimeException(e);

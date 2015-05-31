@@ -106,10 +106,6 @@
             <artifactId>javassist</artifactId>
         </dependency>
         <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.remotingjmx</groupId>
             <artifactId>remoting-jmx</artifactId>
             <exclusions>

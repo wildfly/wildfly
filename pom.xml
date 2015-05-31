@@ -136,7 +136,6 @@
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
         <version.org.apache.ws.security>2.0.4</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0.2</version.org.apache.ws.xmlschema>
-        <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.bouncycastle>1.52</version.org.bouncycastle>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.3</version.org.codehaus.jettison>
@@ -3349,6 +3348,10 @@
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -5271,6 +5274,10 @@
                         <groupId>org.jboss.spec.javax.servlet</groupId>
                         <artifactId>jboss-servlet-api_3.0_spec</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -5280,8 +5287,8 @@
                 <version>${version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -6156,18 +6163,6 @@
             </dependency>
 
             <dependency>
-                <groupId>xalan</groupId>
-                <artifactId>serializer</artifactId>
-                <version>${version.org.apache.xalan}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>xalan</groupId>
-                <artifactId>xalan</artifactId>
-                <version>${version.org.apache.xalan}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.io7m.xom</groupId>
                 <artifactId>xom</artifactId>
                 <version>${version.xom}</version>
@@ -6175,6 +6170,10 @@
                     <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
