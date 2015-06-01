@@ -96,7 +96,7 @@
         <version.com.sun.istack>2.21</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.com.sun.xsom>20140925</version.com.sun.xsom>
-        <version.commons-beanutils-core>1.8.3</version.commons-beanutils-core>
+        <version.commons-beanutils>1.9.2</version.commons-beanutils>
         <version.commons-cli>1.2</version.commons-cli>
         <version.commons-codec>1.9</version.commons-codec>
         <version.commons-collections>3.2.1</version.commons-collections>
@@ -1522,8 +1522,8 @@
 
             <dependency>
                 <groupId>commons-beanutils</groupId>
-                <artifactId>commons-beanutils-core</artifactId>
-                <version>${version.commons-beanutils-core}</version>
+                <artifactId>commons-beanutils</artifactId>
+                <version>${version.commons-beanutils}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
