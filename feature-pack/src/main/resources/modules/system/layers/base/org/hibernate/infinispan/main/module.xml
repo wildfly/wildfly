@@ -32,6 +32,7 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.infinispan" services="import"/>
+        <module name="org.infinispan.commons"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>
