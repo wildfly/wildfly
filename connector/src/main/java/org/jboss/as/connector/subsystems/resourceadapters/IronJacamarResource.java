@@ -22,8 +22,10 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import java.util.Collections;
 import java.util.Set;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.AbstractModelResource;
@@ -104,9 +106,19 @@ public class IronJacamarResource implements Resource {
         delegate.registerChild(address, resource);
     }
 
+    //@Override WFLY-4716
+    public void registerChild(PathElement address, int index, Resource resource) {
+        throw ConnectorLogger.ROOT_LOGGER.indexedChildResourceRegistrationNotAvailable(address);
+    }
+
     @Override
     public Resource removeChild(PathElement address) {
         return delegate.removeChild(address);
+    }
+
+    //@Override WFLY-4716
+    public Set<String> getOrderedChildTypes() {
+        return Collections.emptySet();
     }
 
     @Override

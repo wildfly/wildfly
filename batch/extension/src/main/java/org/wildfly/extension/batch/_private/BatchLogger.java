@@ -25,6 +25,7 @@ package org.wildfly.extension.batch._private;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobException;
 
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -118,4 +119,6 @@ public interface BatchLogger extends BasicLogger {
     @Message(id = 8, value = "Empty job-repository element found in deployment descriptor. Using the default job repository for deployment %s.")
     void emptyJobRepositoryElement(String deploymentName);
 
+    @Message(id = 9, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
+    IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
 }
