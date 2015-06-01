@@ -312,4 +312,7 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 72, value = "Could not find configured external path %s")
     DeploymentUnitProcessingException couldNotFindExternalPath(File path);
+
+    @Message(id = 73, value = "mod_cluster advertise socket binding requires multicast address to be set")
+    StartException advertiseSocketBindingRequiresMulticastAddress();
 }

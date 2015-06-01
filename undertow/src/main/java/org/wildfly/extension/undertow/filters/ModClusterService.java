@@ -15,6 +15,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.XnioWorker;
 
 import io.undertow.predicate.Predicate;
@@ -25,6 +26,7 @@ import io.undertow.server.handlers.proxy.mod_cluster.MCMPConfig;
 import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 /**
  * filter service for the mod cluster frontend. This requires various injections, and as a result can't use the
@@ -85,9 +87,13 @@ public class ModClusterService extends FilterService {
                 .build();
 
         MCMPConfig.Builder builder = MCMPConfig.builder();
+        InetAddress multicastAddress = advertiseSocketBinding.getValue().getMulticastAddress();
+        if(multicastAddress == null) {
+            throw UndertowLogger.ROOT_LOGGER.advertiseSocketBindingRequiresMulticastAddress();
+        }
         builder.enableAdvertise()
                 .setAdvertiseAddress(advertiseSocketBinding.getValue().getSocketAddress().getAddress().getHostAddress())
-                .setAdvertiseGroup(advertiseSocketBinding.getValue().getMulticastAddress().getHostAddress())
+                .setAdvertiseGroup(multicastAddress.getHostAddress())
                 .setAdvertisePort(advertiseSocketBinding.getValue().getPort())
                 .setAdvertiseFrequency(advertiseFrequency)
                 .setPath(advertisePath)
