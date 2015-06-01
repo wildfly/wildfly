@@ -30,6 +30,7 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY;
 
 import java.lang.reflect.Modifier;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 
@@ -65,12 +66,14 @@ import org.jboss.metadata.ear.spec.WebModuleMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.webservices.JBossPortComponentMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * JBoss AS integration helper class.
@@ -394,7 +397,18 @@ public final class ASHelper {
 
     @SuppressWarnings("unchecked")
     public static <T> T getMSCService(final ServiceName serviceName, final Class<T> clazz) {
-        ServiceController<T> service = (ServiceController<T>) CurrentServiceContainer.getServiceContainer().getService(serviceName);
+        final ServiceContainer serviceContainer;
+        if(WildFlySecurityManager.isChecking()) {
+            serviceContainer = WildFlySecurityManager.doUnchecked(new PrivilegedAction<ServiceContainer>() {
+                @Override
+                public ServiceContainer run() {
+                    return CurrentServiceContainer.getServiceContainer();
+                }
+            });
+        } else {
+            serviceContainer = CurrentServiceContainer.getServiceContainer();
+        }
+        ServiceController<T> service = (ServiceController<T>) serviceContainer.getService(serviceName);
         return service != null ? service.getValue() : null;
     }
 
