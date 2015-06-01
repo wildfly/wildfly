@@ -57,7 +57,7 @@ final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler
 
         //if the server is booting or the required value is the current one,
         //we do not need to do anything and reload is not required
-        if (resolvedValue.equals(currentValue) || context.isBooting()) {
+        if (isSameValue(resolvedValue, currentValue, attributeName) || context.isBooting()) {
             return false;
         }
 
@@ -65,6 +65,16 @@ final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler
         boolean done = updateServerConfig(context, attributeName, value, false);
         handbackHolder.setHandback(new RollbackInfo(done));
         return !done; //reload required if runtime has not been updated
+    }
+
+    private boolean isSameValue(ModelNode resolvedValue, ModelNode currentValue, String attributeName) {
+        if (resolvedValue.equals(currentValue)) {
+            return true;
+        }
+        if (!currentValue.isDefined()) {
+            return resolvedValue.equals(getAttributeDefinition(attributeName).getDefaultValue());
+        }
+        return false;
     }
 
     @Override
