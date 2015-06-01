@@ -21,9 +21,9 @@ import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 
 public class BaseQuery {
-    
-    private final static Logger LOGGER = Logger.getLogger(API.class.getName());
-    
+
+    private static final Logger LOGGER = Logger.getLogger(API.class.getName());
+
     protected <T> T get(ResteasyClient client, String uri, Class<T> c)
             throws RequestException {
         Response response = client.target(uri).request()
@@ -39,13 +39,13 @@ public class BaseQuery {
         T returnObject = response.readEntity(c);
         return returnObject;
     }
-    
-    protected String getFile(ResteasyClient client, String uri, String fileName, 
-            String destDir) 
+
+    protected String getFile(ResteasyClient client, String uri, String fileName,
+            String destDir)
         throws RequestException, IOException, javax.mail.internet.ParseException {
         Response response = client.target(uri).request()
                 .accept(MediaType.APPLICATION_XML).get();
-        
+
         if(response.getStatus() != HttpStatus.SC_OK) {
             LOGGER.debug("Failed : HTTP error code : "
                     + response.getStatusInfo().getStatusCode() + " - "
@@ -53,11 +53,11 @@ public class BaseQuery {
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
-        
+
         // copy file using buffer to temporary file
         response.bufferEntity();
-        File file = response.readEntity(File.class);        
-        
+        File file = response.readEntity(File.class);
+
         // if destDir supplied then move temporary file to specified directory
         StringBuffer filePath = new StringBuffer();
         if (destDir != null) {
@@ -65,22 +65,22 @@ public class BaseQuery {
             filePath.append(destDir);
             if(!destDir.endsWith(File.separator)) {
                 filePath.append(File.separator);
-            }           
-        
+            }
+
             if (fileName != null) {
-                nameOfFile = fileName;          
+                nameOfFile = fileName;
             } else {
                 String name = response.getStringHeaders().getFirst("Content-Disposition");
                 String[] temp = name.split("\"");
-                nameOfFile = MimeUtility.decodeWord(temp[1]);   
+                nameOfFile = MimeUtility.decodeWord(temp[1]);
             }
             filePath.append(nameOfFile);
             File movedFile = new File(filePath.toString());
-            FileUtils.moveFile(file, movedFile);    
+            FileUtils.moveFile(file, movedFile);
             file.delete();
             file = movedFile;
         }
-        
+
         return file.getAbsolutePath();
     }
 
@@ -159,7 +159,7 @@ public class BaseQuery {
         GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(
                 mdo) {
         };
-        
+
         javax.ws.rs.client.Invocation.Builder builder = client
                 .target(uri)
                 .request(MediaType.APPLICATION_XML);
