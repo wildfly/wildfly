@@ -24,46 +24,9 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 import java.io.IOException;
-import java.util.List;
-
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.SecurityRealmService;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.NamingStoreService;
-import org.jboss.as.remoting.HttpListenerRegistryService;
-import org.jboss.as.server.Services;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.junit.Assert;
-import org.junit.Test;
-import org.wildfly.extension.io.BufferPoolService;
-import org.wildfly.extension.io.IOServices;
-import org.wildfly.extension.io.WorkerService;
-import org.wildfly.extension.undertow.filters.FilterRef;
-import org.wildfly.extension.undertow.filters.FilterService;
-import org.xnio.OptionMap;
-import org.xnio.Options;
 
 /**
  * This is the barebone test example that tests subsystem

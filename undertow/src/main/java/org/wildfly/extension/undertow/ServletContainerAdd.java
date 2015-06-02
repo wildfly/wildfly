@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -38,6 +39,11 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.io.IOServices;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -72,9 +78,28 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final boolean eagerFilterInit = ServletContainerDefinition.EAGER_FILTER_INIT.resolveModelAttribute(context, model).asBoolean();
         final boolean disableCachingForSecuredPages = ServletContainerDefinition.DISABLE_CACHING_FOR_SECURED_PAGES.resolveModelAttribute(context, model).asBoolean();
 
+        Boolean directoryListingEnabled = null;
+        if(model.hasDefined(Constants.DIRECTORY_LISTING)) {
+            directoryListingEnabled = ServletContainerDefinition.DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
+        }
+
         final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, model).asInt();
 
         WebsocketsDefinition.WebSocketInfo info = WebsocketsDefinition.INSTANCE.getConfig(context, model);
+
+        final Map<String, String> mimeMappings = new HashMap<>();
+        if (fullModel.hasDefined(Constants.MIME_MAPPING)) {
+            for (final Property mapping : fullModel.get(Constants.MIME_MAPPING).asPropertyList()) {
+                mimeMappings.put(mapping.getName(), MimeMappingDefinition.VALUE.resolveModelAttribute(context, mapping.getValue()).asString());
+            }
+        }
+
+        List<String> welcomeFiles = new ArrayList<>();
+        if (fullModel.hasDefined(Constants.WELCOME_FILE)) {
+            for (final Property welcome : fullModel.get(Constants.WELCOME_FILE).asPropertyList()) {
+                welcomeFiles.add(welcome.getName());
+            }
+        }
 
         final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
                 ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')),
@@ -85,7 +110,9 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 ignoreFlush,
                 eagerFilterInit,
                 sessionTimeout,
-                disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker());
+                disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker(),
+                mimeMappings,
+                welcomeFiles, directoryListingEnabled);
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
         if(bufferCache != null) {
@@ -96,7 +123,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         }
         if(info != null) {
             builder.addDependency(IOServices.WORKER.append(info.getWorker()), XnioWorker.class, container.getWebsocketsWorker());
-            builder.addDependency(IOServices.BUFFER_POOL.append(info.getBufferPool()), Pool.class, (InjectedValue)container.getWebsocketsBufferPool());
+            builder.addDependency(IOServices.BUFFER_POOL.append(info.getBufferPool()), Pool.class, (InjectedValue) container.getWebsocketsBufferPool());
         }
 
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND)

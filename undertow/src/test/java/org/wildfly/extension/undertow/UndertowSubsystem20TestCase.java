@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -17,21 +17,10 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.wildfly.extension.undertow;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
 
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
@@ -64,32 +53,36 @@ import org.wildfly.extension.undertow.filters.FilterService;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+
 /**
  * This is the barebone test example that tests subsystem
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class UndertowSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
-    public UndertowSubsystemTestCase() {
+    public UndertowSubsystem20TestCase() {
         super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-3.0.xml");
+        return readResource("undertow-2.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_3_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/undertow.xml"
-        };
+        return "schema/wildfly-undertow_2_0.xsd";
     }
 
     @Override
@@ -100,6 +93,12 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         properties.put("server.data.dir", System.getProperty("java.io.tmpdir"));
         return properties;
     }
+
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
+    }
+
 
     @Test
     public void testRuntime() throws Exception {

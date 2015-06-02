@@ -53,11 +53,6 @@ public class WarMetaData {
     private volatile WebMetaData webMetaData;
 
     /**
-     * Shared web.xml metadata.
-     */
-    private volatile WebMetaData sharedWebMetaData;
-
-    /**
      * Web fragments metadata.
      */
     private volatile Map<String, WebFragmentMetaData> webFragmentsMetaData;
@@ -115,14 +110,6 @@ public class WarMetaData {
 
     public void setWebMetaData(WebMetaData webMetaData) {
         this.webMetaData = webMetaData;
-    }
-
-    public WebMetaData getSharedWebMetaData() {
-        return sharedWebMetaData;
-    }
-
-    public void setSharedWebMetaData(WebMetaData sharedWebMetaData) {
-        this.sharedWebMetaData = sharedWebMetaData;
     }
 
     public Map<String, WebFragmentMetaData> getWebFragmentsMetaData() {

@@ -762,6 +762,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.addServlet(defaultServlet);
             }
 
+            if(servletContainer.getDirectoryListingEnabled() != null) {
+                ServletInfo defaultServlet = d.getServlets().get(DEFAULT_SERVLET_NAME);
+                defaultServlet.addInitParam(DefaultServlet.DIRECTORY_LISTING, servletContainer.getDirectoryListingEnabled().toString());
+            }
+
             if (mergedMetaData.getFilters() != null) {
                 for (final FilterMetaData filter : mergedMetaData.getFilters()) {
                     Class<? extends Filter> filterClass = (Class<? extends Filter>) module.getClassLoader().loadClass(filter.getFilterClass());
@@ -846,6 +851,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else {
                 d.addWelcomePages("index.html", "index.htm", "index.jsp");
             }
+            d.addWelcomePages(servletContainer.getWelcomeFiles());
 
             if (mergedMetaData.getErrorPages() != null) {
                 for (final ErrorPageMetaData page : mergedMetaData.getErrorPages()) {
@@ -859,6 +865,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     }
                     d.addErrorPages(errorPage);
                 }
+            }
+
+            for(Map.Entry<String, String> entry : servletContainer.getMimeMappings().entrySet()) {
+                d.addMimeMapping(new MimeMapping(entry.getKey(), entry.getValue()));
             }
 
             if (mergedMetaData.getMimeMappings() != null) {

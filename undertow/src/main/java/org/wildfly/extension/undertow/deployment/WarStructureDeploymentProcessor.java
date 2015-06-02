@@ -50,7 +50,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.as.web.common.WarMetaData;
-import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.vfs.VFS;
@@ -78,11 +77,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
 
     public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
-    private final WebMetaData sharedWebMetaData;
     private final SharedTldsMetaDataBuilder sharedTldsMetaData;
 
-    public WarStructureDeploymentProcessor(final WebMetaData sharedWebMetaData, final SharedTldsMetaDataBuilder sharedTldsMetaData) {
-        this.sharedWebMetaData = sharedWebMetaData;
+    public WarStructureDeploymentProcessor(final SharedTldsMetaDataBuilder sharedTldsMetaData) {
         this.sharedTldsMetaData = sharedTldsMetaData;
     }
 
@@ -135,7 +132,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         }
         // Add the war metadata
         final WarMetaData warMetaData = new WarMetaData();
-        warMetaData.setSharedWebMetaData(sharedWebMetaData);
         deploymentUnit.putAttachment(WarMetaData.ATTACHMENT_KEY, warMetaData);
 
         String deploymentName;
