@@ -21,20 +21,10 @@
  */
 package org.jboss.as.weld;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 
-class WeldSubsystem30Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+class WeldSubsystem30Parser extends PersistentResourceXMLParser {
 
     public static final String NAMESPACE = "urn:jboss:domain:weld:3.0";
     static final WeldSubsystem30Parser INSTANCE = new WeldSubsystem30Parser();
@@ -42,7 +32,7 @@ class WeldSubsystem30Parser implements XMLElementReader<List<ModelNode>>, XMLEle
 
 
     static {
-        xmlDescription = PersistentResourceXMLDescription.builder(WeldResourceDefinition.INSTANCE)
+        xmlDescription = PersistentResourceXMLDescription.builder(WeldResourceDefinition.INSTANCE, NAMESPACE)
                 .addAttributes(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
                 .build();
     }
@@ -50,21 +40,8 @@ class WeldSubsystem30Parser implements XMLElementReader<List<ModelNode>>, XMLEle
     private WeldSubsystem30Parser() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        ModelNode model = new ModelNode();
-        model.get(WeldResourceDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
-        xmlDescription.persist(writer, model, NAMESPACE);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
+    public PersistentResourceXMLDescription getParserDescription() {
+        return xmlDescription;
     }
 }
