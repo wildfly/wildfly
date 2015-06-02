@@ -153,12 +153,6 @@ public class EJBClientClusterConfigurationTestCase {
 
         // remove local authentication for applications at the server B
         final ModelControllerClient serverBClient = createModelControllerClient(DEFAULT_JBOSSAS);
-        LocalAuthenticationSetup.INSTANCE.setup(createManagementClient(serverBClient, DEFAULT_JBOSSAS), DEFAULT_JBOSSAS);
-
-        // the previous op needs a reload
-        this.container.stop(DEFAULT_JBOSSAS);
-        this.container.start(DEFAULT_JBOSSAS);
-
         ModelControllerClient serverAClient = null;
 
         try {
@@ -193,7 +187,7 @@ public class EJBClientClusterConfigurationTestCase {
                 this.deployer.undeploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
                 SystemPropertySetup.INSTANCE.tearDown(createManagementClient(serverAClient, JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION), JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
             } catch (Exception e) {
-                logger.debug("Exception during container shutdown", e);
+                logger.info("Exception during container shutdown", e);
             } finally {
                 this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
             }
@@ -203,9 +197,8 @@ public class EJBClientClusterConfigurationTestCase {
                     this.container.start(DEFAULT_JBOSSAS);
                 }
                 this.deployer.undeploy(DEFAULT_AS_DEPLOYMENT);
-                LocalAuthenticationSetup.INSTANCE.tearDown(createManagementClient(serverBClient, DEFAULT_JBOSSAS), DEFAULT_JBOSSAS);
             } catch (Exception e) {
-                logger.debug("Exception during container shutdown", e);
+                logger.info("Exception during container shutdown", e);
             } finally {
                 this.container.stop(DEFAULT_JBOSSAS);
             }
@@ -247,7 +240,7 @@ public class EJBClientClusterConfigurationTestCase {
 
         final int portOffset = getContainerPortOffset(container);
         final int managementPort = TestSuiteEnvironment.getServerPort() + portOffset;
-        final String managementAddress = TestSuiteEnvironment.getServerAddress();
+        final String managementAddress = getServerAddress(container);
 
         return ModelControllerClient.Factory.create(InetAddress.getByName(managementAddress),
                 managementPort,
@@ -262,7 +255,7 @@ public class EJBClientClusterConfigurationTestCase {
 
         final int portOffset = getContainerPortOffset(container);
         final int managementPort = TestSuiteEnvironment.getServerPort() + portOffset;
-        final String managementAddress = TestSuiteEnvironment.getServerAddress();
+        final String managementAddress = getServerAddress(container);
 
         return new ManagementClient(client, managementAddress, managementPort, "http-remoting");
     }
@@ -276,6 +269,14 @@ public class EJBClientClusterConfigurationTestCase {
         }
         return portOffset;
     }
+
+    private static String getServerAddress(final String container) {
+        if (JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION.equals(container)) {
+            return TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node1", "localhost"));
+        }
+        return TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0", "localhost"));
+    }
+
 
     static class SystemPropertySetup implements ServerSetupTask {
 
@@ -344,30 +345,6 @@ public class EJBClientClusterConfigurationTestCase {
             Utils.applyUpdate(operation, client);
 
             operation = createOpNode("system-property=EJBClientClusterConfigurationTestCase.security-realm", ModelDescriptionConstants.REMOVE);
-            Utils.applyUpdate(operation, client);
-        }
-    }
-
-    static class LocalAuthenticationSetup implements ServerSetupTask {
-
-        public static final LocalAuthenticationSetup INSTANCE = new LocalAuthenticationSetup();
-
-        @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            final ModelControllerClient client = managementClient.getControllerClient();
-
-            final ModelNode operation = createOpNode("core-service=management/security-realm=ApplicationRealm/authentication=local", ModelDescriptionConstants.REMOVE);
-            Utils.applyUpdate(operation, client);
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            final ModelControllerClient client = managementClient.getControllerClient();
-
-            final ModelNode operation = createOpNode("core-service=management/security-realm=ApplicationRealm/authentication=local", ModelDescriptionConstants.ADD);
-            operation.get("allowed-users").set("*");
-            operation.get("default-user").set("$local");
-            operation.get("skip-group-loading").set(true);
             Utils.applyUpdate(operation, client);
         }
     }
