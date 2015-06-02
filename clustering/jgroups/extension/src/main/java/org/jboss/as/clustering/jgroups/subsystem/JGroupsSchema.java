@@ -67,4 +67,12 @@ public enum JGroupsSchema {
     String format(String pattern) {
         return String.format(pattern, this.major, this.minor);
     }
+
+    public int getMajor() {
+        return major;
+    }
+
+    public int getMinor() {
+        return minor;
+    }
 }

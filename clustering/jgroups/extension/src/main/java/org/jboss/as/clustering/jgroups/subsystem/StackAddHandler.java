@@ -44,6 +44,13 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 public class StackAddHandler extends AbstractAddStepHandler {
 
     @Override
+    protected ResourceCreator getResourceCreator() {
+        //Use the ordered resource creator to flag that the protocol children are indexed, and can be inserted
+        //if the add-index parameter is specified
+        return new OrderedResourceCreator(false, ModelKeys.PROTOCOL);
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         installRuntimeServices(context, operation, Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
     }
