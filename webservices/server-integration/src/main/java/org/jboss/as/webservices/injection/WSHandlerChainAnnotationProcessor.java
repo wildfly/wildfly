@@ -85,7 +85,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
             index = resourceRoot.getAttachment(ANNOTATION_INDEX);
             if (index != null) {
                 // process @HandlerChain annotations
-                processHandlerChainAnnotations(resourceRoot, index, mapping);
+                processHandlerChainAnnotations(resourceRoot, resourceRoots, index, mapping);
             }
         }
         if (!mapping.isEmpty()) {
@@ -98,7 +98,9 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         // noop
     }
 
-    private static void processHandlerChainAnnotations(final ResourceRoot resourceRoot, final Index index, final WSEndpointHandlersMapping mapping) throws DeploymentUnitProcessingException {
+    private static void processHandlerChainAnnotations(final ResourceRoot currentResourceRoot,
+            final List<ResourceRoot> resourceRoots, final Index index, final WSEndpointHandlersMapping mapping)
+            throws DeploymentUnitProcessingException {
         final List<AnnotationInstance> webServiceAnnotations = index.getAnnotations(WEB_SERVICE_ANNOTATION);
         final List<AnnotationInstance> webServiceProviderAnnotations = index.getAnnotations(WEB_SERVICE_PROVIDER_ANNOTATION);
         for (final AnnotationInstance annotationInstance : webServiceAnnotations) {
@@ -114,7 +116,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
                     }
                     if (handlerChainAnnotationInstance != null) {
                         final String endpointClass = classInfo.name().toString();
-                        processHandlerChainAnnotation(resourceRoot, handlerChainAnnotationInstance, endpointClass, mapping);
+                        processHandlerChainAnnotation(currentResourceRoot, resourceRoots, handlerChainAnnotationInstance, endpointClass, mapping);
                     }
                 }
             } else {
@@ -130,7 +132,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
                 final AnnotationInstance handlerChainAnnotationInstance = getHandlerChainAnnotationInstance(classInfo);
                 if (handlerChainAnnotationInstance != null && isJaxwsEndpoint(classInfo, index)) {
                     final String endpointClass = classInfo.name().toString();
-                    processHandlerChainAnnotation(resourceRoot, handlerChainAnnotationInstance, endpointClass, mapping);
+                    processHandlerChainAnnotation(currentResourceRoot, resourceRoots, handlerChainAnnotationInstance, endpointClass, mapping);
                 }
             } else {
                 // We ignore fields & methods annotated with @HandlerChain.
@@ -159,11 +161,13 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         return null;
     }
 
-    private static void processHandlerChainAnnotation(final ResourceRoot resourceRoot, final AnnotationInstance handlerChainAnnotation, final String endpointClass, final WSEndpointHandlersMapping mapping) throws DeploymentUnitProcessingException {
+    private static void processHandlerChainAnnotation(final ResourceRoot currentResourceRoot,
+            final List<ResourceRoot> resourceRoots, final AnnotationInstance handlerChainAnnotation,
+            final String endpointClass, final WSEndpointHandlersMapping mapping) throws DeploymentUnitProcessingException {
         final String handlerChainConfigFile = handlerChainAnnotation.value("file").asString();
         InputStream is = null;
         try {
-            is = getInputStream(resourceRoot, handlerChainConfigFile, endpointClass);
+            is = getInputStream(currentResourceRoot, resourceRoots, handlerChainConfigFile, endpointClass);
             final Set<String> endpointHandlers = getHandlers(is);
             if (endpointHandlers.size() > 0) {
                 mapping.registerEndpointHandlers(endpointClass, endpointHandlers);
@@ -179,7 +183,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         }
     }
 
-    private static InputStream getInputStream(final ResourceRoot resourceRoot, final String handlerChainConfigFile, final String annotatedClassName) throws IOException {
+    private static InputStream getInputStream(final ResourceRoot currentResourceRoot, final List<ResourceRoot> resourceRoots, final String handlerChainConfigFile, final String annotatedClassName) throws IOException {
         if (handlerChainConfigFile.startsWith("file://") || handlerChainConfigFile.startsWith("http://")) {
             return new URL(handlerChainConfigFile).openStream();
         } else {
@@ -188,12 +192,19 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
                 classURI = new URI(annotatedClassName.replace('.', '/'));
             } catch (final URISyntaxException ignore) {}
             final String handlerChainConfigFileResourcePath = classURI.resolve(handlerChainConfigFile).toString();
-            final VirtualFile config = resourceRoot.getRoot().getChild(handlerChainConfigFileResourcePath);
+            VirtualFile config = currentResourceRoot.getRoot().getChild(handlerChainConfigFileResourcePath);
             if (config.exists() && config.isFile()) {
                 return config.openStream();
+            } else {
+                for (ResourceRoot rr : resourceRoots) {
+                    config = rr.getRoot().getChild(handlerChainConfigFileResourcePath);
+                    if (config.exists() && config.isFile()) {
+                        return config.openStream();
+                    }
+                }
             }
 
-            throw WSLogger.ROOT_LOGGER.missingHandlerChainConfigFile(handlerChainConfigFileResourcePath, resourceRoot);
+            throw WSLogger.ROOT_LOGGER.missingHandlerChainConfigFile(handlerChainConfigFileResourcePath, currentResourceRoot);
         }
     }
 
