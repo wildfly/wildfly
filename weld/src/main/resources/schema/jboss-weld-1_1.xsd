@@ -23,11 +23,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:weld:1.0"
-            xmlns="urn:jboss:weld:1.0"
+            targetNamespace="urn:jboss:weld:1.1"
+            xmlns="urn:jboss:weld:1.1"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="1.0">
+            version="1.1">
 
     <xs:element name="weld" type="configuration"/>
 
@@ -40,6 +40,11 @@
         <xs:attribute name="non-portable-mode" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>If true then the non-portable mode is enabled. The non-portable mode is suggested by the specification to overcome problems with legacy applications that do not use CDI SPI properly and may be rejected by more strict validation in CDI 1.1.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="development-mode" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>Weld comes with a special mode for application development. When the development mode is enabled, certain built-in tools, which facilitate the development of CDI applications, are available. Setting this attribute to true activates the development mode.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
