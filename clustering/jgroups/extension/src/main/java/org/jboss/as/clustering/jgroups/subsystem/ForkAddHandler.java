@@ -66,7 +66,7 @@ public class ForkAddHandler extends AbstractAddStepHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        ForkChannelFactoryBuilder builder = new ForkChannelFactoryBuilder(channel);
+        ForkChannelFactoryBuilder builder = new ForkChannelFactoryBuilder(name);
 
         if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
             for (Property property : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
