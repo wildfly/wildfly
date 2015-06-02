@@ -123,12 +123,12 @@ class LogStoreResource implements Resource {
         return false;
     }
 
-    //@Override WFLY-4716
+    @Override
     public void registerChild(PathElement address, int index, Resource resource) {
         throw TransactionLogger.ROOT_LOGGER.indexedChildResourceRegistrationNotAvailable(address);
     }
 
-    //@Override WFLY-4716
+    @Override
     public Set<String> getOrderedChildTypes() {
         return Collections.emptySet();
     }

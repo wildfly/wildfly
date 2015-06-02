@@ -169,7 +169,7 @@ public class BatchJobExecutionResource implements Resource {
         delegate.registerChild(address, resource);
     }
 
-    //@Override WFLY-4716
+    @Override
     public void registerChild(PathElement address, int index, Resource resource) {
         throw BatchLogger.LOGGER.indexedChildResourceRegistrationNotAvailable(address);
     }
@@ -183,7 +183,7 @@ public class BatchJobExecutionResource implements Resource {
         return delegate.removeChild(address);
     }
 
-    //@Override WFLY-4716
+    @Override
     public Set<String> getOrderedChildTypes() {
         return Collections.emptySet();
     }
