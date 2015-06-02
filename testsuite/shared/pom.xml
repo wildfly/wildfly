@@ -25,6 +25,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Not defined in the parent pom as this should only be used here -->
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-core-testsuite-shared</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-parent</artifactId>
