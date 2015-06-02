@@ -65,13 +65,13 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-            { InfinispanSchema.VERSION_1_0, 32 },
-            { InfinispanSchema.VERSION_1_1, 32 },
-            { InfinispanSchema.VERSION_1_2, 36 },
-            { InfinispanSchema.VERSION_1_3, 36 },
-            { InfinispanSchema.VERSION_1_4, 76 },
-            { InfinispanSchema.VERSION_1_5, 76 },
-            { InfinispanSchema.VERSION_2_0, 80 },
+            { InfinispanSchema.VERSION_1_0, 31 },
+            { InfinispanSchema.VERSION_1_1, 31 },
+            { InfinispanSchema.VERSION_1_2, 35 },
+            { InfinispanSchema.VERSION_1_3, 35 },
+            { InfinispanSchema.VERSION_1_4, 73 },
+            { InfinispanSchema.VERSION_1_5, 73 },
+            { InfinispanSchema.VERSION_2_0, 77 },
             { InfinispanSchema.VERSION_3_0, 77 },
         };
         return Arrays.asList(data);
