@@ -254,7 +254,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         if (!this.schema.since(InfinispanSchema.VERSION_3_0)) {
             // We need to create a corresponding channel add operation
-            String channel = (cluster != null) ? cluster : containerAddress.getLastElement().getValue();
+            String channel = (cluster != null) ? cluster : ("ee-" + containerAddress.getLastElement().getValue());
             TransportResourceDefinition.CHANNEL.parseAndSetParameter(channel, operation, reader);
             PathAddress channelAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH, ChannelResourceDefinition.pathElement(channel));
             ModelNode channelOperation = Util.createAddOperation(channelAddress);
