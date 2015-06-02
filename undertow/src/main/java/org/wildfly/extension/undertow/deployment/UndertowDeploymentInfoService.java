@@ -26,6 +26,7 @@ import io.undertow.Handlers;
 import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.security.api.AuthenticationMode;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -640,6 +641,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (mergedMetaData.getExecutorName() != null) {
                 d.setExecutor(executorsByName.get(mergedMetaData.getExecutorName()).getValue());
             }
+
+            d.setAuthenticationMode(mergedMetaData.isProactiveAuthentication() ? AuthenticationMode.PRO_ACTIVE : AuthenticationMode.CONSTRAINT_DRIVEN);
 
             if (servletExtensions != null) {
                 for (ServletExtension extension : servletExtensions) {
