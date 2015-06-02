@@ -22,13 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -37,15 +32,23 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.filters.FilterRef;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class LocationService implements Service<LocationService> {
+public class LocationService implements Service<LocationService>, FilterLocation {
 
     private final String locationPath;
     private final InjectedValue<HttpHandler> httpHandler = new InjectedValue<>();
     private final InjectedValue<Host> host = new InjectedValue<>();
-    private final CopyOnWriteArrayList<InjectedValue<FilterRef>> filters = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<FilterRef> filters = new CopyOnWriteArrayList<>();
+    private final LocationHandler locationHandler = new LocationHandler();
+    private volatile HttpHandler configuredHandler;
 
     public LocationService(String locationPath) {
         this.locationPath = locationPath;
@@ -54,7 +57,7 @@ public class LocationService implements Service<LocationService> {
     @Override
     public void start(StartContext context) throws StartException {
         UndertowLogger.ROOT_LOGGER.tracef("registering handler %s under path '%s'", httpHandler.getValue(), locationPath);
-        host.getValue().registerHandler(locationPath, configureHandler());
+        host.getValue().registerHandler(locationPath, locationHandler);
     }
 
     @Override
@@ -75,16 +78,8 @@ public class LocationService implements Service<LocationService> {
         return httpHandler;
     }
 
-    List<InjectedValue<FilterRef>> getFilters() {
-        return filters;
-    }
-
     private HttpHandler configureHandler() {
-        ArrayList<FilterRef> filters = new ArrayList<>(this.filters.size());
-                for (InjectedValue<FilterRef> injectedFilter : this.filters) {
-                    filters.add(injectedFilter.getValue());
-                }
-
+        ArrayList<FilterRef> filters = new ArrayList<>(this.filters);
         return configureHandlerChain(getHttpHandler().getValue(), filters);
     }
 
@@ -104,4 +99,32 @@ public class LocationService implements Service<LocationService> {
         return handler;
     }
 
+    @Override
+    public void addFilterRef(FilterRef filterRef) {
+        filters.add(filterRef);
+        configuredHandler = null;
+    }
+
+    @Override
+    public void removeFilterRef(FilterRef filterRef) {
+        filters.remove(filterRef);
+        configuredHandler = null;
+    }
+
+    private class LocationHandler implements HttpHandler {
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            HttpHandler root = configuredHandler;
+            if(root == null) {
+                synchronized (LocationService.this) {
+                    root = configuredHandler;
+                    if(root == null) {
+                        root = configuredHandler = configureHandler();
+                    }
+                }
+            }
+            root.handleRequest(exchange);
+        }
+    }
 }

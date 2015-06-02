@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,6 +34,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.IOServices;
 import org.xnio.XnioWorker;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -73,7 +73,8 @@ class AccessLogAdd extends AbstractAddStepHandler {
         final ServiceName serviceName = UndertowService.accessLogServiceName(serverName, hostName);
         final ServiceBuilder<AccessLogService> builder = context.getServiceTarget().addService(serviceName, service)
                 .addDependency(IOServices.WORKER.append(worker), XnioWorker.class, service.getWorker())
-                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager());
+                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager())
+                .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class, service.getHost());
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();

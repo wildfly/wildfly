@@ -41,8 +41,10 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.FilterLocation;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 
@@ -88,6 +90,26 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String name = address.getLastElement().getValue();
 
+            final String locationType = address.getElement(address.size() - 2).getKey();
+
+            ServiceName locationService;
+
+            if(locationType.equals(Constants.HOST)) {
+                final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
+                final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
+                final String serverName = serverAddress.getLastElement().getValue();
+                final String hostName = hostAddress.getLastElement().getValue();
+                locationService = UndertowService.virtualHostName(serverName, hostName);
+            } else {
+                final PathAddress locationAddress = address.subAddress(0, address.size() - 1);
+                final PathAddress hostAddress = locationAddress.subAddress(0, locationAddress.size() - 1);
+                final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
+                final String locationName = locationAddress.getLastElement().getValue();
+                final String serverName = serverAddress.getLastElement().getValue();
+                final String hostName = hostAddress.getLastElement().getValue();
+                locationService = UndertowService.locationServiceName(serverName, hostName, locationName);
+            }
+
             Predicate predicate = null;
             if (model.hasDefined(PREDICATE.getName())) {
                 String predicateString = model.get(PREDICATE.getName()).asString();
@@ -99,6 +121,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             final ServiceTarget target = context.getServiceTarget();
             target.addService(UndertowService.getFilterRefServiceName(address, name), service)
                     .addDependency(UndertowService.FILTER.append(name), FilterService.class, service.getFilter())
+                    .addDependency(locationService, FilterLocation.class, service.getLocation())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
         }

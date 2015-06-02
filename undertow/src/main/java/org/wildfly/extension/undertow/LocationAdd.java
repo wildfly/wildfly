@@ -31,14 +31,11 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.undertow.filters.FilterRef;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -63,7 +60,6 @@ class LocationAdd extends AbstractAddStepHandler {
         final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
         final String name = address.getLastElement().getValue();
         final String handler = LocationDefinition.HANDLER.resolveModelAttribute(context, model).asString();
-        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         final LocationService service = new LocationService(name);
         final String serverName = serverAddress.getLastElement().getValue();
@@ -74,18 +70,7 @@ class LocationAdd extends AbstractAddStepHandler {
                 .addDependency(hostServiceName, Host.class, service.getHost())
                 .addDependency(UndertowService.HANDLER.append(handler), HttpHandler.class, service.getHttpHandler());
 
-        configureFilterRef(fullModel, builder, service, address);
-
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-    }
-
-    private static void configureFilterRef(final ModelNode model, ServiceBuilder<LocationService> builder, LocationService service,PathAddress address) {
-        if (model.hasDefined(Constants.FILTER_REF)) {
-            for (Property property : model.get(Constants.FILTER_REF).asPropertyList()) {
-                String name = property.getName();
-                addDep(builder, UndertowService.getFilterRefServiceName(address,name), FilterRef.class, service.getFilters());
-            }
-        }
     }
 }
