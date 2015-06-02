@@ -69,6 +69,7 @@ import org.jboss.as.weld.discovery.WeldClassFileServices;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
+import org.jboss.as.weld.services.bootstrap.WeldExecutorServices;
 import org.jboss.as.weld.services.bootstrap.WeldJaxwsInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
@@ -90,6 +91,7 @@ import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.manager.api.ExecutorServices;
 import org.jboss.weld.resources.spi.ClassFileServices;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -258,6 +260,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceBuilder<WeldBootstrapService> weldBootstrapServiceBuilder = serviceTarget.addService(weldBootstrapServiceName, weldBootstrapService);
 
         weldBootstrapServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
+        weldBootstrapServiceBuilder.addDependency(WeldExecutorServices.SERVICE_NAME, ExecutorServices.class, weldBootstrapService.getExecutorServices());
 
         installSecurityService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
         installTransactionService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);

@@ -48,6 +48,7 @@ import org.jboss.as.weld.deployment.processors.WeldDeploymentProcessor;
 import org.jboss.as.weld.deployment.processors.WeldImplicitDeploymentProcessor;
 import org.jboss.as.weld.deployment.processors.WeldPortableExtensionProcessor;
 import org.jboss.as.weld.services.TCCLSingletonService;
+import org.jboss.as.weld.services.bootstrap.WeldExecutorServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController.Mode;
 
@@ -99,6 +100,8 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TCCLSingletonService singleton = new TCCLSingletonService();
         context.getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME, singleton).setInitialMode(
                 Mode.ON_DEMAND).install();
+
+        context.getServiceTarget().addService(WeldExecutorServices.SERVICE_NAME, new WeldExecutorServices()).setInitialMode(Mode.ON_DEMAND).install();
     }
 
     // Synchronization objects created by iiop ejb beans require wrapping by JTSSychronizationWrapper to work correctly

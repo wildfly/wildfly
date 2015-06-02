@@ -159,6 +159,11 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.threads</groupId>
+            <artifactId>jboss-threads</artifactId>
+        </dependency>
+
         <!-- Needed for @Resource(lookup=) -->
         <dependency>
             <groupId>org.jboss.spec.javax.annotation</groupId>
