@@ -208,7 +208,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
                                                         .setXmlElementName(Constants.HOST)
-                                                        .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID, ReverseProxyHandlerHost.PATH, ReverseProxyHandlerHost.SCHEME, ReverseProxyHandlerHost.OUTBOUND_SOCKET_BINDING))
+                                                        .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID, ReverseProxyHandlerHost.PATH, ReverseProxyHandlerHost.SCHEME, ReverseProxyHandlerHost.OUTBOUND_SOCKET_BINDING, ReverseProxyHandlerHost.SECURITY_REALM))
                                 )
 
 
@@ -248,7 +248,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.CONNECTIONS_PER_THREAD,
                                         ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD,
                                         ModClusterDefinition.CONNECTION_IDLE_TIMEOUT,
-                                        ModClusterDefinition.REQUEST_QUEUE_SIZE)
+                                        ModClusterDefinition.REQUEST_QUEUE_SIZE,
+                                        ModClusterDefinition.SECURITY_REALM)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)

@@ -377,6 +377,7 @@
         <xs:attribute name="scheme" use="optional" type="xs:string" default="http"/>
         <xs:attribute name="path" use="optional" type="xs:string" default=""/>
         <xs:attribute name="instance-id" use="optional" type="xs:string"/>
+        <xs:attribute name="security-realm" type="xs:string" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="filter-refType">
@@ -499,5 +500,6 @@
         <xs:attribute name="cached-connections-per-thread" type="xs:int" use="optional" />
         <xs:attribute name="connection-idle-timeout" type="xs:int" use="optional" />
         <xs:attribute name="request-queue-size" type="xs:int" use="optional" />
+        <xs:attribute name="security-realm" type="xs:string" use="optional" />
     </xs:complexType>
 </xs:schema>

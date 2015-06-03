@@ -99,7 +99,7 @@
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
         <reverse-proxy connection-idle-timeout="60"
                        connections-per-thread="30" name="reverse-proxy">
-            <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test"/>
+            <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test" security-realm="foo"/>
             <!-- ajp://localhost:8080 -->
         </reverse-proxy>
     </handlers>
@@ -115,6 +115,7 @@
                      connection-idle-timeout="10" health-check-interval="600"
                      management-access-predicate="method[GET]"
                      management-socket-binding="test3" max-request-time="1000"
+                     security-realm="foo"
                      name="mod-cluster" security-key="password"/>
         <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
         <expression-filter name="requestDumper" expression="dump-request" />
