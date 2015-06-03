@@ -51,6 +51,8 @@ if "x%JBOSS_MODULEPATH%" == "x" (
   set "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
+set JAVA_OPTS = "%JAVA_OPTS% -Dprogram.name=wsconsume.bat"
+
 "%JAVA%" %JAVA_OPTS% ^
     -classpath "%JAVA_HOME%\lib\tools.jar;%JBOSS_RUNJAR%" ^
     org.jboss.modules.Main ^
