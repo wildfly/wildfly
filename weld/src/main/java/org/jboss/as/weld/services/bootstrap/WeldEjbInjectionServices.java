@@ -43,6 +43,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.ResourceInjectionUtilities;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.vfs.VirtualFile;
@@ -65,8 +66,8 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
     private final VirtualFile deploymentRoot;
 
 
-    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EEApplicationDescription applicationDescription, final VirtualFile deploymentRoot) {
-        super(serviceRegistry, moduleDescription);
+    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EEApplicationDescription applicationDescription, final VirtualFile deploymentRoot, Module module) {
+        super(serviceRegistry, moduleDescription, module);
         if (serviceRegistry == null) {
             throw WeldLogger.ROOT_LOGGER.parameterCannotBeNull("serviceRegistry");
         }

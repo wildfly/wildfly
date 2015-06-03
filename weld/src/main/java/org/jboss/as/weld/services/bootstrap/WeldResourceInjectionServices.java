@@ -21,18 +21,10 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import org.jboss.as.ee.component.EEDefaultResourceJndiNames;
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.deployment.ContextNames.BindInfo;
-import org.jboss.as.weld.logging.WeldLogger;
-import org.jboss.as.weld.util.ResourceInjectionUtilities;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.weld.injection.spi.ResourceInjectionServices;
-import org.jboss.weld.injection.spi.ResourceReference;
-import org.jboss.weld.injection.spi.ResourceReferenceFactory;
-import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
-import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
+import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
+
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 import javax.annotation.Resource;
 import javax.ejb.TimerService;
@@ -46,10 +38,19 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-
-import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
+import org.jboss.as.ee.component.EEDefaultResourceJndiNames;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames.BindInfo;
+import org.jboss.as.weld.logging.WeldLogger;
+import org.jboss.as.weld.util.ResourceInjectionUtilities;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.injection.spi.ResourceReference;
+import org.jboss.weld.injection.spi.ResourceReferenceFactory;
+import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
+import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
 
 public class WeldResourceInjectionServices extends AbstractResourceInjectionServices implements ResourceInjectionServices {
 
@@ -122,8 +123,8 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         return proposedName;
     }
 
-    public WeldResourceInjectionServices(final ServiceRegistry serviceRegistry, final EEModuleDescription moduleDescription) {
-        super(serviceRegistry, moduleDescription);
+    public WeldResourceInjectionServices(final ServiceRegistry serviceRegistry, final EEModuleDescription moduleDescription, Module module) {
+        super(serviceRegistry, moduleDescription, module);
         try {
             this.context = new InitialContext();
         } catch (NamingException e) {
