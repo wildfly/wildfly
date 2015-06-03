@@ -57,6 +57,7 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -200,7 +201,7 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
             removeModule(defaultPath, true);
         }
         if (reloadRequired){
-            executeReload();
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
         for (Path p:toRemove) {
             deleteRecursively(p);
@@ -222,17 +223,6 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
             this.reloadRequired = true;
         }
     }
-
-    private void executeReload() throws Exception {
-        final CommandContext ctx = CLITestUtil.getCommandContext();
-        try {
-            ctx.connectController();
-            ctx.handle("reload");
-        } finally {
-            ctx.terminateSession();
-        }
-    }
-
 
     @Override
     protected void doSetup(ManagementClient managementClient) throws Exception {
