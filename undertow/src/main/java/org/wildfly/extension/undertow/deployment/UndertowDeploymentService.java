@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.io.File;
+import java.util.concurrent.ExecutorService;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.servlet.api.Deployment;
@@ -36,6 +37,7 @@ import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.host.ContextActivator;
 import org.jboss.el.cache.FactoryFinderCache;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
@@ -52,6 +54,8 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 public class UndertowDeploymentService implements Service<UndertowDeploymentService> {
 
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
+    // used for blocking tasks in this Service's start/stop
+    private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<ExecutorService>();
     private final WebInjectionContainer webInjectionContainer;
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<DeploymentInfo> deploymentInfoInjectedValue = new InjectedValue<>();
@@ -67,11 +71,21 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     @Override
     public void start(final StartContext startContext) throws StartException {
         if (autostart) {
-            try {
-                startContext();
-            } catch (ServletException e) {
-                throw new StartException(e);
-            }
+            // The start can trigger the web app context initialization which involves blocking tasks like
+            // servlet context initialization, startup servlet initialization lifecycles and such. Hence this needs to be done asynchronously
+            // to prevent the MSC threads from blocking
+            startContext.asynchronous();
+            serverExecutor.getValue().submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        startContext();
+                        startContext.complete();
+                    } catch (Throwable e) {
+                        startContext.failed(new StartException(e));
+                    }
+                }
+            });
         }
     }
 
@@ -97,7 +111,20 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
 
     @Override
     public void stop(final StopContext stopContext) {
-        stopContext();
+        // The service stop can trigger the web app context destruction which involves blocking tasks like servlet context destruction, startup servlet
+        // destruction lifecycles and such. Hence this needs to be done asynchronously to prevent the MSC threads from blocking
+        stopContext.asynchronous();
+        serverExecutor.getValue().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    stopContext();
+                } finally {
+                    stopContext.complete();
+                }
+            }
+        });
+
     }
 
     public void stopContext() {
@@ -143,6 +170,10 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
 
     public Deployment getDeployment(){
         return deploymentManager.getDeployment();
+    }
+
+    Injector<ExecutorService> getServerExecutorInjector() {
+        return this.serverExecutor;
     }
 
     /**
