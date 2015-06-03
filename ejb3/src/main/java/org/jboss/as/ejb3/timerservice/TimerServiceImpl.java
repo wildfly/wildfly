@@ -65,7 +65,6 @@ import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -866,7 +865,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
-     * Creates and schedules a {@link org.jboss.as.ejb3.timerservice.task.TimerTask} for the next timeout of the passed <code>timer</code>
+     * Creates and schedules a {@link TimerTask} for the next timeout of the passed <code>timer</code>
      */
     protected void scheduleTimeout(TimerImpl timer, boolean newTimer) {
         synchronized (scheduledTimerFutures) {
@@ -918,14 +917,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             java.util.TimerTask timerTask = this.scheduledTimerFutures.remove(timer.getId());
             if (timerTask != null) {
                 timerTask.cancel();
-            }
-        }
-    }
-
-    public void invokeTimeout(final TimerImpl timer) {
-        synchronized (this.scheduledTimerFutures) {
-            if (this.scheduledTimerFutures.containsKey(timer.getId())) {
-                timer.getTimerTask().run();
             }
         }
     }

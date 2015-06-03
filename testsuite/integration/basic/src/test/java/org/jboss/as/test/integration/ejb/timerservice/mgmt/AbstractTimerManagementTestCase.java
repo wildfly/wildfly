@@ -145,7 +145,8 @@ public abstract class AbstractTimerManagementTestCase {
         Assert.assertEquals("Timer should fire once!", 1, this.bean.getTimerTicks());
         this.activateTimer();
         this.bean.waitOnTimeout();
-        Assert.assertEquals("Timer should fire twice!", 2, this.bean.getTimerTicks());
+        //depending on the timing it is possible for this to have fired a second time
+        Assert.assertTrue("Timer should fire at least twice!", this.bean.getTimerTicks() >= 2);
     }
 
     protected void suspendTimer() throws Exception {

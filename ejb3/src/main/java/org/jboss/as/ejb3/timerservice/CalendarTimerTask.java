@@ -19,15 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.task;
+package org.jboss.as.ejb3.timerservice;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.jboss.as.ejb3.timerservice.CalendarTimer;
-import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 
 /**
@@ -53,7 +50,13 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
         if (calendarTimer.getNextExpiration() != null && !calendarTimer.isInRetry()) {
             calendarTimer.scheduleTimeout(false);
         }
+        invokeBeanMethod(calendarTimer);
 
+
+    }
+
+    protected void invokeBeanMethod(TimerImpl timer) throws Exception {
+        CalendarTimer calendarTimer = (CalendarTimer) timer;
         // finally invoke the timeout method through the invoker
         if (calendarTimer.isAutoTimer()) {
             TimedObjectInvoker invoker = this.timerService.getInvoker();

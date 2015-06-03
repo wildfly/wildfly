@@ -19,14 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timerservice.task;
+package org.jboss.as.ejb3.timerservice;
 
 import java.util.Date;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
-import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
@@ -183,6 +180,10 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     }
 
     protected void callTimeout(TimerImpl timer) throws Exception {
+        invokeBeanMethod(timer);
+    }
+
+    protected void invokeBeanMethod(TimerImpl timer) throws Exception {
         timerService.getInvoker().callTimeout(timer);
     }
 

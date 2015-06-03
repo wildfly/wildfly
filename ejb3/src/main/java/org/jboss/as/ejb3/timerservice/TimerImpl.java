@@ -34,7 +34,6 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.as.ejb3.timerservice.task.TimerTask;
 
 /**
  * Implementation of EJB3.1 {@link Timer}
@@ -487,10 +486,14 @@ public class TimerImpl implements Timer {
     }
 
     /**
-     * Triggers timer.
+     * Triggers timer, outside of normal expiration. Only used when running an explicit management trigger operation.
+     *
+     * The tigger operation simply runs the callback, it does not modify the timer state in any way, and there is no
+     * protection against overlapping events when running it. This is the expected behaviour, as otherwise the semantics
+     * of dealing with concurrent execution is complex and kinda weird.
      */
-    public void invoke() {
-        this.timerService.invokeTimeout(this);
+    public void invokeOneOff() throws Exception {
+        this.getTimerTask().invokeBeanMethod(this);
     }
     /**
      * Creates and schedules a {@link TimerTask} for the next timeout of this timer

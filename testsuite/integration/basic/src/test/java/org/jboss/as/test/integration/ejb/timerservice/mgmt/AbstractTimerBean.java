@@ -48,6 +48,7 @@ public abstract class AbstractTimerBean implements SimpleFace {
 
     @Timeout
     public void booom(Timer t) {
+        new Exception().printStackTrace();
         this.timerTicks++;
         if (latch != null)
             latch.countDown();

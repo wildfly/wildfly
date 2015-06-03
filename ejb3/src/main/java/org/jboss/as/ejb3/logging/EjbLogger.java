@@ -3036,4 +3036,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 467, value = "The request was rejected as the container is suspended")
     EJBComponentUnavailableException containerSuspended();
+
+    @Message(id = 468, value = "Timer invocation failed")
+    OperationFailedException timerInvocationFailed(@Cause Exception e);
 }

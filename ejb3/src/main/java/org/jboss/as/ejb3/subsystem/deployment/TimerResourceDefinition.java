@@ -203,7 +203,11 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
             void executeRuntime(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // This will invoke timer in 'management-handler-thread'
                 final TimerImpl timer = getTimer(context, operation);
-                timer.invoke();
+                try {
+                    timer.invokeOneOff();
+                } catch (Exception e) {
+                    throw EjbLogger.ROOT_LOGGER.timerInvocationFailed(e);
+                }
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         });

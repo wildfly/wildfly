@@ -31,8 +31,6 @@ import javax.ejb.ScheduleExpression;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
-import org.jboss.as.ejb3.timerservice.task.CalendarTimerTask;
-import org.jboss.as.ejb3.timerservice.task.TimerTask;
 
 /**
  * Represents a {@link javax.ejb.Timer} which is created out a calendar expression
@@ -155,7 +153,7 @@ public class CalendarTimer extends TimerImpl {
     /**
      * Returns the task which handles the timeouts on this {@link CalendarTimer}
      *
-     * @see org.jboss.as.ejb3.timerservice.task.CalendarTimerTask
+     * @see CalendarTimerTask
      */
     @Override
     protected TimerTask<?> getTimerTask() {
