@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 
 import java.util.ArrayList;
@@ -112,12 +113,21 @@ public class DomainAdjuster {
             removeProfile(client, profileName);
         }
 
+        removeIpv4SystemProperty(client);
+
         //Add a jaspi test security domain used later by the tests
         addJaspiTestSecurityDomain(client);
 
         //Version specific changes
         final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, FULL_HA));
         applyVersionAdjustments(client, adjustments);
+    }
+
+    private void removeIpv4SystemProperty(final DomainClient client) throws Exception {
+        //The standard domain configuration contains -Djava.net.preferIPv4Stack=true, remove that
+        DomainTestUtils.executeForResult(
+                Util.createRemoveOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, "java.net.preferIPv4Stack")), client);
+
     }
 
     protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress) throws  Exception {
