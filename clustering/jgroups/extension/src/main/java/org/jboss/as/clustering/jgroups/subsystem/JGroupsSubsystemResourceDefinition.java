@@ -95,7 +95,12 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
                     PathAddress rootAddress = address.subAddress(0, address.size() - 2);
                     PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"));
 
-                    Resource infinispanResource = context.readResourceFromRoot(subsystemAddress);
+                    Resource infinispanResource;
+                    try {
+                        infinispanResource = context.readResourceFromRoot(subsystemAddress);
+                    } catch (Resource.NoSuchResourceException nsre) {
+                        return DiscardPolicy.REJECT_AND_WARN;
+                    }
                     ModelNode infinispanModel = Resource.Tools.readModel(infinispanResource);
 
                     if (infinispanModel.hasDefined("cache-container")) {

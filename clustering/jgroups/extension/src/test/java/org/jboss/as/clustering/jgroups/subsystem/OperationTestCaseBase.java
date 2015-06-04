@@ -9,6 +9,7 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.TransformerOperationAttachment;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -124,8 +125,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapClearOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName());
     }
 
-    // creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d})".
+    protected static ModelNode getTransportUndefinePropertiesOperation(String stackName, String protocolName) {
+        return Operations.createUndefineAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName());
+    }
+
     protected static ModelNode getTransportSetPropertiesOperation(String stackName, String type, ModelNode values) {
+        // Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d})".
         return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.PROPERTIES.getName(), values);
     }
 
@@ -185,8 +190,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapClearOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName());
     }
 
-    // creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
+    protected static ModelNode getProtocolUndefinePropertiesOperation(String stackName, String protocolName) {
+        return Operations.createUndefineAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName());
+    }
+
     protected static ModelNode getProtocolSetPropertiesOperation(String stackName, String protocolName, ModelNode values) {
+        // Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
         return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.PROPERTIES.getName(), values);
     }
 
@@ -233,5 +242,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
             results.add(ModelTestUtils.checkOutcome(services.executeOperation(version, services.transformOperation(version, op.clone()))));
         }
         return results;
+    }
+
+    protected void executeOpsInBothControllersWithAttachments(KernelServices services, ModelVersion version, ModelNode... operations) throws Exception {
+        for (ModelNode op : operations) {
+            TransformerOperationAttachment attachments = services.executeAndGrabTransformerAttachment(op.clone());
+            ModelTestUtils.checkOutcome(services.executeOperation(version, services.transformOperation(version, op.clone(), attachments)));
+        }
     }
 }

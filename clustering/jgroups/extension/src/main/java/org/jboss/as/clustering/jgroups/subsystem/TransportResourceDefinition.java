@@ -34,6 +34,7 @@ import org.jboss.as.clustering.controller.transform.SimpleUndefineAttributeOpera
 import org.jboss.as.clustering.controller.transform.SimpleWriteAttributeOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -50,6 +51,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformerOperationAttachment;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -148,14 +150,14 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             builder.setCustomResourceTransformer(new ResourceTransformer() {
                 @Override
                 public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    PropertyResourceDefinition.PROPERTIES_RESOURCE_TRANSFORMER.transformResource(context, LEGACY_ADDRESS_TRANSFORMER.transform(address), resource);
+                    ProtocolResourceDefinition.PROPERTIES_RESOURCE_TRANSFORMER.transformResource(context, LEGACY_ADDRESS_TRANSFORMER.transform(address), resource);
                 }
             });
             builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleOperationTransformer(new org.jboss.as.clustering.controller.transform.OperationTransformer() {
                 @Override
                 public ModelNode transformOperation(final ModelNode operation) {
                     operation.get(ModelDescriptionConstants.OP_ADDR).set(LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation)).toModelNode());
-                    return PropertyResourceDefinition.PROPERTIES_ADD_OP_TRANSFORMER.transformOperation(operation);
+                    return ProtocolResourceDefinition.PROPERTIES_ADD_OP_TRANSFORMER.transformOperation(operation);
                 }
             })).inheritResourceAttributeDefinitions();
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleRemoveOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
@@ -191,7 +193,20 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration registration) {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            if (attr.isDeprecated()) {
+            if (attr.equals(ProtocolResourceDefinition.PROPERTIES)) {
+                // We need to register a special write handler that stores attaches the previous model values
+                // for subsequent transformations
+                registration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr) {
+                    @Override
+                    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+                        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+                        if (!context.isBooting()) {
+                            TransformerOperationAttachment attachment = TransformerOperationAttachment.getOrCreate(context);
+                            attachment.attachIfAbsent(ProtocolResourceDefinition.PropertiesAttachment.KEY, new ProtocolResourceDefinition.PropertiesAttachment(oldValue.clone()));
+                        }
+                    }
+                });
+            } else if (attr.isDeprecated()) {
                 registration.registerReadWriteAttribute(attr, null, new ThreadsAttributesWriteHandler(attr));
             } else {
                 registration.registerReadWriteAttribute(attr, null, writeHandler);

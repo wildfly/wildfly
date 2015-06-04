@@ -22,6 +22,14 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
@@ -30,6 +38,8 @@ import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -45,13 +55,19 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformerOperationAttachment;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
@@ -116,7 +132,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                     addProtocolOp.get(ModelDescriptionConstants.OP_ADDR).set(stackAddress.toModelNode());
                     addProtocolOp.get(ModelDescriptionConstants.OP).set(ModelKeys.ADD_PROTOCOL);
 
-                    addProtocolOp = PropertyResourceDefinition.PROPERTIES_ADD_OP_TRANSFORMER.transformOperation(addProtocolOp);
+                    addProtocolOp = PROPERTIES_ADD_OP_TRANSFORMER.transformOperation(addProtocolOp);
 
                     return addProtocolOp;
                 }
@@ -138,7 +154,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             };
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleOperationTransformer(removeTransformer));
 
-            builder.setCustomResourceTransformer(PropertyResourceDefinition.PROPERTIES_RESOURCE_TRANSFORMER);
+            builder.setCustomResourceTransformer(PROPERTIES_RESOURCE_TRANSFORMER);
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
@@ -164,22 +180,6 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                     .setValueConverter(typeConverter, TYPE)
                     .end();
 
-            OperationTransformer putPropertyTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
-                        String key = operation.get("key").asString();
-                        ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
-                        PathAddress address = TransportResourceDefinition.LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation));
-                        ModelNode transformedOperation = Util.createAddOperation(address.append(PropertyResourceDefinition.pathElement(key)));
-                        transformedOperation.get(PropertyResourceDefinition.VALUE.getName()).set(value);
-                        return transformedOperation;
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(putPropertyTransformer));
-
             OperationTransformer getPropertyTransformer = new OperationTransformer() {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
@@ -195,28 +195,84 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             };
             builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(getPropertyTransformer));
 
-            OperationTransformer removePropertyTransformer = new OperationTransformer() {
+            org.jboss.as.controller.transform.OperationTransformer propertiesOpTransformer = new org.jboss.as.controller.transform.OperationTransformer() {
                 @Override
-                public ModelNode transformOperation(ModelNode operation) {
+                @SuppressWarnings("deprecation")
+                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
                     if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
-                        String key = operation.get("key").asString();
-                        PathAddress address = TransportResourceDefinition.LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation));
-                        return Util.createRemoveOperation(address.append(PropertyResourceDefinition.pathElement(key)));
+
+                        PropertiesAttachment attachment = context.getAttachment(PropertiesAttachment.KEY);
+                        ModelNode oldValue = attachment.getOldValue();
+                        ModelNode newValue = context.readResourceFromRoot(address).getModel().get(PROPERTIES.getName());
+
+                        if (oldValue.equals(newValue) || (oldValue.isDefined() && oldValue.asPropertyList().isEmpty() && !newValue.isDefined())) {
+                            // There is nothing to do, discard this operation
+                            return new TransformedOperation(null, DEFAULT_REJECTION_POLICY, SUCCESSFUL_RESULT);
+                        }
+
+                        final Map<String, ModelNode> oldMap = new HashMap<>();
+                        if (oldValue.isDefined()) {
+                            for (Property property : oldValue.asPropertyList()) {
+                                oldMap.put(property.getName(), property.getValue());
+                            }
+                        }
+
+                        // Transformed address for all operations
+                        final PathAddress legacyAddress = TransportResourceDefinition.LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation));
+
+                        // This may result as multiple operations on the legacy node
+                        final ModelNode composite = new ModelNode();
+                        composite.get(OP).set(COMPOSITE);
+                        composite.get(OP_ADDR).setEmptyList();
+
+                        if (newValue.isDefined()) {
+                            for (Property property : newValue.asPropertyList()) {
+                                String key = property.getName();
+                                ModelNode value = property.getValue();
+
+                                if (!oldMap.containsKey(key)) {
+                                    // This is a newly added property => :add operation
+                                    ModelNode addOp = Util.createAddOperation(legacyAddress.append(PropertyResourceDefinition.pathElement(key)));
+                                    addOp.get(PropertyResourceDefinition.VALUE.getName()).set(value);
+                                    composite.get(STEPS).add(addOp);
+                                } else {
+                                    final ModelNode oldPropValue = oldMap.get(key);
+                                    if (!oldPropValue.equals(value)) {
+                                        // Property value is different => :write-attribute operation
+                                        ModelNode writeOp = Util.getWriteAttributeOperation(legacyAddress.append(PropertyResourceDefinition.pathElement(key)),
+                                                PropertyResourceDefinition.VALUE.getName(), value);
+                                        composite.get(STEPS).add(writeOp);
+                                    }
+                                    // Otherwise both property name and value are the same => no operation
+
+                                    // Remove this key
+                                    oldMap.remove(key);
+                                }
+                            }
+                        }
+
+                        // Properties that were removed = :remove operation
+                        for (Map.Entry<String, ModelNode> prop : oldMap.entrySet()) {
+                            ModelNode removeOperation = Util.createRemoveOperation(legacyAddress.append(PropertyResourceDefinition.pathElement(prop.getKey())));
+                            composite.get(STEPS).add(removeOperation);
+                        }
+
+                        return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
                     }
-                    return operation;
+                    return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
                 }
             };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
 
-//            // FIXME https://github.com/wildfly/wildfly-core/pull/669
-//            org.jboss.as.controller.transform.OperationTransformer clearPropertiesTransformer = new org.jboss.as.controller.transform.OperationTransformer() {
-//                @Override
-//                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-//                    return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-//                }
-//            };
-//            builder.addRawOperationTransformationOverride(MapOperations.MAP_CLEAR_DEFINITION.getName(), clearPropertiesTransformer);
 
+            // map-based write ops
+            builder
+                    .addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), propertiesOpTransformer)
+                    .addRawOperationTransformationOverride(MapOperations.MAP_REMOVE_DEFINITION.getName(), propertiesOpTransformer)
+                    .addRawOperationTransformationOverride(MapOperations.MAP_CLEAR_DEFINITION.getName(), propertiesOpTransformer);
+            // attribute-based write ops
+            builder
+                    .addRawOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, propertiesOpTransformer)
+                    .addRawOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, propertiesOpTransformer);
         }
     }
 
@@ -244,7 +300,22 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration registration) {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
+            if (attr.equals(PROPERTIES)) {
+                // We need to register a special write handler that stores attaches the previous model values
+                // for subsequent transformations
+                registration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr) {
+                    @Override
+                    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+                        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+                        if (!context.isBooting()) {
+                            TransformerOperationAttachment attachment = TransformerOperationAttachment.getOrCreate(context);
+                            attachment.attachIfAbsent(PropertiesAttachment.KEY, new PropertiesAttachment(oldValue.clone()));
+                        }
+                    }
+                });
+            } else {
+                registration.registerReadWriteAttribute(attr, null, writeHandler);
+            }
         }
     }
 
@@ -252,4 +323,70 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration registration) {
         registration.registerSubModel(new PropertyResourceDefinition());
     }
+
+    static class PropertiesAttachment {
+        public static final OperationContext.AttachmentKey<PropertiesAttachment> KEY = OperationContext.AttachmentKey.create(PropertiesAttachment.class);
+
+        public volatile ModelNode oldValue;
+
+        public PropertiesAttachment(ModelNode oldValue) {
+            this.oldValue = oldValue;
+        }
+
+        public ModelNode getOldValue() {
+            return oldValue;
+        }
+    }
+
+    static ResourceTransformer PROPERTIES_RESOURCE_TRANSFORMER = new ResourceTransformer() {
+        @Override
+        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            final ModelNode model = resource.getModel();
+            final ModelNode properties = model.remove(PROPERTIES.getName());
+            final ResourceTransformationContext childContext = context.addTransformedResourceFromRoot(address, resource);
+
+            if (properties.isDefined()) {
+                for (final Property property : properties.asPropertyList()) {
+                    String key = property.getName();
+                    ModelNode value = property.getValue();
+                    Resource propertyResource = Resource.Factory.create();
+                    propertyResource.getModel().get(PropertyResourceDefinition.VALUE.getName()).set(value);
+                    PathAddress absoluteAddress = address.append(PropertyResourceDefinition.pathElement(key).getKey(), PropertyResourceDefinition.pathElement(key).getValue());
+                    childContext.addTransformedResourceFromRoot(absoluteAddress, propertyResource);
+                }
+            }
+
+            context.processChildren(resource);
+        }
+    };
+
+    static OperationTransformer PROPERTIES_ADD_OP_TRANSFORMER = new OperationTransformer()  {
+        @Override
+        public ModelNode transformOperation(ModelNode operation) {
+            if (operation.hasDefined(PROPERTIES.getName())) {
+                final ModelNode addOp = operation.clone();
+                final ModelNode properties = addOp.remove(PROPERTIES.getName());
+
+                final ModelNode composite = new ModelNode();
+                composite.get(OP).set(COMPOSITE);
+                composite.get(OP_ADDR).setEmptyList();
+                composite.get(STEPS).add(addOp);
+
+                // Handle odd legacy case, when :add operation for the protocol is :add-protocol on the parent
+                PathAddress propertyAddress = Operations.getName(addOp).equals(ModelKeys.ADD_PROTOCOL)
+                        ? Operations.getPathAddress(addOp).append(ModelKeys.PROTOCOL, addOp.get(ModelKeys.TYPE).asString())
+                        : Operations.getPathAddress(addOp);
+
+                for (final Property property : properties.asPropertyList()) {
+                    String key = property.getName();
+                    ModelNode value = property.getValue();
+                    ModelNode propAddOp = Util.createAddOperation(propertyAddress.append(PropertyResourceDefinition.pathElement(key)));
+                    propAddOp.get(PropertyResourceDefinition.VALUE.getName()).set(value);
+                    composite.get(STEPS).add(propAddOp);
+                }
+                return composite;
+            }
+            return operation;
+        }
+    };
 }

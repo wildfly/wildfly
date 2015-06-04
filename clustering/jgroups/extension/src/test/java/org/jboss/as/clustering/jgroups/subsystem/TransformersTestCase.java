@@ -107,7 +107,9 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = model.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXmlResource("subsystem-jgroups-transform.xml");
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("subsystem-jgroups-transform.xml")
+                .enableTransformerAttachmentGrabber();
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, version).addMavenResourceURL(mavenResourceURLs).skipReverseControllerCheck();
@@ -126,23 +128,39 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     private void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
 
+        // n.b. only compare actual results since they differ in reload-required
+        List<ModelNode> results;
+
         // Check operations on /transport=*
-        executeOpsInBothControllers(services, version, getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "true"));
-        List<ModelNode> results = executeOpsInBothControllers(services, version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        Assert.assertEquals(results.get(0), results.get(1));
-        executeOpsInBothControllers(services, version, getTransportRemovePropertyOperation("maximal", "TCP", "tcp_nodelay"));
+
+        executeOpsInBothControllersWithAttachments(services, version, getTransportUndefinePropertiesOperation("maximal", "MPING"));
+
+        executeOpsInBothControllersWithAttachments(services, version, getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "true"));
+        results = executeOpsInBothControllers(services, version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
+        Assert.assertEquals("Failed to read property value following a put", results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
+
+        executeOpsInBothControllersWithAttachments(services, version, getTransportRemovePropertyOperation("maximal", "TCP", "tcp_nodelay"));
+        executeOpsInBothControllersWithAttachments(services, version, getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "true"));
+        results = executeOpsInBothControllers(services, version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
+        Assert.assertEquals("Failed to read property value following a remove and a put", results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
+
+        executeOpsInBothControllersWithAttachments(services, version, getTransportClearPropertiesOperation("maximal", "TCP"));
+
 
         // Check operations on /protocol=*
 
-        executeOpsInBothControllers(services, version, getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "true"));
-        results = executeOpsInBothControllers(services, version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        // just compare actual results since they differ in reload-required
-        Assert.assertEquals(results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
-        executeOpsInBothControllers(services, version, getProtocolRemovePropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
+        executeOpsInBothControllersWithAttachments(services, version, getProtocolUndefinePropertiesOperation("maximal", "MPING"));
 
-        // FIXME when we can support transformation of a clear op
-        // executeOpsInBothControllers(services, version, getTransportClearPropertiesOperation("maximal", "TCP"));
-        // executeOpsInBothControllers(services, version, getProtocolClearPropertiesOperation("maximal", "MPING"));
+        executeOpsInBothControllersWithAttachments(services, version, getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "true"));
+        results = executeOpsInBothControllers(services, version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
+        Assert.assertEquals(results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
+
+        executeOpsInBothControllersWithAttachments(services, version, getProtocolRemovePropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
+        executeOpsInBothControllersWithAttachments(services, version, getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "true"));
+        results = executeOpsInBothControllers(services, version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
+        Assert.assertEquals(results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
+
+        executeOpsInBothControllersWithAttachments(services, version, getProtocolClearPropertiesOperation("maximal", "MPING"));
 
     }
 
@@ -210,7 +228,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = model.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .enableTransformerAttachmentGrabber();
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, version)
@@ -233,9 +252,13 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            // Discard instead, otherwise we cannot transform legacy
+            // Discarded instead, otherwise we cannot transform to old version
             //config.addFailedAttribute(subsystemAddress, new NewAttributesConfig(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL));
-            //config.addFailedAttribute(subsystemAddress.append(ChannelResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
+            // This in real life would be not rejected, but since we don't have infinispan subsystem setup (this would also create a cyclic
+            // dependency) it has to be rejected
+            config.addFailedAttribute(subsystemAddress.append(ChannelResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
             config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.WILDCARD_PATH).append(ThreadPoolResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
