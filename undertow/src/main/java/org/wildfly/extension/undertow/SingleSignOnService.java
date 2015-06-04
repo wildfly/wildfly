@@ -42,6 +42,7 @@ class SingleSignOnService implements Service<SingleSignOnService> {
 
     private final String domain;
     private final String path;
+    private final String cookieName;
     private final boolean httpOnly;
     private final boolean secure;
     private final InjectedValue<Host> host = new InjectedValue<>();
@@ -52,23 +53,23 @@ class SingleSignOnService implements Service<SingleSignOnService> {
         this.path = path;
         this.httpOnly = httpOnly;
         this.secure = secure;
+        this.cookieName = cookieName;
     }
 
     @Override
     public void start(StartContext startContext) {
-        Host host = this.host.getValue();
         ServletSingleSignOnAuthenticationMechainism mechanism = new ServletSingleSignOnAuthenticationMechainism(this.manager.getValue());
         mechanism.setDomain(this.domain);
         mechanism.setPath(this.path);
-        mechanism.setHttpOnly(httpOnly);
-        mechanism.setSecure(secure);
-        host.registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
+        mechanism.setHttpOnly(this.httpOnly);
+        mechanism.setSecure(this.secure);
+        mechanism.setCookieName(this.cookieName);
+        this.host.getValue().registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
     }
 
     @Override
     public void stop(StopContext stopContext) {
-        Host host = this.host.getValue();
-        host.unregisterAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME);
+        this.host.getValue().unregisterAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME);
     }
 
     @Override
