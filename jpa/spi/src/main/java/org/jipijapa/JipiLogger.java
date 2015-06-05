@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.hibernate4;
+package org.jipijapa;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -32,18 +32,17 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * JipiJapa message range is 20200-20299
- * note: keep duplicate messages in sync between different sub-projects that use the same messages
+ * JipiJapa integration layer message range is 20200-20299
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Scott Marlow
  */
 @MessageLogger(projectCode = "JIPI")
-public interface JpaLogger extends BasicLogger {
+public interface JipiLogger extends BasicLogger {
 
     /**
      * A logger with the category {@code org.jboss.jpa}.
      */
-    JpaLogger JPA_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jipijapa");
+    JipiLogger JPA_LOGGER = Logger.getMessageLogger(JipiLogger.class, "org.jipijapa");
 
 
     /**
@@ -98,5 +97,23 @@ public interface JpaLogger extends BasicLogger {
      */
     @Message(id = 20205, value = "Parameter %s is null")
     IllegalArgumentException nullVar(String varName);
+
+    /**
+     * Could not open VFS stream
+     *
+     * @param cause the cause of the error.
+     * @param name of VFS file
+     * @return a {@link RuntimeException} for the error.
+     */
+    @Message(id = 20250, value = "Unable to open VirtualFile-based InputStream %s")
+    RuntimeException cannotOpenVFSStream(@Cause Throwable cause, String name);
+
+    /**
+     * URI format is incorrect, which results in a syntax error
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 20251, value = "URI syntax error")
+    IllegalArgumentException uriSyntaxException(@Cause Throwable cause);
 
 }

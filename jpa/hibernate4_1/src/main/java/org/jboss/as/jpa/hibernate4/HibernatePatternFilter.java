@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.hibernate4;
 
-import static org.jboss.as.jpa.hibernate4.JpaLogger.JPA_LOGGER;
+import static org.jipijapa.JipiLogger.JPA_LOGGER;
 
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;

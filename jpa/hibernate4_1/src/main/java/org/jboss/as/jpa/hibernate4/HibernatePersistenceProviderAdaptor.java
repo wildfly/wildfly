@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.hibernate4;
 
-import static org.jboss.as.jpa.hibernate4.JpaLogger.JPA_LOGGER;
+import static org.jipijapa.JipiLogger.JPA_LOGGER;
 
 import java.util.Map;
 import java.util.Properties;
