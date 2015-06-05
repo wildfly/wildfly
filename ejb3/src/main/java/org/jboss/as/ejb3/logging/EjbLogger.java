@@ -24,6 +24,10 @@
 
 package org.jboss.as.ejb3.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -66,6 +70,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -113,10 +118,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
@@ -3039,4 +3040,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 468, value = "Timer invocation failed")
     OperationFailedException timerInvocationFailed(@Cause Exception e);
+
+    @Message(id = 469, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
+    IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
 }

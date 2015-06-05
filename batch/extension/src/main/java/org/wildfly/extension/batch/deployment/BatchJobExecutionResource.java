@@ -25,9 +25,11 @@ package org.wildfly.extension.batch.deployment;
 import static org.wildfly.extension.batch.deployment.BatchJobExecutionResourceDefinition.EXECUTION;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -167,6 +169,11 @@ public class BatchJobExecutionResource implements Resource {
         delegate.registerChild(address, resource);
     }
 
+    //@Override WFLY-4716
+    public void registerChild(PathElement address, int index, Resource resource) {
+        throw BatchLogger.LOGGER.indexedChildResourceRegistrationNotAvailable(address);
+    }
+
     @Override
     public Resource removeChild(final PathElement address) {
         final String type = address.getKey();
@@ -174,6 +181,11 @@ public class BatchJobExecutionResource implements Resource {
             throw BatchLogger.LOGGER.cannotRemoveResourceOfType(type);
         }
         return delegate.removeChild(address);
+    }
+
+    //@Override WFLY-4716
+    public Set<String> getOrderedChildTypes() {
+        return Collections.emptySet();
     }
 
     @Override

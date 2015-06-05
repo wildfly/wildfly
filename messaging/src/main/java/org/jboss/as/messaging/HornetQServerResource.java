@@ -200,6 +200,11 @@ public class HornetQServerResource implements Resource {
         }
     }
 
+    //@Override WFLY-4716
+    public void registerChild(PathElement address, int index, Resource resource) {
+        throw MessagingLogger.ROOT_LOGGER.indexedChildResourceRegistrationNotAvailable(address);
+    }
+
     @Override
     public Resource removeChild(PathElement address) {
         String type = address.getKey();
@@ -209,6 +214,11 @@ public class HornetQServerResource implements Resource {
         } else {
             return delegate.removeChild(address);
         }
+    }
+
+    //@Override WFLY-4716
+    public Set<String> getOrderedChildTypes() {
+        return Collections.emptySet();
     }
 
     @Override

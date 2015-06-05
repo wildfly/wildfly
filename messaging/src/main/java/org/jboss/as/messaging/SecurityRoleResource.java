@@ -103,9 +103,19 @@ public class SecurityRoleResource implements Resource {
         throw MessagingLogger.ROOT_LOGGER.immutableResource();
     }
 
+    //@Override WFLY-4716
+    public void registerChild(PathElement address, int index, Resource resource) {
+        throw MessagingLogger.ROOT_LOGGER.indexedChildResourceRegistrationNotAvailable(address);
+    }
+
     @Override
     public Resource removeChild(PathElement address) {
         throw MessagingLogger.ROOT_LOGGER.immutableResource();
+    }
+
+    //@Override WFLY-4716
+    public Set<String> getOrderedChildTypes() {
+        return Collections.emptySet();
     }
 
     @Override

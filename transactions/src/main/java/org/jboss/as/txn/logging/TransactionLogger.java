@@ -31,6 +31,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.Transaction;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -214,4 +215,7 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 29, value = "Syncs are not allowed to be registered when the tx is in state %s")
     IllegalStateException syncsnotallowed(int status);
+
+    @Message(id = 30, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
+    IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
 }

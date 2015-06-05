@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -823,6 +824,9 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 91, value = "-ds.xml file deployments are deprecated. Support may be removed in a future version.")
     void deprecated();
+
+    @Message(id = 92, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
+    IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
 }
 
 

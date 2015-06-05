@@ -32,17 +32,19 @@ import java.util.Set;
 
 import javax.jms.IllegalStateRuntimeException;
 import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.messaging.Element;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.ServiceController;
@@ -800,4 +802,6 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 77, value = "Can not remove unknown entry %s")
     OperationFailedException canNotRemoveUnknownEntry(String entry);
 
+    @Message(id = 78, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
+    IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
 }
