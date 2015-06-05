@@ -28,6 +28,7 @@ import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.injection.spi.ResourceReference;
@@ -36,16 +37,17 @@ import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 import org.jboss.weld.logging.BeanLogger;
 import org.jboss.weld.util.reflection.HierarchyDiscovery;
 import org.jboss.weld.util.reflection.Reflections;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-public abstract class AbstractResourceInjectionServices {
+abstract class AbstractResourceInjectionServices {
 
     protected final ServiceRegistry serviceRegistry;
     protected final EEModuleDescription moduleDescription;
+    private final Module module;
 
-    protected AbstractResourceInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription) {
+    protected AbstractResourceInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, Module module) {
         this.serviceRegistry = serviceRegistry;
         this.moduleDescription = moduleDescription;
+        this.module = module;
     }
 
     protected abstract ContextNames.BindInfo getBindInfo(final String result);
@@ -75,7 +77,7 @@ public abstract class AbstractResourceInjectionServices {
         }
     }
 
-    protected static void validateResourceInjectionPointType(ManagedReferenceFactory fact, InjectionPoint injectionPoint) {
+    protected void validateResourceInjectionPointType(ManagedReferenceFactory fact, InjectionPoint injectionPoint) {
         if (!(fact instanceof ContextListManagedReferenceFactory) || injectionPoint == null) {
             return; // validation is skipped as we have no information about the resource type
         }
@@ -85,7 +87,7 @@ public abstract class AbstractResourceInjectionServices {
         Class<?> resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), factory.getClass().getClassLoader());
         // or it may come from deployment
         if (resourceClass == null) {
-            resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+            resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), module.getClassLoader());
         }
 
         if (resourceClass != null) {

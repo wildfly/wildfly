@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.enterprise.inject.spi.BeanManager;
+
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.logging.WeldLogger;
@@ -43,6 +45,7 @@ import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.manager.api.ExecutorServices;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -67,6 +70,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
 
     private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<WeldSecurityServices>();
     private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<WeldTransactionServices>();
+    private final InjectedValue<ExecutorServices> executorServices = new InjectedValue<ExecutorServices>();
 
     private volatile boolean started;
 
@@ -105,6 +109,10 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         // set up injected services
         addWeldService(SecurityServices.class, securityServices.getValue());
         addWeldService(TransactionServices.class, weldTransactionServices.getValue());
+
+        if (!deployment.getServices().contains(ExecutorServices.class)) {
+            addWeldService(ExecutorServices.class, executorServices.getValue());
+        }
 
         ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(),
                 deployment.getSubDeploymentClassLoaders());
@@ -205,5 +213,9 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
 
     public InjectedValue<WeldTransactionServices> getWeldTransactionServices() {
         return weldTransactionServices;
+    }
+
+    public InjectedValue<ExecutorServices> getExecutorServices() {
+        return executorServices;
     }
 }
