@@ -54,11 +54,6 @@ public class Configuration {
      */
     public static final String PROVIDER_MODULE_HIBERNATE_OGM = "org.hibernate:ogm";
 
-    /**
-     * Hibernate 3 persistence provider, if this provider is chosen. ADAPTER_MODULE_HIBERNATE3 will be enabled
-     */
-    public static final String PROVIDER_MODULE_HIBERNATE3 = "org.hibernate:3";
-
     public static final String PROVIDER_MODULE_ECLIPSELINK = "org.eclipse.persistence";
 
     public static final String PROVIDER_MODULE_TOPLINK = "oracle.toplink";
@@ -122,17 +117,6 @@ public class Configuration {
      * in the deployment.
      */
     public static final String PROVIDER_MODULE_APPLICATION_SUPPLIED = "application";
-
-    /**
-     * Provider module that represents a bundled hibernate 3
-     */
-    public static final String PROVIDER_MODULE_HIBERNATE3_BUNDLED = "hibernate3-bundled";
-
-
-    /**
-     * Hibernate 3 persistence provider adaptor
-     */
-    public static final String ADAPTER_MODULE_HIBERNATE3 = "org.jboss.as.jpa.hibernate:3";
 
     public static final String ADAPTER_MODULE_OPENJPA = "org.jboss.as.jpa.openjpa";
 

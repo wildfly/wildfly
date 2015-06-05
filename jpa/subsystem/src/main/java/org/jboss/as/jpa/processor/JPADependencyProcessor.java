@@ -190,24 +190,6 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                 String providerModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
                 String adapterModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
                 String adapterClass = pu.getProperties().getProperty(Configuration.ADAPTER_CLASS);
-                if (providerModule != null) {
-                    if (providerModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3_BUNDLED)) {
-                        //in this case we add the persistence provider to the deployment as a resource root
-                        adapterClass = HIBERNATE3_PROVIDER_ADAPTOR;
-                        pu.getProperties().put(Configuration.ADAPTER_CLASS, adapterClass);
-                        pu.getProperties().put(Configuration.PROVIDER_MODULE, Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED);
-                        pu.getProperties().remove(Configuration.ADAPTER_MODULE);
-
-                        //for this special case we need to make a copy of the hibernate 3 adaptor inside the deployment
-                        addHibernate3AdaptorToDeployment(moduleLoader, deploymentUnit);
-                    } else if (providerModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3)) {
-                        // if they are using hibernate 3, default the adapter module setting for them.
-                        if (adapterModule == null) {
-                            adapterModule = Configuration.ADAPTER_MODULE_HIBERNATE3;
-                            pu.getProperties().put(Configuration.ADAPTER_MODULE, adapterModule);
-                        }
-                    }
-                }
 
                 if (adapterModule != null) {
                     ROOT_LOGGER.debugf("%s is configured to use adapter module '%s'", pu.getPersistenceUnitName(), adapterModule);
