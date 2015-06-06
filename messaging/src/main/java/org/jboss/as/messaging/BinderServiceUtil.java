@@ -37,7 +37,9 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Values;
@@ -78,15 +80,21 @@ public class BinderServiceUtil {
      */
     public static void installBinderService(final ServiceTarget serviceTarget,
                                             final String name,
-                                            final Service<?> service) {
+                                            final Service<?> service, final ServiceName... dependencies) {
         final BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
 
-        serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
+        final ServiceBuilder serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                 .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(service))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+                // we set it in passive mode so that missing dependencies (which is possible/valid when it's a backup HornetQ server and the services
+                // haven't been activated on it due to the presence of a different live server) don't cause jms-topic/jms-queue add operations
+                // to fail
+                .setInitialMode(ServiceController.Mode.PASSIVE);
+        if (dependencies != null && dependencies.length > 0) {
+            serviceBuilder.addDependencies(dependencies);
+        }
+        serviceBuilder.install();
     }
 
     public static void installAliasBinderService(final ServiceTarget serviceTarget,
