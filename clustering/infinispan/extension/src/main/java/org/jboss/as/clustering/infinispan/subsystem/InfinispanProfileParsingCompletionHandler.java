@@ -35,8 +35,10 @@ import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Implementation of ProfileParsingCompletionHandler that moves channel add operations from Infinispan subsystem to
- * JGroups subsystem.
+ * Implementation of {@link ProfileParsingCompletionHandler} that moves all operations intended for JGroups subsystem
+ * while parsing Infinispan subsystem.
+ * <p/>
+ * Currently used to move channel add operations from pre-3.0 schemas.
  *
  * @author Radoslav Husar
  * @version May 2015
@@ -45,43 +47,40 @@ public class InfinispanProfileParsingCompletionHandler implements ProfileParsing
 
     @Override
     public void handleProfileParsingCompletion(final Map<String, List<ModelNode>> profileBootOperations, final List<ModelNode> otherBootOperations) {
-        // Find if legacy subsystem was parsed
-        List<ModelNode> legacyInfinispanOps = null;
+        List<ModelNode> infinispanOps = null;
         for (InfinispanSchema schema : InfinispanSchema.values()) {
-            if (!schema.since(InfinispanSchema.VERSION_3_0)) {
-                legacyInfinispanOps = profileBootOperations.get(schema.getNamespaceUri());
-                if (legacyInfinispanOps != null) {
-                    break;
-                }
+            infinispanOps = profileBootOperations.get(schema.getNamespaceUri());
+            if (infinispanOps != null) {
+                break;
             }
         }
-        if (legacyInfinispanOps == null) return;
+        if (infinispanOps == null) return;
 
         // Extract and remove operations intended for jgroups subsystem
-        List<ModelNode> jgroupsOps = new LinkedList<>();
-        for (Iterator<ModelNode> iterator = legacyInfinispanOps.iterator(); iterator.hasNext();) {
+        List<ModelNode> jgroupsOpsToMove = new LinkedList<>();
+        for (Iterator<ModelNode> iterator = infinispanOps.iterator(); iterator.hasNext();) {
             ModelNode op = iterator.next();
             PathAddress operationAddress = Operations.getPathAddress(op);
 
             // If this operation is intended for JGroups subsystem, remove it from here
             if (operationAddress.getElement(0).getValue().equals(JGroupsExtension.SUBSYSTEM_NAME)) {
-                jgroupsOps.add(op);
+                jgroupsOpsToMove.add(op);
                 iterator.remove();
             }
         }
-        if (jgroupsOps.isEmpty()) return;
+        if (jgroupsOpsToMove.isEmpty()) return;
 
         // Re-add the operations in jgroups subsystem if jgroups subsystem is defined
-        List<ModelNode> jgroupsLegacyOps = null;
+        List<ModelNode> jgroupsOps = null;
         for (JGroupsSchema schema : JGroupsSchema.values()) {
-            jgroupsLegacyOps = profileBootOperations.get(schema.getNamespaceUri());
-            if (jgroupsLegacyOps != null) {
+            jgroupsOps = profileBootOperations.get(schema.getNamespaceUri());
+            if (jgroupsOps != null) {
                 break;
             }
         }
-        if (jgroupsLegacyOps == null) return;
+        if (jgroupsOps == null) return;
 
         // Re-add all previously removed operations since jgroups subsystem is defined
-        jgroupsLegacyOps.addAll(jgroupsOps);
+        jgroupsOps.addAll(jgroupsOpsToMove);
     }
 }
