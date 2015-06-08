@@ -1,0 +1,5 @@
+org.jboss.as.messaging.jms.cli.ConnectionFactoryHandlerProvider
+org.jboss.as.messaging.jms.cli.CreateJMSResourceHandlerProvider
+org.jboss.as.messaging.jms.cli.DeleteJMSResourceHandlerProvider
+org.jboss.as.messaging.jms.cli.JMSQueueHandlerProvider
+org.jboss.as.messaging.jms.cli.JMSTopicHandlerProvider
