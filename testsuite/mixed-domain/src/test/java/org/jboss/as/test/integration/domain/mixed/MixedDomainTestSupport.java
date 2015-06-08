@@ -23,7 +23,14 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,6 +74,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             //tested.
             DomainLifecycleUtil masterUtil = getDomainMasterLifecycleUtil();
             masterUtil.getConfiguration().setAdminOnly(true);
+            //masterUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
             masterUtil.start();
             DomainAdjuster.adjustForVersion(masterUtil.getDomainClient(), version);
 
