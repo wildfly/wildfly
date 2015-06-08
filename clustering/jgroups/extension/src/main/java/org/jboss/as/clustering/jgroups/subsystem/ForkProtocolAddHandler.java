@@ -43,6 +43,12 @@ public class ForkProtocolAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
+    protected ResourceCreator getResourceCreator() {
+        //Set this up as an ordered child, which should have indexed adds
+        return new OrderedResourceCreator(true);
+    }
+
+    @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
 

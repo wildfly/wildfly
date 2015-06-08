@@ -54,6 +54,13 @@ import org.wildfly.clustering.spi.GroupBuilderProvider;
 public class ForkAddHandler extends AbstractAddStepHandler {
 
     @Override
+    protected ResourceCreator getResourceCreator() {
+        //Use the ordered resource creator to flag that the protocol children are indexed, and can be inserted
+        //if the add-index parameter is specified
+        return new OrderedResourceCreator(false, ModelKeys.PROTOCOL);
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         installRuntimeServices(context, operation, resource.getModel());
     }

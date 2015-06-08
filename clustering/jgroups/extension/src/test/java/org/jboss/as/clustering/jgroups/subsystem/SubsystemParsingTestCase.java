@@ -21,6 +21,13 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.ModelKeys.CHANNEL;
+import static org.jboss.as.clustering.jgroups.subsystem.ModelKeys.FORK;
+import static org.jboss.as.clustering.jgroups.subsystem.ModelKeys.PROTOCOL;
+import static org.jboss.as.clustering.jgroups.subsystem.ModelKeys.STACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -35,6 +42,7 @@ import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -58,10 +66,12 @@ import org.junit.runners.Parameterized.Parameters;
 public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private final int expectedOperationCount;
+    private final JGroupsSchema schema;
 
     public SubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
         super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema.format("subsystem-jgroups-%d_%d.xml"));
         this.expectedOperationCount = expectedOperationCount;
+        this.schema = schema;
     }
 
     @Parameters
@@ -226,4 +236,55 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
         assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());
     }
+
+    /**
+     * Tests that the 'fork' and 'stack' resources allow indexed adds for the 'protocol' children. This is important for
+     * the work being done for WFCORE-401. This work involves calculating the operations to bring the slave domain model
+     * into sync with the master domain model. Without ordered resources, that would mean on reconnect if the master
+     * had added a protocol somewhere in the middle, the protocol would get added to the end rather at the correct place.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIndexedAdds() throws Exception {
+        if (schema.getMajor() < 3) {
+            return;
+        }
+        final KernelServices services = this.buildKernelServices();
+        ModelNode originalModel = services.readWholeModel();
+
+        final ModelNode originalFork = originalModel.get(SUBSYSTEM, getMainSubsystemName(), CHANNEL, "ee", FORK, "web");
+        Assert.assertTrue(originalFork.isDefined());
+        originalFork.protect();
+        Assert.assertTrue(0 < originalFork.get(PROTOCOL).keys().size());
+
+
+        final ModelNode originalStack = originalModel.get(SUBSYSTEM, getMainSubsystemName(), STACK, "maximal");
+        Assert.assertTrue(originalStack.isDefined());
+        originalStack.protect();
+
+
+        final PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM, getMainSubsystemName());
+        final PathAddress forkAddress = subsystemAddress.append(CHANNEL, "ee").append(FORK, "web");
+        final PathAddress stackAddress = subsystemAddress.append(STACK, "maximal");
+
+        //Check the fork protocols honour indexed adds by inserting a protocol at the start
+        ModelNode add = Util.createAddOperation(forkAddress.append(PROTOCOL, "MERGE2"));
+        add.get(ADD_INDEX).set(0);
+        ModelTestUtils.checkOutcome(services.executeOperation(add));
+        final ModelNode fork = services.readWholeModel().get(SUBSYSTEM, getMainSubsystemName(), CHANNEL, "ee", FORK, "web");
+        Assert.assertEquals(originalFork.keys().size() + 1, fork.get(PROTOCOL).keys().size());
+        Assert.assertEquals("MERGE2", fork.get(PROTOCOL).keys().iterator().next());
+
+        //Check the stack protocols honour indexed adds by removing a protocol in the middle and readding it
+        ModelNode remove = Util.createRemoveOperation(stackAddress.append(PROTOCOL, "FD"));
+        ModelTestUtils.checkOutcome(services.executeOperation(remove));
+        add = Util.createAddOperation(stackAddress.append(PROTOCOL, "FD"));
+        add.get(ADD_INDEX).set(3); //The original index of the FD protocol
+        ModelTestUtils.checkOutcome(services.executeOperation(add));
+        final ModelNode stack = services.readWholeModel().get(SUBSYSTEM, getMainSubsystemName(), STACK, "maximal");
+        Assert.assertEquals(originalStack, stack);
+    }
+
+
 }
