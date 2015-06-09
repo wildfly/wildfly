@@ -37,6 +37,7 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.filters.GzipFilter;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
 import org.wildfly.extension.undertow.filters.ResponseHeaderFilter;
+import org.wildfly.extension.undertow.filters.RewriteFilterDefinition;
 import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
@@ -257,6 +258,9 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                         ).addChild(
                                 builder(ExpressionFilterDefinition.INSTANCE)
                                         .addAttributes(ExpressionFilterDefinition.EXPRESSION, ExpressionFilterDefinition.MODULE)
+                        ).addChild(
+                                builder(RewriteFilterDefinition.INSTANCE)
+                                        .addAttributes(RewriteFilterDefinition.TARGET, RewriteFilterDefinition.REDIRECT)
                         )
 
                 )
