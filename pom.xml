@@ -5462,6 +5462,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.weld.probe</groupId>
+                <artifactId>weld-probe-core</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.xnio.netty</groupId>
                 <artifactId>netty-xnio-transport</artifactId>
                 <version>${version.org.jboss.xnio.netty.netty-xnio-transport}</version>
