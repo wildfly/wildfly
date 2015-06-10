@@ -25,9 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.context.Flag;
-import org.infinispan.transaction.LockingMode;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.MutableCacheEntry;
 import org.wildfly.clustering.ee.infinispan.Mutator;
@@ -119,10 +117,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     @Override
     public CoarseSessionEntry<L> findValue(String id) {
-        TransactionConfiguration transaction = this.sessionCache.getCacheConfiguration().transaction();
-        boolean pessimistic = transaction.transactionMode().isTransactional() && (transaction.lockingMode() == LockingMode.PESSIMISTIC);
-        Cache<String, CoarseSessionCacheEntry<L>> cache = pessimistic ? this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.sessionCache;
-        CoarseSessionCacheEntry<L> entry = cache.get(id);
+        CoarseSessionCacheEntry<L> entry = this.sessionCache.get(id);
         if (entry != null) {
             MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry = new MutableCacheEntry<>(entry, new CacheEntryMutator<>(this.sessionCache, id, entry));
             SessionAttributesCacheKey key = new SessionAttributesCacheKey(id);
