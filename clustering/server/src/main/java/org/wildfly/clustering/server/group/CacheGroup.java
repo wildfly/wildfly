@@ -22,15 +22,20 @@
 package org.wildfly.clustering.server.group;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
+import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
@@ -45,16 +50,19 @@ public class CacheGroup implements Group, AutoCloseable {
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final Cache<?, ?> cache;
     private final InfinispanNodeFactory factory;
+    private final SortedMap<Integer, Boolean> views = Collections.synchronizedSortedMap(new TreeMap<Integer, Boolean>());
 
     public CacheGroup(CacheGroupConfiguration config) {
         this.cache = config.getCache();
         this.factory = config.getNodeFactory();
+        this.cache.getCacheManager().addListener(this);
         this.cache.addListener(this);
     }
 
     @Override
     public void close() {
         this.cache.removeListener(this);
+        this.cache.getCacheManager().removeListener(this);
     }
 
     @Override
@@ -92,6 +100,12 @@ public class CacheGroup implements Group, AutoCloseable {
         return nodes;
     }
 
+    @ViewChanged
+    public void viewChanged(ViewChangedEvent event) {
+        // Record view status for use by @TopologyChanged event
+        this.views.put(event.getViewId(), event.isMergeView());
+    }
+
     @TopologyChanged
     public void topologyChanged(TopologyChangedEvent<?, ?> event) {
         if (event.isPre()) return;
@@ -105,9 +119,14 @@ public class CacheGroup implements Group, AutoCloseable {
         obsolete.removeAll(newAddresses);
         this.factory.invalidate(obsolete);
 
+        int viewId = event.getCache().getCacheManager().getTransport().getViewId();
+        Boolean status = this.views.get(viewId);
+        boolean merged = (status != null) ? status.booleanValue() : false;
         for (Listener listener: this.listeners) {
-            listener.membershipChanged(oldNodes, newNodes, false);
+            listener.membershipChanged(oldNodes, newNodes, merged);
         }
+        // Purge obsolete views
+        this.views.headMap(viewId).clear();
     }
 
     private List<Node> getNodes(List<Address> addresses) {
