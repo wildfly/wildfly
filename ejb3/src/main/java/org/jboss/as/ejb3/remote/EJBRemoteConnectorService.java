@@ -40,6 +40,7 @@ import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelRec
 import org.jboss.as.ejb3.remote.protocol.versiontwo.VersionTwoProtocolChannelReceiver;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.client.ConstantContextSelector;
 import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.remoting.PackedInteger;
@@ -82,6 +83,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<TransactionManager> txManager = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> txSyncRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfoInjectedValue = new InjectedValue<>();
+    private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
     private volatile Registration registration;
     private final byte serverProtocolVersion;
     private final String[] supportedMarshallingStrategies;
@@ -249,19 +251,20 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                 final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
                 final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = EJBRemoteConnectorService.this.clusterRegistryCollector.getValue();
                 final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus = EJBRemoteConnectorService.this.remoteAsyncInvocationCancelStatus.getValue();
+                final SuspendController suspendController = EJBRemoteConnectorService.this.suspendControllerInjectedValue.getValue();
 
                 switch (version) {
                     case 0x01:
                         final VersionOneProtocolChannelReceiver versionOneProtocolHandler = new VersionOneProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getValue(), asyncInvocationCancelStatus);
+                                marshallerFactory, executorService.getValue(), asyncInvocationCancelStatus, suspendController);
                         // trigger the receiving
                         versionOneProtocolHandler.startReceiving();
                         break;
                     case 0x02:
                         final VersionTwoProtocolChannelReceiver versionTwoProtocolHandler = new VersionTwoProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getValue(), asyncInvocationCancelStatus);
+                                marshallerFactory, executorService.getValue(), asyncInvocationCancelStatus, suspendController);
                         // trigger the receiving
                         versionTwoProtocolHandler.startReceiving();
                         break;
@@ -304,6 +307,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> getRemotingConnectorInfoInjectedValue() {
         return remotingConnectorInfoInjectedValue;
+    }
+
+    public InjectedValue<SuspendController> getSuspendControllerInjectedValue() {
+        return suspendControllerInjectedValue;
     }
 
     private boolean isSupportedMarshallingStrategy(final String strategy) {
