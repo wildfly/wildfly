@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -259,6 +260,17 @@ public class VirtualFileResource implements Resource {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Path getResourceManagerRootPath() {
+        return getResourceManagerRoot().toPath();
+    }
+
+    public Path getFilePath() {
+        if(getFile() == null) {
+            return null;
+        }
+        return getFile().toPath();
     }
 
 }

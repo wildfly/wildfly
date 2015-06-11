@@ -30,6 +30,7 @@ import io.undertow.util.MimeMappings;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 
@@ -117,5 +118,17 @@ public class ServletResource implements Resource {
     @Override
     public URL getUrl() {
         return underlying.getUrl();
+    }
+
+
+    public Path getResourceManagerRootPath() {
+        return getResourceManagerRoot().toPath();
+    }
+
+    public Path getFilePath() {
+        if(getFile() == null) {
+            return null;
+        }
+        return getFile().toPath();
     }
 }
