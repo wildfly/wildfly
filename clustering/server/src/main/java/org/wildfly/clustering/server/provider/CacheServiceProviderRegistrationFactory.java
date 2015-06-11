@@ -68,6 +68,7 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
         this.dispatcher = config.getCommandDispatcherFactory().<ServiceRegistry>createCommandDispatcher(config.getId(), this);
         this.cache.addListener(this);
         this.group.addListener(this);
+        config.getCommandDispatcherFactory().getGroup().addListener(this);
     }
 
     @Override
