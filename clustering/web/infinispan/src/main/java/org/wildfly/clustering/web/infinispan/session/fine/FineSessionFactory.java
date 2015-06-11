@@ -24,9 +24,7 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.context.Flag;
-import org.infinispan.transaction.LockingMode;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.MutableCacheEntry;
 import org.wildfly.clustering.ee.infinispan.Mutator;
@@ -86,10 +84,7 @@ public class FineSessionFactory<L> implements SessionFactory<MutableCacheEntry<F
 
     @Override
     public MutableCacheEntry<FineSessionCacheEntry<L>> findValue(String id) {
-        TransactionConfiguration transaction = this.sessionCache.getCacheConfiguration().transaction();
-        boolean pessimistic = transaction.transactionMode().isTransactional() && (transaction.lockingMode() == LockingMode.PESSIMISTIC);
-        Cache<String, FineSessionCacheEntry<L>> cache = pessimistic ? this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.sessionCache;
-        FineSessionCacheEntry<L> value = cache.get(id);
+        FineSessionCacheEntry<L> value = this.sessionCache.get(id);
         if (value == null) return null;
         // Preemptively read all attributes to detect invalid session attributes
         for (Map.Entry<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> entry : this.attributeCache.getAdvancedCache().getGroup(id).entrySet()) {

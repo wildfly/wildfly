@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.transform.DefaultValueAttributeConverter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
@@ -72,7 +73,7 @@ public class LockingResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(IsolationLevel.class, true, false))
-            .setDefaultValue(new ModelNode().set(IsolationLevel.REPEATABLE_READ.name()))
+            .setDefaultValue(new ModelNode().set(IsolationLevel.READ_COMMITTED.name()))
             .build();
 
     static final SimpleAttributeDefinition STRIPING = new SimpleAttributeDefinitionBuilder(ModelKeys.STRIPING, ModelType.BOOLEAN, true)
@@ -87,7 +88,11 @@ public class LockingResourceDefinition extends SimpleResourceDefinition {
     private final boolean allowRuntimeOnlyRegistration;
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // Do nothing
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(ISOLATION), ISOLATION);
+        }
     }
 
     LockingResourceDefinition(boolean allowRuntimeOnlyRegistration) {
