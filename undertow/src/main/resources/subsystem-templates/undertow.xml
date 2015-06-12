@@ -30,7 +30,7 @@
         <buffer-cache name="default" />
         <server name="default-server">
             <?AJP?>
-            <http-listener name="default" socket-binding="http" />
+            <http-listener name="default" socket-binding="http" redirect-socket="https" />
             <host name="default-host" alias="localhost">
                 <location name="/" handler="welcome-content" />
                 <filter-ref name="server-header"/>
