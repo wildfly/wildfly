@@ -34,7 +34,6 @@
         <module name="com.google.protobuf" optional="true"/>
         <module name="org.apache.commons.pool"/>
         <module name="org.infinispan.commons"/>
-        <module name="org.infinispan.query.dsl"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>

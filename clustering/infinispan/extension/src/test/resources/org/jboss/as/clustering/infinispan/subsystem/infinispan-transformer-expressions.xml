@@ -21,7 +21,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:3.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:4.0">
     <cache-container name="minimal" default-cache="local" statistics-enabled="true">
         <local-cache name="local" statistics-enabled="true"/>
     </cache-container>
@@ -35,11 +35,6 @@
             <file-store fetch-state="${test.xxx:false}" passivation="${test.xxx:false}" path="${test.xxx:path}" preload="${test.xxx:true}" purge="${test.xxx:false}" relative-to="jboss.server.temp.dir" shared="${test.xxx:true}" singleton="${tst.xxx:false}">
                 <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}"/>
             </file-store>
-            <indexing index="${test.xxx:LOCAL}">
-                <property name="hibernate.search.default.directory_provider">${test.xxx:infinispan}</property>
-                <property name="hibernate.search.infinispan.cachemanager_jndiname">${test.xxx:java:jboss/infinispan/container/HibernateSearch}</property>
-                <property name="hibernate.search.default.worker.backend">${test.xxx:jgroups}</property>
-            </indexing>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" async-marshalling="${tst.xxx:true}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:READ_UNCOMMITTED}" striping="${test.xxx:true}"/>
@@ -52,7 +47,6 @@
                 <remote-server outbound-socket-binding="hotrod-server-1"/>
                 <remote-server outbound-socket-binding="hotrod-server-2"/>
             </remote-store>
-            <indexing index="${test.xxx:NONE}"/>
         </invalidation-cache>
         <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="${test.xxx:10}" queue-size="${test.xxx:1000}" async-marshalling="${test.xxx:false}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:SERIALIZABLE}" striping="${test.xxx:true}"/>
@@ -64,7 +58,6 @@
                 <write-behind flush-lock-timeout="${test.xxx:2}" modification-queue-size="${test.xxx:2048}" shutdown-timeout="${test.xxx:20000}" thread-pool-size="${test.xxx:1}"/>
                 <property name="location">${test.xxx:location}</property>
             </store>
-            <indexing index="${test.xxx:NONE}"/>
         </replicated-cache>
         <distributed-cache name="dist" mode="SYNC" l1-lifespan="${test.xxx:1200000}" owners="${test.xxx:4}" remote-timeout="${test.xxx:35000}" segments="${test.xxx:2}" async-marshalling="${test.xxx:true}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:READ_COMMITTED}" striping="${test.xxx:true}"/>
@@ -85,7 +78,6 @@
                     <timestamp-column name="${test.xxx:version}" type="${test.xxx:BIGINT}"/>
                 </binary-keyed-table>
             </mixed-keyed-jdbc-store>
-            <indexing index="${test.xxx:ALL}"/>
         </distributed-cache>
     </cache-container>
 </subsystem>

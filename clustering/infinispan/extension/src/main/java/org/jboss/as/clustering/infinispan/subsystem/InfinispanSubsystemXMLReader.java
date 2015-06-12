@@ -548,7 +548,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
             case INDEXING: {
-                if (this.schema.since(InfinispanSchema.VERSION_1_4)) {
+                if (this.schema.since(InfinispanSchema.VERSION_1_4) && !this.schema.since(InfinispanSchema.VERSION_4_0)) {
                     this.parseIndexing(reader, operations.get(cacheAddress));
                     break;
                 }

@@ -31,7 +31,6 @@ import org.infinispan.Cache;
 import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
@@ -114,9 +113,6 @@ public class CacheAddHandler extends AbstractAddStepHandler {
         String jndiName = ModelNodes.asString(CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel));
 
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(CacheResourceDefinition.MODULE.resolveModelAttribute(context, cacheModel));
-        if ((module == null) && Index.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cacheModel).asString()).isEnabled()) {
-            module = QUERY_MODULE;
-        }
 
         // create a list for dependencies which may need to be added during processing
         AdvancedCacheConfigurationBuilder builder = new AdvancedCacheConfigurationBuilder(containerName, cacheName, this.mode, module);
@@ -195,22 +191,8 @@ public class CacheAddHandler extends AbstractAddStepHandler {
             builder.jmxStatistics().enabled(CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, containerModel).asBoolean());
         }
 
-        final Index indexing = Index.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cache).asString());
-
         // set the cache mode (may be modified when setting up clustering attributes)
         builder.clustering().cacheMode(this.mode);
-        final ModelNode indexingPropertiesModel = CacheResourceDefinition.INDEXING_PROPERTIES.resolveModelAttribute(context, cache);
-        Properties indexingProperties = new Properties();
-        if (indexing.isEnabled() && indexingPropertiesModel.isDefined()) {
-            for (Property p : indexingPropertiesModel.asPropertyList()) {
-                String value = p.getValue().asString();
-                indexingProperties.put(p.getName(), value);
-            }
-        }
-        builder.indexing()
-                .index(indexing)
-                .withProperties(indexingProperties)
-        ;
 
         IsolationLevel isolationLevel = IsolationLevel.valueOf(LockingResourceDefinition.ISOLATION.getDefaultValue().asString());
         // locking is a child resource

@@ -19,7 +19,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:3.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:4.0">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
@@ -33,7 +33,6 @@
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="false">
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
             </file-store>
-            <indexing index="NONE"/>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="10" queue-size="1000" async-marshalling="true" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
@@ -46,7 +45,6 @@
                 <remote-server outbound-socket-binding="hotrod-server-1"/>
                 <remote-server outbound-socket-binding="hotrod-server-2"/>
             </remote-store>
-            <indexing index="NONE"/>
         </invalidation-cache>
         <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="10" queue-size="1000" async-marshalling="false" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
@@ -57,7 +55,6 @@
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
                 <property name="location">${java.io.tmpdir}</property>
             </store>
-            <indexing index="NONE"/>
             <state-transfer enabled="true" timeout="60000" chunk-size="10000"/>
             <backup-for remote-cache="users" remote-site="LON"/>
         </replicated-cache>

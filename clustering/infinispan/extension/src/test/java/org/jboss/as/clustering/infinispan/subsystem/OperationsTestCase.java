@@ -251,33 +251,4 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
     }
-
-    @Test
-    public void testIndexingProperties() throws Exception {
-        KernelServices services = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
-
-        PathAddress address = getCacheAddress("capedwarf", ModelKeys.DISTRIBUTED_CACHE, "tasks");
-        String key = "hibernate.test";
-        String value = "true";
-
-        ModelNode operation = Operations.createMapPutOperation(address, CacheResourceDefinition.INDEXING_PROPERTIES.getName(), key, value);
-        ModelNode result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createMapGetOperation(address, CacheResourceDefinition.INDEXING_PROPERTIES.getName(), key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(value, result.get(RESULT).asString());
-
-        operation = Operations.createMapRemoveOperation(address, CacheResourceDefinition.INDEXING_PROPERTIES.getName(), key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createMapGetOperation(address, CacheResourceDefinition.INDEXING_PROPERTIES.getName(), key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-    }
 }
