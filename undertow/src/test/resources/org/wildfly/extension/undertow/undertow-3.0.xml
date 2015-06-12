@@ -119,6 +119,7 @@
                      name="mod-cluster" security-key="password"/>
         <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
         <expression-filter name="requestDumper" expression="dump-request" />
+        <rewrite name="redirects" target="'/foo/'" redirect="true" />
     </filters>
 
 </subsystem>

@@ -48,7 +48,8 @@ public class FilterDefinitions extends PersistentResourceDefinition {
             ErrorPageDefinition.INSTANCE,
             CustomFilterDefinition.INSTANCE,
             ModClusterDefinition.INSTANCE,
-            ExpressionFilterDefinition.INSTANCE
+            ExpressionFilterDefinition.INSTANCE,
+            RewriteFilterDefinition.INSTANCE
     ));
 
     private FilterDefinitions() {

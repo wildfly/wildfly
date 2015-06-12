@@ -303,6 +303,7 @@
             <xs:element name="mod-cluster" type="modClusterType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="filter" type="customFilterType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="expression-filter" type="expressionFilterType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="rewrite" type="rewriteFilterType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -348,6 +349,11 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="expression" use="required" type="xs:string"/>
         <xs:attribute name="module" use="optional" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="rewriteFilterType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="target" use="required" type="xs:string"/>
+        <xs:attribute name="redirect" use="optional" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="file-handlerType">
         <xs:attribute name="name" use="required" type="xs:string"/>

@@ -160,4 +160,5 @@ public interface Constants {
     String USE_SERVER_LOG = "use-server-log";
     String VALUE = "value";
 
+    String REWRITE = "rewrite";
 }
