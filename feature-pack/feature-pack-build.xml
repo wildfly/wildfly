@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:1.0">
+<build xmlns="urn:wildfly:feature-pack-build:1.1">
     <dependencies>
     	<artifact name="org.wildfly:wildfly-servlet-feature-pack" />
     </dependencies>
@@ -98,6 +98,19 @@
                 template="configuration/domain/template.xml"
                 subsystems="configuration/domain/subsystems.xml"
                 output-file="domain/configuration/domain.xml"/>
+        <host
+                template="configuration/host/host.xml"
+                subsystems="configuration/host/subsystems.xml"
+                output-file="domain/configuration/host.xml" />
+        <host
+                template="configuration/host/host-master.xml"
+                subsystems="configuration/host/subsystems.xml"
+                output-file="domain/configuration/host-master.xml" />
+        <host
+                template="configuration/host/host-slave.xml"
+                subsystems="configuration/host/subsystems.xml"
+                output-file="domain/configuration/host-slave.xml" />
+
     </config>
     <copy-artifacts>
         <copy-artifact artifact="org.jboss.resteasy:resteasy-spring" to-location="modules/system/layers/base/org/jboss/resteasy/resteasy-spring/main/bundled/resteasy-spring-jar/"/>
