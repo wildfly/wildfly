@@ -54,7 +54,12 @@ public class UndertowNativeWebSocketDeploymentProcessor implements DeploymentUni
         if (metaData == null) {
             return;
         }
+
         JBossWebMetaData mergedMetaData = metaData.getMergedJBossWebMetaData();
+
+        if(!mergedMetaData.isEnableWebSockets()) {
+            return;
+        }
 
         if (mergedMetaData.getServlets() != null) {
             for (final JBossServletMetaData servlet : mergedMetaData.getServlets()) {

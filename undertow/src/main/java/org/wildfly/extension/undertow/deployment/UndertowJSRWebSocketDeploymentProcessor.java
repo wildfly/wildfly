@@ -81,6 +81,9 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
             if (metaData == null) {
                 return;
             }
+            if(!metaData.getMergedJBossWebMetaData().isEnableWebSockets()) {
+                return;
+            }
 
             final Set<Class<?>> annotatedEndpoints = new HashSet<>();
             final Set<Class<? extends Endpoint>> endpoints = new HashSet<>();
