@@ -64,6 +64,29 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
 
+    /*
+     * Tests access to the deprecated transport type attribute
+     */
+    @Test
+    public void testTransportTypeReadWriteOperation() throws Exception {
+
+        KernelServices services = this.buildKernelServices();
+
+        // read the deprecated transport "type" attribute
+        ModelNode result = services.executeOperation(getTransportReadOperation("maximal", "TCP", ModelKeys.TYPE));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("TCP", result.get(RESULT).resolve().asString());
+
+        // write the deprecated transport type attribute
+        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", ModelKeys.TYPE, "UDP"));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        // re-read the rack attribute
+        result = services.executeOperation(getTransportReadOperation("maximal", "UDP", ModelKeys.TYPE));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("UDP", result.get(RESULT).asString());
+    }
+
     @Test
     public void testTransportReadWriteWithParameters() throws Exception {
         // Parse and install the XML into the controller

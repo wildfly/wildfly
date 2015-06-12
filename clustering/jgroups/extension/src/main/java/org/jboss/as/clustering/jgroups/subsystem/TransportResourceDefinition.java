@@ -22,6 +22,10 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.clustering.controller.transform.DefaultValueAttributeConverter;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
@@ -37,11 +41,9 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -55,7 +57,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class TransportResourceDefinition extends SimpleResourceDefinition {
+public class TransportResourceDefinition extends ProtocolResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -127,11 +129,15 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    // the list of attributes used by the transport resource
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
-            ProtocolResourceDefinition.TYPE, ProtocolResourceDefinition.MODULE, SHARED, ProtocolResourceDefinition.SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING,
-            ProtocolResourceDefinition.PROPERTIES, DEFAULT_EXECUTOR, OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE
+    static final AttributeDefinition[] TRANSPORT_ATTRIBUTES = new AttributeDefinition[] {
+            SHARED, DIAGNOSTICS_SOCKET_BINDING, DEFAULT_EXECUTOR, OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE
     };
+    // the list of attributes used by the transport resource
+    static final Collection<AttributeDefinition> ATTRIBUTES = new ArrayList<>(TRANSPORT_ATTRIBUTES.length + ProtocolResourceDefinition.ATTRIBUTES.length);
+    static {
+        Collections.addAll(ATTRIBUTES, TRANSPORT_ATTRIBUTES);
+        Collections.addAll(ATTRIBUTES, ProtocolResourceDefinition.ATTRIBUTES);
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
@@ -169,13 +175,15 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     };
 
     TransportResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.TRANSPORT), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(WILDCARD_PATH, new ReloadRequiredAddStepHandler(ATTRIBUTES));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
+        super.registerAttributes(registration);
+
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(TRANSPORT_ATTRIBUTES);
+        for (AttributeDefinition attr : TRANSPORT_ATTRIBUTES) {
             if (attr.isDeprecated()) {
                 registration.registerReadWriteAttribute(attr, null, new ThreadsAttributesWriteHandler(attr));
             } else {
@@ -186,7 +194,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(new PropertyResourceDefinition());
+        super.registerChildren(registration);
 
         for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
             registration.registerSubModel(pool);
