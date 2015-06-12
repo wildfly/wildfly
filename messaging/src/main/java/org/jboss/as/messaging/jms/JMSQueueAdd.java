@@ -75,8 +75,10 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
 
         final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
         final String[] jndiBindings = JMSServices.getJndiBindings(entries);
+        final ServiceName jmsQueueServiceName = JMSServices.getJmsQueueBaseServiceName(hqServiceName).append(name);
         for (String jndiBinding : jndiBindings) {
-            BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, queueService);
+            // install a binder service which depends on the JMS queue service
+            BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, queueService, jmsQueueServiceName);
         }
     }
 
