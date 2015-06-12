@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.NoSuchElementException;
 
+import org.infinispan.configuration.cache.Index;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.MetricHandler;
@@ -62,10 +63,10 @@ public class CacheResourceDefinition extends SimpleResourceDefinition implements
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         @Deprecated BATCHING("batching", ModelType.BOOLEAN, new ModelNode(false), null, InfinispanModel.VERSION_3_0_0),
         MODULE("module", ModelType.STRING, null, new ModuleIdentifierValidator(true, true)),
-        @Deprecated INDEXING("indexing", ModelType.STRING, IndexingResourceDefinition.Attribute.INDEX.getDefinition().getDefaultValue(), IndexingResourceDefinition.Attribute.INDEX.getDefinition().getValidator(), InfinispanModel.VERSION_4_0_0),
+        @Deprecated INDEXING("indexing", ModelType.STRING, new ModelNode(Index.NONE.name()), new EnumValidator<>(Index.class, true, false, Index.NONE), InfinispanModel.VERSION_4_0_0),
         @Deprecated INDEXING_PROPERTIES("indexing-properties", InfinispanModel.VERSION_4_0_0),
         JNDI_NAME("jndi-name", ModelType.STRING, null, null),
-        @Deprecated START("start", ModelType.STRING, new ModelNode(StartMode.LAZY.name()), new EnumValidator<>(StartMode.class, true, false), InfinispanModel.VERSION_3_0_0),
+        @Deprecated START("start", ModelType.STRING, new ModelNode(StartMode.LAZY.name()), new EnumValidator<>(StartMode.class, true, false, StartMode.LAZY), InfinispanModel.VERSION_3_0_0),
         STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, new ModelNode(false), null),
         ;
         private final AttributeDefinition definition;
@@ -146,7 +147,6 @@ public class CacheResourceDefinition extends SimpleResourceDefinition implements
         LockingResourceDefinition.buildTransformation(version, builder);
         EvictionResourceDefinition.buildTransformation(version, builder);
         ExpirationResourceDefinition.buildTransformation(version, builder);
-        IndexingResourceDefinition.buildTransformation(version, builder);
         TransactionResourceDefinition.buildTransformation(version, builder);
 
         FileStoreResourceDefinition.buildTransformation(version, builder);
@@ -179,7 +179,6 @@ public class CacheResourceDefinition extends SimpleResourceDefinition implements
     public void registerChildren(ManagementResourceRegistration registration) {
         new EvictionResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new ExpirationResourceDefinition().register(registration);
-        new IndexingResourceDefinition().register(registration);
         new LockingResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new TransactionResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
 

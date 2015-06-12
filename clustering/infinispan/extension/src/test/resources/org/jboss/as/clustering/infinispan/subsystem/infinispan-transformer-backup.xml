@@ -35,15 +35,6 @@
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="false">
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
             </file-store>
-            <indexing index="LOCAL">
-            <!--
-                 TODO: These are not configurable in 7.1.x and should only be discarded if they have different values from the values assumed in 7.1.x.
-                 Currently it is set up to discard if they are undefined
-                <property name="hibernate.search.default.directory_provider">infinispan</property>
-                <property name="hibernate.search.infinispan.cachemanager_jndiname">java:jboss/infinispan/container/HibernateSearch</property>
-                <property name="hibernate.search.default.worker.backend">jgroups</property>
-                 -->
-            </indexing>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="10" queue-size="1000" async-marshalling="true" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
@@ -54,7 +45,6 @@
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
                 <property name="valueSizeEstimate">100</property>
             </remote-store>
-            <indexing index="NONE"/>
         </invalidation-cache>
         <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="10" queue-size="1000" async-marshalling="false" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
@@ -66,7 +56,6 @@
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
                 <property name="location">location</property>
             </store>
-            <indexing index="NONE"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
                 <backup site="SFO" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="true"/>
@@ -95,7 +84,6 @@
                     <timestamp-column name="version" type="BIGINT"/>
                 </binary-keyed-table>
             </mixed-keyed-jdbc-store>
-            <indexing index="ALL"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
                 <backup site="SFO" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="true"/>

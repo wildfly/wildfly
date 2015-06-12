@@ -144,7 +144,6 @@
         <version.org.hibernate.commons.annotations>5.0.0.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.validator>5.2.0.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
-        <version.org.hibernate.hql>1.1.0.Final</version.org.hibernate.hql>
         <version.org.hibernate.search>5.4.0.Alpha1</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <version.org.infinispan>7.2.3.Final</version.org.infinispan>
@@ -3957,33 +3956,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.hibernate.hql</groupId>
-                <artifactId>hibernate-hql-lucene</artifactId>
-                <version>${version.org.hibernate.hql}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-engine</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate.javax.persistence</groupId>
-                        <artifactId>hibernate-jpa-2.0-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.hql</groupId>
-                <artifactId>hibernate-hql-parser</artifactId>
-                <version>${version.org.hibernate.hql}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr-runtime</artifactId>
                 <version>${version.org.antlr-34}</version>
@@ -4236,45 +4208,6 @@
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-lucene-directory</artifactId>
-                <version>${version.org.infinispan}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-objectfilter</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate.hql</groupId>
-                        <artifactId>hibernate-hql-parser</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-query</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate.hql</groupId>
-                        <artifactId>hibernate-hql-lucene</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate.hql</groupId>
-                        <artifactId>hibernate-hql-parser</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-engine</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-serialization-avro</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-query-dsl</artifactId>
                 <version>${version.org.infinispan}</version>
             </dependency>
 

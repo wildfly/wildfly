@@ -286,9 +286,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         PathAddress expirationAddress = address.append(ExpirationResourceDefinition.PATH);
         operations.put(expirationAddress, Util.createAddOperation(expirationAddress));
 
-        PathAddress indexingAddress = address.append(IndexingResourceDefinition.PATH);
-        operations.put(indexingAddress, Util.createAddOperation(indexingAddress));
-
         PathAddress lockingAddress = address.append(LockingResourceDefinition.PATH);
         operations.put(lockingAddress, Util.createAddOperation(lockingAddress));
 
@@ -478,9 +475,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 if (this.schema.since(InfinispanSchema.VERSION_1_4)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
-                PathAddress indexingAddress = address.append(IndexingResourceDefinition.PATH);
-                ModelNode indexingOperation = operations.get(indexingAddress);
-                readAttribute(reader, index, indexingOperation, IndexingResourceDefinition.Attribute.INDEX);
+                readAttribute(reader, index, operation, CacheResourceDefinition.Attribute.INDEXING);
                 break;
             }
             case JNDI_NAME: {
@@ -602,7 +597,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
             case INDEXING: {
-                if (this.schema.since(InfinispanSchema.VERSION_1_4)) {
+                if (this.schema.since(InfinispanSchema.VERSION_1_4) && !this.schema.since(InfinispanSchema.VERSION_4_0)) {
                     this.parseIndexing(reader, cacheAddress, operations);
                     break;
                 }
@@ -908,13 +903,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
     private void parseIndexing(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        ModelNode operation = operations.get(cacheAddress.append(IndexingResourceDefinition.PATH));
+        ModelNode operation = operations.get(cacheAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case INDEX: {
-                    readAttribute(reader, i, operation, IndexingResourceDefinition.Attribute.INDEX);
+                    readAttribute(reader, i, operation, CacheResourceDefinition.Attribute.INDEXING);
                     break;
                 }
                 default: {
@@ -928,7 +923,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             switch (element) {
                 case PROPERTY: {
                     ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
-                    readAttribute(reader, 0, operation, IndexingResourceDefinition.Attribute.PROPERTIES);
+                    readAttribute(reader, 0, operation, CacheResourceDefinition.Attribute.INDEXING_PROPERTIES);
                     break;
                 }
                 default: {

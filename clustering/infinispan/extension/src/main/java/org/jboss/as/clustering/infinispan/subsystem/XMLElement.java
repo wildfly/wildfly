@@ -59,7 +59,7 @@ public enum XMLElement {
     STRING_KEYED_JDBC_STORE("string-keyed-jdbc-store"),
     BINARY_KEYED_JDBC_STORE("binary-keyed-jdbc-store"),
     MIXED_KEYED_JDBC_STORE("mixed-keyed-jdbc-store"),
-    INDEXING(IndexingResourceDefinition.PATH),
+    @Deprecated INDEXING(CacheResourceDefinition.Attribute.INDEXING),
     LOCAL_CACHE(LocalCacheResourceDefinition.WILDCARD_PATH),
     LOCKING(LockingResourceDefinition.PATH),
     PROPERTY(ModelDescriptionConstants.PROPERTY),

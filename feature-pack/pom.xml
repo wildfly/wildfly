@@ -1876,28 +1876,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate.hql</groupId>
-            <artifactId>hibernate-hql-lucene</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.hibernate.hql</groupId>
-            <artifactId>hibernate-hql-parser</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-commons</artifactId>
             <exclusions>
@@ -1973,18 +1951,6 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-lucene-directory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-objectfilter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-query</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-query-dsl</artifactId>
         </dependency>
 
         <dependency>
