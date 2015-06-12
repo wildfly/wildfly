@@ -33,7 +33,6 @@ interface CommonAttributes {
     String NODES_CONF = "nodes-conf";
     String ADVERTISE_SOCKET = "advertise-socket";
     String SSL = "ssl";
-    String PROXY = "proxy";
     String PROXIES = "proxies";
     String PROXY_LIST = "proxy-list";
     String PROXY_URL = "proxy-url";
