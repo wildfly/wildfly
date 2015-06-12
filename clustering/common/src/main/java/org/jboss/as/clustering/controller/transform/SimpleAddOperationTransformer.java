@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.controller.transform;
 
-import java.util.Arrays;
-
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -39,13 +37,9 @@ import org.jboss.dmr.ModelNode;
 public class SimpleAddOperationTransformer implements org.jboss.as.controller.transform.OperationTransformer {
 
     private final OperationTransformer transformer;
-    private final Iterable<AttributeDefinition> attributes;
+    private final AttributeDefinition[] attributes;
 
-    public SimpleAddOperationTransformer(PathAddressTransformer transformer, AttributeDefinition... attributes) {
-        this(transformer, Arrays.asList(attributes));
-    }
-
-    public SimpleAddOperationTransformer(final PathAddressTransformer transformer, Iterable<AttributeDefinition> attributes) {
+    public SimpleAddOperationTransformer(final PathAddressTransformer transformer, AttributeDefinition... attributes) {
         this.transformer = new OperationTransformer() {
             @Override
             public ModelNode transformOperation(ModelNode operation) {
@@ -56,10 +50,6 @@ public class SimpleAddOperationTransformer implements org.jboss.as.controller.tr
     }
 
     public SimpleAddOperationTransformer(OperationTransformer transformer, AttributeDefinition... attributes) {
-        this(transformer, Arrays.asList(attributes));
-    }
-
-    public SimpleAddOperationTransformer(OperationTransformer transformer, Iterable<AttributeDefinition> attributes) {
         this.transformer = transformer;
         this.attributes = attributes;
     }
