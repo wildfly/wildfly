@@ -24,20 +24,20 @@ package org.jboss.as.weld;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 
-class WeldSubsystem20Parser extends PersistentResourceXMLParser {
+class WeldSubsystem30Parser extends PersistentResourceXMLParser {
 
-    public static final String NAMESPACE = "urn:jboss:domain:weld:2.0";
-    static final WeldSubsystem20Parser INSTANCE = new WeldSubsystem20Parser();
+    public static final String NAMESPACE = "urn:jboss:domain:weld:3.0";
+    static final WeldSubsystem30Parser INSTANCE = new WeldSubsystem30Parser();
     private static final PersistentResourceXMLDescription xmlDescription;
 
 
     static {
         xmlDescription = PersistentResourceXMLDescription.builder(WeldResourceDefinition.INSTANCE, NAMESPACE)
-                .addAttributes(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                .addAttributes(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
                 .build();
     }
 
-    private WeldSubsystem20Parser() {
+    private WeldSubsystem30Parser() {
     }
 
     @Override

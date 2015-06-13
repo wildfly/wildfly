@@ -53,7 +53,7 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-weld_2_0.xsd";
+        return "schema/jboss-as-weld_3_0.xsd";
     }
 
     @Override
