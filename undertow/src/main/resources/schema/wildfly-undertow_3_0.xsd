@@ -30,6 +30,7 @@
            version="1.0">
     <!-- The undertow subsystem root element -->
     <xs:element name="subsystem" type="undertow-subsystemType"/>
+
     <xs:complexType name="undertow-subsystemType">
         <xs:annotation>
             <xs:documentation>
@@ -100,6 +101,7 @@
                 <xs:attribute name="allow-equals-in-cookie-value" type="xs:boolean" default="false"/>
                 <xs:attribute name="no-request-timeout" type="xs:int"/>
                 <xs:attribute name="request-parse-timeout" type="xs:int"/>
+                <xs:attribute name="disallowed-methods" type="stringList"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
