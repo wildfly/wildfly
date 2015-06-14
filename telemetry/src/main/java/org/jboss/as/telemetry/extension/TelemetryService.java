@@ -42,33 +42,6 @@ public class TelemetryService extends Telemetries implements
 
     public static final String TELEMETRY_DESCRIPTION = "Properties file consisting of RHN login information and telemetry/insights URL";
 
-    public static final String DEFAULT_BASE_URL = "https://api.access.qa.redhat.com";
-    public static final String DEFAULT_ENDPOINT = "/api/telemetry/uploads/";
-
-    /**
-     * Properties that can be set via the properties file.
-     */
-    public static final String USERNAME = "username";
-    public static final String PASSWORD = "password";
-    public static final String URL = "url";
-    public static final String PROXY_USER = "proxyUser";
-    public static final String PROXY_PASSWORD = "proxyPassword";
-    public static final String PROXY_URL = "proxyUrl";
-    public static final String PROXY_PORT = "proxyPort";
-    public static final String USER_AGENT = "userAgent";
-    public static final String BASE_URI = "baseUri";
-    public static final String TELEMETRY_ENDPOINT = "endpoint";
-
-    public static final String JDR_DESCRIPTION = "JDR for UUID {uuid}";
-
-    private static volatile TelemetryService instance;
-
-    public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
-
-    public static final String TELEMETRY_PROPERTY_FILE_NAME = "telemetry.properties";
-
-    public static final String TELEMETRY_DESCRIPTION = "Properties file consisting of RHN login information and telemetry/insights URL";
-
     public static final String DEFAULT_BASE_URL = "https://api.access.redhat.com";
     public static final String DEFAULT_TELEMETRY_ENDPOINT = "/r/insights/v1/uploads/";
     public static final String DEFAULT_SYSTEM_ENDPOINT = "/r/insights/v1/systems/";
@@ -326,38 +299,6 @@ public class TelemetryService extends Telemetries implements
                 } catch (IOException e) {
                     ROOT_LOGGER.couldNotClosePropertiesFile(e);
                 }
-    public void setTelemetryUri() {
-        String jbossConfig = System.getProperty(JBOSS_PROPERTY_DIR);
-        String propertiesFilePath = jbossConfig + File.separator + TelemetryExtension.SUBSYSTEM_NAME + File.separator + TELEMETRY_PROPERTY_FILE_NAME;
-        Properties properties = new Properties();
-        FileOutputStream fileOut = null;
-        File file = new File(propertiesFilePath);
-        try {
-            if(!file.exists()) {
-                file.getParentFile().mkdirs();
-                properties.setProperty(URL, DEFAULT_BASE_URL);
-                properties.setProperty(TELEMETRY_ENDPOINT, DEFAULT_ENDPOINT);
-            }
-            else {
-                properties.load(new FileInputStream(propertiesFilePath));
-            }
-            properties.setProperty(USERNAME, rhnUid);
-            properties.setProperty(PASSWORD, rhnPw);
-            fileOut = new FileOutputStream(file);
-            properties.store(fileOut, TELEMETRY_DESCRIPTION);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if(fileOut != null) {
-                try {
-                    fileOut.close();
-                    setConnectionManager();
-                }
-                catch(IOException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
@@ -379,7 +320,6 @@ public class TelemetryService extends Telemetries implements
         FileInputStream fis = null;
         File file = new File(propertiesFilePath);
         if (file.exists()) {
-
             try {
                 fis = new FileInputStream(propertiesFilePath);
                 properties.load(fis);
