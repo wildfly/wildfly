@@ -25,7 +25,16 @@ public class ConnectionManager {
 
     public ConnectionManager(ConfigHelper config) {
         this.config = config;
-        clientBuilder = new ResteasyClientBuilder().connectionPoolSize(CONNECTION_POOL_SIZE);
+        // setting classloader to RESTEasy jaxrs classloader
+        Thread t = Thread.currentThread();
+        ClassLoader old = t.getContextClassLoader();
+        t.setContextClassLoader(ResteasyClientBuilder.class.getClassLoader());
+        try {
+            clientBuilder = new ResteasyClientBuilder().connectionPoolSize(CONNECTION_POOL_SIZE);
+        } finally {
+            // setting classloader back to original
+            t.setContextClassLoader(old);
+        }
         clientBuilder.connectionPoolSize(CONNECTION_POOL_SIZE);
         clientBuilder.connectionTTL(config.getTimeout(), TimeUnit.MILLISECONDS);
         clientBuilder.socketTimeout(config.getTimeout(), TimeUnit.MILLISECONDS);
