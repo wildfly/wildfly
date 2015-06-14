@@ -17,14 +17,16 @@ import com.redhat.gss.redhat_support_lib.helpers.ConfigHelper;
 
 public class ConnectionManager {
 
-    ResteasyClientBuilder clientBuilder = new ResteasyClientBuilder()
-            .connectionPoolSize(100);
+    public static final int CONNECTION_POOL_SIZE = 10;
+
+    ResteasyClientBuilder clientBuilder;
     ConfigHelper config = null;
     ResteasyClient client = null;
 
     public ConnectionManager(ConfigHelper config) {
         this.config = config;
-        clientBuilder.connectionPoolSize(100);
+        clientBuilder = new ResteasyClientBuilder().connectionPoolSize(CONNECTION_POOL_SIZE);
+        clientBuilder.connectionPoolSize(CONNECTION_POOL_SIZE);
         clientBuilder.connectionTTL(config.getTimeout(), TimeUnit.MILLISECONDS);
         clientBuilder.socketTimeout(config.getTimeout(), TimeUnit.MILLISECONDS);
         CustomHttpEngine httpEngine = new CustomHttpEngine(config);
@@ -55,6 +57,7 @@ public class ConnectionManager {
             if (config.getCookies() != null) {
                 client.register(new RedHatCookieFilter(config.getCookies()));
             }
+            setWriters();
         }
         return client;
     }
@@ -65,17 +68,76 @@ public class ConnectionManager {
 
     public FTPClient getFTP() throws IOException, FTPException {
         FTPClient ftp = null;
+        System.out.println("ftp username, ftp password: "
+                + config.getFtpUsername() + ", " + config.getFtpPassword());
         if (config.getProxyUrl() == null) {
             ftp = new FTPClient();
+            System.out.println("created new ftp: " + ftp);
         } else {
             ftp = new FTPHTTPClient(config.getProxyUrl().getHost(),
                     config.getProxyPort(), config.getProxyUser(),
                     config.getProxyPassword());
         }
+        System.out.println("ftpHost, ftpPort: " + config.getFtpHost() + ", "
+                + config.getFtpPort());
         ftp.connect(config.getFtpHost(), config.getFtpPort());
         if (!ftp.login(config.getFtpUsername(), config.getFtpPassword())) {
             throw new FTPException("Error during FTP login");
         }
         return ftp;
+    }
+
+    private void setWriters() {
+        try {
+            // results in a ClassNotFoundException
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartReader"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.ListMultipartReader"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataReader"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedReader"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataReader"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartWriter"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataWriter"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedWriter"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.ListMultipartWriter"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataWriter"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationReader"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationWriter"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MimeMultipartProvider"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedReader"));
+            client.register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedWriter"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartReader"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.ListMultipartReader"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataReader"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedReader"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataReader"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartWriter"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataWriter"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedWriter"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.ListMultipartWriter"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataWriter"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationReader"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationWriter"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.MimeMultipartProvider"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedReader"));
+            clientBuilder
+                    .register(Thread.currentThread().getContextClassLoader().loadClass("org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedWriter"));
+        }
+        catch(ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
