@@ -4,9 +4,6 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.logging.Logger;
-
-import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 import com.redhat.gss.redhat_support_lib.helpers.QueryBuilder;
 import com.redhat.gss.redhat_support_lib.parsers.SearchResultType;
@@ -20,7 +17,6 @@ import com.redhat.gss.redhat_support_lib.web.ConnectionManager;
  *
  */
 public class Search extends BaseQuery {
-    private static final Logger LOGGER = Logger.getLogger(API.class.getName());
     private ConnectionManager connectionManager = null;
     static String url = "/rs/search/";
 

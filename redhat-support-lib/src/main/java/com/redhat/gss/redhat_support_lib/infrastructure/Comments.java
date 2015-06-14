@@ -8,16 +8,12 @@ import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import org.jboss.logging.Logger;
-
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 import com.redhat.gss.redhat_support_lib.helpers.QueryBuilder;
 import com.redhat.gss.redhat_support_lib.parsers.CommentType;
 import com.redhat.gss.redhat_support_lib.web.ConnectionManager;
 
 public class Comments extends BaseQuery {
-    private static final Logger LOGGER = Logger.getLogger(Comments.class
-            .getName());
     private ConnectionManager connectionManager = null;
 
     public Comments(ConnectionManager connectionManager) {
@@ -111,13 +107,7 @@ public class Comments extends BaseQuery {
         Response resp = add(connectionManager.getConnection(), fullUrl, comment);
         MultivaluedMap<String, String> headers = resp.getStringHeaders();
         URL caseurl = null;
-        try {
-            caseurl = new URL(headers.getFirst("Location"));
-        } catch (MalformedURLException e) {
-            LOGGER.debug("Failed : Adding comment " + comment.getText()
-                    + " was unsuccessful.");
-            throw new Exception();
-        }
+        caseurl = new URL(headers.getFirst("Location"));
         String path = caseurl.getPath();
         comment.setId(path.substring(path.lastIndexOf('/') + 1, path.length()));
         comment.setViewUri(caseurl.toString());

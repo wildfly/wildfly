@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 /**
  * @author <a href="jkinlaw@redhat.com">Josh Kinlaw</a>
  */
@@ -100,7 +101,6 @@ public class TelemetryExtension implements Extension {
             ParseUtils.requireNoContent(reader);
 
             final ModelNode subsystem = Util.createAddOperation(PathAddress.pathAddress(SUBSYSTEM_PATH));
-            list.add(subsystem);
         }
 
         /**
