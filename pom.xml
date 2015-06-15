@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>17</version>
+      <version>19</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -67,11 +67,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
 
-        <!-- sticking with 3.1 as 3.2 has problems with partial recompile -->
-        <version.compiler.plugin>3.1</version.compiler.plugin>
-        <version.checkstyle.plugin>2.15</version.checkstyle.plugin>
-        <version.checkstyle>6.3</version.checkstyle>
-        <version.enforcer.plugin>1.4</version.enforcer.plugin>
         <version.surefire.plugin>2.17</version.surefire.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
@@ -224,7 +219,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.build-tools>1.1.0.Beta1</version.org.wildfly.build-tools>
-        <version.org.wildfly.checkstyle-config>1.0.3.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.checkstyle-config>1.0.4.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>2.0.0.Alpha9</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.Final</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
