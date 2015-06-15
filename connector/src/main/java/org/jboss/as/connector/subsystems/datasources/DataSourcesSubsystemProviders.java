@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelNode;
 public class DataSourcesSubsystemProviders {
 
 
-    static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+    public static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
 
     public static OverrideDescriptionProvider OVERRIDE_DS_DESC = new OverrideDescriptionProvider() {

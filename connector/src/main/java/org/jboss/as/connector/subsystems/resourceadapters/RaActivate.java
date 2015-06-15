@@ -22,6 +22,10 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -29,11 +33,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation handler responsible for disabling an existing data-source.
@@ -57,7 +56,6 @@ public class RaActivate implements OperationStepHandler {
         } else {
             archiveOrModuleName = model.get(MODULE.getName()).asString();
         }
-        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
@@ -66,7 +64,7 @@ public class RaActivate implements OperationStepHandler {
                     ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveOrModuleName, idName);
 
                     if (restartedServiceName == null) {
-                        RaOperationUtil.activate(context, idName, archiveOrModuleName, statsEnabled);
+                        RaOperationUtil.activate(context, idName, archiveOrModuleName);
                     }
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
