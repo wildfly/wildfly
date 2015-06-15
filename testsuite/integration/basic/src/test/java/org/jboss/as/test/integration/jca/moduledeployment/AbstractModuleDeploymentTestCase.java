@@ -28,11 +28,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.Set;
+
 import javax.naming.InitialContext;
 import javax.resource.cci.Connection;
 import javax.resource.cci.ConnectionFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.as.test.deployment.AbstractModuleDeployment;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -63,7 +65,8 @@ public abstract class AbstractModuleDeploymentTestCase extends
                 XMLElementWriter.class);
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage())
-                .addPackage(AbstractModuleDeploymentTestCase.class.getPackage());
+                .addPackage(AbstractModuleDeploymentTestCase.class.getPackage())
+                .addClass(AbstractModuleDeployment.class);
         
         if (withDependencies)
         	ja.addAsManifestResource(
