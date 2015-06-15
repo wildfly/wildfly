@@ -57,7 +57,7 @@ public class ConnectionManager {
                     .getClassLoader());
             try {
                 client = clientBuilder.build();
-                setWriters();
+                setProviders();
 
             } finally {
                 // setting classloader back to original
@@ -100,7 +100,7 @@ public class ConnectionManager {
         return ftp;
     }
 
-    private void setWriters() {
+    private void setProviders() {
             client.register(org.jboss.resteasy.plugins.providers.DataSourceProvider.class);
             client.register(org.jboss.resteasy.plugins.providers.DocumentProvider.class);
             client.register(org.jboss.resteasy.plugins.providers.DefaultTextPlain.class);
