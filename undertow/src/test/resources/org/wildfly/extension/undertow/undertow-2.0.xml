@@ -47,7 +47,7 @@
             <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access"/>
             <single-sign-on domain="${prop.domain:myDomain}" http-only="true" secure="true" path="/" cookie-name="SSOID"/>
         </host>
-        <host name="other-host" alias="www.mysite.com" default-web-module="something.war" default-response-code="503">
+        <host name="other-host" alias="www.mysite.com" default-web-module="something.war">
             <location name="/" handler="welcome-content">
                 <filter-ref name="limit-connections"/>
                 <filter-ref name="headers"/>
@@ -92,7 +92,7 @@
     </servlet-container>
 
     <handlers>
-        <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true" case-sensitive="false" follow-symlink="true" safe-symlink-paths="/path/to/folder /second/path"/>
+        <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true" />
         <reverse-proxy connection-idle-timeout="60"
                        connections-per-thread="30" name="reverse-proxy">
             <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test"/>

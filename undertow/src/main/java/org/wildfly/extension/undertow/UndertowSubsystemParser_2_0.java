@@ -95,7 +95,7 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE)
-                                                .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE)
+                                                .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE)
                                                                 .addAttributes(LocationDefinition.HANDLER)
@@ -187,11 +187,7 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         FileHandler.PATH,
                                                         FileHandler.CACHE_BUFFER_SIZE,
                                                         FileHandler.CACHE_BUFFERS,
-                                                        FileHandler.DIRECTORY_LISTING,
-                                                        FileHandler.FOLLOW_SYMLINK,
-                                                        FileHandler.SAFE_SYMLINK_PATHS,
-                                                        FileHandler.CASE_SENSITIVE
-                                                )
+                                                        FileHandler.DIRECTORY_LISTING)
                                 )
                                 .addChild(
                                         builder(ReverseProxyHandler.INSTANCE)

@@ -22,6 +22,10 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
+import java.util.List;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
@@ -42,10 +46,6 @@ import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
-
-import java.util.List;
-
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -96,7 +96,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE)
-                                                .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE)
+                                                .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE)
                                                                 .addAttributes(LocationDefinition.HANDLER)
@@ -195,7 +195,11 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         FileHandler.PATH,
                                                         FileHandler.CACHE_BUFFER_SIZE,
                                                         FileHandler.CACHE_BUFFERS,
-                                                        FileHandler.DIRECTORY_LISTING)
+                                                        FileHandler.DIRECTORY_LISTING,
+                                                        FileHandler.FOLLOW_SYMLINK,
+                                                        FileHandler.SAFE_SYMLINK_PATHS,
+                                                        FileHandler.CASE_SENSITIVE
+                                                )
                                 )
                                 .addChild(
                                         builder(ReverseProxyHandler.INSTANCE)
