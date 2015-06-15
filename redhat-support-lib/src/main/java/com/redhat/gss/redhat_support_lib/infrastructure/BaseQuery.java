@@ -40,13 +40,13 @@ public class BaseQuery {
         return returnObject;
     }
 
-    protected String getFile(ResteasyClient client, String uri, String fileName,
-            String destDir)
-        throws RequestException, IOException, javax.mail.internet.ParseException {
+    protected String getFile(ResteasyClient client, String uri,
+            String fileName, String destDir) throws RequestException,
+            IOException, javax.mail.internet.ParseException {
         Response response = client.target(uri).request()
                 .accept(MediaType.APPLICATION_XML).get();
 
-        if(response.getStatus() != HttpStatus.SC_OK) {
+        if (response.getStatus() != HttpStatus.SC_OK) {
             LOGGER.debug("Failed : HTTP error code : "
                     + response.getStatusInfo().getStatusCode() + " - "
                     + response.getStatusInfo().getReasonPhrase());
@@ -63,14 +63,15 @@ public class BaseQuery {
         if (destDir != null) {
             String nameOfFile;
             filePath.append(destDir);
-            if(!destDir.endsWith(File.separator)) {
+            if (!destDir.endsWith(File.separator)) {
                 filePath.append(File.separator);
             }
 
             if (fileName != null) {
                 nameOfFile = fileName;
             } else {
-                String name = response.getStringHeaders().getFirst("Content-Disposition");
+                String name = response.getStringHeaders().getFirst(
+                        "Content-Disposition");
                 String[] temp = name.split("\"");
                 nameOfFile = MimeUtility.decodeWord(temp[1]);
             }
@@ -151,22 +152,41 @@ public class BaseQuery {
     protected Response upload(ResteasyClient client, String uri, File file,
             String description) throws FileNotFoundException, ParseException,
             RequestException {
+        // client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartWriter");
+        // client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataWriter");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartReader");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.ListMultipartReader");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataReader");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedReader");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataReader");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartWriter");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataWriter");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedWriter");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.ListMultipartWriter");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataWriter");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationReader");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationWriter");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.MimeMultipartProvider");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedReader");
+//        client.register("org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedWriter");
         MultipartFormDataOutput mdo = new MultipartFormDataOutput();
         if (description != null) {
-            mdo.addFormData("description", description, MediaType.APPLICATION_XML_TYPE);
+            mdo.addFormData("description", description,
+                    MediaType.APPLICATION_XML_TYPE);
         }
-        mdo.addFormData("file", file, MediaType.APPLICATION_OCTET_STREAM_TYPE, file.getName());
+        mdo.addFormData("file", file, MediaType.APPLICATION_OCTET_STREAM_TYPE,
+                file.getName());
         GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(
                 mdo) {
         };
 
-        javax.ws.rs.client.Invocation.Builder builder = client
-                .target(uri)
+        javax.ws.rs.client.Invocation.Builder builder = client.target(uri)
                 .request(MediaType.APPLICATION_XML);
-        if(description != null){
+        if (description != null) {
             builder.header("description", description);
         }
-        Response response = builder.post(Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE));
+        Response response = builder.post(Entity.entity(entity,
+                MediaType.MULTIPART_FORM_DATA_TYPE));
 
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
             LOGGER.debug("Failed : HTTP error code : "

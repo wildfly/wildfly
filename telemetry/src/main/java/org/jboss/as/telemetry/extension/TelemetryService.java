@@ -283,17 +283,18 @@ public class TelemetryService implements Service<TelemetryService> {
                 telemetryEndpoint = properties.getProperty(TELEMETRY_ENDPOINT);
 
                 // setting optional fields
-                proxyUser = properties.getProperty(PROXY_USER);
-                proxyPassword = properties.getProperty(PROXY_PASSWORD);
-                userAgent = properties.getProperty(USER_AGENT);
-                if(properties.containsKey(PROXY_PORT)) {
-                    proxyPort = Integer.parseInt(properties.getProperty(PROXY_PORT));
-                }
-                if(properties.containsKey(PROXY_URL)) {
-                    proxyUrl = new URL(properties.getProperty(PROXY_URL));
-                }
-                this.connectionManager = new ConnectionManager(new ConfigHelper(
-                        username, password, url, proxyUser, proxyPassword, proxyUrl, proxyPort, userAgent, false));
+//                proxyUser = properties.getProperty(PROXY_USER);
+//                proxyPassword = properties.getProperty(PROXY_PASSWORD);
+//                if(properties.containsKey(USER_AGENT)) {
+//                    userAgent = properties.getProperty(USER_AGENT);
+//                }
+//                if(properties.containsKey(PROXY_PORT)) {
+//                    proxyPort = Integer.parseInt(properties.getProperty(PROXY_PORT));
+//                }
+//                if(properties.containsKey(PROXY_URL)) {
+//                    proxyUrl = new URL(properties.getProperty(PROXY_URL));
+//                }
+                this.connectionManager = new ConnectionManager(new ConfigHelper(propertiesFilePath));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -315,56 +316,21 @@ public class TelemetryService implements Service<TelemetryService> {
         String uuid = "uuid_placeholder";
         String description = JDR_DESCRIPTION.replace("{uuid}", uuid);
         File file = new File(fileName);
-//        List<String> queryParams = new ArrayList<String>();
-//        queryParams.add("public=" + Boolean.toString(publicVis));
         String uri = null;
-        // TODO: move 2GB to constant
-//        if (file.length() > 200000L) {
-//            FTPClient ftp = null;
-//            FileInputStream fis = null;
-//            try {
-//                ftp = connectionManager.getFTP();
-//                ftp.cwd(connectionManager.getConfig().getFtpDir());
-//                ftp.enterLocalPassiveMode();
-//                fis = new FileInputStream(file);
-//                if (!ftp.storeFile(file.getName(), fis)) {
-//                    throw new FTPException("Error during FTP store file.");
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            } finally {
-//                try {
-//                    if(fis != null) {
-//                        fis.close();
-//                    }
-//                    if(ftp != null) {
-//                        ftp.logout();
-//                    }
-//                } catch (IOException e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                }
-//            }
-//        } else {
-            String fullUrl = connectionManager.getConfig().getUrl() + telemetryEndpoint + uuid;
-            System.out.println("connectionManager: " + connectionManager + "\nfullUrl: " + fullUrl + "\nfile : " + file.getPath() + "\ndescription: " + description);
-            try {
-                uri = upload(connectionManager.getConnection(), fullUrl, file,
-                        description).getStringHeaders().getFirst("location");
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (RequestException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-//        }
+        String fullUrl = connectionManager.getConfig().getUrl() + telemetryEndpoint + uuid;
+        System.out.println("connectionManager: " + connectionManager + "\nfullUrl: " + fullUrl + "\nfile : " + file.getPath() + "\ndescription: " + description);
+        try {
+            uri = upload(connectionManager.getConnection(), fullUrl, file,
+                    description).getStringHeaders().getFirst("location");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (RequestException e) {
+            e.printStackTrace();
+        }
         return uri;
     }
 }
