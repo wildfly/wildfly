@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.ConfigService;
 import org.jboss.as.webservices.service.PropertyService;
 import org.jboss.as.webservices.util.ASHelper;
@@ -76,6 +77,9 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
 
            //get the server config object from the ServerConfigService (service installed but not started yet, but the object is fine for our needs here)
            final ServerConfig serverConfig = ASHelper.getMSCService(WSServices.CONFIG_SERVICE, ServerConfig.class, context);
+           if (serverConfig == null) {
+               throw WSLogger.ROOT_LOGGER.serviceNotAvailable(WSServices.CONFIG_SERVICE.getCanonicalName());
+           }
            final ServiceName serviceName = getEndpointConfigServiceName(name);
            final ConfigService endpointConfigService = new ConfigService(serverConfig, name, false);
 

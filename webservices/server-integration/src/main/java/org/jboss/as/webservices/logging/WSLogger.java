@@ -291,4 +291,7 @@ public interface WSLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 67, value = "Could not activate the webservices subsystem.")
     void couldNotActivateSubsystem(@Cause Throwable cause);
+
+    @Message(id = 68, value = "Service %s not available")
+    OperationFailedException serviceNotAvailable(String serviceName);
 }
