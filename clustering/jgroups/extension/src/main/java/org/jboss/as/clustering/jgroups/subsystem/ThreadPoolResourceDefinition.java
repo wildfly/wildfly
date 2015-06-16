@@ -176,4 +176,9 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
     void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         // Nothing to transform yet
     }
+
+    //@Override this will be brought in my WFCORE-759/https://github.com/wildfly/wildfly-core/pull/813
+    public boolean isOrderedChild() {
+        return false;
+    }
 }
