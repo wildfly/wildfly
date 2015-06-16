@@ -32,6 +32,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -77,6 +78,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     public static final SimpleAttributeDefinition HUNG_TASK_THRESHOLD_AD =
             new SimpleAttributeDefinitionBuilder(HUNG_TASK_THRESHOLD, ModelType.LONG, true)
                     .setAllowExpression(true)
+                    .setValidator(new LongRangeValidator(0, Long.MAX_VALUE, true, true))
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setDefaultValue(new ModelNode(0))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -107,6 +109,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     public static final SimpleAttributeDefinition KEEPALIVE_TIME_AD =
             new SimpleAttributeDefinitionBuilder(KEEPALIVE_TIME, ModelType.LONG, true)
                     .setAllowExpression(true)
+                    .setValidator(new LongRangeValidator(0, Long.MAX_VALUE, true, true))
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(60000))
