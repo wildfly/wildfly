@@ -61,7 +61,7 @@ interface Attributes {
             .setAllowNull(true)
             .setMinSize(1)
             .setValidator(new EnumValidator<>(WsdlUriSchema.class, false, false))
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
     enum WsdlUriSchema {http, https}
 
