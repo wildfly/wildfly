@@ -212,4 +212,8 @@ public class ModClusterService extends FilterService {
 
         return builder.install();
     }
+
+    public ModCluster getModCluster() {
+        return modCluster;
+    }
 }

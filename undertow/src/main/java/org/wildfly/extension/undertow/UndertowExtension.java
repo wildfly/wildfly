@@ -63,6 +63,9 @@ public class UndertowExtension implements Extension {
     protected static final PathElement SERVER_PATH = PathElement.pathElement(Constants.SERVER);
     protected static final PathElement PATH_ACCESS_LOG = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
     protected static final PathElement PATH_SSO = PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON);
+    public static final PathElement BALANCER = PathElement.pathElement(Constants.BALANCER);
+    public static final PathElement CONTEXT = PathElement.pathElement(Constants.CONTEXT);
+    public static final PathElement NODE = PathElement.pathElement(Constants.NODE);
     public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
