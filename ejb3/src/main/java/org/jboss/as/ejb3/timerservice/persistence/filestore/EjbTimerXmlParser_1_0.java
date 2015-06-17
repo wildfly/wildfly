@@ -127,6 +127,7 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
     private void parseTimer(XMLExtendedStreamReader reader, List<TimerImpl> timers) throws XMLStreamException {
         LoadableElements loadableElements = new LoadableElements();
         TimerImpl.Builder builder = TimerImpl.builder();
+        builder.setPersistent(true);
         final Set<String> required = new HashSet<>(Arrays.asList(new String[]{TIMED_OBJECT_ID, TIMER_ID, INITIAL_DATE, REPEAT_INTERVAL, TIMER_STATE}));
         for (int i = 0; i < reader.getAttributeCount(); ++i) {
             String attr = reader.getAttributeValue(i);
@@ -207,7 +208,7 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
     private void parseCalendarTimer(XMLExtendedStreamReader reader, List<TimerImpl> timers) throws XMLStreamException {
         LoadableElements loadableElements = new LoadableElements();
         CalendarTimer.Builder builder = CalendarTimer.builder();
-        builder.setAutoTimer(false);
+        builder.setAutoTimer(false).setPersistent(true);
         final Set<String> required = new HashSet<>(Arrays.asList(new String[]{
                 TIMED_OBJECT_ID,
                 TIMER_ID,
