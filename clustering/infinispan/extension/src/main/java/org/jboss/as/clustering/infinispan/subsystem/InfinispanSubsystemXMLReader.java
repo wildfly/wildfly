@@ -126,9 +126,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case ALIASES: {
                     if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
-                        for (String alias: reader.getListAttributeValue(i)) {
-                            CacheContainerResourceDefinition.ALIASES.parseAndAddParameterElement(alias, operation, reader);
-                        }
+                        CacheContainerResourceDefinition.ALIASES.getParser().parseAndSetParameter(CacheContainerResourceDefinition.ALIASES, value, operation, reader);
                         break;
                     }
                 }
