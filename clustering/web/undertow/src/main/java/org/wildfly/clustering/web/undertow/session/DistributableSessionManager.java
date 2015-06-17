@@ -26,6 +26,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
+import io.undertow.server.session.SessionManagerStatistics;
 
 import java.util.Collections;
 import java.util.Set;
@@ -169,6 +170,11 @@ public class DistributableSessionManager implements UndertowSessionManager {
     @Override
     public String getDeploymentName() {
         return this.deploymentName;
+    }
+
+    //@Override
+    public SessionManagerStatistics getStatistics() {
+        return null;
     }
 
     @Override
