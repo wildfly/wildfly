@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.jipijapa:jipijapa-spi}"/>
+        <artifact name="${org.wildfly:jipijapa-spi}"/>
     </resources>
 
     <dependencies>

@@ -33,19 +33,10 @@ import javax.persistence.PersistenceContext;
  */
 @Stateful
 public class SFSB1 {
-    @PersistenceContext(unitName = "hibernate3_pc")
+    @PersistenceContext(unitName = "hibernate_pc")
         EntityManager em;
 
-    public void createEmployee(String name, String address, int id) {
-        Employee emp = new Employee();
-        emp.setId(id);
-        emp.setAddress(address);
-        emp.setName(name);
-        em.persist(emp);
-    }
-
-    public Employee getEmployeeNoTX(int id) {
-        return em.find(Employee.class, id);
-    }
-
+    public EntityManager getEmImpl() {
+        return em.unwrap(EntityManager.class);
+    };
 }
