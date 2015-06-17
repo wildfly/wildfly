@@ -42,6 +42,7 @@ import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -106,6 +107,12 @@ public final class WSExtension implements Extension {
         }
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, WSExtension.class.getClassLoader(), true, false);
     }
+
+    static final String JMX_CAPABILITY = "org.wildfly.extension.jmx";
+
+    static final RuntimeCapability<Void> WEBSERVICES_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.webservices")
+            .addRuntimeOnlyRequirements(JMX_CAPABILITY)
+            .build();
 
     @Override
     public void initialize(final ExtensionContext context) {

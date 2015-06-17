@@ -80,8 +80,15 @@ import org.junit.Test;
  */
 public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
+    private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities("org.wildfly.extension.iiop", "org.wildfly.extension.jmx");
+
     public TransactionSubsystemTestCase() {
         super(TransactionExtension.SUBSYSTEM_NAME, new TransactionExtension());
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return ADDITIONAL_INITIALIZATION;
     }
 
     @Override
@@ -168,7 +175,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         String subsystemXml = readResource("full.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION)
                 .setSubsystemXml(subsystemXml);
 
         final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
@@ -176,7 +183,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         LegacyKernelServicesInitializer init = builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
-            .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
+            .configureReverseControllerCheck(ADDITIONAL_INITIALIZATION, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
             .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
         if (controllerVersion == ModelTestControllerVersion.EAP_6_0_0) {
             //EAP_6_0_0 does not have OperationFixer, so disable the validation of the ADD operation
@@ -233,7 +240,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
         String subsystemXml = readResource("full-expressions-transform.xml");
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION)
                 .setSubsystemXml(subsystemXml);
 
         final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
@@ -242,7 +249,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
                 .addOperationValidationResolve(ADD, subsystemAddress)
                 .addOperationValidationFixer(ADD, subsystemAddress, RemoveProcessUUIDOperationFixer.INSTANCE)
-                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
+                .configureReverseControllerCheck(ADDITIONAL_INITIALIZATION, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
                 .addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
@@ -352,10 +359,10 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejectTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(ADDITIONAL_INITIALIZATION, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 

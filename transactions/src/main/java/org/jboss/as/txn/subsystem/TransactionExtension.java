@@ -74,7 +74,6 @@ public class TransactionExtension implements Extension {
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
-    private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
     static final PathElement LOG_STORE_PATH = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
     static final PathElement PARTICIPANT_PATH = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
@@ -90,8 +89,9 @@ public class TransactionExtension implements Extension {
     }
 
     static MBeanServer getMBeanServer(OperationContext context) {
+        ServiceName jmxCapability = context.getCapabilityServiceName(TransactionSubsystemRootResourceDefinition.JMX_CAPABILITY, MBeanServer.class);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-        final ServiceController<?> serviceController = serviceRegistry.getService(MBEAN_SERVER_SERVICE_NAME);
+        final ServiceController<?> serviceController = serviceRegistry.getService(jmxCapability);
         if (serviceController == null) {
             throw TransactionLogger.ROOT_LOGGER.jmxSubsystemNotInstalled();
         }

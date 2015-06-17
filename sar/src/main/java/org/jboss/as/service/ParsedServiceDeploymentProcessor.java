@@ -59,6 +59,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MethodInjector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.MethodValue;
@@ -75,6 +76,13 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Eduardo Martins
  */
 public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor {
+
+    private final ServiceName mbeanServerServiceName;
+
+    ParsedServiceDeploymentProcessor(ServiceName mbeanServerServiceName) {
+
+        this.mbeanServerServiceName = mbeanServerServiceName;
+    }
 
     /**
      * Process a deployment for JbossService configuration.  Will install a {@code JBossService} for each configured service.
@@ -122,7 +130,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final String mBeanName = mBeanConfig.getName();
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, deploymentUnit.getAttachmentList(Attachments.SETUP_ACTIONS), classLoader);
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, deploymentUnit.getAttachmentList(Attachments.SETUP_ACTIONS), classLoader, mbeanServerServiceName);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         addDependencies(dependencyConfigs, mBeanClassHierarchy, mBeanServices);

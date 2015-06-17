@@ -24,10 +24,6 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -40,6 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -231,25 +228,38 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
 
+    static final String JMX_CAPABILITY = "org.wildfly.extension.jmx";
+    static final RuntimeCapability<Void> BASIC_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.extension.transactions")
+                    .addRequirements(JMX_CAPABILITY)
+                .build();
+    static final RuntimeCapability<JTSCapability> JTS_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.extension.transactions.jts", new JTSCapability())
+                .addRequirements(BASIC_CAPABILITY.getName(), "org.wildfly.extension.iiop")
+                .build();
 
     private final boolean registerRuntimeOnly;
 
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
         super(TransactionExtension.SUBSYSTEM_PATH,
                 TransactionExtension.getResourceDescriptionResolver(),
-                TransactionSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
+                TransactionSubsystemAdd.INSTANCE,
+                new ReloadRequiredRemoveStepHandler(BASIC_CAPABILITY, JTS_CAPABILITY),
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
-    // all attributes
-    static final AttributeDefinition[] attributes = new AttributeDefinition[] {
-            BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
-            PROCESS_ID_SOCKET_MAX_PORTS, RELATIVE_TO, PATH, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
-            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
+    // all attributes except JTS, USEHORNETQSTORE, USE_JDBC_STORE and PROCESS_ID_xxx
+    private static final AttributeDefinition[] basicAttributes = new AttributeDefinition[] {
+            BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, RELATIVE_TO, PATH, STATISTICS_ENABLED,
+            ENABLE_TSM_STATUS, DEFAULT_TIMEOUT, OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
             HORNETQ_STORE_ENABLE_ASYNC_IO
+    };
+
+    private static final AttributeDefinition[] attributesWithMutuals = new AttributeDefinition[] {
+            PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING, USEHORNETQSTORE, USE_JDBC_STORE
     };
 
     static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_0 = new AttributeDefinition[] {
@@ -269,20 +279,32 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        // Register all attributes except of the mutual ones
-        Set<AttributeDefinition> attributesWithoutMutuals = new HashSet<>(Arrays.asList(attributes));
-        attributesWithoutMutuals.remove(USEHORNETQSTORE);
-        attributesWithoutMutuals.remove(USE_JDBC_STORE);
-
-        attributesWithoutMutuals.remove(PROCESS_ID_UUID);
-        attributesWithoutMutuals.remove(PROCESS_ID_SOCKET_BINDING);
-        attributesWithoutMutuals.remove(PROCESS_ID_SOCKET_MAX_PORTS);
-
-
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributesWithoutMutuals);
-        for(final AttributeDefinition def : attributesWithoutMutuals) {
+        // Register all attributes except the mutual ones and JTS, which require special handling
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(basicAttributes);
+        for(final AttributeDefinition def : basicAttributes) {
             resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
         }
+
+        // Register JTS with support for adding/removing the capability
+        resourceRegistration.registerReadWriteAttribute(JTS, null, new ReloadRequiredWriteAttributeHandler(JTS) {
+            @Override
+            protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+
+                super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+
+                assert !JTS.isAllowExpression(); // if someone changes that we need to deal with it.
+                // Don't change it :)
+                boolean jts = newValue.asBoolean(JTS.getDefaultValue().asBoolean());
+                boolean was = oldValue.asBoolean(JTS.getDefaultValue().asBoolean());
+                if (jts != was) {
+                    if (jts) {
+                        context.registerCapability(JTS_CAPABILITY, JTS.getName());
+                    } else {
+                        context.deregisterCapability(JTS_CAPABILITY.getName());
+                    }
+                }
+            }
+        });
 
         // Register mutual object store attributes
         OperationStepHandler mutualWriteHandler = new ObjectStoreMutualWriteHandler(USEHORNETQSTORE, USE_JDBC_STORE);

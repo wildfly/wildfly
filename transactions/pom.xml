@@ -40,12 +40,12 @@
             <artifactId>wildfly-controller</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-jmx</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-iiop-openjdk</artifactId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>

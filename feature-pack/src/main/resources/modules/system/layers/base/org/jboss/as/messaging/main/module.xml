@@ -48,6 +48,7 @@
         <module name="org.jboss.as.cli" />
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.jmx"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
         <!-- required only to access the HttpListenerRegistryService used by http-acceptor -->

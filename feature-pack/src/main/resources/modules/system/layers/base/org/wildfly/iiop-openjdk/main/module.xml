@@ -38,8 +38,9 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
-        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.as.server"/>
+        <!-- JTSCapability must be loadable, but only if transaction support is configured -->
+        <module name="org.jboss.as.transactions" optional="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.ejb"/>
@@ -49,5 +50,6 @@
         <module name="org.jboss.jts" />
         <module name="org.jboss.jts.integration"/>
         <module name="org.picketbox"/>
+        <module name="org.wildfly.security.elytron"/>
     </dependencies>
 </module>

@@ -28,9 +28,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -38,6 +42,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -348,6 +353,13 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     }
 
     @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        for (AttributeDefinition ad : ALL_ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(ad, null, OpenJDKReloadRequiredWriteAttributeHandler.INSTANCE);
+        }
+    }
+
+    @Override
     public Collection<AttributeDefinition> getAttributes() {
         return ALL_ATTRIBUTES;
     }
@@ -397,6 +409,50 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
         @Override
         public String toString() {
             return this.name;
+        }
+    }
+
+    private static class OpenJDKReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
+
+        private static final OperationStepHandler INSTANCE = new OpenJDKReloadRequiredWriteAttributeHandler();
+
+        private OpenJDKReloadRequiredWriteAttributeHandler() {
+            super(ALL_ATTRIBUTES);
+        }
+
+        @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attributeDefinition, ModelNode newValue, ModelNode oldValue) {
+            if (TRANSACTIONS.equals(attributeDefinition)) {
+                Boolean needJTS = isJtsNeeded(context, newValue);
+                if (needJTS != null) {
+                    if (needJTS) {
+                        context.registerAdditionalCapabilityRequirement(IIOPExtension.JTS_CAPABILITY,
+                                IIOPExtension.IIOP_CAPABILITY.getName(),
+                                TRANSACTIONS.getName());
+                    } else {
+                        context.deregisterCapabilityRequirement(IIOPExtension.JTS_CAPABILITY, IIOPExtension.IIOP_CAPABILITY.getName());
+                    }
+                }
+            } else {
+                super.recordCapabilitiesAndRequirements(context, attributeDefinition, newValue, oldValue);
+            }
+        }
+
+        private Boolean isJtsNeeded(OperationContext context, ModelNode attributeValue) {
+            // Create a fake model to resolve
+            ModelNode model = new ModelNode();
+            model.get(TRANSACTIONS.getName()).set(attributeValue);
+            try {
+                String s = TRANSACTIONS.resolveModelAttribute(context, model).asString();
+                return s.equalsIgnoreCase(Constants.FULL);
+            } catch (OperationFailedException ofe) {
+                if (attributeValue.getType() == ModelType.EXPRESSION) {
+                    // Must be a vault expression or something we can't resolve in Stage.MODEL.
+                    // So we can only do nothing and hope for the best when they reload
+                    return null;
+                }
+                throw new IllegalStateException(ofe);
+            }
         }
     }
 

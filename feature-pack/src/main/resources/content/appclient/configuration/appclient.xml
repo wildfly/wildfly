@@ -26,6 +26,7 @@
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
+        <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.naming"/>
@@ -133,6 +134,7 @@
                 </long-running-threads>
             </default-workmanager>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jmx:1.3"/>
         <subsystem xmlns="urn:jboss:domain:jpa:1.1">
             <jpa default-datasource=""/>
         </subsystem>

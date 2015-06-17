@@ -743,6 +743,7 @@
             </subsystem>
         </profile>
         <profile name="ignored">
+            <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         </profile>
         <profile name="minimal">

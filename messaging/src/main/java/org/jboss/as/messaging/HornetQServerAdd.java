@@ -247,8 +247,11 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Add the HornetQ Service
                 ServiceName hqServiceName = MessagingServices.getHornetQServiceName(serverName);
-                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(hqServiceName, hqService)
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
+                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(hqServiceName, hqService);
+                if (context.hasOptionalCapability(MessagingSubsystemRootResourceDefinition.JMX_CAPABILITY, MessagingSubsystemRootResourceDefinition.MESSAGING_CAPABILITY.getName(), null)) {
+                    ServiceName jmxCapability = context.getCapabilityServiceName(MessagingSubsystemRootResourceDefinition.JMX_CAPABILITY, MBeanServer.class);
+                    serviceBuilder.addDependency(jmxCapability, MBeanServer.class, hqService.getMBeanServer());
+                }
 
                 serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, hqService.getPathManagerInjector());
 
