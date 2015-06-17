@@ -33,8 +33,6 @@ public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    DATASOURCES_1_0("urn:jboss:domain:datasources:1.0"),
-
     DATASOURCES_1_1("urn:jboss:domain:datasources:1.1"),
 
     DATASOURCES_1_2("urn:jboss:domain:datasources:1.2"),
