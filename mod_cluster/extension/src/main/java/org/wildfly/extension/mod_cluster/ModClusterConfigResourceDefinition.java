@@ -31,15 +31,14 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -81,14 +80,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    static final AttributeDefinition PROXY = new SimpleAttributeDefinitionBuilder(CommonAttributes.PROXY, ModelType.STRING, true)
-            // We don't allow expressions for model references!
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-            .build();
-
-    static final SimpleListAttributeDefinition PROXIES = SimpleListAttributeDefinition.Builder.of(CommonAttributes.PROXIES, PROXY)
+    static final StringListAttributeDefinition PROXIES = new StringListAttributeDefinition.Builder(CommonAttributes.PROXIES)
             // We don't allow expressions for model references!
             .setAllowExpression(false)
             .setAllowNull(true)

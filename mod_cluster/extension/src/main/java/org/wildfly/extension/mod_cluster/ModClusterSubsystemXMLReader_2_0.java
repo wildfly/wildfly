@@ -72,9 +72,7 @@ public class ModClusterSubsystemXMLReader_2_0 extends ModClusterSubsystemXMLRead
                     ((SimpleAttributeDefinition) ModClusterConfigResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName())).parseAndSetParameter(value, conf, reader);
                     break;
                 case PROXIES:
-                    for (String proxy : reader.getListAttributeValue(i)) {
-                        conf.get(CommonAttributes.PROXIES).add(proxy);
-                    }
+                    ModClusterConfigResourceDefinition.PROXIES.getParser().parseAndSetParameter(ModClusterConfigResourceDefinition.PROXIES, value, conf, reader);
                     break;
                 case PROXY_LIST:
                     // Keep deprecated PROXY_LIST to be able to support EAP 6.x slaves
