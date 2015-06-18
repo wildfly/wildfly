@@ -25,6 +25,8 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,8 +44,8 @@ public class Util {
      *
      * @return the compliant jndi name
      */
-    public static String getJndiName(final ModelNode modelNode) {
-        final String rawJndiName = modelNode.require(JNDI_NAME.getName()).asString();
+    public static String getJndiName(final OperationContext context, final ModelNode modelNode) throws OperationFailedException {
+        final String rawJndiName = JNDI_NAME.resolveModelAttribute(context, modelNode).asString();
         return cleanJndiName(rawJndiName, modelNode.hasDefined(USE_JAVA_CONTEXT.getName()) && modelNode.get(USE_JAVA_CONTEXT.getName()).asBoolean());
     }
 

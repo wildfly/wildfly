@@ -64,7 +64,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         ModelNode model;
         if (!address.getElement(0).getKey().equals(ModelDescriptionConstants.DEPLOYMENT) &&
                 (model = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel()).isDefined()) {
-            jndiName = Util.getJndiName(model);
+            jndiName = Util.getJndiName(context, model);
         } else {
             jndiName = address.getLastElement().getValue();
         }
