@@ -67,13 +67,26 @@ public class Host implements Service<Host>, FilterLocation {
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
     private final HostRootHandler hostRootHandler = new HostRootHandler();
 
-    protected Host(String name, List<String> aliases, String defaultWebModule) {
+    private final DefaultResponseCodeHandler defaultHandler;
+    protected Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
         hosts.add(name);
         hosts.addAll(aliases);
         allAliases = Collections.unmodifiableSet(hosts);
+        this.defaultHandler = new DefaultResponseCodeHandler(defaultResponseCode);
+        this.setupDefaultResponseCodeHandler();
+    }
+
+    protected Host(final String name, final List<String> aliases, final String defaultWebModule ) {
+        this.name = name;
+        this.defaultWebModule = defaultWebModule;
+        Set<String> hosts = new HashSet<>(aliases.size() + 1);
+        hosts.add(name);
+        hosts.addAll(aliases);
+        this.allAliases = Collections.unmodifiableSet(hosts);
+        this.defaultHandler = null;
     }
 
     private String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -200,6 +213,9 @@ public class Host implements Service<Host>, FilterLocation {
 
     public void unregisterHandler(String path) {
         pathHandler.removePrefixPath(path);
+        if(path.equals("/")){
+            this.setupDefaultResponseCodeHandler();
+        }
     }
 
     /**
@@ -221,6 +237,7 @@ public class Host implements Service<Host>, FilterLocation {
         return new LinkedHashMap<>(additionalAuthenticationMechanisms);
     }
 
+
     @Override
     public void addFilterRef(FilterRef filterRef) {
         filters.add(filterRef);
@@ -232,6 +249,13 @@ public class Host implements Service<Host>, FilterLocation {
         filters.remove(filterRef);
         rootHandler = null;
     }
+
+    protected void setupDefaultResponseCodeHandler(){
+        if(this.defaultHandler != null){
+            this.registerHandler("/", this.defaultHandler);
+        }
+    }
+
 
     private static final class OptionsHandler implements HttpHandler {
 

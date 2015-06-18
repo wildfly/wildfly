@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -51,29 +49,29 @@ class HostAdd extends AbstractAddStepHandler {
     static final HostAdd INSTANCE = new HostAdd();
 
     private HostAdd() {
-        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE);
+        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE);
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final PathAddress serverAddress = address.subAddress(0, address.size() - 1);
-        final PathAddress subsystemAddress = serverAddress.subAddress(0, address.size() - 2);
+        final PathAddress address = context.getCurrentAddress();
+        final PathAddress serverAddress = address.getParent();
+        final PathAddress subsystemAddress = serverAddress.getParent();
         final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(subsystemAddress, false), 1);
         final ModelNode serverModel = Resource.Tools.readModel(context.readResourceFromRoot(serverAddress, false), 1);
 
         final String name = address.getLastElement().getValue();
         final List<String> aliases = HostDefinition.ALIAS.unwrap(context, model);
         final String defaultWebModule = HostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, model).asString();
-        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, subsystemModel).asString();
         final String defaultHostName = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, serverModel).asString();
         final String serverName = serverAddress.getLastElement().getValue();
-
-        boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
+        final boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
+        final int defaultResponseCode = HostDefinition.DEFAULT_RESPONSE_CODE.resolveModelAttribute(context, model).asInt();
 
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
-        final Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases, defaultWebModule);
+
+        final Host service = new Host(name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode);
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService());
