@@ -101,6 +101,7 @@
         <version.commons-codec>1.9</version.commons-codec>
         <version.commons-collections>3.2.1</version.commons-collections>
         <version.commons-digester>1.8</version.commons-digester>
+        <version.commons-net>3.2</version.commons-net>
         <version.commons-pool>1.6</version.commons-pool>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
@@ -297,12 +298,13 @@
         <module>naming</module>
         <module>picketlink</module>
         <module>pojo</module>
+        <module>redhat-support-lib</module>
         <module>sar</module>
         <module>security</module>
         <module>security-manager</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-	<module>telemetry</module>
+	    <module>telemetry</module>
         <module>transactions</module>
         <module>undertow</module>
         <module>servlet-build</module>
@@ -841,6 +843,12 @@
     <dependencyManagement>
         <dependencies>
 
+            <dependency>
+                <groupId>com.redhat.gss</groupId>
+                <artifactId>wildfly-redhat-support-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Import the core parent to get all the managed dependencies from core -->
             <dependency>
                 <groupId>org.wildfly.core</groupId>
@@ -1179,6 +1187,42 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-patching</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-platform-mbean</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-process-controller</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-protocol</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-redhat-support-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-remoting</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-security-api</artifactId>
                 <version>${project.version}</version>
@@ -1208,11 +1252,17 @@
                 <version>${project.version}</version>
             </dependency>
 
-	    <dependency>
-		<groupId>org.wildfly</groupId>
-		<artifactId>wildfly-telemetry</artifactId>
-		<version>${project.version}</version>
-	    </dependency>
+    	    <dependency>
+        		<groupId>org.wildfly</groupId>
+        		<artifactId>wildfly-telemetry</artifactId>
+        		<version>${project.version}</version>
+    	    </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-threads</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
@@ -1587,6 +1637,12 @@
                         <groupId>servlet-api</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${version.commons-net}</version>
             </dependency>
 
             <dependency>
