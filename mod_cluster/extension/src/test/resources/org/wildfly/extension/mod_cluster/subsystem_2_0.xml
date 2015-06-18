@@ -35,6 +35,7 @@
                         node-timeout="${modcluster.node-timeout:123}"
                         ping="${modcluster.ping:10}"
                         proxy-url="${modcluster.proxy-url:/}"
+                        proxies="proxy1 proxy2"
                         smax="${modcluster.smax:2}"
                         socket-timeout="${modcluster.socket-timeout:20}"
                         sticky-session="${modcluster.sticky-session:true}"
