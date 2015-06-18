@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${commons-beanutils:commons-beanutils-core}"/>
+        <artifact name="${commons-beanutils:commons-beanutils}"/>
     </resources>
 
     <dependencies>

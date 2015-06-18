@@ -72,12 +72,4 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
             BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, jmsTopicService, jmsTopicServiceName);
         }
     }
-
-    /**
-     * @deprecated use {@link JMSTopicService#installService(String, org.jboss.msc.service.ServiceName, org.jboss.msc.service.ServiceTarget, String[])} instead.
-     */
-    @Deprecated
-    public void installServices(final String name, final ServiceName hqServiceName, final ServiceTarget serviceTarget, final String[] jndiBindings) {
-        JMSTopicService.installService(name, hqServiceName, serviceTarget, jndiBindings);
-    }
 }

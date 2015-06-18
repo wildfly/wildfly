@@ -56,6 +56,12 @@
         <ts.config-as.change-jgroups-multicast-interface name="wildfly-${cacheMode}-${stack}-1"
                                                          interface="multicast"/>
 
+        <copy todir="target/wildfly-clustered-messaging-0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <copy todir="target/wildfly-clustered-messaging-1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
     </target>
 
     <!-- Build SYNC-tcp stack configs -->

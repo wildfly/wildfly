@@ -18,7 +18,6 @@ import org.jboss.logging.Logger;
 @MessageDriven(name = "AnnoBasedBean", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "${destination}") })
-@ResourceAdapter("${resource.adapter}")
 @DependsOn("CallCounterProxy")
 public class MDBWhichDependsOn implements MessageListener {
 

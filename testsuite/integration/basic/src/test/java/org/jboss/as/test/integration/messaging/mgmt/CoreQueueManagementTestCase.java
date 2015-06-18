@@ -23,17 +23,15 @@
 package org.jboss.as.test.integration.messaging.mgmt;
 
 import static java.util.UUID.randomUUID;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.junit.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -42,17 +40,20 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,11 +68,20 @@ public class CoreQueueManagementTestCase {
 
     private static long count = System.currentTimeMillis();
 
-    private static ClientSessionFactory sessionFactory;
+    @ContainerResource
+    private ManagementClient managementClient;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
+    private ClientSessionFactory sessionFactory;
+    private ClientSession session;
+    private ClientSession consumerSession;
 
+    @Before
+    public void setup() throws Exception {
+
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+        Assume.assumeTrue("Test is relevant only when the messaging subsystem with HornetQ is setup", "hornetq".equals(jmsOperations.getProviderName()));
+
+        count++;
 
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
@@ -84,28 +94,6 @@ public class CoreQueueManagementTestCase {
         locator.setBlockOnDurableSend(true);
         locator.setBlockOnNonDurableSend(true);
         sessionFactory =  locator.createSessionFactory();
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-
-        if (sessionFactory != null) {
-            sessionFactory.cleanup();
-            sessionFactory.close();
-        }
-    }
-
-
-    @ContainerResource
-    private ManagementClient managementClient;
-
-    private ClientSession session;
-    private ClientSession consumerSession;
-
-    @Before
-    public void setup() throws Exception {
-
-        count++;
 
         session = sessionFactory.createSession("guest", "guest", false, true, true, false, 1);
         session.createQueue(getQueueName(), getQueueName(), false);
@@ -125,6 +113,11 @@ public class CoreQueueManagementTestCase {
             session.deleteQueue(getQueueName());
             session.deleteQueue(getOtherQueueName());
             session.close();
+        }
+
+        if (sessionFactory != null) {
+            sessionFactory.cleanup();
+            sessionFactory.close();
         }
     }
 

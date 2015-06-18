@@ -279,16 +279,16 @@
         </sequential>
     </macrodef>
 
-    <macrodef name="ts.config-as.add-messaging-failover" description="Make default hornetq-server fails over on shutdown">
+    <macrodef name="ts.config-as.add-messaging-failover" description="Make default messaging aserver fails over on shutdown">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
         <sequential>
-            <echo message="Make default hornetq-server fails over on shutdown"/>
-            <copy file="@{output.dir}/@{name}/@{config.dir.name}/standalone-full.xml"
-                  tofile="@{output.dir}/@{name}/@{config.dir.name}/standalone-full-backup.xml" />
+            <echo message="Make default messagingserver fails over on shutdown"/>
+            <copy file="@{output.dir}/@{name}/@{config.dir.name}/standalone-full-hornetq.xml"
+                  tofile="@{output.dir}/@{name}/@{config.dir.name}/standalone-full-hornetq-backup.xml" />
 
             <!-- Process *.xml to *.xml.mod. -->
             <xslt destdir="@{output.dir}/@{name}-tmp/@{config.dir.name}"
@@ -296,7 +296,7 @@
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-full.xml"/>
+                    <include name="**/standalone-full-hornetq.xml"/>
                 </fileset>
             </xslt>
             <xslt destdir="@{output.dir}/@{name}-tmp/@{config.dir.name}"
@@ -304,15 +304,15 @@
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-full-backup.xml"/>
+                    <include name="**/standalone-full-hornetq-backup.xml"/>
                 </fileset>
             </xslt>
 
             <!-- Move processed files back. -->
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                 <fileset dir="@{output.dir}/@{name}-tmp/@{config.dir.name}">
-                    <include name="**/standalone-full.xml.mod"/>
-                    <include name="**/standalone-full-backup.xml.mod"/>
+                    <include name="**/standalone-full-hornetq.xml.mod"/>
+                    <include name="**/standalone-full-hornetq-backup.xml.mod"/>
                 </fileset>
                 <mapper type="glob" from="*.mod" to="*"/>
             </move>

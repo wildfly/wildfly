@@ -81,12 +81,4 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
             BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, queueService, jmsQueueServiceName);
         }
     }
-
-    /**
-     * @deprecated use {@link JMSQueueService#installService(String, org.jboss.msc.service.ServiceTarget, org.jboss.msc.service.ServiceName, String, boolean, String[])} instead
-     */
-    @Deprecated
-    public void installServices(final String name, final ServiceTarget serviceTarget, final ServiceName hqServiceName, final String selector, final boolean durable, final String[] jndiBindings) {
-        JMSQueueService.installService(name, serviceTarget, hqServiceName, selector, durable, jndiBindings);
-    }
 }

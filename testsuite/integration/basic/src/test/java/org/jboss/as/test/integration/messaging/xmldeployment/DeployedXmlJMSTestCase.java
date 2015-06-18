@@ -39,6 +39,8 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.deployment.xml.datasource.DeployedXmlDataSourceTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -57,7 +59,8 @@ import org.junit.runner.RunWith;
 @ServerSetup(DeployedXmlJMSTestCase.DeployedXmlJMSTestCaseSetup.class)
 public class DeployedXmlJMSTestCase {
 
-    public static final String TEST_JMS_XML = "test-jms.xml";
+    private static final String TEST_HORNETQ_JMS_XML = "test-hornetq-jms.xml";
+    private static final String TEST_ACTIVEMQ_JMS_XML = "test-activemq-jms.xml";
 
     static class DeployedXmlJMSTestCaseSetup implements ServerSetupTask {
 
@@ -65,7 +68,11 @@ public class DeployedXmlJMSTestCase {
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final String packageName = DeployedXmlJMSTestCase.class.getPackage().getName().replace(".", "/");
-            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();
+
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+            String xmlFile = (jmsOperations.getProviderName().equals("hornetq")) ? TEST_HORNETQ_JMS_XML : TEST_ACTIVEMQ_JMS_XML;
+
+            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSTestCase.class.getResource("/" + packageName + "/" + xmlFile)).andDeploy().build();
             final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
             final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
             final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
@@ -78,8 +85,11 @@ public class DeployedXmlJMSTestCase {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+            String xmlFile = (jmsOperations.getProviderName().equals("hornetq")) ? TEST_HORNETQ_JMS_XML : TEST_ACTIVEMQ_JMS_XML;
+
             final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
-            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_JMS_XML).andRemoveUndeployed().build();
+            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(xmlFile).andRemoveUndeployed().build();
             manager.execute(undeployPlan).get();
         }
     }

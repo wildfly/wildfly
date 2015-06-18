@@ -22,17 +22,11 @@
 
 package org.jboss.as.test.integration.messaging.jms.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -45,9 +39,8 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -71,14 +64,6 @@ public class DependentMessagingDeploymentTestCase {
     private static final String QUEUE_NAME = "myQueue";
     private static final String TOPIC_NAME = "myTopic";
 
-    private static final ModelNode hornetQServerAddress;
-
-    static {
-        hornetQServerAddress = new ModelNode();
-        hornetQServerAddress.add("subsystem", "messaging");
-        hornetQServerAddress.add("hornetq-server", "default");
-    }
-
     @ContainerResource
     private ManagementClient managementClient;
 
@@ -89,15 +74,15 @@ public class DependentMessagingDeploymentTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            addResource(managementClient, "jms-queue", QUEUE_NAME, QUEUE_LOOKUP);
-            addResource(managementClient, "jms-topic", TOPIC_NAME, TOPIC_LOOKUP);
+            JMSOperationsProvider.getInstance(managementClient).createJmsQueue(QUEUE_NAME, QUEUE_LOOKUP);
+            JMSOperationsProvider.getInstance(managementClient).createJmsTopic(TOPIC_NAME, TOPIC_LOOKUP);
         }
 
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            removeResource(managementClient, "jms-queue", QUEUE_NAME);
-            removeResource(managementClient, "jms-topic", TOPIC_NAME);
+            JMSOperationsProvider.getInstance(managementClient).removeJmsQueue(QUEUE_NAME);
+            JMSOperationsProvider.getInstance(managementClient).removeJmsTopic(TOPIC_NAME);
         }
     }
 
@@ -113,7 +98,11 @@ public class DependentMessagingDeploymentTestCase {
     public void testRemoveDependingQueue() throws Exception {
         sendAndReceiveMessage(true);
 
-        assertFalse(removeResource(managementClient, "jms-queue", QUEUE_NAME));
+        try {
+            JMSOperationsProvider.getInstance(managementClient).removeJmsQueue(QUEUE_NAME);
+            fail("removing a JMS resource that the deployment is depending upon must fail");
+        } catch(Exception e) {
+        }
 
         sendAndReceiveMessage(true);
     }
@@ -122,7 +111,11 @@ public class DependentMessagingDeploymentTestCase {
     public void testRemoveDependingTopic() throws Exception {
         sendAndReceiveMessage(false);
 
-        assertFalse(removeResource(managementClient, "jms-topic", TOPIC_NAME));
+        try {
+            JMSOperationsProvider.getInstance(managementClient).removeJmsTopic(TOPIC_NAME);
+            fail("removing a JMS resource that the deployment is depending upon must fail");
+        } catch(Exception e) {
+        }
 
         sendAndReceiveMessage(false);
     }
@@ -135,30 +128,5 @@ public class DependentMessagingDeploymentTestCase {
 
         assertNotNull(reply);
         assertEquals(text, reply);
-    }
-
-    private static void addResource(ManagementClient managementClient, String type, String name, String lookup) throws IOException {
-        ModelNode operation = new ModelNode();
-        ModelNode address = hornetQServerAddress.clone().add(type, name);
-        operation.get(OP_ADDR).set(address);
-        operation.get(OP).set(ADD);
-        operation.get("entries").add(lookup);
-        execute(managementClient, operation);
-    }
-
-    private static boolean removeResource(ManagementClient managementClient, String type, String name) throws IOException {
-        ModelNode operation = new ModelNode();
-        ModelNode address = hornetQServerAddress.clone().add(type, name);
-        operation.get(OP_ADDR).set(address);
-        operation.get(OP).set(REMOVE);
-        return execute(managementClient, operation);
-    }
-
-    private static boolean execute(ManagementClient managementClient, final ModelNode operation) throws IOException {
-        System.out.println("operation = " + operation);
-        ModelNode response = managementClient.getControllerClient().execute(operation);
-        System.out.println("response = " + response);
-        final String outcome = response.get(OUTCOME).asString();
-        return ModelDescriptionConstants.SUCCESS.equals(outcome);
     }
 }

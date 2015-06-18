@@ -382,6 +382,11 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
             modelNode.get("strict-max-bean-instance-pool", "mdb-strict-max-pool").remove("name");
             modelNode.get("cache", "simple").remove("name");
             modelNode.get("cache", "distributable").remove("name");
+            // Previous versions of the subsystem use the hornetq-ra as the default resource adapter name, version 3.1.0 uses activemq-ra
+            ModelNode defaultResourceAdapterName = modelNode.get(EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.getName());
+            if (defaultResourceAdapterName.isDefined() && defaultResourceAdapterName.asString().equals("hornetq-ra")) {
+                modelNode.get(EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.getName()).set(EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.getDefaultValue());
+            }
             return modelNode;
         }
     };

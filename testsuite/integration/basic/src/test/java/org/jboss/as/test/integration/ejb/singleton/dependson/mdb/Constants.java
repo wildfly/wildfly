@@ -36,7 +36,7 @@ public interface Constants {
     String QUEUE_REPLY_NAME = "mdbtest/replyQueue";
     String QUEUE_REPLY_JNDI_NAME = "java:jboss/" + QUEUE_REPLY_NAME;
     String SYS_PROP_KEY = "jboss/" + QUEUE_NAME;
-    String SYS_PROP_VALUE = "hornetq-ra.rar";
+    String SYS_PROP_VALUE = "activemq-ra.rar";
 
     String DEPLOYMENT_NAME_COUNTER = "callcounter";
     String DEPLOYMENT_JAR_NAME_COUNTER = DEPLOYMENT_NAME_COUNTER + ".jar";

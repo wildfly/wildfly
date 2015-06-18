@@ -86,7 +86,7 @@ public class MDBTestCase {
             jmsAdminOperations.createJmsQueue("mdbtest/replyQueue", "java:jboss/mdbtest/replyQueue");
             jmsAdminOperations.createJmsQueue("mdbtest/annoQueue", "java:jboss/mdbtest/annoQueue");
             jmsAdminOperations.createJmsQueue("mdbtest/annoReplyQueue", "java:jboss/mdbtest/annoReplyQueue");
-            jmsAdminOperations.setSystemProperties("jboss/mdbtest/annoQueue", "hornetq-ra.rar");
+            jmsAdminOperations.setSystemProperties("jboss/mdbtest/annoQueue", "activemq-ra.rar");
         }
 
         @Override

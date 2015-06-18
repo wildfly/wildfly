@@ -44,6 +44,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -73,7 +74,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .setAllowExpression(true).build();
     static final SimpleAttributeDefinition DEFAULT_RESOURCE_ADAPTER_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME, ModelType.STRING, true)
-                    .setDefaultValue(new ModelNode().set("hornetq-ra"))
+                    .setDefaultValue(new ModelNode("activemq-ra"))
                     .setAllowExpression(true).build();
     static final SimpleAttributeDefinition DEFAULT_ENTITY_BEAN_INSTANCE_POOL =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL, ModelType.STRING, true)
@@ -271,6 +272,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         registerTransformers_1_1_0(subsystemRegistration);
         registerTransformers_1_2_0(subsystemRegistration);
         registerTransformers_1_2_1(subsystemRegistration);
+        registerTransformers_3_0_0(subsystemRegistration);
     }
 
     private static void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
@@ -303,6 +305,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                 // a legacy slave can't have that subsystem in its profile.
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME)
                 .end();
         EJB3RemoteResourceDefinition.registerTransformers_1_1_0(builder);
         UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, EJB3SubsystemModel.THREAD_POOL);
@@ -334,10 +337,21 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         // We can always discard this attribute, because it's meaningless without the security-manager subsystem, and
         // a legacy slave can't have that subsystem in its profile.
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
+        //builder.getAttributeBuilder().setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME);
         PassivationStoreResourceDefinition.registerTransformers_1_2_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
         builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem12);
+    }
+
+    private static void registerTransformers_3_0_0(SubsystemRegistration subsystemRegistration) {
+        ModelVersion subsystem200 = ModelVersion.create(3, 0, 0);
+
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder()
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME)
+        .end();
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem200);
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

@@ -49,9 +49,13 @@ import javax.naming.Context;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
@@ -77,27 +81,15 @@ public class JmsClientTestCase {
     private ManagementClient managementClient;
 
     @Before
-
     public void setUp() throws IOException {
-        // Create the destination using the management API
-        ModelNode op = new ModelNode();
-        op.get("operation").set("add");
-        op.get("address").add("subsystem", "messaging");
-        op.get("address").add("hornetq-server", "default");
-        op.get("address").add("jms-queue", QUEUE_NAME);
-        op.get("entries").add(EXPORTED_QUEUE_NAME);
-        applyUpdate(op, managementClient.getControllerClient());
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+        jmsOperations.createJmsQueue(QUEUE_NAME, EXPORTED_QUEUE_NAME);
     }
 
     @After
     public void tearDown() throws IOException {
-        // Remove the queue using the management API
-        ModelNode op = new ModelNode();
-        op.get("operation").set("remove");
-        op.get("address").add("subsystem", "messaging");
-        op.get("address").add("hornetq-server", "default");
-        op.get("address").add("jms-queue", QUEUE_NAME);
-        applyUpdate(op, managementClient.getControllerClient());
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+        jmsOperations.removeJmsQueue(QUEUE_NAME);
     }
 
     @Test
@@ -160,20 +152,4 @@ public class JmsClientTestCase {
             }
         }
     }
-
-    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(new OperationBuilder(update).build());
-        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
-            }
-        }
-        else if (result.hasDefined("failure-description")){
-            throw new RuntimeException(result.get("failure-description").toString());
-        }
-        else {
-            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
-        }
-    }
-
 }

@@ -76,6 +76,18 @@
             <fileset dir="target/jbossas"/>
         </copy>
         <ts.config-as.add-messaging-failover name="jbossas-messaging-failover"/>
+
+
+        <delete dir="target/jbossas-messaging-ha-server1"/>
+        <echo message="Copying and configuring instance jbossas-messaging-ha-server1"/>
+        <copy todir="target/jbossas-messaging-ha-server1">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <delete dir="target/jbossas-messaging-ha-server2"/>
+        <echo message="Copying and configuring instance jbossas-messaging-ha-server2"/>
+        <copy todir="target/jbossas-messaging-ha-server2">
+            <fileset dir="target/jbossas"/>
+        </copy>
     </target>
 
 </project>

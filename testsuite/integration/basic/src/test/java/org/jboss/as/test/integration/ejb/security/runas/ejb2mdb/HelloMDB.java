@@ -52,7 +52,6 @@ import org.jboss.logging.Logger;
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
         @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1") })
 @RunAs("INTERNAL_ROLE")
-@ResourceAdapter(value = "hornetq-ra.rar")
 public class HelloMDB implements MessageListener {
     private static final Logger log = Logger.getLogger(HowdyBean.class);
 

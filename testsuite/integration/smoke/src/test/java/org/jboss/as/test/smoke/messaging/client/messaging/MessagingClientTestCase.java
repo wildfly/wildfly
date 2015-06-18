@@ -48,7 +48,10 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,6 +68,12 @@ public class MessagingClientTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    @Before
+    public void before() {
+        Assume.assumeTrue("Test is relevant only when the messaging subsystem with HornetQ is setup",
+            "hornetq".equals(JMSOperationsProvider.getInstance(managementClient).getProviderName()));
+    }
 
     @Ignore
     @Test

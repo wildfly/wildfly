@@ -39,7 +39,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.api.jms.HornetQJMSConstants;
+import org.apache.activemq.artemis.api.jms.ActiveMQJMSConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -123,7 +123,7 @@ public class JMSBridgeTest {
             assertNotNull("did not receive expected message", receivedMessage);
             assertTrue(receivedMessage instanceof TextMessage);
             assertEquals(text, ((TextMessage) receivedMessage).getText());
-            assertNotNull("did not get header set by the JMS bridge", receivedMessage.getStringProperty(HornetQJMSConstants.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST));
+            assertNotNull("did not get header set by the JMS bridge", receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

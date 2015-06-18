@@ -6,6 +6,10 @@
         <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
         <singleton default-access-timeout="${prop.default-access-timeout:5000}"/>
     </session-bean>
+    <mdb>
+        <resource-adapter-ref resource-adapter-name="${ejb.resource-adapter-name:activemq-ra.rar}"/>
+        <bean-instance-pool-ref pool-name="mdb-strict-max-pool" />
+    </mdb>
     <entity-bean>
         <bean-instance-pool-ref pool-name="entity-strict-max-pool"/>
         <optimistic-locking enabled="true"/>

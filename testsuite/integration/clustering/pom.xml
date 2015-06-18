@@ -134,7 +134,6 @@
                                     <includes>
                                         <include>org/jboss/as/test/clustering/messaging/**/*TestCase.java</include>
                                     </includes>
-
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustered-messaging</arquillian.launch>

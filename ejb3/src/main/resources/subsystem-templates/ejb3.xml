@@ -51,7 +51,7 @@
       </replacement>
       <replacement placeholder="MDB">
          <mdb>
-             <resource-adapter-ref resource-adapter-name="${ejb.resource-adapter-name:hornetq-ra.rar}"/>
+             <resource-adapter-ref resource-adapter-name="${ejb.resource-adapter-name:activemq-ra.rar}"/>
              <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
          </mdb>
       </replacement>

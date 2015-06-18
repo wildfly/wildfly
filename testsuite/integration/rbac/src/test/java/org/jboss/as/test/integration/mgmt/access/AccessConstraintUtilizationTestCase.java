@@ -39,7 +39,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.jdr.JdrReportExtension;
-import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.dmr.ModelNode;
@@ -47,6 +46,7 @@ import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
