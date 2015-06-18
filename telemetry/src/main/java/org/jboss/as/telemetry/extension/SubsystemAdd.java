@@ -3,7 +3,6 @@ package org.jboss.as.telemetry.extension;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-//import org.jboss.as.jdr.JdrReport;
 import org.jboss.as.jdr.JdrReportCollector;
 import org.jboss.as.jdr.JdrReportService;
 import org.jboss.dmr.ModelNode;

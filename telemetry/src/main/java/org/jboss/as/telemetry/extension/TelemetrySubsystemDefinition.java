@@ -3,10 +3,8 @@ package org.jboss.as.telemetry.extension;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-//import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-//import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -45,6 +43,38 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition RHNPW =
             new SimpleAttributeDefinitionBuilder(TelemetryExtension.RHNPW, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition PROXYUSER =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_USER, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition PROXYPASSWORD =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_PASSWORD, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition PROXYPORT =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_PORT, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition PROXYURL =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_URL, ModelType.STRING)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(""))

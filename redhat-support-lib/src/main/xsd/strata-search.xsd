@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- This document is used by JAXB to generate Java classes at project build 
+	time. Most entities can be the top-level payload of an REST API response 
+	or embedded in another entity. -->
+<xs:schema targetNamespace="http://www.redhat.com/gss/strata"
+	elementFormDefault="qualified" version="1.14.0-SNAPSHOT-SNAPSHOT"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:tns="http://www.redhat.com/gss/strata"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
+
+	<!-- ================================================================================================= -->
+
+	<xs:complexType name="confidentialSearchType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Customer Data Detection Input
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Customer Data Detection Input</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="searchTexts" type="tns:searchTextsType"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="infractionType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Internal_Diagnostics_Steps in Customer Data Detection
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Internal_Diagnostics_Steps in Customer Data Detection</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="start" type="xs:int" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="end" type="xs:int" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="infractionsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Complex Type for infractions
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Complex Type for infractions</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="infraction" type="tns:infractionType" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="searchResultsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Complex Type for a list of search results.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Complex Type for a list of search results.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:searchResult" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="searchResultType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Complex Type for search result.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>Complex Type for search result.</xs:documentation>
+		</xs:annotation>            
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="displayId" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The (short) name to display for this result. Usually this is the "id" of the result item.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="resourceType" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The (short) name of the kind of this result to display.  Usually this is some variation of the name of the kind of thing.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="title" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The title of this result.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>URI for this result.  This should be the 
+								API/XML address for this result, rather than the browser/HTML 
+								address for this result, if they are different.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>URI for this result.  This should be the 
+								browser/HTML address for this result, rather than the API/XML
+								address for this result, if they are different.</xs:documentation>
+							<xs:documentation>URI for this result.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:choice>
+						<xs:element ref="tns:solution"/>
+						<xs:element ref="tns:article"/>
+					</xs:choice>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="searchTextType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Key, value pair to hold keyed chunks of text.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>Key, value pair to hold keyed chunks of text.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="referenceKey" type="xs:string"/>
+			<xs:element name="text" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="searchTextsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    List of: Key, value pair to hold keyed chunks of text.
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>
+			<xs:documentation>List of: Key, value pair to hold keyed chunks of text.</xs:documentation>
+		</xs:annotation>            
+		<xs:sequence>
+			<xs:element name="searchText" type="tns:searchTextType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="suspectTextType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    Customer Data Detection
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>Customer Data Detection</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="referenceKey" type="xs:string"/>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="natureOfInfraction" type="xs:string"/>
+			<xs:element name="infractions" type="tns:infractionsType"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="suspectTextsType">
+		<xs:annotation>
+                        <xs:appinfo>
+                            <jaxb:class>
+                                <jaxb:javadoc>
+                                    List of: Customer Data Detection
+                                </jaxb:javadoc>
+                            </jaxb:class>
+                        </xs:appinfo>                    
+			<xs:documentation>List of: Customer Data Detection</xs:documentation>
+		</xs:annotation>            
+		<xs:sequence>
+			<xs:element name="suspectText" type="tns:suspectTextType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- ================================================================================================= -->
+
+	<xs:element name="confidentialSearch" type="tns:confidentialSearchType"/>
+
+	<xs:element name="searchResult" type="tns:searchResultType">
+		<xs:annotation>
+			<xs:documentation>A single search result.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="searchResults" type="tns:searchResultsType">
+		<xs:annotation>
+			<xs:documentation>A list of searchResult.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+</xs:schema>

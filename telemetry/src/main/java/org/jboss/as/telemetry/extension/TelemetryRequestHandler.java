@@ -17,6 +17,10 @@ public class TelemetryRequestHandler implements OperationStepHandler {
             .setRuntimeOnly()
             .addParameter(TelemetrySubsystemDefinition.RHNUID)
             .addParameter(TelemetrySubsystemDefinition.RHNPW)
+            .addParameter(TelemetrySubsystemDefinition.PROXYURL)
+            .addParameter(TelemetrySubsystemDefinition.PROXYPORT)
+            .addParameter(TelemetrySubsystemDefinition.PROXYPASSWORD)
+            .addParameter(TelemetrySubsystemDefinition.PROXYUSER)
             .build();
 
     private TelemetryRequestHandler() {
@@ -28,16 +32,45 @@ public class TelemetryRequestHandler implements OperationStepHandler {
         final String rhnUid = operation.require(TelemetryExtension.RHNUID).asString();
         final String rhnPw = operation.require(TelemetryExtension.RHNPW).asString();
 
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                TelemetryService service = (TelemetryService) context.getServiceRegistry(true).getRequiredService(TelemetryService.createServiceName()).getValue();
-                service.setRhnLoginCredentials(rhnUid,rhnPw);
-                service.setEnabled(true);
-                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-            }
-        }, OperationContext.Stage.RUNTIME);
-
+        if(operation.has(TelemetryExtension.PROXY_PASSWORD) && operation.has(TelemetryExtension.PROXY_USER)) {
+            String proxyPwd = operation.get(TelemetryExtension.PROXY_PASSWORD).asString();
+            String proxyPort = operation.get(TelemetryExtension.PROXY_PORT).asString();
+            String proxyUrl = operation.get(TelemetryExtension.PROXY_URL).asString();
+            String proxyUser = operation.get(TelemetryExtension.PROXY_USER).asString();
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    TelemetryService service = (TelemetryService) context.getServiceRegistry(true).getRequiredService(TelemetryService.createServiceName()).getValue();
+                    service.setRhnLoginCredentials(rhnUid,rhnPw,proxyUrl,proxyPort,proxyUser,proxyPwd);
+                    service.setEnabled(true);
+                    context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+        else if(operation.has(TelemetryExtension.PROXY_PORT) && operation.has(TelemetryExtension.PROXY_URL)) {
+            String proxyPort = operation.get(TelemetryExtension.PROXY_PORT).asString();
+            String proxyUrl = operation.get(TelemetryExtension.PROXY_URL).asString();
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    TelemetryService service = (TelemetryService) context.getServiceRegistry(true).getRequiredService(TelemetryService.createServiceName()).getValue();
+                    service.setRhnLoginCredentials(rhnUid,rhnPw,proxyUrl,proxyPort);
+                    service.setEnabled(true);
+                    context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+        else {
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    TelemetryService service = (TelemetryService) context.getServiceRegistry(true).getRequiredService(TelemetryService.createServiceName()).getValue();
+                    service.setRhnLoginCredentials(rhnUid,rhnPw);
+                    service.setEnabled(true);
+                    context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
         context.stepCompleted();
     }
 }
