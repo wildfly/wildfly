@@ -3,13 +3,13 @@ package org.jboss.as.telemetry.extension;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-//import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -25,13 +25,10 @@ import javax.xml.stream.XMLStreamException;
 
 import java.util.List;
 
-
-//import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-
 /**
  * @author <a href="jkinlaw@redhat.com">Josh Kinlaw</a>
  */
@@ -100,38 +97,9 @@ public class TelemetryExtension implements Extension {
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             // Require no attributes
             ParseUtils.requireNoAttributes(reader);
-
-            //Read the children
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                readDeploymentType(reader, list);
-            }
-        }
-
-        private void readDeploymentType(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            if (!reader.getLocalName().equals(TYPE)) {
-                throw ParseUtils.unexpectedElement(reader);
-            }
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ModelDescriptionConstants.ADD);
-
-            for (int i = 0; i < reader.getAttributeCount(); i++) {
-                String attr = reader.getAttributeLocalName(i);
-                String value = reader.getAttributeValue(i);
-                if (attr.equals(FREQUENCY)) {
-                    TelemetrySubsystemDefinition.FREQUENCY.parseAndSetParameter(value, subsystem, reader);
-                }
-                else if (attr.equals(ENABLED)) {
-                    TelemetrySubsystemDefinition.ENABLED.parseAndSetParameter(value, subsystem, reader);
-                }
-                else {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
             ParseUtils.requireNoContent(reader);
 
-            //Add the 'add' operation
-            PathAddress addr = PathAddress.pathAddress(SUBSYSTEM_PATH);
-            subsystem.get(OP_ADDR).set(addr.toModelNode());
+            final ModelNode subsystem = Util.createAddOperation(PathAddress.pathAddress(SUBSYSTEM_PATH));
             list.add(subsystem);
         }
 
@@ -141,11 +109,6 @@ public class TelemetryExtension implements Extension {
         @Override
         public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(TelemetryExtension.NAMESPACE, false);
-            ModelNode node = context.getModelNode();
-            writer.writeStartElement(TYPE);
-            TelemetrySubsystemDefinition.FREQUENCY.marshallAsAttribute(node, true, writer);
-            TelemetrySubsystemDefinition.ENABLED.marshallAsAttribute(node, true, writer);
-            writer.writeEndElement();
             writer.writeEndElement();
         }
     }

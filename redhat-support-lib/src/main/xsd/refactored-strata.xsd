@@ -1,0 +1,2735 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- This document is used by JAXB to generate Java classes at project build 
+	time. Most entities can be the top-level payload of an REST API response 
+	or embedded in another entity. -->
+<xs:schema targetNamespace="http://www.redhat.com/gss/strata"
+	elementFormDefault="qualified" version="1.14.0-SNAPSHOT-SNAPSHOT"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:tns="http://www.redhat.com/gss/strata"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
+
+	<xs:annotation>
+		<xs:documentation>Red Hat Customer Portal API</xs:documentation>
+		<xs:appinfo>
+			<jaxb:globalBindings>
+				<xjc:serializable uid="11"/>
+				<jaxb:javaType xmlType="xs:dateTime" name="java.util.Calendar"
+					parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
+					printMethod="javax.xml.bind.DatatypeConverter.printDateTime"/>
+				<!-- Global binding for xs to java boolean to allow case insensitivity -->
+				<jaxb:javaType xmlType="xs:boolean" name="boolean"
+					parseMethod="com.redhat.gss.avalon.strata.rest.BooleanDatatypeConverter.parseBoolean"/>
+			</jaxb:globalBindings>
+		</xs:appinfo>
+	</xs:annotation>
+
+	<xs:complexType name="strataEntityType" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The base type for all API entities.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="label" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>
+						This is a repeat of the containing element name for JSON,
+						since JSON doesn't include this for top level elements.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="trackedEntityType" abstract="true">
+		<xs:annotation>
+			<xs:documentation>The base type for entities that maintain create and update information.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="createdBy" type="xs:string"   minOccurs="0" maxOccurs="1"/>
+					<xs:element name="createdDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="lastModifiedBy" type="xs:string"   minOccurs="0" maxOccurs="1"/>
+					<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="linked" type="xs:boolean"  minOccurs="0" maxOccurs="1"/>
+					<xs:element name="linkedBy" type="xs:string"   minOccurs="0" maxOccurs="1"/>	
+					<xs:element name="linkedAt" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>			
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="base_linkType">
+		<xs:annotation>
+			<xs:documentation>ATOM link type.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+
+				<xs:attribute name="title" type="xs:string" use="optional"/>
+				<xs:attribute name="rel" type="xs:string" use="optional"/>
+				<xs:attribute name="href" type="xs:string" use="optional"/>
+				<xs:attribute name="type" type="xs:string" use="optional"/>
+				<!-- This is not standard and is for backwards compatibility only -->
+				<xs:attribute name="uri" type="xs:string" use="optional"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="problemsType">
+		<xs:annotation>
+			<xs:documentation>A list of problem reports.</xs:documentation>
+		</xs:annotation>
+
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="source" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="tns:link"/>
+			<xs:element ref="tns:problem"/>
+		</xs:choice>
+	</xs:complexType>
+
+	<xs:element name="problems" type="tns:problemsType">
+		<xs:annotation>
+			<xs:documentation>A list of problem reports.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="problemType">
+		<xs:annotation>
+			<xs:documentation>A problem report.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>    
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="source" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				<xs:element ref="tns:link"/>                                
+			</xs:choice>
+
+			<xs:element ref="tns:explainSbr" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="problem" type="tns:problemType">
+		<xs:annotation>
+			<xs:documentation>A problem report.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="explainSbrType">
+		<xs:sequence>
+			<xs:element ref="tns:sbrs"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="explainSbr" type="tns:explainSbrType"/>
+
+	<xs:complexType name="sbrsType">
+		<xs:sequence minOccurs="0" maxOccurs="unbounded">
+			<xs:element ref="tns:sbr"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="sbrs" type="tns:sbrsType"/>
+
+	<xs:complexType name="sbrType">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="score" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="sbr" type="tns:sbrType"/>
+
+	<xs:complexType name="solutions">
+		<xs:annotation>
+			<xs:documentation>A list of solutions.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element ref="tns:solution" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="solutions" type="tns:solutions">
+		<xs:annotation>
+			<xs:documentation>A list of solutions.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="articlesType">
+		<xs:annotation>
+			<xs:documentation>A list of articles.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element ref="tns:article" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="articles" type="tns:articlesType">
+		<xs:annotation>
+			<xs:documentation>A list of articles.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="sqiSolutionLinkType">
+		<xs:annotation>
+			<xs:documentation>A link to the Solution this sqiRating is applicable to.</xs:documentation>
+		</xs:annotation>
+
+		<xs:simpleContent>
+			<xs:extension base="xs:anyURI">
+				<xs:attribute name="rel" type="xs:string" use="optional" default="solution"/>
+				<xs:attribute name="solutionId" type="xs:string" use="optional"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:complexType name="sqiRatingType">
+		<xs:annotation>
+			<xs:documentation>An SQI Rating for a KCS Solution.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="solution" type="tns:sqiSolutionLinkType" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A link to the Solution this sqiRating is applicable to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="completeTitle" type="xs:integer" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Is the title complete?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="adheresToContentStandard" type="xs:integer" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Solution adheres to current template, style,
+								and formatting guidelines in the content
+								standard?
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="accuratelyReflectsProblem" type="xs:integer" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Does the issue accurately reflect the
+								customer's problem and context?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="isUnique" type="xs:integer" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Is article unique?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="clearAndConcise" type="xs:integer" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Is content clear and concise?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="metadataSetCorrectly" type="xs:integer" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Is article metadata set correctly?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="sqiRating" type="tns:sqiRatingType">
+		<xs:annotation>
+			<xs:documentation>An SQI Rating for a KCS Solution.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+
+
+	<xs:element name="solution" type="tns:solutionType">
+		<xs:annotation>
+			<xs:documentation>
+				A KCS Solution. Some elements have subelements called "html" and "text". The "html" field
+				is a "safe value" field.  It is the text field containing HTML markup rendered from the
+				markdown stored in "value". The "html" field is not editable. The
+				"text" field is the editable field that may contain markdown.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="knowledgeDescriptionType">
+		<xs:annotation>
+			<xs:documentation>A description of the something knowledge related like a solution issue or environment.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="text" type="xs:string"/>
+			<xs:element name="html" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:complexType name="knowledgeDuplicateLinkType">
+		<xs:annotation>
+			<xs:documentation>Links to duplicates of the solution </xs:documentation>
+		</xs:annotation>
+
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="rel" type="xs:string" use="optional" default="solution"/>
+				<xs:attribute name="solutionId" type="xs:string" use="optional"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:complexType name="knowledgeSbrsType">
+		<xs:annotation>
+			<xs:documentation>SBRs for this solution resource.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="sbr" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tagsType">
+		<xs:annotation>
+			<xs:documentation>TAGs for this solution resource.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="tag" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="knowledgeProductsType">
+		<xs:annotation>
+			<xs:documentation>Drupal products list for this solution resource.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="product" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="knowledgeLinkedProductsType">
+		<xs:annotation>
+			<xs:documentation>
+				linked products list for this solution Sresource. This list is calculated from a Math, that 
+				calculatges if linked case's product can be quanitatively make to this list.
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="product" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="knowledgeProductFamilyType">
+		<xs:annotation>
+			<xs:documentation>This is the families of products to which the solution belongs to.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="family" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="solutionType">
+		<xs:annotation>
+			<xs:documentation>
+				A KCS Solution. Some elements have subelements called "html" and "text". The "html" field
+				is a "safe value" field.  It is the text field containing HTML markup rendered from the
+				markdown stored in "value". The "html" field is not editable. The
+				"text" field is the editable field that may contain markdown.
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Solution identifier assigned by backing system.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="tnid" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Translated Solution identifier assigned by backing system.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI for this solution resource.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="uidName" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Author name.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Portal URI for this solution resource.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="title" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The title of the solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="authorSSOName" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The SSO username of the user that authored the solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="lastModifiedBySSOName" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The SSO username of the user that last modified the solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="language" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								The language the solution is written in. When a solution is
+								retrieved from drupal, this field is the language as set by the author of the solution.
+								When a solution is retrieved from Calaveras, this is the language as set by
+								drupal unless that is empty or null, in which case this is set by Calaveras from
+								detectLanguage. If language detection fails, it is set by Calaveras to be 'en'.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="issue" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A description of the issue the solution resolves.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="environment" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A description of the environment the solution applies to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="resolution" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A description of the resolution proposed to resolve the issue.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="rootCause" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A description of the underlying cause of the issue.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="internalDiagnosticSteps" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A description of the diagnostic steps a technician should take to diagnose the issue.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="externalDiagnosticSteps" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A description of the diagnostic steps a customer should take to diagnose the issue.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element ref="tns:privateNotes" minOccurs="0" maxOccurs="1" >
+						<xs:annotation>
+							<xs:documentation>
+								The private notes attached to the solution
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="summary" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Summary of the solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="score" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The lucene score for the solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="case" type="xs:anyURI" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>A case linked to this solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="supportNeed" type="xs:anyURI" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>A support need linked to this solution.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="published" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Is the solution published?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="hasPublishedRevision" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Does a published revision of this solution exist?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="isLocked" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Is the solution locked?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="lockedBy" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Who locked the solution?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="lockedAt" type="xs:dateTime" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>When was the solution locked?  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="lockExpiresAt" type="xs:dateTime" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>When will the lock expire?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="duplicateOf" type="tns:knowledgeDuplicateLinkType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Links to duplicates of the solution </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="kcsState" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								The state in the KCS lifecycle the solution is currently in. The
+								possible states are "wip", "verified", and "unverified".
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="sbrs" type="tns:knowledgeSbrsType">
+						<xs:annotation>
+							<xs:documentation>SBRs for this solution resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="tags" type="tns:tagsType">
+						<xs:annotation>
+							<xs:documentation>TAGs for this solution resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="products" type="tns:knowledgeProductsType">
+						<xs:annotation>
+							<xs:documentation>Drupal products list for this solution resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="LinkedProducts" type="tns:knowledgeLinkedProductsType">
+						<xs:annotation>
+							<xs:documentation>
+								linked products list for this solution Sresource. This list is calculated from a Math, that 
+								calculatges if linked case's product can be quanitatively make to this list.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="productFamily" type="tns:knowledgeProductFamilyType">
+						<xs:annotation>
+							<xs:documentation>This is the families of products to 
+								which the solution belongs to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="ModerationState" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The moderation state the solution is currently in.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="caseCount" type="xs:int" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								The count of cases linked to this solution.
+								This only appears
+								in search results and recommendations.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="kcsProductCount" type="xs:int" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								The count of cases having the same product as that of 
+								solution's product or linked product field.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="abstract" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								This is a short summary of the Solution
+								suitable for display as part of search results. If a particular
+								solution
+								does not have this field set; then one is automatically
+								created by Calaveras.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="extract" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								This field is only set when the solution is
+								part of search results (or recommendations). This is an excerpt
+								from
+								the solution which contains the section(s) of the solution
+								that best indicate why this solution matched the
+								search query.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="explanation" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Lucene search result explanation of why and how well this document matches the search query.
+								This field is only set when the solution is part of search results (or
+								recommendations).  This field only is present when the 'explain=true' search query
+								parameter is used.  This field is only for debugging purposes.
+								See 'extract' for a more generally useful field.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="detectedLanguage" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Only for solutions returned from Calaveras.
+								Language of the solution detected by Google's language-detection.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="setLanguage" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Only for solutions returned from Calaveras.
+								The language as set by the author in drupal.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="indexedDate" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Time when the solution has been indexed.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="accessState" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								The access state in the KCS lifecycle the solution is currently in. The possible states are "active","private", "retired".
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+
+	<xs:complexType name="knowledgeCategoriesType">
+		<xs:annotation>
+			<xs:documentation>Categories for things like articles resource.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="category" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="knowledgeLinkType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="rel" type="xs:string" use="optional"/>		
+			</xs:extension> 
+		</xs:simpleContent>
+	</xs:complexType>                                                                                                       
+
+	<xs:complexType name="articleType">
+		<xs:annotation>
+			<xs:documentation>
+				A KCS Article. Some elements have subelements called "html" and "text". The "html" field
+				is "safe value" field. It is the text field rendered as HTML so there is no markup in the
+				"html" field and it is not editable. The "text" field is an editable
+				field that may contain HTML markup.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>A unique identifier for the solution assigned by the backing system.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="tnid" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Translated Solution identifier assigned by backing system.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI for this solution.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="uidName" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Author name.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Portal URI for this solution.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<!-- BOOKMARK -->
+					<xs:element name="title" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Title</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="authorSSOName" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								AuthorSSOName. This field is required by the model but the schema allows it to be omitted so
+								that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="lastModifiedBySSOName" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								lastModifiedBySSOName. This field is required by the model but the schema allows it to be
+								omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="language" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								language of the node/solution. This field is required by the model but the schema allows it to
+								be omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="issue" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="environment" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="resolution" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="rootCause" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="internalDiagnosticSteps" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="articleBody" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="externalDiagnosticSteps" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation> External summary of steps that are used in troubleshooting.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="summary" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Short summary or the first n words from the contents</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="hasPublishedRevision" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Does a published revision of this solution exist?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="score" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The lucene score for article</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="tags" type="tns:tagsType">
+						<xs:annotation>
+							<xs:documentation>TAGs for this article resource.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="categories" type="tns:knowledgeCategoriesType">
+						<xs:annotation>
+							<xs:documentation>Categories for this article resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="case" type="xs:anyURI" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>A Case linked to this Solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="tag" type="tns:knowledgeDescriptionType" minOccurs="0" maxOccurs="unbounded"/>
+
+					<xs:element name="published" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Is Solution published?</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="duplicateOf" type="tns:knowledgeDuplicateLinkType" minOccurs="0" maxOccurs="unbounded"/>
+
+					<xs:element name="kcsState" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>KCS State</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="body" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Text body of the article without markdown.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="sbrs" type="tns:knowledgeSbrsType">
+						<xs:annotation>
+							<xs:documentation>SBRs for this solution resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="products" type="tns:knowledgeProductsType">
+						<xs:annotation>
+							<xs:documentation>Drupal products list for this solution resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="LinkedProducts" type="tns:knowledgeLinkedProductsType">
+						<xs:annotation>
+							<xs:documentation>
+								linked products list for this solution Sresource. This list is calculated from a Math, that 
+								calculatges if linked case's product can be quanitatively make to this list.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="productFamily" type="tns:knowledgeProductFamilyType">
+						<xs:annotation>
+							<xs:documentation>This is the families of products to which the article belongs to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="ModerationState" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The moderation state the article is currently in.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="link" type="tns:knowledgeLinkType" minOccurs="0" maxOccurs="unbounded"/>
+
+					<xs:element name="caseCount" type="xs:int" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								The count of cases linked to this solution.  This only appears in search results and recommendations.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="abstract" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								This is a short summary of the Solution suitable for display as part of search results. If a particular
+								solution does not have this field set; then one is automatically created by Calaveras.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="extract" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								This field is only set when the solution is part of search results (or recommendations). This is an excerpt
+								from the solution which contains the section(s) of the solution that best indicate why this solution matched the search query.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="explanation" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Lucene search result explanation of why and how well this document matches the search query.
+								This field is only set when the solution is part of search results (or recommendations).
+								This field only is present when the 'explain=true' search query parameter is used.
+								This field is only for debugging purposes.  See 'extract' for a more generally useful field.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="detectedLanguage" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Only for solutions returned from Calaveras.  Language of the solution detected by Google's language-detection.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="setLanguage" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation> Only for solutions returned from Calaveras.  The language as set by the author in drupal.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="indexedDate" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Time when the solution has been indexed.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="article" type="tns:articleType">
+		<xs:annotation>
+			<xs:documentation>
+				A KCS Article. Some elements have subelements called "html" and "text". The "html" field
+				is "safe value" field. It is the text field rendered as HTML so there is no markup in the
+				"html" field and it is not editable. The "text" field is an editable
+				field that may contain HTML markup.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<!-- Lightweight emulation of ATOM link -->
+	<xs:complexType name="linkType">
+		<xs:annotation>
+			<xs:documentation>Simple ATOM link type.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:base_linkType">
+				<!-- The following are non-standard fields and attributes not dictated 
+				by ATOM -->
+				<xs:attribute name="ssoUsername" type="xs:string" use="optional"/>
+				<xs:attribute name="explanation" type="xs:string" use="optional"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="link" type="tns:linkType">
+		<xs:annotation>
+			<xs:documentation>Simple ATOM link type.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="sourceType">
+		<xs:annotation>
+			<xs:documentation>The source of a problem</xs:documentation>
+		</xs:annotation>
+
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="name" type="xs:string" use="required">
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:element name="source" type="tns:sourceType">
+		<xs:annotation>
+			<xs:documentation>The source of a problem</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="attachmentsType">
+		<xs:annotation>
+			<xs:documentation>A list of attachments.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:attachment" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="attachments" type="tns:attachmentsType">
+		<xs:annotation>
+			<xs:documentation>A list of attachments.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="attachmentType">
+		<xs:annotation>
+			<xs:documentation>A file attachment and related meta data.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="caseId" type="xs:string"/>
+					<xs:element name="uuid" type="xs:string"/>
+					<xs:element name="etag" type="xs:string"/>
+					<xs:element name="uri" type="xs:anyURI"/>
+					<xs:element name="fileDate" type="xs:dateTime"/>
+					<xs:element name="fileName" type="xs:string"/>
+					<xs:element name="description" type="xs:string"/>
+					<xs:element name="mimeType" type="xs:string"/>
+					<xs:element name="length" type="xs:long"/>
+					<xs:element name="active" type="xs:boolean"/>
+					<xs:element name="deprecated" type="xs:boolean"/>
+					<xs:element name="private" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+				</xs:sequence>
+
+				<xs:attribute name="caseNumber" type="xs:string" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="attachment" type="tns:attachmentType">
+		<xs:annotation>
+			<xs:documentation>A file attachment and related meta data.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="backtraceType">
+		<xs:annotation>
+			<xs:documentation>An extracted backtrace.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="uri" type="xs:anyURI" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI for this backtrace resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="taskid" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Unique task identifier.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="password" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Task password.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="filename" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Name of uploaded file.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="bt" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Extracted backtrace text.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="status" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>String describing the backtrace extraction status.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="backtrace" type="tns:backtraceType">
+		<xs:annotation>
+			<xs:documentation>An extracted backtrace.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="recommendationsType">
+		<xs:annotation>
+			<xs:documentation>A list of suggestions.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:recommendation" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="recommendations" type="tns:recommendationsType">
+		<xs:annotation>
+			<xs:documentation>A list of suggestions.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+
+	<xs:complexType name="recommendationLinkedProductsType">
+		<xs:annotation>
+			<xs:documentation>Linked products list for this suggestion resource.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="linkedProduct" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="recommendationType">
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element ref="tns:solution"/>
+						<xs:element ref="tns:article"/>
+					</xs:choice>
+
+					<xs:element name="algorithmScore" type="xs:double"/>
+					<xs:element name="analysisAlgorithm" type="xs:string"/>
+					<xs:element name="analysisAlgorithmVersion" type="xs:string"/>
+					<xs:element name="analysisCategory" type="xs:string"/>
+					<xs:element name="analysisModule" type="xs:string"/>
+					<xs:element name="analysisService" type="xs:string"/>
+					<xs:element name="analysisServiceVersion" type="xs:string"/>
+					<xs:element name="bucket" type="xs:string"/>
+					<xs:element name="caseNumber" type="xs:string"/>
+					<xs:element name="client" type="xs:string"/>
+					<xs:element name="clientVersion" type="xs:string"/>
+					<xs:element name="display" type="xs:boolean"/>
+					<xs:element name="maturityLevel" type="xs:string"/>
+					<xs:element name="analysisStatus" type="xs:string"/>
+					<xs:element name="firstSuggestedDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="keywords" type="xs:string"/>
+					<xs:element name="lastSuggestedDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="location" type="xs:string"/>
+					<xs:element name="luceneScore" type="xs:double"/>
+					<xs:element name="message" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="note" type="xs:string"/>
+					<xs:element name="origin" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="pinnedAt" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="pinnedBy" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="relevanceScore" type="xs:int" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="resource" type="xs:string"/>
+					<xs:element name="resourceId" type="xs:string"/>
+					<xs:element name="resourceType" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="resourceURI" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="resourceViewURI" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="rule" type="xs:string"/>
+					<xs:element name="ruleVersion" type="xs:string"/>
+					<xs:element name="scoringAlgorithmVersion" type="xs:double"/>
+					<xs:element name="solutionId" type="xs:string"/>
+					<xs:element name="solutionKcsState" type="xs:string"/>
+					<xs:element name="solutionOwnerSSOName" type="xs:string"/>
+					<xs:element name="solutionTitle" type="xs:string"/>
+					<xs:element name="solutionAbstract" type="xs:string"/>
+					<xs:element name="solutionUrl" type="xs:string"/>
+					<xs:element name="suggestedCount" type="xs:double" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suggestionRelevanceScore" type="xs:double" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="explanation" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Lucene search result explanation of why and how well this document
+								matches the search query.  This field is only set when the solution is part of search results
+								(or recommendations).  This field only is present when the 'explain=true' search query
+								parameter is used.  This field is only for debugging purposes. See 'extract' for a more
+								generally useful field.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="title" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="tracebackUrl" type="xs:string" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="solutionCaseCount" type="xs:int" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								The count of cases linked to this solution.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="language" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>
+								This field is set based on the first of the following that is not
+								empty or null: the language field returned by drupal
+								the language as detected by Calaveras 'en'
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="detectedLanguage" type="xs:string">
+						<xs:annotation>
+							<xs:documentation> The language of the suggestion detected by language-detection tool.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="setLanguage" type="xs:string">
+						<xs:annotation>
+							<xs:documentation> The language of the suggestion set by the author in drupal.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="ModerationState" type="xs:string"/>
+					<xs:element name="hasPublishedVersion" type="xs:string"/>
+					<xs:element name="product" type="xs:string"/>
+					<xs:element name="indexedDate" type="xs:string"/>
+
+					<xs:element name="sbrs" type="tns:knowledgeSbrsType">
+						<xs:annotation>
+							<xs:documentation>SBRs for this suggestion resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="tags" type="tns:tagsType">
+						<xs:annotation>
+							<xs:documentation>TAGs for this suggestion resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="products" type="tns:knowledgeProductsType">
+						<xs:annotation>
+							<xs:documentation>Drupal products list for this suggestion resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="linkedProducts" type="tns:recommendationLinkedProductsType">
+						<xs:annotation>
+							<xs:documentation>Linked products list for this suggestion resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="productFamily" type="tns:knowledgeProductFamilyType">
+						<xs:annotation>
+							<xs:documentation>This is the families of products to which the solution belongs to.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="kcsProductCount" type="xs:int" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								The count of linked cases to solution that has same product as that of
+								solution's product/linked product value.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="recommendation" type="tns:recommendationType">
+		<xs:annotation>
+			<xs:documentation>A suggestion referring to a solution and related meta data.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="searchResultsType">
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:searchResult" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="searchResults" type="tns:searchResultsType">
+		<xs:annotation>
+			<xs:documentation>A list of searchResult.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="searchResultType">
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="displayId" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The (short) name to display for this result. Usually this is the "id" of the result item.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="resourceType" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The (short) name of the kind of this result to display.  Usually this is some variation of the name of the kind of thing.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="title" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The title of this result.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>URI for this result.  This should be the 
+								API/XML address for this result, rather than the browser/HTML 
+								address for this result, if they are different.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>URI for this result.  This should be the 
+								browser/HTML address for this result, rather than the API/XML
+								address for this result, if they are different.</xs:documentation>
+							<xs:documentation>URI for this result.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:choice>
+						<xs:element ref="tns:solution"/>
+						<xs:element ref="tns:article"/>
+					</xs:choice>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="searchResult" type="tns:searchResultType">
+		<xs:annotation>
+			<xs:documentation>A single search result.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="groupsType">
+		<xs:annotation>
+			<xs:documentation>A list of groups.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:group" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="groups" type="tns:groupsType">
+		<xs:annotation>
+			<xs:documentation>A list of groups.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="groupType">
+		<xs:annotation>
+			<xs:documentation>A group that may contain zero or more cases.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="number" type="xs:string"/>
+					<xs:element name="contactSsoName" type="xs:string"/>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="uri" type="xs:anyURI"/>
+					<xs:element name="isPrivate" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="isDefault" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="group" type="tns:groupType">
+		<xs:annotation>
+			<xs:documentation>A group that may contain zero or more cases.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="accountType">
+		<xs:annotation>
+			<xs:documentation>An account that may organizes users. It is represented in a simplified manner on the Strata API.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="hasGroupACLs" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="isSecure" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1"/> 
+				</xs:sequence>
+
+				<xs:attribute name="number" type="xs:string"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="account" type="tns:accountType">
+		<xs:annotation>
+			<xs:documentation>An account that may organizes users. It is represented in a simplified manner on the Strata API.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="userGroupsType">
+		<xs:annotation>
+			<xs:documentation>A user's groups.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="group" type="tns:userGroupType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="userGroups" type="tns:userGroupsType">
+		<xs:annotation>
+			<xs:documentation>Concrete element of users groups.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="userGroupType">
+		<xs:annotation>
+			<xs:documentation>A user's group.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="role" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="userGroup" type="tns:userGroupType">
+		<xs:annotation>
+			<xs:documentation>Concrete element of a user's group.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="usersType">
+		<xs:annotation>
+			<xs:documentation>A list of users.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:user" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="previous" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="next" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="users" type="tns:usersType">
+		<xs:annotation>
+			<xs:documentation>A list of users.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="userType">
+		<xs:annotation>
+			<xs:documentation>The user entity reflects a Red Hat Login user.  </xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<!-- TODO Where does ID come from? -->
+					<!-- TODO Perhaps internal only? -->
+					<xs:element name="login" type="xs:string"/>
+					<xs:element name="userType" type="xs:string"/>
+					<xs:element name="oracleContactId" type="xs:string"/>
+					<xs:element name="isActive" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="company" type="xs:string"/>
+					<xs:element name="department" type="xs:string"/>
+					<xs:element name="phoneNumber" type="xs:string"/>
+					<xs:element name="faxNumber" type="xs:string"/>
+					<xs:element name="id" type="xs:string"/>
+					<xs:element name="firstName" type="xs:string"/>
+					<xs:element name="lastName" type="xs:string"/>
+					<xs:element name="orgId" type="xs:string"/>
+					<xs:element name="system" type="xs:string"/>
+					<xs:element name="password" type="xs:string"/>
+					<xs:element name="loginUppercase" type="xs:string"/>			
+					<xs:element name="email" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="emailConfirmed" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="accountId" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<!-- TODO Consider as enumerated type -->
+					<xs:element name="preferredLanguage" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="title" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suffix" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="greeting" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<!-- TODO Consider as enumerated type -->
+					<xs:element name="timezone" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="locale" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="orgAdmin" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="tamContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="access" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="write" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>The field is use to provide read/write access to a particular case group.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="hasChat" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="sessionId" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:permissions" minOccurs="1" maxOccurs="1"/>
+					<xs:element ref="tns:roles" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="isInternal" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:address" minOccurs="0" maxOccurs="1"/>
+					<!-- TODO Add roles element -->
+					<!-- TODO Consider adding link/relation element to use for account -->
+					<xs:element name="groups" type="tns:userGroupsType" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="ssoUsername" type="xs:string" use="optional"/>
+				<xs:attribute name="uri" type="xs:anyURI"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="user" type="tns:userType">
+		<xs:annotation>
+			<xs:documentation>The user entity reflects a Red Hat Login user.  </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="permissions" type="tns:permissionsType"/>
+
+	<xs:complexType name="permissionsType">
+		<xs:sequence>
+			<xs:element name="allowEmailContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="allowFaxContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="allowMailContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="allowPhoneContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="allowThirdPartyContact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="address" type="tns:addressType"/>
+
+	<xs:complexType name="addressType">
+		<xs:sequence>
+			<xs:element name="address1" type="xs:string"/>
+			<xs:element name="address2" type="xs:string"/>
+			<xs:element name="address3" type="xs:string"/>
+			<xs:element name="address4" type="xs:string"/>
+			<xs:element name="county" type="xs:string"/>
+			<xs:element name="countryCode" type="xs:string"/>
+			<xs:element name="poBox" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="postalCode" type="xs:string"/>
+			<xs:element name="state" type="xs:string"/>
+			<xs:element name="city" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="rolesType">
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:role" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="roles" type="tns:rolesType"/>
+
+	<xs:element name="role" type="tns:roleType"/>
+
+	<xs:complexType name="roleType">
+		<xs:sequence>
+			<xs:element name="description" type="xs:string"/>
+			<xs:element name="roleLabel" type="xs:string"/>
+			<xs:element name="isRoleAccess" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="casesType">
+		<xs:annotation>
+			<xs:documentation>
+				A list of support cases. This type serves as both a top-level construct in the case that a query
+				returns a list of support cases as well as an embedded construct as part of a larger
+				item. This element is not required to contain any child case elements.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:case" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="previous" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="next" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="totalCount" type="xs:int" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="cases" type="tns:casesType">
+		<xs:annotation>
+			<xs:documentation>
+				A list of support cases. This type serves as both a top-level construct in the case that a query
+				returns a list of support cases as well as an embedded construct as part of a larger
+				item. This element is not required to contain any child case elements.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="caseType">
+		<xs:annotation>
+			<xs:documentation>A support case.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Case identifier assigned by backing system.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI for this case resource.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="summary" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Title or short summary. This field is required by the model but the schema allows it to be
+								omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Description of the problem or question. This field is required by the model
+								but the schema allows it to be omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="status" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Case status. Valid values are available from the values service.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="product" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Product this case relates to. Valid products are available from the products resource. This
+								field is required by the model but the schema allows it to be omitted so that
+								field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="component" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Component this case relates to (optional).  Valid components for a given product are available
+								from the values service.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="version" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Version of the product this case relates to.  Valid versions for a given product are available
+								from the products resource.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="type" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation> Type of case, i.e. question, problem, etc.  Valid types are available from the values service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Account number this case belongs to. This field is required by the model but the schema allows
+								it to be omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Portal URI for this solution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="reference" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="notes" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="escalated" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="contactName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="contactSsoUsername" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="origin" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="owner" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="internalPriority" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="internalStatus" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedPhone" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedEmail" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="severity" type="xs:string" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="tags" type="tns:tagsType">
+						<xs:annotation>
+							<xs:documentation>TAGs for this case.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+
+					<xs:element name="folderNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:comments" minOccurs="0"/>
+					<xs:element ref="tns:notified_users" minOccurs="0"/>
+					<xs:element ref="tns:entitlement" minOccurs="1" maxOccurs="1"/>
+					<xs:element ref="tns:recommendations" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="fts" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:bugzillas" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+
+				<xs:attribute name="caseNumber" type="xs:string" use="optional"/>
+				<xs:attribute name="closed" type="xs:boolean" use="optional"/>
+				<xs:attribute name="alternateId" type="xs:string" use="optional"/>
+				<xs:attribute name="contactInfo24x7" type="xs:string" use="optional"/>					
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="case" type="tns:caseType">
+		<xs:annotation>
+			<xs:documentation>A support case.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="supportNeedType">
+		<xs:annotation>
+			<xs:documentation>A support need.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Case identifier assigned by backing system.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI for this support need resource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="summary" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Title or short summary. This field is required by the model but the schema allows it to be
+								omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Description of the problem or question. This field is required by the model
+								but the schema allows it to be omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="status" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation> Case status. Valid values are available from the values service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="product" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Product this case relates to. Valid products are available from the products resource. This
+								field is required by the model but the schema allows it to be omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="component" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Component this case relates to (optional).  Valid components for a given product are available
+								from the values service.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="version" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Version of the product this case relates to.  Valid versions for a given product are available
+								from the products resource.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="type" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation> Type of case, i.e. question, problem, etc.  Valid types are available from the values service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								Account number this case belongs to. This field is required by the model but the schema allows it to be
+								omitted so that field-level updates are possible.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Portal URI for this solution.  </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="reference" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="notes" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="escalated" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="contactName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="contactSsoUsername" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="origin" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="owner" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="internalPriority" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="internalStatus" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedPhone" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="suppliedEmail" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="severity" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="folderNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:comments" minOccurs="0"/>
+					<xs:element ref="tns:notified_users" minOccurs="0"/>
+					<xs:element ref="tns:entitlement" minOccurs="1" maxOccurs="1"/>
+					<xs:element ref="tns:solutions" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+
+				<xs:attribute name="alternateId" type="xs:string" use="optional"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="supportNeed" type="tns:supportNeedType">
+		<xs:annotation>
+			<xs:documentation>A support need.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="commentsType">
+		<xs:annotation>
+			<xs:documentation>A list of comments</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:comment" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="comments" type="tns:commentsType">
+		<xs:annotation>
+			<xs:documentation>A list of comments</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="commentType">
+		<xs:annotation>
+			<xs:documentation>A support case comment and associated metadata.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="text" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="public" type="xs:boolean" minOccurs="0" maxOccurs="1" default="true"/>
+					<xs:element name="draft" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
+					<xs:element name="publishedDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="view_uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Portal URI for this comment.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+
+				<xs:attribute name="id" type="xs:string"/>
+				<xs:attribute name="caseNumber" type="xs:string" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="comment" type="tns:commentType">
+		<xs:annotation>
+			<xs:documentation>A support case comment and associated metadata.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="notified_usersType">
+		<xs:annotation>
+			<xs:documentation>A list of users notified by email when the parent case is modified</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:link" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="notified_users" type="tns:notified_usersType">
+		<xs:annotation>
+			<xs:documentation>A list of users notified by email when the parent case is modified</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="productsType">
+		<xs:annotation>
+			<xs:documentation>A list of products.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="tns:product" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="products" type="tns:productsType">
+		<xs:annotation>
+			<xs:documentation>A list of products.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="productType">
+		<xs:annotation>
+			<xs:documentation>A product.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="code" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A short, unique, human-readable code identifying this product.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The formal product brand name.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="tns:suggested_artifacts" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>A list of Artifacts.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="product" type="tns:productType">
+		<xs:annotation>
+			<xs:documentation>A product.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="suggested_artifactsType">
+		<xs:annotation>
+			<xs:documentation>A list of Artifacts.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element ref="tns:suggested_artifact" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="suggested_artifacts" type="tns:suggested_artifactsType">
+		<xs:annotation>
+			<xs:documentation>A list of Artifacts.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="suggested_artifactType">
+		<xs:annotation>
+			<xs:documentation>A Artifact.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The formal Artifact name</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The formal Artifact description
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="suggested_artifact" type="tns:suggested_artifactType">
+		<xs:annotation>
+			<xs:documentation>A Artifact.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="versionsType">
+		<xs:annotation>
+			<xs:documentation>A list of product versions.</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="version" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="versions" type="tns:versionsType">
+		<xs:annotation>
+			<xs:documentation>A list of product versions.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="valueType">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+
+		<xs:attribute name="type" type="xs:string"/>
+	</xs:complexType>
+
+	<xs:complexType name="valuesType">
+		<xs:annotation>
+			<xs:documentation>
+				A list of name/value pairs. Both names and values are String typed. List can contain zero or more
+				elements. Values are nullable.
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="value" type="tns:valueType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="values" type="tns:valuesType">
+		<xs:annotation>
+			<xs:documentation>
+				A list of name/value pairs. Both names and values are String typed. List can contain zero or more
+				elements. Values are nullable.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="entitlementsType">
+		<xs:annotation>
+			<xs:documentation>A list of Entitlements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:entitlement" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="entitlements" type="tns:entitlementsType">
+		<xs:annotation>
+			<xs:documentation>A list of Entitlements.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="entitlementType">
+		<xs:annotation>
+			<xs:documentation>entitlement and related meta data.  </xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI for SLA.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="sla" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="supportLevel" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="serviceLevel" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="startDate" type="xs:date"/>
+					<xs:element name="endDate" type="xs:date"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="entitlement" type="tns:entitlementType">
+		<xs:annotation>
+			<xs:documentation>entitlement and related meta data.  </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="errorType">
+		<xs:annotation>
+			<xs:documentation>Provides error code and description for Starta API </xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="code" type="xs:string"/>
+			<xs:element name="message" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="error" type="tns:errorType">
+		<xs:annotation>
+			<xs:documentation>Provides error code and description for Starta API </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="systemProfilesType">
+		<xs:annotation>
+			<xs:documentation>A list of systemProfiles.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:systemProfile" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="systemProfiles" type="tns:systemProfilesType">
+		<xs:annotation>
+			<xs:documentation>A list of systemProfiles.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="systemProfileType">
+		<xs:annotation>
+			<xs:documentation>systemProfile and related meta data.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="caseNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="attachmentHash" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="deprecated" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="maturityLevel" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="hash" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:SystemProfileCategory" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="systemProfile" type="tns:systemProfileType">
+		<xs:annotation>
+			<xs:documentation>systemProfile and related meta data.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="symptomsType">
+		<xs:annotation>
+			<xs:documentation>A list of Symptoms.</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:symptom" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="symptoms" type="tns:symptomsType">
+		<xs:annotation>
+			<xs:documentation>A list of Symptoms.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="symptomType">
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="caseNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="category" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="data" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="display" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="maturityLevel" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="location" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element ref="tns:problemSymptomParameters" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="summary" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="timestamp" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+
+					<xs:element name="uri" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>RESTful URI.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="symptom" type="tns:symptomType">
+		<xs:annotation>
+			<xs:documentation>symptom and related meta data.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="extractedSymptomsType">
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element name="extractedSymptom" type="tns:extractedSymptomType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="extractedSymptoms" type="tns:extractedSymptomsType">
+		<xs:annotation>
+			<xs:documentation>A list of Extracted Symptoms.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="symptomFieldsType">
+		<xs:sequence>
+			<xs:element name="field" type="tns:symptomFieldType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="symptomFieldType">
+		<xs:sequence>
+			<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="key" type="xs:string" use="required"/>
+	</xs:complexType>
+
+	<xs:complexType name="extractedSymptomType">
+		<xs:annotation>
+			<xs:documentation>Extracted Symptom with fields.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="type" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="category" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="occurrences" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="verbatim" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="fields" type="tns:symptomFieldsType" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="beginIndex" type="xs:integer" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="endIndex" type="xs:integer" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="summary" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="signature" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="timestamp" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="problemSymptomParametersType">
+		<xs:sequence>
+			<xs:element name="key" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="problemSymptomParameters" type="tns:problemSymptomParametersType"/>
+
+	<xs:complexType name="SystemProfileCategoryType">
+		<xs:sequence>
+			<xs:element name="SystemProfileCategoryName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="SystemProfileCategorySummary" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="tns:SystemProfileCategoryDetails" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="SystemProfileCategory" type="tns:SystemProfileCategoryType"/>
+
+	<xs:complexType name="SystemProfileCategoryDetailsType">
+		<xs:sequence>
+			<xs:element name="key" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="SystemProfileCategoryDetails" type="tns:SystemProfileCategoryDetailsType"/>
+
+	<!--  start Customer Data Entity  -->
+	<xs:complexType name="searchTextType">
+		<xs:annotation>
+			<xs:documentation>Key, value pair to hold keyed chunks of text.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="referenceKey" type="xs:string"/>
+			<xs:element name="text" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="searchTextsType">
+		<xs:sequence>
+			<xs:element name="searchText" type="tns:searchTextType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="confidentialSearchType">
+		<xs:annotation>
+			<xs:documentation>Customer Data Detection Input</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="searchTexts" type="tns:searchTextsType"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="confidentialSearch" type="tns:confidentialSearchType"/>
+
+	<xs:complexType name="suspectTextsType">
+		<xs:sequence>
+			<xs:element name="suspectText" type="tns:suspectTextType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="confidentialType">
+		<xs:annotation>
+			<xs:documentation>Customer Data Detection Output, possible customer, confidential data</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="suspectTexts" type="tns:suspectTextsType"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="confidential" type="tns:confidentialType"/>
+
+	<xs:complexType name="infractionsType">
+		<xs:sequence>
+			<xs:element name="infraction" type="tns:infractionType" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="suspectTextType">
+		<xs:annotation>
+			<xs:documentation>Customer Data Detection</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="referenceKey" type="xs:string"/>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="natureOfInfraction" type="xs:string"/>
+
+			<xs:element name="infractions" type="tns:infractionsType"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="infractionType">
+		<xs:annotation>
+			<xs:documentation>Internal_Diagnostics_Steps in Customer Data Detection</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="start" type="xs:int" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="end" type="xs:int" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--  end Customer Data Entity  -->
+
+	<xs:complexType name="caseFilterType">
+		<xs:sequence>
+			<xs:element name="endDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="accountNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="includeClosed" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="tns:groupNumbers"/>
+			<xs:element name="includePrivate" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="keyword" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="count" type="xs:int" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="start" type="xs:int" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="onlyUngrouped" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="ownerSSOName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="product" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="severity" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="sortField" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="sortOrder" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="startDate" type="xs:dateTime" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="status" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="type" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="createdBySSOName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="resourceType" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="uri" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="viewURI" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="caseFilter" type="tns:caseFilterType"/>
+
+	<xs:complexType name="groupNumbersType">
+		<xs:sequence>
+			<xs:element name="groupNumber" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="groupNumbers" type="tns:groupNumbersType"/>
+
+	<xs:complexType name="domainsType">
+		<xs:annotation>
+			<xs:documentation>A list of Domains.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:domain" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="domains" type="tns:domainsType">
+		<xs:annotation>
+			<xs:documentation>A list of Domains.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="domainType">
+		<xs:sequence>
+			<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="aliases" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="tns:tags" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="domain" type="tns:domainType"/>
+
+	<xs:complexType name="tagsType">
+		<xs:annotation>
+			<xs:documentation>A list of Tags.</xs:documentation>        
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:tag" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="tags" type="tns:tagsType">
+		<xs:annotation>
+			<xs:documentation>A list of Tags.</xs:documentation>        
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="tagType">
+		<xs:sequence>
+			<xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="tag" type="tns:tagType"/>
+
+	<xs:complexType name="languageProfileType">
+		<xs:annotation>
+			<xs:documentation>It contains details of detected language and language probablity list</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:languages" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="detectedLanguage" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="languageProfile" type="tns:languageProfileType">
+		<xs:annotation>
+			<xs:documentation>It contains details of detected language and language probablity list</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="languagesType">
+		<xs:annotation>
+			<xs:documentation>A list of languages</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:language" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="languages" type="tns:languagesType">
+		<xs:annotation>
+			<xs:documentation>A list of languages</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="languageType">
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="name" type="xs:string" minOccurs="1"/>
+					<xs:element name="code" type="xs:string" minOccurs="1"/>
+					<xs:element name="definedForCase" type="xs:boolean" minOccurs="1"/>
+					<xs:element name="definedForSolution" type="xs:boolean" minOccurs="1"/>
+					<xs:element name="probability" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="language" type="tns:languageType"/>
+
+	<xs:complexType name="privateNotesType">
+		<xs:annotation>
+			<xs:documentation>Private notes section</xs:documentation>
+		</xs:annotation>                
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="text" type="xs:string"/>
+					<xs:element name="html" type="xs:string"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="privateNotes" type="tns:privateNotesType">
+		<xs:annotation>
+			<xs:documentation>Private notes section</xs:documentation>
+		</xs:annotation>                
+	</xs:element>
+
+	<xs:complexType name="healthType">
+		<xs:annotation>
+			<xs:documentation>A list of upstreamSystem</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="tns:upstreamSystem" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="health" type="tns:healthType">
+		<xs:annotation>
+			<xs:documentation>A list of upstreamSystem</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="upstreamSystemType">
+		<xs:annotation>
+			<xs:documentation> upstreamSystem consist of field name and status</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="status" type="xs:boolean" minOccurs="0" maxOccurs="1"/>				
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="upstreamSystem" type="tns:upstreamSystemType">
+		<xs:annotation>
+			<xs:documentation> upstreamSystem consist of field name and status</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="bugzillas" type="tns:bugzillasType">
+		<xs:annotation>
+			<xs:documentation>A list of bugzillas linked with the case</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="bugzillasType">
+		<xs:annotation>
+			<xs:documentation>A list of bugzillas linked with the case</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:strataEntityType">
+				<xs:sequence>
+					<xs:element ref="tns:bugzilla" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="bugzilla" type="tns:bugzillaType">
+		<xs:annotation>
+			<xs:documentation>A bugzilla associated with support case</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="bugzillaType">
+		<xs:annotation>
+			<xs:documentation>A bugzilla associated with support case</xs:documentation>
+		</xs:annotation>
+
+		<xs:complexContent>
+			<xs:extension base="tns:trackedEntityType">
+				<xs:sequence>
+					<xs:element name="bugzillaNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="resourceViewURI" type="xs:string" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="summary" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="userFilter" type="tns:userFilterType">
+		<xs:annotation>
+			<xs:documentation>Filter for searching users</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="userFilterType">
+		<xs:annotation>
+			<xs:documentation>Filter for searching users</xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="userName" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>sso user name that has to be searched</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="companyName" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>company name on which search has to be done</xs:documentation>
+				</xs:annotation>
+			</xs:element>   
+
+			<xs:element name="email" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>email on which search has to be done</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="ssoUserNameSearchType" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>search type for user name based search. Valid values are: exactMatch, startsWith,endsWith and contains</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="companyNameSearchType" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>search type for company name based search. Valid values are: exactMatch, startsWith,endsWith and contains</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="emailSearchType" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>search type for email based search. Valid values are: exactMatch, startsWith,endsWith and contains</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="accountNo" type="xs:long" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>account no. on which search has to be done</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="customerId" type="xs:long" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>customer id on which search has to be done</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="sortField" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>field on which sorting has to be done. Valid values are: userName, semail,companyName, accountNo and customerId</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="sortOrder" type="xs:string" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>order of sort. Valid values are asc and desc</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="count" type="xs:int" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>the no. of records to be retrieved per request</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element name="start" type="xs:int" minOccurs="0" maxOccurs="1" >
+				<xs:annotation>
+					<xs:documentation>index from which records have to be retrieved  per request</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>    
+</xs:schema>
