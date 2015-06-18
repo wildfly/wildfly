@@ -38,6 +38,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -57,6 +58,7 @@ import org.wildfly.extension.batch.deployment.BatchDeploymentResourceProcessor;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.batch.job.repository.JobRepositoryType;
+import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
 public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
@@ -168,6 +170,8 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
+            // Check if the request-controller subsystem exists
+            final boolean rcPresent = context.getOriginalRootResource().hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
@@ -178,7 +182,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
                             Phase.DEPENDENCIES, Phase.DEPENDENCIES_BATCH, new BatchDependencyProcessor());
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
-                            Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor());
+                            Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent));
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
                             Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor());
 
