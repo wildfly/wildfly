@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 
 import java.io.File;
 
-import io.undertow.util.FileUtils;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
@@ -41,7 +40,7 @@ import org.junit.Ignore;
 
 /**
  * IGNORE until https://issues.apache.org/jira/browse/ARTEMIS-138 is fixed.
- * 
+ *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
 @Ignore
@@ -113,7 +112,7 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
     @Override
     public void tearDown() throws Exception {
         // remove shared store files
-        FileUtils.deleteRecursive(SHARED_STORE_DIR);
+        deleteRecursive(SHARED_STORE_DIR);
 
         super.tearDown();
     }
@@ -141,5 +140,20 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
             undefineRelativeToAttribute.get(PATH).set(f.getAbsolutePath());
             execute(client, undefineRelativeToAttribute);
         }
+    }
+
+    private static void deleteRecursive(File file) {
+        File[] files = file.listFiles();
+        if(files != null) {
+            File[] var2 = files;
+            int var3 = files.length;
+
+            for(int var4 = 0; var4 < var3; ++var4) {
+                File f = var2[var4];
+                deleteRecursive(f);
+            }
+        }
+
+        file.delete();
     }
 }
