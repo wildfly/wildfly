@@ -16,6 +16,8 @@
  */
 package org.jboss.as.weld.util;
 
+import java.util.Map;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -71,5 +73,11 @@ public class Utils {
                 applicationClasses);
         module.addComponent(componentDescription);
         deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, componentDescription.getStartServiceName());
+    }
+
+    public static <K, V> void putIfValueNotNull(Map<K, V> map, K key, V value) {
+        if (value != null) {
+            map.put(key, value);
+        }
     }
 }
