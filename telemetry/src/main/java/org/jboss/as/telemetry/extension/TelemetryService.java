@@ -15,7 +15,6 @@ import javax.ws.rs.core.Response;
 //import org.apache.commons.net.ftp.FTPClient;
 import org.jboss.as.jdr.JdrReport;
 import org.jboss.as.jdr.JdrReportCollector;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -127,14 +126,14 @@ public class TelemetryService extends Telemetry implements
                             sendJdr(report.getLocation());
                             output.wait(frequency * MILLISECOND_TO_DAY);
                         } catch (InterruptedException e) {
-                            ROOT_LOGGER.error(ROOT_LOGGER.threadInterrupted(e));
+                            ROOT_LOGGER.threadInterrupted(e);
                             return;
                         } catch (Exception e) {
-                            ROOT_LOGGER.error(ROOT_LOGGER.couldNotGenerateJdr(e));
+                            ROOT_LOGGER.couldNotGenerateJdr(e);
                             try {
                                 output.wait(frequency * MILLISECOND_TO_DAY);
                             } catch (InterruptedException e2) {
-                                ROOT_LOGGER.error(ROOT_LOGGER.threadInterrupted(e));
+                                ROOT_LOGGER.threadInterrupted(e);
                             }
                         }
                     }
@@ -162,7 +161,7 @@ public class TelemetryService extends Telemetry implements
     }
 
     void setFrequency(long frequency) {
-        ROOT_LOGGER.info(ROOT_LOGGER.frequencyUpdated(frequency));
+        ROOT_LOGGER.frequencyUpdated("" + frequency);
         this.frequency = frequency;
         synchronized (output) {
             output.notify();
@@ -185,15 +184,15 @@ public class TelemetryService extends Telemetry implements
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         if (enabled && (output == null || !output.isAlive())) {
-            ROOT_LOGGER.info(ROOT_LOGGER.telemetryEnabled());
+            ROOT_LOGGER.telemetryEnabled();
             output = initializeOutput();
             try {
                 this.start(null);
             } catch (StartException e) {
-                ROOT_LOGGER.info(ROOT_LOGGER.couldNotStartThread(e));
+                ROOT_LOGGER.couldNotStartThread(e);
             }
         } else if (!enabled) {
-            ROOT_LOGGER.info(ROOT_LOGGER.telemetryDisabled());
+            ROOT_LOGGER.telemetryDisabled();
         }
         synchronized (output) {
             output.notify();
@@ -254,14 +253,14 @@ public class TelemetryService extends Telemetry implements
             fileOut = new FileOutputStream(file);
             properties.store(fileOut, TELEMETRY_DESCRIPTION);
         } catch (IOException e) {
-            ROOT_LOGGER.info(ROOT_LOGGER.couldNotCreateEditPropertiesFile(e));
+            ROOT_LOGGER.couldNotCreateEditPropertiesFile(e);
         } finally {
             if (fileOut != null) {
                 try {
                     fileOut.close();
                     setConnectionManager();
                 } catch (IOException e) {
-                    ROOT_LOGGER.info(ROOT_LOGGER.couldNotClosePropertiesFile(e));
+                    ROOT_LOGGER.couldNotClosePropertiesFile(e);
                 }
             }
         }
@@ -297,13 +296,13 @@ public class TelemetryService extends Telemetry implements
                 this.connectionManager = new ConnectionManager(
                         new ConfigHelper(propertiesFilePath));
             } catch (IOException e) {
-                ROOT_LOGGER.info(ROOT_LOGGER.couldNotLoadPropertiesFile(e));
+                ROOT_LOGGER.couldNotLoadPropertiesFile(e);
             } finally {
                 if (fis != null) {
                     try {
                         fis.close();
                     } catch (IOException e) {
-                        ROOT_LOGGER.info(ROOT_LOGGER.couldNotClosePropertiesFile(e));
+                        ROOT_LOGGER.couldNotClosePropertiesFile(e);
                     }
                 }
             }
@@ -327,26 +326,26 @@ public class TelemetryService extends Telemetry implements
                 try {
                     addSystem(connectionManager.getConnection(), systemUrl, uuid);
                 } catch (RequestException exception) {
-                    ROOT_LOGGER.info(ROOT_LOGGER.couldNotRegisterSystem(e));
+                    ROOT_LOGGER.couldNotRegisterSystem(e);
                 }
                 catch (MalformedURLException exception) {
-                    ROOT_LOGGER.info(ROOT_LOGGER.couldNotRegisterSystem(e));
+                    ROOT_LOGGER.couldNotRegisterSystem(e);
                 }
             }
         } catch (MalformedURLException e) {
-            ROOT_LOGGER.info(ROOT_LOGGER.couldNotFindSystem(e));
+            ROOT_LOGGER.couldNotFindSystem(e);
         }
         try {
             upload(connectionManager.getConnection(), new URL(new URL(new URL(connectionManager.getConfig().getUrl()), telemetryEndpoint), uuid).toString(), file,
                     description);
         } catch (FileNotFoundException e) {
-            ROOT_LOGGER.info(ROOT_LOGGER.couldNotFindJdr(e));
+            ROOT_LOGGER.couldNotFindJdr(e);
         } catch (MalformedURLException e) {
-            ROOT_LOGGER.info(ROOT_LOGGER.couldNotUploadJdr(e));
+            ROOT_LOGGER.couldNotUploadJdr(e);
         } catch (ParseException e) {
-            ROOT_LOGGER.info(ROOT_LOGGER.couldNotUploadJdr(e));
+            ROOT_LOGGER.couldNotUploadJdr(e);
         } catch (RequestException e) {
-            ROOT_LOGGER.info(ROOT_LOGGER.couldNotUploadJdr(e));
+            ROOT_LOGGER.couldNotUploadJdr(e);
         }
     }
 }

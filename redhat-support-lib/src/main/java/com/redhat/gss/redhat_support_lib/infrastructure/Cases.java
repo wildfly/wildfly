@@ -8,8 +8,6 @@ import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import org.jboss.logging.Logger;
-
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 import com.redhat.gss.redhat_support_lib.helpers.FilterHelper;
 import com.redhat.gss.redhat_support_lib.helpers.QueryBuilder;
@@ -19,8 +17,6 @@ import com.redhat.gss.redhat_support_lib.parsers.ValueType;
 import com.redhat.gss.redhat_support_lib.web.ConnectionManager;
 
 public class Cases extends BaseQuery {
-    private static final Logger LOGGER = Logger
-            .getLogger(Cases.class.getName());
     private ConnectionManager connectionManager = null;
     static String url = "/rs/cases/";
 
@@ -153,19 +149,14 @@ public class Cases extends BaseQuery {
      * @throws Exception
      *             An exception if there was a connection related issue.
      */
-    public CaseType add(CaseType cas) throws Exception {
+    public CaseType add(CaseType cas) throws MalformedURLException,
+            RequestException {
 
         String fullUrl = connectionManager.getConfig().getUrl() + url;
         Response resp = add(connectionManager.getConnection(), fullUrl, cas);
         MultivaluedMap<String, String> headers = resp.getStringHeaders();
         URL caseurl = null;
-        try {
-            caseurl = new URL(headers.getFirst("Location"));
-        } catch (MalformedURLException e) {
-            LOGGER.debug("Failed : Adding case " + cas.getSummary()
-                    + " was unsuccessful.");
-            throw new Exception();
-        }
+        caseurl = new URL(headers.getFirst("Location"));
         String path = caseurl.getPath();
         cas.setCaseNumber(path.substring(path.lastIndexOf('/') + 1,
                 path.length()));
