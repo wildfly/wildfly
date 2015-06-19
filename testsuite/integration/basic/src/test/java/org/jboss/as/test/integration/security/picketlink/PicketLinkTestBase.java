@@ -51,7 +51,6 @@ import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
 import org.jboss.logging.Logger;
-import org.jboss.security.auth.callback.UsernamePasswordHandler;
 
 /**
  * Base class with common utilities for PicketLink integration tests
@@ -265,10 +264,10 @@ public class PicketLinkTestBase {
             EntityUtils.consume(entity);
 
         // Use our custom configuration to avoid reliance on external config
-        Configuration.setConfiguration(new Krb5LoginConfiguration());
+        final Krb5LoginConfiguration krb5configuration = new Krb5LoginConfiguration(Utils.getLoginConfiguration());
+        Configuration.setConfiguration(krb5configuration);
         // 1. Authenticate to Kerberos.
-        final LoginContext lc = new LoginContext(Utils.class.getName(), new UsernamePasswordHandler(user, pass));
-        lc.login();
+        final LoginContext lc = Utils.loginWithKerberos(krb5configuration, user, pass);
 
         // 2. Perform the work as authenticated Subject.
         final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
@@ -280,6 +279,7 @@ public class PicketLinkTestBase {
             }
         });
         lc.logout();
+        krb5configuration.resetConfiguration();
         return responseBody;
     }
 

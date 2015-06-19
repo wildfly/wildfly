@@ -84,7 +84,6 @@ import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUti
 import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
-import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -99,8 +98,12 @@ import org.junit.runner.RunWith;
  * @author Hynek Mlnarik
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ KerberosServerSetupTask.Krb5ConfServerSetupTask.class, KerberosServerSetupTask.SystemPropertiesSetup.class,
-        KerberosServerSetupTask.class, SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class })
+@ServerSetup({
+    KerberosServerSetupTask.Krb5ConfServerSetupTask.class,
+    KerberosServerSetupTask.SystemPropertiesSetup.class,
+    KerberosServerSetupTask.class,
+    SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class
+})
 @RunAsClient
 @Ignore("AS7-6796 - Undertow SPNEGO")
 public class SAML2KerberosAuthenticationTestCase {
@@ -312,16 +315,17 @@ public class SAML2KerberosAuthenticationTestCase {
         LOGGER.info("Making call to: " + uri);
         LOGGER.info("Expected IDP: " + idpUri);
 
+        final Krb5LoginConfiguration krb5configuration = new Krb5LoginConfiguration(Utils.getLoginConfiguration());
         // Use our custom configuration to avoid reliance on external config
-        Configuration.setConfiguration(new Krb5LoginConfiguration());
+        Configuration.setConfiguration(krb5configuration);
 
         // 1. Authenticate to Kerberos.
-        final LoginContext lc = new LoginContext(Utils.class.getName(), new UsernamePasswordHandler(user, pass));
-        lc.login();
+        final LoginContext lc = Utils.loginWithKerberos(krb5configuration, user, pass);
 
         // 2. Perform the work as authenticated Subject.
         final String responseBody = Subject.doAs(lc.getSubject(), new HttpGetInKerberos(uri, idpUri));
         lc.logout();
+        krb5configuration.resetConfiguration();
         return responseBody;
     }
 
