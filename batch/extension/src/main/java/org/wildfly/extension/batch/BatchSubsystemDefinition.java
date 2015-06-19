@@ -30,6 +30,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DefaultAttributeMarshaller;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -65,6 +66,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NAME);
     static final PathElement THREAD_POOL_PATH = PathElement.pathElement(BatchConstants.THREAD_POOL, BatchConstants.THREAD_POOL_NAME);
 
+    @Deprecated
     static final SimpleAttributeDefinition JOB_REPOSITORY_TYPE = SimpleAttributeDefinitionBuilder.create("job-repository-type", ModelType.STRING, true)
             .setAllowExpression(false)
             .setAttributeMarshaller(new DefaultAttributeMarshaller() {
@@ -98,6 +100,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(JobRepositoryType.IN_MEMORY.toString()))
             .setValidator(new EnumValidator<>(JobRepositoryType.class, true, true))
             .setRestartJVM()
+            .setDeprecated(ModelVersion.create(1, 0, 0))
             .build();
 
     public static final BatchSubsystemDefinition INSTANCE = new BatchSubsystemDefinition();
