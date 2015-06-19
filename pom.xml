@@ -152,7 +152,7 @@
         <version.org.hibernate.hql>1.1.0.Final</version.org.hibernate.hql>
         <version.org.hibernate.search>5.2.0.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>7.2.2.Final</version.org.infinispan>
+        <version.org.infinispan>7.2.3.Final</version.org.infinispan>
         <version.org.jasypt>1.9.1</version.org.jasypt>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
         <version.org.jberet>1.1.0.Final</version.org.jberet>
