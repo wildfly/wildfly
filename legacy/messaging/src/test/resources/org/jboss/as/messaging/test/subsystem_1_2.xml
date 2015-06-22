@@ -260,7 +260,7 @@
                  <connectors>
                     <connector-ref connector-name="in-vm"/>
                  </connectors>
-                 <entries> 
+                 <entries>
                     <entry name="java:/JmsLocal"/>
                  </entries>
               </pooled-connection-factory>

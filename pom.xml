@@ -289,9 +289,9 @@
         <module>legacy/cmp</module>
         <module>legacy/jacorb</module>
         <module>legacy/jaxr</module>
+        <module>legacy/messaging</module>
         <module>legacy/web</module>
         <module>mail</module>
-        <module>messaging</module>
         <module>messaging-activemq</module>
         <module>mod_cluster</module>
         <module>naming</module>

@@ -240,7 +240,7 @@
                     <entry name="java:/JmsXA"/>
                  </entries>
               </pooled-connection-factory>
-              <pooled-connection-factory name="hornetq-ra-local"> 
+              <pooled-connection-factory name="hornetq-ra-local">
                  <user>alice</user>
                  <password>alicepassword</password>
                  <transaction mode="local"/>
