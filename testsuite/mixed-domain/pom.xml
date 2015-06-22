@@ -58,6 +58,16 @@
             <artifactId>wildfly-model-test</artifactId>
          <scope>test</scope>
        </dependency>
+        <dependency>
+            <groupId>org.wildfly.build</groupId>
+            <artifactId>wildfly-server-provisioning-standalone</artifactId>
+            <!-- Set in root pom.xml -->
+            <version>${version.org.wildfly.build-tools}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem-test-framework</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
