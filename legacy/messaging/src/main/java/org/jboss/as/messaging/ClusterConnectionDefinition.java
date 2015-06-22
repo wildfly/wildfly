@@ -30,23 +30,19 @@ import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
-import static org.jboss.dmr.ModelType.OBJECT;
 import static org.jboss.dmr.ModelType.STRING;
-
-import java.util.EnumSet;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 
@@ -55,19 +51,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class ClusterConnectionDefinition extends SimpleResourceDefinition {
+public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.CLUSTER_CONNECTION);
-
-    public static final String GET_NODES = "get-nodes";
-
-    // we keep the operation for backwards compatibility but it duplicates the "static-connectors" writable attribute
-    @Deprecated
-    public static final String GET_STATIC_CONNECTORS_AS_JSON = "get-static-connectors-as-json";
-
-    public static final String[] OPERATIONS = {GET_NODES, GET_STATIC_CONNECTORS_AS_JSON};
-
-    private final boolean registerRuntimeOnly;
 
     public static final SimpleAttributeDefinition ADDRESS = create("cluster-connection-address", STRING)
             .setXmlName(CommonAttributes.ADDRESS)
@@ -230,58 +216,19 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
 
-    public static final AttributeDefinition[] READONLY_ATTRIBUTES = {
-            TOPOLOGY,
-            NODE_ID
-    };
+    static final ClusterConnectionDefinition INSTANCE = new ClusterConnectionDefinition();
 
-    public ClusterConnectionDefinition(final boolean registerRuntimeOnly) {
+    private ClusterConnectionDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CLUSTER_CONNECTION),
-                ClusterConnectionAdd.INSTANCE,
-                ClusterConnectionRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                new ModelOnlyAddStepHandler(ATTRIBUTES) {
+                    @Override
+                    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+                        super.populateModel(context, operation, resource);
+                        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), (DISCOVERY_GROUP_NAME.getName()), true);
+                    }
+                },
+                ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, ClusterConnectionWriteAttributeHandler.INSTANCE);
-            }
-        }
-
-        if (registerRuntimeOnly) {
-            ClusterConnectionControlHandler.INSTANCE.registerAttributes(registry);
-
-            for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
-                registry.registerReadOnlyAttribute(attr, ClusterConnectionControlHandler.INSTANCE);
-            }
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry) {
-        if (registerRuntimeOnly) {
-            ClusterConnectionControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
-
-            final EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
-            SimpleOperationDefinition getNodesDef = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_NODES, getResourceDescriptionResolver())
-                    .withFlags(flags)
-                    .setReplyType(OBJECT)
-                    .setReplyValueType(STRING)
-                    .build();
-            registry.registerOperationHandler(getNodesDef, ClusterConnectionControlHandler.INSTANCE);
-            SimpleOperationDefinition getStaticConnectorsAsJson = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_STATIC_CONNECTORS_AS_JSON, getResourceDescriptionResolver())
-                    .withFlags(flags)
-                    .setReplyType(STRING)
-                    .build();
-            registry.registerOperationHandler(getStaticConnectorsAsJson, ClusterConnectionControlHandler.INSTANCE);
-
-        }
-
-        super.registerOperations(registry);
     }
 }

@@ -25,8 +25,8 @@ package org.jboss.as.messaging;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
@@ -37,20 +37,18 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class SecuritySettingDefinition extends SimpleResourceDefinition {
+public class SecuritySettingDefinition extends ModelOnlyResourceDefinition {
 
-    private final boolean registerRuntimeOnly;
     private final List<AccessConstraintDefinition> accessConstraints;
 
-    public SecuritySettingDefinition(final boolean registerRuntimeOnly) {
+    static final SecuritySettingDefinition INSTANCE = new SecuritySettingDefinition();
+
+    private SecuritySettingDefinition() {
         super(PathElement.pathElement(CommonAttributes.SECURITY_SETTING),
-                MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.SECURITY_SETTING),
-                SecuritySettingAdd.INSTANCE,
-                SecuritySettingRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.SECURITY_SETTING));
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MessagingExtension.SUBSYSTEM_NAME, CommonAttributes.SECURITY_SETTING);
         AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
-        this.accessConstraints = Arrays.asList((AccessConstraintDefinition) CommonAttributes.MESSAGING_SECURITY_DEF, acd);
+        this.accessConstraints = Arrays.asList(CommonAttributes.MESSAGING_SECURITY_DEF, acd);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
@@ -58,7 +56,7 @@ public class SecuritySettingDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration registry) {
         super.registerChildren(registry);
 
-        registry.registerSubModel(SecurityRoleDefinition.newSecurityRoleDefinition(registerRuntimeOnly));
+        registry.registerSubModel(SecurityRoleDefinition.INSTANCE);
     }
 
     @Override

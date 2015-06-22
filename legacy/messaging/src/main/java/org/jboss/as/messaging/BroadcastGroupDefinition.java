@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
 import static org.jboss.as.messaging.CommonAttributes.GROUP_ADDRESS;
@@ -37,26 +36,23 @@ import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
@@ -66,7 +62,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class BroadcastGroupDefinition extends SimpleResourceDefinition {
+public class BroadcastGroupDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
 
@@ -91,45 +87,40 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_STACK, JGROUPS_CHANNEL, SOCKET_BINDING, LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT,
         GROUP_ADDRESS, GROUP_PORT, BROADCAST_PERIOD, CONNECTOR_REFS };
 
-    public static final String GET_CONNECTOR_PAIRS_AS_JSON = "get-connector-pairs-as-json";
+    private static final OperationValidator VALIDATOR = new OperationValidator.AttributeDefinitionOperationValidator(ATTRIBUTES);
 
-    private final boolean registerRuntimeOnly;
+    static final BroadcastGroupDefinition INSTANCE = new BroadcastGroupDefinition();
 
-    public BroadcastGroupDefinition(boolean registerRuntimeOnly) {
+    public BroadcastGroupDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BROADCAST_GROUP),
-                BroadcastGroupAdd.INSTANCE,
-                BroadcastGroupRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                new ModelOnlyAddStepHandler(ATTRIBUTES) {
+
+                    @Override
+                    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+                        model.setEmptyObject();
+
+                        VALIDATOR.validateAndSet(operation, model);
+                    }
+
+                    @Override
+                    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+                        super.populateModel(context, operation, resource);
+
+                        final ModelNode connectorRefs = resource.getModel().get(CONNECTOR_REFS.getName());
+                        if (connectorRefs.isDefined()) {
+                            context.addStep(new OperationStepHandler() {
+                                @Override
+                                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                                    validateConnectors(context, operation, connectorRefs);
+                                }
+                            }, OperationContext.Stage.MODEL);
+                        }
+
+                    }
+                },
+                ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, BroadcastGroupWriteAttributeHandler.INSTANCE);
-            }
-        }
-
-        if (registerRuntimeOnly) {
-            BroadcastGroupControlHandler.INSTANCE.registerAttributes(registry);
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry) {
-        if (registerRuntimeOnly) {
-            BroadcastGroupControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
-
-            SimpleOperationDefinition op = new SimpleOperationDefinitionBuilder(GET_CONNECTOR_PAIRS_AS_JSON, getResourceDescriptionResolver())
-                .withFlags(EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY))
-                .setReplyType(STRING)
-                .build();
-            registry.registerOperationHandler(op, BroadcastGroupControlHandler.INSTANCE);
-        }
-        super.registerOperations(registry);
     }
 
     static void validateConnectors(OperationContext context, ModelNode operation, ModelNode connectorRefs) throws OperationFailedException {
@@ -145,8 +136,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
     }
 
     private static Set<String> getAvailableConnectors(final OperationContext context,final ModelNode operation) throws OperationFailedException{
-        PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        PathAddress hornetqServer = MessagingServices.getHornetQServerPathAddress(address);
+        PathAddress hornetqServer = context.getCurrentAddress().getParent();
         Resource hornetQServerResource = context.readResourceFromRoot(hornetqServer);
         Set<String> availableConnectors = new HashSet<String>();
         availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.HTTP_CONNECTOR));

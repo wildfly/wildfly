@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
+import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
@@ -71,15 +72,23 @@ import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_P
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 
 import java.util.Locale;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.messaging.jms.JMSServerControlHandler;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -87,7 +96,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
+public class HornetQServerResourceDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement HORNETQ_SERVER_PATH = PathElement.pathElement(CommonAttributes.HORNETQ_SERVER);
 
@@ -103,50 +112,50 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL};
 
-    private final boolean registerRuntimeOnly;
+    static final HornetQServerResourceDefinition INSTANCE = new HornetQServerResourceDefinition();
 
-    HornetQServerResourceDefinition(boolean registerRuntimeOnly) {
+    private HornetQServerResourceDefinition() {
         super(HORNETQ_SERVER_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.HORNETQ_SERVER),
-                HornetQServerAdd.INSTANCE,
-                HornetQServerRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                new ModelOnlyAddStepHandler(CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+                    @Override
+                    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+                        super.populateModel(operation, model);
+
+                        if (model.hasDefined(MESSAGE_COUNTER_ENABLED.getName())) {
+                            ModelNode mceVal = model.get(MESSAGE_COUNTER_ENABLED.getName());
+                            ModelNode seVal = model.get(STATISTICS_ENABLED.getName());
+                            if (seVal.isDefined() && !seVal.equals(mceVal)) {
+                                throw MessagingLogger.ROOT_LOGGER.inconsistentStatisticsSettings(MESSAGE_COUNTER_ENABLED.getName(), STATISTICS_ENABLED.getName());
+                            }
+                            seVal.set(mceVal);
+                            model.remove(MESSAGE_COUNTER_ENABLED.getName());
+                        }
+                    }
+                },
+                CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        if (registerRuntimeOnly) {
-            HornetQServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
-            JMSServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
-
-            AddressSettingsResolveHandler.registerOperationHandler(resourceRegistration, getResourceDescriptionResolver());
-        }
-
-        // unsupported runtime operations exposed by HornetQServerControl
-        // enableMessageCounters, disableMessageCounters
-    }
-
-    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        HornetQServerControlWriteHandler.INSTANCE.registerAttributes(resourceRegistration, registerRuntimeOnly);
-        if (registerRuntimeOnly) {
-            HornetQServerControlHandler.INSTANCE.registerAttributes(resourceRegistration);
+        OperationStepHandler writeHandler = new ModelOnlyWriteAttributeHandler(CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES);
+        for (AttributeDefinition ad : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+            if (ad.getName().equals(CLUSTERED.getName())) {
+                resourceRegistration.registerReadWriteAttribute(CLUSTERED,
+                        ClusteredAttributeHandlers.READ_HANDLER,
+                        ClusteredAttributeHandlers.WRITE_HANDLER);
+            } else if (ad.getName().equals(MESSAGE_COUNTER_ENABLED.getName())) {
+                MessageCounterEnabledHandler handler = new MessageCounterEnabledHandler();
+                resourceRegistration.registerReadWriteAttribute(MESSAGE_COUNTER_ENABLED, handler, handler);
+            } else {
+                resourceRegistration.registerReadWriteAttribute(ad, null, writeHandler);
+            }
         }
-        // unsupported READ-ATTRIBUTES
-        // getConnectors, getAddressNames, getQueueNames, getDivertNames, getBridgeNames,
-        // unsupported JMSServerControlHandler READ-ATTRIBUTES
-        // getTopicNames, getQueueNames, getConnectionFactoryNames,
+
+        // handle deprecate attributes
+        resourceRegistration.registerReadWriteAttribute(CommonAttributes.LIVE_CONNECTOR_REF, null, DeprecatedAttributeWriteHandler.INSTANCE);
     }
-
-
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        super.registerChildren(resourceRegistration);
-    }
-
     /**
      * {@inheritDoc}
      * <p/>
@@ -154,20 +163,75 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
      */
     @Override
     public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-        if (registerRuntimeOnly) {
-            return super.getDescriptionProvider(resourceRegistration);
-        } else {
-            return new DefaultResourceDescriptionProvider(resourceRegistration, getResourceDescriptionResolver()) {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode result = super.getModelDescription(locale);
-                    result.get(CHILDREN, PATH, MIN_OCCURS).set(4);
-                    result.get(CHILDREN, PATH, MAX_OCCURS).set(4);
-                    return result;
-                }
-            };
+        return new DefaultResourceDescriptionProvider(resourceRegistration, getResourceDescriptionResolver()) {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode result = super.getModelDescription(locale);
+                result.get(CHILDREN, PATH, MIN_OCCURS).set(4);
+                result.get(CHILDREN, PATH, MAX_OCCURS).set(4);
+                return result;
+            }
+        };
+    }
+
+    private static class MessageCounterEnabledHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode aliased = getAliasedOperation(operation);
+            context.addStep(aliased, getHandlerForOperation(context, operation), OperationContext.Stage.MODEL, true);
+        }
+
+        private static ModelNode getAliasedOperation(ModelNode operation) {
+            ModelNode aliased = operation.clone();
+            aliased.get(ModelDescriptionConstants.NAME).set(CommonAttributes.STATISTICS_ENABLED.getName());
+            return aliased;
+        }
+
+        private static OperationStepHandler getHandlerForOperation(OperationContext context, ModelNode operation) {
+            ImmutableManagementResourceRegistration imrr = context.getResourceRegistration();
+            return imrr.getOperationHandler(PathAddress.EMPTY_ADDRESS, operation.get(ModelDescriptionConstants.OP).asString());
         }
     }
 
+    /**
+     * The clustered configuration parameter no longer exists for HornetQ configuration (a hornetq server is automatically clustered if it has cluster-connections)
+     * but we continue to support it for legacy versions.
+     *
+     * For AS7 new versions, we compute its value based on the presence of cluster-connection children and ignore any write-attribute operation on it.
+     * We only warn the user if he wants to disable the clustered state of the server by setting it to false.
+     */
+    private static final class ClusteredAttributeHandlers {
+        static final OperationStepHandler READ_HANDLER = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                boolean clustered = isClustered(context);
+                context.getResult().set(clustered);
+            }
+        };
+
+        static final OperationStepHandler WRITE_HANDLER = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // the real clustered HornetQ state
+                boolean clustered = isClustered(context);
+                // whether the user wants the server to be clustered
+                ModelNode mock = new ModelNode();
+                mock.get(CLUSTERED.getName()).set(operation.get(ModelDescriptionConstants.VALUE));
+                boolean wantsClustered = CLUSTERED.resolveModelAttribute(context, mock).asBoolean();
+                if (clustered && !wantsClustered) {
+                    PathAddress serverAddress = context.getCurrentAddress();
+                    MessagingLogger.ROOT_LOGGER.warn(MessagingLogger.ROOT_LOGGER.canNotChangeClusteredAttribute(serverAddress));
+                }
+                // ignore the operation
+                context.stepCompleted();
+            }
+        };
+
+        private static boolean isClustered(OperationContext context) {
+            Set<String> clusterConnectionNames = context.readResource(PathAddress.EMPTY_ADDRESS).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
+            return !clusterConnectionNames.isEmpty();
+        }
+    }
 
 }

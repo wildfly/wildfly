@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 
 /**
@@ -48,16 +47,11 @@ public class GenericTransportDefinition extends AbstractTransportDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { CommonAttributes.FACTORY_CLASS, SOCKET_BINDING };
 
-    public static SimpleResourceDefinition createAcceptorDefinition(final boolean registerRuntimeOnly) {
-        return new GenericTransportDefinition(registerRuntimeOnly, true, CommonAttributes.ACCEPTOR);
-    }
+    static final GenericTransportDefinition ACCEPTOR_INSTANCE = new GenericTransportDefinition(true, CommonAttributes.ACCEPTOR);
+    static final GenericTransportDefinition CONNECTOR_INSTANCE = new GenericTransportDefinition(true, CommonAttributes.CONNECTOR);
 
-    public static SimpleResourceDefinition createConnectorDefinition(final boolean registerRuntimeOnly) {
-        return new GenericTransportDefinition(registerRuntimeOnly, false, CommonAttributes.CONNECTOR);
-    }
-
-    private GenericTransportDefinition(final boolean registerRuntimeOnly, boolean isAcceptor, String specificType) {
-        super(registerRuntimeOnly, isAcceptor, specificType, ATTRIBUTES);
+    private GenericTransportDefinition(boolean isAcceptor, String specificType) {
+        super(isAcceptor, specificType, ATTRIBUTES);
     }
 
     @Override

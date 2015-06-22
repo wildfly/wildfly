@@ -55,12 +55,9 @@ import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.USE_
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.DeprecatedAttributeWriteHandler;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular;
@@ -70,7 +67,7 @@ import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
+public class ConnectionFactoryDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.CONNECTION_FACTORY);
 
@@ -92,48 +89,12 @@ public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
             PRODUCER_MAX_RATE, PRODUCER_WINDOW_SIZE, RECONNECT_ATTEMPTS, RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, TRANSACTION_BATCH_SIZE,
             USE_GLOBAL_POOLS};
 
-    static final AttributeDefinition[] READONLY_ATTRIBUTES = { Regular.INITIAL_MESSAGE_PACKET_SIZE };
+    public static final ConnectionFactoryDefinition INSTANCE = new ConnectionFactoryDefinition();
 
-    private final boolean registerRuntimeOnly;
-
-    public ConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
+    private ConnectionFactoryDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY),
-                ConnectionFactoryAdd.INSTANCE,
-                ConnectionFactoryRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            // deprecated attributes
-            if (attr == Common.DISCOVERY_INITIAL_WAIT_TIMEOUT ||
-                    attr == Common.FAILOVER_ON_SERVER_SHUTDOWN) {
-                registry.registerReadWriteAttribute(attr, null, DeprecatedAttributeWriteHandler.INSTANCE);
-            } else {
-                if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                    registry.registerReadWriteAttribute(attr, null, ConnectionFactoryWriteAttributeHandler.INSTANCE);
-                }
-            }
-        }
-
-        if (registerRuntimeOnly) {
-            for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
-                registry.registerReadOnlyAttribute(attr, ConnectionFactoryReadAttributeHandler.INSTANCE);
-            }
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry) {
-        super.registerOperations(registry);
-
-        if (registerRuntimeOnly) {
-            ConnectionFactoryUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
-        }
-   }
 }

@@ -157,10 +157,6 @@ public interface CommonAttributes {
             .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
-    AttributeDefinition CONSUMER_COUNT = create("consumer-count", INT)
-            .setStorageRuntime()
-            .build();
-
     SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = create("confirmation-window-size", INT)
             .setDefaultValue(new ModelNode(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE))
             .setMeasurementUnit(BYTES)
@@ -202,10 +198,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DEAD_LETTER_ADDRESS = create("dead-letter-address", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
-            .build();
-
-    AttributeDefinition DELIVERING_COUNT = create("delivering-count", INT)
-            .setStorageRuntime()
             .build();
 
     PrimitiveListAttributeDefinition DESTINATION_ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ENTRIES, ModelType.STRING)
@@ -485,10 +477,6 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    AttributeDefinition MESSAGE_COUNT = create("message-count", LONG)
-            .setStorageRuntime()
-            .build();
-
     SimpleAttributeDefinition STATISTICS_ENABLED = create(ModelDescriptionConstants.STATISTICS_ENABLED, BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
@@ -532,10 +520,6 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    AttributeDefinition MESSAGES_ADDED = create("messages-added", LONG)
-            .setStorageRuntime()
-            .build();
-
     AttributeDefinition MIN_LARGE_MESSAGE_SIZE = create("min-large-message-size", INT)
             .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
             .setMeasurementUnit(BYTES)
@@ -562,10 +546,6 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
-            .build();
-
-    AttributeDefinition PAUSED = create("paused", BOOLEAN)
-            .setStorageRuntime()
             .build();
 
     SimpleAttributeDefinition PERF_BLAST_PAGES = create("perf-blast-pages", INT)
@@ -656,10 +636,6 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    AttributeDefinition SCHEDULED_COUNT = create("scheduled-count", LONG)
-            .setStorageRuntime()
-            .build();
-
     AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = create("scheduled-thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
             .setAllowNull(true)
@@ -727,10 +703,6 @@ public interface CommonAttributes {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
-    AttributeDefinition TEMPORARY = create("temporary", BOOLEAN)
-            .setStorageRuntime()
-            .build();
-
     AttributeDefinition THREAD_POOL_MAX_SIZE = create("thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
             .setAllowNull(true)
@@ -760,11 +732,6 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition USER = create("user", ModelType.STRING, true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultClusterUser()))
-            .build();
-
     SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = create("wild-card-routing-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultWildcardRoutingEnabled()))
             .setAllowNull(true)
@@ -777,7 +744,6 @@ public interface CommonAttributes {
     String ADDRESS = "address";
     String ADDRESS_SETTING = "address-setting";
     String ADDRESS_SETTINGS = "address-settings";
-    String BINDING_NAMES = "binding-names";
     String BINDINGS_DIRECTORY = "bindings-directory";
     String BRIDGE = "bridge";
     String BRIDGES = "bridges";
@@ -793,8 +759,6 @@ public interface CommonAttributes {
     String CONNECTOR_REF_STRING = "connector-ref";
     String CONNECTOR_SERVICE = "connector-service";
     String CONNECTOR_SERVICES = "connector-services";
-    String CORE = "core";
-    String CORE_ADDRESS = "core-address";
     String CORE_QUEUE = "core-queue";
     String CORE_QUEUES = "core-queues";
     String DEFAULT = "default";
@@ -804,18 +768,12 @@ public interface CommonAttributes {
     String DISCOVERY_GROUP_REF = "discovery-group-ref";
     String DIVERT = "divert";
     String DIVERTS = "diverts";
-    String DURABLE_MESSAGE_COUNT = "durable-message-count";
-    String DURABLE_SUBSCRIPTION_COUNT = "durable-subscription-count";
     String ENTRY = "entry";
     String FILE_DEPLOYMENT_ENABLED = "file-deployment-enabled";
     String GROUPING_HANDLER = "grouping-handler";
-    String HOST = "host";
-    String HTTP = "http";
     String HTTP_ACCEPTOR = "http-acceptor";
     String HTTP_CONNECTOR = "http-connector";
     String HTTP_LISTENER = "http-listener";
-    String HORNETQ_ADDRESS = "hornetq-address";
-    String ID = "id";
     String IN_VM_ACCEPTOR = "in-vm-acceptor";
     String IN_VM_CONNECTOR = "in-vm-connector";
     String JMS_BRIDGE = "jms-bridge";
@@ -823,62 +781,34 @@ public interface CommonAttributes {
     String JMS_DESTINATIONS = "jms-destinations";
     String JMS_QUEUE = "jms-queue";
     String JMS_TOPIC = "jms-topic";
-    String JNDI_BINDING = "jndi-binding";
     String JOURNAL_DIRECTORY = "journal-directory";
     String KEY = "key";
     String INBOUND_CONFIG = "inbound-config";
     String LARGE_MESSAGES_DIRECTORY = "large-messages-directory";
-    String LAST_VALUE_QUEUE = "last-value=queue";
     String LOCAL = "local";
-    String LOCAL_TX = "LocalTransaction";
-    String MANAGE_XML_NAME = "manage";
     String MATCH = "match";
-    String MESSAGE_ID = "message-id";
     String MODE = "mode";
     String NAME = "name";
     String NETTY_ACCEPTOR = "netty-acceptor";
     String NETTY_CONNECTOR = "netty-connector";
-    String NONE = "none";
-    String NON_DURABLE_MESSAGE_COUNT = "non-durable-message-count";
-    String NON_DURABLE_SUBSCRIPTION_COUNT = "non-durable-subscription-count";
-    String NO_TX = "NoTransaction";
-    String NUMBER_OF_BYTES_PER_PAGE = "number-of-bytes-per-page";
-    String NUMBER_OF_PAGES = "number-of-pages";
-
     String PAGING_DIRECTORY = "paging-directory";
     String PARAM = "param";
     String PERMISSION_ELEMENT_NAME = "permission";
     String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
     String QUEUE = "queue";
     String QUEUE_NAME = "queue-name";
-    String QUEUE_NAMES = "queue-names";
     String REMOTE_ACCEPTOR = "remote-acceptor";
     String REMOTE_CONNECTOR = "remote-connector";
-    String REMOTING_INTERCEPTOR = "remoting-interceptor";
-    String REMOTING_INCOMING_INTERCEPTOR = "remoting-incoming-interceptor";
-    String REMOTING_OUTGOING_INTERCEPTOR = "remoting-outgoing-interceptor";
-    String RESOURCE_ADAPTER = "resource-adapter";
-    String RESOLVE_ADDRESS_SETTING = "resolve-address-setting";
     String ROLE = "role";
     String ROLES_ATTR_NAME = "roles";
-    String RUNTIME_QUEUE = "runtime-queue";
     String SECURITY_ROLE = "security-role";
     String SECURITY_SETTING = "security-setting";
     String SECURITY_SETTINGS = "security-settings";
-    String SERVLET_PATH = "servlet-path";
     String HORNETQ_SERVER = "hornetq-server";
-    String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";
     String STRING = "string";
-    String SUBSCRIPTION_COUNT = "subscription-count";
     String SUBSYSTEM = "subsystem";
-    String TOPIC_ADDRESS = "topic-address";
     String TYPE_ATTR_NAME = "type";
-    String USE_INVM = "use-invm";
-    String USE_SERVLET = "use-servlet";
-    String VERSION = "version";
-    String XA = "xa";
-    String XA_TX = "XATransaction";
 
     AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = { CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
             THREAD_POOL_MAX_SIZE, SECURITY_DOMAIN, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL, OVERRIDE_IN_VM_SECURITY, WILD_CARD_ROUTING_ENABLED,
@@ -893,7 +823,4 @@ public interface CommonAttributes {
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             MAX_SAVED_REPLICATED_JOURNAL_SIZE, PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
             CHECK_FOR_LIVE_SERVER, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME };
-
-    AttributeDefinition[] SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES = { FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED,
-            MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD };
 }

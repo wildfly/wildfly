@@ -34,7 +34,6 @@ import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -59,16 +58,11 @@ public class InVMTransportDefinition extends AbstractTransportDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { SERVER_ID };
 
-    public static SimpleResourceDefinition createAcceptorDefinition(final boolean registerRuntimeOnly) {
-        return new InVMTransportDefinition(registerRuntimeOnly, true, CommonAttributes.IN_VM_ACCEPTOR);
-    }
+    static final InVMTransportDefinition ACCEPTOR_INSTANCE = new InVMTransportDefinition(true, CommonAttributes.IN_VM_ACCEPTOR);
+    static final InVMTransportDefinition CONNECTOR_INSTANCE = new InVMTransportDefinition(false, CommonAttributes.IN_VM_CONNECTOR);
 
-    public static SimpleResourceDefinition createConnectorDefinition(final boolean registerRuntimeOnly) {
-        return new InVMTransportDefinition(registerRuntimeOnly, false, CommonAttributes.IN_VM_CONNECTOR);
-    }
-
-    private InVMTransportDefinition(final boolean registerRuntimeOnly, boolean isAcceptor, String specificType) {
-        super(registerRuntimeOnly, isAcceptor, specificType, ATTRIBUTES);
+    private InVMTransportDefinition(boolean isAcceptor, String specificType) {
+        super(isAcceptor, specificType, ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 

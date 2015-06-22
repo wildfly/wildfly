@@ -27,15 +27,15 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.Set;
 
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class TransportParamDefinition extends SimpleResourceDefinition {
+public class TransportParamDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.PARAM);
 
@@ -54,25 +54,18 @@ public class TransportParamDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public TransportParamDefinition(final Set<String> allowedKeys) {
+    TransportParamDefinition(final Set<String> allowedKeys) {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver("transport-config." + CommonAttributes.PARAM),
-                new HornetQReloadRequiredHandlers.AddStepHandler(VALUE) {
+                new ModelOnlyAddStepHandler(VALUE) {
                     @Override
                     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                         super.populateModel(context, operation, resource);
                         context.addStep(new CheckParameterStep(allowedKeys), OperationContext.Stage.MODEL);
                     }
                 },
-                new HornetQReloadRequiredHandlers.RemoveStepHandler());
+                VALUE);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-
-        registry.registerReadWriteAttribute(VALUE, null, new HornetQReloadRequiredHandlers.WriteAttributeHandler(VALUE));
     }
 
     private static class CheckParameterStep implements OperationStepHandler {

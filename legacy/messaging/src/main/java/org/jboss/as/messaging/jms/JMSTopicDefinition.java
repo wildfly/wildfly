@@ -22,22 +22,14 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.jboss.dmr.ModelType.INT;
-import static org.jboss.dmr.ModelType.STRING;
-
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingExtension;
 
@@ -47,112 +39,22 @@ import org.jboss.as.messaging.MessagingExtension;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class JMSTopicDefinition extends SimpleResourceDefinition {
+public class JMSTopicDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
 
     public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES };
 
-    /**
-     * Attributes for deployed JMS topic are stored in runtime
-     */
-    private static AttributeDefinition[] getDeploymentAttributes() {
-        return new AttributeDefinition[] {
-                new PrimitiveListAttributeDefinition.Builder(CommonAttributes.DESTINATION_ENTRIES).setStorageRuntime().build()
-        };
-    }
-
-    static final AttributeDefinition TOPIC_ADDRESS = create(CommonAttributes.TOPIC_ADDRESS, STRING)
-            .setStorageRuntime()
-            .build();
-
-    static final AttributeDefinition[] READONLY_ATTRIBUTES = { TOPIC_ADDRESS, CommonAttributes.TEMPORARY };
-
-    static final AttributeDefinition DURABLE_MESSAGE_COUNT = create(CommonAttributes.DURABLE_MESSAGE_COUNT, INT)
-            .setStorageRuntime()
-            .build();
-
-    static final AttributeDefinition NON_DURABLE_MESSAGE_COUNT = create(CommonAttributes.NON_DURABLE_MESSAGE_COUNT, INT)
-            .setStorageRuntime()
-            .build();
-
-    static final AttributeDefinition SUBSCRIPTION_COUNT = create(CommonAttributes.SUBSCRIPTION_COUNT, INT)
-            .setStorageRuntime()
-            .build();
-
-    static final AttributeDefinition DURABLE_SUBSCRIPTION_COUNT = create(CommonAttributes.DURABLE_SUBSCRIPTION_COUNT, INT)
-            .setStorageRuntime()
-            .build();
-
-    static final AttributeDefinition NON_DURABLE_SUBSCRIPTION_COUNT = create(CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT, INT)
-            .setStorageRuntime()
-            .build();
-
-    static final AttributeDefinition[] METRICS = { CommonAttributes.DELIVERING_COUNT, CommonAttributes.MESSAGES_ADDED,
-        CommonAttributes.MESSAGE_COUNT, DURABLE_MESSAGE_COUNT, NON_DURABLE_MESSAGE_COUNT,
-        SUBSCRIPTION_COUNT, DURABLE_SUBSCRIPTION_COUNT, NON_DURABLE_SUBSCRIPTION_COUNT};
-
-    private final boolean registerRuntimeOnly;
-
-    private final boolean deployed;
-
+    public static final JMSTopicDefinition INSTANCE = new JMSTopicDefinition();
     private final List<AccessConstraintDefinition> accessConstraints;
 
-    public static JMSTopicDefinition newDeployedJMSTopicDefinition() {
-        return new JMSTopicDefinition(true, true, null, null);
-    }
-
-    public JMSTopicDefinition(final boolean registerRuntimeOnly) {
-        this(registerRuntimeOnly, false, JMSTopicAdd.INSTANCE, JMSTopicRemove.INSTANCE);
-    }
-
-    private JMSTopicDefinition(final boolean registerRuntimeOnly, final boolean deployed, final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
+    public JMSTopicDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_TOPIC),
-                addHandler,
-                removeHandler);
-        this.registerRuntimeOnly = registerRuntimeOnly;
-        this.deployed = deployed;
+                ATTRIBUTES);
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MessagingExtension.SUBSYSTEM_NAME, CommonAttributes.JMS_TOPIC);
         accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-
-        AttributeDefinition[] attributes = deployed ? getDeploymentAttributes() : ATTRIBUTES;
-        for (AttributeDefinition attr : attributes) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                if (deployed) {
-                    registry.registerReadOnlyAttribute(attr, JMSTopicConfigurationRuntimeHandler.INSTANCE);
-                } else {
-                    registry.registerReadWriteAttribute(attr, null, JMSTopicConfigurationWriteHandler.INSTANCE);
-                }
-            }
-        }
-
-        if (registerRuntimeOnly) {
-            for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
-                registry.registerReadOnlyAttribute(attr, JMSTopicReadAttributeHandler.INSTANCE);
-            }
-
-            for (AttributeDefinition metric : METRICS) {
-                registry.registerMetric(metric, JMSTopicReadAttributeHandler.INSTANCE);
-            }
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry) {
-        super.registerOperations(registry);
-
-        if (registerRuntimeOnly && !deployed) {
-            JMSTopicUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
-        }
-
-        JMSTopicControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
     }
 
     @Override

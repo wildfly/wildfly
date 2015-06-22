@@ -33,11 +33,11 @@ import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -47,7 +47,7 @@ import org.jboss.dmr.ModelType;
 *
 * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
 */
-public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
+public class DiscoveryGroupDefinition extends ModelOnlyResourceDefinition {
 
    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
 
@@ -72,24 +72,22 @@ public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
             REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT
     };
 
-    private final boolean registerRuntimeOnly;
+    private static final OperationValidator VALIDATOR = new OperationValidator.AttributeDefinitionOperationValidator(ATTRIBUTES);
 
-    public DiscoveryGroupDefinition(final boolean registerRuntimeOnly) {
+    static final DiscoveryGroupDefinition INSTANCE = new DiscoveryGroupDefinition();
+
+    public DiscoveryGroupDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP),
-                DiscoveryGroupAdd.INSTANCE,
-                DiscoveryGroupRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
-        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
+                new ModelOnlyAddStepHandler(ATTRIBUTES) {
+                    @Override
+                    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+                        model.setEmptyObject();
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, DiscoveryGroupWriteAttributeHandler.INSTANCE);
-            }
-        }
+                        VALIDATOR.validateAndSet(operation, model);
+                    }
+                },
+                ATTRIBUTES);
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 }

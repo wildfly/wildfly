@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.hornetq.jms.client.HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX;
 import static org.hornetq.jms.client.HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX;
-import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
@@ -33,7 +32,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
@@ -54,31 +52,13 @@ class AddressSettingsValidator {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             String addressSetting = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
 
-            PathAddress address = pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            Resource hornetqServer = context.readResourceFromRoot(MessagingServices.getHornetQServerPathAddress(address), true);
+            PathAddress hornetqServerAddress = context.getCurrentAddress().getParent();
+            Resource hornetqServer = context.readResourceFromRoot(hornetqServerAddress, true);
 
             checkExpiryAddress(context, operation, hornetqServer, addressSetting);
             checkDeadLetterAddress(context, operation, hornetqServer, addressSetting);
-
-            context.stepCompleted();
         }
     };
-
-    /**
-     * Validate that an updated address-settings still has resources bound corresponding
-     * to expiry-address and dead-letter-address (if they are defined).
-     */
-    static void validateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        String addressSetting = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-        PathAddress address = pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-
-        Resource hornetqServer = context.readResourceFromRoot(MessagingServices.getHornetQServerPathAddress(address), true);
-
-        checkExpiryAddress(context, resource.getModel(), hornetqServer, addressSetting);
-        checkDeadLetterAddress(context, resource.getModel(), hornetqServer, addressSetting);
-
-        context.stepCompleted();
-    }
 
     private static void checkExpiryAddress(OperationContext context, ModelNode model, Resource hornetqServer, String addressSetting) throws OperationFailedException {
         ModelNode expiryAddress = EXPIRY_ADDRESS.resolveModelAttribute(context, model);

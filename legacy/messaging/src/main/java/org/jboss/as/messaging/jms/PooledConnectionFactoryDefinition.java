@@ -62,35 +62,33 @@ import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_JNDI;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.DeprecatedAttributeWriteHandler;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
+import org.jboss.dmr.ModelNode;
 
 /**
  * JMS pooled Connection Factory resource definition.
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition {
+public class PooledConnectionFactoryDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
-
 
     // the generation of the Pooled CF attributes is a bit ugly but it is with purpose:
     // * factorize the attributes which are common between the regular CF and the pooled CF
@@ -156,44 +154,18 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
             JNDI_PARAMS, RECONNECT_ATTEMPTS, SETUP_ATTEMPTS, SETUP_INTERVAL,
             TRANSACTION, USE_JNDI, USE_LOCAL_TX};
 
-    public static Map<String, ConnectionFactoryAttribute> getAttributes() {
-        Map<String, ConnectionFactoryAttribute> attrs = new HashMap<String, ConnectionFactoryAttribute>(ATTRIBUTES.length);
-        for (ConnectionFactoryAttribute attribute : ATTRIBUTES) {
-            attrs.put(attribute.getDefinition().getName(), attribute);
-        }
-        return attrs;
-    }
+    public static final PooledConnectionFactoryDefinition INSTANCE = new PooledConnectionFactoryDefinition();
 
-    private final boolean registerRuntimeOnly;
-    private final boolean deployed;
-
-    public PooledConnectionFactoryDefinition(final boolean registerRuntimeOnly, final boolean deployed) {
-        super(PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.POOLED_CONNECTION_FACTORY),
-                PooledConnectionFactoryAdd.INSTANCE,
-                PooledConnectionFactoryRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
-        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-        this.deployed = deployed;
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-
-        for (AttributeDefinition attr : getDefinitions(ATTRIBUTES)) {
-            // deprecated attribute
-            if (attr == Common.DISCOVERY_INITIAL_WAIT_TIMEOUT ||
-                    attr == Common.FAILOVER_ON_SERVER_SHUTDOWN) {
-                registry.registerReadWriteAttribute(attr, null, DeprecatedAttributeWriteHandler.INSTANCE);
-            } else {
-                if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                    if (deployed) {
-                        registry.registerReadOnlyAttribute(attr, PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
-                    } else {
-                        registry.registerReadWriteAttribute(attr, null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE);
+    private PooledConnectionFactoryDefinition() {
+        super(PATH,
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.POOLED_CONNECTION_FACTORY),
+                new ModelOnlyAddStepHandler(getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
+                    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+                        super.populateModel(operation, model);
+                        AlternativeAttributeCheckHandler.checkAlternatives(operation, Common.CONNECTOR.getName(), Common.DISCOVERY_GROUP_NAME.getName(), false);
                     }
-                }
-            }
-        }
+                },
+                getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES));
+        setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 }

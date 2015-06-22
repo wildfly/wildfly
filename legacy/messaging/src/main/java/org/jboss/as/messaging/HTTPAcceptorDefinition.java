@@ -30,13 +30,10 @@ import java.util.ResourceBundle;
 
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
@@ -45,11 +42,9 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2013 Red Hat Inc.
  */
-public class HTTPAcceptorDefinition extends SimpleResourceDefinition {
+public class HTTPAcceptorDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(HTTP_ACCEPTOR);
-
-    private final boolean registerRuntimeOnly;
 
     static final SimpleAttributeDefinition HTTP_LISTENER = create(CommonAttributes.HTTP_LISTENER, ModelType.STRING)
             .setAllowNull(false)
@@ -57,7 +52,9 @@ public class HTTPAcceptorDefinition extends SimpleResourceDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { HTTP_LISTENER };
 
-    HTTPAcceptorDefinition(final boolean registerRuntimeOnly) {
+    static final HTTPAcceptorDefinition INSTANCE = new HTTPAcceptorDefinition();
+
+    private HTTPAcceptorDefinition() {
         super(PATH,
                 new StandardResourceDescriptionResolver(CommonAttributes.ACCEPTOR, MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
                     @Override
@@ -65,21 +62,7 @@ public class HTTPAcceptorDefinition extends SimpleResourceDefinition {
                         return bundle.getString(HTTP_ACCEPTOR);
                     }
                 },
-                HTTPAcceptorAdd.INSTANCE,
-                HTTPAcceptorRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-
-        OperationStepHandler attributeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, attributeHandler);
-            }
-        }
+                ATTRIBUTES);
     }
 
     @Override

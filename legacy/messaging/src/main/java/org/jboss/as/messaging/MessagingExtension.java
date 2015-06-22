@@ -33,13 +33,10 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_1_5;
 import static org.jboss.as.messaging.Namespace.MESSAGING_2_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_3_0;
 
-import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -58,7 +55,7 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * Domain extension that integrates HornetQ.
  *
  * <dl>
- *   <dt><strong>Current</strong> - WildFly 10</dt>
+ *   <dt><strong>Current</strong> - WildFly 9 / 10</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:3.0
@@ -164,60 +161,46 @@ public class MessagingExtension implements Extension {
         rootRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // HQ servers
-        final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(new HornetQServerResourceDefinition(registerRuntimeOnly));
-
-        // Runtime addresses
-        if (registerRuntimeOnly) {
-            final ManagementResourceRegistration coreAddress = serverRegistration.registerSubModel(new CoreAddressDefinition());
-            coreAddress.setRuntimeOnly(true);
-        }
+        final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(HornetQServerResourceDefinition.INSTANCE);
 
         // Address settings
-        serverRegistration.registerSubModel(new AddressSettingDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(AddressSettingDefinition.INSTANCE);
 
         // Broadcast groups
-        serverRegistration.registerSubModel(new BroadcastGroupDefinition(registerRuntimeOnly));
-        // getConnectorPairs, -- no, this is just the same as attribute connector-refs
+        serverRegistration.registerSubModel(BroadcastGroupDefinition.INSTANCE);
 
         // Discovery groups
-        serverRegistration.registerSubModel(new DiscoveryGroupDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(DiscoveryGroupDefinition.INSTANCE);
 
         // Diverts
-        serverRegistration.registerSubModel(new DivertDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(DivertDefinition.INSTANCE);
 
         // Core queues
-        serverRegistration.registerSubModel(QueueDefinition.newQueueDefinition(registerRuntimeOnly));
-        // getExpiryAddress, setExpiryAddress, getDeadLetterAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
-
-        // Runtime core queues
-        if (registerRuntimeOnly) {
-            final ManagementResourceRegistration runtimeQueue = serverRegistration.registerSubModel(QueueDefinition.newRuntimeQueueDefinition(registerRuntimeOnly));
-            runtimeQueue.setRuntimeOnly(true);
-        }
+        serverRegistration.registerSubModel(QueueDefinition.INSTANCE);
 
         // Acceptors
-        serverRegistration.registerSubModel(new HTTPAcceptorDefinition(registerRuntimeOnly));
-        serverRegistration.registerSubModel(GenericTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
-        serverRegistration.registerSubModel(RemoteTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
-        serverRegistration.registerSubModel(InVMTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(HTTPAcceptorDefinition.INSTANCE);
+        serverRegistration.registerSubModel(GenericTransportDefinition.ACCEPTOR_INSTANCE);
+        serverRegistration.registerSubModel(RemoteTransportDefinition.ACCEPTOR_INSTANCE);
+        serverRegistration.registerSubModel(InVMTransportDefinition.ACCEPTOR_INSTANCE);
 
         // Connectors
-        serverRegistration.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
-        serverRegistration.registerSubModel(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        serverRegistration.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        serverRegistration.registerSubModel(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(HTTPConnectorDefinition.INSTANCE);
+        serverRegistration.registerSubModel(GenericTransportDefinition.CONNECTOR_INSTANCE);
+        serverRegistration.registerSubModel(RemoteTransportDefinition.CONNECTOR_INSTANCE);
+        serverRegistration.registerSubModel(InVMTransportDefinition.CONNECTOR_INSTANCE);
 
         // Bridges
-        serverRegistration.registerSubModel(new BridgeDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(BridgeDefinition.INSTANCE);
 
         // Cluster connections
-        serverRegistration.registerSubModel(new ClusterConnectionDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(ClusterConnectionDefinition.INSTANCE);
 
         // Grouping Handler
-        serverRegistration.registerSubModel(new GroupingHandlerDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(GroupingHandlerDefinition.INSTANCE);
 
         // Connector services
-        serverRegistration.registerSubModel(new ConnectorServiceDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(ConnectorServiceDefinition.INSTANCE);
 
         // Messaging paths
         //todo, shouldn't we leverage Path service from AS? see: package org.jboss.as.controller.services.path
@@ -234,37 +217,20 @@ public class MessagingExtension implements Extension {
         }
 
         // Connection factories
-        serverRegistration.registerSubModel(new ConnectionFactoryDefinition(registerRuntimeOnly));
-        // getJNDIBindings (no -- same as "entries")
+        serverRegistration.registerSubModel(ConnectionFactoryDefinition.INSTANCE);
 
         // Resource Adapter Pooled connection factories
-        serverRegistration.registerSubModel(new PooledConnectionFactoryDefinition(registerRuntimeOnly, false));
-        // TODO how do ConnectionFactoryControl things relate?
+        serverRegistration.registerSubModel(PooledConnectionFactoryDefinition.INSTANCE);
 
         // JMS Queues
-        serverRegistration.registerSubModel(new JMSQueueDefinition(registerRuntimeOnly));
-        // setExpiryAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
-        // getJNDIBindings (no -- same as "entries")
-
+        serverRegistration.registerSubModel(JMSQueueDefinition.INSTANCE);
         // JMS Topics
-        serverRegistration.registerSubModel(new JMSTopicDefinition(registerRuntimeOnly));
-        // getJNDIBindings (no -- same as "entries")
+        serverRegistration.registerSubModel(JMSTopicDefinition.INSTANCE);
 
-        serverRegistration.registerSubModel(new SecuritySettingDefinition(registerRuntimeOnly));
-
-        if (registerRuntimeOnly) {
-
-            ResourceDefinition deploymentsDef = new SimpleResourceDefinition(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed"), null, null, new DeprecationData(DEPRECATED_SINCE));
-            final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
-            final ManagementResourceRegistration serverModel = deploymentsRegistration.registerSubModel(new HornetQServerResourceDefinition(true));
-
-            serverModel.registerSubModel(JMSQueueDefinition.newDeployedJMSQueueDefinition());
-            serverModel.registerSubModel(JMSTopicDefinition.newDeployedJMSTopicDefinition());
-            serverModel.registerSubModel(new PooledConnectionFactoryDefinition(true, true));
-        }
+        serverRegistration.registerSubModel(SecuritySettingDefinition.INSTANCE);
 
         // JMS Bridges
-        rootRegistration.registerSubModel(new JMSBridgeDefinition());
+        rootRegistration.registerSubModel(JMSBridgeDefinition.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             MessagingTransformers.registerTransformers(subsystem);

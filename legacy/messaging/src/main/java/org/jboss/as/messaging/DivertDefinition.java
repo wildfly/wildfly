@@ -28,11 +28,9 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -40,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class DivertDefinition extends SimpleResourceDefinition {
+public class DivertDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DIVERT);
 
@@ -72,24 +70,12 @@ public class DivertDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTES = { ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, CommonAttributes.FILTER,
         CommonAttributes.TRANSFORMER_CLASS_NAME, EXCLUSIVE };
 
-    private final boolean registerRuntimeOnly;
+    static final DivertDefinition INSTANCE = new DivertDefinition();
 
-    public DivertDefinition(boolean registerRuntimeOnly) {
+    public DivertDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DIVERT),
-                DivertAdd.INSTANCE,
-                DivertRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, DivertConfigurationWriteHandler.INSTANCE);
-            }
-        }
     }
 }

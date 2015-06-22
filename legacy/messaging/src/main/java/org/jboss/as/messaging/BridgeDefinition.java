@@ -32,14 +32,16 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -47,11 +49,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class BridgeDefinition extends SimpleResourceDefinition {
+public class BridgeDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.BRIDGE);
-
-    private final boolean registerRuntimeOnly;
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(STATIC_CONNECTORS, STRING)
             .setAllowNull(true)
@@ -147,39 +147,19 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE };
 
-    public BridgeDefinition(final boolean registerRuntimeOnly) {
+    static final BridgeDefinition INSTANCE = new BridgeDefinition();
+
+    private BridgeDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BRIDGE),
-                BridgeAdd.INSTANCE,
-                BridgeRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                new ModelOnlyAddStepHandler(ATTRIBUTES) {
+                    @Override
+                    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+                        super.populateModel(context, operation, resource);
+                        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), DISCOVERY_GROUP_NAME.getName(), false);
+                    }
+                },
+                ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                if (attr == CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN) {
-                    registry.registerReadWriteAttribute(attr, null, DeprecatedAttributeWriteHandler.INSTANCE);
-                } else {
-                    registry.registerReadWriteAttribute(attr, null, BridgeWriteAttributeHandler.INSTANCE);
-                }
-            }
-        }
-
-        if (registerRuntimeOnly) {
-            BridgeControlHandler.INSTANCE.registerAttributes(registry);
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry) {
-        if (registerRuntimeOnly) {
-            BridgeControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
-        }
-
-        super.registerOperations(registry);
     }
 }

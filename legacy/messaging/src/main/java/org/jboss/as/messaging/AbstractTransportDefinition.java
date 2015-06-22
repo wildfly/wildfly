@@ -27,12 +27,9 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -40,9 +37,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public abstract class AbstractTransportDefinition extends SimpleResourceDefinition {
+public abstract class AbstractTransportDefinition extends ModelOnlyResourceDefinition {
 
-    private final boolean registerRuntimeOnly;
     private final AttributeDefinition[] attrs;
     protected final boolean isAcceptor;
 
@@ -54,7 +50,7 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
      */
     protected abstract Set<String> getAllowedKeys();
 
-    protected AbstractTransportDefinition(final boolean registerRuntimeOnly, final boolean isAcceptor, final String specificType, AttributeDefinition... attrs) {
+    protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, AttributeDefinition... attrs) {
         super(PathElement.pathElement(specificType),
                 new DeprecatedResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME, (isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
                         MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
@@ -63,37 +59,10 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
                         return bundle.getString(specificType);
                     }
                 },
-                new HornetQReloadRequiredHandlers.AddStepHandler(attrs),
-                new HornetQReloadRequiredHandlers.RemoveStepHandler());
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                attrs);
         this.isAcceptor = isAcceptor;
         this.attrs = attrs;
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-
-        OperationStepHandler attributeHandler = new ReloadRequiredWriteAttributeHandler(attrs);
-        for (AttributeDefinition attr : attrs) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, attributeHandler);
-            }
-        }
-
-        if (isAcceptor && registerRuntimeOnly) {
-            AcceptorControlHandler.INSTANCE.registerAttributes(registry);
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry) {
-        if (isAcceptor && registerRuntimeOnly) {
-            AcceptorControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
-        }
-
-        super.registerOperations(registry);
     }
 
     @Override

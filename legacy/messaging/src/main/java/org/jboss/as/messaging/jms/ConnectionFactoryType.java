@@ -47,7 +47,8 @@ public enum ConnectionFactoryType {
     XA_TOPIC(TOPIC_XA_CF);
 
     private final JMSFactoryType type;
-    private ConnectionFactoryType(JMSFactoryType type) {
+
+    ConnectionFactoryType(JMSFactoryType type) {
         this.type = type;
     }
 

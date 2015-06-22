@@ -24,18 +24,16 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class GroupingHandlerDefinition extends SimpleResourceDefinition {
+public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
 
@@ -82,30 +80,18 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<GroupingHandlerConfiguration.TYPE>(GroupingHandlerConfiguration.TYPE.class, false, true))
+            .setValidator(new EnumValidator<>(GroupingHandlerConfiguration.TYPE.class, false, true))
             .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT, GROUP_TIMEOUT, REAPER_PERIOD };
 
-    private final boolean registerRuntimeOnly;
+    static final GroupingHandlerDefinition INSTANCE = new GroupingHandlerDefinition();
 
-    public GroupingHandlerDefinition(final boolean registerRuntimeOnly) {
+    private GroupingHandlerDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.GROUPING_HANDLER),
-                GroupingHandlerAdd.INSTANCE,
-                GroupingHandlerRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+                ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, GroupingHandlerWriteAttributeHandler.INSTANCE);
-            }
-        }
     }
 }

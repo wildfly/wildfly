@@ -25,11 +25,9 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -37,7 +35,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class ConnectorServiceParamDefinition extends SimpleResourceDefinition {
+public class ConnectorServiceParamDefinition extends ModelOnlyResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.PARAM);
 
@@ -49,20 +47,12 @@ public class ConnectorServiceParamDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = { VALUE };
 
-    public ConnectorServiceParamDefinition() {
+    static final ConnectorServiceParamDefinition INSTANCE = new ConnectorServiceParamDefinition();
+
+    private ConnectorServiceParamDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTOR_SERVICE, CommonAttributes.PARAM),
-                new HornetQReloadRequiredHandlers.AddStepHandler(ATTRIBUTES),
-                new HornetQReloadRequiredHandlers.RemoveStepHandler());
+                ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-        OperationStepHandler writeHandler = new HornetQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, writeHandler);
-        }
     }
 }
