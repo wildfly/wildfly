@@ -206,6 +206,7 @@
         <xs:attribute name="disable-caching-for-secured-pages" type="xs:boolean" use="optional" default="true"/>
         <xs:attribute name="directory-listing" type="xs:boolean" use="optional" />
         <xs:attribute name="proactive-authentication" type="xs:string" use="optional" default="false" />
+        <xs:attribute name="session-id-length" type="xs:int" use="optional" default="30" />
     </xs:complexType>
 
     <xs:complexType name="mime-mappingsType">

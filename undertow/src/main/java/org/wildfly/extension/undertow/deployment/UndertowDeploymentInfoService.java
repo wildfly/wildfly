@@ -34,6 +34,7 @@ import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.ResourceManager;
+import io.undertow.server.session.SecureRandomSessionIdGenerator;
 import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.AuthMethodConfig;
@@ -314,6 +315,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     config.setComment(defaultSessionConfig.getComment());
                 }
             }
+            SecureRandomSessionIdGenerator sessionIdGenerator = new SecureRandomSessionIdGenerator();
+            sessionIdGenerator.setLength(container.getValue().getSessionIdLength());
+            deploymentInfo.setSessionIdGenerator(sessionIdGenerator);
 
             boolean sessionTimeoutSet = false;
             if (sessionConfig != null) {
