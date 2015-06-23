@@ -56,7 +56,7 @@ import com.arjuna.orbportability.ORB;
 import com.sun.corba.se.impl.orbutil.ORBConstants;
 
 public class Util {
-    public static final String HOST = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node0", "localhost"));
+    public static final String HOST = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node1", "localhost"));
     private static ORB orb = null;
 
     // Recovery manager is needed till the end of orb usage
