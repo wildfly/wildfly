@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.domain.mixed.eap630;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -42,14 +43,15 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.ee.subsystem.EeExtension;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
-import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
+import org.jboss.as.test.integration.domain.mixed.LegacySubsystemConfigurationUtil;
 import org.jboss.as.weld.WeldExtension;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.batch.BatchSubsystemExtension;
 import org.wildfly.extension.beanvalidation.BeanValidationExtension;
 import org.wildfly.extension.io.IOExtension;
+import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 import org.wildfly.extension.security.manager.SecurityManagerExtension;
 import org.wildfly.extension.undertow.UndertowExtension;
@@ -73,12 +75,12 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.addAll(adjustInfinispan(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
         list.addAll(removeIo(profileAddress.append(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
-        list.addAll(adjustMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustRemoting(profileAddress.append(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustWeld(profileAddress.append(SUBSYSTEM, WeldExtension.SUBSYSTEM_NAME)));
         list.addAll(removeRequestController(profileAddress.append(SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME)));
         list.addAll(removeSecurityManager(profileAddress.append(SecurityManagerExtension.SUBSYSTEM_PATH)));
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
+        list.addAll(replaceActiveMqWithMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
 
 
         //Temporary workaround, something weird is going on in infinispan/jgroups so let's get rid of those for now
@@ -88,6 +90,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
 
         return list;
     }
+
 
 
     private Collection<? extends ModelNode> removeBatch(final PathAddress subsystem) {
@@ -238,22 +241,6 @@ public class DomainAdjuster630 extends DomainAdjuster {
         return list;
     }
 
-    private List<ModelNode> adjustMessaging(final PathAddress subsystem) throws Exception {
-        final List<ModelNode> list = new ArrayList<>();
-        //http acceptors and connectors are not available
-        PathAddress server = subsystem.append("hornetq-server", "default");
-        list.add(createRemoveOperation(server.append("http-acceptor", "http-acceptor")));
-        list.add(createRemoveOperation(server.append("http-acceptor", "http-acceptor-throughput")));
-        list.add(createRemoveOperation(server.append("http-connector", "http-connector")));
-        list.add(createRemoveOperation(server.append("http-connector", "http-connector-throughput")));
-
-        //TODO here we should add a remote connector, for now use the in-vm one
-        list.add(getWriteAttributeOperation(server.append("broadcast-group", "bg-group1"), "connectors",
-                new ModelNode().add("in-vm")));
-
-        return list;
-    }
-
     private Collection<? extends ModelNode> adjustRemoting(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
         //The endpoint configuration does not exist
@@ -326,6 +313,40 @@ public class DomainAdjuster630 extends DomainAdjuster {
 
         return list;
     }
+
+    private Collection<? extends ModelNode> replaceActiveMqWithMessaging(PathAddress subsystem) throws Exception {
+        final List<ModelNode> list = new ArrayList<>();
+        //messaging-activemq does not exist, remove it and the extension
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.messaging-activemq")));
+
+        //Add legacy messaging extension
+        list.add(createAddOperation(PathAddress.pathAddress(EXTENSION, "org.jboss.as.messaging")));
+
+        //Get the subsystem add operations (since the subsystem is huge, and there is a template, use the util)
+        LegacySubsystemConfigurationUtil util =
+                new LegacySubsystemConfigurationUtil(
+                        new org.jboss.as.messaging.MessagingExtension(), "messaging", "ha", "subsystem-templates/messaging.xml");
+
+        list.addAll(util.getSubsystemOperations());
+
+
+        //Now adjust the things from the template which are not available in the legacy server
+
+        //http acceptors and connectors are not available
+        PathAddress messaging = PathAddress.pathAddress(PROFILE, "full-ha").append(SUBSYSTEM, "messaging");
+        PathAddress server = messaging.append("hornetq-server", "default");
+        list.add(createRemoveOperation(server.append("http-acceptor", "http-acceptor")));
+        list.add(createRemoveOperation(server.append("http-acceptor", "http-acceptor-throughput")));
+        list.add(createRemoveOperation(server.append("http-connector", "http-connector")));
+        list.add(createRemoveOperation(server.append("http-connector", "http-connector-throughput")));
+        //TODO here we should add a remote connector, for now use the in-vm one
+        list.add(getWriteAttributeOperation(server.append("broadcast-group", "bg-group1"), "connectors",
+                new ModelNode().add("in-vm")));
+
+        return list;
+    }
+
 
     private Collection<? extends ModelNode> adjustWeld(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
