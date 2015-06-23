@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
@@ -37,6 +36,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_D
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECURITY_SETTING;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.PATHS;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.RELATIVE_TO;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_PASSWORD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_USER;
@@ -44,6 +44,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.CONNECTI
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_BINDINGS_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_JOURNAL_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ID_CACHE_SIZE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_MANAGEMENT_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_BUFFER_SIZE;
@@ -102,7 +103,7 @@ import org.apache.activemq.artemis.core.security.Role;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -136,26 +137,33 @@ import org.wildfly.extension.messaging.activemq.jms.JMSService;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-class ServerAdd implements OperationStepHandler {
+class ServerAdd extends AbstractAddStepHandler {
 
     static final String PATH_BASE = "paths";
 
     public static final ServerAdd INSTANCE = new ServerAdd();
 
     private ServerAdd() {
+        super(ServerDefinition.ATTRIBUTES);
     }
 
-    /** {@inheritDoc */
-    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-
-        // We use a custom Resource impl so we can expose runtime ActiveMQ components (e.g. AddressControl) as child resources
-        final ActiveMQServerResource resource = new ActiveMQServerResource();
+    @Override
+    protected Resource createResource(OperationContext context) {
+        ActiveMQServerResource resource = new ActiveMQServerResource();
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
-        final ModelNode model = resource.getModel();
+        return resource;
+    }
 
-        for (final AttributeDefinition attributeDefinition : ServerDefinition.ATTRIBUTES) {
-            attributeDefinition.validateAndSet(operation, model);
-        }
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        context.registerCapability(ACTIVEMQ_SERVER_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue()), null);
+    }
+
+    @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
 
         if (context.isNormalServer()) {
             // add an operation to create all the messaging paths resources that have not been already been created
@@ -172,15 +180,11 @@ class ServerAdd implements OperationStepHandler {
                     }
                 }
             }, OperationContext.Stage.MODEL);
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    performRuntime(context, resource);
-                }
-            }, OperationContext.Stage.RUNTIME);
         }
     }
 
-    private void performRuntime(final OperationContext context, final ActiveMQServerResource resource) throws OperationFailedException {
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         // Add a RUNTIME step to actually install the ActiveMQ Service. This will execute after the runtime step
         // added by any child resources whose ADD handler executes after this one in the model stage.
         context.addStep(new OperationStepHandler() {
@@ -188,7 +192,7 @@ class ServerAdd implements OperationStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                final String serverName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+                final String serverName = context.getCurrentAddressValue();
 
                 // Transform the configuration based on the recursive model
                 final ModelNode model = Resource.Tools.readModel(resource);
@@ -210,8 +214,11 @@ class ServerAdd implements OperationStepHandler {
 
                 // Add the ActiveMQ Service
                 ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(serverName);
-                final ServiceBuilder<ActiveMQServer> serviceBuilder = serviceTarget.addService(activeMQServiceName, serverService)
-                        .addDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, serverService.getMBeanServer());
+                final ServiceBuilder<ActiveMQServer> serviceBuilder = serviceTarget.addService(activeMQServiceName, serverService);
+                if (context.hasOptionalCapability(JMX_CAPABILITY, ACTIVEMQ_SERVER_CAPABILITY.getDynamicName(serverName), null)) {
+                    ServiceName jmxCapability = context.getCapabilityServiceName(JMX_CAPABILITY, MBeanServer.class);
+                    serviceBuilder.addDependency(jmxCapability, MBeanServer.class, serverService.getMBeanServer());
+                }
 
                 serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, serverService.getPathManagerInjector());
 
@@ -298,7 +305,7 @@ class ServerAdd implements OperationStepHandler {
                 // Install the ActiveMQ Service
                 ServiceController<ActiveMQServer> activeMQServerServiceController = serviceBuilder.install();
                 // Provide our custom Resource impl a ref to the ActiveMQ server so it can create child runtime resources
-                resource.setActiveMQServerServiceController(activeMQServerServiceController);
+                ((ActiveMQServerResource)resource).setActiveMQServerServiceController(activeMQServerServiceController);
 
                 // Install the JMSService
                 boolean overrideInVMSecurity = OVERRIDE_IN_VM_SECURITY.resolveModelAttribute(context, operation).asBoolean();
