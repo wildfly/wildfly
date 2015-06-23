@@ -34,6 +34,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DUMP_QUEUED_THREADS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_ADD_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
@@ -136,7 +137,11 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                     if (DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED.contains(attribute)) {
                         resourceRegistration.registerReadWriteAttribute(attribute, null, reloadRequiredWriteAttributeHandler);
                     } else {
-                        resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredWriteHandler);
+                        if (attribute.equals(ENABLED)) {
+                            resourceRegistration.registerReadWriteAttribute(attribute, null, new EnableAttributeWriteHandler(false, ENABLED));
+                        } else {
+                            resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredWriteHandler);
+                        }
                     }
                 }
             }

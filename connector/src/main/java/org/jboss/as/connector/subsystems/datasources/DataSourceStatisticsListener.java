@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.as.connector.dynamicresource.StatisticsResourceDefinition;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
@@ -65,12 +66,12 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                 int poolStatsSize = poolStats.getNames().size();
                 if (jdbcStatsSize > 0 || poolStatsSize > 0) {
                     if (overrideRegistration != null) {
-                        if (jdbcStatsSize > 0) {
+                        if (jdbcStatsSize > 0 && overrideRegistration.getSubModel(PathAddress.pathAddress(JDBC_STATISTICS)) == null) {
                             ManagementResourceRegistration jdbcRegistration = overrideRegistration.registerSubModel(new StatisticsResourceDefinition(JDBC_STATISTICS,DataSourcesSubsystemProviders.RESOURCE_NAME, jdbcStats));
                             jdbcRegistration.setRuntimeOnly(true);
                         }
 
-                        if (poolStatsSize > 0) {
+                        if (poolStatsSize > 0 && overrideRegistration.getSubModel(PathAddress.pathAddress(POOL_STATISTICS)) == null) {
                             ManagementResourceRegistration poolRegistration = overrideRegistration.registerSubModel(new StatisticsResourceDefinition(POOL_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, poolStats));
                             poolRegistration.setRuntimeOnly(true);
                         }
