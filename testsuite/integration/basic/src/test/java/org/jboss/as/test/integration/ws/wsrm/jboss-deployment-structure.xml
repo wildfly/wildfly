@@ -1,0 +1,18 @@
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="org.apache.cxf" export="true">
+                <imports>
+                    <include path="META-INF**"/>
+                    <include path="org**"/>
+                </imports>
+            </module>
+            <module name="org.apache.cxf.impl" export="true">
+                <imports>
+                    <include path="META-INF**"/>
+                    <include path="org**"/>
+                </imports>
+            </module>
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
