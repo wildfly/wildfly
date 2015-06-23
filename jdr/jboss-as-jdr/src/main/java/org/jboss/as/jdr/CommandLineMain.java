@@ -112,9 +112,11 @@ public class CommandLineMain {
             String startTime = result.get("start-time").asString();
             String endTime = result.get("end-time").asString();
             String reportLocation = result.get("report-location").asString();
+            String jdrUuid = result.get("jdr-uuid").asString();
             System.out.println("JDR started: " + startTime);
             System.out.println("JDR ended: " + endTime);
             System.out.println("JDR location: " + reportLocation);
+            System.out.println("JDR uuid: " + jdrUuid);
         } catch(IllegalStateException ise) {
             System.out.println(ise.getMessage());
 
@@ -127,6 +129,7 @@ public class CommandLineMain {
                 System.out.println("JDR started: " + response.getStartTime().toString());
                 System.out.println("JDR ended: " + response.getEndTime().toString());
                 System.out.println("JDR location: " + response.getLocation());
+                System.out.println("JDR uuid: " + response.getJdrUuid());
             } catch (OperationFailedException e) {
                 System.out.println("Failed to complete the JDR report: " + e.getMessage());
             }

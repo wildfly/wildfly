@@ -44,7 +44,7 @@ public class JdrReportRequestHandler implements OperationStepHandler {
     static final JdrReportRequestHandler INSTANCE = new JdrReportRequestHandler();
 
     static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JdrReportExtension.getResourceDescriptionResolver())
-            .setReplyParameters(CommonAttributes.START_TIME, CommonAttributes.END_TIME, CommonAttributes.REPORT_LOCATION)
+            .setReplyParameters(CommonAttributes.START_TIME, CommonAttributes.END_TIME, CommonAttributes.REPORT_LOCATION, CommonAttributes.JDR_UUID)
             .setReadOnly()
             .setRuntimeOnly()
             .addAccessConstraint(JdrReportExtension.JDR_SENSITIVITY_DEF)
@@ -78,6 +78,9 @@ public class JdrReportRequestHandler implements OperationStepHandler {
                 }
                 if (report.getEndTime() != null) {
                     response.get("end-time").set(report.getEndTime().toString());
+                }
+                if (report.getJdrUuid() != null) {
+                    response.get("jdr-uuid").set(report.getJdrUuid().toString());
                 }
                 response.get("report-location").set(report.getLocation());
 
