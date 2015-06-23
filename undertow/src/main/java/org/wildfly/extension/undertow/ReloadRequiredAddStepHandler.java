@@ -22,44 +22,40 @@
 
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * Global welcome file definition
- *
- * @author Stuart Douglas
+ * @author Paul Ferraro
  */
-class WelcomeFileDefinition extends PersistentResourceDefinition {
+public class ReloadRequiredAddStepHandler extends AbstractAddStepHandler {
 
-    static final WelcomeFileDefinition INSTANCE = new WelcomeFileDefinition();
+    public ReloadRequiredAddStepHandler(AttributeDefinition... attributes) {
+        super(attributes);
+    }
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
-
-    };
-
-    static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
-
-    static {
-        for (SimpleAttributeDefinition attr : ATTRIBUTES) {
-            ATTRIBUTES_MAP.put(attr.getName(), attr);
-        }
+    public ReloadRequiredAddStepHandler(Collection<AttributeDefinition> attributes) {
+        super(attributes);
     }
 
 
-    private WelcomeFileDefinition() {
-        super(UndertowExtension.PATH_WELCOME_FILE,
-                UndertowExtension.getResolver(Constants.WELCOME_FILE), new ReloadRequiredAddStepHandler(), new ReloadRequiredRemoveStepHandler());
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return !context.isBooting() && super.requiresRuntime(context);
     }
 
     @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES_MAP.values();
+    protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        context.reloadRequired();
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        context.revertReloadRequired();
     }
 }

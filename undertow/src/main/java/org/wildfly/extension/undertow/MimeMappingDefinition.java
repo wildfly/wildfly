@@ -23,9 +23,8 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyAddStepHandler;
-import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -66,7 +65,7 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
 
     private MimeMappingDefinition() {
         super(UndertowExtension.PATH_MIME_MAPPING,
-                UndertowExtension.getResolver(Constants.MIME_MAPPING), new ModelOnlyAddStepHandler(ATTRIBUTES), new ModelOnlyRemoveStepHandler());
+                UndertowExtension.getResolver(Constants.MIME_MAPPING), new ReloadRequiredAddStepHandler(ATTRIBUTES), new ReloadRequiredRemoveStepHandler());
     }
 
     @Override
