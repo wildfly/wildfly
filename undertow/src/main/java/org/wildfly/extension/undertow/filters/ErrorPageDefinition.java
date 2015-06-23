@@ -73,7 +73,11 @@ public class ErrorPageDefinition extends Filter{
         String path = model.get(PATH.getName()).asString();
         FileErrorPageHandler handler = new FileErrorPageHandler(Paths.get(path).toFile(), code);
         handler.setNext(next);
-        return Handlers.predicate(predicate, handler, next);
+        if(predicate == null) {
+            return handler;
+        } else {
+            return Handlers.predicate(predicate, handler, next);
+        }
 
     }
 
