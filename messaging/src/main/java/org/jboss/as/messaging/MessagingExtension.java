@@ -58,7 +58,7 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * Domain extension that integrates HornetQ.
  *
  * <dl>
- *   <dt><strong>Current</strong> - WildFly 9</dt>
+ *   <dt><strong>Current</strong> - WildFly 10</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:3.0

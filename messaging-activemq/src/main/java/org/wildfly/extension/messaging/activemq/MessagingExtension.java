@@ -78,7 +78,7 @@ import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
  * Domain extension that integrates Apache ActiveMQ 6.
  *
  * <dl>
- *   <dt><strong>Current</strong> - WildFly 9</dt>
+ *   <dt><strong>Current</strong> - WildFly 10</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging-activemq:1.0
