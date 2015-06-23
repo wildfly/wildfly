@@ -22,23 +22,23 @@
 
 package org.jboss.as.test.shared;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.xnio.IoUtils;
-
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
+import org.xnio.IoUtils;
 
 /**
  * @author Stuart Douglas
@@ -48,8 +48,12 @@ public class ServerReload {
     public static final int TIMEOUT = 100000;
 
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client) {
+        executeReloadAndWaitForCompletion(client, TIMEOUT);
+    }
+
+    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout) {
         executeReload(client);
-        waitForLiveServerToReload(TIMEOUT);
+        waitForLiveServerToReload(timeout);
     }
 
     private static void executeReload(ModelControllerClient client) {
