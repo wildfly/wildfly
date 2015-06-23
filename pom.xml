@@ -223,7 +223,7 @@
         <version.org.slf4j>1.7.7.jbossorg-1</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.1.1</version.org.testng>
-        <version.org.wildfly.build-tools>1.0.0.Final</version.org.wildfly.build-tools>
+        <version.org.wildfly.build-tools>1.1.0.Beta1</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.3.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>2.0.0.Alpha4</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.CR1</version.org.wildfly.arquillian>
