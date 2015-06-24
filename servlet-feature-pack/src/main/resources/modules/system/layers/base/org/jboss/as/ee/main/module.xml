@@ -58,5 +58,6 @@
         <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.vfs"/>
         <module name="org.picketbox"/>
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
