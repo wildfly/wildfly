@@ -1036,24 +1036,12 @@ public class Utils extends CoreUtils {
     }
 
     /**
-     * Returns installed login configuration. This is workaround for Oracle JDK 6 behavior where
-     * {@link Configuration#getConfiguration()} throws a {@link SecurityException} when no configuration is installed and the
-     * default login configuration (file) is not found.
+     * Returns installed login configuration.
      *
-     * @return Configuration (may be <code>null</code>)
+     * @return Configuration
      */
     public static Configuration getLoginConfiguration() {
-        Configuration configuration = null;
-        try {
-            configuration = Configuration.getConfiguration();
-        } catch (SecurityException e) {
-            if (SystemUtils.IS_JAVA_1_6 && !IBM_JDK) {
-                LOGGER.debug("Unable to load default login configuration", e);
-            } else {
-                throw e;
-            }
-        }
-        return configuration;
+        return Configuration.getConfiguration();
     }
 
     /**
