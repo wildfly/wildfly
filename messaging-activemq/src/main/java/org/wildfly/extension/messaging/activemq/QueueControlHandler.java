@@ -25,12 +25,9 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.createNonEmptyStringAttribute;
-import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeReadOnlyOperation;
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.forwardToRuntimeQueue;
 import static org.jboss.dmr.ModelType.INT;
-import static org.jboss.dmr.ModelType.LIST;
 import static org.jboss.dmr.ModelType.LONG;
-import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +38,8 @@ import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -56,9 +51,6 @@ import org.jboss.dmr.ModelType;
 public class QueueControlHandler extends AbstractQueueControlHandler<QueueControl> {
 
     public static final QueueControlHandler INSTANCE = new QueueControlHandler();
-
-    public static final String LIST_SCHEDULED_MESSAGES = "list-scheduled-messages";
-    public static final String LIST_SCHEDULED_MESSAGES_AS_JSON = "list-scheduled-messages-as-json";
 
     private static final AttributeDefinition MESSAGE_ID = create(CommonAttributes.MESSAGE_ID, LONG)
             .build();
@@ -110,21 +102,6 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
         };
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
-        super.registerOperations(registry, resolver);
-
-        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES, resolver)
-                .setReplyType(LIST)
-                .setReplyParameters(getReplyMessageParameterDefinitions())
-                .build(),
-                this);
-        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES_AS_JSON, resolver)
-                .setReplyType(STRING)
-                .build(),
-                this);
-    }
-
     /*
      * Do not check whether the queue resource exists.
      *
@@ -147,22 +124,7 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     @Override
     protected Object handleAdditionalOperation(String operationName, ModelNode operation, OperationContext context,
                                                QueueControl queueControl) throws OperationFailedException {
-        try {
-            if (LIST_SCHEDULED_MESSAGES.equals(operationName)) {
-                String json = queueControl.listScheduledMessagesAsJSON();
-                context.getResult().set(ModelNode.fromJSONString(json));
-            } else if (LIST_SCHEDULED_MESSAGES_AS_JSON.equals(operationName)) {
-                context.getResult().set(queueControl.listScheduledMessagesAsJSON());
-            } else {
-                // Bug
-                throwUnimplementedOperationException(operationName);
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            context.getFailureDescription().set(e.getLocalizedMessage());
-        }
-
+        throwUnimplementedOperationException(operationName);
         return null;
     }
 
@@ -290,6 +252,16 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
             @Override
             public String listConsumersAsJSON() throws Exception {
                 return control.listConsumersAsJSON();
+            }
+
+            @Override
+            public String listScheduledMessagesAsJSON() throws Exception {
+                return control.listScheduledMessagesAsJSON();
+            }
+
+            @Override
+            public String listDeliveringMessagesAsJSON() throws Exception {
+                return control.listDeliveringMessagesAsJSON();
             }
         };
     }

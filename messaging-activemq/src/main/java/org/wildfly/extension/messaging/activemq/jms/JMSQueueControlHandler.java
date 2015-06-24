@@ -178,6 +178,16 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<JMSQueue
             public String listConsumersAsJSON() throws Exception {
                 return control.listConsumersAsJSON();
             }
+
+            @Override
+            public String listScheduledMessagesAsJSON() throws Exception {
+                return control.listScheduledMessagesAsJSON();
+            }
+
+            @Override
+            public String listDeliveringMessagesAsJSON() throws Exception {
+                return control.listDeliveringMessagesAsJSON();
+            }
         };
     }
 
