@@ -64,7 +64,14 @@ public class ConnectorServices {
 
     public static final ServiceName WORKMANAGER_SERVICE = ServiceName.JBOSS.append("connector", "workmanager");
 
+    public static final ServiceName WORKMANAGER_STATS_SERVICE = WORKMANAGER_SERVICE.append("statistics");
+
+    public static final ServiceName DISTRIBUTED_WORKMANAGER_STATS_SERVICE = WORKMANAGER_SERVICE.append("distributed-statistics");
+
     public static final ServiceName RESOURCE_ADAPTER_SERVICE_PREFIX = ServiceName.JBOSS.append("ra");
+
+    public static final String STATISTICS_SUFFIX = "STATISTICS";
+
 
     public static final ServiceName RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX = RESOURCE_ADAPTER_SERVICE_PREFIX
             .append("deployment");
@@ -82,6 +89,8 @@ public class ConnectorServices {
      * MDR service name *
      */
     public static final ServiceName IRONJACAMAR_MDR = ServiceName.JBOSS.append("ironjacamar", "mdr");
+
+    public static final ServiceName IRONJACAMAR_RESOURCE = ServiceName.JBOSS.append("ironjacamar", "resource");
 
     public static final ServiceName RA_REPOSITORY_SERVICE = ServiceName.JBOSS.append("rarepository");
 

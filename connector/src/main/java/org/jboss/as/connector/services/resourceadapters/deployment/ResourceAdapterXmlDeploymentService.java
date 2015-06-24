@@ -104,7 +104,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                 raServiceName = ConnectorServices.getResourceAdapterServiceName(id);
                 this.connectorServicesRegistrationName = id;
             }
-            final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
+            final WildFlyRaXmlDeployer raDeployer = new WildFlyRaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
                 raName, root, module.getClassLoader(), cmd, localRaXml, deploymentServiceName);
 
             raDeployer.setConfiguration(config.getValue());
@@ -152,13 +152,13 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     }
 
 
-    private class AS7RaXmlDeployer extends AbstractAS7RaDeployer {
+    private class WildFlyRaXmlDeployer extends AbstractWildFlyRaDeployer {
 
         private final Activation activation;
 
 
-        public AS7RaXmlDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd, Activation activation,  final ServiceName deploymentServiceName) {
+        public WildFlyRaXmlDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
+                                    Connector cmd, Activation activation, final ServiceName deploymentServiceName) {
             super(serviceTarget, url, deploymentName, root, cl, cmd, deploymentServiceName);
             this.activation = activation;
         }

@@ -103,9 +103,11 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
         ModelNode statAddress = new ModelNode();
         statAddress.add(DEPLOYMENT, arch)
                 .add(SUBSYSTEM, "resource-adapters")
-                .add("statistics", "statistics")
+                .add("ironjacamar", "ironjacamar")
                 .add("resource-adapter", arch)
-                .add("connection-definitions", cdName);
+                .add("connection-definitions", cdName)
+                .add("statistics", "pool");
+
         statAddress.protect();
         ModelNode operation = new ModelNode();
         operation.get(OP).set("write-attribute");
@@ -190,9 +192,10 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
         ModelNode statNode = new ModelNode();
         statNode.add(DEPLOYMENT, connectionNode.get(0).get(DEPLOYMENT).asString());
         statNode.add(SUBSYSTEM, "resource-adapters");
-        statNode.add("statistics", "statistics");
+        statNode.add("ironjacamar", "ironjacamar");
         statNode.add(connectionNode.get(3));
         statNode.add("connection-definitions", connectionNode.get(4).get("connection-definitions").asString());
+        statNode.add("statistics", "pool");
         return statNode;
     }
 }

@@ -149,7 +149,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         return deploymentMD;
     }
 
-    private class ResourceAdapterActivator extends AbstractAS7RaDeployer {
+    private class ResourceAdapterActivator extends AbstractWildFlyRaDeployer {
 
         private final Activation activation;
 

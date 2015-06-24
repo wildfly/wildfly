@@ -21,12 +21,16 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
+import org.jboss.as.connector.services.workmanager.statistics.WorkManagerStatisticsService;
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 import org.jboss.as.connector.services.workmanager.WorkManagerService;
+import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -49,6 +53,7 @@ public class WorkManagerAdd extends AbstractAddStepHandler {
 
     public static final WorkManagerAdd INSTANCE = new WorkManagerAdd();
 
+
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         for (JcaWorkManagerDefinition.WmParameters parameter : JcaWorkManagerDefinition.WmParameters.values()) {
@@ -57,9 +62,9 @@ public class WorkManagerAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
 
-        String name = JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
+        String name = JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().resolveModelAttribute(context, resource.getModel()).asString();
 
 
         ServiceTarget serviceTarget = context.getServiceTarget();
@@ -77,5 +82,19 @@ public class WorkManagerAdd extends AbstractAddStepHandler {
         builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
+
+
+        WorkManagerStatisticsService wmStatsService = new WorkManagerStatisticsService(context.getResourceRegistrationForUpdate(), name, true);
+        serviceTarget
+                .addService(ConnectorServices.WORKMANAGER_STATS_SERVICE.append(name), wmStatsService)
+                .addDependency(ConnectorServices.WORKMANAGER_SERVICE.append(name), WorkManager.class, wmStatsService.getWorkManagerInjector())
+                .setInitialMode(ServiceController.Mode.PASSIVE).install();
+        PathElement peLocaldWm = PathElement.pathElement(org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_NAME, "local");
+
+        final Resource wmResource = new IronJacamarResource.IronJacamarRuntimeResource();
+
+        if (!resource.hasChild(peLocaldWm))
+            resource.registerChild(peLocaldWm, wmResource);
+
     }
 }

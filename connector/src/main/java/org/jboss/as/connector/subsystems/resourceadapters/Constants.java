@@ -146,7 +146,7 @@ public class Constants {
 
     private static final String BEANVALIDATIONGROUPS_NAME = "beanvalidationgroups";
 
-    static final String ADMIN_OBJECTS_NAME = "admin-objects";
+    public static final String ADMIN_OBJECTS_NAME = "admin-objects";
 
     private static final String INTERLEAVING_NAME = "interleaving";
 
