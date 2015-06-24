@@ -21,17 +21,11 @@
  */
 package org.jboss.as.test.manualmode.web.ssl;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
 import static org.jboss.as.test.integration.security.common.Utils.makeCallWithHttpClient;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,8 +33,6 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.http.HttpServletResponse;
@@ -56,7 +48,6 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
@@ -68,9 +59,7 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
 import org.junit.Assume;
-import org.xnio.IoUtils;
 
 /**
  * Abstract class which serve as a base for CertificateLoginModule tests. It is
@@ -170,52 +159,6 @@ public abstract class AbstractCertificateLoginModuleTestCase {
     public static HttpClient getHttpsClient(File keystoreFile) {
         return SSLTruststoreUtil.getHttpClientWithSSL(keystoreFile, SecurityTestConstants.KEYSTORE_PASSWORD, CLIENT_TRUSTSTORE_FILE,
                 SecurityTestConstants.KEYSTORE_PASSWORD);
-    }
-
-    public void reloadServer(ModelControllerClient client, int timeout) throws Exception {
-        executeReload(client);
-        waitForLiveServerToReload(timeout);
-    }
-
-    private void executeReload(ModelControllerClient client) throws IOException {
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(OP).set("reload");
-        try {
-            ModelNode result = client.execute(operation);
-            Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
-        } catch (IOException e) {
-            final Throwable cause = e.getCause();
-            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
-                throw e;
-            } // else ignore, this might happen if the channel gets closed before we got the response
-        }
-    }
-
-    private void waitForLiveServerToReload(int timeout) throws Exception {
-        long start = System.currentTimeMillis();
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set("server-state");
-        while (System.currentTimeMillis() - start < timeout) {
-            ModelControllerClient liveClient = ModelControllerClient.Factory.create(TestSuiteEnvironment.getServerAddress(),
-                    TestSuiteEnvironment.getServerPort());
-            try {
-                ModelNode result = liveClient.execute(operation);
-                if ("running".equals(result.get(RESULT).asString())) {
-                    return;
-                }
-            } catch (IOException e) {
-            } finally {
-                IoUtils.safeClose(liveClient);
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-            }
-        }
-        fail("Live Server did not reload in the imparted time.");
     }
 
     static class HTTPSConnectorSetup implements ServerSetupTask {

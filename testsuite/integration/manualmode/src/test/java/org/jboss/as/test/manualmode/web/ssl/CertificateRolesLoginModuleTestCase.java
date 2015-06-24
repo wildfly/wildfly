@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.manualmode.web.ssl;
 
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -55,7 +57,7 @@ import org.junit.runner.RunWith;
  * Tests for {@link CertRolesLoginModule} which uses truststore with trusted
  * certificates for authentication of users and property file with users roles
  * for authorization.
- * 
+ *
  * @author Filip Bogyai
  */
 @RunWith(Arquillian.class)
@@ -103,14 +105,14 @@ public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLogi
         SecurityDomainsSetup.INSTANCE.setup(managementClient, CONTAINER);
 
         LOGGER.info("*** reloading server");
-        reloadServer(client, 100000);
+        executeReloadAndWaitForCompletion(client, 100000);
         deployer.deploy(APP_NAME);
     }
 
     /**
      * Test authentication against application which uses security domain with
      * configured {@link CertRolesLoginModule}.
-     * 
+     *
      */
     @Test
     @InSequence(1)
@@ -141,7 +143,7 @@ public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLogi
     /**
      * A {@link ServerSetupTask} instance which creates security domains for
      * this test case.
-     * 
+     *
      * @author Filip Bogyai
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
@@ -150,7 +152,7 @@ public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLogi
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override

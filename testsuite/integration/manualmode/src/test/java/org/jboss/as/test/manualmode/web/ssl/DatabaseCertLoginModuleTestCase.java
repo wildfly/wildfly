@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.manualmode.web.ssl;
 
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -62,7 +64,7 @@ import org.junit.runner.RunWith;
  * Tests for {@link DatabaseCertLoginModule} which uses truststore with trusted
  * certificates for authentication of users and database with users roles for
  * authorization.
- * 
+ *
  * @author Filip Bogyai
  */
 @RunWith(Arquillian.class)
@@ -110,14 +112,14 @@ public class DatabaseCertLoginModuleTestCase extends AbstractCertificateLoginMod
         SecurityDomainsSetup.INSTANCE.setup(managementClient, CONTAINER);
 
         LOGGER.info("*** reloading server");
-        reloadServer(client, 100000);
+        executeReloadAndWaitForCompletion(client, 100000);
         deployer.deploy(APP_NAME);
     }
 
     /**
      * Test authentication against application which uses security domain with
      * configured {@link DatabaseCertLoginModule}.
-     * 
+     *
      */
     @Test
     @InSequence(1)
@@ -150,7 +152,7 @@ public class DatabaseCertLoginModuleTestCase extends AbstractCertificateLoginMod
     /**
      * A {@link ServerSetupTask} instance which creates security domains for
      * this test case.
-     * 
+     *
      * @author Filip Bogyai
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
@@ -159,7 +161,7 @@ public class DatabaseCertLoginModuleTestCase extends AbstractCertificateLoginMod
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override

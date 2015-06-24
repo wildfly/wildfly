@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.web.response;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 
 import java.net.URL;
 
@@ -36,6 +37,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -52,7 +54,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DefaultResponseCodeTestCase extends TestBase {
+public class DefaultResponseCodeTestCase extends ContainerResourceMgmtTestBase {
     private static final String URL_PATTERN = "simple";
     @ArquillianResource
     URL url;
@@ -89,7 +91,7 @@ public class DefaultResponseCodeTestCase extends TestBase {
         operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "remove");
         operation.get("address").add("location","/");
         executeOperation(operation);
-        reload();
+        executeReloadAndWaitForCompletion(getModelControllerClient());
         try {
             HttpGet httpget = new HttpGet(url.toString() + URL_PATTERN);
             HttpResponse response = this.httpclient.execute(httpget);
@@ -107,7 +109,7 @@ public class DefaultResponseCodeTestCase extends TestBase {
             operation.get("address").add("location","/");
             operation.get("handler").set("welcome-content");
             executeOperation(operation);
-            reload();
+            executeReloadAndWaitForCompletion(getModelControllerClient());
         }
     }
 

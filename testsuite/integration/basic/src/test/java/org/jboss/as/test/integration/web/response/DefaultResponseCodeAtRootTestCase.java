@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.web.response;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 
 import java.net.URL;
 
@@ -38,6 +39,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -55,7 +57,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DefaultResponseCodeAtRootTestCase extends TestBase {
+public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTestBase {
     private static final String URL_PATTERN = "/";
     private URL url;
     @ArquillianResource
@@ -109,7 +111,7 @@ public class DefaultResponseCodeAtRootTestCase extends TestBase {
 //        operation.get("address").add("location","/");
 //        cob.addStep(operation);
         executeOperation(cob.build().getOperation());
-        reload();
+        executeReloadAndWaitForCompletion(getModelControllerClient());
         deployer.deploy("test");
         try {
             HttpGet httpget = null;
@@ -131,7 +133,7 @@ public class DefaultResponseCodeAtRootTestCase extends TestBase {
 //            operation.get("handler").set("welcome-content");
 //            cob.addStep(operation);
             executeOperation(cob.build().getOperation());
-            reload();
+            executeReloadAndWaitForCompletion(getModelControllerClient());
         }
     }
 }
