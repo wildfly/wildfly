@@ -22,10 +22,26 @@
 
 package org.jboss.as.test.iiop.client;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
+
+import java.io.IOException;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.rmi.PortableRemoteObject;
+import javax.transaction.Status;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
@@ -44,21 +60,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.omg.CORBA.ORB;
-import org.omg.CORBA.SystemException;
 import org.omg.CORBA.ORBPackage.InvalidName;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
-import javax.transaction.Status;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Vector;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import org.omg.CORBA.SystemException;
 
 /**
  * @author Ondrej Chaloupka
@@ -195,7 +198,7 @@ public class IIOPTransactionPropagationTestCase {
             }
 
             if (isNeedReload) {
-                reload();
+                executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
             }
         }
 
@@ -217,7 +220,7 @@ public class IIOPTransactionPropagationTestCase {
             }
 
             if (isNeedReload) {
-                reload();
+                executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
             }
         }
 
@@ -269,39 +272,6 @@ public class IIOPTransactionPropagationTestCase {
             operation.get("value").set(transactionsOnIIOP);
             log.info("operation=" + operation);
             executeOperation(operation);
-        }
-
-        public boolean reload() throws IOException, MgmtOperationException {
-            /* :reload() */
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set("reload");
-            log.info("operation=" + operation);
-
-            try {
-                executeOperation(operation);
-            } catch (Exception e) {
-                log.error(
-                        "Exception applying reload operation. This is probably fine, as the server probably shut down before the response was sent",
-                        e);
-            }
-            boolean reloaded = false;
-            int i = 0;
-            while (!reloaded) {
-                try {
-                    Thread.sleep(2000);
-                    if (managementClient.isServerInRunningState()) {
-                        reloaded = true;
-                        log.info("Server was successfully reloaded");
-                    }
-                } catch (Throwable t) {
-                    // nothing to do, just waiting
-                } finally {
-                    if (!reloaded && i++ > 20) {
-                        throw new MgmtOperationException("Server reloading failed");
-                    }
-                }
-            }
-            return reloaded;
         }
 
         private ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
