@@ -51,15 +51,34 @@ public class ServerReload {
         executeReloadAndWaitForCompletion(client, TIMEOUT);
     }
 
-    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout) {
-        executeReload(client);
-        waitForLiveServerToReload(timeout);
+    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, boolean adminOnly) {
+        executeReloadAndWaitForCompletion(client, TIMEOUT, adminOnly, null, -1);
     }
 
-    private static void executeReload(ModelControllerClient client) {
+    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout) {
+        executeReloadAndWaitForCompletion(client, timeout, false, null, -1);
+    }
+
+    /**
+     *
+     * @param client
+     * @param timeout
+     * @param adminOnly if {@code true}, the server will be reloaded in admin-only mode
+     * @param serverAddress if {@code null}, use {@code TestSuiteEnvironment.getServerAddress()} to create the ModelControllerClient
+     * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
+     */
+    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout, boolean adminOnly, String serverAddress, int serverPort) {
+        executeReload(client, adminOnly);
+        waitForLiveServerToReload(timeout,
+                serverAddress != null ? serverAddress : TestSuiteEnvironment.getServerAddress(),
+                serverPort != -1 ? serverPort : TestSuiteEnvironment.getServerPort());
+    }
+
+    private static void executeReload(ModelControllerClient client, boolean adminOnly) {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set("reload");
+        operation.get("admin-only").set(adminOnly);
         try {
             ModelNode result = client.execute(operation);
             Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
@@ -71,7 +90,7 @@ public class ServerReload {
         }
     }
 
-    private static void waitForLiveServerToReload(int timeout) {
+    private static void waitForLiveServerToReload(int timeout, String serverAddress, int serverPort) {
         long start = System.currentTimeMillis();
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
@@ -80,7 +99,7 @@ public class ServerReload {
         while (System.currentTimeMillis() - start < timeout) {
             try {
                 ModelControllerClient liveClient = ModelControllerClient.Factory.create(
-                        TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
+                        serverAddress, serverPort);
                 try {
                     ModelNode result = liveClient.execute(operation);
                     if ("running" .equals(result.get(RESULT).asString())) {
