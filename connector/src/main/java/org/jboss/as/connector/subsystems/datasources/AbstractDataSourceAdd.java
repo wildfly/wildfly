@@ -132,10 +132,13 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceAliasServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(dsName);
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(
                         serviceTarget.addService(dataSourceServiceName, dataSourceService),
                         dataSourceService.getExecutorServiceInjector(), false)
+                // Add an alias to the data-source resource name
+                .addAliases(dataSourceAliasServiceName)
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())
                 .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
