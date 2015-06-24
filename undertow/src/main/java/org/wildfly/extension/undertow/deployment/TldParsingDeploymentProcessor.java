@@ -125,8 +125,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                     }
                 }
                 if (!found) {
-                    //todo: internataitonalization
-                    UndertowLogger.ROOT_LOGGER.errorf("Could not find tld %s", tld.getTaglibLocation());
+                    UndertowLogger.ROOT_LOGGER.tldNotFound(tld.getTaglibLocation());
                 }
 
             }

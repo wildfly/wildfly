@@ -196,7 +196,7 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                 boolean wantsClustered = CLUSTERED.resolveModelAttribute(context, mock).asBoolean();
                 if (clustered && !wantsClustered) {
                     PathAddress serverAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-                    MessagingLogger.MESSAGING_LOGGER.warn(MessagingLogger.MESSAGING_LOGGER.canNotChangeClusteredAttribute(serverAddress));
+                    MessagingLogger.ROOT_LOGGER.warn(MessagingLogger.ROOT_LOGGER.canNotChangeClusteredAttribute(serverAddress));
                 }
                 // ignore the operation
                 context.stepCompleted();

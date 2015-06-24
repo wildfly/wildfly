@@ -188,7 +188,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         for (int i = 0; i < remoteAttrs.length; i++) {
             final OperationAnalysis op = remoteAttrs[i].getAccessorAnalysis();
             if (op != null) {
-                EjbLogger.ROOT_LOGGER.debugf("    %s\n                %s", op.getJavaName(), op.getIDLName());
+                EjbLogger.DEPLOYMENT_LOGGER.debugf("    %s%n                %s", op.getJavaName(), op.getIDLName());
                 //translate to the deployment reflection index method
                 //TODO: this needs to be fixed so it just returns the correct method
                 final Method method = translateMethod(deploymentReflectionIndex, op);
@@ -196,7 +196,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
                 beanMethodMap.put(op.getIDLName(), new SkeletonStrategy(method));
                 final OperationAnalysis setop = remoteAttrs[i].getMutatorAnalysis();
                 if (setop != null) {
-                    EjbLogger.ROOT_LOGGER.debugf("    %s\n                %s", setop.getJavaName(), setop.getIDLName());
+                    EjbLogger.DEPLOYMENT_LOGGER.debugf("    %s%n                %s", setop.getJavaName(), setop.getIDLName());
                     //translate to the deployment reflection index method
                     //TODO: this needs to be fixed so it just returns the correct method
                     final Method realSetmethod = translateMethod(deploymentReflectionIndex, setop);
@@ -207,7 +207,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
         final OperationAnalysis[] ops = remoteInterfaceAnalysis.getOperations();
         for (int i = 0; i < ops.length; i++) {
-            EjbLogger.ROOT_LOGGER.debugf("    %s\n                %s", ops[i].getJavaName(), ops[i].getIDLName());
+            EjbLogger.DEPLOYMENT_LOGGER.debugf("    %s%n                %s", ops[i].getJavaName(), ops[i].getIDLName());
             beanMethodMap.put(ops[i].getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, ops[i])));
         }
 
@@ -229,11 +229,11 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         for (int i = 0; i < attrs.length; i++) {
             final OperationAnalysis op = attrs[i].getAccessorAnalysis();
             if (op != null) {
-                EjbLogger.ROOT_LOGGER.debugf("    %s\n                %s", op.getJavaName(), op.getIDLName());
+                EjbLogger.DEPLOYMENT_LOGGER.debugf("    %s%n                %s", op.getJavaName(), op.getIDLName());
                 homeMethodMap.put(op.getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, op)));
                 final OperationAnalysis setop = attrs[i].getMutatorAnalysis();
                 if (setop != null) {
-                    EjbLogger.ROOT_LOGGER.debugf("    %s\n                %s", setop.getJavaName(), setop.getIDLName());
+                    EjbLogger.DEPLOYMENT_LOGGER.debugf("    %s%n                %s", setop.getJavaName(), setop.getIDLName());
                     homeMethodMap.put(setop.getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, setop)));
                 }
             }
@@ -241,7 +241,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
         final OperationAnalysis[] homeops = homeInterfaceAnalysis.getOperations();
         for (int i = 0; i < homeops.length; i++) {
-            EjbLogger.ROOT_LOGGER.debugf("    %s\n                %s", homeops[i].getJavaName(), homeops[i].getIDLName());
+            EjbLogger.DEPLOYMENT_LOGGER.debugf("    %s%n                %s", homeops[i].getJavaName(), homeops[i].getIDLName());
             homeMethodMap.put(homeops[i].getIDLName(), new SkeletonStrategy(translateMethod(deploymentReflectionIndex, homeops[i])));
         }
 

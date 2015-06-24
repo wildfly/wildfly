@@ -39,7 +39,7 @@ import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 /**
  * Parse a persistence.xml into a list of persistence unit definitions.
@@ -48,7 +48,7 @@ import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
  */
 public class PersistenceUnitXmlParser extends MetaDataElementParser {
     // cache the trace enabled flag
-    private static final boolean traceEnabled = JPA_LOGGER.isTraceEnabled();
+    private static final boolean traceEnabled = ROOT_LOGGER.isTraceEnabled();
 
     public static PersistenceUnitMetadataHolder parse(final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
 
@@ -121,7 +121,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                 case PERSISTENCEUNIT:
                     PersistenceUnitMetadata pu = parsePU(reader, version, propertyReplacer);
                     PUs.add(pu);
-                    JPA_LOGGER.readingPersistenceXml(pu.getPersistenceUnitName());
+                    ROOT_LOGGER.readingPersistenceXml(pu.getPersistenceUnitName());
                     break;
 
                 default:
@@ -129,8 +129,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             }
         }
         PersistenceUnitMetadataHolder result = new PersistenceUnitMetadataHolder(PUs);
-        if (JPA_LOGGER.isTraceEnabled())
-            JPA_LOGGER.trace(result.toString());
+        if (ROOT_LOGGER.isTraceEnabled())
+            ROOT_LOGGER.trace(result.toString());
 
         return result;
     }
@@ -168,7 +168,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (traceEnabled) {
-                JPA_LOGGER.tracef("parse persistence.xml: attribute value(%d) = %s", i, value);
+                ROOT_LOGGER.tracef("parse persistence.xml: attribute value(%d) = %s", i, value);
             }
             final String attributeNamespace = reader.getAttributeNamespace(i);
             if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
@@ -192,7 +192,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (traceEnabled) {
-                JPA_LOGGER.tracef("parse persistence.xml: element=%s", element.getLocalName());
+                ROOT_LOGGER.tracef("parse persistence.xml: element=%s", element.getLocalName());
             }
             switch (element) {
                 case CLASS:
@@ -255,7 +255,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             }
         }
         if (traceEnabled) {
-            JPA_LOGGER.trace("parse persistence.xml: reached ending persistence-unit tag");
+            ROOT_LOGGER.trace("parse persistence.xml: reached ending persistence-unit tag");
         }
         pu.setManagedClassNames(classes);
         pu.setJarFiles(jarFiles);

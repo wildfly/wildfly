@@ -58,11 +58,6 @@ public interface JpaLogger extends BasicLogger {
     JpaLogger ROOT_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jboss.as.jpa");
 
     /**
-     * A logger with the category {@code org.jboss.jpa}.
-     */
-    JpaLogger JPA_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jboss.as.jpa");
-
-    /**
      * Logs a warning message indicating duplicate persistence.xml files were found.
      *
      * @param puName    the persistence XML file.

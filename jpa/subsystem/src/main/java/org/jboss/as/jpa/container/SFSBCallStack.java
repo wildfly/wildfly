@@ -90,7 +90,7 @@ public class SFSBCallStack {
     static SFSBInjectedXPCs getSFSBCreationTimeInjectedXPCs(final String puScopedName) {
         SFSBInjectedXPCs result = CURRENT.get().creationTimeInjectedXPCs;
         if (result == null) {
-            throw JpaLogger.JPA_LOGGER.xpcOnlyFromSFSB(puScopedName);
+            throw JpaLogger.ROOT_LOGGER.xpcOnlyFromSFSB(puScopedName);
         }
         return result;
     }

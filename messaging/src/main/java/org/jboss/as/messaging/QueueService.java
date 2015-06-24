@@ -22,7 +22,7 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.CoreQueueConfiguration;
@@ -73,7 +73,7 @@ class QueueService implements Service<Void> {
             final HornetQServer hornetQService = this.hornetQService.getValue();
             hornetQService.destroyQueue(new SimpleString(queueConfiguration.getName()), null, false);
         } catch(Exception e) {
-            MESSAGING_LOGGER.failedToDestroy("queue", queueConfiguration.getName());
+            ROOT_LOGGER.failedToDestroy("queue", queueConfiguration.getName());
         }
     }
 

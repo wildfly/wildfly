@@ -83,7 +83,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
             rootBda = topLevelDeployment.getAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE);
         }
         if (rootBda == null) {
-            WeldLogger.ROOT_LOGGER.couldNotFindBeanManagerForDeployment(deploymentUnit.getName());
+            WeldLogger.DEPLOYMENT_LOGGER.couldNotFindBeanManagerForDeployment(deploymentUnit.getName());
             return;
         }
 

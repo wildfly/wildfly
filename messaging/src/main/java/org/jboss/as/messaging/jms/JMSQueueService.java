@@ -22,7 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 
 import java.util.concurrent.ExecutorService;
@@ -102,7 +102,7 @@ public class JMSQueueService implements Service<Queue> {
                     jmsManager.removeQueueFromJNDI(queueName);
                     queue = null;
                 } catch (Throwable e) {
-                    MESSAGING_LOGGER.failedToDestroy(e, "queue", queueName);
+                    ROOT_LOGGER.failedToDestroy(e, "queue", queueName);
                 }
                 context.complete();
             }

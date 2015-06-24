@@ -66,7 +66,9 @@ abstract class AbstractMetaDataBuilderPOJO {
      * @return universal JSE meta data model
      */
     JSEArchiveMetaData create(final Deployment dep) {
-        WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic meta data for POJO webservice deployment: %s", dep.getSimpleName());
+        if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+            WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic meta data for POJO webservice deployment: %s", dep.getSimpleName());
+        }
         final JBossWebMetaData jbossWebMD = WSHelper.getRequiredAttachment(dep, JBossWebMetaData.class);
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
         final List<POJOEndpoint> pojoEndpoints = getPojoEndpoints(unit);

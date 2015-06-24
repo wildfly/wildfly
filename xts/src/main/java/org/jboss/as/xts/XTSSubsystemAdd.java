@@ -205,8 +205,8 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }
 
-        if (coordinatorURL != null && XtsAsLogger.ROOT_LOGGER.isDebugEnabled()) {
-            XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s\n", coordinatorURL);
+        if (coordinatorURL != null) {
+            XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", coordinatorURL);
         }
 
         final boolean isDefaultContextPropagation = model.hasDefined(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION)

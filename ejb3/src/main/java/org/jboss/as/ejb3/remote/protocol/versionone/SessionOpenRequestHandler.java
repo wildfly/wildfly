@@ -144,7 +144,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                 try {
                     sessionID = statefulSessionComponent.createSessionRemote();
                 } catch (Throwable t) {
-                    EjbLogger.ROOT_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
+                    EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
                     SessionOpenRequestHandler.this.writeException(channelAssociation, SessionOpenRequestHandler.this.marshallerFactory, invocationId, t, null);
                     return;
                 }
@@ -152,7 +152,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                 final Affinity hardAffinity = statefulSessionComponent.getCache().getStrictAffinity();
                 SessionOpenRequestHandler.this.writeSessionId(channelAssociation, invocationId, sessionID, hardAffinity);
             } catch (IOException ioe) {
-                EjbLogger.ROOT_LOGGER.exceptionGeneratingSessionId(ioe, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
+                EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(ioe, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
                 return;

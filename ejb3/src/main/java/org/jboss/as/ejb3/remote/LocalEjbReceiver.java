@@ -74,7 +74,6 @@ import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.remoting.NetworkUtil;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.cloner.ClassLoaderClassCloner;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
@@ -99,7 +98,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbReceiver>, RegistryCollector.Listener<String, List<ClientMapping>> {
 
-    private static final Logger logger = Logger.getLogger(LocalEjbReceiver.class);
     public static final ServiceName DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("default-local-ejb-receiver-service");
     public static final ServiceName BY_VALUE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "value");
     public static final ServiceName BY_REFERENCE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "reference");
@@ -504,7 +502,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             // which can only handle local receiver and no remote receivers (due to lack of configurations
             // to connect to them), then skip that context
             if (this.isLocalOnlyEJBClientContext(ejbClientContext)) {
-                logger.debugf("Skipping cluster node additions to EJB client context %s since it can only handle local node", ejbClientContext);
+                EjbLogger.REMOTE_LOGGER.debugf("Skipping cluster node additions to EJB client context %s since it can only handle local node", ejbClientContext);
                 continue;
             }
             // find a matching client mapping for our bind address
@@ -517,7 +515,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                     final boolean match = NetworkUtil.belongsToNetwork(binding.getAddress().getAddress(), sourceNetworkAddress, (byte) (netMask & 0xff));
                     if (match) {
                         resolvedClientMapping = clientMapping;
-                        logger.debugf("Client mapping %s matches client address %s", clientMapping, binding.getAddress().getAddress());
+                        EjbLogger.REMOTE_LOGGER.debugf("Client mapping %s matches client address %s", clientMapping, binding.getAddress().getAddress());
                         break;
                     }
                 }
@@ -709,7 +707,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             // which can only handle local receiver and no remote receivers (due to lack of configurations
             // to connect to them), then skip that context
             if (this.isLocalOnlyEJBClientContext(ejbClientContext)) {
-                logger.debug("Skipping cluster node removal to EJB client context " + ejbClientContext + " since it can only handle local node");
+                EjbLogger.REMOTE_LOGGER.debugf("Skipping cluster node removal to EJB client context %s since it can only handle local node", ejbClientContext);
                 continue;
             }
             clusterContext.removeClusterNode(removedNodeName);

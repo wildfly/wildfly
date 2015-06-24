@@ -41,7 +41,7 @@ public final class DeprecatedAttributeWriteHandler extends AbstractWriteAttribut
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
         PathAddress pa = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        MessagingLogger.MESSAGING_LOGGER.deprecatedAttribute(attributeName, pa);
+        MessagingLogger.ROOT_LOGGER.deprecatedAttribute(attributeName, pa);
         return false;
     }
 

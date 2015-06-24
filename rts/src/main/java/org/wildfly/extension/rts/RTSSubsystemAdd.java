@@ -56,9 +56,7 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("RTSSubsystemAdd.populateModel");
-        }
+        RTSLogger.ROOT_LOGGER.trace("RTSSubsystemAdd.populateModel");
 
         RTSSubsystemDefinition.SERVER.validateAndSet(operation, model);
         RTSSubsystemDefinition.HOST.validateAndSet(operation, model);
@@ -69,9 +67,7 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
 
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("RTSSubsystemAdd.performBoottime");
-        }
+        RTSLogger.ROOT_LOGGER.trace("RTSSubsystemAdd.performBoottime");
 
         registerCoordinatorService(context, model);
         registerParticipantService(context, model);

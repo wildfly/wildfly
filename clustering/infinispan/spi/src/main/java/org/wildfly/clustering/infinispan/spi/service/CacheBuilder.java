@@ -43,6 +43,7 @@ import org.wildfly.clustering.service.Builder;
  */
 public class CacheBuilder<K, V> implements Service<Cache<K, V>>, Builder<Cache<K, V>> {
 
+    // No logger interface for this module and no reason to create one for this class only
     private static final Logger log = Logger.getLogger(CacheBuilder.class);
 
     private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();

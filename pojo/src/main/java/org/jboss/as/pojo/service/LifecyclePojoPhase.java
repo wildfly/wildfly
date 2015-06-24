@@ -23,6 +23,7 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.descriptor.LifecycleConfig;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -58,7 +59,7 @@ public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
         try {
             dispatchJoinpoint(getDownConfig(), defaultDown());
         } catch (Throwable t) {
-            log.debug("Exception at " + defaultDown() + " phase.", t);
+            PojoLogger.ROOT_LOGGER.debugf(t, "Exception at %s phase.", defaultDown());
         }
     }
 }

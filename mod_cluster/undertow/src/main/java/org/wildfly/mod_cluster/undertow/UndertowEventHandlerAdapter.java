@@ -58,7 +58,8 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  * @author Paul Ferraro
  */
 public class UndertowEventHandlerAdapter implements UndertowEventListener, Service<Void>, Runnable, ServerActivity {
-    private static final Logger log = Logger.getLogger(UndertowEventHandlerAdapter.class);
+    // No logger interface for this module and no reason to create one for this class only
+    private static final Logger log = Logger.getLogger("org.jboss.mod_cluster.undertow");
 
     @SuppressWarnings("rawtypes")
     private final Value<ListenerService> listener;

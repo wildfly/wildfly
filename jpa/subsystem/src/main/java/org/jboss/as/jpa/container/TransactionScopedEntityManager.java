@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.container;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -146,16 +146,16 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         EntityManager entityManager = TransactionUtil.getTransactionScopedEntityManager(puScopedName);
         if (entityManager == null) {
             entityManager = createEntityManager(emf, properties, synchronizationType);
-            if (JPA_LOGGER.isDebugEnabled())
-                JPA_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
+            if (ROOT_LOGGER.isDebugEnabled())
+                ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
                     TransactionUtil.getTransaction().toString());
             TransactionUtil.registerSynchronization(entityManager, scopedPuName);
             TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager);
         }
         else {
             testForMixedSynchronizationTypes(entityManager, puScopedName, synchronizationType);
-            if (JPA_LOGGER.isDebugEnabled()) {
-                JPA_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
+            if (ROOT_LOGGER.isDebugEnabled()) {
+                ROOT_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
                     TransactionUtil.getTransaction().toString());
             }
         }

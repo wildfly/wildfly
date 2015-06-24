@@ -37,8 +37,10 @@ public final class WebMetaDataCreatingDeploymentAspect extends AbstractDeploymen
     @Override
     public void start(final Deployment dep) {
         if (isEjbDeployment(dep)) {
-            WSLogger.ROOT_LOGGER.tracef("Creating web meta data for EJB webservice deployment: %s", dep.getSimpleName());
-           webMetaDataCreator.create(dep);
+            if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+                WSLogger.ROOT_LOGGER.tracef("Creating web meta data for EJB webservice deployment: %s", dep.getSimpleName());
+            }
+            webMetaDataCreator.create(dep);
         }
     }
 

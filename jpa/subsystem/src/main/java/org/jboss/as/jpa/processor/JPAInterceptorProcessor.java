@@ -38,7 +38,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 /**
  * @author Stuart Douglas
@@ -51,7 +51,7 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if (component instanceof SessionBeanComponentDescription) {
-                JPA_LOGGER.tracef("registering session bean interceptors for component '%s' in '%s'", component.getComponentName(), deploymentUnit.getName());
+                ROOT_LOGGER.tracef("registering session bean interceptors for component '%s' in '%s'", component.getComponentName(), deploymentUnit.getName());
                 registerSessionBeanInterceptors((SessionBeanComponentDescription) component, deploymentUnit);
             }
         }

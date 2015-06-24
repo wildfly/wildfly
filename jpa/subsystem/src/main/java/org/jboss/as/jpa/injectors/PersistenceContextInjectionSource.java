@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.injectors;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.lang.reflect.Proxy;
 import java.util.Map;
@@ -153,8 +153,8 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
             if (type.equals(PersistenceContextType.TRANSACTION)) {
                 entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType);
-                if (JPA_LOGGER.isDebugEnabled())
-                    JPA_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
+                if (ROOT_LOGGER.isDebugEnabled())
+                    ROOT_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {
                 boolean useDeepInheritance = !ExtendedPersistenceInheritance.SHALLOW.equals(JPAService.getDefaultExtendedPersistenceInheritance());
                 if (jpaDeploymentSettings != null) {
@@ -174,13 +174,13 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 if (entityManager1 == null) {
                     entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties), synchronizationType);
                     createdNewExtendedPersistence = true;
-                    if (JPA_LOGGER.isDebugEnabled())
-                        JPA_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s, useDeepInheritance = %b", unitName, useDeepInheritance);
+                    if (ROOT_LOGGER.isDebugEnabled())
+                        ROOT_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s, useDeepInheritance = %b", unitName, useDeepInheritance);
 
                 } else {
                     entityManager1.increaseReferenceCount();
-                    if (JPA_LOGGER.isDebugEnabled())
-                        JPA_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s, " +
+                    if (ROOT_LOGGER.isDebugEnabled())
+                        ROOT_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s, " +
                                 "%d beans sharing ExtendedEntityManager, useDeepInheritance = %b", unitName, entityManager1.getReferenceCount(), useDeepInheritance);
                 }
 
@@ -243,8 +243,8 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                                     entityManagerUnwrappedTargetInvocationHandler
                                 );
 
-                if (JPA_LOGGER.isDebugEnabled())
-                    JPA_LOGGER.debugf("injecting entity manager into a '%s' (unit name=%s)", extensionClass.getName(), unitName);
+                if (ROOT_LOGGER.isDebugEnabled())
+                    ROOT_LOGGER.debugf("injecting entity manager into a '%s' (unit name=%s)", extensionClass.getName(), unitName);
 
                 return new ValueManagedReference(new ImmediateValue<Object>(proxyForUnwrappedObject));
             }

@@ -46,7 +46,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.common.WarMetaData;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.javaee.spec.EmptyMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -221,15 +220,14 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             warMetaData.setNoOrder(true);
         }
 
-        Logger log = Logger.getLogger("org.jboss.web");
-        if (log.isDebugEnabled()) {
+        if (UndertowLogger.ROOT_LOGGER.isDebugEnabled()) {
             StringBuilder builder = new StringBuilder();
             builder.append("Resolved order: [ ");
             for (String jar : order) {
                 builder.append(jar).append(' ');
             }
             builder.append(']');
-            log.debug(builder.toString());
+            UndertowLogger.ROOT_LOGGER.debug(builder.toString());
         }
 
         warMetaData.setOrder(order);

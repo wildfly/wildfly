@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.transaction;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Status;
@@ -149,12 +149,12 @@ public class TransactionUtil {
              */
             if (safeToClose(status)) {
                 try {
-                    if (JPA_LOGGER.isDebugEnabled())
-                        JPA_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
+                    if (ROOT_LOGGER.isDebugEnabled())
+                        ROOT_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
                     manager.close();
                 } catch (Exception ignored) {
-                    if (JPA_LOGGER.isDebugEnabled())
-                        JPA_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (", scopedPuName);
+                    if (ROOT_LOGGER.isDebugEnabled())
+                        ROOT_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (", scopedPuName);
                 }
             }
             // The TX reference to the entity manager, should be cleared by the TM

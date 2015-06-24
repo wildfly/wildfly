@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.classfilewriter.ClassFile;
 import org.jboss.classfilewriter.ClassMethod;
 import org.jboss.classfilewriter.code.CodeAttribute;
@@ -200,9 +201,7 @@ public class IIOPStubCompiler {
                     }
                 }
             } catch (RMIIIOPViolationException e) {
-                throw new RuntimeException("Cannot obtain "
-                        + "exception repository id for "
-                        + exceptions[i].getName() + ":\n" + e);
+                throw EjbLogger.ROOT_LOGGER.exceptionRepositoryNotFound(exceptions[i].getName(), e.getLocalizedMessage());
             }
 
             // Push third argument for StubStrategy constructor:
@@ -357,7 +356,7 @@ public class IIOPStubCompiler {
         try {
             interfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(intf);
         } catch (RMIIIOPViolationException e) {
-            throw new RuntimeException("RMI/IIOP Violation:\n" + e);
+            throw EjbLogger.ROOT_LOGGER.rmiIiopVoliation(e.getLocalizedMessage());
         }
         return makeCode(interfaceAnalysis, DynamicIIOPStub.class, stubClassName);
     }

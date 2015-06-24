@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,7 +33,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -51,8 +51,6 @@ import org.jboss.msc.value.InjectedValue;
  * @author Jaikiran Pai
  */
 public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger logger = Logger.getLogger(EjbClientContextSetupProcessor.class);
 
 
     @Override
@@ -119,7 +117,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             final EJBClientContext ejbClientContext = ejbClientContextInjectedValue.getValue();
             final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
             // associate the EJB client context with the deployment classloader
-            logger.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, module.getClassLoader());
+            EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, module.getClassLoader());
             tcclBasedEJBClientContextSelector.registerEJBClientContext(ejbClientContext, module.getClassLoader());
         }
 
@@ -127,7 +125,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         public void stop(StopContext context) {
             final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
             // de-associate the EJB client context with the deployment classloader
-            logger.debugf("unRegistering EJB client context for classloader %s", module.getClassLoader());
+            EjbLogger.DEPLOYMENT_LOGGER.debugf("unRegistering EJB client context for classloader %s", module.getClassLoader());
             tcclBasedEJBClientContextSelector.unRegisterEJBClientContext(module.getClassLoader());
         }
 

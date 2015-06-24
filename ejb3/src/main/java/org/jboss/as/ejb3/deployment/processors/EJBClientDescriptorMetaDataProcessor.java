@@ -43,7 +43,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -66,7 +65,6 @@ import org.xnio.OptionMap;
  */
 public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger logger = Logger.getLogger(EJBClientDescriptorMetaDataProcessor.class);
     private static final String INTERNAL_REMOTING_PROFILE = "internal-remoting-profile";
 
     @Override
@@ -115,7 +113,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         serviceBuilder.addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
         // install the service
         serviceBuilder.install();
-        logger.debugf("Deployment unit %s will use %s as the EJB client context service", deploymentUnit,
+        EjbLogger.DEPLOYMENT_LOGGER.debugf("Deployment unit %s will use %s as the EJB client context service", deploymentUnit,
                 ejbClientContextServiceName);
 
         // attach the service name of this EJB client context to the deployment unit
@@ -170,7 +168,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 channelCreationOpts = getOptionMapFromProperties(channelCreationProps, this.getClass().getClassLoader());
             }
             profileService.addChannelCreationOption(connectionRef, channelCreationOpts);
-            logger.debugf("Channel creation options for connection %s are %s", channelCreationOpts, connectionRef,
+            EjbLogger.DEPLOYMENT_LOGGER.debugf("Channel creation options for connection %s are %s", channelCreationOpts, connectionRef,
                     channelCreationOpts);
         }
         final boolean localReceiverExcluded = ejbClientDescriptorMetaData.isLocalReceiverExcluded() != null ? ejbClientDescriptorMetaData
@@ -200,7 +198,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 final Option<?> option = Option.fromString(propertyName, classLoader);
                 optionMapBuilder.parse(option, properties.getProperty(propertyName), classLoader);
             } catch (IllegalArgumentException e) {
-                EjbLogger.ROOT_LOGGER.failedToCreateOptionForProperty(propertyName, e.getMessage());
+                EjbLogger.DEPLOYMENT_LOGGER.failedToCreateOptionForProperty(propertyName, e.getMessage());
             }
         }
         return optionMapBuilder.getMap();

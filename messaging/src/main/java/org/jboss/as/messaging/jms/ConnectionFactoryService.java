@@ -31,7 +31,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -88,7 +88,7 @@ class ConnectionFactoryService implements Service<Void> {
                 try {
                     jmsManager.destroyConnectionFactory(name);
                 } catch (Throwable e) {
-                    MESSAGING_LOGGER.failedToDestroy("connection-factory", name);
+                    ROOT_LOGGER.failedToDestroy("connection-factory", name);
                 }
                 context.complete();
             }

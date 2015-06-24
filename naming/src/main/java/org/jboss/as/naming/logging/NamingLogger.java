@@ -575,12 +575,13 @@ public interface NamingLogger extends BasicLogger {
     /**
      * Creates an exception indicating a lookup failure.
      *
-     * @param name the bind name.
+     * @param cause the cause of the error
+     * @param name  the bind name.
      *
      * @return a {@link NamingException} for the error.
      */
     @Message(id = 62, value = "Failed to lookup %s")
-    NamingException lookupError(String name);
+    NamingException lookupError(@Cause Throwable cause, String name);
 
     /**
      * Indicates that a service is not started as expected.

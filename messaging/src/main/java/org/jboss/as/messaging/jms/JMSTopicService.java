@@ -22,7 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -97,7 +97,7 @@ public class JMSTopicService implements Service<Topic> {
                     jmsManager.removeTopicFromJNDI(name);
                     topic = null;
                 } catch (Throwable e) {
-                    MESSAGING_LOGGER.failedToDestroy(e, "jms topic", name);
+                    ROOT_LOGGER.failedToDestroy(e, "jms topic", name);
                 }
                 context.complete();
             }

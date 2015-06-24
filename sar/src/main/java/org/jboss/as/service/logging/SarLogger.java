@@ -48,11 +48,6 @@ public interface SarLogger extends BasicLogger {
     SarLogger ROOT_LOGGER = Logger.getMessageLogger(SarLogger.class, "org.jboss.as.service");
 
     /**
-     * A logger with the category {@code org.jboss.as.deployment.service}.
-     */
-    SarLogger DEPLOYMENT_SERVICE_LOGGER = Logger.getMessageLogger(SarLogger.class, "org.jboss.as.deployment.service");
-
-    /**
      * A message indicating a failure to execute a legacy service method, represented by the {@code methodName}
      * parameter.
      *

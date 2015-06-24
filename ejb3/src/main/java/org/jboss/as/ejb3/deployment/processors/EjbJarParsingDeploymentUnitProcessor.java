@@ -251,7 +251,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             try {
                 stream.close();
             } catch (IOException ioe) {
-                EjbLogger.ROOT_LOGGER.failToCloseFile(ioe);
+                EjbLogger.DEPLOYMENT_LOGGER.failToCloseFile(ioe);
             }
         }
     }
@@ -283,7 +283,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             try {
                 stream.close();
             } catch (IOException ioe) {
-                EjbLogger.ROOT_LOGGER.failToCloseFile(ioe);
+                EjbLogger.DEPLOYMENT_LOGGER.failToCloseFile(ioe);
             }
         }
     }

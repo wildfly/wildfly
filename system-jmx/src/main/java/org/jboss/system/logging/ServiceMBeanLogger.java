@@ -24,7 +24,6 @@ package org.jboss.system.logging;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -44,22 +43,22 @@ public interface ServiceMBeanLogger extends BasicLogger {
     IllegalArgumentException unknownLifecycleMethod(String methodName);
 
     @Message(id = 3, value = "Error in destroy %s")
-    IllegalArgumentException errorInDestroy(@Cause Throwable cause, String description);
+    String errorInDestroy(String description);
 
     @Message(id = 4, value = "Error in stop %s")
-    IllegalArgumentException errorInStop(@Cause Throwable cause, String description);
+    String errorInStop(String description);
 
     @Message(id = 5, value = "Initialization failed %s")
-    IllegalArgumentException initializationFailed(@Cause Throwable cause, String description);
+    String initializationFailed(String description);
 
     @Message(id = 6, value = "Starting failed %s")
-    IllegalArgumentException startingFailed(@Cause Throwable cause, String description);
+    String startingFailed(String description);
 
     @Message(id = 7, value = "Stopping failed %s")
-    IllegalArgumentException stoppingFailed(@Cause Throwable cause, String description);
+    String stoppingFailed(String description);
 
     @Message(id = 8, value = "Destroying failed %s")
-    IllegalArgumentException destroyingFailed(@Cause Throwable cause, String description);
+    String destroyingFailed(String description);
 
     @Message(id = 9, value = "Initialization failed during postRegister")
     String postRegisterInitializationFailed();

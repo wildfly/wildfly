@@ -28,7 +28,7 @@ import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_RE
 import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_REMOTING_KEY;
 import static org.hornetq.core.remoting.impl.netty.TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CORE;
-import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 
@@ -98,7 +98,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         httpUpgradeMetadata = new ListenerRegistry.HttpUpgradeMetadata(HORNETQ_REMOTING, CORE);
         listenerInfo.addHttpUpgradeMetadata(httpUpgradeMetadata);
 
-        MESSAGING_LOGGER.registeredHTTPUpgradeHandler(HORNETQ_REMOTING, acceptorName);
+        ROOT_LOGGER.registeredHTTPUpgradeHandler(HORNETQ_REMOTING, acceptorName);
         ServiceController<?> hornetqService = context.getController().getServiceContainer().getService(MessagingServices.getHornetQServiceName(hornetQServerName));
         HornetQServer hornetQServer = HornetQServer.class.cast(hornetqService.getValue());
 
@@ -143,7 +143,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         return new ChannelListener<StreamConnection>() {
             @Override
             public void handleEvent(final StreamConnection connection) {
-                MESSAGING_LOGGER.debugf("Switching to %s protocol for %s http-acceptor", HORNETQ_REMOTING, acceptorName);
+                ROOT_LOGGER.debugf("Switching to %s protocol for %s http-acceptor", HORNETQ_REMOTING, acceptorName);
                 SocketChannel channel = new WrappingXnioSocketChannel(connection);
                 RemotingService remotingService = hornetqServer.getRemotingService();
 

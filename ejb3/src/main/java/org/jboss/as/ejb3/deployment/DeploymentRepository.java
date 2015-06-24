@@ -80,7 +80,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
             try {
                 listener.deploymentAvailable(identifier, deployment);
             } catch (Throwable t) {
-                EjbLogger.ROOT_LOGGER.deploymentAddListenerException(t);
+                EjbLogger.DEPLOYMENT_LOGGER.deploymentAddListenerException(t);
             }
         }
     }
@@ -97,7 +97,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
             try {
                 listener.deploymentStarted(identifier, deployment.deployment);
             } catch (Throwable t) {
-                EjbLogger.ROOT_LOGGER.deploymentAddListenerException(t);
+                EjbLogger.DEPLOYMENT_LOGGER.deploymentAddListenerException(t);
             }
         }
     }
@@ -126,7 +126,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
             try {
                 listener.deploymentRemoved(identifier);
             } catch (Throwable t) {
-                EjbLogger.ROOT_LOGGER.deploymentRemoveListenerException(t);
+                EjbLogger.DEPLOYMENT_LOGGER.deploymentRemoveListenerException(t);
             }
         }
     }

@@ -45,6 +45,7 @@ import org.wildfly.clustering.service.Builder;
  */
 public class ChannelConnectorBuilder implements Builder<Channel>, Service<Channel> {
 
+    // No logger interface for this module and no reason to create one for only two classes
     private static final Logger LOGGER = org.jboss.logging.Logger.getLogger(ChannelConnectorBuilder.class);
 
     private final String name;

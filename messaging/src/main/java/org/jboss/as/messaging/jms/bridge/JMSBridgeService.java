@@ -22,7 +22,7 @@
 
 package org.jboss.as.messaging.jms.bridge;
 
-import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -108,7 +108,7 @@ class JMSBridgeService implements Service<JMSBridge> {
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
-        MessagingLogger.MESSAGING_LOGGER.startedService("JMS Bridge", bridgeName);
+        MessagingLogger.ROOT_LOGGER.startedService("JMS Bridge", bridgeName);
     }
 
     @Override
@@ -118,11 +118,11 @@ class JMSBridgeService implements Service<JMSBridge> {
             public void run() {
                 try {
                     bridge.stop();
-                    MessagingLogger.MESSAGING_LOGGER.stoppedService("JMS Bridge", bridgeName);
+                    MessagingLogger.ROOT_LOGGER.stoppedService("JMS Bridge", bridgeName);
 
                     context.complete();
                 } catch(Exception e) {
-                    MESSAGING_LOGGER.failedToDestroy("bridge", bridgeName);
+                    ROOT_LOGGER.failedToDestroy("bridge", bridgeName);
                 }
             }
         };

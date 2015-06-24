@@ -31,6 +31,7 @@ import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -38,7 +39,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeansMetaData;
@@ -47,7 +47,6 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeansMetaData;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class AbstractDeploymentUnitProcessor implements DeploymentUnitProcessor {
-    private static final Logger logger = Logger.getLogger(AbstractDeploymentUnitProcessor.class);
 
     /**
      * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
@@ -69,14 +68,10 @@ public abstract class AbstractDeploymentUnitProcessor implements DeploymentUnitP
 
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Skipping EJB annotation processing since no composite annotation index found in unit: " + deploymentUnit);
-            }
+            EjbLogger.DEPLOYMENT_LOGGER.tracef("Skipping EJB annotation processing since no composite annotation index found in unit: %s", deploymentUnit);
         } else {
             if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Skipping EJB annotation processing due to deployment being metadata-complete. ");
-                }
+                EjbLogger.DEPLOYMENT_LOGGER.trace("Skipping EJB annotation processing due to deployment being metadata-complete. ");
             } else {
                 processAnnotations(deploymentUnit, compositeIndex);
             }

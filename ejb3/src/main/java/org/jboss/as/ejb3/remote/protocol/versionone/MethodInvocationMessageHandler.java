@@ -191,7 +191,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                         } catch (Throwable t) {
                             // catch Throwable, so that we don't skip invoking the method, just because we
                             // failed to send a notification to the client that the method is an async method
-                            EjbLogger.ROOT_LOGGER.failedToSendAsyncMethodIndicatorToClient(t, invokedMethod);
+                            EjbLogger.REMOTE_LOGGER.failedToSendAsyncMethodIndicatorToClient(t, invokedMethod);
                         }
                     }
 
@@ -214,9 +214,9 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                         } catch (Throwable ioe) {
                             // we couldn't write out a method invocation failure message. So let's at least log the
                             // actual method invocation exception, for debugging/reference
-                            EjbLogger.ROOT_LOGGER.errorInvokingMethod(throwable, invokedMethod, beanName, appName, moduleName, distinctName);
+                            EjbLogger.REMOTE_LOGGER.errorInvokingMethod(throwable, invokedMethod, beanName, appName, moduleName, distinctName);
                             // now log why we couldn't send back the method invocation failure message
-                            EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
+                            EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
                             // close the channel unless this is a NotSerializableException
                             //as this does not represent a problem with the channel there is no
                             //need to close it (see AS7-3402)
@@ -246,7 +246,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                     } catch (Throwable ioe) {
                         boolean isAsyncVoid = componentView.isAsynchronous(invokedMethod) && invokedMethod.getReturnType().equals(Void.TYPE);
                         if (!isAsyncVoid)
-                            EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
+                            EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
                         // close the channel unless this is a NotSerializableException
                         //as this does not represent a problem with the channel there is no
                         //need to close it (see AS7-3402)
@@ -311,7 +311,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         if (componentView.isAsynchronous(method)) {
             final Component component = componentView.getComponent();
             if (!(component instanceof SessionBeanComponent)) {
-                EjbLogger.ROOT_LOGGER.asyncMethodSupportedOnlyForSessionBeans(component.getComponentClass(), method);
+                EjbLogger.REMOTE_LOGGER.asyncMethodSupportedOnlyForSessionBeans(component.getComponentClass(), method);
                 // just invoke normally
                 return componentView.invoke(interceptorContext);
             }

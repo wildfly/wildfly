@@ -22,7 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.io.IOException;
@@ -175,7 +174,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
             if (deployPU) {
                 final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
                 for (final ComponentDescription component : components) {
-                    JPA_LOGGER.debugf("Adding dependency on PU service %s for component %s", puServiceName, component.getComponentClassName());
+                    ROOT_LOGGER.debugf("Adding dependency on PU service %s for component %s", puServiceName, component.getComponentClassName());
                     component.addDependency(puServiceName, ServiceBuilder.DependencyType.REQUIRED);
                 }
             }

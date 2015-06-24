@@ -47,18 +47,14 @@ public final class VolatileParticipantService extends AbstractRTSService impleme
 
     @Override
     public VolatileParticipantService getValue() throws IllegalStateException, IllegalArgumentException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("VolatileParticipantService.getValue");
-        }
+        RTSLogger.ROOT_LOGGER.trace("VolatileParticipantService.getValue");
 
         return this;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("VolatileParticipantService.start");
-        }
+        RTSLogger.ROOT_LOGGER.trace("VolatileParticipantService.start");
 
         deployParticipant();
         ParticipantsManagerFactory.getInstance().setBaseUrl(getBaseUrl());
@@ -66,9 +62,7 @@ public final class VolatileParticipantService extends AbstractRTSService impleme
 
     @Override
     public void stop(StopContext context) {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("ParticipantService.stop");
-        }
+        RTSLogger.ROOT_LOGGER.trace("ParticipantService.stop");
 
         undeployServlet();
     }

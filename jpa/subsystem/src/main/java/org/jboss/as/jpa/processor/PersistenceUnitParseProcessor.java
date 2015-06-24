@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 /**
  * Handle parsing of Persistence unit persistence.xml files
@@ -112,7 +112,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             // deploymentUnit.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
-            JPA_LOGGER.tracef("parsed persistence unit definitions for jar %s", deploymentRoot.getRootName());
+            ROOT_LOGGER.tracef("parsed persistence unit definitions for jar %s", deploymentRoot.getRootName());
 
             incrementPersistenceUnitCount(deploymentUnit, holder.getPersistenceUnits().size());
             addApplicationDependenciesOnProvider( deploymentUnit, holder);
@@ -153,7 +153,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                     puCount += holder.getPersistenceUnits().size();
                 }
             }
-            JPA_LOGGER.tracef("parsed persistence unit definitions for war %s", deploymentRoot.getRootName());
+            ROOT_LOGGER.tracef("parsed persistence unit definitions for war %s", deploymentRoot.getRootName());
 
             incrementPersistenceUnitCount(deploymentUnit, puCount);
         }
@@ -194,7 +194,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                     puCount += holder.getPersistenceUnits().size();
                 }
             }
-            JPA_LOGGER.tracef("parsed persistence unit definitions for ear %s", deploymentRoot.getRootName());
+            ROOT_LOGGER.tracef("parsed persistence unit definitions for ear %s", deploymentRoot.getRootName());
             incrementPersistenceUnitCount(deploymentUnit, puCount);
         }
     }
@@ -205,7 +205,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             final DeploymentUnit deploymentUnit)
         throws DeploymentUnitProcessingException {
 
-        JPA_LOGGER.tracef("parse checking if %s exists, result = %b",persistence_xml.toString(), persistence_xml.exists());
+        ROOT_LOGGER.tracef("parse checking if %s exists, result = %b",persistence_xml.toString(), persistence_xml.exists());
         if (persistence_xml.exists() && persistence_xml.isFile()) {
             InputStream is = null;
             try {
@@ -306,7 +306,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 } else {
                     PersistenceUnitMetadata first = flattened.get(pu.getPersistenceUnitName());
                     PersistenceUnitMetadata duplicate = pu;
-                    JPA_LOGGER.duplicatePersistenceUnitDefinition(duplicate.getPersistenceUnitName(), first.getScopedPersistenceUnitName(), duplicate.getScopedPersistenceUnitName());
+                    ROOT_LOGGER.duplicatePersistenceUnitDefinition(duplicate.getPersistenceUnitName(), first.getScopedPersistenceUnitName(), duplicate.getScopedPersistenceUnitName());
                 }
             }
         }
@@ -378,7 +378,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             PersistenceUnitsInApplication persistenceUnitsInApplication = getPersistenceUnitsInApplication(topDeploymentUnit);
             persistenceUnitsInApplication.increment(persistenceUnitCount);
         }
-        JPA_LOGGER.tracef("incrementing PU count for %s by %d", topDeploymentUnit.getName(), persistenceUnitCount);
+        ROOT_LOGGER.tracef("incrementing PU count for %s by %d", topDeploymentUnit.getName(), persistenceUnitCount);
     }
 
     private void addApplicationDependenciesOnProvider(DeploymentUnit topDeploymentUnit, PersistenceUnitMetadataHolder holder) {

@@ -63,7 +63,6 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
@@ -83,7 +82,6 @@ import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
  */
 public class CacheAddHandler extends AbstractAddStepHandler {
 
-    private static final Logger log = Logger.getLogger(CacheAddHandler.class.getPackage().getName());
     private static final ModuleIdentifier QUERY_MODULE = ModuleIdentifier.fromString("org.infinispan.query");
 
     final CacheMode mode;
@@ -146,7 +144,10 @@ public class CacheAddHandler extends AbstractAddStepHandler {
 
         Class<? extends CacheGroupBuilderProvider> providerClass = this.mode.isClustered() ? ClusteredCacheGroupBuilderProvider.class : LocalCacheGroupBuilderProvider.class;
         for (CacheGroupBuilderProvider provider : ServiceLoader.load(providerClass, providerClass.getClassLoader())) {
-            log.debugf("Installing %s for cache %s of container %s", provider.getClass().getSimpleName(), cacheName, containerName);
+            // Getting the class name can be expensive
+            if (InfinispanLogger.ROOT_LOGGER.isDebugEnabled()) {
+                InfinispanLogger.ROOT_LOGGER.debugf("Installing %s for cache %s of container %s", provider.getClass().getSimpleName(), cacheName, containerName);
+            }
             for (Builder<?> groupBuilder : provider.getBuilders(containerName, cacheName)) {
                 groupBuilder.build(target).install();
             }
@@ -173,7 +174,7 @@ public class CacheAddHandler extends AbstractAddStepHandler {
             }
         }
 
-        log.debugf("cache %s removed for container %s", cacheName, containerName);
+        InfinispanLogger.ROOT_LOGGER.debugf("cache %s removed for container %s", cacheName, containerName);
     }
 
     /**

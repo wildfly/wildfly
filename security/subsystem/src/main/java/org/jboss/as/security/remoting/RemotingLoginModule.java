@@ -38,7 +38,6 @@ import javax.security.auth.login.LoginException;
 
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.core.security.SubjectUserInfo;
-import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.remoting3.security.UserPrincipal;
@@ -55,8 +54,6 @@ import org.jboss.security.auth.spi.AbstractServerLoginModule;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class RemotingLoginModule extends AbstractServerLoginModule {
-
-    private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
     /**
      * If a {@link X509Certificate} is available from the client as a result of a {@link SSLSession} being established should

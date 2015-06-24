@@ -66,7 +66,6 @@ import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -90,11 +89,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * inactive timer states
      */
     private static final Set<TimerState> ineligibleTimerStates;
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(TimerServiceImpl.class);
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("ejb3", "timerService");
 
@@ -186,8 +180,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
+        if (EjbLogger.ROOT_LOGGER.isDebugEnabled()) {
+            EjbLogger.ROOT_LOGGER.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
         }
         final EJBComponent component = ejbComponentInjectedValue.getValue();
         this.transactionManager = component.getTransactionManager();

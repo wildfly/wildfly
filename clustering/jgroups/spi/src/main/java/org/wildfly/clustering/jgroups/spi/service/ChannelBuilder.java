@@ -42,6 +42,7 @@ import org.wildfly.clustering.service.Builder;
  */
 public class ChannelBuilder implements Service<Channel>, Builder<Channel> {
 
+    // No logger interface for this module and no reason to create one for only two classes
     private static final Logger LOGGER = org.jboss.logging.Logger.getLogger(ChannelConnectorBuilder.class);
 
     private InjectedValue<ChannelFactory> factory = new InjectedValue<>();
@@ -81,7 +82,7 @@ public class ChannelBuilder implements Service<Channel>, Builder<Channel> {
 
         if (LOGGER.isTraceEnabled())  {
             String output = this.channel.getProtocolStack().printProtocolSpec(true);
-            LOGGER.tracef("JGroups channel %s created with configuration:\n %s", this.name, output);
+            LOGGER.tracef("JGroups channel %s created with configuration:%n %s", this.name, output);
         }
     }
 

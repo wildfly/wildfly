@@ -24,10 +24,6 @@
 
 package org.jboss.as.ejb3.logging;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -119,6 +115,10 @@ import org.jboss.msc.service.StartException;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 /**
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -127,6 +127,16 @@ import org.jboss.remoting3.MessageInputStream;
 public interface EjbLogger extends BasicLogger {
 
     EjbLogger ROOT_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3");
+
+    /**
+     * A logger with the category {@code org.jboss.as.ejb3.deployment} used for deployment log messages
+     */
+    EjbLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.deployment");
+
+    /**
+     * A logger with the category {@code org.jboss.as.ejb3.remote} used for remote log messages
+     */
+    EjbLogger REMOTE_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.remote");
 
     /**
      * logger use to log EJB invocation errors
@@ -860,8 +870,8 @@ public interface EjbLogger extends BasicLogger {
     void couldNotWriteInvocationSuccessMessage(@Cause Throwable cause);
 
     @LogMessage(level = WARN)
-    @Message(id = 154, value = "Received unsupported message header 0x%s on channel %s")
-    void unsupportedMessageHeader(String header, Channel channel);
+    @Message(id = 154, value = "Received unsupported message header 0x%x on channel %s")
+    void unsupportedMessageHeader(int header, Channel channel);
 
     @LogMessage(level = ERROR)
     @Message(id = 155, value = "Error during transaction management of transaction id %s")
@@ -3043,4 +3053,14 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 469, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
     IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
+
+    @LogMessage(level = INFO)
+    @Message(id = 470, value = "Could not create a connection for cluster node %s in cluster %s")
+    void couldNotCreateClusterConnection(@Cause Throwable cause, String nodeName, String clusterName);
+
+    @Message(id = 471, value = "RMI/IIOP Violation: %s%n")
+    RuntimeException rmiIiopVoliation(String violation);
+
+    @Message(id = 472, value = "Cannot obtain exception repository id for %s:%n%s")
+    RuntimeException exceptionRepositoryNotFound(String name, String message);
 }

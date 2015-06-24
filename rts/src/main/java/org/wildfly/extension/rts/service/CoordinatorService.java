@@ -46,27 +46,21 @@ public final class CoordinatorService extends AbstractRTSService implements Serv
 
     @Override
     public CoordinatorService getValue() throws IllegalStateException, IllegalArgumentException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("CoordinatorService.getValue");
-        }
+        RTSLogger.ROOT_LOGGER.trace("CoordinatorService.getValue");
 
         return this;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("CoordinatorService.start");
-        }
+        RTSLogger.ROOT_LOGGER.trace("CoordinatorService.start");
 
         deployCoordinator();
     }
 
     @Override
     public void stop(StopContext context) {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("CoordinatorService.stop");
-        }
+        RTSLogger.ROOT_LOGGER.trace("CoordinatorService.stop");
 
         undeployServlet();
     }

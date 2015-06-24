@@ -48,18 +48,14 @@ public final class ParticipantService extends AbstractRTSService implements Serv
 
     @Override
     public ParticipantService getValue() throws IllegalStateException, IllegalArgumentException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("ParticipantService.getValue");
-        }
+        RTSLogger.ROOT_LOGGER.trace("ParticipantService.getValue");
 
         return this;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("ParticipantService.start");
-        }
+        RTSLogger.ROOT_LOGGER.trace("ParticipantService.start");
 
         deployParticipant();
         ParticipantsManagerFactory.getInstance().setBaseUrl(getBaseUrl());
@@ -67,9 +63,7 @@ public final class ParticipantService extends AbstractRTSService implements Serv
 
     @Override
     public void stop(StopContext context) {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("ParticipantService.stop");
-        }
+        RTSLogger.ROOT_LOGGER.trace("ParticipantService.stop");
 
         undeployServlet();
     }

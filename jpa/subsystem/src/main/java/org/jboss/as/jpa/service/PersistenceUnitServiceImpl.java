@@ -54,7 +54,7 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 /**
  * Persistence Unit service that is created for each deployed persistence unit that will be referenced by the
@@ -134,7 +134,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
                                     // handle phase 2 of 2 of bootstrapping the persistence unit
                                     if (phaseOnePersistenceUnitService != null) {
-                                        JPA_LOGGER.startingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
+                                        ROOT_LOGGER.startingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
                                         // indicate that the second phase of bootstrapping the persistence unit has started
                                         phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
                                         if (beanManagerInjector.getOptionalValue() != null) {
@@ -153,7 +153,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                         // get the EntityManagerFactory from the second phase of the persistence unit bootstrap
                                         entityManagerFactory = emfBuilder.build();
                                     } else {
-                                        JPA_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+                                        ROOT_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
                                         // start the persistence unit in one pass (1 of 1)
                                         pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
                                         pu.setJtaDataSource(jtaDataSource.getOptionalValue());
@@ -209,9 +209,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                             public Void run() {
 
                                 if (phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue() != null) {
-                                    JPA_LOGGER.stoppingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
+                                    ROOT_LOGGER.stoppingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
                                 } else {
-                                    JPA_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+                                    ROOT_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
                                 }
                                 if (entityManagerFactory != null) {
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
@@ -220,7 +220,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                             entityManagerFactory.close();
                                         }
                                     } catch (Throwable t) {
-                                        JPA_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
+                                        ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
                                     } finally {
                                         entityManagerFactory = null;
                                         pu.setTempClassLoaderFactory(null);
@@ -313,7 +313,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private EntityManagerFactory createContainerEntityManagerFactory() {
         persistenceProviderAdaptor.beforeCreateContainerEntityManagerFactory(pu);
         try {
-            JPA_LOGGER.tracef("calling createContainerEntityManagerFactory for pu=%s with integration properties=%s, application properties=%s",
+            ROOT_LOGGER.tracef("calling createContainerEntityManagerFactory for pu=%s with integration properties=%s, application properties=%s",
                     pu.getScopedPersistenceUnitName(), properties.getValue(), pu.getProperties());
             return persistenceProvider.createContainerEntityManagerFactory(pu, properties.getValue());
         } finally {

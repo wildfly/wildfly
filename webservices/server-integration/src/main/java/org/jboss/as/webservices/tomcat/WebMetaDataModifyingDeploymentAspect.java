@@ -34,7 +34,9 @@ public final class WebMetaDataModifyingDeploymentAspect extends AbstractDeployme
 
     @Override
     public void start(final Deployment dep) {
-        WSLogger.ROOT_LOGGER.tracef("Modifying web meta data for webservice deployment: %s", dep.getSimpleName());
+        if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+            WSLogger.ROOT_LOGGER.tracef("Modifying web meta data for webservice deployment: %s", dep.getSimpleName());
+        }
         webMetaDataModifier.modify(dep);
     }
 

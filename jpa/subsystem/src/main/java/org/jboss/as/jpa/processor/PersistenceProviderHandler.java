@@ -73,7 +73,7 @@ public class PersistenceProviderHandler {
                     final Constructor<? extends PersistenceProvider> constructor = providerClass.getConstructor();
                     provider = constructor.newInstance();
                     providerList.add(provider);
-                    JpaLogger.JPA_LOGGER.tracef("deployment %s is using its own copy of %s", deploymentUnit.getName(), providerName);
+                    JpaLogger.ROOT_LOGGER.tracef("deployment %s is using its own copy of %s", deploymentUnit.getName(), providerName);
 
                 } catch (Exception e) {
                     throw JpaLogger.ROOT_LOGGER.cannotDeployApp(e, providerName);
