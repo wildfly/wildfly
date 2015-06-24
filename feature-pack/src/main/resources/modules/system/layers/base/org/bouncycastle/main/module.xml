@@ -30,6 +30,8 @@
     </resources>
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.mail.api" optional="true"/>
+        <module name="javax.activation.api" optional="true"/>
     </dependencies>
 
 </module>
