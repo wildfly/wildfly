@@ -70,14 +70,6 @@
         />
         <ts.config-as.add-port-offset name="jbossas-with-remote-outbound-connection" offset="100" nativePort="9999" httpPort="9990"/>
 
-        <delete dir="target/jbossas-messaging-failover"/>
-        <echo message="Copying and configuring instance jbossas-messaging-failover"/>
-        <copy todir="target/jbossas-messaging-failover">
-            <fileset dir="target/jbossas"/>
-        </copy>
-        <ts.config-as.add-messaging-failover name="jbossas-messaging-failover"/>
-
-
         <delete dir="target/jbossas-messaging-ha-server1"/>
         <echo message="Copying and configuring instance jbossas-messaging-ha-server1"/>
         <copy todir="target/jbossas-messaging-ha-server1">
