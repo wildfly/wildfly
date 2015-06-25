@@ -1,0 +1,279 @@
+
+    <subsystem xmlns="urn:jboss:domain:messaging:1.1">
+        <hornetq-server>
+            <!-- disable messaging persistence -->
+            <persistence-enabled>false</persistence-enabled>
+            <thread-pool-max-size>${messaging.thread.pool.max.size:5}</thread-pool-max-size>
+            <security-domain>someDomain</security-domain>
+            <cluster-user>${messaging.cluster.user.name}</cluster-user>
+            <cluster-password>${messaging.cluster.user.password}</cluster-password>
+            <remoting-interceptors>
+                <class-name>foo.bar</class-name>
+                <class-name>bar.foo</class-name>
+            </remoting-interceptors>
+            <live-connector-ref connector-name="in-vm"/>
+            <journal-type>NIO</journal-type>
+            <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+            <journal-file-size>102400</journal-file-size>
+            <journal-min-files>2</journal-min-files>
+            <paging-directory path="test" relative-to="test" />
+            <bindings-directory path="test" relative-to="test" />
+            <journal-directory path="test" relative-to="test" />
+            <large-messages-directory path="test" relative-to="test" />
+            <connectors>
+               <connector name="myconnector">
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+                  <param key="host" value="192.168.1.2"/>
+                  <param key="port" value="5445"/>
+               </connector>
+               <netty-connector name="netty" socket-binding="messaging" />
+               <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+                  <param key="batch-delay" value="50"/>
+               </netty-connector>
+               <in-vm-connector name="in-vm" server-id="0" />
+            </connectors>
+            <acceptors>
+               <netty-acceptor name="netty" socket-binding="messaging" />
+               <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
+                  <param key="batch-delay" value="50"/>
+                  <param key="direct-deliver" value="false"/>
+               </netty-acceptor>
+               <in-vm-acceptor name="in-vm" server-id="0" />
+            </acceptors>
+            <broadcast-groups>
+                <broadcast-group name="groupA">
+                    <local-bind-address>localhost</local-bind-address>
+                    <local-bind-port>12345</local-bind-port>
+                    <group-address>224.0.1.105</group-address>
+                    <group-port>23456</group-port>
+                    <broadcast-period>2500</broadcast-period>
+                    <connector-ref>netty</connector-ref>
+                    <connector-ref>netty-throughput</connector-ref>
+                </broadcast-group>
+                <broadcast-group name="groupB">
+                    <group-address>224.0.1.105</group-address>
+                    <group-port>34567</group-port>
+                </broadcast-group>
+                <broadcast-group name="groupS">
+                    <socket-binding>group-s-binding</socket-binding>
+                </broadcast-group>
+            </broadcast-groups>
+            <discovery-groups>
+                <discovery-group name="groupC">
+                    <local-bind-address>localhost</local-bind-address>
+                    <group-address>224.0.1.105</group-address>
+                    <group-port>45678</group-port>
+                    <refresh-timeout>3500</refresh-timeout>
+                    <initial-wait-timeout>7500</initial-wait-timeout>
+                </discovery-group>
+                <discovery-group name="groupD">
+                    <group-address>224.0.1.105</group-address>
+                    <group-port>56789</group-port>
+                </discovery-group>
+                <discovery-group name="groupT">
+                    <socket-binding>group-t-binding</socket-binding>
+                </discovery-group>
+            </discovery-groups>
+            <diverts>
+                <divert name="testDivert1">
+                    <routing-name>routing</routing-name>
+                    <address>address1</address>
+                    <forwarding-address>forwardingaddress1</forwarding-address>
+                    <filter string="afilter"/>
+                    <transformer-class-name>org.jboss.test.Transformer</transformer-class-name>
+                    <exclusive>true</exclusive>
+                </divert>
+                <divert name="testDivert2">
+                    <address>address2</address>
+                    <forwarding-address>forwardingaddress2</forwarding-address>
+                </divert>
+            </diverts>
+            <core-queues>
+                <queue name="coreQueueA">
+                    <address>addressA</address>
+                    <filter string="afilter"/>
+                    <durable>true</durable>
+                </queue>
+                <queue name="coreQueueB">
+                    <address>addressB</address>
+                </queue>
+            </core-queues>
+            <bridges>
+                <bridge name="bridge1">
+                    <queue-name>coreQueueA</queue-name>
+                    <forwarding-address>forwardingaddress1</forwarding-address>
+                    <ha>true</ha>
+                    <filter string="afilter"/>
+                    <transformer-class-name>foo.bar</transformer-class-name>
+                    <retry-interval>750</retry-interval>
+                    <retry-interval-multiplier>2</retry-interval-multiplier>
+                    <reconnect-attempts>3</reconnect-attempts>
+                    <failover-on-server-shutdown>true</failover-on-server-shutdown>
+                    <use-duplicate-detection>true</use-duplicate-detection>
+                    <confirmation-window-size>350</confirmation-window-size>
+                    <user>Brian</user>
+                    <password>secret</password>
+                    <static-connectors>
+                        <connector-ref>in-vm</connector-ref>
+                        <connector-ref>netty</connector-ref>
+                    </static-connectors>
+                </bridge>
+                <bridge name="bridge2">
+                    <queue-name>coreQueueB</queue-name>
+                    <discovery-group-ref discovery-group-name="groupC"/>
+                </bridge>
+            </bridges>
+            <cluster-connections>
+                <cluster-connection name="cc1">
+                    <address>cc1-address</address>
+                    <connector-ref>netty</connector-ref>
+                    <retry-interval>987</retry-interval>
+                    <use-duplicate-detection>true</use-duplicate-detection>
+                    <forward-when-no-consumers>true</forward-when-no-consumers>
+                    <max-hops>7</max-hops>
+                    <confirmation-window-size>459</confirmation-window-size>
+                    <static-connectors>
+                        <connector-ref>in-vm</connector-ref>
+                        <connector-ref>netty</connector-ref>
+                    </static-connectors>
+                </cluster-connection>
+                <cluster-connection name="cc2">
+                    <address>cc2-address</address>
+                    <connector-ref>netty</connector-ref>
+                    <static-connectors allow-direct-connections-only="true">
+                        <connector-ref>in-vm</connector-ref>
+                        <connector-ref>netty</connector-ref>
+                    </static-connectors>
+                </cluster-connection>
+                <cluster-connection name="cc3">
+                    <address>cc3-address</address>
+                    <connector-ref>netty</connector-ref>
+                    <discovery-group-ref discovery-group-name="groupC"/>
+                </cluster-connection>
+                <cluster-connection name="cc4">
+                    <address>cc4-address</address>
+                    <connector-ref>netty-throughput</connector-ref>
+                    <static-connectors>
+                        <connector-ref>in-vm</connector-ref>
+                        <connector-ref>netty</connector-ref>
+                    </static-connectors>
+                </cluster-connection>
+            </cluster-connections>
+            <grouping-handler name="grouping-handler">
+                <type>LOCAL</type>
+                <address>handler-address</address>
+                <timeout>5000</timeout>
+            </grouping-handler>
+            <security-settings>
+               <security-setting match="#">
+                   <permission roles="guest" type="send"/>
+                   <permission roles="guest" type="consume"/>
+                   <permission roles="guest" type="createNonDurableQueue"/>
+                   <permission roles="guest" type="deleteNonDurableQueue"/>
+                   <permission roles="adming" type="manage"/>
+               </security-setting>
+            </security-settings>
+            <address-settings>
+               <!--default for catch all-->
+               <address-setting match="#">
+                  <dead-letter-address>jms.queue.DLQ</dead-letter-address>
+                  <expiry-address>jms.queue.ExpiryQueue</expiry-address>
+                  <redelivery-delay>0</redelivery-delay>
+                  <max-delivery-attempts>5</max-delivery-attempts>
+                  <max-size-bytes>10485760</max-size-bytes>
+                  <page-size-bytes>10485760</page-size-bytes>
+                  <page-max-cache-size>7</page-max-cache-size>
+                  <address-full-policy>BLOCK</address-full-policy>
+                  <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                  <last-value-queue>false</last-value-queue>
+                  <redistribution-delay>0</redistribution-delay>
+                  <send-to-dla-on-no-route>false</send-to-dla-on-no-route>
+               </address-setting>
+            </address-settings>
+
+            <connector-services>
+                <connector-service name="a">
+                    <factory-class>foo.bar</factory-class>
+                </connector-service>
+                <connector-service name="b">
+                    <factory-class>bar.foo</factory-class>
+                    <param key="foo" value="bar"/>
+                    <param key="bar" value="2"/>
+                </connector-service>
+            </connector-services>
+
+            <!--JMS Stuff-->
+            <jms-connection-factories>
+              <connection-factory name="InVmConnectionFactory">
+                 <connectors>
+                    <connector-ref connector-name="in-vm"/>
+                 </connectors>
+                 <entries>
+                    <entry name="java:/ConnectionFactory"/>
+                 </entries>
+              </connection-factory>
+              <connection-factory name="RemoteConnectionFactory">
+                 <factory-type>XA_QUEUE</factory-type>
+                 <connectors>
+                    <connector-ref connector-name="netty" backup-connector-name="netty-throughput"/>
+                 </connectors>
+                 <entries>
+                    <entry name="RemoteConnectionFactory"/>
+                 </entries>
+                 <client-id>testClient2</client-id>
+              </connection-factory>
+              <connection-factory name="otherConnectionFactory">
+                 <discovery-group-ref discovery-group-name="groupC" />
+                 <discovery-initial-wait-timeout>1234</discovery-initial-wait-timeout>
+                 <entries>
+                    <entry name="otherConnectionFactory"/>
+                 </entries>
+              </connection-factory>
+              <pooled-connection-factory name="hornetq-ra">
+                 <user>alice</user>
+                 <password>alicepassword</password>
+                 <transaction mode="xa"/>
+                 <connectors>
+                    <connector-ref connector-name="in-vm"/>
+                 </connectors>
+                 <entries>
+                    <entry name="java:/JmsXA"/>
+                 </entries>
+              </pooled-connection-factory>
+              <pooled-connection-factory name="hornetq-ra-local">
+                 <user>alice</user>
+                 <password>alicepassword</password>
+                 <transaction mode="local"/>
+                 <connectors>
+                    <connector-ref connector-name="in-vm"/>
+                 </connectors>
+                 <entries>
+                    <entry name="java:/JmsLocal"/>
+                 </entries>
+              </pooled-connection-factory>
+              <pooled-connection-factory name="hornetq-ra-none">
+                 <user>alice</user>
+                 <password>alicepassword</password>
+                 <transaction mode="none"/>
+                 <connectors>
+                    <connector-ref connector-name="in-vm"/>
+                 </connectors>
+                 <entries>
+                    <entry name="java:/JmsNone"/>
+                 </entries>
+              </pooled-connection-factory>
+           </jms-connection-factories>
+
+           <jms-destinations>
+              <jms-queue name="testQueue">
+                 <entry name="queue/test"/>
+                 <selector string="color='red'"/>
+              </jms-queue>
+              <jms-topic name="testTopic">
+                 <entry name="topic/test"/>
+              </jms-topic>
+           </jms-destinations>
+        </hornetq-server>
+
+        <hornetq-server name="empty"/>
+    </subsystem>
