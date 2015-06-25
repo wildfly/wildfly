@@ -116,4 +116,19 @@ public interface TelemetryLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 13, value = "Could not find system in Insights")
     void couldNotFindSystem(@Cause Throwable cause);
+
+    /**
+     * Jdr was sent successfully
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 14, value = "Jdr sent successfully")
+    void jdrSent();
+
+    /**
+     * Could not write frequency to properties file
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 15, value = "Could not write frequency to properties file")
+    void couldNotWriteFrequency(@Cause Throwable cause);
+
 }
