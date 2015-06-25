@@ -119,6 +119,4 @@
                                 entries="java:jboss/exported/jms/RemoteConnectionFactory" />
         </replacement>
     </supplement>
-
-    <socket-binding name="messaging-group" port="0" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
 </config>
