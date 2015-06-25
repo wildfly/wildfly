@@ -14,20 +14,24 @@
             </cache-container>
             <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
                 <local-cache name="passivation">
+                    <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
                 <local-cache name="persistent">
+                    <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                     <file-store passivation="false" purge="false"/>
                 </local-cache>
             </cache-container>
             <cache-container name="ejb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan" aliases="sfsb">
                 <local-cache name="passivation">
+                    <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
                 <local-cache name="persistent">
+                    <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                     <file-store passivation="false" purge="false"/>
                 </local-cache>
@@ -57,6 +61,7 @@
             <cache-container name="web" default-cache="dist" module="org.wildfly.clustering.web.infinispan">
                 <transport lock-timeout="60000"/>
                 <distributed-cache name="dist" mode="ASYNC" owners="2" l1-lifespan="0">
+                    <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                     <file-store/>
                 </distributed-cache>
@@ -64,6 +69,7 @@
             <cache-container name="ejb" default-cache="dist" module="org.wildfly.clustering.ejb.infinispan" aliases="sfsb">
                 <transport lock-timeout="60000"/>
                 <distributed-cache name="dist" mode="ASYNC" owners="2" l1-lifespan="0">
+                    <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                     <file-store/>
                 </distributed-cache>
