@@ -63,9 +63,11 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
         JMSTopicService jmsTopicService = JMSTopicService.installService(name, serviceName, serviceTarget, new String[0]);
 
         final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
+        final ServiceName jmsTopicServiceName = JMSServices.getJmsTopicBaseServiceName(serviceName).append(name);
         final String[] jndiBindings = JMSServices.getJndiBindings(entries);
         for (String jndiBinding : jndiBindings) {
-            BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, jmsTopicService);
+            // install a binder service which depends on the JMS topic service
+            BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, jmsTopicService, jmsTopicServiceName);
         }
     }
 }
