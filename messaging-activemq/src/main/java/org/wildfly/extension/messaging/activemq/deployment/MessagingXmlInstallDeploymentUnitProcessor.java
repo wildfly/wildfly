@@ -36,6 +36,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
@@ -64,6 +66,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final List<ParseResult> parseResults = deploymentUnit.getAttachmentList(MessagingAttachments.PARSE_RESULT);
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
         for (final ParseResult parseResult : parseResults) {
 
             for (final JmsDestination topic : parseResult.getTopics()) {
@@ -78,7 +81,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                 //create the management registration
                 final PathElement serverElement = PathElement.pathElement(SERVER, topic.getServer());
                 final PathElement destination = PathElement.pathElement(JMS_TOPIC, topic.getName());
-                deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+                deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
                 PathAddress registration = PathAddress.pathAddress(serverElement, destination);
                 createDeploymentSubModel(registration, deploymentUnit);
 
@@ -102,7 +105,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                 //create the management registration
                 final PathElement serverElement = PathElement.pathElement(SERVER, queue.getServer());
                 final PathElement dest = PathElement.pathElement(JMS_QUEUE, queue.getName());
-                deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+                deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
                 PathAddress registration = PathAddress.pathAddress(serverElement, dest);
                 createDeploymentSubModel(registration, deploymentUnit);
                 JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(queue.getServer(), queue.getName(), destination);
