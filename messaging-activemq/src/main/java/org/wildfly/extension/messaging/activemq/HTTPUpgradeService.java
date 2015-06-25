@@ -28,7 +28,6 @@ import static org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnecto
 import static org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnector.SEC_ACTIVEMQ_REMOTING_KEY;
 import static org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CORE;
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import java.io.IOException;
 
@@ -49,6 +48,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.xnio.ChannelListener;
 import org.xnio.StreamConnection;
 import org.xnio.netty.transport.WrappingXnioSocketChannel;
@@ -96,7 +96,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         httpUpgradeMetadata = new ListenerRegistry.HttpUpgradeMetadata(ACTIVEMQ_REMOTING, CORE);
         listenerInfo.addHttpUpgradeMetadata(httpUpgradeMetadata);
 
-        MESSAGING_LOGGER.registeredHTTPUpgradeHandler(ACTIVEMQ_REMOTING, acceptorName);
+        MessagingLogger.ROOT_LOGGER.registeredHTTPUpgradeHandler(ACTIVEMQ_REMOTING, acceptorName);
         ServiceController<?> activeMQService = context.getController().getServiceContainer().getService(MessagingServices.getActiveMQServiceName(activeMQServerName));
         ActiveMQServer activeMQServer = ActiveMQServer.class.cast(activeMQService.getValue());
 
@@ -142,7 +142,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         return new ChannelListener<StreamConnection>() {
             @Override
             public void handleEvent(final StreamConnection connection) {
-                MESSAGING_LOGGER.debugf("Switching to %s protocol for %s http-acceptor", ACTIVEMQ_REMOTING, acceptorName);
+                MessagingLogger.ROOT_LOGGER.debugf("Switching to %s protocol for %s http-acceptor", ACTIVEMQ_REMOTING, acceptorName);
                 SocketChannel channel = new WrappingXnioSocketChannel(connection);
                 RemotingService remotingService = activeMQServer.getRemotingService();
 

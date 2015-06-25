@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.MESSAGING_LOGGER;
-
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -73,7 +71,7 @@ class QueueService implements Service<Void> {
             final ActiveMQServer server = this.activeMQServer.getValue();
             server.destroyQueue(new SimpleString(queueConfiguration.getName()), null, false);
         } catch(Exception e) {
-            MESSAGING_LOGGER.failedToDestroy("queue", queueConfiguration.getName());
+            MessagingLogger.ROOT_LOGGER.failedToDestroy("queue", queueConfiguration.getName());
         }
     }
 

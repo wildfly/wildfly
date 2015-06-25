@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.MESSAGING_LOGGER;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -97,7 +95,7 @@ public class JMSTopicService implements Service<Topic> {
                     jmsManager.removeTopicFromBindingRegistry(name);
                     topic = null;
                 } catch (Throwable e) {
-                    MESSAGING_LOGGER.failedToDestroy(e, "jms topic", name);
+                    MessagingLogger.ROOT_LOGGER.failedToDestroy(e, "jms topic", name);
                 }
                 context.complete();
             }

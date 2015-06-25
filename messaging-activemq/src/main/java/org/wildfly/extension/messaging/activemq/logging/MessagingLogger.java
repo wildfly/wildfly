@@ -63,11 +63,6 @@ public interface MessagingLogger extends BasicLogger {
     MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.wildfly.extension.messaging-activemq");
 
     /**
-     * A logger with the category {@code org.wildfly.extension.messaging-activemq}.
-     */
-    MessagingLogger MESSAGING_LOGGER = ROOT_LOGGER;
-
-    /**
      * Logs a warning message indicating AIO was not found.
      */
     @LogMessage(level = WARN)

@@ -79,14 +79,14 @@ class AddressSettingsValidator {
     private static void checkExpiryAddress(OperationContext context, ModelNode model, Resource activeMQServer, String addressSetting) throws OperationFailedException {
         ModelNode expiryAddress = EXPIRY_ADDRESS.resolveModelAttribute(context, model);
         if (!findMatchingResource(expiryAddress, activeMQServer)) {
-            MessagingLogger.MESSAGING_LOGGER.noMatchingExpiryAddress(expiryAddress.asString(), addressSetting);
+            MessagingLogger.ROOT_LOGGER.noMatchingExpiryAddress(expiryAddress.asString(), addressSetting);
         }
     }
 
     private static void checkDeadLetterAddress(OperationContext context, ModelNode model, Resource activeMQServer, String addressSetting) throws OperationFailedException {
         ModelNode deadLetterAddress = DEAD_LETTER_ADDRESS.resolveModelAttribute(context, model);
         if (!findMatchingResource(deadLetterAddress, activeMQServer)) {
-            MessagingLogger.MESSAGING_LOGGER.noMatchingDeadLetterAddress(deadLetterAddress.asString(), addressSetting);
+            MessagingLogger.ROOT_LOGGER.noMatchingDeadLetterAddress(deadLetterAddress.asString(), addressSetting);
         }
     }
 

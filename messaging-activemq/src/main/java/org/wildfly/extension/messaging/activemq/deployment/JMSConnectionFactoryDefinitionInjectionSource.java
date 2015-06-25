@@ -235,7 +235,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             if (value == null || "".equals(value)) {
                 it.remove();
             } else if (!attributeNames.contains(entry.getKey())) {
-                MessagingLogger.MESSAGING_LOGGER.unknownPooledConnectionFactoryAttribute(entry.getKey());
+                MessagingLogger.ROOT_LOGGER.unknownPooledConnectionFactoryAttribute(entry.getKey());
                 it.remove();
             }
         }

@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.MESSAGING_LOGGER;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -34,6 +32,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * {@code Service} responsible for creating and destroying a {@code javax.jms.ConnectionFactory}.
@@ -50,7 +49,7 @@ class ConnectionFactoryService implements Service<Void> {
     public ConnectionFactoryService(final ConnectionFactoryConfiguration configuration) {
         name = configuration.getName();
         if(name == null) {
-            throw MESSAGING_LOGGER.nullVar("cf name");
+            throw MessagingLogger.ROOT_LOGGER.nullVar("cf name");
         }
         this.configuration = configuration;
     }
@@ -65,7 +64,7 @@ class ConnectionFactoryService implements Service<Void> {
                     jmsManager.createConnectionFactory(false, configuration, configuration.getBindings());
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MESSAGING_LOGGER.failedToCreate(e, "connection-factory"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "connection-factory"));
                 }
             }
         };
@@ -87,7 +86,7 @@ class ConnectionFactoryService implements Service<Void> {
                 try {
                     jmsManager.destroyConnectionFactory(name);
                 } catch (Throwable e) {
-                    MESSAGING_LOGGER.failedToDestroy("connection-factory", name);
+                    MessagingLogger.ROOT_LOGGER.failedToDestroy("connection-factory", name);
                 }
                 context.complete();
             }
