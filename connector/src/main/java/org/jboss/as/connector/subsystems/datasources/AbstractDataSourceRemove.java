@@ -122,7 +122,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        addHandler.performRuntime(context, operation, /* resource (unused there anyway) */ null, model);
+        addHandler.performRuntime(context, operation, model);
 
         boolean enabled = ! operation.hasDefined(ENABLED.getName()) || ENABLED.resolveModelAttribute(context, model).asBoolean();
         if (context.isNormalServer() && enabled) {

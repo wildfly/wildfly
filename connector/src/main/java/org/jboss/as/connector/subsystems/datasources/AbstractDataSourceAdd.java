@@ -31,23 +31,24 @@ import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -67,41 +68,22 @@ import org.jboss.security.SubjectFactory;
  */
 public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
+    AbstractDataSourceAdd(final Collection<AttributeDefinition> attributes) {
+        super(attributes);
+    }
 
-    /**
-     * Overrides superclass method to pass the full {@code Resource} into the runtime handling logic.
-     *
-     * {@inheritDoc}
-     */
     @Override
-    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final Resource resource = createResource(context);
-        populateModel(context, operation, resource);
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        super.populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
         boolean enabled = ! operation.hasDefined(ENABLED.getName()) || ENABLED.resolveModelAttribute(context, model).asBoolean();
-
-        if (requiresRuntime(context)) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    performRuntime(context, operation, resource, model);
-
-                    context.completeStep(new OperationContext.RollbackHandler() {
-                        @Override
-                        public void handleRollback(OperationContext context, ModelNode operation) {
-                            rollbackRuntime(context, operation, resource);
-                        }
-                    });
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
         if (enabled) {
             context.addStep(new DataSourceEnable(this instanceof XaDataSourceAdd), OperationContext.Stage.MODEL);
         }
-        context.stepCompleted();
     }
 
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource,
-                                final ModelNode model) throws OperationFailedException {
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
@@ -173,24 +155,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException;
 
-    protected abstract void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException;
-
     protected abstract AbstractDataSourceService createDataSourceService(final String dsName, final String jndiName) throws OperationFailedException;
 
-    static void populateAddModel(final ModelNode operation, final ModelNode modelNode,
-            final String connectionPropertiesProp, final SimpleAttributeDefinition[] attributes, PropertiesAttributeDefinition[] properties) throws OperationFailedException {
-        if (operation.hasDefined(connectionPropertiesProp)) {
-            for (Property property : operation.get(connectionPropertiesProp).asPropertyList()) {
-                modelNode.get(connectionPropertiesProp, property.getName()).set(property.getValue().asString());
-            }
-        }
-        for (final SimpleAttributeDefinition attribute : attributes) {
-            attribute.validateAndSet(operation, modelNode);
-        }
-
-        for (final PropertiesAttributeDefinition attribute : properties) {
-            attribute.validateAndSet(operation, modelNode);
-        }
+    static Collection<AttributeDefinition> join(final AttributeDefinition[] a, final AttributeDefinition[] b) {
+        final List<AttributeDefinition> result = new ArrayList<>();
+        result.addAll(Arrays.asList(a));
+        result.addAll(Arrays.asList(b));
+        return result;
     }
-
 }
