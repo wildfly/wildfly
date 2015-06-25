@@ -1,0 +1,8 @@
+<subsystem xmlns="urn:jboss:domain:ejb3:1.5">
+    <timer-service thread-pool-name="default" default-data-store="file-data-store">
+        <data-stores>
+            <file-data-store name="file-data-store" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
+            <database-data-store name="database-data-store" datasource-jndi-name="${prop.timer-service-database:java:global/DataSource}" database="hsql" partition="mypartition"/>
+        </data-stores>
+    </timer-service>
+</subsystem>
