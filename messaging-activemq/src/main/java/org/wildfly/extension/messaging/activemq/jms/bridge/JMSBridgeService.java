@@ -93,18 +93,20 @@ class JMSBridgeService implements Service<JMSBridge> {
     }
 
     public void startBridge() throws Exception {
-        if (moduleName == null) {
-            bridge.start();
+        final Module module;
+        if (moduleName != null) {
+            ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
+            module =  Module.getContextModuleLoader().loadModule(moduleID);
         } else {
-            ClassLoader oldTccl= WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            try {
-                ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
-                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
-                bridge.start();
-            } finally {
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
-            }
+            module = Module.forClass(JMSBridgeService.class);
+        }
+
+        ClassLoader oldTccl= WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
+            bridge.start();
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
         MessagingLogger.MESSAGING_LOGGER.startedService("JMS Bridge", bridgeName);
     }
