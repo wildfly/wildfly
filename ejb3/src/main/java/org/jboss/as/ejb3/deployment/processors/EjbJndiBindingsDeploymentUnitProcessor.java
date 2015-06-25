@@ -122,7 +122,6 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
         // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
         final StringBuilder jndiBindingsLogMessage = new StringBuilder();
-        jndiBindingsLogMessage.append("JNDI bindings for session bean named " + sessionBean.getEJBName() + " in deployment unit " + deploymentUnit + " are as follows:");
         jndiBindingsLogMessage.append(System.lineSeparator()).append(System.lineSeparator());
 
         // now create the bindings for each view under the java:global, java:app and java:module namespaces
@@ -191,7 +190,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         }
 
         // log the jndi bindings
-        EjbLogger.DEPLOYMENT_LOGGER.info(jndiBindingsLogMessage);
+        EjbLogger.DEPLOYMENT_LOGGER.jndiBindings(sessionBean.getEJBName(),deploymentUnit,jndiBindingsLogMessage);
     }
 
     private void registerBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
