@@ -3063,4 +3063,9 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 472, value = "Cannot obtain exception repository id for %s:%n%s")
     RuntimeException exceptionRepositoryNotFound(String name, String message);
+
+    @LogMessage(level = INFO)
+    @Message(id = 473, value = "JNDI bindings for session bean named '%s' in deployment unit '%s' are as follows:%s")
+    void jndiBindings(final String ejbName, final DeploymentUnit deploymentUnit, final StringBuilder bindings);
+
 }
