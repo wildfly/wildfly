@@ -121,4 +121,5 @@ public interface BatchLogger extends BasicLogger {
 
     @Message(id = 9, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
     IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
+
 }
