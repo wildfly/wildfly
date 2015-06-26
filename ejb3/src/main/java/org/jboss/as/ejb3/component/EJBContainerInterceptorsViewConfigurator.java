@@ -37,21 +37,21 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.modules.Module;
 import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
@@ -106,7 +106,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
                              final ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final DeploymentClassIndex deploymentClassIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
         final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
         final Map<String, List<InterceptorFactory>> userAroundTimeoutsByInterceptorClass;
@@ -119,15 +119,15 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
         // info
         for (final InterceptorDescription interceptorDescription : ejbComponentDescription.getAllContainerInterceptors()) {
             final String interceptorClassName = interceptorDescription.getInterceptorClassName();
-            final ClassIndex interceptorClassIndex;
+            final Class<?> intereptorClass;
             try {
-                interceptorClassIndex = deploymentClassIndex.classIndex(interceptorClassName);
+                intereptorClass = ClassLoadingUtils.loadClass(interceptorClassName, module);
             } catch (ClassNotFoundException e) {
                 throw EeLogger.ROOT_LOGGER.cannotLoadInterceptor(e, interceptorClassName);
             }
             // run the interceptor class (and its super class hierarchy) through the InterceptorClassDescriptionTraversal so that it can
             // find the relevant @AroundInvoke/@AroundTimeout methods
-            final InterceptorClassDescriptionTraversal interceptorClassDescriptionTraversal = new InterceptorClassDescriptionTraversal(interceptorClassIndex.getModuleClass(), applicationClasses, deploymentUnit, ejbComponentDescription);
+            final InterceptorClassDescriptionTraversal interceptorClassDescriptionTraversal = new InterceptorClassDescriptionTraversal(intereptorClass, applicationClasses, deploymentUnit, ejbComponentDescription);
             interceptorClassDescriptionTraversal.run();
             // now that the InterceptorClassDescriptionTraversal has done the relevant processing, keep track of the @AroundInvoke and
             // @AroundTimeout methods applicable for this interceptor class, within a map

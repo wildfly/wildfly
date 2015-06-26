@@ -24,13 +24,13 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.websockets.jsr.JsrWebSocketLogger;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
@@ -66,7 +66,6 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             return;
@@ -97,7 +96,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
                     if (endpoint.target() instanceof ClassInfo) {
                         ClassInfo clazz = (ClassInfo) endpoint.target();
                         try {
-                            Class<?> moduleClass = classIndex.classIndex(clazz.name().toString()).getModuleClass();
+                            Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                             if (!Modifier.isAbstract(moduleClass.getModifiers())) {
                                 annotatedEndpoints.add(moduleClass);
                             }
@@ -114,7 +113,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
                     if (endpoint.target() instanceof ClassInfo) {
                         ClassInfo clazz = (ClassInfo) endpoint.target();
                         try {
-                            Class<?> moduleClass = classIndex.classIndex(clazz.name().toString()).getModuleClass();
+                            Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                             if (!Modifier.isAbstract(moduleClass.getModifiers())) {
                                 annotatedEndpoints.add(moduleClass);
                             }
@@ -130,7 +129,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
             if (subclasses != null) {
                 for (final ClassInfo clazz : subclasses) {
                     try {
-                        Class<?> moduleClass = classIndex.classIndex(clazz.name().toString()).getModuleClass();
+                        Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                         if (!Modifier.isAbstract(moduleClass.getModifiers())) {
                             config.add((Class) moduleClass);
                         }
@@ -145,7 +144,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
             if (epClasses != null) {
                 for (final ClassInfo clazz : epClasses) {
                     try {
-                        Class<?> moduleClass = classIndex.classIndex(clazz.name().toString()).getModuleClass();
+                        Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                         if (!Modifier.isAbstract(moduleClass.getModifiers())) {
                             endpoints.add((Class) moduleClass);
                         }

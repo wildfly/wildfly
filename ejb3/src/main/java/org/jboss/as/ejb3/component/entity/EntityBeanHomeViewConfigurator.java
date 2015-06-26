@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
@@ -52,7 +53,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.metadata.ejb.spec.PersistenceType;
@@ -78,8 +78,6 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
 
         final EntityBeanComponentDescription componentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
         final EJBViewDescription createdView = localHome ? componentDescription.getEjbLocalView() : componentDescription.getEjbRemoteView();
-
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
 
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
@@ -132,8 +130,8 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                 final Class<?> ejbObjectClass;
                 final Class<?> pkClass;
                 try {
-                    ejbObjectClass = classIndex.classIndex(createdView.getViewClassName()).getModuleClass();
-                    pkClass = classIndex.classIndex(componentDescription.getPrimaryKeyType()).getModuleClass();
+                    ejbObjectClass = ClassLoadingUtils.loadClass(createdView.getViewClassName(), deploymentUnit);
+                    pkClass = ClassLoadingUtils.loadClass(componentDescription.getPrimaryKeyType(), deploymentUnit);
                 } catch (ClassNotFoundException e) {
                     throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                 }

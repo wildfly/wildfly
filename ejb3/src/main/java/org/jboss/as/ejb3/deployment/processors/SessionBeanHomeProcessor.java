@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -48,12 +49,10 @@ import org.jboss.as.ejb3.component.session.InvalidRemoveExceptionMethodIntercept
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 
@@ -93,8 +92,6 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                 configuration.addClientPostConstructInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
                 configuration.addClientPreDestroyInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
 
-                final DeploymentClassIndex classIndex = phaseContext.getDeploymentUnit().getAttachment(Attachments.CLASS_INDEX);
-
                 //loop over methods looking for create methods:
                 for (Method method : configuration.getProxyFactory().getCachedMethods()) {
                     if (method.getName().startsWith("create")) {
@@ -122,7 +119,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
 
                         final Class<?> ejbObjectClass;
                         try {
-                            ejbObjectClass = classIndex.classIndex(ejbObjectView.getViewClassName()).getModuleClass();
+                            ejbObjectClass = ClassLoadingUtils.loadClass(ejbObjectView.getViewClassName(), context.getDeploymentUnit());
                         } catch (ClassNotFoundException e) {
                             throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                         }

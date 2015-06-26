@@ -36,7 +36,7 @@ import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
@@ -55,7 +55,7 @@ public class ComponentConfiguration {
     private final ComponentDescription componentDescription;
 
     // Core component config
-    private final ClassIndex classIndex;
+    private final ClassReflectionIndex<?> classIndex;
     private final ModuleLoader moduleLoader;
     private final ClassLoader moduleClassLoader;
 
@@ -94,7 +94,7 @@ public class ComponentConfiguration {
      */
     private final Set<Method> lifecycleMethods = new HashSet<>();
 
-    public ComponentConfiguration(final ComponentDescription componentDescription, final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    public ComponentConfiguration(final ComponentDescription componentDescription, final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         this.componentDescription = componentDescription;
         this.classIndex = classIndex;
         this.moduleClassLoader = moduleClassLoader;
@@ -117,7 +117,7 @@ public class ComponentConfiguration {
      * @return the component class
      */
     public Class<?> getComponentClass() {
-        return classIndex.getModuleClass();
+        return classIndex.getIndexedClass();
     }
 
     /**
@@ -505,7 +505,7 @@ public class ComponentConfiguration {
         this.instanceFactory = instanceFactory;
     }
 
-    public ClassIndex getClassIndex() {
+    public ClassReflectionIndex getClassIndex() {
         return classIndex;
     }
 

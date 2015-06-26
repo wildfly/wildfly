@@ -321,7 +321,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if(context.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
                         configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
-                    for (final Method method : configuration.getClassIndex().getClassMethods()) {
+                    final Set<Method> classMethods = configuration.getClassIndex().getClassMethods();
+                    for (final Method method : classMethods) {
                         configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     }
                 }
