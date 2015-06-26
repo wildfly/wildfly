@@ -54,12 +54,12 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         this.addHandler = addHandler;
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
-        final String jndiName = model.get(JNDI_NAME.getName()).asString();
+        final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
 
         final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
         final ServiceController<?> binderController = registry.getService(binderServiceName);

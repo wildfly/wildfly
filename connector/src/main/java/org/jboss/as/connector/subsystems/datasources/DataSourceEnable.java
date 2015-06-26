@@ -103,7 +103,7 @@ public class DataSourceEnable implements OperationStepHandler {
 
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
-        final String jndiName = model.get(JNDI_NAME.getName()).asString();
+        final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final List<ServiceName> serviceNames = registry.getServiceNames();
 
