@@ -41,6 +41,8 @@ import org.jboss.dmr.ModelNode;
 public interface ActiveMQReloadRequiredHandlers {
     static class AddStepHandler extends AbstractAddStepHandler {
 
+        private boolean reloadRequired = false;
+
         public AddStepHandler(Collection<? extends AttributeDefinition> attributes) {
             super(attributes);
         }
@@ -53,28 +55,33 @@ public interface ActiveMQReloadRequiredHandlers {
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             if (ActiveMQServerService.isServiceInstalled(context)) {
                 context.reloadRequired();
+                reloadRequired = true;
             }
         }
 
         @Override
         protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-            if (ActiveMQServerService.isServiceInstalled(context)) {
+            if (reloadRequired && ActiveMQServerService.isServiceInstalled(context)) {
                 context.revertReloadRequired();
             }
         }
     }
 
     final class RemoveStepHandler extends AbstractRemoveStepHandler {
+
+        private boolean reloadRequired = false;
+
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             if (ActiveMQServerService.isServiceInstalled(context)) {
                 context.reloadRequired();
+                reloadRequired = true;
             }
         }
 
         @Override
         protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (ActiveMQServerService.isServiceInstalled(context)) {
+            if (reloadRequired && ActiveMQServerService.isServiceInstalled(context)) {
                 context.revertReloadRequired();
             }
         }

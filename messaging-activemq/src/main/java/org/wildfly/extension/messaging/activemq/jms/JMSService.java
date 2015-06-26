@@ -27,7 +27,6 @@ import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 import static org.jboss.msc.service.ServiceController.State.REMOVED;
 import static org.jboss.msc.service.ServiceController.State.STOPPING;
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -186,7 +185,7 @@ public class JMSService implements Service<JMSServerManager> {
             jmsServer.stop();
             jmsServer = null;
         } catch (Exception e) {
-            MESSAGING_LOGGER.errorStoppingJmsServer(e);
+            MessagingLogger.ROOT_LOGGER.errorStoppingJmsServer(e);
         }
     }
 }

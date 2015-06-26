@@ -32,9 +32,7 @@
         <version>10.0.0.Alpha4-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-messaging-activemq</artifactId>
-    <version>10.0.0.Alpha4-SNAPSHOT</version>
 
     <name>WildFly: Messaging Subsystem With ActiveMQ Artemis</name>
 

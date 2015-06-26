@@ -22,15 +22,12 @@
 
 package org.wildfly.extension.messaging.activemq.jms.bridge;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.MESSAGING_LOGGER;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 import javax.transaction.TransactionManager;
 
 import org.apache.activemq.artemis.jms.bridge.JMSBridge;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -40,6 +37,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -93,20 +91,22 @@ class JMSBridgeService implements Service<JMSBridge> {
     }
 
     public void startBridge() throws Exception {
-        if (moduleName == null) {
-            bridge.start();
+        final Module module;
+        if (moduleName != null) {
+            ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
+            module =  Module.getContextModuleLoader().loadModule(moduleID);
         } else {
-            ClassLoader oldTccl= WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            try {
-                ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
-                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
-                bridge.start();
-            } finally {
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
-            }
+            module = Module.forClass(JMSBridgeService.class);
         }
-        MessagingLogger.MESSAGING_LOGGER.startedService("JMS Bridge", bridgeName);
+
+        ClassLoader oldTccl= WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
+            bridge.start();
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
+        }
+        MessagingLogger.ROOT_LOGGER.startedService("JMS Bridge", bridgeName);
     }
 
     @Override
@@ -116,11 +116,11 @@ class JMSBridgeService implements Service<JMSBridge> {
             public void run() {
                 try {
                     bridge.stop();
-                    MessagingLogger.MESSAGING_LOGGER.stoppedService("JMS Bridge", bridgeName);
+                    MessagingLogger.ROOT_LOGGER.stoppedService("JMS Bridge", bridgeName);
 
                     context.complete();
                 } catch(Exception e) {
-                    MESSAGING_LOGGER.failedToDestroy("bridge", bridgeName);
+                    MessagingLogger.ROOT_LOGGER.failedToDestroy("JMS Bridge", bridgeName);
                 }
             }
         };

@@ -40,6 +40,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueConfigurationRuntimeHandler;
@@ -161,7 +163,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         //create the management registration
         final PathElement serverElement = PathElement.pathElement(SERVER, getActiveMQServerName());
         final PathElement dest = PathElement.pathElement(JMS_QUEUE, queueName);
-        deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
         JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(getActiveMQServerName(), queueName, destination);
@@ -183,7 +186,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         //create the management registration
         final PathElement serverElement = PathElement.pathElement(SERVER, getActiveMQServerName());
         final PathElement dest = PathElement.pathElement(JMS_TOPIC, topicName);
-        deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
         JMSTopicConfigurationRuntimeHandler.INSTANCE.registerResource(getActiveMQServerName(), topicName, destination);

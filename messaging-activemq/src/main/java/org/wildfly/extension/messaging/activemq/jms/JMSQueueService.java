@@ -23,7 +23,6 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.server.Services.addServerExecutorDependency;
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -102,7 +101,7 @@ public class JMSQueueService implements Service<Queue> {
                     jmsManager.removeQueueFromBindingRegistry(queueName);
                     queue = null;
                 } catch (Throwable e) {
-                    MESSAGING_LOGGER.failedToDestroy(e, "queue", queueName);
+                    MessagingLogger.ROOT_LOGGER.failedToDestroy(e, "queue", queueName);
                 }
                 context.complete();
             }
