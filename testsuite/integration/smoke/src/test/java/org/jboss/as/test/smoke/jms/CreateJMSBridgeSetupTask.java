@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.smoke.jms;
 
-import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.apache.activemq.artemis.jms.bridge.QualityOfServiceMode;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;

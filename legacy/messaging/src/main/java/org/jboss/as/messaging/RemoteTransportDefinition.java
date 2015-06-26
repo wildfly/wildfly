@@ -24,11 +24,8 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 
-import java.util.Set;
-
 import javax.xml.stream.XMLStreamWriter;
 
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -62,10 +59,5 @@ public class RemoteTransportDefinition extends AbstractTransportDefinition {
 
     private RemoteTransportDefinition(boolean isAcceptor, String specificType) {
         super(isAcceptor, specificType, ATTRIBUTES);
-    }
-
-    @Override
-    protected Set<String> getAllowedKeys() {
-        return isAcceptor ? TransportConstants.ALLOWABLE_ACCEPTOR_KEYS : TransportConstants.ALLOWABLE_CONNECTOR_KEYS;
     }
 }

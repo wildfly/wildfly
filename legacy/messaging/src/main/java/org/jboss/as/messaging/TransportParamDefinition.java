@@ -25,20 +25,9 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.STRING;
 
-import java.util.Set;
-
-import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.messaging.logging.MessagingLogger;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Transport param resource definition.
@@ -54,37 +43,10 @@ public class TransportParamDefinition extends ModelOnlyResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    TransportParamDefinition(final Set<String> allowedKeys) {
+    TransportParamDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver("transport-config." + CommonAttributes.PARAM),
-                new ModelOnlyAddStepHandler(VALUE) {
-                    @Override
-                    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-                        super.populateModel(context, operation, resource);
-                        context.addStep(new CheckParameterStep(allowedKeys), OperationContext.Stage.MODEL);
-                    }
-                },
                 VALUE);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    private static class CheckParameterStep implements OperationStepHandler {
-        private final Set<String> allowedKeys;
-
-        public CheckParameterStep(Set<String> allowedKeys) {
-            this.allowedKeys = allowedKeys;
-        }
-
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String parameterName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-
-            // empty allowedKeys is possible for generic transport resources where the keys are not known.
-            if (!allowedKeys.isEmpty() && !allowedKeys.contains(parameterName)) {
-                throw MessagingLogger.ROOT_LOGGER.invalidParameterName(parameterName, allowedKeys);
-            }
-
-            context.stepCompleted();
-        }
     }
 }

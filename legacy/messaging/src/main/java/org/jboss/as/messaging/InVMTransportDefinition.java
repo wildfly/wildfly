@@ -25,12 +25,9 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.INT;
 
-import java.util.Set;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -64,10 +61,5 @@ public class InVMTransportDefinition extends AbstractTransportDefinition {
     private InVMTransportDefinition(boolean isAcceptor, String specificType) {
         super(isAcceptor, specificType, ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
-    }
-
-    @Override
-    protected Set<String> getAllowedKeys() {
-        return isAcceptor ? TransportConstants.ALLOWABLE_ACCEPTOR_KEYS : TransportConstants.ALLOWABLE_CONNECTOR_KEYS;
     }
 }

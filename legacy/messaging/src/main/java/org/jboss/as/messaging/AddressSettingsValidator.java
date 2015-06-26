@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.hornetq.jms.client.HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX;
-import static org.hornetq.jms.client.HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
@@ -42,6 +40,10 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
 class AddressSettingsValidator {
+
+    private static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
+
+    private static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
 
     /**
      * Validates that an address-setting:add operation does not define expiry-address or dead-letter address

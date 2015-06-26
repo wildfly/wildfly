@@ -28,7 +28,6 @@ import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
-import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -54,7 +53,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
     // FIXME GroupingHanderConfiguration timeout is an int (instead of a long). Use an int until HornetQ conf is fixed
     // [HORNETQ-885]
     public static final SimpleAttributeDefinition TIMEOUT = create("timeout", INT)
-            .setDefaultValue(new ModelNode(GroupingHandlerConfiguration.DEFAULT_TIMEOUT))
+            .setDefaultValue(new ModelNode(5000))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -63,7 +62,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
 
     public static final SimpleAttributeDefinition GROUP_TIMEOUT = create("group-timeout", LONG)
             // FIXME GroupingHanderConfiguration.DEFAULT_GROUP_TIMEOUT is an int (instead of a long). Cast to a long until HornetQ conf is fixed
-            .setDefaultValue(new ModelNode(1L * GroupingHandlerConfiguration.DEFAULT_GROUP_TIMEOUT))
+            .setDefaultValue(new ModelNode(-1))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -71,7 +70,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition REAPER_PERIOD = create("reaper-period", LONG)
-            .setDefaultValue(new ModelNode(GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD))
+            .setDefaultValue(new ModelNode(30000))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -80,7 +79,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
 
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<>(GroupingHandlerConfiguration.TYPE.class, false, true))
+            .setValidator(new EnumValidator<>(TYPE.class, false, true))
             .setRestartAllServices()
             .build();
 
@@ -93,5 +92,20 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.GROUPING_HANDLER),
                 ATTRIBUTES);
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
+    }
+
+    // copied from HornetQ to avoid import HornetQ artifacts just to define attribute constants and enum validator
+    private enum TYPE  {
+        LOCAL("LOCAL"), REMOTE("REMOTE");
+
+        private String type;
+
+        TYPE(final String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
     }
 }

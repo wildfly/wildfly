@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -199,5 +198,17 @@ public class JMSBridgeDefinition extends ModelOnlyResourceDefinition {
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_BRIDGE),
                 getAllAttributes());
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
+    }
+
+    private enum QualityOfServiceMode {
+        AT_MOST_ONCE(0),
+        DUPLICATES_OK(1),
+        ONCE_AND_ONLY_ONCE(2);
+
+        private final int value;
+
+        QualityOfServiceMode(int value) {
+            this.value = value;
+        }
     }
 }

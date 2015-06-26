@@ -22,14 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.hornetq.api.jms.JMSFactoryType.CF;
-import static org.hornetq.api.jms.JMSFactoryType.QUEUE_CF;
-import static org.hornetq.api.jms.JMSFactoryType.QUEUE_XA_CF;
-import static org.hornetq.api.jms.JMSFactoryType.TOPIC_CF;
-import static org.hornetq.api.jms.JMSFactoryType.TOPIC_XA_CF;
-import static org.hornetq.api.jms.JMSFactoryType.XA_CF;
-
-import org.hornetq.api.jms.JMSFactoryType;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 
@@ -39,12 +31,12 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 public enum ConnectionFactoryType {
-    GENERIC(CF),
-    TOPIC(TOPIC_CF),
-    QUEUE(QUEUE_CF),
-    XA_GENERIC(XA_CF),
-    XA_QUEUE(QUEUE_XA_CF),
-    XA_TOPIC(TOPIC_XA_CF);
+    GENERIC(JMSFactoryType.CF),
+    TOPIC(JMSFactoryType.TOPIC_CF),
+    QUEUE(JMSFactoryType.QUEUE_CF),
+    XA_GENERIC(JMSFactoryType.XA_CF),
+    XA_QUEUE(JMSFactoryType.QUEUE_XA_CF),
+    XA_TOPIC(JMSFactoryType.TOPIC_XA_CF);
 
     private final JMSFactoryType type;
 
@@ -56,5 +48,11 @@ public enum ConnectionFactoryType {
         return type;
     }
 
-    public static final ParameterValidator VALIDATOR = new EnumValidator<ConnectionFactoryType>(ConnectionFactoryType.class, true, false);
+    public static final ParameterValidator VALIDATOR = new EnumValidator<>(ConnectionFactoryType.class, true, false);
+
+    // copied from HornetQ to avoid import HornetQ artifacts just to define attribute constants and enum validator
+    private enum JMSFactoryType
+    {
+        CF, QUEUE_CF, TOPIC_CF, XA_CF, QUEUE_XA_CF, TOPIC_XA_CF;
+    }
 }

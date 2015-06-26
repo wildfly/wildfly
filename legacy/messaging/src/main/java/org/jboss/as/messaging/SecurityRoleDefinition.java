@@ -30,11 +30,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.core.security.Role;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -91,17 +88,6 @@ public class SecurityRoleDefinition extends ModelOnlyResourceDefinition {
         robxn.put("createTempQueue", SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE);
         robxn.put("deleteTempQueue", SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE);
         ROLE_ATTRIBUTES_BY_XML_NAME = Collections.unmodifiableMap(robxn);
-    }
-
-    static Role transform(final OperationContext context, final String name, final ModelNode node) throws OperationFailedException {
-        final boolean send = SEND.resolveModelAttribute(context, node).asBoolean();
-        final boolean consume = CONSUME.resolveModelAttribute(context, node).asBoolean();
-        final boolean createDurableQueue = CREATE_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
-        final boolean deleteDurableQueue = DELETE_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
-        final boolean createNonDurableQueue = CREATE_NON_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
-        final boolean deleteNonDurableQueue = DELETE_NON_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
-        final boolean manage = MANAGE.resolveModelAttribute(context, node).asBoolean();
-        return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
     }
 
     static final SecurityRoleDefinition INSTANCE = new SecurityRoleDefinition();

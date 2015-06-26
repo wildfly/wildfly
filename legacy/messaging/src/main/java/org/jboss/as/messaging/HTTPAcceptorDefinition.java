@@ -28,7 +28,6 @@ import static org.jboss.as.messaging.CommonAttributes.HTTP_ACCEPTOR;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -69,6 +68,6 @@ public class HTTPAcceptorDefinition extends ModelOnlyResourceDefinition {
     public void registerChildren(ManagementResourceRegistration registry) {
         super.registerChildren(registry);
 
-        registry.registerSubModel(new TransportParamDefinition(TransportConstants.ALLOWABLE_ACCEPTOR_KEYS));
+        registry.registerSubModel(new TransportParamDefinition());
     }
 }
