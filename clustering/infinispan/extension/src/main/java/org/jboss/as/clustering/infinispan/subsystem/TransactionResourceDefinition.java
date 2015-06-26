@@ -33,6 +33,7 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.clustering.controller.transform.AttributeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
+import org.jboss.as.clustering.controller.transform.DefaultValueAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
@@ -91,7 +92,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(30000))
+            .setDefaultValue(new ModelNode().set(10000))
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MODE, STOP_TIMEOUT, LOCKING };
@@ -192,6 +193,9 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
                 }
             };
             builder.setCustomResourceTransformer(modeTransformer);
+
+            // change default value of stop-timeout attribute
+            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(STOP_TIMEOUT), STOP_TIMEOUT);
         }
 
         buildOperationTransformation(builder, ModelDescriptionConstants.ADD, addOperationTransformers);

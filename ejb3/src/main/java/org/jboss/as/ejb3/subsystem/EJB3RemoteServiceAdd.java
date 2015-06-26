@@ -46,6 +46,7 @@ import org.jboss.as.ejb3.remote.RegistryInstallerService;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.TxnServices;
@@ -153,6 +154,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, ejbRemoteConnectorService.getTxSyncRegistryInjector())
                 .addDependency(RemoteAsyncInvocationCancelStatusService.SERVICE_NAME, RemoteAsyncInvocationCancelStatusService.class, ejbRemoteConnectorService.getAsyncInvocationCancelStatusInjector())
                 .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, ejbRemoteConnectorService.getRemotingConnectorInfoInjectedValue())
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, ejbRemoteConnectorService.getSuspendControllerInjectedValue())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
