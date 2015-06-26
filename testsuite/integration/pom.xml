@@ -61,6 +61,7 @@
                 <module>multinode</module>
                 <module>manualmode</module>
                 <module>picketlink</module>
+                <module>secman</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -79,6 +80,7 @@
                 <module>multinode</module>
                 <module>manualmode</module>
                 <module>picketlink</module>
+                <module>secman</module>
             </modules>
         </profile>
 
@@ -179,6 +181,15 @@
             <activation><property><name>ts.picketlink</name></property></activation>
             <modules>
                 <module>picketlink</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.secman -->
+        <profile>
+            <id>ts.integ.group.secman</id>
+            <activation><property><name>ts.secman</name></property></activation>
+            <modules>
+                <module>secman</module>
             </modules>
         </profile>
     </profiles>
