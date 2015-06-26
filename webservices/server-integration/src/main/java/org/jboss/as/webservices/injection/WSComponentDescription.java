@@ -41,7 +41,7 @@ public final class WSComponentDescription extends ComponentDescription {
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassReflectionIndex<?> classIndex, final ClassLoader moduleClassLoader,
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader,
             final ModuleLoader moduleLoader) {
         final ComponentConfiguration cc = super.createConfiguration(classIndex, moduleClassLoader, moduleLoader);
         cc.setComponentCreateServiceFactory(WSComponentCreateServiceFactory.INSTANCE);

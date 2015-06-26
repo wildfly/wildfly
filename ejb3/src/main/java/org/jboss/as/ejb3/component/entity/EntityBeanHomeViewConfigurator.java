@@ -169,7 +169,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
         final String name = method.getName().replaceFirst(userName, ejbMethodName);
         Class<?> clazz = componentClass;
         while (clazz != Object.class) {
-            final ClassReflectionIndex<?> classIndex = index.getClassIndex(clazz);
+            final ClassReflectionIndex classIndex = index.getClassIndex(clazz);
             Method ret = classIndex.getMethod(returnType, name, namesOf(method.getParameterTypes()));
             if (ret != null) {
                 return ret;
@@ -183,7 +183,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
         final String name = method.getName().replaceFirst("find", "ejbFind");
         Class<?> clazz = componentClass;
         while (clazz != Object.class) {
-            final ClassReflectionIndex<?> classIndex = index.getClassIndex(clazz);
+            final ClassReflectionIndex classIndex = index.getClassIndex(clazz);
             Collection<Method> methods = classIndex.getMethods(name, method.getParameterTypes());
             if (!methods.isEmpty()) {
                 return methods.iterator().next();
@@ -200,7 +200,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
         final String name = "ejbHome" + Character.toUpperCase(method.getName().charAt(0)) + method.getName().substring(1);
         Class<?> clazz = componentClass;
         while (clazz != Object.class) {
-            final ClassReflectionIndex<?> classIndex = index.getClassIndex(clazz);
+            final ClassReflectionIndex classIndex = index.getClassIndex(clazz);
             Collection<Method> methods = classIndex.getMethods(name, method.getParameterTypes());
             if (!methods.isEmpty()) {
                 return methods.iterator().next();

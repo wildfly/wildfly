@@ -85,7 +85,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         if (instanceFactory != null) {
             instantiator = new ImmediateInterceptorFactory(new ComponentInstantiatorInterceptor(instanceFactory, BasicComponentInstance.INSTANCE_KEY, true));
         } else {
-            final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
+            final ClassReflectionIndex componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
             //use the default constructor if no instanceFactory has been set
             final Constructor<?> constructor = componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (constructor == null) {
@@ -124,7 +124,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             final Object contextKey = interceptorClass;
             configuration.getInterceptorContextKeys().add(contextKey);
 
-            final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
+            final ClassReflectionIndex interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
             final Constructor<?> constructor = interceptorIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (constructor == null) {
                 throw EeLogger.ROOT_LOGGER.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());

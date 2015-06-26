@@ -74,7 +74,7 @@ final class MBeanServices {
      * @param componentInstantiator
      * @param setupActions the deployment unit's service name
      */
-    MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target,ServiceComponentInstantiator componentInstantiator,
+    MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex> mBeanClassHierarchy, final ServiceTarget target,ServiceComponentInstantiator componentInstantiator,
                   final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader) {
         if (mBeanClassHierarchy == null) {
             throw SarLogger.ROOT_LOGGER.nullVar("mBeanName");

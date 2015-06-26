@@ -50,7 +50,7 @@ public final class ServiceComponentDescription extends ComponentDescription {
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassReflectionIndex<?> classIndex, final ClassLoader moduleClassLoader,
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader,
             final ModuleLoader moduleLoader) {
         final ComponentConfiguration configuration = super.createConfiguration(classIndex, moduleClassLoader, moduleLoader);
         // will not be used, but if instance factory is not set then components must have default constructor, which is not a

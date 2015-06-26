@@ -256,7 +256,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
                 interceptorConfig = InterceptorClassDescription.merge(null, moduleDescription.getInterceptorClassOverride(clazz.getName()));
             }
             // get the container-interceptor class' constructor
-            final ClassReflectionIndex<?> interceptorClassReflectionIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
+            final ClassReflectionIndex interceptorClassReflectionIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
             final Constructor<?> interceptorClassConstructor = interceptorClassReflectionIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (interceptorClassConstructor == null) {
                 throw EeLogger.ROOT_LOGGER.defaultConstructorNotFound(interceptorClass);

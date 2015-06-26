@@ -116,7 +116,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassReflectionIndex<?> classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         final ComponentConfiguration mdbComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
         final Class<?> messageListenerInterface;

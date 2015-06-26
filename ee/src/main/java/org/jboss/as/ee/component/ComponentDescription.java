@@ -127,7 +127,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
         configurators.addLast(DEFAULT_COMPONENT_VIEW_CONFIGURATOR);
     }
 
-    public ComponentConfiguration createConfiguration(final ClassReflectionIndex<?> classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         return new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
     }
 

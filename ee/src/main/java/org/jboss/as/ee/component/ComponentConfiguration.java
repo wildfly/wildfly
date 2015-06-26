@@ -55,7 +55,7 @@ public class ComponentConfiguration {
     private final ComponentDescription componentDescription;
 
     // Core component config
-    private final ClassReflectionIndex<?> classIndex;
+    private final ClassReflectionIndex classIndex;
     private final ModuleLoader moduleLoader;
     private final ClassLoader moduleClassLoader;
 
@@ -193,7 +193,7 @@ public class ComponentConfiguration {
      * @param publicOnly If true then then interceptor is only added to public methods
      */
     public void addComponentInterceptors(List<InterceptorFactory> factory, int priority, boolean publicOnly) {
-        for (Method method : classIndex.getClassMethods()) {
+        for (Method method : (Iterable<Method>)classIndex.getClassMethods()) {
             if (publicOnly && !Modifier.isPublic(method.getModifiers())) {
                 continue;
             }
@@ -241,7 +241,7 @@ public class ComponentConfiguration {
      * @param priority The interceptors relative order
      */
     public void addTimeoutViewInterceptor(InterceptorFactory factory, int priority) {
-        for (Method method : classIndex.getClassMethods()) {
+        for (Method method : (Iterable<Method>)classIndex.getClassMethods()) {
             OrderedItemContainer<InterceptorFactory> interceptors = timeoutInterceptors.get(method);
             if (interceptors == null) {
                 timeoutInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());

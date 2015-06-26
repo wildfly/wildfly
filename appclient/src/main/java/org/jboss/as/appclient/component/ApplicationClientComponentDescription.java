@@ -54,7 +54,7 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassReflectionIndex<?> classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         final ComponentConfiguration configuration =  super.createConfiguration(classIndex, moduleClassLoader, moduleLoader);
         configuration.setInstanceFactory(new ComponentFactory() {
             @Override

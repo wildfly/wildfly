@@ -131,7 +131,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
         if (currentClass == null) {
             throw EjbLogger.ROOT_LOGGER.failToFindMethodWithParameterTypes(componentClass.getName(), methodData.getMethodName(), methodData.getMethodParams());
         }
-        final ClassReflectionIndex<?> classIndex = index.getClassIndex(currentClass);
+        final ClassReflectionIndex classIndex = index.getClassIndex(currentClass);
 
         if (methodData.getMethodParams() == null) {
             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());

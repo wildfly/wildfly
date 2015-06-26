@@ -71,7 +71,7 @@ public final class FieldInjectionTarget extends InjectionTarget {
         final Module module = deploymentUnit.getAttachment(MODULE);
         final ModuleClassLoader classLoader = module.getClassLoader();
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
-        final ClassReflectionIndex<?> classIndex;
+        final ClassReflectionIndex classIndex;
         try {
             classIndex = reflectionIndex.getClassIndex(Class.forName(className, false, classLoader));
         } catch (ClassNotFoundException e) {

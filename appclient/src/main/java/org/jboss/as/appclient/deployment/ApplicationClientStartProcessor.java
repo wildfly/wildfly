@@ -106,7 +106,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         Method mainMethod = null;
         Class<?> klass = mainClass;
         while (klass != Object.class) {
-            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(klass);
+            final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(klass);
             mainMethod = index.getMethod(void.class, "main", String[].class);
             if (mainMethod != null) {
                 break;

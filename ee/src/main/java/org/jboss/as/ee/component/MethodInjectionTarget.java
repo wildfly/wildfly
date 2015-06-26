@@ -74,7 +74,7 @@ public final class MethodInjectionTarget extends InjectionTarget {
     }
 
     public Method getMethod(final DeploymentReflectionIndex reflectionIndex, final Class<?> clazz) throws DeploymentUnitProcessingException {
-        final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(clazz);
+        final ClassReflectionIndex classIndex = reflectionIndex.getClassIndex(clazz);
         Collection<Method> methods = null;
         final String paramType = getDeclaredValueClassName();
         final String name = getName();
