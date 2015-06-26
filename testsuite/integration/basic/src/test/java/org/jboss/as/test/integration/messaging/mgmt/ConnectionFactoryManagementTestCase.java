@@ -84,13 +84,7 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
             e.printStackTrace();
             assertEquals(FAILED, e.getResult().get(OUTCOME).asString());
             assertEquals(true, e.getResult().get(ROLLED_BACK).asBoolean());
-            final String errorCode;
-            if ("hornetq".equals(jmsOperations.getProviderName())) {
-                errorCode = "WFLYMSG0019";
-            } else {
-                errorCode = "WFLYMSGAMQ0019";
-            }
-            assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains(errorCode));
+            assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains("WFLYMSGAMQ0019"));
         }
 
         jmsOperations.removeJmsConnectionFactory(CF_NAME);

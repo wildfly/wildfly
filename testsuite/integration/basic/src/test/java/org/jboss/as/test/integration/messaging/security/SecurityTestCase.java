@@ -27,32 +27,24 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.hornetq.core.security.CheckType;
+import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.ActiveMQExceptionType;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.ClientConsumer;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
+import org.apache.activemq.artemis.core.security.CheckType;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.integration.common.jms.JMSOperations;
-import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.dmr.ModelNode;
-import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -68,21 +60,15 @@ public class SecurityTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
-    @Before
-    public void setUp() {
-        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
-        Assume.assumeTrue("Test is relevant only when the messaging subsystem with HornetQ is setup", "hornetq".equals(jmsOperations.getProviderName()));
-    }
-
     @Test
     public void testFailedAuthenticationBadUserPass() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), managementClient.getWebUri().getPort());
         try {
             sf.createSession("fail", "epicfail", false, true, true, false, 1);
             fail("must not allow to create a session with bad authentication");
-        } catch (HornetQException e) {
-            assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119031"));
+        } catch (ActiveMQException e) {
+            assertEquals(ActiveMQExceptionType.SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage(), e.getMessage().startsWith("AMQ119031"));
         } finally {
             if (sf != null) {
                 sf.close();
@@ -96,9 +82,9 @@ public class SecurityTestCase {
         try {
             sf.createSession();
             fail("must not allow to create a session without any authentication");
-        } catch (HornetQException e) {
-            assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119031"));
+        } catch (ActiveMQException e) {
+            assertEquals(ActiveMQExceptionType.SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage(), e.getMessage().startsWith("AMQ119031"));
         } finally {
             if (sf != null) {
                 sf.close();
@@ -110,11 +96,11 @@ public class SecurityTestCase {
     public void testDefaultClusterUser() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), managementClient.getWebUri().getPort());
         try {
-            sf.createSession(HornetQDefaultConfiguration.getDefaultClusterUser(), HornetQDefaultConfiguration.getDefaultClusterPassword(), false, true, true, false, 1);
+            sf.createSession(ActiveMQDefaultConfiguration.getDefaultClusterUser(), ActiveMQDefaultConfiguration.getDefaultClusterPassword(), false, true, true, false, 1);
             fail("must not allow to create a session with the default cluster user credentials");
-        } catch (HornetQException e) {
-            assertEquals(HornetQExceptionType.CLUSTER_SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119099"));
+        } catch (ActiveMQException e) {
+            assertEquals(ActiveMQExceptionType.CLUSTER_SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage(), e.getMessage().startsWith("AMQ119099"));
         } finally {
             if (sf != null) {
                 sf.close();
@@ -168,27 +154,14 @@ public class SecurityTestCase {
             session = sf.createSession("guest", "guest", false, true, true, false, 1);
             session.createQueue(queueName, queueName, true);
             fail("Must not create a durable queue without the CREATE_DURABLE_QUEUE permission");
-        } catch (HornetQException e) {
-            assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119032"));
+        } catch (ActiveMQException e) {
+            assertEquals(ActiveMQExceptionType.SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage().startsWith("AMQ119032"));
             assertTrue(e.getMessage().contains(CheckType.CREATE_DURABLE_QUEUE.toString()));
         } finally {
             if (session != null) {
                 session.close();
             }
-        }
-    }
-
-    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(new OperationBuilder(update).build());
-        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
-            }
-        } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.get("failure-description").toString());
-        } else {
-            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 
@@ -199,6 +172,6 @@ public class SecurityTestCase {
         properties.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
         properties.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);
-        return HornetQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
+        return ActiveMQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }
 }

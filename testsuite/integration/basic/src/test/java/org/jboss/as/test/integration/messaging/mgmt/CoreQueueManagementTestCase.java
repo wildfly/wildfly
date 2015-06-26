@@ -32,33 +32,30 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientProducer;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
+import org.apache.activemq.artemis.api.core.client.ServerLocator;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.common.jms.JMSOperations;
-import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the management API for HornetQ core queues.
+ * Tests the management API for Artemis core queues.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -78,9 +75,6 @@ public class CoreQueueManagementTestCase {
     @Before
     public void setup() throws Exception {
 
-        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
-        Assume.assumeTrue("Test is relevant only when the messaging subsystem with HornetQ is setup", "hornetq".equals(jmsOperations.getProviderName()));
-
         count++;
 
         HashMap<String, Object> map = new HashMap<String, Object>();
@@ -90,7 +84,7 @@ public class CoreQueueManagementTestCase {
         map.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
         TransportConfiguration transportConfiguration =
                 new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-        ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
+        ServerLocator locator = ActiveMQClient.createServerLocatorWithoutHA(transportConfiguration);
         locator.setBlockOnDurableSend(true);
         locator.setBlockOnNonDurableSend(true);
         sessionFactory =  locator.createSessionFactory();
@@ -370,16 +364,16 @@ public class CoreQueueManagementTestCase {
 
     private ModelNode getQueueOperation(String operationName, String queueName) {
         final ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
+        address.add("subsystem", "messaging-activemq");
+        address.add("server", "default");
         address.add("queue", queueName);
         return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
     }
 
     private ModelNode getRuntimeQueueOperation(String operationName, String queueName) {
         final ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
+        address.add("subsystem", "messaging-activemq");
+        address.add("server", "default");
         address.add("runtime-queue", queueName);
         return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
     }
