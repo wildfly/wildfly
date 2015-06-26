@@ -25,16 +25,14 @@ package org.jboss.as.test.manualmode.messaging.ha;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -47,8 +45,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -64,6 +60,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
@@ -84,8 +81,6 @@ public abstract class AbstractMessagingHATestCase {
 
     // maximum time for HornetQ activation to detect node failover/failback
     protected static int ACTIVATION_TIMEOUT = 30000;
-    // maximum time to reload a server
-    protected static int RELOAD_TIMEOUT = 30000;
 
     private String snapshotForServer1;
     private String snapshotForServer2;
@@ -259,15 +254,15 @@ public abstract class AbstractMessagingHATestCase {
         container.start(SERVER1);
         ModelControllerClient client1 = createClient1();
         snapshotForServer1 = takeSnapshot(client1);
-        reload(client1, true);
-        client1 = waitFoServer1ToReload(client1);
+        executeReloadAndWaitForCompletionOfServer1(client1, true);
+        client1 = createClient1();
 
         // start server2 and reload it in admin-only
         container.start(SERVER2);
         ModelControllerClient client2 = createClient2();
         snapshotForServer2 = takeSnapshot(client2);
-        reload(client2, true);
-        client2 = waitFoServer2ToReload(client2);
+        executeReloadAndWaitForCompletionOfServer2(client2, true);
+        client2 = createClient2();
 
         // setup both servers
         try {
@@ -278,13 +273,13 @@ public abstract class AbstractMessagingHATestCase {
             throw e;
         }
 
-        // reload server1
-        reload(client1, false);
-        client1 = waitFoServer1ToReload(client1);
+        // reload server1 in normal mode
+        executeReloadAndWaitForCompletionOfServer1(client1, false);
+        client1 = createClient1();
 
-        // reload server2
-        reload(client2, false);
-        client2 = waitFoServer2ToReload(client2);
+        // reload server2  in normal mode
+        executeReloadAndWaitForCompletionOfServer2(client2, false);
+        client2 = createClient2();
 
         // both servers are started and configured
         assertTrue(container.isStarted(SERVER1));
@@ -308,88 +303,14 @@ public abstract class AbstractMessagingHATestCase {
         restoreSnapshot(snapshotForServer2);
     }
 
-    protected static ModelNode reload(ModelControllerClient client, boolean adminOnly) throws IOException {
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(OP).set("reload");
-        operation.get("admin-only").set(adminOnly);
-        try {
-            ModelNode result = client.execute(operation);
-            return result;
-        } catch(IOException e) {
-            final Throwable cause = e.getCause();
-            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
-                throw e;
-            } // else ignore, this might happen if the channel gets closed before we got the response
-        }
-        return operation;
+    private void executeReloadAndWaitForCompletionOfServer1(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
+        executeReloadAndWaitForCompletion(initialClient, adminOnly);
     }
 
-    private ModelControllerClient waitFoServer1ToReload(ModelControllerClient initialClient) throws Exception {
-        // FIXME use the CLI high-level reload operation that blocks instead of
-        // fiddling with timeouts...
-        // leave some time to have the server starts its reload process and change
-        // its server-starte from running.
-        Thread.sleep(TimeoutUtil.adjust(500));
-        long start = System.currentTimeMillis();
-        long now;
-        ModelControllerClient client = initialClient;
-        do {
-            client.close();
-            client = createClient1();
-            ModelNode operation = new ModelNode();
-            operation.get(OP_ADDR).setEmptyList();
-            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-            operation.get(NAME).set("server-state");
-            try {
-                ModelNode result = client.execute(operation);
-                boolean normal = "running".equals(result.get(RESULT).asString());
-                if (normal) {
-                    return client;
-                }
-            } catch (Exception e) {
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-            }
-            now = System.currentTimeMillis();
-        } while (now - start < RELOAD_TIMEOUT);
-
-        throw new Exception("Server did not reload in the imparted time.");
-    }
-
-    private ModelControllerClient waitFoServer2ToReload(ModelControllerClient initialClient) throws Exception {
-        // FIXME use the CLI high-level reload operation that blocks instead of
-        // fiddling with timeouts...
-        // leave some time to have the server starts its reload process and change
-        // its server-starte from running.
-        Thread.sleep(TimeoutUtil.adjust(500));
-        long start = System.currentTimeMillis();
-        long now;
-        ModelControllerClient client = initialClient;
-        do {
-            client.close();
-            client = createClient2();
-            ModelNode operation = new ModelNode();
-            operation.get(OP_ADDR).setEmptyList();
-            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-            operation.get(NAME).set("server-state");
-            try {
-                ModelNode result = client.execute(operation);
-                boolean normal = "running".equals(result.get(RESULT).asString());
-                if (normal) {
-                    return client;
-                }
-            } catch (Exception e) {
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-            }
-            now = System.currentTimeMillis();
-        } while (now - start < RELOAD_TIMEOUT);
-
-        throw new Exception("Server did not reload in the imparted time.");
+    private void executeReloadAndWaitForCompletionOfServer2(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
+        executeReloadAndWaitForCompletion(initialClient, ServerReload.TIMEOUT,
+                adminOnly,
+                TestSuiteEnvironment.getServerAddress(),
+                TestSuiteEnvironment.getServerPort() + 100);
     }
 }
