@@ -19,7 +19,7 @@ ROOT="/"
 M2_HOME=""
 MAVEN_HOME=""
 
-MAVEN_OPTS="$MAVEN_OPTS -Xmx768M"
+MAVEN_OPTS="$MAVEN_OPTS -Xmx1024M"
 export MAVEN_OPTS
 
 ./tools/download-maven.sh
