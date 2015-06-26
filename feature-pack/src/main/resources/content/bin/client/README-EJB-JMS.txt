@@ -7,6 +7,7 @@ org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec
 org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec
 org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec
 
+io.netty:netty-all
 org.jboss:jboss-ejb-client
 org.jboss:jboss-remote-naming
 org.jboss.logging:jboss-logging
@@ -17,9 +18,9 @@ org.jboss.remotingjmx:remoting-jmx
 org.jboss.sasl:jboss-sasl
 org.jboss.xnio:xnio-api
 org.jboss.xnio:xnio-nio
-org.jboss.netty:netty
-org.hornetq:hornetq-core-client
-org.hornetq:hornetq-jms-client
+org.apache.activemq:artemis-commons
+org.apache.activemq:artemis-core-client
+org.apache.activemq:artemis-jms-client
 
 
 Maven users should not use this jar, but should use the following BOM dependencies instead
