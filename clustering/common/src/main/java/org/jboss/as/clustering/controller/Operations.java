@@ -76,7 +76,7 @@ public final class Operations {
 
     /**
      * Creates a composite operation using the specified operation steps.
-     * @param operation steps
+     * @param operations steps
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(List<ModelNode> operations) {
@@ -90,7 +90,7 @@ public final class Operations {
 
     /**
      * Creates a composite operation using the specified operation steps.
-     * @param operation steps
+     * @param operations steps
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(ModelNode... operations) {
@@ -108,7 +108,7 @@ public final class Operations {
     }
 
     /**
-     * Creates a write-attribute operation using the specified address, namem and value.
+     * Creates a write-attribute operation using the specified address, name and value.
      * @param address a resource path
      * @param name an attribute name
      * @param value an attribute value
@@ -185,6 +185,12 @@ public final class Operations {
 
     public static ModelNode createMapRemoveOperation(PathAddress address, String attributeName, String key) {
         return createMapEntryOperation(MapOperations.MAP_REMOVE_DEFINITION, address, attributeName, key);
+    }
+
+    public static ModelNode createMapClearOperation(PathAddress address, String attributeName) {
+        ModelNode operation = Util.createOperation(MapOperations.MAP_CLEAR_DEFINITION, address);
+        operation.get(ModelDescriptionConstants.NAME).set(attributeName);
+        return operation;
     }
 
     private static ModelNode createMapEntryOperation(OperationDefinition definition, PathAddress address, String attributeName, String key) {

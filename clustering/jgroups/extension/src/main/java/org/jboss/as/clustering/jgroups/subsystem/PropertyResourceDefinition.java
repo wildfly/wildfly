@@ -153,4 +153,5 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
         };
         this.registerRemoveOperation(registration, removeHandler);
     }
+
 }

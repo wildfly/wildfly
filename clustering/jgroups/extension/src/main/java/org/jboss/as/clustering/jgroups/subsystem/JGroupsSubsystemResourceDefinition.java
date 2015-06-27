@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -33,12 +34,17 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.DiscardPolicy;
+import org.jboss.as.controller.transform.description.DynamicDiscardPolicy;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
 
 /**
  * The root resource of the JGroups subsystem.
@@ -73,12 +79,59 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, DEFAULT_CHANNEL)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, DEFAULT_CHANNEL)
-                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, DEFAULT_STACK)
+                    .setDiscard(DiscardAttributeChecker.ALWAYS, DEFAULT_CHANNEL)
                     .end();
 
-            builder.rejectChildResource(ChannelResourceDefinition.WILDCARD_PATH);
+            DynamicDiscardPolicy channelDiscardRejectPolicy = new DynamicDiscardPolicy() {
+                @Override
+                public DiscardPolicy checkResource(TransformationContext context, PathAddress address) {
+                    // Check whether all channel resources are used by the infinispan subsystem, and transformed
+                    // by its corresponding transformers; reject otherwise
+
+                    // n.b. we need to hardcode the values because otherwise we would end up with cyclical dependency
+
+                    String channelName = address.getLastElement().getValue();
+
+                    PathAddress rootAddress = address.subAddress(0, address.size() - 2);
+                    PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"));
+
+                    Resource infinispanResource;
+                    try {
+                        infinispanResource = context.readResourceFromRoot(subsystemAddress);
+                    } catch (Resource.NoSuchResourceException nsre) {
+                        return DiscardPolicy.REJECT_AND_WARN;
+                    }
+                    ModelNode infinispanModel = Resource.Tools.readModel(infinispanResource);
+
+                    if (infinispanModel.hasDefined("cache-container")) {
+                        for (ModelNode container : infinispanModel.get("cache-container").asList()) {
+                            ModelNode cacheContainer = container.get(0);
+                            if (cacheContainer.hasDefined("transport")) {
+                                ModelNode transport = cacheContainer.get("transport").get("TRANSPORT");
+                                if (transport.hasDefined("channel")) {
+                                    String channel = transport.get("channel").asString();
+                                    if (channel.equals(channelName)) {
+                                        return DiscardPolicy.SILENT;
+                                    }
+                                } else {
+                                    // In that case, if this were the default channel, it can be discarded too
+                                    ModelNode subsystem = context.readResourceFromRoot(address.subAddress(0, address.size() - 1)).getModel();
+                                    if (subsystem.hasDefined(DEFAULT_CHANNEL.getName())) {
+                                        if (subsystem.get(DEFAULT_CHANNEL.getName()).asString().equals(channelName)) {
+                                            return DiscardPolicy.SILENT;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // No references to this channel, we need to reject it.
+                    return DiscardPolicy.REJECT_AND_WARN;
+                }
+
+            };
+            builder.addChildResource(ChannelResourceDefinition.WILDCARD_PATH, channelDiscardRejectPolicy);
         } else {
             ChannelResourceDefinition.buildTransformation(version, builder);
         }

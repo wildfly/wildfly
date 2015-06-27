@@ -208,7 +208,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = model.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = this.createKernelServicesBuilder();
+        KernelServicesBuilder builder = this.createKernelServicesBuilder().enableTransformerAttachmentGrabber();
 
         // initialize the legacy services
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controller, version)

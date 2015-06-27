@@ -73,6 +73,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             //adjusters will also make adjustments for the legacy version being
             //tested.
             DomainLifecycleUtil masterUtil = getDomainMasterLifecycleUtil();
+            //masterUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
             masterUtil.getConfiguration().setAdminOnly(true);
             //masterUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
             masterUtil.start();
