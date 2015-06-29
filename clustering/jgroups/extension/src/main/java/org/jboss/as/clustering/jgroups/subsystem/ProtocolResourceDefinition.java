@@ -188,23 +188,15 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     }
 
     ProtocolResourceDefinition() {
-        this(new ReloadRequiredAddStepHandler(ATTRIBUTES) {
-            @Override
-            protected ResourceCreator getResourceCreator() {
-                //Set this up as an ordered child, which should have indexed adds
-                return new OrderedResourceCreator(true);
-            }
-        });
+        this(new ReloadRequiredAddStepHandler(ATTRIBUTES));
     }
 
     ProtocolResourceDefinition(OperationStepHandler addHandler) {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.PROTOCOL), addHandler, new ReloadRequiredRemoveStepHandler());
-    }
-
-    @Override
-    protected boolean isOrderedChildResource() {
-        //Set this up as an ordered child resource so that the add handler gets the add-index parameter added
-        return true;
+        super(
+                new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.PROTOCOL))
+                    .setAddHandler(addHandler)
+                    .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                    .setOrderedChild());
     }
 
     @Override
