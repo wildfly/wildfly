@@ -21,8 +21,6 @@
  */
 package org.jboss.as.messaging.jms;
 
-import static org.hornetq.api.core.client.HornetQClient.DEFAULT_CONNECTION_TTL;
-import static org.hornetq.api.core.client.HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
@@ -40,8 +38,6 @@ import static org.jboss.dmr.ModelType.STRING;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ListAttributeDefinition;
@@ -62,63 +58,63 @@ public interface ConnectionFactoryAttributes {
 
     interface Common {
         AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_AUTO_GROUP))
+                .setDefaultValue(new ModelNode().set(false))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE))
+                .setDefaultValue(new ModelNode().set(false))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND))
+                .setDefaultValue(new ModelNode().set(true))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND))
+                .setDefaultValue(new ModelNode().set(false))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT))
+                .setDefaultValue(new ModelNode().set(false))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CLIENT_FAILURE_CHECK_PERIOD =SimpleAttributeDefinitionBuilder.create("client-failure-check-period", LONG)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
+                .setDefaultValue(new ModelNode().set(30000))
                 .setMeasurementUnit(MILLISECONDS)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES))
+                .setDefaultValue(new ModelNode().set(false))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CONFIRMATION_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("confirmation-window-size", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE))
+                .setDefaultValue(new ModelNode().set(-1))
                 .setMeasurementUnit(BYTES)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CONNECTION_LOAD_BALANCING_CLASS_NAME = SimpleAttributeDefinitionBuilder.create("connection-load-balancing-policy-class-name", STRING)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME))
+                .setDefaultValue(new ModelNode().set("org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy"))
                 .setAllowNull(true)
                 .setAllowExpression(false)
                 .build();
 
         AttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinitionBuilder("connection-ttl", LONG)
-                .setDefaultValue(new ModelNode().set(DEFAULT_CONNECTION_TTL))
+                .setDefaultValue(new ModelNode().set(60000))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .setMeasurementUnit(MILLISECONDS)
@@ -157,14 +153,14 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition CONSUMER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("consumer-max-rate", INT)
-                .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_CONSUMER_MAX_RATE))
+                .setDefaultValue(new ModelNode(-1))
                 .setMeasurementUnit(PER_SECOND)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CONSUMER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("consumer-window-size", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE))
+                .setDefaultValue(new ModelNode().set(1048576))
                 .setMeasurementUnit(BYTES)
                 .setAllowNull(true)
                 .setAllowExpression(true)
@@ -186,7 +182,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition DUPS_OK_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("dups-ok-batch-size", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE))
+                .setDefaultValue(new ModelNode().set(1048576))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
@@ -200,7 +196,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION))
+                .setDefaultValue(new ModelNode().set(false))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
@@ -217,34 +213,34 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition MAX_RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("max-retry-interval", LONG)
-                .setDefaultValue(new ModelNode().set(DEFAULT_MAX_RETRY_INTERVAL))
+                .setDefaultValue(new ModelNode().set(2000))
                 .setMeasurementUnit(MILLISECONDS)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition MIN_LARGE_MESSAGE_SIZE = SimpleAttributeDefinitionBuilder.create("min-large-message-size", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
+                .setDefaultValue(new ModelNode().set(102400))
                 .setMeasurementUnit(BYTES)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_PRE_ACKNOWLEDGE))
+                .setDefaultValue(new ModelNode().set(false))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition PRODUCER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("producer-max-rate", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_PRODUCER_MAX_RATE))
+                .setDefaultValue(new ModelNode().set(-1))
                 .setMeasurementUnit(PER_SECOND)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition PRODUCER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("producer-window-size", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE))
+                .setDefaultValue(new ModelNode().set(65536))
                 .setMeasurementUnit(BYTES)
                 .setAllowNull(true)
                 .setAllowExpression(true)
@@ -252,44 +248,44 @@ public interface ConnectionFactoryAttributes {
 
 
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS))
+                .setDefaultValue(new ModelNode().set(0))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("retry-interval", LONG)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL))
+                .setDefaultValue(new ModelNode().set(2000))
                 .setMeasurementUnit(MILLISECONDS)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER))
+                .setDefaultValue(new ModelNode().set(1))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("scheduled-thread-pool-max-size", INT)
-                .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
+                .setDefaultValue(new ModelNode().set(5))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("thread-pool-max-size", INT)
-                .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
+                .setDefaultValue(new ModelNode().set(30))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition TRANSACTION_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("transaction-batch-size", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE))
+                .setDefaultValue(new ModelNode().set(1048576))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS))
+                .setDefaultValue(new ModelNode().set(true))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
@@ -365,14 +361,14 @@ public interface ConnectionFactoryAttributes {
         SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("initial-connect-attempts", INT)
                 .setAllowNull(true)
                 .setAllowExpression(true)
-                .setDefaultValue(new ModelNode(HornetQClient.INITIAL_CONNECT_ATTEMPTS))
+                .setDefaultValue(new ModelNode(1))
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition INITIAL_MESSAGE_PACKET_SIZE = SimpleAttributeDefinitionBuilder.create("initial-message-packet-size", INT)
                 .setAllowNull(true)
                 .setAllowExpression(true)
-                .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_INITIAL_MESSAGE_PACKET_SIZE))
+                .setDefaultValue(new ModelNode(1500))
                 .setRestartAllServices()
                 .build();
 
@@ -405,7 +401,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         /**
-         * By default, the resource adapter must reconnect infinitely (see {@link org.hornetq.ra.HornetQResourceAdapter#setParams})
+         * By default, the resource adapter must reconnect infinitely.
          */
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
                 .setDefaultValue(new ModelNode().set(-1))

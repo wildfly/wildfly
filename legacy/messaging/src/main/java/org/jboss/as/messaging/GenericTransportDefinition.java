@@ -25,9 +25,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.STRING;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -52,10 +49,5 @@ public class GenericTransportDefinition extends AbstractTransportDefinition {
 
     private GenericTransportDefinition(boolean isAcceptor, String specificType) {
         super(isAcceptor, specificType, ATTRIBUTES);
-    }
-
-    @Override
-    protected Set<String> getAllowedKeys() {
-        return Collections.emptySet();
     }
 }

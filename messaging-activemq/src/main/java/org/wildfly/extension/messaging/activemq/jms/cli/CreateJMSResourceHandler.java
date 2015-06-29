@@ -134,8 +134,8 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
         if(restype.equals("javax.jms.Queue")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-            builder.addNode("subsystem", "messaging");
-            builder.addNode("hornetq-server", serverName);
+            builder.addNode("subsystem", "messaging-activemq");
+            builder.addNode("server", serverName);
             builder.addNode("jms-queue", name);
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);
@@ -149,8 +149,8 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
         } else if(restype.equals("javax.jms.Topic")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-            builder.addNode("subsystem", "messaging");
-            builder.addNode("hornetq-server", serverName);
+            builder.addNode("subsystem", "messaging-activemq");
+            builder.addNode("server", serverName);
             builder.addNode("jms-topic", name);
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);
@@ -166,8 +166,8 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
                 restype.equals("javax.jms.QueueConnectionFactory")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-            builder.addNode("subsystem", "messaging");
-            builder.addNode("hornetq-server", serverName);
+            builder.addNode("subsystem", "messaging-activemq");
+            builder.addNode("server", serverName);
             builder.addNode("connection-factory", name);
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);

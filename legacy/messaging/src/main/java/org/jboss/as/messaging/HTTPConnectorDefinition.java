@@ -24,11 +24,8 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 
-import java.util.Set;
-
 import javax.xml.stream.XMLStreamWriter;
 
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -60,10 +57,5 @@ public class HTTPConnectorDefinition extends AbstractTransportDefinition {
 
     private HTTPConnectorDefinition() {
         super(false, CommonAttributes.HTTP_CONNECTOR, SOCKET_BINDING);
-    }
-
-    @Override
-    protected Set<String> getAllowedKeys() {
-        return TransportConstants.ALLOWABLE_CONNECTOR_KEYS;
     }
 }

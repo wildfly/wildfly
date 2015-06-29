@@ -26,7 +26,6 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.STRING;
 
-import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -61,7 +60,7 @@ public class DivertDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition EXCLUSIVE = create("exclusive", BOOLEAN)
-            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultDivertExclusive()))
+            .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()

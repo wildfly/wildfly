@@ -88,7 +88,7 @@ class DeleteJMSResourceHandler extends BatchModeCommandHandler {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "messaging");
-        builder.addNode("hornetq-server", serverName);
+        builder.addNode("server", serverName);
         builder.addNode(resource, jndiName);
         builder.setOperationName("remove");
         return builder.buildRequest();

@@ -42,7 +42,7 @@
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.logging"/>
-        <!-- allow to create a RA that connects to a remote hornetq-server -->
+        <!-- allow to create a RA that connects to a remote Artemis server -->
         <module name="org.jboss.remote-naming" optional="true"/>
         <module name="org.jgroups"/>
         <module name="org.wildfly.extension.messaging-activemq"/>
