@@ -38,6 +38,7 @@ import org.jboss.as.weld.deployment.processors.BeanArchiveProcessor;
 import org.jboss.as.weld.deployment.processors.BeanDefiningAnnotationProcessor;
 import org.jboss.as.weld.deployment.processors.BeansXmlProcessor;
 import org.jboss.as.weld.deployment.processors.CdiBeanValidationFactoryProcessor;
+import org.jboss.as.weld.deployment.processors.DevelopmentModeProcessor;
 import org.jboss.as.weld.deployment.processors.ExternalBeanArchiveProcessor;
 import org.jboss.as.weld.deployment.processors.WebIntegrationProcessor;
 import org.jboss.as.weld.deployment.processors.WeldBeanManagerServiceProcessor;
@@ -93,6 +94,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WELD_IMPLICIT_DEPLOYMENT_DETECTION, new WeldImplicitDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD, new WeldDependencyProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
+                processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_DEVELOPMENT_MODE, new DevelopmentModeProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_BEAN_ARCHIVE, new BeanArchiveProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_EXTERNAL_BEAN_ARCHIVE, new ExternalBeanArchiveProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS, new WeldPortableExtensionProcessor());
