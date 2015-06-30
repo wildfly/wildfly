@@ -35,6 +35,22 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
                     .setAllowNull(true)
                     .build();
 
+    protected static final SimpleAttributeDefinition RHNUID =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.RHNUID, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition RHNPW =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.RHNPW, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
     private TelemetrySubsystemDefinition() {
         super(TelemetryExtension.SUBSYSTEM_PATH,
                 TelemetryExtension.getResourceDescriptionResolver(null),
