@@ -152,23 +152,6 @@ public class BaseQuery {
     protected Response upload(ResteasyClient client, String uri, File file,
             String description) throws FileNotFoundException, ParseException,
             RequestException {
-        // client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartWriter");
-        // client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataWriter");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartReader");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.ListMultipartReader");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataReader");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedReader");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataReader");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartWriter");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataWriter");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedWriter");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.ListMultipartWriter");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataWriter");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationReader");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationWriter");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.MimeMultipartProvider");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedReader");
-//        client.register("org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedWriter");
         MultipartFormDataOutput mdo = new MultipartFormDataOutput();
         if (description != null) {
             mdo.addFormData("description", description,
