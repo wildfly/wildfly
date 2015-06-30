@@ -104,6 +104,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -211,11 +212,13 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
     ////////////////////////////////////////
 
     @Test
+    @Ignore("WFLY-4848")
     public void testTransformersEAP_6_3_0() throws Exception {
         testTransformers(EAP_6_3_0, VERSION_1_3_0, PATH_FIXER);
     }
 
     @Test
+    @Ignore("WFLY-4848")
     public void testRejectExpressionsEAP_6_3_0() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(EAP_6_3_0, VERSION_1_3_0, PATH_FIXER, "empty_subsystem_3_0.xml");
 
@@ -223,11 +226,13 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Ignore("WFLY-4848")
     public void testTransformersEAP_6_2_0() throws Exception {
         testTransformers(EAP_6_2_0, VERSION_1_3_0, PATH_FIXER);
     }
 
     @Test
+    @Ignore("WFLY-4848")
     public void testRejectExpressionsEAP_6_2_0() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(EAP_6_2_0, VERSION_1_3_0, PATH_FIXER, "empty_subsystem_3_0.xml");
 
