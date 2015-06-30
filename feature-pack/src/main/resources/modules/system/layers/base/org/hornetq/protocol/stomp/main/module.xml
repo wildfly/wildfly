@@ -31,6 +31,8 @@
     </resources>
 
     <dependencies>
+        <!-- required for STOMP logging to work -->
+        <module name="org.jboss.logging"/>
         <!-- required to load HornetQ protocol SPI -->
         <module name="org.hornetq"/>
     </dependencies>
