@@ -65,8 +65,6 @@ public class TelemetryService extends Telemetries implements
 
     public static final String JDR_DESCRIPTION = "JDR for UUID {uuid}";
 
-    private static volatile TelemetryService instance;
-
     /**
      * Endpoint of url which when added to the end of the url reveals the
      * location of where to send the JDR Should take the format of
