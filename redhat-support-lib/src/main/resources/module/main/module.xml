@@ -15,7 +15,8 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.resteasy.resteasy-multipart-provider" services="import"/>
+        <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="import"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs" services="import"/>
+        <module name="org.jboss.resteasy.resteasy-multipart-provider" services="import"/>
     </dependencies>
 </module>
