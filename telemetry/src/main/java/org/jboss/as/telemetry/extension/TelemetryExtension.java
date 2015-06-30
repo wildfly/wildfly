@@ -25,6 +25,7 @@ import javax.xml.stream.XMLStreamException;
 
 import java.util.List;
 
+
 //import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -36,8 +37,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  */
 public class TelemetryExtension implements Extension {
 
-    protected static final String FREQUENCY = "frequency";
     protected static final String ENABLED = "enabled";
+    protected static final String FREQUENCY = "frequency";
+    protected static final String RHNPW = "rhnPw";
+    protected static final String RHNUID = "rhnUid";
     protected static final String TYPE = "telemetryType";
     protected static final PathElement TYPE_PATH = PathElement.pathElement(TYPE);
 
@@ -79,6 +82,9 @@ public class TelemetryExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ModelVersion.create(MAJOR_VERSION));
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(TelemetrySubsystemDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            registration.registerOperationHandler(TelemetryRequestHandler.DEFINITION, TelemetryRequestHandler.INSTANCE);
+        }
         subsystem.registerXMLElementWriter(parser);
     }
 
