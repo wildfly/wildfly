@@ -65,6 +65,11 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
     }
 
     @Override
+    protected void cleanFailedStart() {
+        //noting to do
+    }
+
+    @Override
     void stopListening() {
         server.suspendAccepts();
         UndertowLogger.ROOT_LOGGER.listenerSuspend("AJP", getName());
