@@ -70,6 +70,32 @@
         	<groupId>org.wildfly</groupId>
         	<artifactId>wildfly-jdr</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.redhat.gss</groupId>
+            <artifactId>wildfly-redhat-support-lib</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>

@@ -10,15 +10,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 
-import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 
 public class Telemetry {
-    private static final Logger LOGGER = Logger.getLogger(API.class.getName());
 
     protected Response get(ResteasyClient client, String uri)
             throws RequestException {
@@ -26,9 +23,6 @@ public class Telemetry {
                 .accept(MediaType.APPLICATION_JSON).get();
 
         if (response.getStatus() != HttpStatus.SC_OK) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
@@ -44,9 +38,6 @@ public class Telemetry {
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(mdo, MediaType.APPLICATION_JSON));
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
@@ -77,9 +68,6 @@ public class Telemetry {
                 MediaType.MULTIPART_FORM_DATA_TYPE));
 
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
