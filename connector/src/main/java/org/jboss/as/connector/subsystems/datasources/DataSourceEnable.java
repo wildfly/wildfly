@@ -30,6 +30,7 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -195,7 +196,8 @@ public class DataSourceEnable implements OperationStepHandler {
             builder.install();
         }
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceName = context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY_NAME, dsName, DataSource.class);
+        final ServiceName dataSourceServiceNameAlias = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName).append(Constants.STATISTICS);
 
 
         final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
@@ -205,6 +207,7 @@ public class DataSourceEnable implements OperationStepHandler {
                 final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
                 DataSourceStatisticsService statsService = new DataSourceStatisticsService(datasourceRegistration, statsEnabled);
                 serviceTarget.addService(dataSourceServiceName.append(Constants.STATISTICS), statsService)
+                        .addAliases(dataSourceServiceNameAlias)
                         .addDependency(dataSourceServiceName)
                         .addDependency(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName), CommonDeployment.class, statsService.getCommonDeploymentInjector())
                         .setInitialMode(ServiceController.Mode.PASSIVE)

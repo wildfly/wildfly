@@ -99,6 +99,10 @@ import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
  */
 public abstract class AbstractDataSourceService implements Service<DataSource> {
 
+    /**
+     * Consumers outside of the data-source subsystem should use the capability {@code org.wildfly.data-source} where
+     * the dynamic name is the resource name in the model.
+     */
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source");
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
     protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
@@ -141,6 +145,8 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
             CommonDeploymentService cdService = new CommonDeploymentService(deploymentMD);
             startContext.getController().getServiceContainer().addService(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName),cdService)
+                    // The dependency added must be the JNDI name which for subsystem resources is an alias. This service
+                    // is also used in deployments where the capability service name is not registered for the service.
                     .addDependency(SERVICE_NAME_BASE.append(jndiName))
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (Throwable t) {

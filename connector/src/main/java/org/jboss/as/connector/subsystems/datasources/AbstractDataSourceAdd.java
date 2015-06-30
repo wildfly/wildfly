@@ -30,6 +30,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import javax.sql.DataSource;
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,8 +69,8 @@ import org.jboss.security.SubjectFactory;
  */
 public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
-    AbstractDataSourceAdd(final Collection<AttributeDefinition> attributes) {
-        super(attributes);
+    AbstractDataSourceAdd(Collection<AttributeDefinition> attributes) {
+        super(Capabilities.DATA_SOURCE_CAPABILITY, attributes);
     }
 
     @Override
@@ -113,11 +114,13 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName, jndiName);
 
         final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceNameAlias = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceName = context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY_NAME, dsName, DataSource.class);
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(
                         serviceTarget.addService(dataSourceServiceName, dataSourceService),
                         dataSourceService.getExecutorServiceInjector(), false)
+                        .addAliases(dataSourceServiceNameAlias)
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())
                 .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
