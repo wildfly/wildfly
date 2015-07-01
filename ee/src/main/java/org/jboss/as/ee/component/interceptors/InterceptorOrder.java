@@ -44,7 +44,6 @@ public class InterceptorOrder {
         public static final int ENTITY_BEAN_REMOVE_INTERCEPTOR = 0x550;
         public static final int JPA_SFSB_INTERCEPTOR = 0x560;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR = 0x600;
-        public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR = 0x700;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR = 0x800;
         // WS handlers, user and CDI interceptors plus the bean method are considered user execution time
         public static final int EJB_EXECUTION_TIME_INTERCEPTOR = 0x850;
@@ -174,6 +173,7 @@ public class InterceptorOrder {
         public static final int GRACEFUL_SHUTDOWN = 0x218;
         public static final int SHUTDOWN_INTERCEPTOR = 0x220;
         public static final int INVALID_METHOD_EXCEPTION = 0x230;
+        public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR = 0x240;
         // Allows users to specify user application specific "container interceptors" which run before the
         // other JBoss specific container interceptors like the security interceptor
         public static final int USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS = 0x249;

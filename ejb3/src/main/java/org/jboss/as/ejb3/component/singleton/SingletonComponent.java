@@ -67,6 +67,8 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
+    private Interceptor interceptor;
+
     /**
      * We can't lock on <code>this</code> because the {@link org.jboss.as.ee.component.BasicComponent#waitForComponentStart()}
      * also synchronizes on it, and calls {@link #wait()}.
@@ -177,6 +179,16 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     @Override
     public AccessTimeoutDetails getDefaultAccessTimeout() {
         return defaultAccessTimeoutProvider.getDefaultAccessTimeout();
+    }
+
+    @Override
+    public void setInterceptor(Interceptor interceptor) {
+        this.interceptor = interceptor;
+    }
+
+    @Override
+    public Interceptor getInterceptor() {
+        return this.interceptor;
     }
 
     private void destroySingletonInstance() {
