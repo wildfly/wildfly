@@ -51,6 +51,7 @@ class AccessLogService implements Service<AccessLogService> {
     private final String pathRelativeTo;
     private final String filePrefix;
     private final String fileSuffix;
+    private final boolean rotate;
     private final boolean useServerLog;
     private volatile AccessLogReceiver logReceiver;
 
@@ -69,14 +70,16 @@ class AccessLogService implements Service<AccessLogService> {
         this.filePrefix = null;
         this.fileSuffix = null;
         this.useServerLog = true;
+        this.rotate = false; //doesn't really matter
     }
 
-    AccessLogService(String pattern, String path, String pathRelativeTo, String filePrefix, String fileSuffix) {
+    AccessLogService(String pattern, String path, String pathRelativeTo, String filePrefix, String fileSuffix, boolean rotate) {
         this.pattern = pattern;
         this.path = path;
         this.pathRelativeTo = pathRelativeTo;
         this.filePrefix = filePrefix;
         this.fileSuffix = fileSuffix;
+        this.rotate = rotate;
         this.useServerLog = false;
     }
 
@@ -95,7 +98,7 @@ class AccessLogService implements Service<AccessLogService> {
                 }
             }
             try {
-                logReceiver = new DefaultAccessLogReceiver(worker.getValue(), directory, filePrefix, fileSuffix);
+                logReceiver = new DefaultAccessLogReceiver(worker.getValue(), directory, filePrefix, fileSuffix, rotate);
             } catch (IllegalStateException e) {
                 throw new StartException(e);
             }
@@ -131,5 +134,13 @@ class AccessLogService implements Service<AccessLogService> {
 
     public InjectedValue<Host> getHost() {
         return host;
+    }
+
+    boolean isRotate() {
+        return rotate;
+    }
+
+    String getPath() {
+        return path;
     }
 }

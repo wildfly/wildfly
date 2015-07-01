@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Properties;
 
@@ -167,6 +168,16 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         defaultServerSC.setMode(ServiceController.Mode.ACTIVE);
         Server defaultServer = defaultServerSC.getValue();
         Assert.assertNotNull("Default host should exist", defaultServer);
+
+
+        final ServiceName accessLogServiceName = UndertowService.accessLogServiceName("some-server", "default-host");
+        ServiceController<AccessLogService> accessLogSC = (ServiceController<AccessLogService>) mainServices.getContainer().getService(accessLogServiceName);
+        Assert.assertNotNull(accessLogSC);
+        accessLogSC.setMode(ServiceController.Mode.ACTIVE);
+        AccessLogService accessLogService = accessLogSC.getValue();
+        Assert.assertNotNull(accessLogService);
+        Assert.assertFalse(accessLogService.isRotate());
+
     }
 
     private void testCustomFilters(KernelServices mainServices) {

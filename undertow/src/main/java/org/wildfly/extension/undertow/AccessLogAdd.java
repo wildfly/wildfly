@@ -35,8 +35,6 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.IOServices;
 import org.xnio.XnioWorker;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
@@ -49,22 +47,23 @@ class AccessLogAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
-        final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
+        final PathAddress address = context.getCurrentAddress();
+        final PathAddress hostAddress = address.getParent();
+        final PathAddress serverAddress = hostAddress.getParent();
         final String worker = AccessLogDefinition.WORKER.resolveModelAttribute(context, model).asString();
         final String pattern = AccessLogDefinition.PATTERN.resolveModelAttribute(context, model).asString();
         final String directory = AccessLogDefinition.DIRECTORY.resolveModelAttribute(context, model).asString();
         final String filePrefix = AccessLogDefinition.PREFIX.resolveModelAttribute(context, model).asString();
         final String fileSuffix = AccessLogDefinition.SUFFIX.resolveModelAttribute(context, model).asString();
         final boolean useServerLog = AccessLogDefinition.USE_SERVER_LOG.resolveModelAttribute(context, model).asBoolean();
+        final boolean rotate = AccessLogDefinition.ROTATE.resolveModelAttribute(context, model).asBoolean();
         final ModelNode relativeToNode = AccessLogDefinition.RELATIVE_TO.resolveModelAttribute(context, model);
         final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
         final AccessLogService service;
         if (useServerLog) {
             service = new AccessLogService(pattern);
         } else {
-            service = new AccessLogService(pattern, directory, relativeTo, filePrefix, fileSuffix);
+            service = new AccessLogService(pattern, directory, relativeTo, filePrefix, fileSuffix, rotate);
         }
 
         final String serverName = serverAddress.getLastElement().getValue();
