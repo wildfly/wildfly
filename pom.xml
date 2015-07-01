@@ -1800,6 +1800,10 @@
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>org.jboss.logmanager</groupId>
+                        <artifactId>jboss-logmanager</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
