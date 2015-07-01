@@ -485,6 +485,8 @@ public class Utils extends CoreUtils {
             final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
         LOGGER.info("Requesting URI: " + uri);
         final DefaultHttpClient httpClient = new DefaultHttpClient();
+        final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
+
         try {
             httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
@@ -512,10 +514,9 @@ public class Utils extends CoreUtils {
                 EntityUtils.consume(entity);
 
             // Use our custom configuration to avoid reliance on external config
-            Configuration.setConfiguration(new Krb5LoginConfiguration());
+            Configuration.setConfiguration(krb5Configuration);
             // 1. Authenticate to Kerberos.
-            final LoginContext lc = new LoginContext(CoreUtils.class.getName(), new UsernamePasswordHandler(user, pass));
-            lc.login();
+            final LoginContext lc = loginWithKerberos(krb5Configuration, user, pass);
 
             // 2. Perform the work as authenticated Subject.
             final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
@@ -533,6 +534,7 @@ public class Utils extends CoreUtils {
             // shut down the connection manager to ensure
             // immediate deallocation of all system resources
             httpClient.getConnectionManager().shutdown();
+            krb5Configuration.resetConfiguration();
         }
     }
 
@@ -560,6 +562,8 @@ public class Utils extends CoreUtils {
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
         String unauthorizedPageBody = null;
+        final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
+
         try {
             httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
@@ -583,10 +587,9 @@ public class Utils extends CoreUtils {
             unauthorizedPageBody = EntityUtils.toString(response.getEntity());
 
             // Use our custom configuration to avoid reliance on external config
-            Configuration.setConfiguration(new Krb5LoginConfiguration());
+            Configuration.setConfiguration(krb5Configuration);
             // 1. Authenticate to Kerberos.
-            final LoginContext lc = new LoginContext(CoreUtils.class.getName(), new UsernamePasswordHandler(user, pass));
-            lc.login();
+            final LoginContext lc = loginWithKerberos(krb5Configuration, user, pass);
 
             // 2. Perform the work as authenticated Subject.
             final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
@@ -617,6 +620,8 @@ public class Utils extends CoreUtils {
             // shut down the connection manager to ensure
             // immediate deallocation of all system resources
             httpClient.getConnectionManager().shutdown();
+            // reset login configuration
+            krb5Configuration.resetConfiguration();
         }
     }
 
@@ -1028,5 +1033,39 @@ public class Utils extends CoreUtils {
     public static String getDefaultHost(boolean canonical) {
         final String hostname = System.getProperty("node0", "127.0.0.1");
         return canonical ? getCannonicalHost(hostname) : hostname;
+    }
+
+    /**
+     * Returns installed login configuration.
+     *
+     * @return Configuration
+     */
+    public static Configuration getLoginConfiguration() {
+        return Configuration.getConfiguration();
+    }
+
+    /**
+     * Creates login context for given {@link Krb5LoginConfiguration} and credentials and calls the {@link LoginContext#login()}
+     * method on it. This method contains workaround for IBM JDK issue described in bugzilla <a
+     * href="https://bugzilla.redhat.com/show_bug.cgi?id=1206177">https://bugzilla.redhat.com/show_bug.cgi?id=1206177</a>.
+     *
+     * @param krb5Configuration
+     * @param user
+     * @param pass
+     * @return
+     * @throws LoginException
+     */
+    public static LoginContext loginWithKerberos(final Krb5LoginConfiguration krb5Configuration, final String user,
+            final String pass) throws LoginException {
+        LoginContext lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordHandler(user, pass));
+        if (IBM_JDK) {
+            // workaround for IBM JDK on RHEL5 issue described in https://bugzilla.redhat.com/show_bug.cgi?id=1206177
+            // The first negotiation always fail, so let's do a dummy login/logout round.
+            lc.login();
+            lc.logout();
+            lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordHandler(user, pass));
+        }
+        lc.login();
+        return lc;
     }
 }
