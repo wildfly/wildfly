@@ -75,6 +75,8 @@ public class MessagingDependencies {
                 "org.hornetq:hornetq-ra:2.2.23.Final-redhat-1"});
 
         map.put(ModelTestControllerVersion.EAP_6_1_0, new String[] {
+                "org.hornetq:hornetq-commons:2.3.1.Final-redhat-1",
+                "org.hornetq:hornetq-journal:2.3.1.Final-redhat-1",
                 "org.hornetq:hornetq-server:2.3.1.Final-redhat-1",
                 "org.hornetq:hornetq-jms-server:2.3.1.Final-redhat-1",
                 "org.hornetq:hornetq-core-client:2.3.1.Final-redhat-1",
@@ -82,6 +84,8 @@ public class MessagingDependencies {
                 "org.hornetq:hornetq-ra:2.3.1.Final-redhat-1"});
 
         map.put(ModelTestControllerVersion.EAP_6_1_1, new String[] {
+                "org.hornetq:hornetq-commons:2.3.5.Final-redhat-2",
+                "org.hornetq:hornetq-journal:2.3.5.Final-redhat-2",
                 "org.hornetq:hornetq-server:2.3.5.Final-redhat-2",
                 "org.hornetq:hornetq-jms-server:2.3.5.Final-redhat-2",
                 "org.hornetq:hornetq-core-client:2.3.5.Final-redhat-2",
@@ -89,6 +93,8 @@ public class MessagingDependencies {
                 "org.hornetq:hornetq-ra:2.3.5.Final-redhat-2"});
 
         map.put(ModelTestControllerVersion.EAP_6_2_0, new String[] {
+                "org.hornetq:hornetq-commons:2.3.12.Final-redhat-1",
+                "org.hornetq:hornetq-journal:2.3.12.Final-redhat-1",
                 "org.hornetq:hornetq-server:2.3.12.Final-redhat-1",
                 "org.hornetq:hornetq-jms-server:2.3.12.Final-redhat-1",
                 "org.hornetq:hornetq-core-client:2.3.12.Final-redhat-1",
@@ -97,6 +103,8 @@ public class MessagingDependencies {
         });
 
         map.put(ModelTestControllerVersion.EAP_6_3_0, new String[]{
+                "org.hornetq:hornetq-commons:2.3.20.Final-redhat-1",
+                "org.hornetq:hornetq-journal:2.3.20.Final-redhat-1",
                 "org.hornetq:hornetq-server:2.3.20.Final-redhat-1",
                 "org.hornetq:hornetq-jms-server:2.3.20.Final-redhat-1",
                 "org.hornetq:hornetq-core-client:2.3.20.Final-redhat-1",
