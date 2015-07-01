@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +65,7 @@ public abstract class ListenerService<T> implements Service<T> {
     protected final InjectedValue<SocketBinding> binding = new InjectedValue<>();
     protected final InjectedValue<SocketBinding> redirectSocket = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    protected final InjectedValue<Pool> bufferPool = new InjectedValue<>();
+    protected final InjectedValue<Pool<ByteBuffer>> bufferPool = new InjectedValue<>();
     protected final InjectedValue<Server> serverService = new InjectedValue<>();
     private final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
 
@@ -93,7 +94,7 @@ public abstract class ListenerService<T> implements Service<T> {
     }
 
     @SuppressWarnings("rawtypes")
-    public InjectedValue<Pool> getBufferPool() {
+    public InjectedValue<Pool<ByteBuffer>> getBufferPool() {
         return bufferPool;
     }
 

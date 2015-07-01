@@ -31,13 +31,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.OptionList;
 import org.xnio.OptionMap;
-import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
 /**
@@ -77,7 +77,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
         serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
+                .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), (Injector) service.getBufferPool())
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
         configureAdditionalDependencies(context, serviceBuilder, model, service);
