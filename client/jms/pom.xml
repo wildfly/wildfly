@@ -58,6 +58,12 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-jms-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jms_2.0_spec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- required until HORNETQ-1053 is fixed -->

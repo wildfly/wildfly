@@ -57,6 +57,12 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jms-client-bom</artifactId>
             <type>pom</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jms_2.0_spec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
