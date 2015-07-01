@@ -29,8 +29,8 @@ import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGING_SECURITY_DEF;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.create;
-import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.DOUBLE;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
@@ -88,7 +88,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition CLIENT_FAILURE_CHECK_PERIOD =SimpleAttributeDefinitionBuilder.create("client-failure-check-period", LONG)
-                .setDefaultValue(new ModelNode().set(30000))
+                .setDefaultValue(new ModelNode().set(30000L))
                 .setMeasurementUnit(MILLISECONDS)
                 .setAllowNull(true)
                 .setAllowExpression(true)
@@ -114,7 +114,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinitionBuilder("connection-ttl", LONG)
-                .setDefaultValue(new ModelNode().set(60000))
+                .setDefaultValue(new ModelNode().set(60000L))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .setMeasurementUnit(MILLISECONDS)
@@ -213,7 +213,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition MAX_RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("max-retry-interval", LONG)
-                .setDefaultValue(new ModelNode().set(2000))
+                .setDefaultValue(new ModelNode().set(2000L))
                 .setMeasurementUnit(MILLISECONDS)
                 .setAllowNull(true)
                 .setAllowExpression(true)
@@ -254,14 +254,14 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("retry-interval", LONG)
-                .setDefaultValue(new ModelNode().set(2000))
+                .setDefaultValue(new ModelNode().set(2000L))
                 .setMeasurementUnit(MILLISECONDS)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
 
-        AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
-                .setDefaultValue(new ModelNode().set(1))
+        AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", DOUBLE)
+                .setDefaultValue(new ModelNode().set(1.0))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();

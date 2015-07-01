@@ -76,7 +76,7 @@ public class BroadcastGroupDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
-            .setDefaultValue(new ModelNode(2000))
+            .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)

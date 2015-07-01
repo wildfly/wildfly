@@ -59,7 +59,7 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition EXPIRY_DELAY = create("expiry-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -78,14 +78,14 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition MAX_REDELIVERY_DELAY = create("max-redelivery-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(new ModelNode(0L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_SIZE_BYTES = create("max-size-bytes", ModelType.LONG)
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(BYTES)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -105,14 +105,14 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition PAGE_SIZE_BYTES = create("page-size-bytes", ModelType.LONG)
-            .setDefaultValue(new ModelNode(10485760))
+            .setDefaultValue(new ModelNode(10485760L))
             .setMeasurementUnit(BYTES)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDELIVERY_DELAY = create("redelivery-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(new ModelNode(0L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -125,7 +125,7 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition REDISTRIBUTION_DELAY = create("redistribution-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -138,7 +138,7 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_CHECK_PERIOD = create("slow-consumer-check-period", ModelType.LONG)
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MINUTES)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -152,7 +152,7 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_THRESHOLD = create("slow-consumer-threshold", ModelType.LONG)
-            .setDefaultValue(new ModelNode(5))
+            .setDefaultValue(new ModelNode(5L))
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();

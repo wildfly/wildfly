@@ -26,8 +26,8 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
-import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.DOUBLE;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
@@ -70,7 +70,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
-            .setDefaultValue(new ModelNode(30000))
+            .setDefaultValue(new ModelNode(30000L))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
@@ -78,7 +78,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition CONNECTION_TTL = create("connection-ttl", LONG)
-            .setDefaultValue(new ModelNode(60000))
+            .setDefaultValue(new ModelNode(60000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -127,7 +127,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
-            .setDefaultValue(new ModelNode(2000))
+            .setDefaultValue(new ModelNode(2000L))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
@@ -142,7 +142,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition NOTIFICATION_INTERVAL = create("notification-interval",LONG)
-            .setDefaultValue(new ModelNode(1000))
+            .setDefaultValue(new ModelNode(1000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -150,7 +150,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
-            .setDefaultValue(new ModelNode(500))
+            .setDefaultValue(new ModelNode(500L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -164,8 +164,8 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
-            .setDefaultValue(new ModelNode(1))
+    public static final SimpleAttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", DOUBLE)
+            .setDefaultValue(new ModelNode(1.0))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
