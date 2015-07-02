@@ -82,10 +82,6 @@
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
-                subsystems="configuration/examples/subsystems-hornetq-colocated.xml"
-                output-file="docs/examples/configs/standalone-hornetq-colocated.xml"/>
-        <standalone
-                template="configuration/standalone/template.xml"
                 subsystems="configuration/examples/subsystems-jts.xml"
                 output-file="docs/examples/configs/standalone-jts.xml"/>
         <standalone

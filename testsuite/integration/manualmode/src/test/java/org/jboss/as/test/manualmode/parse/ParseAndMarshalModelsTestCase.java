@@ -132,11 +132,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void testStandaloneHornetqColocatedXml() throws Exception {
-        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-hornetq-colocated.xml"));
-    }
-
-    @Test
     public void testStandaloneJtsXml() throws Exception {
         standaloneXmlTest(getGeneratedExampleConfigFile("standalone-jts.xml"));
     }
