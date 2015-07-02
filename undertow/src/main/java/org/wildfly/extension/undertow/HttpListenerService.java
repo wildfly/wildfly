@@ -118,6 +118,11 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
     }
 
     @Override
+    protected void cleanFailedStart() {
+        httpListenerRegistry.getValue().removeListener(getName());
+    }
+
+    @Override
     protected void stopListening() {
         server.suspendAccepts();
         UndertowLogger.ROOT_LOGGER.listenerSuspend("HTTP", getName());
