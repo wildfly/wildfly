@@ -22,16 +22,12 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.api.jms.management.JMSServerControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -49,9 +45,8 @@ public class ConnectionFactoryRemove extends AbstractRemoveStepHandler {
     public static final ConnectionFactoryRemove INSTANCE = new ConnectionFactoryRemove();
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
+        final String name = context.getCurrentAddressValue();
+        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
         context.removeService(JMSServices.getConnectionFactoryBaseServiceName(serviceName).append(name));
 
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
@@ -63,9 +58,10 @@ public class ConnectionFactoryRemove extends AbstractRemoveStepHandler {
             } catch (Exception e) {
                 throw new OperationFailedException(e);
             }
-        }    }
+        }
+    }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        ConnectionFactoryAdd.INSTANCE.performRuntime(context, operation, model);
     }
 }

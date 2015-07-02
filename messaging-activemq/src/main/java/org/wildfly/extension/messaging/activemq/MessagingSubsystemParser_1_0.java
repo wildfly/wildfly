@@ -52,6 +52,7 @@ import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
+import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFactoryDefinition;
 
 /**
  * Parser and Marshaller for messaging-activemq's {@link #NAMESPACE}.
@@ -315,6 +316,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                         builder(HTTPAcceptorDefinition.INSTANCE)
                                                 .addAttributes(
                                                         HTTPAcceptorDefinition.HTTP_LISTENER,
+                                                        HTTPAcceptorDefinition.UPGRADE_LEGACY,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
                                         builder(RemoteTransportDefinition.ACCEPTOR_INSTANCE)
@@ -422,11 +424,13 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                 .addAttributes(
                                                         CommonAttributes.DESTINATION_ENTRIES,
                                                         CommonAttributes.SELECTOR,
-                                                        CommonAttributes.DURABLE))
+                                                        CommonAttributes.DURABLE,
+                                                        CommonAttributes.LEGACY_ENTRIES))
                                 .addChild(
                                         builder(JMSTopicDefinition.INSTANCE)
                                                 .addAttributes(
-                                                        CommonAttributes.DESTINATION_ENTRIES))
+                                                        CommonAttributes.DESTINATION_ENTRIES,
+                                                        CommonAttributes.LEGACY_ENTRIES))
                                 .addChild(
                                         builder(ConnectionFactoryDefinition.INSTANCE)
                                                 .addAttributes(
@@ -467,6 +471,47 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
                                                         // regular
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
+                                .addChild(
+                                        builder(LegacyConnectionFactoryDefinition.INSTANCE)
+                                                .addAttributes(
+                                                        LegacyConnectionFactoryDefinition.ENTRIES,
+                                                        LegacyConnectionFactoryDefinition.DISCOVERY_GROUP,
+                                                        LegacyConnectionFactoryDefinition.CONNECTORS,
+
+                                                        LegacyConnectionFactoryDefinition.AUTO_GROUP,
+                                                        LegacyConnectionFactoryDefinition.BLOCK_ON_ACKNOWLEDGE,
+                                                        LegacyConnectionFactoryDefinition.BLOCK_ON_DURABLE_SEND,
+                                                        LegacyConnectionFactoryDefinition.BLOCK_ON_NON_DURABLE_SEND,
+                                                        LegacyConnectionFactoryDefinition.CACHE_LARGE_MESSAGE_CLIENT,
+                                                        CommonAttributes.CALL_FAILOVER_TIMEOUT,
+                                                        CommonAttributes.CALL_TIMEOUT,
+                                                        LegacyConnectionFactoryDefinition.CLIENT_FAILURE_CHECK_PERIOD,
+                                                        CommonAttributes.CLIENT_ID,
+                                                        LegacyConnectionFactoryDefinition.COMPRESS_LARGE_MESSAGES,
+                                                        LegacyConnectionFactoryDefinition.CONFIRMATION_WINDOW_SIZE,
+                                                        LegacyConnectionFactoryDefinition.CONNECTION_LOAD_BALANCING_CLASS_NAME,
+                                                        LegacyConnectionFactoryDefinition.CONNECTION_TTL,
+                                                        LegacyConnectionFactoryDefinition.CONSUMER_MAX_RATE,
+                                                        LegacyConnectionFactoryDefinition.CONSUMER_WINDOW_SIZE,
+                                                        LegacyConnectionFactoryDefinition.DUPS_OK_BATCH_SIZE,
+                                                        LegacyConnectionFactoryDefinition.FACTORY_TYPE,
+                                                        LegacyConnectionFactoryDefinition.FAILOVER_ON_INITIAL_CONNECTION,
+                                                        LegacyConnectionFactoryDefinition.GROUP_ID,
+                                                        LegacyConnectionFactoryDefinition.HA,
+                                                        LegacyConnectionFactoryDefinition.INITIAL_CONNECT_ATTEMPTS,
+                                                        LegacyConnectionFactoryDefinition.INITIAL_MESSAGE_PACKET_SIZE,
+                                                        LegacyConnectionFactoryDefinition.MAX_RETRY_INTERVAL,
+                                                        LegacyConnectionFactoryDefinition.MIN_LARGE_MESSAGE_SIZE,
+                                                        LegacyConnectionFactoryDefinition.PRE_ACKNOWLEDGE,
+                                                        LegacyConnectionFactoryDefinition.PRODUCER_MAX_RATE,
+                                                        LegacyConnectionFactoryDefinition.PRODUCER_WINDOW_SIZE,
+                                                        LegacyConnectionFactoryDefinition.RECONNECT_ATTEMPTS,
+                                                        LegacyConnectionFactoryDefinition.RETRY_INTERVAL,
+                                                        LegacyConnectionFactoryDefinition.RETRY_INTERVAL_MULTIPLIER,
+                                                        LegacyConnectionFactoryDefinition.SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                        LegacyConnectionFactoryDefinition.THREAD_POOL_MAX_SIZE,
+                                                        LegacyConnectionFactoryDefinition.TRANSACTION_BATCH_SIZE,
+                                                        LegacyConnectionFactoryDefinition.USE_GLOBAL_POOLS))
                                 .addChild(
                                         builder(PooledConnectionFactoryDefinition.INSTANCE)
                                                 .addAttributes(

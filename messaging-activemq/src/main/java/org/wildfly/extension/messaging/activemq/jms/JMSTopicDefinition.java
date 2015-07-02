@@ -48,7 +48,8 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
 public class JMSTopicDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = {
-            CommonAttributes.DESTINATION_ENTRIES
+            CommonAttributes.DESTINATION_ENTRIES,
+            CommonAttributes.LEGACY_ENTRIES
     };
 
     /**
@@ -56,6 +57,9 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
      */
     private static AttributeDefinition[] DEPLOYMENT_ATTRIBUTES = {
             new StringListAttributeDefinition.Builder(CommonAttributes.DESTINATION_ENTRIES)
+                    .setStorageRuntime()
+                    .build(),
+            new StringListAttributeDefinition.Builder(CommonAttributes.LEGACY_ENTRIES)
                     .setStorageRuntime()
                     .build()
     };
@@ -127,7 +131,8 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
             if (deployed) {
                 registry.registerReadOnlyAttribute(attr, JMSTopicConfigurationRuntimeHandler.INSTANCE);
             } else {
-                if (attr == CommonAttributes.DESTINATION_ENTRIES) {
+                if (attr == CommonAttributes.DESTINATION_ENTRIES ||
+                        attr == CommonAttributes.LEGACY_ENTRIES) {
                     registry.registerReadWriteAttribute(attr, null, handler);
                 } else {
                     registry.registerReadOnlyAttribute(attr, null);

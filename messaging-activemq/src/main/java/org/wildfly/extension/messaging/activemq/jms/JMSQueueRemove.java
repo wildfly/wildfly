@@ -48,13 +48,9 @@ import org.wildfly.extension.messaging.activemq.MessagingServices;
  */
 public class JMSQueueRemove extends AbstractRemoveStepHandler {
 
-    static final JMSQueueRemove INSTANCE = new JMSQueueRemove(JMSQueueAdd.INSTANCE);
+    static final JMSQueueRemove INSTANCE = new JMSQueueRemove();
 
-    private final JMSQueueAdd addOperation;
-
-    private JMSQueueRemove(JMSQueueAdd addOperation) {
-
-        this.addOperation = addOperation;
+    private JMSQueueRemove() {
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -75,17 +71,21 @@ public class JMSQueueRemove extends AbstractRemoveStepHandler {
         }
 
         context.removeService(JMSServices.getJmsQueueBaseServiceName(serviceName).append(name));
-        final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
-        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
 
-        for (String jndiBinding : jndiBindings) {
-            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiBinding);
+        for (String entry : CommonAttributes.DESTINATION_ENTRIES.unwrap(context, model)) {
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(entry);
+            ServiceName binderServiceName = bindInfo.getBinderServiceName();
+            context.removeService(binderServiceName);
+        }
+
+        for (String legacyEntry: CommonAttributes.LEGACY_ENTRIES.unwrap(context, model)) {
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(legacyEntry);
             ServiceName binderServiceName = bindInfo.getBinderServiceName();
             context.removeService(binderServiceName);
         }
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        addOperation.performRuntime(context, operation, model);
+        JMSQueueAdd.INSTANCE.performRuntime(context, operation, model);
     }
 }

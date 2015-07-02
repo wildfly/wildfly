@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.api.jms.management.JMSServerControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -55,8 +53,7 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
+        final String name = context.getCurrentAddress().getLastElement().getValue();
 
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
@@ -71,10 +68,14 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
 
         context.removeService(JMSServices.getJmsTopicBaseServiceName(serviceName).append(name));
 
-        final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
-        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
-        for (String jndiBinding : jndiBindings) {
-            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiBinding);
+        for (String entry : CommonAttributes.DESTINATION_ENTRIES.unwrap(context, model)) {
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(entry);
+            ServiceName binderServiceName = bindInfo.getBinderServiceName();
+            context.removeService(binderServiceName);
+        }
+
+        for (String legacyEntry : CommonAttributes.LEGACY_ENTRIES.unwrap(context, model)) {
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(legacyEntry);
             ServiceName binderServiceName = bindInfo.getBinderServiceName();
             context.removeService(binderServiceName);
         }

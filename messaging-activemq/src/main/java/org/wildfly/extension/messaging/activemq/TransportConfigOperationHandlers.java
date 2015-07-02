@@ -53,7 +53,7 @@ import org.jboss.dmr.Property;
  *
  * @author Emanuel Muckenhuber
  */
-class TransportConfigOperationHandlers {
+public class TransportConfigOperationHandlers {
 
     /**
      * Process the acceptor information.
@@ -115,7 +115,7 @@ class TransportConfigOperationHandlers {
      * @return the extracted parameters
      * @throws OperationFailedException if an expression can not be resolved
      */
-    static Map<String, Object> getParameters(final OperationContext context, final ModelNode config) throws OperationFailedException {
+    public static Map<String, Object> getParameters(final OperationContext context, final ModelNode config) throws OperationFailedException {
         Map<String, String> fromModel = CommonAttributes.PARAMS.unwrap(context, config);
         return new HashMap<String, Object>(fromModel);
     }

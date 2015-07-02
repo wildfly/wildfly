@@ -67,6 +67,7 @@ import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSServerControlHandler;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
+import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFactoryDefinition;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the messaging-activemq subsystem server resource.
@@ -483,6 +484,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             JMSQueueDefinition.INSTANCE,
             JMSTopicDefinition.INSTANCE,
             ConnectionFactoryDefinition.INSTANCE,
+            LegacyConnectionFactoryDefinition.INSTANCE,
             PooledConnectionFactoryDefinition.INSTANCE
     };
 

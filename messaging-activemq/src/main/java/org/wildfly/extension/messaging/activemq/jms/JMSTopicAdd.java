@@ -22,13 +22,14 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import java.util.List;
 
+import javax.jms.Topic;
+
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -53,21 +54,25 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final String name = context.getCurrentAddressValue();
+        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         // Do not pass the JNDI bindings to ActiveMQ but install them directly instead so that the
         // dependencies from the BinderServices to the JMSQueueService are not broken
         JMSTopicService jmsTopicService = JMSTopicService.installService(name, serviceName, serviceTarget, new String[0]);
 
-        final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
         final ServiceName jmsTopicServiceName = JMSServices.getJmsTopicBaseServiceName(serviceName).append(name);
-        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
-        for (String jndiBinding : jndiBindings) {
-            // install a binder service which depends on the JMS topic service
-            BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, jmsTopicService, jmsTopicServiceName);
+        for (String entry : CommonAttributes.DESTINATION_ENTRIES.unwrap(context, model)) {
+            BinderServiceUtil.installBinderService(serviceTarget, entry, jmsTopicService, jmsTopicServiceName);
+        }
+
+        List<String> legacyEntries = CommonAttributes.LEGACY_ENTRIES.unwrap(context, model);
+        if (!legacyEntries.isEmpty()) {
+            Topic legacyTopic = HornetQJMSClient.createTopic(name);
+            for (String legacyEntry : legacyEntries) {
+                BinderServiceUtil.installBinderService(serviceTarget, legacyEntry, legacyTopic);
+            }
         }
     }
 }

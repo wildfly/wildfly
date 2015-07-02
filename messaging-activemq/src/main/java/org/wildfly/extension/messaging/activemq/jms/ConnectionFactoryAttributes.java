@@ -38,7 +38,6 @@ import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
-import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -147,7 +146,7 @@ public interface ConnectionFactoryAttributes {
                 .setAllowExpression(true)
                 .build();
 
-        ListAttributeDefinition ENTRIES = new StringListAttributeDefinition.Builder(CommonAttributes.ENTRIES)
+        StringListAttributeDefinition ENTRIES = new StringListAttributeDefinition.Builder(CommonAttributes.ENTRIES)
                 .setAllowNull(false)
                 .setAllowExpression(true)
                 .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, false, true)))

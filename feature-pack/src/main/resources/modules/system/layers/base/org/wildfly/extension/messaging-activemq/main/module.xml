@@ -79,5 +79,7 @@
         <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
         <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true" />
         <module name="org.wildfly.clustering.jgroups.spi" optional="true"/>
+        <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
+        <module name="org.hornetq.client" />
     </dependencies>
 </module>

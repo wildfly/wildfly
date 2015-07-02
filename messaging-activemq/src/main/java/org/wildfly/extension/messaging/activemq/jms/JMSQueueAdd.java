@@ -22,17 +22,17 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DURABLE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SELECTOR;
 
+import java.util.List;
+
 import javax.jms.Queue;
 
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -58,10 +58,9 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
+        final String name = context.getCurrentAddressValue();
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
 
         final ModelNode selectorNode = SELECTOR.resolveModelAttribute(context, model);
         final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
@@ -72,12 +71,17 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
         // dependencies from the BinderServices to the JMSQueueService are not broken
         Service<Queue> queueService = JMSQueueService.installService(name, serviceTarget, serviceName, selector, durable, new String[0]);
 
-        final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
         final ServiceName jmsQueueServiceName = JMSServices.getJmsQueueBaseServiceName(serviceName).append(name);
-        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
-        for (String jndiBinding : jndiBindings) {
-            // install a binder service which depends on the JMS queue service
-            BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, queueService, jmsQueueServiceName);
+        for (String entry : CommonAttributes.DESTINATION_ENTRIES.unwrap(context, model)) {
+            BinderServiceUtil.installBinderService(serviceTarget, entry, queueService, jmsQueueServiceName);
+        }
+
+        List<String> legacyEntries = CommonAttributes.LEGACY_ENTRIES.unwrap(context, model);
+        if (!legacyEntries.isEmpty()) {
+            Queue legacyQueue = HornetQJMSClient.createQueue(name);
+            for (String legacyEntry : legacyEntries) {
+                BinderServiceUtil.installBinderService(serviceTarget, legacyEntry, legacyQueue);
+            }
         }
     }
 }

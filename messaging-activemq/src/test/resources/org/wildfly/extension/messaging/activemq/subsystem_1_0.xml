@@ -136,7 +136,8 @@
         </connector>
 
         <http-acceptor name="http"
-                       http-listener="default">
+                       http-listener="default"
+                       upgrade-legacy="${upgrade.legacy:true}">
             <param name="batch-delay" value="${batch.delay:50}"/>
         </http-acceptor>
         <remote-acceptor name="netty"
@@ -257,10 +258,11 @@
                    selector="${selector:color='red'}"
                    durable="${durable:true}" />
         <jms-queue name="testQueue2"
-                   entries="java:/global/queue/test java:/global/queue/test2" />
-
+                   entries="java:/global/queue/test java:/global/queue/test2"
+                   legacy-entries="java:/global/queue/legacy/test java:/global/queue/legacy/test2" />
         <jms-topic name="testTopic"
-                   entries="${jms-topic.entry:topic/test}" />
+                   entries="${jms-topic.entry:topic/test}"
+                   legacy-entries="${jms-topic.entry:topic/legacy/test}" />
 
         <connection-factory name="InVmConnectionFactory"
                             connectors="in-vm netty"
@@ -304,7 +306,47 @@
                             scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                             thread-pool-max-size="${thread.pool.max.size:48}"
                             group-id="${group.id:myGroup}" />
-        <pooled-connection-factory name="activemq-ra-local"
+        <legacy-connection-factory name="legacyConnectionFactory-discovery"
+                                   entries="legacy/RemoteConnectionFactory java:/global/jms/legacy/RemoteConnectionFactory"
+                                   discovery-group="groupT"
+                                   auto-group="${auto.group:true}"
+                                   block-on-acknowledge="${block.on.acknowledge:false}"
+                                   block-on-durable-send="${block.on.durable.send:false}"
+                                   block-on-non-durable-send="${block.on.non.durable.send:false}"
+                                   cache-large-message-client="${cache.large.message.client:false}"
+                                   call-failover-timeout="${call.failover.timeout:456}"
+                                   call-timeout="${call.timeout:123}"
+                                   client-failure-check-period="${client.failure.check.period:12345}"
+                                   client-id="${client.id:myClientID}"
+                                   compress-large-messages="${compress.large.messages:true}"
+                                   confirmation-window-size="${confirmation.window.size:-1}"
+                                   connection-load-balancing-policy-class-name="connection.load.balancy.policy.class"
+                                   connection-ttl="${connection.ttl:56789}"
+                                   consumer-max-rate="${consumer.max.rate:789}"
+                                   consumer-window-size="${consumer.window.size:456}"
+                                   dups-ok-batch-size="${dups.ok.batch.size:256}"
+                                   factory-type="${legacy.connection.factory.factory-type:XA_QUEUE}"
+                                   failover-on-initial-connection="${failover.on.initial.connection:true}"
+                                   group-id="${group.id:myGroup}"
+                                   ha="${legacy.connection.factory.ha:true}"
+                                   initial-connect-attempts="${initial.connect.attemps:123}"
+                                   initial-message-packet-size="${initial.message.packet.size:456}"
+                                   max-retry-interval="${max.retry.interval:10000}"
+                                   min-large-message-size="${min.large.message.size:2048}"
+                                   pre-acknowledge="${pre.acknowledge:true}"
+                                   producer-max-rate="${producer.max.rate:1024}"
+                                   producer-window-size="${producer.window.size:-1}"
+                                   reconnect-attempts="${reconnect.attempts:2}"
+                                   retry-interval="${retry.interval:500}"
+                                   retry-interval-multiplier="${retry.interval.multiplier:2.5}"
+                                   scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
+                                   thread-pool-max-size="${thread.pool.max.size:48}"
+                                   transaction-batch-size="${transaction.batch.size:512}"
+                                   use-global-pools="${use.global.pools:true}" />
+        <legacy-connection-factory name="legacyConnectionFactory-connectors"
+                                   entries="legacy/RemoteConnectionFactory2 java:/global/jms/legacy/RemoteConnectionFactory2"
+                                   connectors="netty http" />
+        <pooled-connection-factory name="hornetq-ra-local"
                                    transaction="local"
                                    user="alice"
                                    password="alicepassword"

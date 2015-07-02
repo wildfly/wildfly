@@ -51,7 +51,8 @@ public class JMSQueueDefinition extends PersistentResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTES = {
             CommonAttributes.DESTINATION_ENTRIES,
             CommonAttributes.SELECTOR,
-            CommonAttributes.DURABLE
+            CommonAttributes.DURABLE,
+            CommonAttributes.LEGACY_ENTRIES
     };
 
     /**
@@ -65,6 +66,9 @@ public class JMSQueueDefinition extends PersistentResourceDefinition {
                     .setStorageRuntime()
                     .build(),
             SimpleAttributeDefinitionBuilder.create(CommonAttributes.DURABLE)
+                    .setStorageRuntime()
+                    .build(),
+            new StringListAttributeDefinition.Builder(CommonAttributes.LEGACY_ENTRIES)
                     .setStorageRuntime()
                     .build()
     };
@@ -129,7 +133,8 @@ public class JMSQueueDefinition extends PersistentResourceDefinition {
             if (deployed) {
                 registry.registerReadOnlyAttribute(attr, JMSQueueConfigurationRuntimeHandler.INSTANCE);
             } else {
-                if (attr == CommonAttributes.DESTINATION_ENTRIES) {
+                if (attr == CommonAttributes.DESTINATION_ENTRIES ||
+                        attr == CommonAttributes.LEGACY_ENTRIES) {
                     registry.registerReadWriteAttribute(attr, null, handler);
                 } else {
                     registry.registerReadOnlyAttribute(attr, null);

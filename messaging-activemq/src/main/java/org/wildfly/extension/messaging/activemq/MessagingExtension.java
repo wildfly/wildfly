@@ -39,6 +39,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEU
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_TOPIC;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.LEGACY_CONNECTION_FACTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LIVE_ONLY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.MASTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_DIRECTORY;
@@ -124,6 +125,7 @@ public class MessagingExtension implements Extension {
     public static final PathElement POOLED_CONNECTION_FACTORY_PATH = pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
     public static final PathElement CONNECTION_FACTORY_PATH = pathElement(CommonAttributes.CONNECTION_FACTORY);
     public static final PathElement JMS_BRIDGE_PATH = pathElement(CommonAttributes.JMS_BRIDGE);
+    public static final PathElement LEGACY_CONNECTION_FACTORY_PATH = pathElement(LEGACY_CONNECTION_FACTORY);
 
     public static final SensitiveTargetAccessConstraintDefinition MESSAGING_SECURITY_SENSITIVE_TARGET = new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(SUBSYSTEM_NAME, "messaging-security", false, false, true));
     public static final SensitiveTargetAccessConstraintDefinition MESSAGING_MANAGEMENT_SENSITIVE_TARGET = new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(SUBSYSTEM_NAME, "messaging-management", false, false, true));

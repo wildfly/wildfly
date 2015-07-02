@@ -793,4 +793,13 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 79, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
     IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
 
+    @Message(id = 80, value = "Discovery group %s is not defined")
+    StartException discoveryGroupIsNotDefined(String discoveryGroupName);
+
+    @Message(id = 81, value = "Unsupported type of broadcast group configuration for legacy resource: %s")
+    StartException unsupportedBroadcastGroupConfigurationForLegacy(String broadcastGroupConfigurationClassName);
+
+    @Message(id = 82, value = "Unsupported type of connector factory for legacy resource: %s")
+    StartException unsupportedConnectorFactoryForLegacy(String connectorFactoryClassName);
+
 }

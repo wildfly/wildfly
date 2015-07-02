@@ -121,6 +121,15 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    StringListAttributeDefinition LEGACY_ENTRIES = new StringListAttributeDefinition.Builder("legacy-entries")
+            .setAllowNull(true)
+            .setListValidator(noDuplicateElements(new StringLengthValidator(1, false, true)))
+            .setAllowExpression(true)
+            .setAttributeParser(AttributeParser.STRING_LIST)
+            .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+            .setRestartAllServices()
+            .build();
+
     SimpleAttributeDefinition DURABLE = create("durable", BOOLEAN)
             .setDefaultValue(new ModelNode().set(true))
             .setAllowNull(true)
@@ -331,6 +340,8 @@ public interface CommonAttributes {
     String ID = "id";
     String IN_VM_ACCEPTOR = "in-vm-acceptor";
     String IN_VM_CONNECTOR = "in-vm-connector";
+    String LEGACY = "legacy";
+    String LEGACY_CONNECTION_FACTORY = "legacy-connection-factory";
     String JMS_BRIDGE = "jms-bridge";
     String JMS_CONNECTION_FACTORIES = "jms-connection-factories";
     String JMS_DESTINATION = "jms-destination";
