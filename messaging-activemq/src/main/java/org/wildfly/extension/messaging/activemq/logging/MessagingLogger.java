@@ -63,11 +63,11 @@ public interface MessagingLogger extends BasicLogger {
     MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.wildfly.extension.messaging-activemq");
 
     /**
-     * Logs a warning message indicating AIO was not found.
+     * Logs a info message indicating AIO was not found.
      */
-    @LogMessage(level = WARN)
+    @LogMessage(level = INFO)
     @Message(id = 1, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO.")
-    void aioWarning();
+    void aioInfo();
 
     /**
      * Logs an informational message indicating a messaging object was bound to the JNDI name represented by the
@@ -775,11 +775,11 @@ public interface MessagingLogger extends BasicLogger {
     OperationFailedException invalidParameterName(String parameterName, Set<String> allowedKeys);
 
     /**
-     * Logs a warning message indicating AIO was not found, ask to install LibAIO to enable the AIO on Linux systems.
+     * Logs a INFO message indicating AIO was not found, ask to install LibAIO to enable the AIO on Linux systems to achieve optimal performance.
      */
-    @LogMessage(level = WARN)
-    @Message(id = 75, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO. Your platform is Linux, install LibAIO to enable the AIO journal.")
-    void aioWarningLinux();
+    @LogMessage(level = INFO)
+    @Message(id = 75, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO. Your platform is Linux, install LibAIO to enable the AIO journal and achieve optimal performance.")
+    void aioInfoLinux();
 
     @Message(id = 76, value = "Parameter %s contains duplicate elements [%s]")
     OperationFailedException duplicateElements(String parameterName, ModelNode elements);

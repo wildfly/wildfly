@@ -143,9 +143,9 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             if (supportsAIO == false) {
                 String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
                 if (osName.contains("nux")){
-                    ROOT_LOGGER.aioWarningLinux();
+                    ROOT_LOGGER.aioInfoLinux();
                 } else {
-                    ROOT_LOGGER.aioWarning();
+                    ROOT_LOGGER.aioInfo();
                 }
                 configuration.setJournalType(JournalType.NIO);
             }
