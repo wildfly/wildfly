@@ -45,6 +45,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
     private static ModuleIdentifier JBOSS_AS_WELD_ID = ModuleIdentifier.create("org.jboss.as.weld");
     private static ModuleIdentifier WELD_CORE_ID = ModuleIdentifier.create("org.jboss.weld.core");
+    private static final ModuleIdentifier WELD_PROBE_ID = ModuleIdentifier.create("org.jboss.weld.probe");
     private static ModuleIdentifier WELD_API_ID = ModuleIdentifier.create("org.jboss.weld.api");
     private static ModuleIdentifier WELD_SPI_ID = ModuleIdentifier.create("org.jboss.weld.spi");
     private static ModuleIdentifier CDI_BEAN_VALIDATION_ID = ModuleIdentifier.create("org.hibernate.validator.cdi");
@@ -70,6 +71,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         }
         addDependency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_CORE_ID);
+        addDependency(moduleSpecification, moduleLoader, WELD_PROBE_ID, true);
         addDependency(moduleSpecification, moduleLoader, WELD_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_SPI_ID);
 
@@ -88,7 +90,12 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+        addDependency(moduleSpecification, moduleLoader, moduleIdentifier, false);
+    }
+
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+            ModuleIdentifier moduleIdentifier, boolean optional) {
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false));
     }
 
     @Override
