@@ -6,9 +6,6 @@
         <server name="default">
             <?CLUSTERED?>
 
-            <journal
-                    file-size="102400" />
-
             <security-setting name="#">
                 <role name="guest"
                       send="true"
