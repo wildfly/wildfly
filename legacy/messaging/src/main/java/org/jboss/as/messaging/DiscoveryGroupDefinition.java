@@ -51,7 +51,7 @@ public class DiscoveryGroupDefinition extends ModelOnlyResourceDefinition {
    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
 
     public static final SimpleAttributeDefinition REFRESH_TIMEOUT = create("refresh-timeout", ModelType.LONG)
-            .setDefaultValue(new ModelNode(10000))
+            .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -59,7 +59,7 @@ public class DiscoveryGroupDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition INITIAL_WAIT_TIMEOUT = create("initial-wait-timeout", ModelType.LONG)
-            .setDefaultValue(new ModelNode(10000))
+            .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)

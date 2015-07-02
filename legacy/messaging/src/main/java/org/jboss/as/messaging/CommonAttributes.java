@@ -31,8 +31,8 @@ import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_
 import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.jms.Validators.noDuplicateElements;
-import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.DOUBLE;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 
@@ -91,21 +91,21 @@ public interface CommonAttributes {
             .build();
 
     AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
-            .setDefaultValue(new ModelNode(30000))
+            .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout",LONG)
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .build();
 
     SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
-            .setDefaultValue(new ModelNode(30000))
+            .setDefaultValue(new ModelNode(30000L))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
@@ -158,7 +158,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition CONNECTION_TTL = create("connection-ttl", LONG)
-            .setDefaultValue(new ModelNode().set(60000))
+            .setDefaultValue(new ModelNode().set(60000L))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
@@ -166,7 +166,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = create("connection-ttl-override", LONG)
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -218,7 +218,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition FAILBACK_DELAY = create("failback-delay", LONG)
-            .setDefaultValue(new ModelNode(5000))
+            .setDefaultValue(new ModelNode(5000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -438,7 +438,7 @@ public interface CommonAttributes {
             .build();
 
     AttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
-            .setDefaultValue(new ModelNode(2000))
+            .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -453,7 +453,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = create("memory-measure-interval", LONG)
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -489,14 +489,14 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition MESSAGE_COUNTER_SAMPLE_PERIOD = create("message-counter-sample-period", LONG)
-            .setDefaultValue(new ModelNode(10000))
+            .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition MESSAGE_EXPIRY_SCAN_PERIOD = create("message-expiry-scan-period", LONG)
-            .setDefaultValue(new ModelNode(30000))
+            .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -606,15 +606,15 @@ public interface CommonAttributes {
             .build();
 
     AttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
-            .setDefaultValue(new ModelNode().set(2000))
+            .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
-            .setDefaultValue(new ModelNode(1))
+    AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", DOUBLE)
+            .setDefaultValue(new ModelNode(1.0))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -652,7 +652,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition SECURITY_INVALIDATION_INTERVAL = create("security-invalidation-interval", LONG)
-            .setDefaultValue(new ModelNode(10000))
+            .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -668,7 +668,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition SERVER_DUMP_INTERVAL = create("server-dump-interval", LONG)
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -702,7 +702,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition TRANSACTION_TIMEOUT = create("transaction-timeout", LONG)
-            .setDefaultValue(new ModelNode(300000))
+            .setDefaultValue(new ModelNode(300000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -710,7 +710,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition TRANSACTION_TIMEOUT_SCAN_PERIOD = create("transaction-timeout-scan-period", LONG)
-            .setDefaultValue(new ModelNode(1000))
+            .setDefaultValue(new ModelNode(1000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)

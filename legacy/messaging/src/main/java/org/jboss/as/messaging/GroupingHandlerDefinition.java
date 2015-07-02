@@ -61,8 +61,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition GROUP_TIMEOUT = create("group-timeout", LONG)
-            // FIXME GroupingHanderConfiguration.DEFAULT_GROUP_TIMEOUT is an int (instead of a long). Cast to a long until HornetQ conf is fixed
-            .setDefaultValue(new ModelNode(-1))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -70,7 +69,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition REAPER_PERIOD = create("reaper-period", LONG)
-            .setDefaultValue(new ModelNode(30000))
+            .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)

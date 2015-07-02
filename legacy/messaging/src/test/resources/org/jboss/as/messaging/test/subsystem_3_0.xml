@@ -264,6 +264,9 @@
                   <last-value-queue>false</last-value-queue>
                   <redistribution-delay>0</redistribution-delay>
                   <send-to-dla-on-no-route>false</send-to-dla-on-no-route>
+                  <slow-consumer-check-period>-1</slow-consumer-check-period>
+                  <slow-consumer-policy>NOTIFY</slow-consumer-policy>
+                  <slow-consumer-threshold>5</slow-consumer-threshold>
                </address-setting>
             </address-settings>
 
