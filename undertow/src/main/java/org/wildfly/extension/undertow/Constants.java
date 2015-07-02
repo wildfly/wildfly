@@ -162,4 +162,6 @@ public interface Constants {
     String VALUE = "value";
 
     String REWRITE = "rewrite";
+    String DISALLOWED_METHODS = "disallowed-methods";
+    String RESOLVE_PEER_ADDRESS = "resolve-peer-address";
 }

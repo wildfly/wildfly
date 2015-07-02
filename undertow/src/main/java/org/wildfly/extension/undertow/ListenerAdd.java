@@ -24,7 +24,9 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.DisallowedMethodsHandler;
 import io.undertow.server.handlers.PeerNameResolvingHandler;
+import io.undertow.util.HttpString;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,6 +41,10 @@ import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.OptionList;
 import org.xnio.OptionMap;
 import org.xnio.XnioWorker;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -70,6 +76,19 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
                 @Override
                 public HttpHandler wrap(HttpHandler handler) {
                     return new PeerNameResolvingHandler(handler);
+                }
+            });
+        }
+        List<String> disallowedMethods = ListenerResourceDefinition.DISALLOWED_METHODS.unwrap(context, model);
+        if(!disallowedMethods.isEmpty()) {
+            final Set<HttpString> methodSet = new HashSet<>();
+            for(String i : disallowedMethods) {
+                methodSet.add(new HttpString(i.trim()));
+            }
+            service.addWrapperHandler(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler handler) {
+                    return new DisallowedMethodsHandler(handler, methodSet);
                 }
             });
         }
