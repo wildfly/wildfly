@@ -139,11 +139,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     @Test
-    public void testHornetQColocated() throws Exception {
-        parseXml("docs/examples/configs/standalone-hornetq-colocated.xml");
-    }
-
-    @Test
     public void testStandaloneJTS() throws Exception {
         parseXml("docs/examples/configs/standalone-jts.xml");
     }
