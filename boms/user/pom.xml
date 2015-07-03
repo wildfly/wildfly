@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>16</version>
+        <version>19</version>
     </parent>
 
     <groupId>org.wildfly.bom</groupId>
@@ -73,14 +73,14 @@
     <properties>
 
         <!-- Versions of JBoss projects -->
-        <version.org.infinispan>7.2.2.Final</version.org.infinispan>
+        <version.org.infinispan>7.2.3.Final</version.org.infinispan>
         <version.org.jboss.arquillian>1.1.7.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>1.3.0.Final</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>2.0.2.Final</version.org.jboss.arquillian.graphene>
-        <version.org.wildfly.arquillian.container>1.0.0.CR1</version.org.wildfly.arquillian.container>
+        <version.org.wildfly.arquillian.container>1.0.0.Final</version.org.wildfly.arquillian.container>
         <version.org.jboss.narayana>5.0.6.Final</version.org.jboss.narayana>
         <version.org.jboss.logging>3.2.1.Final</version.org.jboss.logging>
-        <version.org.jboss.logging.processor>2.0.0.Final</version.org.jboss.logging.processor>
+        <version.org.jboss.logging.jboss-logging-tools>2.0.0.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.resteasy>3.0.11.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.negotiation>2.3.6.Final</version.org.jboss.security.negotiation>
         <version.org.jboss.spec.jboss.javaee.7.0>1.0.3.Final</version.org.jboss.spec.jboss.javaee.7.0>
@@ -101,7 +101,7 @@
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.surefire.plugin>2.17</version.surefire.plugin>
         <version.org.wildfly.plugins.maven.plugin>1.0.2.Final</version.org.wildfly.plugins.maven.plugin>
-        <version.io.undertow>1.2.7.Final</version.io.undertow>
+        <version.io.undertow>1.2.8.Final</version.io.undertow>
     </properties>
 
     <dependencyManagement>
@@ -284,14 +284,24 @@
             <!--  the jboss-logging-tools processor  -->
             <dependency>
                 <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging-processor</artifactId>
-                <version>${version.org.jboss.logging.processor}</version>
+                <artifactId>jboss-logging-annotations</artifactId>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
+                <scope>provided</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-processor</artifactId>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
+                <scope>provided</scope>
+            </dependency>
+
             <!--  jboss-logging API -->
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
                 <version>${version.org.jboss.logging}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- The XTS api needed to use WS-TX -->
@@ -359,7 +369,6 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
-                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.annotation</groupId>
@@ -369,21 +378,12 @@
                         <groupId>net.jcip</groupId>
                         <artifactId>jcip-annotations</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.httpcomponents</groupId>
-                        <artifactId>httpclient</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-io</groupId>
-                        <artifactId>commons-io</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
