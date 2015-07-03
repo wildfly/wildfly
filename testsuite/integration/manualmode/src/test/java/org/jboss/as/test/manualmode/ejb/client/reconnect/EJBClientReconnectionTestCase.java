@@ -69,7 +69,7 @@ public class EJBClientReconnectionTestCase {
     private static final Logger log = Logger.getLogger(EJBClientReconnectionTestCase.class);
 
     private static final String DEPLOYMENT = "ejbclientreconnection";
-    private static final String CONTAINER = "default-jbossas";
+    private static final String CONTAINER = "jbossas-non-clustered";
 
     @ArquillianResource
     private ContainerController controller;
