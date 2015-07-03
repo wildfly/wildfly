@@ -32,6 +32,7 @@ import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGro
 import org.jboss.as.test.integration.domain.management.cli.DomainDeployWithRuntimeNameTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DomainDeploymentOverlayTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
+import org.jboss.as.test.integration.domain.management.cli.CloneProfileTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.junit.AfterClass;
@@ -51,7 +52,8 @@ import org.junit.runners.Suite;
         DomainDeploymentOverlayTestCase.class,
         RolloutPlanTestCase.class,
         DomainDeployWithRuntimeNameTestCase.class,
-        DataSourceTestCase.class
+        DataSourceTestCase.class,
+        CloneProfileTestCase.class
 })
 public class CLITestSuite {
 
