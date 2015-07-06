@@ -60,6 +60,7 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
 
     private static final Logger logger = Logger.getLogger(RemoteEJBTwoClusterTestCase.class);
     private static final String FORWARDER_MODULE_NAME = "clusterbench-ee6-ejb-forwarder";
+    private static final String FORWARDER_WITH_TXN_MODULE_NAME = "clusterbench-ee6-ejb-forwarder-with-txn";
     private static final String RECEIVER_MODULE_NAME = "clusterbench-ee6-ejb";
     // EJBClient configuartion to cluster A
     private static final String FORWARDER_CLIENT_PROPERTIES = "org/jboss/as/test/clustering/twoclusters/forwarder-jboss-ejb-client.properties";
@@ -71,26 +72,21 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
     private static long SERVER_DOWN_TIME = TimeoutUtil.adjust(5000);
     // allowed percentage of exceptions (exceptions / invocations)
     private static double EXCEPTION_PERCENTAGE = 0.1;
-    private static boolean useTransactions = true;
 
-    private static EJBDirectory directory;
+    // EJB deployment lookup helpers
+    private static EJBDirectory beanDirectory;
+    private static EJBDirectory txnBeanDirectory;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        if (useTransactions)
-            return getTxForwardingDeployment();
-        else
-            return getNonTxForwardingDeployment();
+        return getNonTxForwardingDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        if (useTransactions)
-            return getTxForwardingDeployment();
-        else
-            return getNonTxForwardingDeployment();
+        return getNonTxForwardingDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
@@ -105,8 +101,20 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
         return getNonForwardingDeployment();
     }
 
+    @Deployment(name = "deployment-4", managed = false, testable = false)
+    @TargetsContainer(CONTAINER_1)
+    public static Archive<?> deployment0_txn() {
+        return getTxForwardingDeployment();
+    }
+
+    @Deployment(name = "deployment-5", managed = false, testable = false)
+    @TargetsContainer(CONTAINER_2)
+    public static Archive<?> deployment1_txn() {
+        return getTxForwardingDeployment();
+    }
+
     private static Archive<?> getTxForwardingDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, FORWARDER_MODULE_NAME + ".jar");
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, FORWARDER_WITH_TXN_MODULE_NAME + ".jar");
         ejbJar.addPackage(CommonStatefulSB.class.getPackage());
         ejbJar.addPackage(RemoteStatefulSB.class.getPackage());
         ejbJar.addClass(SerialBean.class.getName());
@@ -152,13 +160,14 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
 
     @BeforeClass
     public static void beforeTest() throws NamingException {
-
-        directory = new RemoteEJBDirectory(FORWARDER_MODULE_NAME);
+        beanDirectory = new RemoteEJBDirectory(FORWARDER_MODULE_NAME);
+        txnBeanDirectory = new RemoteEJBDirectory(FORWARDER_WITH_TXN_MODULE_NAME);
     }
 
     @AfterClass
     public static void destroy() throws NamingException {
-        directory.close();
+        beanDirectory.close();
+        txnBeanDirectory.close();
     }
 
     @After
@@ -166,23 +175,46 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
     }
 
     /*
-     * Tests that EJBClient invocations on stateful session beans can still successfully be processed
-     * as long as one node in each cluster is available.
-     *
+     * Tests concurrent fail-over without a managed transaction context on the forwarder.
      */
     @Test
     @InSequence(1)
-    public void testConcurrentFailoverOverTwoClusters() throws Exception {
+    public void testConcurrentFailoverOverWithoutTransactions() throws Exception {
+
+        testConcurrentFailoverOverWithTwoClusters(false);
+    }
+
+    /*
+     * Tests concurrent fail-over with a managed transaction context on the forwarder.
+     */
+    @Ignore("See EJBCLIENT-137")
+    @Test
+    @InSequence(2)
+    public void testConcurrentFailoverOverWithTransactions() throws Exception {
+        // some additional transaction-oriented deployments for containers 1 and 2
+        this.deploy("deployment-4", "deployment-5");
+
+        testConcurrentFailoverOverWithTwoClusters(true);
+
+        // additional un-deployments for containers 1 and 2
+        this.undeploy("deployment-4", "deployment-5");
+    }
+
+    /*
+     * Tests that EJBClient invocations on stateful session beans can still successfully be processed
+     * as long as one node in each cluster is available.
+     */
+    public void testConcurrentFailoverOverWithTwoClusters(boolean useTransactions) throws Exception {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(FORWARDER_CLIENT_PROPERTIES);
 
         try {
             try {
-                // get the forwarder deployment on cluster A
+                // get the correct forwarder deployment on cluster A
                 RemoteStatefulSB bean = null;
                 if (useTransactions)
-                    bean = directory.lookupStateful(ForwardingStatefulSBImpl.class, RemoteStatefulSB.class);
+                    bean = txnBeanDirectory.lookupStateful(ForwardingStatefulSBImpl.class, RemoteStatefulSB.class);
                 else
-                    bean = directory.lookupStateful(NonTxForwardingStatefulSBImpl.class, RemoteStatefulSB.class);
+                    bean = beanDirectory.lookupStateful(NonTxForwardingStatefulSBImpl.class, RemoteStatefulSB.class);
 
                 AtomicInteger count = new AtomicInteger();
 
