@@ -34,6 +34,7 @@ import io.undertow.server.handlers.ChannelUpgradeHandler;
 import io.undertow.server.handlers.ProxyPeerAddressHandler;
 import io.undertow.server.handlers.SSLHeaderHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
+import io.undertow.server.protocol.http2.Http2UpgradeHandler;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.ValueService;
@@ -71,6 +72,14 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
                 return httpUpgradeHandler;
             }
         });
+        if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false)) {
+            addWrapperHandler(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler handler) {
+                    return new Http2UpgradeHandler(handler);
+                }
+            });
+        }
         if (certificateForwarding) {
             addWrapperHandler(new HandlerWrapper() {
                 @Override
