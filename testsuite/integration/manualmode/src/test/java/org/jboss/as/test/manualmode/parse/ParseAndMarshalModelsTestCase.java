@@ -254,6 +254,70 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testEAP600StandaloneFullHaXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-full-ha.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP600StandaloneFullXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-full.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP600StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-hornetq-colocated.xml"));
+    }
+
+    @Test
+    public void testEAP600StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-jts.xml"));
+    }
+
+    @Test
+    public void testEAP600StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-minimalistic.xml"));
+    }
+
+    @Test
+    public void testEAP600StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-xts.xml"));
+    }
+
+    @Test
+    public void testEAP610StandaloneFullHaXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-full-ha.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP610StandaloneFullXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-full.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP610StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-hornetq-colocated.xml"));
+    }
+
+    @Test
+    public void testEAP610StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-jts.xml"));
+    }
+
+    @Test
+    public void testEAP610StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-minimalistic.xml"));
+    }
+
+    @Test
+    public void testEAP610StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-xts.xml"));
+    }
+
+    @Test
     public void testEAP620StandaloneFullHaXml() throws Exception {
         ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-full-ha.xml"));
         validateJsfSubsystem(model);
@@ -285,6 +349,76 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-xts.xml"));
     }
 
+    @Test
+    @Ignore("WFCORE-798")
+    public void testEAP630StandaloneFullHaXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-full-ha.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    @Ignore("WFCORE-798")
+    public void testEAP630StandaloneFullXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-full.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    @Ignore("WFCORE-798")
+    public void testEAP630StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-hornetq-colocated.xml"));
+    }
+
+    @Test
+    @Ignore("WFCORE-798")
+    public void testEAP630StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-jts.xml"));
+    }
+
+    @Test
+    @Ignore("WFCORE-798")
+    public void testEAP630StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-minimalistic.xml"));
+    }
+
+    @Test
+    @Ignore("WFCORE-798")
+    public void testEAP630StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-xts.xml"));
+    }
+
+    @Test
+    public void testEAP640StandaloneFullHaXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-full-ha.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP640StandaloneFullXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-full.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP640StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-hornetq-colocated.xml"));
+    }
+
+    @Test
+    public void testEAP640StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-jts.xml"));
+    }
+
+    @Test
+    public void testEAP640StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-minimalistic.xml"));
+    }
+
+    @Test
+    public void testEAP640StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-xts.xml"));
+    }
+
     private ModelNode standaloneXmlTest(File original) throws Exception {
         File file = new File("target/standalone-copy.xml");
         if (file.exists()) {
@@ -314,8 +448,29 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testEAP600HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "eap-6-0-0.xml"));
+    }
+
+    @Test
+    public void testEAP610HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "eap-6-1-0.xml"));
+    }
+
+    @Test
     public void testEAP620HostXml() throws Exception {
         hostXmlTest(getLegacyConfigFile("host", "eap-6-2-0.xml"));
+    }
+
+    @Test
+    @Ignore("WFCORE-798")
+    public void testEAP630HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "eap-6-3-0.xml"));
+    }
+
+    @Test
+    public void testEAP640HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "eap-6-4-0.xml"));
     }
 
     private void hostXmlTest(final File original) throws Exception {
@@ -355,8 +510,36 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     @TargetsContainer("class-jbossas")
+    public void testEAP600DomainXml() throws Exception {
+        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-0-0.xml"));
+        validateJsfProfiles(model);
+    }
+
+    @Test
+    @TargetsContainer("class-jbossas")
+    public void testEAP610DomainXml() throws Exception {
+        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-1-0.xml"));
+        validateJsfProfiles(model);
+    }
+
+    @Test
+    @TargetsContainer("class-jbossas")
     public void testEAP620DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-2-0.xml"));
+        validateJsfProfiles(model);
+    }
+
+    @Test
+    @TargetsContainer("class-jbossas")
+    public void testEAP630DomainXml() throws Exception {
+        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-3-0.xml"));
+        validateJsfProfiles(model);
+    }
+
+    @Test
+    @TargetsContainer("class-jbossas")
+    public void testEAP640DomainXml() throws Exception {
+        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-4-0.xml"));
         validateJsfProfiles(model);
     }
 
