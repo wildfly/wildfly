@@ -56,7 +56,9 @@
         </dependency>
     </dependencies>
 
-
+    <properties>
+        <product.release.name>WildFly Full</product.release.name>
+    </properties>
     <build>
         <finalName>${server.output.dir.prefix}-${project.version}</finalName>
         <plugins>
@@ -72,6 +74,29 @@
                         <phase>compile</phase>
                         <configuration>
                             <config-file>server-provisioning.xml</config-file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>distribution-configuration</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${basedir}/target/${server.output.dir.prefix}-${project.version}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/distribution/resources</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>

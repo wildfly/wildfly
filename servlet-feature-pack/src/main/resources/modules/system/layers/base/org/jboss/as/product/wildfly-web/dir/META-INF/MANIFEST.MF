@@ -1,2 +1,0 @@
-JBoss-Product-Release-Name: WildFly Web Lite
-JBoss-Product-Release-Version: 10.0.0.Alpha5-SNAPSHOT
