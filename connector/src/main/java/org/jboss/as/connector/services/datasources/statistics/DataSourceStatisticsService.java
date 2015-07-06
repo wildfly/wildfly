@@ -26,6 +26,7 @@ import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 import org.jboss.as.connector.dynamicresource.StatisticsResourceDefinition;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
@@ -80,13 +81,17 @@ public class DataSourceStatisticsService implements Service<ManagementResourceRe
             if (jdbcStatsSize > 0 || poolStatsSize > 0) {
                 if (registration != null) {
                     if (jdbcStatsSize > 0) {
-                        ManagementResourceRegistration jdbcRegistration = registration.registerSubModel(new StatisticsResourceDefinition(JDBC_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, jdbcStats));
-                        jdbcRegistration.setRuntimeOnly(true);
+                        if (registration.getSubModel(PathAddress.pathAddress(JDBC_STATISTICS)) == null) {
+                            ManagementResourceRegistration jdbcRegistration = registration.registerSubModel(new StatisticsResourceDefinition(JDBC_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, jdbcStats));
+                            jdbcRegistration.setRuntimeOnly(true);
+                        }
                     }
 
                     if (poolStatsSize > 0) {
-                        ManagementResourceRegistration poolRegistration = registration.registerSubModel(new StatisticsResourceDefinition(POOL_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, poolStats));
-                        poolRegistration.setRuntimeOnly(true);
+                        if (registration.getSubModel(PathAddress.pathAddress(POOL_STATISTICS)) == null) {
+                            ManagementResourceRegistration poolRegistration = registration.registerSubModel(new StatisticsResourceDefinition(POOL_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, poolStats));
+                            poolRegistration.setRuntimeOnly(true);
+                        }
                     }
                 }
 
