@@ -58,6 +58,10 @@
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
+                subsystems="configuration/standalone/subsystems-elytron.xml"
+                output-file="standalone/configuration/standalone-elytron.xml"/>
+        <standalone
+                template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-full-ha.xml"
                 output-file="docs/examples/configs/standalone-ec2-full-ha.xml">
             <property name="jgroups.supplement" value="ec2" />
@@ -104,6 +108,10 @@
                 template="configuration/domain/template.xml"
                 subsystems="configuration/domain/subsystems.xml"
                 output-file="domain/configuration/domain.xml"/>
+        <domain
+                template="configuration/domain/template.xml"
+                subsystems="configuration/domain/subsystems-elytron.xml"
+                output-file="domain/configuration/domain-elytron.xml"/>
         <host
                 template="configuration/host/host.xml"
                 subsystems="configuration/host/subsystems.xml"
@@ -116,7 +124,10 @@
                 template="configuration/host/host-slave.xml"
                 subsystems="configuration/host/subsystems.xml"
                 output-file="domain/configuration/host-slave.xml" />
-
+        <host
+                template="configuration/host/host.xml"
+                subsystems="configuration/host/subsystems-elytron.xml"
+                output-file="domain/configuration/host-elytron.xml" />
     </config>
     <copy-artifacts>
         <copy-artifact artifact="org.jboss.resteasy:resteasy-spring" to-location="modules/system/layers/base/org/jboss/resteasy/resteasy-spring/main/bundled/resteasy-spring-jar/"/>
