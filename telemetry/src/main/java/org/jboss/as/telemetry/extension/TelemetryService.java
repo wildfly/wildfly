@@ -36,23 +36,6 @@ public class TelemetryService extends Telemetries implements
 //    public static final long MILLISECOND_TO_DAY = 86400000;
     public static final long MILLISECOND_TO_DAY = 1; //for testing purposes
 
-    /**
-     * Properties that can be set via the properties file.
-     */
-    public static final String USERNAME = "username";
-    public static final String PASSWORD = "password";
-    public static final String URL = "url";
-    public static final String PROXY_USER = "proxyUser";
-    public static final String PROXY_PASSWORD = "proxyPassword";
-    public static final String PROXY_URL = "proxyUrl";
-    public static final String PROXY_PORT = "proxyPort";
-    public static final String USER_AGENT = "userAgent";
-    public static final String BASE_URI = "baseUri";
-    public static final String TELEMETRY_ENDPOINT = "telemetryEndpoint";
-    public static final String SYSTEM_ENDPOINT = "systemEndpoint";
-
-    public static final String JDR_DESCRIPTION = "JDR for UUID {uuid}";
-
     private static volatile TelemetryService instance;
 
     public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
@@ -280,49 +263,6 @@ public class TelemetryService extends Telemetries implements
     public void setRhnLoginCredentials(String rhnUid, String rhnPw) {
         setRhnUid(rhnUid);
         setRhnPw(rhnPw);
-        Properties properties = new Properties();
-        FileOutputStream fileOut = null;
-        FileInputStream fis = null;
-        File file = getPropertiesFile();
-        try {
-            if (!file.exists()) {
-                file.getParentFile().mkdirs();
-                properties.setProperty(URL, DEFAULT_BASE_URL);
-                properties.setProperty(TELEMETRY_ENDPOINT,
-                        DEFAULT_TELEMETRY_ENDPOINT);
-                properties.setProperty(SYSTEM_ENDPOINT, DEFAULT_SYSTEM_ENDPOINT);
-                properties.setProperty(TelemetryExtension.FREQUENCY, "" + frequency);
-                properties.setProperty(TelemetryExtension.ENABLED, "" + enabled);
-            } else {
-                fis = new FileInputStream(file.getPath());
-                properties.load(fis);
-            }
-            properties.setProperty(USERNAME, rhnUid);
-            properties.setProperty(PASSWORD, rhnPw);
-            fileOut = new FileOutputStream(file);
-            properties.store(fileOut, TELEMETRY_DESCRIPTION);
-        } catch (IOException e) {
-            ROOT_LOGGER.couldNotCreateEditPropertiesFile(e);
-        } finally {
-            if (fileOut != null) {
-                try {
-                    fileOut.close();
-                    setConnectionManager();
-                } catch (IOException e) {
-                    ROOT_LOGGER.couldNotClosePropertiesFile(e);
-                }
-            }
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    ROOT_LOGGER.couldNotClosePropertiesFile(e);
-                }
-    public void setTelemetryUri() {
-        String jbossConfig = System.getProperty(JBOSS_PROPERTY_DIR);
-        String propertiesFilePath = jbossConfig + File.separator
-                + TelemetryExtension.SUBSYSTEM_NAME + File.separator
-                + TELEMETRY_PROPERTY_FILE_NAME;
         Properties properties = new Properties();
         FileOutputStream fileOut = null;
         FileInputStream fis = null;
