@@ -20,6 +20,7 @@ import com.redhat.gss.redhat_support_lib.errors.RequestException;
 public class Telemetries {
 
     public static final String MACHINE_ID = "machine_id";
+    public static final String HOSTNAME = "hostname";
 
     protected Response get(ResteasyClient client, String uri)
             throws RequestException {
@@ -33,16 +34,28 @@ public class Telemetries {
         return response;
     }
 
-    protected Response addSystem(ResteasyClient client, String uri, String uuid)
+    protected Response addSystem(ResteasyClient client, String uri, String uuid, String hostname)
             throws RequestException {
-        MultipartFormDataOutput mdo = new MultipartFormDataOutput();
-        mdo.addFormData("machine_id", uuid,
-                    MediaType.APPLICATION_JSON_TYPE);
         Map<String,String> params = new HashMap<String,String>();
         params.put(MACHINE_ID,uuid);
+        params.put(HOSTNAME, hostname);
         Response response = (Response) client.target(uri).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(params, MediaType.APPLICATION_JSON));
+        if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
+            throw new RequestException(response.getStatusInfo().getStatusCode()
+                    + " - " + response.getStatusInfo().getReasonPhrase());
+        }
+        return response;
+    }
+
+    protected Response updateSystem(ResteasyClient client, String uri, String hostname)
+            throws RequestException {
+        Map<String,String> params = new HashMap<String,String>();
+        params.put(HOSTNAME, hostname);
+        Response response = (Response) client.target(uri).request()
+                .accept(MediaType.APPLICATION_JSON)
+                .put(Entity.entity(params, MediaType.APPLICATION_JSON));
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
