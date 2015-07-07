@@ -85,8 +85,6 @@ public class Solutions extends BaseQuery {
      *             issue.
      */
     public SolutionType add(SolutionType sol) throws Exception {
-        // TODO: Test once implemented
-
         String fullUrl = connectionManager.getConfig().getUrl() + url;
         Response resp = add(connectionManager.getConnection(), fullUrl, sol);
         MultivaluedMap<String, String> headers = resp.getStringHeaders();

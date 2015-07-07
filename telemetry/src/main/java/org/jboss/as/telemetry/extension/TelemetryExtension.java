@@ -9,7 +9,6 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -26,9 +25,6 @@ import javax.xml.stream.XMLStreamException;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * @author <a href="jkinlaw@redhat.com">Josh Kinlaw</a>
@@ -39,6 +35,10 @@ public class TelemetryExtension implements Extension {
     protected static final String FREQUENCY = "frequency";
     protected static final String RHNPW = "rhnPw";
     protected static final String RHNUID = "rhnUid";
+    public static final String PROXY_USER = "proxyUser";
+    public static final String PROXY_PASSWORD = "proxyPassword";
+    public static final String PROXY_URL = "proxyUrl";
+    public static final String PROXY_PORT = "proxyPort";
     protected static final String TYPE = "telemetryType";
     protected static final PathElement TYPE_PATH = PathElement.pathElement(TYPE);
 
