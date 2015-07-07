@@ -36,16 +36,6 @@ public class TelemetryService extends Telemetries implements
 //    public static final long MILLISECOND_TO_DAY = 86400000;
     public static final long MILLISECOND_TO_DAY = 1; //for testing purposes
 
-    public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
-
-    public static final String TELEMETRY_PROPERTY_FILE_NAME = "telemetry.properties";
-
-    public static final String TELEMETRY_DESCRIPTION = "Properties file consisting of RHN login information and telemetry/insights URL";
-
-    public static final String DEFAULT_BASE_URL = "https://api.access.redhat.com";
-    public static final String DEFAULT_TELEMETRY_ENDPOINT = "/r/insights/v1/uploads/";
-    public static final String DEFAULT_SYSTEM_ENDPOINT = "/r/insights/v1/systems/";
-
     /**
      * Properties that can be set via the properties file.
      */
