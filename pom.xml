@@ -304,7 +304,7 @@
         <module>security-manager</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-	<module>telemetry</module>
+	    <module>telemetry</module>
         <module>transactions</module>
         <module>undertow</module>
         <module>servlet-build</module>
@@ -1184,6 +1184,42 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-pojo</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-patching</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-platform-mbean</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-process-controller</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-protocol</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-redhat-support-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-remoting</artifactId>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>

@@ -36,6 +36,16 @@ public class TelemetryService extends Telemetries implements
 //    public static final long MILLISECOND_TO_DAY = 86400000;
     public static final long MILLISECOND_TO_DAY = 1; //for testing purposes
 
+    public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
+
+    public static final String TELEMETRY_PROPERTY_FILE_NAME = "telemetry.properties";
+
+    public static final String BASE_URI = "baseUri";
+
+    public static final String TELEMETRY_PATH = "telemetryPath";
+
+    public static final String JDR_DESCRIPTION = "JDR for UUID {uuid}";
+
     private static volatile TelemetryService instance;
 
     public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
@@ -301,6 +311,20 @@ public class TelemetryService extends Telemetries implements
                 } catch (IOException e) {
                     ROOT_LOGGER.couldNotClosePropertiesFile(e);
                 }
+    public void setTelemetryUri() {
+        String jbossConfig = System.getProperty(JBOSS_PROPERTY_DIR);
+        String telemetryPropFilePath = jbossConfig + File.separator + TelemetryExtension.SUBSYSTEM_NAME +
+                    File.separator + TELEMETRY_PROPERTY_FILE_NAME;
+        Properties telemetryProperties = new Properties();
+        InputStream telemetryIs = getClass().getClassLoader().getResourceAsStream(telemetryPropFilePath);
+        if(telemetryIs != null) {
+            try {
+                telemetryProperties.load(telemetryIs);
+                telemetryUri = telemetryProperties.getProperty(BASE_URI) +
+                        telemetryProperties.getProperty(TELEMETRY_PATH);
+            }
+            catch(IOException e) {
+                e.printStackTrace();
             }
         }
     }
