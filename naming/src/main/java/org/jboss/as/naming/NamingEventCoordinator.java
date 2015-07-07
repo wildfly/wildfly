@@ -22,6 +22,7 @@
 
 package org.jboss.as.naming;
 
+import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
 import org.jboss.as.naming.util.FastCopyHashMap;
 
@@ -41,7 +42,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.threads.JBossThreadFactory;
 
 import static java.security.AccessController.doPrivileged;
@@ -57,7 +57,11 @@ public class NamingEventCoordinator {
     private volatile Map<TargetScope, List<ListenerHolder>> holdersByTarget = Collections.emptyMap();
     private volatile Map<NamingListener, ListenerHolder> holdersByListener = Collections.emptyMap();
 
-    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("NamingEventCoordinator-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
+    private final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+        public JBossThreadFactory run() {
+            return new JBossThreadFactory(new ThreadGroup("NamingEventCoordinator-threads"), Boolean.FALSE, null, "%G - %t", null, null);
+        }
+    });
 
     private final Executor executor = Executors.newSingleThreadExecutor(threadFactory);
 

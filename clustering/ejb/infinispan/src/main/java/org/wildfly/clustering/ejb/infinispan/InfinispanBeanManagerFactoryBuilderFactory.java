@@ -21,7 +21,9 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.security.AccessController;
+import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +46,6 @@ import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.concurrent.CachedThreadPoolExecutorServiceBuilder;
 import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
 import org.wildfly.clustering.spi.CacheGroupServiceNameFactory;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.
@@ -56,8 +57,16 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  */
 public class InfinispanBeanManagerFactoryBuilderFactory<G, I> implements BeanManagerFactoryBuilderFactory<G, I, TransactionBatch> {
 
-    private static final ThreadFactory EXPIRATION_THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup(BeanExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
-    private static final ThreadFactory EVICTION_THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup(BeanEvictionScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+    private static final ThreadFactory EXPIRATION_THREAD_FACTORY = createThreadFactory();
+    private static final ThreadFactory EVICTION_THREAD_FACTORY = createThreadFactory();
+
+    private static ThreadFactory createThreadFactory() {
+        return doPrivileged(new PrivilegedAction<ThreadFactory>() {
+            public ThreadFactory run() {
+                return new JBossThreadFactory(new ThreadGroup(BeanEvictionScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+            }
+        });
+    }
 
     static String getCacheName(ServiceName deploymentUnitServiceName) {
         if (Services.JBOSS_DEPLOYMENT_SUB_UNIT.isParentOf(deploymentUnitServiceName)) {

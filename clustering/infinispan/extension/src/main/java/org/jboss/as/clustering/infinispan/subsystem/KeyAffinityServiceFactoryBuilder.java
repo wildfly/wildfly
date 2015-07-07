@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,7 +37,6 @@ import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -88,7 +88,11 @@ public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServ
     public void start(StartContext context) {
         final ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
         final String namePattern = "KeyAffinityService Thread Pool -- %t";
-        final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
+        final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+            public JBossThreadFactory run() {
+                return new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
+            }
+        });
 
         this.executor = Executors.newCachedThreadPool(threadFactory);
     }

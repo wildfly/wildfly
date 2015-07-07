@@ -21,7 +21,9 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.security.AccessController;
+import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +41,6 @@ import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Session expiration scheduler that eagerly expires sessions as soon as they are eligible.
@@ -58,7 +59,11 @@ public class SessionExpirationScheduler implements Scheduler {
     }
 
     private static ThreadFactory createThreadFactory() {
-        return new JBossThreadFactory(new ThreadGroup(SessionExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+        return doPrivileged(new PrivilegedAction<ThreadFactory>() {
+            public ThreadFactory run() {
+                return new JBossThreadFactory(new ThreadGroup(SessionExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+            }
+        });
     }
 
     private static ScheduledExecutorService createScheduledExecutor(ThreadFactory factory) {
