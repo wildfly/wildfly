@@ -5,8 +5,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.Properties;
 
@@ -120,7 +122,7 @@ public class TelemetryService extends Telemetries implements
                     while (enabled) {
                         try {
                             JdrReport report = jdrCollector.collect();
-                            sendJdr(report.getLocation());
+                            sendJdr(report.getLocation(), report.getJdrUuid());
                             output.wait(frequency * MILLISECOND_TO_DAY);
                         } catch (InterruptedException e) {
                             ROOT_LOGGER.threadInterrupted(e);
@@ -348,9 +350,7 @@ public class TelemetryService extends Telemetries implements
         }
     }
 
-    private void sendJdr(String fileName) {
-        // TODO: replace with JdrReport uuid property
-        String uuid = "6fdc7b27-2c64-4d73-b04c-aa3ddafeb05e"; // need to replace this with wildfly UUID
+    private void sendJdr(String fileName, String uuid) {
         String description = JDR_DESCRIPTION.replace("{uuid}", uuid);
         boolean wasSuccessful = true;
         File file = new File(fileName);
@@ -364,28 +364,31 @@ public class TelemetryService extends Telemetries implements
             com.redhat.gss.redhat_support_lib.infrastructure.System system = response.readEntity(com.redhat.gss.redhat_support_lib.infrastructure.System.class);
             // if system is unregistered then attempt to register system
             if(system.getUnregistered_at() != null) {
-                try {
-                    addSystem(connectionManager.getConnection(), systemUrl, uuid);
-                } catch (RequestException e) {
-                    ROOT_LOGGER.couldNotRegisterSystem(e);
-                }
-                catch (MalformedURLException e) {
-                    ROOT_LOGGER.couldNotRegisterSystem(e);
-                }
+                addSystem(connectionManager.getConnection(), systemUrl, uuid, InetAddress.getLocalHost().getHostName());
             }
+            // if system does not have a hostname then add it; TODO: waiting on PUT capability
+//            if(system.getHostname() == null || system.getHostname().isEmpty()) {
+//                updateSystem(connectionManager.getConnection(), new URL(new URL(systemUrl),uuid).toString(), InetAddress.getLocalHost().getHostName());
+//            }
         } catch (RequestException e) {
             // if the system was not found then attempt to register the system
             if(e.getMessage().contains("" + Response.Status.NOT_FOUND.getStatusCode())) {
                 try {
-                    addSystem(connectionManager.getConnection(), systemUrl, uuid);
+                    addSystem(connectionManager.getConnection(), systemUrl, uuid, InetAddress.getLocalHost().getHostName());
                 } catch (RequestException exception) {
                     ROOT_LOGGER.couldNotRegisterSystem(exception);
-                }
-                catch (MalformedURLException exception) {
+                } catch (MalformedURLException exception) {
+                    ROOT_LOGGER.couldNotRegisterSystem(exception);
+                } catch (UnknownHostException exception) {
                     ROOT_LOGGER.couldNotRegisterSystem(exception);
                 }
             }
+            else {
+                ROOT_LOGGER.couldNotRegisterSystem(e);
+            }
         } catch (MalformedURLException e) {
+            ROOT_LOGGER.couldNotFindSystem(e);
+        } catch (UnknownHostException e) {
             ROOT_LOGGER.couldNotFindSystem(e);
         }
         try {
