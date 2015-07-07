@@ -14,8 +14,7 @@ grant codeBase "file:${{java.ext.dirs}}/*" {
 grant codeBase "vfs:/content/read-props.war/-" {
   permission java.util.PropertyPermission "*", "read";
 };
-
-// workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1075045
-grant {
-  permission java.lang.RuntimePermission "getClassLoader";
+//workaround for vfs on windows https://bugzilla.redhat.com/show_bug.cgi?id=1082518
+grant codeBase "vfs:/${user.dir}/content/read-props.war/-" {
+  permission java.util.PropertyPermission "*", "read";
 };
