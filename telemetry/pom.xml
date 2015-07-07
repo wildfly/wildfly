@@ -30,7 +30,7 @@
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
         <version>10.0.0.Alpha5-SNAPSHOT</version>
-	<relativePath>../pom.xml</relativePath>
+    	<relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-telemetry</artifactId>
@@ -80,22 +80,6 @@
             <artifactId>commons-net</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-annotations</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
 
     <build>
@@ -103,43 +87,7 @@
            given to the generated war, and hence the context root) -->
         <finalName>${project.artifactId}</finalName>
         <plugins>
-	    <!-- <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <enableAssertions>true</enableAssertions>
-                    <argLine>-Xmx512m</argLine>
-                    <systemProperties>
-                        <property>
-                            <name>jboss.home</name>
-                            <value>${jboss.home}</value>
-                        </property>
-                    </systemProperties>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                    <forkMode>once</forkMode>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <filters>
-                        <filter>src/assemble/filter.properties</filter>
-                    </filters>
-                    <descriptors>
-                        <descriptor>src/assemble/distribution.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin> -->
+	    
             <plugin> 
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -162,16 +110,16 @@
 
                                 <delete dir="target/module" />
                                 <property name="module.dir" value="target/module/${module.path}/main" />
-				<property name="wildfly_dir" value="../build/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/telemetry/main" />
-				<property name="dist_dir" value="../dist/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/telemetry/main" />
+                				<property name="wildfly_dir" value="../build/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/telemetry/main" />
+                				<property name="dist_dir" value="../dist/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/telemetry/main" />
 
                                 <copy file="src/main/resources/module/main/module.xml" tofile="${module.dir}/module.xml" />
                                 <copy file="target/${project.artifactId}.jar" tofile="${module.dir}/jboss-as-telemetry.jar" />
 
-				<copy file="src/main/resources/module/main/module.xml" tofile="${wildfly_dir}/module.xml" />
+                				<copy file="src/main/resources/module/main/module.xml" tofile="${wildfly_dir}/module.xml" />
                                 <copy file="target/${project.artifactId}.jar" tofile="${wildfly_dir}/jboss-as-telemetry.jar" />
 
-				<copy file="src/main/resources/module/main/module.xml" tofile="${dist_dir}/module.xml" />
+                				<copy file="src/main/resources/module/main/module.xml" tofile="${dist_dir}/module.xml" />
                                 <copy file="target/${project.artifactId}.jar" tofile="${dist_dir}/jboss-as-telemetry.jar" />
 
                                 <echo>Module ${module.name} has been created in the target/module directory. Copy to your WildFly installation.</echo>
