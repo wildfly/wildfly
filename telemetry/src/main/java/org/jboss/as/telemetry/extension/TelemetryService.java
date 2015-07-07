@@ -354,14 +354,14 @@ public class TelemetryService extends Telemetries implements
             fileOut = new FileOutputStream(file);
             properties.store(fileOut, TELEMETRY_DESCRIPTION);
         } catch (IOException e) {
-            e.printStackTrace();
+            ROOT_LOGGER.info(ROOT_LOGGER.couldNotCreateEditPropertiesFile(e));
         } finally {
             if (fileOut != null) {
                 try {
                     fileOut.close();
                     setConnectionManager();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    ROOT_LOGGER.info(ROOT_LOGGER.couldNotClosePropertiesFile(e));
                 }
             }
         }
