@@ -366,7 +366,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS,
                                                         ClusterConnectionDefinition.RECONNECT_ATTEMPTS,
                                                         ClusterConnectionDefinition.USE_DUPLICATE_DETECTION,
-                                                        ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS,
+                                                        ClusterConnectionDefinition.MESSAGE_LOAD_BALANCING_TYPE,
                                                         ClusterConnectionDefinition.MAX_HOPS,
                                                         CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
                                                         ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS,
