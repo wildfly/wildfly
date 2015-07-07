@@ -26,7 +26,8 @@ public class ConnectionManager {
 
     public ConnectionManager(ConfigHelper config) {
         this.config = config;
-        clientBuilder = new ResteasyClientBuilder().connectionPoolSize(CONNECTION_POOL_SIZE);
+        clientBuilder = new ResteasyClientBuilder()
+                .connectionPoolSize(CONNECTION_POOL_SIZE);
         clientBuilder.connectionPoolSize(CONNECTION_POOL_SIZE);
         clientBuilder.connectionTTL(config.getTimeout(), TimeUnit.MILLISECONDS);
         clientBuilder.socketTimeout(config.getTimeout(), TimeUnit.MILLISECONDS);
@@ -52,9 +53,12 @@ public class ConnectionManager {
             // setting classloader to RESTEasy jaxrs classloader
             Thread t = Thread.currentThread();
             ClassLoader old = t.getContextClassLoader();
-            t.setContextClassLoader(MultipartFormDataOutput.class.getClassLoader());
+            t.setContextClassLoader(MultipartFormDataOutput.class
+                    .getClassLoader());
             try {
                 client = clientBuilder.build();
+                setWriters();
+
             } finally {
                 // setting classloader back to original
                 t.setContextClassLoader(old);
@@ -94,5 +98,52 @@ public class ConnectionManager {
             throw new FTPException("Error during FTP login");
         }
         return ftp;
+    }
+
+    private void setWriters() {
+            client.register(org.jboss.resteasy.plugins.providers.DataSourceProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.DocumentProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.DefaultTextPlain.class);
+            client.register(org.jboss.resteasy.plugins.providers.StringTextStar.class);
+            client.register(org.jboss.resteasy.plugins.providers.SourceProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.InputStreamProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.ReaderProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.ByteArrayProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.FormUrlEncodedProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.JaxrsFormProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.FileProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.FileRangeWriter.class);
+            client.register(org.jboss.resteasy.plugins.providers.StreamingOutputProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.IIOImageProvider.class);
+            client.register(org.jboss.resteasy.plugins.providers.SerializableProvider.class);
+            client.register(org.jboss.resteasy.plugins.interceptors.CacheControlFeature.class);
+            client.register(org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPInterceptor.class);
+            client.register(org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPFilter.class);
+            client.register(org.jboss.resteasy.plugins.interceptors.encoding.ClientContentEncodingAnnotationFeature.class);
+            client.register(org.jboss.resteasy.plugins.interceptors.encoding.GZIPDecodingInterceptor.class);
+            client.register(org.jboss.resteasy.plugins.interceptors.encoding.GZIPEncodingInterceptor.class);
+            client.register(org.jboss.resteasy.plugins.interceptors.encoding.ServerContentEncodingAnnotationFeature.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.DataSourceProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.DocumentProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.DefaultTextPlain.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.StringTextStar.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.SourceProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.InputStreamProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.ReaderProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.ByteArrayProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.FormUrlEncodedProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.JaxrsFormProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.FileProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.FileRangeWriter.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.StreamingOutputProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.IIOImageProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.providers.SerializableProvider.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.interceptors.CacheControlFeature.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPInterceptor.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPFilter.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.interceptors.encoding.ClientContentEncodingAnnotationFeature.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.interceptors.encoding.GZIPDecodingInterceptor.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.interceptors.encoding.GZIPEncodingInterceptor.class);
+            clientBuilder.register(org.jboss.resteasy.plugins.interceptors.encoding.ServerContentEncodingAnnotationFeature.class);
     }
 }
