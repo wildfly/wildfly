@@ -1,26 +1,19 @@
 <?xml version="1.0"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.CR1-SNAPSHOT</version>
-	<relativePath>../pom.xml</relativePath>
-    </parent>
+	<parent>
+		<groupId>org.wildfly</groupId>
+		<artifactId>wildfly-parent</artifactId>
+		<version>10.0.0.Alpha2-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
-    <groupId>com.redhat.gss</groupId>
-    <artifactId>redhat-support-lib</artifactId>
-    <name>WildFly: Redhat Support Library</name>
-	<!-- <properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties> -->
-	<!-- <groupId>com.redhat.gss</groupId> -->
-	<!-- <artifactId>redhat-support-lib-java</artifactId> -->
-	<!-- <version>2.0.7</version> -->
+	<groupId>com.redhat.gss</groupId>
+	<artifactId>wildfly-redhat-support-lib</artifactId>
+	<name>WildFly: Redhat Support Library</name>
 	<dependencies>
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
@@ -55,87 +48,55 @@
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
-            <dependency>
-                <groupId>com.redhat.gss</groupId>
-                <artifactId>redhat-support-lib-java</artifactId>
-                <version>${version.com.redhat.gss.redhat-support-lib-java}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-net</groupId>
-                <artifactId>commons-net</artifactId>
-                <version>${version.commons-net}</version>
-            </dependency>
-            <dependency>
-            	<groupId>org.jboss.resteasy</groupId>
-            	<artifactId>resteasy-client</artifactId>
-            	<version>${version.org.jboss.resteasy}</version>
-        	</dependency>
-        	<dependency>
-        		<groupId>org.jboss.resteasy</groupId>
-        		<artifactId>resteasy-multipart-provider</artifactId>
-        		<version>${version.org.jboss.resteasy}</version>
-    		</dependency>
-    		<dependency>
-    			<groupId>org.apache.httpcomponents</groupId>
-    			<artifactId>httpclient</artifactId>
-    			<version>${version.org.apache.httpcomponents.httpclient}</version>
-    			<exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-    		</dependency>
-    		<dependency>
+			<dependency>
+				<groupId>commons-net</groupId>
+				<artifactId>commons-net</artifactId>
+				<version>${version.commons-net}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.resteasy</groupId>
+				<artifactId>resteasy-client</artifactId>
+				<version>${version.org.jboss.resteasy}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.resteasy</groupId>
+				<artifactId>resteasy-multipart-provider</artifactId>
+				<version>${version.org.jboss.resteasy}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${version.org.apache.httpcomponents.httpclient}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
 				<groupId>javax.ws.rs</groupId>
 				<artifactId>javax.ws.rs-api</artifactId>
 				<version>2.0</version>
 			</dependency>
-   	    </dependencies>
-   	</dependencyManagement>
-	<!-- <dependencies>
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>3.0.0.CR1</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>commons-net</groupId>
-			<artifactId>commons-net</artifactId>
-			<version>3.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-client</artifactId>
-			<version>3.0.11.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-multipart-provider</artifactId>
-			<version>3.0.11.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.3.3</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.10</version>
-		</dependency>
-	</dependencies> -->
+		</dependencies>
+	</dependencyManagement>
 	<build>
 		<pluginManagement>
-			<plugins>
+			<plugins>                                
 				<!-- Need Java 5, which is the default since v2.3 of the maven-compiler-plugin. -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>2.5.1</version>
 				</plugin>
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-checkstyle-plugin</artifactId>
+                                    <configuration>
+                                        <excludes>**/target/generated-sources/**</excludes>
+                                    </configuration>
+                                </plugin>
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -200,46 +161,52 @@
 				</executions>
 			</plugin>
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>build-dist</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <target> 
-                                <!-- Replace the '.' in ${module.name} with '/' to get its path  -->
-                                <tempfile property="temp.file" />
-                                <echo message="${module.name}" file="${temp.file}" />
-                                <replace file="${temp.file}" token="." value="/" />
-                                <loadfile srcfile="${temp.file}" property="module.path" />
-                                <delete file="${temp.file}" />
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<inherited>false</inherited>
+				<executions>
+					<execution>
+						<id>build-dist</id>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<!-- Replace the '.' in ${module.name} with '/' to get its path -->
+								<tempfile property="temp.file" />
+								<echo message="${module.name}" file="${temp.file}" />
+								<replace file="${temp.file}" token="." value="/" />
+								<loadfile srcfile="${temp.file}" property="module.path" />
+								<delete file="${temp.file}" />
 
-                                <delete dir="target/module" />
-                                <property name="module.dir" value="target/module/${module.path}/main" />
-                <property name="wildfly_dir" value="../build/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/com/redhat/gss/redhat-support-lib/main" />
-                <property name="dist_dir" value="../dist/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/com/redhat/gss/redhat-support-lib/main" />
+								<delete dir="target/module" />
+								<property name="module.dir" value="target/module/${module.path}/main" />
+								<property name="wildfly_dir"
+									value="../build/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/com/redhat/gss/redhat-support-lib/main" />
+								<property name="dist_dir"
+									value="../dist/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/com/redhat/gss/redhat-support-lib/main" />
 
-                                <copy file="src/main/resources/module/main/module.xml" tofile="${module.dir}/module.xml" />
-                                <copy file="target/${project.artifactId}.jar" tofile="${module.dir}/jboss-redhat-support-lib.jar" />
+								<copy file="src/main/resources/module/main/module.xml"
+									tofile="${module.dir}/module.xml" />
+								<copy file="target/${project.artifactId}.jar" tofile="${module.dir}/jboss-redhat-support-lib.jar" />
 
-                                <copy file="src/main/resources/module/main/module.xml" tofile="${wildfly_dir}/module.xml" />
-                                <copy file="target/${project.artifactId}.jar" tofile="${wildfly_dir}/jboss-redhat-support-lib.jar" />
+								<copy file="src/main/resources/module/main/module.xml"
+									tofile="${wildfly_dir}/module.xml" />
+								<copy file="target/${project.artifactId}.jar" tofile="${wildfly_dir}/jboss-redhat-support-lib.jar" />
 
-                                <copy file="src/main/resources/module/main/module.xml" tofile="${dist_dir}/module.xml" />
-                                <copy file="target/${project.artifactId}.jar" tofile="${dist_dir}/jboss-redhat-support-lib.jar" />
+								<copy file="src/main/resources/module/main/module.xml"
+									tofile="${dist_dir}/module.xml" />
+								<copy file="target/${project.artifactId}.jar" tofile="${dist_dir}/jboss-redhat-support-lib.jar" />
 
-                                <echo>Module ${module.name} has been created in the target/module directory. Copy to your WildFly installation.</echo>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+								<echo>Module ${module.name} has been created in the
+									target/module directory. Copy to your WildFly installation.</echo>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
-		<finalName>redhat-support-lib</finalName>
+		<finalName>wildfly-redhat-support-lib</finalName>
 	</build>
 </project>
