@@ -8,9 +8,6 @@ import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import org.jboss.logging.Logger;
-
-import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 import com.redhat.gss.redhat_support_lib.helpers.FilterHelper;
 import com.redhat.gss.redhat_support_lib.helpers.QueryBuilder;
@@ -18,7 +15,6 @@ import com.redhat.gss.redhat_support_lib.parsers.ArticleType;
 import com.redhat.gss.redhat_support_lib.web.ConnectionManager;
 
 public class Articles extends BaseQuery {
-    private static final Logger LOGGER = Logger.getLogger(API.class.getName());
     private ConnectionManager connectionManager = null;
     static String url = "/rs/articles/";
 
@@ -89,13 +85,7 @@ public class Articles extends BaseQuery {
         Response resp = add(connectionManager.getConnection(), fullUrl, art);
         MultivaluedMap<String, String> headers = resp.getStringHeaders();
         URL url = null;
-        try {
-            url = new URL(headers.getFirst("view-uri"));
-        } catch (MalformedURLException e) {
-            LOGGER.debug("Failed : Adding ArticleType " + art.getTitle()
-                    + " was unsuccessful.");
-            throw new Exception();
-        }
+        url = new URL(headers.getFirst("view-uri"));
         String path = url.getPath();
         art.setId(path.substring(path.lastIndexOf('/') + 1, path.length()));
         art.setViewUri(url.toString());

@@ -35,5 +35,4 @@ public class Symptoms extends BaseQuery {
                 .readEntity(com.redhat.gss.redhat_support_lib.parsers.ExtractedSymptomsType.class);
         return symptoms.getExtractedSymptom();
     }
-
 }

@@ -13,16 +13,12 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 
-import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 
 public class BaseQuery {
-
-    private static final Logger LOGGER = Logger.getLogger(API.class.getName());
 
     protected <T> T get(ResteasyClient client, String uri, Class<T> c)
             throws RequestException {
@@ -30,9 +26,6 @@ public class BaseQuery {
                 .accept(MediaType.APPLICATION_XML).get();
 
         if (response.getStatus() != HttpStatus.SC_OK) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
@@ -47,9 +40,6 @@ public class BaseQuery {
                 .accept(MediaType.APPLICATION_XML).get();
 
         if (response.getStatus() != HttpStatus.SC_OK) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
@@ -91,9 +81,6 @@ public class BaseQuery {
                 .accept(MediaType.APPLICATION_XML)
                 .post(Entity.entity(object, MediaType.APPLICATION_XML));
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
@@ -108,9 +95,6 @@ public class BaseQuery {
                 .accept(MediaType.APPLICATION_XML)
                 .post(Entity.entity(object, MediaType.APPLICATION_XML));
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
@@ -125,9 +109,6 @@ public class BaseQuery {
                 .accept(MediaType.APPLICATION_XML)
                 .put(Entity.entity(object, MediaType.APPLICATION_XML));
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
@@ -140,9 +121,6 @@ public class BaseQuery {
         Response response = (Response) client.target(uri).request()
                 .delete(Response.class);
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
@@ -172,9 +150,6 @@ public class BaseQuery {
                 MediaType.MULTIPART_FORM_DATA_TYPE));
 
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
-            LOGGER.debug("Failed : HTTP error code : "
-                    + response.getStatusInfo().getStatusCode() + " - "
-                    + response.getStatusInfo().getReasonPhrase());
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
