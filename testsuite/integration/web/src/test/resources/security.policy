@@ -18,3 +18,8 @@ grant codeBase "vfs:/content/read-props.war/-" {
 grant codeBase "vfs:/${user.dir}/content/read-props.war/-" {
   permission java.util.PropertyPermission "*", "read";
 };
+
+//add permisions for WebSocket tests
+grant{
+  permission java.net.SocketPermission "*", "listen,resolve";
+};
