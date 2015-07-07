@@ -81,7 +81,7 @@ public class TransformUtils {
                     default:
                         value = legacyValue;
                 }
-                if(!value.equals("off")) {
+                if (!value.asString().equals(JacORBSubsystemConstants.OFF)) {
                     model.get(name).set(value);
                 }
             }
