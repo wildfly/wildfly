@@ -42,7 +42,7 @@ public class TelemetryService extends Telemetries implements
 
     public static final String TELEMETRY_DESCRIPTION = "Properties file consisting of RHN login information and telemetry/insights URL";
 
-    public static final String DEFAULT_BASE_URL = "https://access.redhat.com";
+    public static final String DEFAULT_BASE_URL = "https://api.access.redhat.com";
     public static final String DEFAULT_TELEMETRY_ENDPOINT = "/r/insights/v1/uploads/";
     public static final String DEFAULT_SYSTEM_ENDPOINT = "/r/insights/v1/systems/";
 
@@ -335,22 +335,23 @@ public class TelemetryService extends Telemetries implements
                 + TELEMETRY_PROPERTY_FILE_NAME;
         Properties properties = new Properties();
         FileOutputStream fileOut = null;
-        File file = new File(propertiesFilePath);
+        FileInputStream fis = null;
+        File file = getPropertiesFile();
         try {
             if (!file.exists()) {
                 file.getParentFile().mkdirs();
                 properties.setProperty(URL, DEFAULT_BASE_URL);
                 properties.setProperty(TELEMETRY_ENDPOINT,
                         DEFAULT_TELEMETRY_ENDPOINT);
+                properties.setProperty(SYSTEM_ENDPOINT, DEFAULT_SYSTEM_ENDPOINT);
+                properties.setProperty(TelemetryExtension.FREQUENCY, "" + frequency);
+                properties.setProperty(TelemetryExtension.ENABLED, "" + enabled);
             } else {
-                properties.load(new FileInputStream(propertiesFilePath));
+                fis = new FileInputStream(file.getPath());
+                properties.load(fis);
             }
             properties.setProperty(USERNAME, rhnUid);
             properties.setProperty(PASSWORD, rhnPw);
-            properties.setProperty(URL, DEFAULT_BASE_URL);
-            properties.setProperty(TELEMETRY_ENDPOINT,
-                    DEFAULT_TELEMETRY_ENDPOINT);
-            properties.setProperty(SYSTEM_ENDPOINT, DEFAULT_SYSTEM_ENDPOINT);
             fileOut = new FileOutputStream(file);
             properties.store(fileOut, TELEMETRY_DESCRIPTION);
         } catch (IOException e) {
@@ -360,6 +361,13 @@ public class TelemetryService extends Telemetries implements
                 try {
                     fileOut.close();
                     setConnectionManager();
+                } catch (IOException e) {
+                    ROOT_LOGGER.couldNotClosePropertiesFile(e);
+                }
+            }
+            if (fis != null) {
+                try {
+                    fis.close();
                 } catch (IOException e) {
                     ROOT_LOGGER.couldNotClosePropertiesFile(e);
                 }

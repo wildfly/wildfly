@@ -3,6 +3,8 @@ package com.redhat.gss.redhat_support_lib.infrastructure;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericEntity;
@@ -15,7 +17,9 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 
-public class Telemetry {
+public class Telemetries {
+
+    public static final String MACHINE_ID = "machine_id";
 
     protected Response get(ResteasyClient client, String uri)
             throws RequestException {
@@ -34,15 +38,16 @@ public class Telemetry {
         MultipartFormDataOutput mdo = new MultipartFormDataOutput();
         mdo.addFormData("machine_id", uuid,
                     MediaType.APPLICATION_JSON_TYPE);
+        Map<String,String> params = new HashMap<String,String>();
+        params.put(MACHINE_ID,uuid);
         Response response = (Response) client.target(uri).request()
                 .accept(MediaType.APPLICATION_JSON)
-                .post(Entity.entity(mdo, MediaType.APPLICATION_JSON));
+                .post(Entity.entity(params, MediaType.APPLICATION_JSON));
         if (response.getStatus() >= HttpStatus.SC_BAD_REQUEST) {
             throw new RequestException(response.getStatusInfo().getStatusCode()
                     + " - " + response.getStatusInfo().getReasonPhrase());
         }
         return response;
-
     }
 
     protected Response upload(ResteasyClient client, String uri, File file,
