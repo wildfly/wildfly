@@ -24,7 +24,9 @@ package org.jboss.as.weld.deployment;
 import java.util.Collection;
 import java.util.Set;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.weld.bootstrap.api.Service;
+import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -40,11 +42,16 @@ import com.google.common.collect.ImmutableSet;
 public class BeanDeploymentModule {
 
     private final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives;
+    private final EEModuleDescriptor moduleDescriptor;
 
-    public BeanDeploymentModule(Collection<BeanDeploymentArchiveImpl> beanDeploymentArchives) {
+    public BeanDeploymentModule(String moduleId, DeploymentUnit deploymentUnit, Collection<BeanDeploymentArchiveImpl> beanDeploymentArchives) {
         this.beanDeploymentArchives = ImmutableSet.copyOf(beanDeploymentArchives);
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
             bda.addBeanDeploymentArchives(beanDeploymentArchives);
+        }
+        this.moduleDescriptor = WeldEEModuleDescriptor.of(moduleId, deploymentUnit);
+        if (moduleDescriptor != null) {
+            addService(EEModuleDescriptor.class, moduleDescriptor);
         }
     }
 
@@ -99,4 +106,7 @@ public class BeanDeploymentModule {
         return beanDeploymentArchives;
     }
 
+    public EEModuleDescriptor getModuleDescriptor() {
+        return moduleDescriptor;
+    }
 }

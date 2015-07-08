@@ -34,18 +34,20 @@ import javax.enterprise.inject.spi.Extension;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.WeldModuleResourceLoader;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.discovery.WeldAnnotationDiscovery;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.bootstrap.ProxyServicesImpl;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.bootstrap.spi.CDI11Deployment;
+import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.resources.spi.AnnotationDiscovery;
 import org.jboss.weld.resources.spi.ResourceLoader;
@@ -84,9 +86,11 @@ public class WeldDeployment implements CDI11Deployment {
     private final Map<ClassLoader, BeanDeploymentArchiveImpl> additionalBeanDeploymentArchivesByClassloader;
 
     private final BeanDeploymentModule rootBeanDeploymentModule;
+    private final Map<ModuleIdentifier, EEModuleDescriptor> eeModuleDescriptors;
 
     public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Collection<Metadata<Extension>> extensions,
-            Module module, Set<ClassLoader> subDeploymentClassLoaders, DeploymentUnit deploymentUnit, BeanDeploymentModule rootBeanDeploymentModule) {
+            Module module, Set<ClassLoader> subDeploymentClassLoaders, DeploymentUnit deploymentUnit, BeanDeploymentModule rootBeanDeploymentModule,
+            Map<ModuleIdentifier, EEModuleDescriptor> eeModuleDescriptors) {
         this.subDeploymentClassLoaders = new HashSet<ClassLoader>(subDeploymentClassLoaders);
         this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
@@ -94,6 +98,7 @@ public class WeldDeployment implements CDI11Deployment {
         this.additionalBeanDeploymentArchivesByClassloader = new HashMap<ClassLoader, BeanDeploymentArchiveImpl>();
         this.module = module;
         this.rootBeanDeploymentModule = rootBeanDeploymentModule;
+        this.eeModuleDescriptors = eeModuleDescriptors;
 
         // add static services
         this.serviceRegistry.add(ProxyServices.class, new ProxyServicesImpl(module));
@@ -178,6 +183,9 @@ public class WeldDeployment implements CDI11Deployment {
         WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(newBda);
         newBda.addBeanClass(beanClass);
         newBda.getServices().addAll(serviceRegistry.entrySet());
+        if (module != null && eeModuleDescriptors.containsKey(module.getIdentifier())) {
+            newBda.getServices().add(EEModuleDescriptor.class, eeModuleDescriptors.get(module.getIdentifier()));
+        }
         // handle BDAs visible from the new BDA
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
             if (newBda.isAccessible(bda)) {

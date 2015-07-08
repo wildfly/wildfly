@@ -146,7 +146,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit);
         final JaxwsInjectionServices jaxwsInjectionServices = new WeldJaxwsInjectionServices(deploymentUnit);
 
-        final BeanDeploymentModule bdm = new BeanDeploymentModule(bdaMap.values());
+        final BeanDeploymentModule bdm = new BeanDeploymentModule(handler.module.getIdentifier().toString(), deploymentUnit, bdaMap.values());
         bdm.addService(JpaInjectionServices.class, jpaInjectionServices);
         bdm.addService(JaxwsInjectionServices.class, jaxwsInjectionServices);
         deploymentUnit.putAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE, bdm);
