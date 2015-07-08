@@ -74,7 +74,6 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.addAll(adjustEjb3(profileAddress.append(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)));
         list.addAll(replaceIiopOpenJdk(client, profileAddress.append(SUBSYSTEM, IIOPExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustInfinispan(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
-        list.addAll(removeIo(profileAddress.append(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustRemoting(profileAddress.append(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustWeld(profileAddress.append(SUBSYSTEM, WeldExtension.SUBSYSTEM_NAME)));
@@ -83,6 +82,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
         list.addAll(replaceActiveMqWithMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
         list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME)));
+        list.addAll(removeIo(profileAddress.append(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME)));
 
         //Temporary workaround, something weird is going on in infinispan/jgroups so let's get rid of those for now
         //TODO Reenable these subsystems, it is important to see if we boot with them configured although the tests don't use clustering
