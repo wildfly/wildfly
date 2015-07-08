@@ -21,7 +21,9 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import java.security.AccessController;
+import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -38,7 +40,6 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Non-clustered {@link CommandDispatcher} implementation
@@ -56,7 +57,11 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     private static ThreadFactory createThreadFactory() {
-        return new JBossThreadFactory(new ThreadGroup(LocalCommandDispatcher.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+        return doPrivileged(new PrivilegedAction<ThreadFactory>() {
+            public ThreadFactory run() {
+                return new JBossThreadFactory(new ThreadGroup(LocalCommandDispatcher.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+            }
+        });
     }
 
     public LocalCommandDispatcher(Node node, C context, ExecutorService executor) {

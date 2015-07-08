@@ -29,6 +29,7 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTO
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -87,7 +88,6 @@ import org.jboss.security.SubjectFactory;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
 
 /**
@@ -276,8 +276,11 @@ public abstract class AbstractResourceAdapterDeploymentService {
             // add-on projects don't know to inject it....
             final ThreadGroup threadGroup = new ThreadGroup("ResourceAdapterDeploymentService ThreadGroup");
             final String namePattern = "ResourceAdapterDeploymentService Thread Pool -- %t";
-            final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern,
-                    null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
+            final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+                public JBossThreadFactory run() {
+                    return new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
+                }
+            });
             result = Executors.newSingleThreadExecutor(threadFactory);
         }
         return result;
