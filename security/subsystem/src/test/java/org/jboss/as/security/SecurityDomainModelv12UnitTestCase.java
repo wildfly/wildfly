@@ -52,6 +52,7 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -67,71 +68,15 @@ import org.junit.Test;
  * Security subsystem tests for the version 1.2 of the subsystem schema.
  * </p>
  */
-public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTest {
-
-    private static String oldConfig;
-    @BeforeClass
-    public static void beforeClass() {
-        try {
-            File target = new File(SecurityDomainModelv11UnitTestCase.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
-            File config = new File(target, "config");
-            config.mkdir();
-            oldConfig = System.setProperty("jboss.server.config.dir", config.getAbsolutePath());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        if (oldConfig != null) {
-            System.setProperty("jboss.server.config.dir", oldConfig);
-        } else {
-            System.clearProperty("jboss.server.config.dir");
-        }
-    }
+public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemTest {
 
     public SecurityDomainModelv12UnitTestCase() {
         super(SecurityExtension.SUBSYSTEM_NAME, new SecurityExtension());
     }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization() {
-            @Override
-            protected RunningMode getRunningMode() {
-                return RunningMode.NORMAL;
-            }
-        };
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("securitysubsystemv12.xml");
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-security_1_2.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/security.xml"
-        };
-    }
-
-    @Override
-    protected Properties getResolvedProperties() {
-        Properties properties = new Properties();
-        properties.put("jboss.server.config.dir", System.getProperty("java.io.tmpdir"));
-        return properties;
-    }
-
     @Test
     public void testOrder() throws Exception {
-        KernelServices service = createKernelServicesBuilder(createAdditionalInitialization())
+        KernelServices service = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("securitysubsystemv12.xml")
                 .build();
         PathAddress address = PathAddress.pathAddress().append("subsystem", "security").append("security-domain", "ordering");

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -66,23 +67,32 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    public static final SimpleAttributeDefinition EXPORT_ELYTRON_REALM = new SimpleAttributeDefinitionBuilder(Constants.EXPORT_ELYTRON_REALM, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {CACHE_TYPE, EXPORT_ELYTRON_REALM};
+
     private final boolean registerRuntimeOnly;
     private final List<AccessConstraintDefinition> accessConstraints;
 
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
         super(SecurityExtension.SECURITY_DOMAIN_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE,
-                new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE));
+                new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE, Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY));
         this.registerRuntimeOnly = registerRuntimeOnly;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.SECURITY_DOMAIN);
         AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
-        this.accessConstraints = Arrays.asList((AccessConstraintDefinition) SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN, acd);
+        this.accessConstraints = Arrays.asList(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN, acd);
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(CACHE_TYPE, null, new SecurityDomainReloadWriteHandler(CACHE_TYPE));
+        SecurityDomainReloadWriteHandler handler = new SecurityDomainReloadWriteHandler(ATTRIBUTES);
+        for (AttributeDefinition attribute : ATTRIBUTES)
+            resourceRegistration.registerReadWriteAttribute(attribute, null, handler);
     }
 
     @Override

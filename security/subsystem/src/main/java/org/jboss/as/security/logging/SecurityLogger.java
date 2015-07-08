@@ -849,5 +849,4 @@ public interface SecurityLogger extends BasicLogger {
      */
     @Message(id = NONE, value = "Action not specified")
     String actionNotSpecified();
-
 }

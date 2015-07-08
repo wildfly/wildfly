@@ -89,8 +89,9 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+        SecurityDomainReloadWriteHandler writeHandler = new SecurityDomainReloadWriteHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new SecurityDomainReloadWriteHandler(attr));
+            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
 

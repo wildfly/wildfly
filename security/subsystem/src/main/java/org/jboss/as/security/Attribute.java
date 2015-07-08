@@ -38,6 +38,7 @@ public enum Attribute {
     AUTHENTICATION_MANAGER_CLASS_NAME("authentication-manager-class-name"),
     AUTHORIZATION_MANAGER_CLASS_NAME("authorization-manager-class-name"),
     CACHE_TYPE("cache-type"),
+    EXPORT_ELYTRON_REALM("export-elytron-realm"),
     CIPHER_SUITES("cipher-suites"),
     CLIENT_ALIAS("client-alias"),
     CLIENT_AUTH("client-auth"),

@@ -41,6 +41,7 @@ import static org.jboss.as.security.Constants.AUTHORIZATION;
 import static org.jboss.as.security.Constants.AUTH_MODULE;
 import static org.jboss.as.security.Constants.CACHE_TYPE;
 import static org.jboss.as.security.Constants.CLASSIC;
+import static org.jboss.as.security.Constants.EXPORT_ELYTRON_REALM;
 import static org.jboss.as.security.Constants.IDENTITY_TRUST;
 import static org.jboss.as.security.Constants.JASPI;
 import static org.jboss.as.security.Constants.JSSE;
@@ -191,6 +192,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 writer.writeAttribute(Attribute.NAME.getLocalName(), policy.getName());
                 ModelNode policyDetails = policy.getValue();
                 SecurityDomainResourceDefinition.CACHE_TYPE.marshallAsAttribute(policyDetails, writer);
+                SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.marshallAsAttribute(policyDetails, writer);
                 writeSecurityDomainContent(writer, policyDetails);
                 writer.writeEndElement();
             }
@@ -220,6 +222,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         Set<String> keys = policyDetails.keys();
         keys.remove(NAME);
         keys.remove(CACHE_TYPE);
+        keys.remove(EXPORT_ELYTRON_REALM);
 
         for (String key : keys) {
             Element element = Element.forName(key);
@@ -446,6 +449,15 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 }
                 case CACHE_TYPE: {
                     SecurityDomainResourceDefinition.CACHE_TYPE.parseAndSetParameter(value, op, reader);
+                    break;
+                }
+                case EXPORT_ELYTRON_REALM: {
+                    Namespace schemaVersion = Namespace.forUri(reader.getNamespaceURI());
+                    // the export-elytron-realm attribute was added in version 1.3 of the schema.
+                    if (schemaVersion.compareTo(Namespace.SECURITY_2_0) < 0) {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                    SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.parseAndSetParameter(value, op, reader);
                     break;
                 }
                 default:
@@ -745,13 +757,13 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
         EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
         EnumSet<Attribute> notAllowed;
-        // in version 1.2 of the schema the optional flag attribute has been included.
-        if (schemaVer == Namespace.SECURITY_1_2) {
-            notAllowed = EnumSet.of(Attribute.TYPE);
-        }
         // in earlier versions of the schema, the flag attribute was missing (not allowed).
-        else {
+        if (schemaVer.compareTo(Namespace.SECURITY_1_2) < 0) {
             notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
+        }
+        // in version 1.2 of the schema the optional flag attribute has been included.
+        else {
+            notAllowed = EnumSet.of(Attribute.TYPE);
         }
         parseCommonModule(reader, parentAddress, AUTH_MODULE, required, notAllowed, list);
     }

@@ -60,6 +60,7 @@ import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -81,7 +82,7 @@ import org.jboss.msc.service.ServiceName;
 
     private static final String RESOURCE_NAME = SecurityExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 3, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
@@ -152,18 +153,24 @@ import org.jboss.msc.service.ServiceName;
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_2_0.getUriString(), PARSER);
     }
 
     private void registerTransformers(SubsystemRegistration subsystemRegistration) {
         registerTransformers_1_1_0(subsystemRegistration);
         registerTransformers_1_2_0(subsystemRegistration);
+        registerTransformers_1_3_0(subsystemRegistration);
     }
 
     private void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE);
         final ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
-        securityDomain.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecurityDomainResourceDefinition.CACHE_TYPE).end();
+        securityDomain.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                            SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecurityDomainResourceDefinition.CACHE_TYPE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+                .end();
 
         final ModulesToAttributeTransformer authClassicLoginModule = new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES);
         registerModuleTransformer(securityDomain, PATH_CLASSIC_AUTHENTICATION, authClassicLoginModule,
@@ -226,6 +233,10 @@ import org.jboss.msc.service.ServiceName;
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
+        securityDomain.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+                .end();
 
         // Transform any add op that includes the module list attribute into a compsosite of an add w/o that + write-attribute
         AttributeToModulesTransformer loginModule = new AttributeToModulesTransformer(Constants.LOGIN_MODULES);
@@ -254,6 +265,20 @@ import org.jboss.msc.service.ServiceName;
         registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, loginModule);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 2, 0));
+    }
+
+    private void registerTransformers_1_3_0(SubsystemRegistration subsystemRegistration) {
+        // earlier versions of the model didn't have the export-elytron-realm attribute, but the subsystem behavior is
+        // fully compatible if this attribute is left undefined or if its set to false.
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
+        securityDomain.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+                .end();
+
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 3, 0));
+
     }
 
     private ResourceTransformationDescriptionBuilder registerModuleTransformer(final ResourceTransformationDescriptionBuilder parent, final PathElement childPath,

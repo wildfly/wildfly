@@ -72,6 +72,7 @@ import javax.security.auth.login.Configuration;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -79,6 +80,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.security.realm.DomainContextRealmService;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.security.service.SecurityManagementService;
@@ -113,6 +115,7 @@ import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
 import org.jboss.security.plugins.TransactionManagerLocator;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.security.auth.server.SecurityRealm;
 
 /**
  * Add a security domain configuration.
@@ -124,16 +127,21 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 class SecurityDomainAdd extends AbstractAddStepHandler {
     private static final String CACHE_CONTAINER_NAME = "security";
 
+    private static final String DEFAULT_MODULE = "org.picketbox";
+
     static final SecurityDomainAdd INSTANCE = new SecurityDomainAdd();
 
     /**
      * Private to ensure a singleton.
      */
     private SecurityDomainAdd() {
+        super(Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        SecurityDomainResourceDefinition.CACHE_TYPE.validateAndSet(operation, model);
+        for (AttributeDefinition attribute : SecurityDomainResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, final ModelNode model) {
@@ -156,6 +164,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         final ApplicationPolicy applicationPolicy = createApplicationPolicy(context, securityDomain, model);
         final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(context, securityDomain, model);
         final String cacheType = getAuthenticationCacheType(model);
+        final boolean exportElytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, model).asBoolean();
 
         final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
                 applicationPolicy, jsseSecurityDomain, cacheType);
@@ -182,8 +191,15 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             builder.addDependency(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(CACHE_CONTAINER_NAME),
                     Object.class, securityDomainService.getCacheManagerInjector());
         }
-
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+        if (exportElytronRealm) {
+            final ServiceName realmServiceName = context.getCapabilityServiceName(Capabilities.SECURITY_REALM_CAPABILITY, securityDomain, SecurityRealm.class);
+            final DomainContextRealmService domainContextRealmService = new DomainContextRealmService();
+            target.addService(realmServiceName, domainContextRealmService)
+                    .addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, domainContextRealmService.getSecurityDomainContextInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+        }
     }
 
     private ApplicationPolicy createApplicationPolicy(OperationContext context, String securityDomain, final ModelNode model)
@@ -226,8 +242,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             applicationPolicy.setMappingInfo(mappingType, mappingInfo);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                mappingInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                mappingInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                mappingInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
 
@@ -251,8 +269,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             identityTrustInfo.add(entry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                identityTrustInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                identityTrustInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                identityTrustInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setIdentityTrustInfo(identityTrustInfo);
@@ -273,8 +293,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             auditInfo.add(entry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                auditInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                auditInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                auditInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setAuditInfo(auditInfo);
@@ -298,8 +320,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             aclInfo.add(entry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                aclInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                aclInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                aclInfo.addJBossModuleName(DEFAULT_MODULE);
             }
 
         }
@@ -324,8 +348,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             authzInfo.add(authzModuleEntry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authzInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                authzInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                authzInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
 
@@ -380,8 +406,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             authenticationInfo.add(entry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, authModule);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authenticationInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                authenticationInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                authenticationInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setAuthenticationInfo(authenticationInfo);
@@ -436,8 +464,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             AppConfigurationEntry entry = new AppConfigurationEntry(codeName, controlFlag, options);
             container.addAppConfigurationEntry(entry);
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                authInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                authInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
     }
