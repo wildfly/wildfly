@@ -91,7 +91,7 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
             for(final StatefulComponentDescription.StatefulRemoveMethod method : methods) {
                 Class<?> c = ejbClass;
                 while (c != null && c != Object.class) {
-                    ClassReflectionIndex<?> index = reflectionIndex.getClassIndex(c);
+                    ClassReflectionIndex index = reflectionIndex.getClassIndex(c);
                     Method m = index.getMethod(method.getMethodIdentifier());
                     if(m != null) {
                         removeMethods.add(m);

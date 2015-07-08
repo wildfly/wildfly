@@ -102,7 +102,7 @@ public final class JwsWebServiceEndpointVerifier {
     }
 
     void verifyFinalizeMethod() {
-        ClassReflectionIndex<?> classReflectionIndex = deploymentReflectionIndex.getClassIndex(endpointClass);
+        ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(endpointClass);
         Method finalizeMethod = classReflectionIndex.getMethod(void.class, "finalize");
         if (finalizeMethod != null) {
             verificationFailures.add(new ImplementationHasFinalize());

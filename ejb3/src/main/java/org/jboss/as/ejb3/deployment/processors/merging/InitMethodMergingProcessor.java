@@ -76,9 +76,9 @@ public class InitMethodMergingProcessor extends AbstractMergingProcessor<Statefu
         //we are only looking on the bean class, not sure if that is correct or not
         Class<?> clazz = componentClass;
         while (clazz != Object.class && clazz != null) {
-            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(clazz);
+            final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(clazz);
 
-            for (Method method : index.getMethods()) {
+            for (Method method : (Iterable<Method>)index.getMethods()) {
                 if (method.getName().startsWith("ejbCreate")) {
                     //if there is additional metadata specified for this method
                     //it will be overridden below

@@ -29,7 +29,7 @@ import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
@@ -54,7 +54,7 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         final ComponentConfiguration configuration =  super.createConfiguration(classIndex, moduleClassLoader, moduleLoader);
         configuration.setInstanceFactory(new ComponentFactory() {
             @Override

@@ -117,7 +117,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
     private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final String mBeanClassName = mBeanConfig.getCode();
-        final List<ClassReflectionIndex<?>> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
+        final List<ClassReflectionIndex> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);
         final String mBeanName = mBeanConfig.getName();
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -138,7 +138,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         mBeanServices.install();
     }
 
-    private void addDependencies(final JBossServiceDependencyConfig[] dependencyConfigs, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final MBeanServices mBeanServices) throws DeploymentUnitProcessingException {
+    private void addDependencies(final JBossServiceDependencyConfig[] dependencyConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices) throws DeploymentUnitProcessingException {
         if (dependencyConfigs != null) {
             final Service<Object> createDestroyService = mBeanServices.getCreateDestroyService();
             for (final JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {
@@ -154,7 +154,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    private void addDependencyLists(final JBossServiceDependencyListConfig[] dependencyListConfigs, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final MBeanServices mBeanServices) throws DeploymentUnitProcessingException {
+    private void addDependencyLists(final JBossServiceDependencyListConfig[] dependencyListConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices) throws DeploymentUnitProcessingException {
         if(dependencyListConfigs != null){
             final Service<Object> createDestroyService = mBeanServices.getCreateDestroyService();
             for(final JBossServiceDependencyListConfig dependencyListConfig: dependencyListConfigs) {
@@ -175,7 +175,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    private void addAttributes(final JBossServiceAttributeConfig[] attributeConfigs, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final MBeanServices mBeanServices, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
+    private void addAttributes(final JBossServiceAttributeConfig[] attributeConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
         if (attributeConfigs != null) {
             final Service<Object> createDestroyService = mBeanServices.getCreateDestroyService();
             for (final JBossServiceAttributeConfig attributeConfig : attributeConfigs) {
@@ -208,11 +208,11 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    private static Injector<Object> getOptionalAttributeInjector(final String attributeName, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final Service<Object> service) {
+    private static Injector<Object> getOptionalAttributeInjector(final String attributeName, final List<ClassReflectionIndex> mBeanClassHierarchy, final Service<Object> service) {
         return getPropertyInjector(attributeName, mBeanClassHierarchy, service, Values.injectedValue());
     }
 
-    private static Value<?> getValue(final Inject injectConfig, final List<ClassReflectionIndex<?>> mBeanClassHierarchy) {
+    private static Value<?> getValue(final Inject injectConfig, final List<ClassReflectionIndex> mBeanClassHierarchy) {
         final String propertyName = injectConfig.getPropertyName();
         Value<?> valueToInject = Values.injectedValue();
         if (propertyName != null) {
@@ -223,7 +223,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         return valueToInject;
     }
 
-    private static Value<?> getValue(final ValueFactory valueFactory, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
+    private static Value<?> getValue(final ValueFactory valueFactory, final List<ClassReflectionIndex> mBeanClassHierarchy, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
         final String methodName = valueFactory.getMethodName();
         final ValueFactoryParameter[] parameters = valueFactory.getParameters();
         final List<Class<?>> paramTypes = new ArrayList<Class<?>>(parameters.length);
@@ -237,7 +237,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         return cached(new MethodValue<Object>(methodValue, Values.injectedValue(), paramValues));
     }
 
-    private static Value<?> getValue(final JBossServiceAttributeConfig attributeConfig, final List<ClassReflectionIndex<?>> mBeanClassHierarchy) {
+    private static Value<?> getValue(final JBossServiceAttributeConfig attributeConfig, final List<ClassReflectionIndex> mBeanClassHierarchy) {
         final String attributeName = attributeConfig.getName();
         final Method setterMethod = ReflectionUtils.getSetter(mBeanClassHierarchy, attributeName);
         final Class<?> setterType = setterMethod.getParameterTypes()[0];
@@ -245,7 +245,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         return new ImmediateValue<Object>(newValue(setterType, attributeConfig.getValue()));
     }
 
-    private static Object newInstance(final JBossServiceConfig serviceConfig, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ClassLoader deploymentClassLoader) throws DeploymentUnitProcessingException {
+    private static Object newInstance(final JBossServiceConfig serviceConfig, final List<ClassReflectionIndex> mBeanClassHierarchy, final ClassLoader deploymentClassLoader) throws DeploymentUnitProcessingException {
         // set TCCL so that the MBean instantiation happens in the deployment's classloader
         final ClassLoader oldTCCL = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(deploymentClassLoader);
         try {
@@ -272,7 +272,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    private static Injector<Object> getPropertyInjector(final String propertyName, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final Service<?> service, final Value<?> value) {
+    private static Injector<Object> getPropertyInjector(final String propertyName, final List<ClassReflectionIndex> mBeanClassHierarchy, final Service<?> service, final Value<?> value) {
         final Method setterMethod = ReflectionUtils.getSetter(mBeanClassHierarchy, propertyName);
         return new MethodInjector<Object>(setterMethod, service, Values.nullValue(), Collections.singletonList(value));
     }

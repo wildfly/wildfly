@@ -105,7 +105,7 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBCom
         if (TimedObject.class.isAssignableFrom(componentClass)) {
             Class<?> c = componentClass;
             while (c != null && c != Object.class) {
-                final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(c);
+                final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(c);
                 //TimedObject takes precedence
                 Method method = index.getMethod(Void.TYPE, "ejbTimeout", javax.ejb.Timer.class);
                 if (method != null) {

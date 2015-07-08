@@ -45,11 +45,11 @@ final class ReflectionUtils {
         // forbidden instantiation
     }
 
-    static Method getGetter(final List<ClassReflectionIndex<?>> classHierarchy, final String propertyName) {
+    static Method getGetter(final List<ClassReflectionIndex> classHierarchy, final String propertyName) {
         final String getterName = "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         final String iserName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
 
-        for (final ClassReflectionIndex<?> classIndex : classHierarchy) {
+        for (final ClassReflectionIndex classIndex : classHierarchy) {
             final Iterator<Method> methods = classIndex.getMethods().iterator();
             Method method = null;
             String methodName = null;
@@ -66,10 +66,10 @@ final class ReflectionUtils {
         throw SarLogger.ROOT_LOGGER.propertyMethodNotFound("Get", propertyName, className);
     }
 
-    static Method getSetter(final List<ClassReflectionIndex<?>> classHierarchy, final String propertyName) {
+    static Method getSetter(final List<ClassReflectionIndex> classHierarchy, final String propertyName) {
         final String setterName = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
 
-        for (final ClassReflectionIndex<?> classIndex : classHierarchy) {
+        for (final ClassReflectionIndex classIndex : classHierarchy) {
             final Iterator<Method> methods = classIndex.getMethods().iterator();
             Method method = null;
             String methodName = null;
@@ -86,8 +86,8 @@ final class ReflectionUtils {
         throw SarLogger.ROOT_LOGGER.propertyMethodNotFound("Set", propertyName, className);
     }
 
-    static Method getMethod(final List<ClassReflectionIndex<?>> classHierarchy, final String methodName, final Class<?>[] types, final boolean fail) {
-        for (final ClassReflectionIndex<?> classIndex : classHierarchy) {
+    static Method getMethod(final List<ClassReflectionIndex> classHierarchy, final String methodName, final Class<?>[] types, final boolean fail) {
+        for (final ClassReflectionIndex classIndex : classHierarchy) {
             final Collection<Method> methods = classIndex.getMethods(methodName, types);
             if (methods.size() == 1) {
                 return methods.iterator().next();
@@ -117,8 +117,8 @@ final class ReflectionUtils {
         }
     }
 
-    static List<ClassReflectionIndex<?>> getClassHierarchy(final String className, final DeploymentReflectionIndex index, final ClassLoader classLoader) {
-        final List<ClassReflectionIndex<?>> retVal = new LinkedList<ClassReflectionIndex<?>>();
+    static List<ClassReflectionIndex> getClassHierarchy(final String className, final DeploymentReflectionIndex index, final ClassLoader classLoader) {
+        final List<ClassReflectionIndex> retVal = new LinkedList<ClassReflectionIndex>();
 
         Class<?> temp = getClass(className, classLoader);
         while (temp != null) {

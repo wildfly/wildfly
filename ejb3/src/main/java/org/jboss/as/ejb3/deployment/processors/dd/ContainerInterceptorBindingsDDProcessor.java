@@ -166,7 +166,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                         // Method level bindings
                         // First find the right method
                         final NamedMethodMetaData methodData = binding.getMethod();
-                        final ClassReflectionIndex<?> classIndex = index.getClassIndex(componentClass);
+                        final ClassReflectionIndex classIndex = index.getClassIndex(componentClass);
                         Method resolvedMethod = null;
                         if (methodData.getMethodParams() == null) {
                             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());

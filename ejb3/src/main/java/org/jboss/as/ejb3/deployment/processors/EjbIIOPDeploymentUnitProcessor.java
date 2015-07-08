@@ -37,6 +37,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -52,8 +53,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.txn.service.TxnServices;
@@ -115,7 +114,6 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (moduleDescription != null) {
@@ -131,7 +129,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
                         // the bean will be exposed via IIOP if it has IIOP metadata that applies to it or if IIOP access
                         // has been enabled by default in the EJB3 subsystem.
                         if (iiopMetaData != null || settingsService.isEnabledByDefault()) {
-                            processEjb(ejbComponentDescription, classIndex, deploymentReflectionIndex, module,
+                            processEjb(ejbComponentDescription, deploymentReflectionIndex, module,
                                     phaseContext.getServiceTarget(), iiopMetaData);
                         }
                     }
@@ -145,7 +143,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private void processEjb(final EJBComponentDescription componentDescription, final DeploymentClassIndex classIndex,
+    private void processEjb(final EJBComponentDescription componentDescription,
                             final DeploymentReflectionIndex deploymentReflectionIndex, final Module module,
                             final ServiceTarget serviceTarget, final IIOPMetaData iiopMetaData) {
         componentDescription.setExposedViaIiop(true);
@@ -155,16 +153,16 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
 
         final EJBViewDescription remoteView = componentDescription.getEjbRemoteView();
-        final ClassIndex remoteClass;
+        final Class<?> remoteClass;
         try {
-            remoteClass = classIndex.classIndex(remoteView.getViewClassName());
+            remoteClass = ClassLoadingUtils.loadClass(remoteView.getViewClassName(), module);
         } catch (ClassNotFoundException e) {
             throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
         final EJBViewDescription homeView = componentDescription.getEjbHomeView();
-        final ClassIndex homeClass;
+        final Class<?> homeClass;
         try {
-            homeClass = classIndex.classIndex(homeView.getViewClassName());
+            homeClass = ClassLoadingUtils.loadClass(homeView.getViewClassName(), module);
         } catch (ClassNotFoundException e) {
             throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
@@ -177,7 +175,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         final InterfaceAnalysis remoteInterfaceAnalysis;
         try {
             //TODO: change all this to use the deployment reflection index
-            remoteInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(remoteClass.getModuleClass());
+            remoteInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(remoteClass);
         } catch (RMIIIOPViolationException e) {
             throw EjbLogger.ROOT_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
@@ -218,7 +216,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         final InterfaceAnalysis homeInterfaceAnalysis;
         try {
             //TODO: change all this to use the deployment reflection index
-            homeInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(homeClass.getModuleClass());
+            homeInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(homeClass);
         } catch (RMIIIOPViolationException e) {
             throw EjbLogger.ROOT_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }

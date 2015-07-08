@@ -52,7 +52,7 @@ public final class InjectionUtils {
         } catch (ClassNotFoundException e) {
             throw EeLogger.ROOT_LOGGER.cannotLoad(e, injectionTargetClassName);
         }
-        final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
+        final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
         String methodName = "set" + injectionTargetName.substring(0, 1).toUpperCase(Locale.ENGLISH) + injectionTargetName.substring(1);
 
         boolean methodFound = false;
