@@ -141,49 +141,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void test712StandaloneXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    @Ignore("test config seems incorrect")
-    public void test712StandaloneFullHaXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-full-ha.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    @Ignore("test config seems incorrect")
-    public void test712StandaloneFullXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-full.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    @Ignore("test config seems incorrect")
-    public void test712StandaloneHornetQCollocatedXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-hornetq-colocated.xml"));
-    }
-
-    @Test
-    @Ignore("test config seems incorrect")
-    public void test712StandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-jts.xml"));
-    }
-
-    @Test
-    @Ignore("test config seems incorrect")
-    public void test712StandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-minimalistic.xml"));
-    }
-
-    @Test
-    public void test712StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-2-xts.xml"));
-    }
-
-    @Test
     public void test713StandaloneXml() throws Exception {
         ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3.xml"));
         validateJsfSubsystem(model);
@@ -433,11 +390,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void test712HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "7-1-2.xml"));
-    }
-
-    @Test
     public void test713HostXml() throws Exception {
         hostXmlTest(getLegacyConfigFile("host", "7-1-3.xml"));
     }
@@ -485,13 +437,6 @@ public class ParseAndMarshalModelsTestCase {
     @TargetsContainer("class-jbossas")
     public void testDomainXml() throws Exception {
         domainXmlTest(getOriginalDomainXml("domain.xml"));
-    }
-
-    @Test
-    @TargetsContainer("class-jbossas")
-    public void test712DomainXml() throws Exception {
-        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-1-2.xml"));
-        validateJsfProfiles(model);
     }
 
     @Test
