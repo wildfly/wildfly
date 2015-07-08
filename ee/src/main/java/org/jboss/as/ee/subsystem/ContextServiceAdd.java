@@ -23,7 +23,7 @@ package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -41,7 +41,7 @@ import org.jboss.msc.value.ImmediateValue;
 /**
  * @author Eduardo Martins
  */
-public class ContextServiceAdd extends AbstractBoottimeAddStepHandler {
+public class ContextServiceAdd extends AbstractAddStepHandler {
 
     static final ContextServiceAdd INSTANCE = new ContextServiceAdd();
 
@@ -50,7 +50,7 @@ public class ContextServiceAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         ModelNode model = resource.getModel();
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
