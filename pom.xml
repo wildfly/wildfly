@@ -150,7 +150,7 @@
         <version.org.hibernate.validator>5.1.3.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.hql>1.1.0.Final</version.org.hibernate.hql>
-        <version.org.hibernate.search>5.2.0.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>5.3.0.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <version.org.infinispan>7.2.3.Final</version.org.infinispan>
         <version.org.jasypt>1.9.1</version.org.jasypt>
@@ -4033,12 +4033,6 @@
 
             <dependency>
                 <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search-infinispan</artifactId>
-                <version>${version.org.hibernate.search}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-backend-jms</artifactId>
                 <version>${version.org.hibernate.search}</version>
             </dependency>
@@ -4255,10 +4249,6 @@
                     <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-search-engine</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-infinispan</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
