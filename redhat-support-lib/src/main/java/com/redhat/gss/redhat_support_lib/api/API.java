@@ -17,6 +17,7 @@ import com.redhat.gss.redhat_support_lib.infrastructure.Search;
 import com.redhat.gss.redhat_support_lib.infrastructure.Solutions;
 import com.redhat.gss.redhat_support_lib.infrastructure.Groups;
 import com.redhat.gss.redhat_support_lib.infrastructure.Symptoms;
+import com.redhat.gss.redhat_support_lib.infrastructure.Telemetries;
 import com.redhat.gss.redhat_support_lib.web.ConnectionManager;
 
 import javax.ws.rs.core.Cookie;
@@ -37,6 +38,7 @@ public class API {
     Ping ping = null;
     Groups groups = null;
     Symptoms symptoms = null;
+    Telemetries telemetries = null;
 
     /**
      * @param username
@@ -74,6 +76,7 @@ public class API {
         ping = new Ping(connectionManager);
         groups = new Groups(connectionManager);
         symptoms = new Symptoms(connectionManager);
+        telemetries = new Telemetries(connectionManager);
     }
 
     /**
@@ -115,6 +118,7 @@ public class API {
         ping = new Ping(connectionManager);
         groups = new Groups(connectionManager);
         symptoms = new Symptoms(connectionManager);
+        telemetries = new Telemetries(connectionManager);
     }
 
     /**
@@ -159,6 +163,7 @@ public class API {
         ping = new Ping(connectionManager);
         groups = new Groups(connectionManager);
         symptoms = new Symptoms(connectionManager);
+        telemetries = new Telemetries(connectionManager);
     }
 
     public API(String url, String proxyUser, String proxyPassword,
@@ -180,6 +185,7 @@ public class API {
         ping = new Ping(connectionManager);
         groups = new Groups(connectionManager);
         symptoms = new Symptoms(connectionManager);
+        telemetries = new Telemetries(connectionManager);
     }
 
     public API(String username, String password, String url,
@@ -203,6 +209,7 @@ public class API {
         ping = new Ping(connectionManager);
         groups = new Groups(connectionManager);
         symptoms = new Symptoms(connectionManager);
+        telemetries = new Telemetries(connectionManager);
     }
 
     public API(String configFileName) throws IOException {
@@ -221,6 +228,7 @@ public class API {
         ping = new Ping(connectionManager);
         groups = new Groups(connectionManager);
         symptoms = new Symptoms(connectionManager);
+        telemetries = new Telemetries(connectionManager);
     }
 
     public Search getSearch() {
@@ -273,5 +281,9 @@ public class API {
 
     public Symptoms getSymptoms() {
         return symptoms;
+    }
+
+    public Telemetries getTelemetries() {
+        return telemetries;
     }
 }

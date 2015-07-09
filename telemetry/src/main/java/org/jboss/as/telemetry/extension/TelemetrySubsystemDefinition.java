@@ -49,6 +49,38 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
                     .setAllowNull(true)
                     .build();
 
+    protected static final SimpleAttributeDefinition PROXYUSER =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_USER, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition PROXYPASSWORD =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_PASSWORD, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition PROXYPORT =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_PORT, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition PROXYURL =
+            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_URL, ModelType.STRING)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(""))
+                    .setAllowNull(true)
+                    .build();
+
     private TelemetrySubsystemDefinition() {
         super(TelemetryExtension.SUBSYSTEM_PATH,
                 TelemetryExtension.getResourceDescriptionResolver(null),

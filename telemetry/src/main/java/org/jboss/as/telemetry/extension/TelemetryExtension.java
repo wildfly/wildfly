@@ -35,6 +35,10 @@ public class TelemetryExtension implements Extension {
     protected static final String FREQUENCY = "frequency";
     protected static final String RHNPW = "rhnPw";
     protected static final String RHNUID = "rhnUid";
+    public static final String PROXY_USER = "proxyUser";
+    public static final String PROXY_PASSWORD = "proxyPassword";
+    public static final String PROXY_URL = "proxyUrl";
+    public static final String PROXY_PORT = "proxyPort";
     protected static final String TYPE = "telemetryType";
     protected static final PathElement TYPE_PATH = PathElement.pathElement(TYPE);
 

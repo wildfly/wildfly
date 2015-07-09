@@ -150,7 +150,6 @@ public class Attachments extends BaseQuery {
         List<String> queryParams = new ArrayList<String>();
         queryParams.add("public=" + Boolean.toString(publicVis));
         String uri = null;
-        // TODO: put in constants size is 2GB
         if (file.length() > connectionManager.getConfig().getFtpFileSize()) {
             FTPClient ftp = null;
             FileInputStream fis = null;
