@@ -23,20 +23,17 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
-import com.redhat.gss.redhat_support_lib.helpers.ConfigHelper;
-import com.redhat.gss.redhat_support_lib.infrastructure.Telemetries;
-import com.redhat.gss.redhat_support_lib.web.ConnectionManager;
+import com.redhat.gss.redhat_support_lib.api.API;
 
 import static org.jboss.as.telemetry.logger.TelemetryLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:jkinlaw@redhat.com">Josh Kinlaw</a>
  */
-public class TelemetryService extends Telemetries implements
-        Service<TelemetryService> {
+public class TelemetryService implements Service<TelemetryService> {
 
-//    public static final long MILLISECOND_TO_DAY = 86400000;
-    public static final long MILLISECOND_TO_DAY = 1; //for testing purposes
+    // public static final long MILLISECOND_TO_DAY = 86400000;
+    public static final long MILLISECOND_TO_DAY = 1; // for testing purposes
 
     public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
 
@@ -54,10 +51,6 @@ public class TelemetryService extends Telemetries implements
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
     public static final String URL = "url";
-    public static final String PROXY_USER = "proxyUser";
-    public static final String PROXY_PASSWORD = "proxyPassword";
-    public static final String PROXY_URL = "proxyUrl";
-    public static final String PROXY_PORT = "proxyPort";
     public static final String USER_AGENT = "userAgent";
     public static final String BASE_URI = "baseUri";
     public static final String TELEMETRY_ENDPOINT = "telemetryEndpoint";
@@ -78,8 +71,6 @@ public class TelemetryService extends Telemetries implements
      */
     private String systemEndpoint;
 
-    private ConnectionManager connectionManager = null;
-
     private boolean enabled = true;
 
     private long frequency = 1;
@@ -91,6 +82,8 @@ public class TelemetryService extends Telemetries implements
     private JdrReportCollector jdrCollector;
 
     private Thread output = initializeOutput();
+
+    private API api;
 
     private TelemetryService(long tick, boolean enabled) {
         this.frequency = tick;
@@ -163,7 +156,7 @@ public class TelemetryService extends Telemetries implements
         File file = getPropertiesFile();
         FileInputStream fis = null;
         FileOutputStream fileOut = null;
-        if(file.exists()) {
+        if (file.exists()) {
             synchronized (output) {
                 output.notify();
             }
@@ -171,7 +164,8 @@ public class TelemetryService extends Telemetries implements
                 Properties properties = new Properties();
                 fis = new FileInputStream(file.getPath());
                 properties.load(fis);
-                properties.setProperty(TelemetryExtension.FREQUENCY, "" + frequency);
+                properties.setProperty(TelemetryExtension.FREQUENCY, ""
+                        + frequency);
                 fileOut = new FileOutputStream(file);
                 properties.store(fileOut, TELEMETRY_DESCRIPTION);
             } catch (IOException e) {
@@ -270,15 +264,28 @@ public class TelemetryService extends Telemetries implements
         try {
             if (!file.exists()) {
                 file.getParentFile().mkdirs();
-                properties.setProperty(URL, DEFAULT_BASE_URL);
-                properties.setProperty(TELEMETRY_ENDPOINT,
-                        DEFAULT_TELEMETRY_ENDPOINT);
-                properties.setProperty(SYSTEM_ENDPOINT, DEFAULT_SYSTEM_ENDPOINT);
-                properties.setProperty(TelemetryExtension.FREQUENCY, "" + frequency);
-                properties.setProperty(TelemetryExtension.ENABLED, "" + enabled);
             } else {
                 fis = new FileInputStream(file.getPath());
                 properties.load(fis);
+            }
+            if (!properties.containsKey(URL)) {
+                properties.setProperty(URL, DEFAULT_BASE_URL);
+            }
+            if (!properties.containsKey(TELEMETRY_ENDPOINT)) {
+                properties.setProperty(TELEMETRY_ENDPOINT,
+                        DEFAULT_TELEMETRY_ENDPOINT);
+            }
+            if (!properties.containsKey(SYSTEM_ENDPOINT)) {
+                properties
+                        .setProperty(SYSTEM_ENDPOINT, DEFAULT_SYSTEM_ENDPOINT);
+            }
+            if (!properties.containsKey(TelemetryExtension.FREQUENCY)) {
+                properties.setProperty(TelemetryExtension.FREQUENCY, ""
+                        + frequency);
+            }
+            if (!properties.containsKey(TelemetryExtension.ENABLED)) {
+                properties
+                        .setProperty(TelemetryExtension.ENABLED, "" + enabled);
             }
             properties.setProperty(USERNAME, rhnUid);
             properties.setProperty(PASSWORD, rhnPw);
@@ -303,6 +310,82 @@ public class TelemetryService extends Telemetries implements
                 }
             }
         }
+    }
+
+    public void setRhnLoginCredentials(String rhnUid, String rhnPw,
+            String proxyUrl, String proxyPort) {
+        Properties properties = new Properties();
+        FileOutputStream fileOut = null;
+        FileInputStream fis = null;
+        File file = getPropertiesFile();
+        try {
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+            } else {
+                fis = new FileInputStream(file.getPath());
+                properties.load(fis);
+            }
+            properties.setProperty(TelemetryExtension.PROXY_PORT, proxyPort);
+            properties.setProperty(TelemetryExtension.PROXY_URL, proxyUrl);
+            fileOut = new FileOutputStream(file);
+            properties.store(fileOut, TELEMETRY_DESCRIPTION);
+        } catch (IOException e) {
+            ROOT_LOGGER.couldNotCreateEditPropertiesFile(e);
+        } finally {
+            if (fileOut != null) {
+                try {
+                    fileOut.close();
+                } catch (IOException e) {
+                    ROOT_LOGGER.couldNotClosePropertiesFile(e);
+                }
+            }
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    ROOT_LOGGER.couldNotClosePropertiesFile(e);
+                }
+            }
+        }
+        setRhnLoginCredentials(rhnUid, rhnPw);
+    }
+
+    public void setRhnLoginCredentials(String rhnUid, String rhnPw,
+            String proxyUrl, String proxyPort, String proxyUser, String proxyPwd) {
+        Properties properties = new Properties();
+        FileOutputStream fileOut = null;
+        FileInputStream fis = null;
+        File file = getPropertiesFile();
+        try {
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+            } else {
+                fis = new FileInputStream(file.getPath());
+                properties.load(fis);
+            }
+            properties.setProperty(TelemetryExtension.PROXY_PASSWORD, proxyPwd);
+            properties.setProperty(TelemetryExtension.PROXY_USER, proxyUser);
+            fileOut = new FileOutputStream(file);
+            properties.store(fileOut, TELEMETRY_DESCRIPTION);
+        } catch (IOException e) {
+            ROOT_LOGGER.couldNotCreateEditPropertiesFile(e);
+        } finally {
+            if (fileOut != null) {
+                try {
+                    fileOut.close();
+                } catch (IOException e) {
+                    ROOT_LOGGER.couldNotClosePropertiesFile(e);
+                }
+            }
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    ROOT_LOGGER.couldNotClosePropertiesFile(e);
+                }
+            }
+        }
+        setRhnLoginCredentials(rhnUid, rhnPw, proxyUrl, proxyPort);
     }
 
     public void setConnectionManager() {
@@ -331,9 +414,9 @@ public class TelemetryService extends Telemetries implements
                 url = properties.getProperty(URL);
                 telemetryEndpoint = properties.getProperty(TELEMETRY_ENDPOINT);
                 systemEndpoint = properties.getProperty(SYSTEM_ENDPOINT);
-
-                this.connectionManager = new ConnectionManager(
-                        new ConfigHelper(propertiesFilePath));
+                api = new API(propertiesFilePath);
+                // this.connectionManager = new ConnectionManager(
+                // new ConfigHelper(propertiesFilePath));
             } catch (IOException e) {
                 ROOT_LOGGER.couldNotLoadPropertiesFile(e);
             } finally {
@@ -352,27 +435,24 @@ public class TelemetryService extends Telemetries implements
         String description = JDR_DESCRIPTION.replace("{uuid}", uuid);
         boolean wasSuccessful = true;
         File file = new File(fileName);
-        String fullUrl = connectionManager.getConfig().getUrl()
-                + telemetryEndpoint + uuid;
         String systemUrl = "";
         try {
-            systemUrl = new URL(new URL(connectionManager.getConfig().getUrl()), systemEndpoint).toString();
-            Response response = get(connectionManager.getConnection(),
-                    new URL(new URL(systemUrl), uuid).toString());
-            com.redhat.gss.redhat_support_lib.infrastructure.System system = response.readEntity(com.redhat.gss.redhat_support_lib.infrastructure.System.class);
+            systemUrl = systemEndpoint;
+            Response response = api.getTelemetries().get(systemUrl + uuid);
+            com.redhat.gss.redhat_support_lib.infrastructure.System system = response
+                    .readEntity(com.redhat.gss.redhat_support_lib.infrastructure.System.class);
             // if system is unregistered then attempt to register system
-            if(system.getUnregistered_at() != null) {
-                addSystem(connectionManager.getConnection(), systemUrl, uuid, InetAddress.getLocalHost().getHostName());
+            if (system.getUnregistered_at() != null) {
+                api.getTelemetries().addSystem(systemUrl, uuid,
+                        InetAddress.getLocalHost().getHostName());
             }
-            // if system does not have a hostname then add it; TODO: waiting on PUT capability
-//            if(system.getHostname() == null || system.getHostname().isEmpty()) {
-//                updateSystem(connectionManager.getConnection(), new URL(new URL(systemUrl),uuid).toString(), InetAddress.getLocalHost().getHostName());
-//            }
         } catch (RequestException e) {
             // if the system was not found then attempt to register the system
-            if(e.getMessage().contains("" + Response.Status.NOT_FOUND.getStatusCode())) {
+            if (e.getMessage().contains(
+                    "" + Response.Status.NOT_FOUND.getStatusCode())) {
                 try {
-                    addSystem(connectionManager.getConnection(), systemUrl, uuid, InetAddress.getLocalHost().getHostName());
+                    api.getTelemetries().addSystem(systemUrl, uuid,
+                            InetAddress.getLocalHost().getHostName());
                 } catch (RequestException exception) {
                     ROOT_LOGGER.couldNotRegisterSystem(exception);
                 } catch (MalformedURLException exception) {
@@ -380,8 +460,7 @@ public class TelemetryService extends Telemetries implements
                 } catch (UnknownHostException exception) {
                     ROOT_LOGGER.couldNotRegisterSystem(exception);
                 }
-            }
-            else {
+            } else {
                 ROOT_LOGGER.couldNotRegisterSystem(e);
             }
         } catch (MalformedURLException e) {
@@ -390,7 +469,7 @@ public class TelemetryService extends Telemetries implements
             ROOT_LOGGER.couldNotFindSystem(e);
         }
         try {
-            upload(connectionManager.getConnection(), new URL(new URL(new URL(connectionManager.getConfig().getUrl()), telemetryEndpoint), uuid).toString(), file,
+            api.getTelemetries().upload((telemetryEndpoint + uuid), file,
                     description);
         } catch (FileNotFoundException e) {
             wasSuccessful = false;
@@ -405,7 +484,7 @@ public class TelemetryService extends Telemetries implements
             wasSuccessful = false;
             ROOT_LOGGER.couldNotUploadJdr(e);
         }
-        if(wasSuccessful) {
+        if (wasSuccessful) {
             ROOT_LOGGER.jdrSent();
         }
     }
