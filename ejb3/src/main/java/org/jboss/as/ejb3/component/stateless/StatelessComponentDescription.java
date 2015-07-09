@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.stateless;
 
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 import javax.ejb.TransactionManagementType;
 
@@ -182,8 +183,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-                ClassReflectionIndex<WriteReplaceInterface> classIndex = index.getClassIndex(WriteReplaceInterface.class);
-                for (Method method : classIndex.getMethods()) {
+                ClassReflectionIndex classIndex = index.getClassIndex(WriteReplaceInterface.class);
+                for (Method method : (Collection<Method>)classIndex.getMethods()) {
                     configuration.addClientInterceptor(method, StatelessWriteReplaceInterceptor.factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
                 }
             }
