@@ -54,7 +54,6 @@ public class CompensatableTestCase {
                 .addClass(CompensatableClient.class)
                 .addClass(CompensatableService.class)
                 .addClass(CompensatableServiceImpl.class)
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts\n"), "MANIFEST.MF")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
 
         return webArchive;
