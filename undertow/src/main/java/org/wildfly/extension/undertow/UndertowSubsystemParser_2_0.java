@@ -213,6 +213,7 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                 .addChild(
                                         builder(BasicAuthHandler.INSTANCE)
                                                 .addAttributes(BasicAuthHandler.SECURITY_DOMAIN)
+                                        .setNoAddOperation(true)
                                 )
                                 .addChild(
                                         builder(ConnectionLimitHandler.INSTANCE)
