@@ -164,4 +164,12 @@ public interface Constants {
     String REWRITE = "rewrite";
     String DISALLOWED_METHODS = "disallowed-methods";
     String RESOLVE_PEER_ADDRESS = "resolve-peer-address";
+    String BALANCER = "balancer";
+    String CONTEXT = "context";
+    String NODE = "node";
+    String STATUS = "status";
+    String REQUESTS = "requests";
+    String ENABLE = "enable";
+    String DISABLE = "disable";
+    String LOAD = "load";
 }

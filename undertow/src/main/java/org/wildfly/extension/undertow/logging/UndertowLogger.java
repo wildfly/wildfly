@@ -320,4 +320,10 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 74, value = "Could not find TLD %s")
     void tldNotFound(String location);
+
+    @Message(id = 75, value = "Cannot register resource of type %s")
+    IllegalArgumentException cannotRegisterResourceOfType(String type);
+
+    @Message(id = 76, value = "Cannot remove resource of type %s")
+    IllegalArgumentException cannotRemoveResourceOfType(String type);
 }
