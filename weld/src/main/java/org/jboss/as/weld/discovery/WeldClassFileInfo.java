@@ -126,7 +126,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
     public boolean isTopLevelClass() {
         // TODO This is not portable per the JSL
         // TODO Modify jandex to contain isTopLevelClass attribute
-        return !classInfo.name().local().contains("$");
+        return !classInfo.name().toString().contains("$");
     }
 
     @Override
