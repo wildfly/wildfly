@@ -124,15 +124,14 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                         // message expiry
                                         ServerDefinition.MESSAGE_EXPIRY_SCAN_PERIOD,
                                         ServerDefinition.MESSAGE_EXPIRY_THREAD_PRIORITY,
-                                        // remoting-interceptors
-                                        CommonAttributes.REMOTING_INCOMING_INTERCEPTORS,
-                                        CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS,
                                         // debug
                                         ServerDefinition.PERF_BLAST_PAGES,
                                         ServerDefinition.RUN_SYNC_SPEED_TEST,
                                         ServerDefinition.SERVER_DUMP_INTERVAL,
                                         ServerDefinition.MEMORY_MEASURE_INTERVAL,
-                                        ServerDefinition.MEMORY_WARNING_THRESHOLD)
+                                        ServerDefinition.MEMORY_WARNING_THRESHOLD,
+                                        CommonAttributes.INCOMING_INTERCEPTORS,
+                                        CommonAttributes.OUTGOING_INTERCEPTORS)
                                 .addChild(
                                         builder(LiveOnlyDefinition.INSTANCE)
                                                 .addAttributes(
