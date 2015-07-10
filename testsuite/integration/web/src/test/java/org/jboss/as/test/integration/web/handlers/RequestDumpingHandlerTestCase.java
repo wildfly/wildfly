@@ -1,5 +1,8 @@
 package org.jboss.as.test.integration.web.handlers;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -9,7 +12,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.Header;
@@ -25,6 +30,8 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -34,64 +41,90 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the use of undertow-handlers.conf
+ * Tests the use of undertow request dumping handler.
  *
  * @author <a href="mailto:jstourac@redhat.com">Jan Stourac</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(RequestDumpingHandlerTestCase.RequestDumpingHandlerTestCaseSetupAction.class)
 public class RequestDumpingHandlerTestCase {
+
+    public static class RequestDumpingHandlerTestCaseSetupAction implements ServerSetupTask {
+
+        private static String relativeTo;
+        private static ModelNode originalValue;
+
+        /** Name of the log file that will be used for testing. */
+        private static final String LOG_FILE_PREFIX = "test_server_" + System.currentTimeMillis();
+        private static final String LOG_FILE_SUFFIX = ".log";
+
+        // Address to server log setting
+        private static final PathAddress aLogAddr = PathAddress.pathAddress().append(SUBSYSTEM, "logging")
+                .append(PERIODIC_ROTATING_FILE_HANDLER, "FILE");
+
+        // Address to custom file handler
+        private static final String FILE_HANDLER_NAME = "testing-req-dump-handler";
+        private static final PathAddress ADDR_FILE_HANDLER = PathAddress.pathAddress().append(SUBSYSTEM, "logging")
+                .append(FILE_HANDLER, FILE_HANDLER_NAME);
+
+        // Address to custom logger
+        private static final String LOGGER_NAME = "io.undertow.request.dump";
+        private static final PathAddress ADDR_LOGGER = PathAddress.pathAddress().append(SUBSYSTEM, "logging")
+                .append(LOGGER, LOGGER_NAME);
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            // Retrieve original path to server log files
+            ModelNode op = Util.getReadAttributeOperation(aLogAddr, "file");
+            originalValue = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+            log.info("Original value: " + originalValue.toString());
+            // Retrieve relative path to log files
+            relativeTo = originalValue.get("relative-to").asString();
+
+            op = Util.getReadAttributeOperation(PathAddress.pathAddress("path", relativeTo), "path");
+            ModelNode logPathModel = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+            logFilePath = Paths.get(logPathModel.asString() + File.separator + LOG_FILE_PREFIX + LOG_FILE_SUFFIX);
+
+            // Set custom file handler to log dumping requests into separate log file
+            ModelNode file = new ModelNode();
+            file.get("relative-to").set(relativeTo);
+            file.get("path").set(LOG_FILE_PREFIX + LOG_FILE_SUFFIX);
+            op = Util.createAddOperation(ADDR_FILE_HANDLER);
+            op.get(FILE).set(file);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            // Set custom logger that uses previous custom file handler for logging
+            op = Util.createAddOperation(ADDR_LOGGER);
+            LinkedList<ModelNode> handlers = new LinkedList<ModelNode>();
+            handlers.add(new ModelNode(FILE_HANDLER_NAME));
+            op.get("handlers").set(handlers);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            // Remove custom logger and file-handler
+            ModelNode op = Util.createRemoveOperation(ADDR_LOGGER);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            op = Util.createRemoveOperation(ADDR_FILE_HANDLER);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            // Delete custom server log file
+            Files.delete(logFilePath);
+        }
+    }
 
     private static Logger log = Logger.getLogger(RequestDumpingHandlerTestCase.class);
 
-    /** Name of the log file that will be used for testing. */
-    private static String logFilePrefix;
-    private static final String LOG_FILE_SUFFIX = ".log";
-
-    @ArquillianResource
-    private static ManagementClient mgmtClient;
-
     /** Path to custom server log file. */
     private static Path logFilePath;
-
-    private static ModelNode originalValue;
-    private static String relativeTo;
-
-    // Address to server log setting
-    private static final PathAddress aLogAddr = PathAddress.pathAddress().append(SUBSYSTEM, "logging")
-            .append(PERIODIC_ROTATING_FILE_HANDLER, "FILE");
-
-    @Before
-    public void setup() throws Exception {
-        logFilePrefix = "test_server_" + System.currentTimeMillis();
-
-        // Retrieve path to server log files
-        ModelNode op = Util.getReadAttributeOperation(aLogAddr, "file");
-        originalValue = ManagementOperations.executeOperation(mgmtClient.getControllerClient(), op);
-        log.info("Original value: " + originalValue.toString());
-        relativeTo = originalValue.get("relative-to").asString();
-
-        op = Util.getReadAttributeOperation(PathAddress.pathAddress("path", relativeTo), "path");
-        ModelNode logPathModel = ManagementOperations.executeOperation(mgmtClient.getControllerClient(), op);
-        logFilePath = Paths.get(logPathModel.asString() + File.separator + logFilePrefix + LOG_FILE_SUFFIX);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        // Remove custom server log setting
-        ManagementOperations.executeOperation(mgmtClient.getControllerClient(),
-                Util.getWriteAttributeOperation(aLogAddr, "file", originalValue));
-
-        // Delete custom server log file
-        Files.delete(logFilePath);
-    }
 
     private final static String DEPLOYMENT = "no-req-dump";
     private final static String DEPLOYMENT_DUMP = "req-dump";
@@ -116,8 +149,8 @@ public class RequestDumpingHandlerTestCase {
     }
 
     /**
-     * Testing app has already defined request dumper handler. This test checks that when an request to URL is performed then
-     * request detail data is stored in proper format in the proper log file. Also check that warning for the user is generated.
+     * Testing app has already defined request dumper handler. This test checks that when a request to URL is performed then
+     * request detail data is stored in proper format in the proper log file.
      */
     @Test
     @OperateOnDeployment(DEPLOYMENT_DUMP)
@@ -126,8 +159,8 @@ public class RequestDumpingHandlerTestCase {
     }
 
     /**
-     * Testing app has no request dumper handler registered. This test checks that there is not dump additional info about
-     * executed request in the logfile. Also no warning is shown to user.
+     * Testing app has no request dumper handler registered. This test checks that there is not dumped additional info about
+     * executed request in the log file.
      */
     @Test
     @OperateOnDeployment(DEPLOYMENT)
@@ -138,28 +171,21 @@ public class RequestDumpingHandlerTestCase {
     /**
      * Common test body part.
      *
-     * @param url deployment url
+     * @param url deployment URL
      * @param requestDumperOn whether RequestDumpingHandler is turned on
      * @throws Exception
      */
     private void commonTestBody(@ArquillianResource URL url, boolean requestDumperOn) throws Exception {
-        // Set custom system log name
-        ModelNode file = new ModelNode();
-        file.get("relative-to").set(relativeTo);
-        file.get("path").set(logFilePrefix + LOG_FILE_SUFFIX);
-        ModelNode op = Util.getWriteAttributeOperation(aLogAddr, "file", file);
-        ManagementOperations.executeOperation(mgmtClient.getControllerClient(), op);
-
-        // Test there is no request dump before actual http request OR no log file at all...
+        // Test that there is no request dump for current URL before actual HTTP request OR no custom log file exists at all...
         if (logFilePath.toFile().exists() && logFilePath.toFile().isFile()) {
-            checkIsReqDumData(logFilePath, null, null, url.getHost(), url.getPort(), false);
+            testLogForDumpWithURL(logFilePath, url.getFile(), false);
         } else {
-            log.info("The log file ('" + logFilePath + "') does not exist yet");
+            log.info("The log file ('" + logFilePath + "') does not exist yet, that is ok.");
         }
 
         Header reqHdrs[] = null;
         Header respHdrs[] = null;
-        // Perform http request...
+        // Perform HTTP request...
         CloseableHttpClient httpclient = HttpClientBuilder.create().build();
         try {
             HttpGet httpget = new HttpGet(url.toExternalForm() + "file.txt");
@@ -182,118 +208,145 @@ public class RequestDumpingHandlerTestCase {
             httpclient.close();
         }
 
-        // Test whether there is request dump after the http request executed...
-        checkIsReqDumData(logFilePath, reqHdrs, respHdrs, url.getHost(), url.getPort(), requestDumperOn);
+        // Test whether there is request dump for particular URL after the HTTP request executed...
+        testLogForDumpWithURL(logFilePath, url.getFile(), requestDumperOn);
+
+        if (requestDumperOn) {
+            // If we expect request dump -> check its data.
+            checkReqDumpData(logFilePath, reqHdrs, respHdrs, url.getHost(), url.getPort());
+        }
     }
 
     /**
-     * Check whether request dumper data is available.
+     * Reads content of the file into a string variable.
+     * 
+     * @param logFilePath
+     * @return content of the file as a string
+     * @throws FileNotFoundException
+     */
+    private String readLogFile(Path logFilePath) throws FileNotFoundException {
+        Assert.assertTrue("Log file ('" + logFilePath + "') does not exist", logFilePath.toFile().exists());
+        Assert.assertTrue("The '" + logFilePath + "' is not a file", logFilePath.toFile().isFile());
+
+        // logfile exists -> read its content...
+        Scanner scanner = new Scanner(logFilePath.toFile());
+        StringBuilder sb = new StringBuilder();
+
+        while (scanner.hasNextLine()) {
+            sb.append(scanner.nextLine());
+        }
+        scanner.close();
+
+        return sb.toString();
+    }
+
+    /**
+     * Searching log for request dump of request to particular path.
+     * 
+     * @param logFilePath path to log file
+     * @param path URI path searched for in log file
+     * @param expected whether we expect to find given path
+     * @throws FileNotFoundException
+     */
+    private void testLogForDumpWithURL(Path logFilePath, String path, boolean expected) throws FileNotFoundException {
+        String content = readLogFile(logFilePath);
+
+        Pattern pattern = Pattern.compile("-+REQUEST-+.+" + path + ".+-+RESPONSE-+", Pattern.DOTALL);
+        Matcher m = pattern.matcher(content);
+
+        // Search for pattern...
+        Assert.assertEquals("Searching for pattern: '" + pattern + "' in log file ('" + logFilePath.toString() + "')",
+                expected, m.find());
+    }
+
+    /**
+     * Check request dumper data.
      *
      * @param logFilePath path to log file
      * @param reqHdrs request headers
      * @param respHdrs response headers
      * @param host server IP address
      * @param port server listening port
-     * @param expected whether we expect searched data to be found or not
      * @throws FileNotFoundException
      */
-    private void checkIsReqDumData(Path logFilePath, Header[] reqHdrs, Header[] respHdrs, String host, int port,
-            boolean expected) throws FileNotFoundException {
-        Assert.assertTrue("Log file ('" + logFilePath + "') does not exist", logFilePath.toFile().exists());
-        Assert.assertTrue("The '" + logFilePath + "' is not a file", logFilePath.toFile().isFile());
+    private void checkReqDumpData(Path logFilePath, Header[] reqHdrs, Header[] respHdrs, String host, int port)
+            throws FileNotFoundException {
+        String content = readLogFile(logFilePath);
 
-        // logfile exists -> read its content...
-        Scanner scanner = new Scanner(logFilePath.toFile());
+        // Split into request and response part:
+        String request = content.substring(0, content.indexOf("-RESPONSE-"));
+        String response = content.substring(content.indexOf("-RESPONSE-"), content.length());
 
         // Check request dump part...
-        searchInFile(scanner, "-+REQUEST-+", logFilePath, expected);
-        if (expected) {
-            searchInFile(scanner, "\\s+URI=/req-dump/file\\.txt", logFilePath, expected);
-        } else {
-            searchInFile(scanner, "\\s+URI=/no-req-dump/file\\.txt", logFilePath, expected);
-        }
-        searchInFile(scanner, "\\s+characterEncoding=", logFilePath, expected);
-        searchInFile(scanner, "\\s+contentLength=", logFilePath, expected);
-        searchInFile(scanner, "\\s+contentType=", logFilePath, expected);
+        searchInFile(request, "-+REQUEST-+");
+        searchInFile(request, "\\s+URI=/req-dump/file\\.txt");
+        searchInFile(request, "\\s+characterEncoding=");
+        searchInFile(request, "\\s+contentLength=");
+        searchInFile(request, "\\s+contentType=");
 
-        searchForHeaders(reqHdrs, "-+REQUEST-+", expected);
+        searchForHeaders(request, reqHdrs);
 
-        searchInFile(scanner, "\\s+locale=\\[.*\\]", logFilePath, expected);
-        searchInFile(scanner, "\\s+method=GET", logFilePath, expected);
-        searchInFile(scanner, "\\s+protocol=", logFilePath, expected);
-        searchInFile(scanner, "\\s+queryString=", logFilePath, expected);
-        searchInFile(scanner, "\\s+remoteAddr=", logFilePath, expected);
-        searchInFile(scanner, "\\s+remoteHost=", logFilePath, expected);
-        searchInFile(scanner, "\\s+scheme=http", logFilePath, expected);
-        searchInFile(scanner, "\\s+host=" + host, logFilePath, expected);
-        searchInFile(scanner, "\\s+serverPort=" + port, logFilePath, expected);
+        searchInFile(request, "\\s+locale=\\[.*\\]");
+        searchInFile(request, "\\s+method=GET");
+        searchInFile(request, "\\s+protocol=");
+        searchInFile(request, "\\s+queryString=");
+        searchInFile(request, "\\s+remoteAddr=");
+        searchInFile(request, "\\s+remoteHost=");
+        searchInFile(request, "\\s+scheme=http");
+        searchInFile(request, "\\s+host=" + host);
+        searchInFile(request, "\\s+serverPort=" + port);
 
         // Now check response dump part...
-        searchInFile(scanner, "-+RESPONSE-+", logFilePath, expected);
-        searchInFile(scanner, "\\s+contentLength=", logFilePath, expected);
-        searchInFile(scanner, "\\s+contentType=text/plain", logFilePath, expected);
+        searchInFile(response, "-+RESPONSE-+");
+        searchInFile(response, "\\s+contentLength=");
+        searchInFile(response, "\\s+contentType=text/plain");
 
-        searchForHeaders(respHdrs, "-+RESPONSE-+", expected);
+        searchForHeaders(response, respHdrs);
 
-        searchInFile(scanner, "\\s+status=200", logFilePath, expected);
-
-        scanner.close();
+        searchInFile(response, "\\s+status=200");
     }
 
     /**
      * Search for request and response headers. Respect that they might be in different order.
      *
+     * @param content content in which is searched
      * @param hdrs array of headers which should be searched for
-     * @param startPattern starting pattern in log file
-     * @param expected whether header is expected to be in log file or not
      * @throws FileNotFoundException
      */
-    private void searchForHeaders(Header[] hdrs, String startPattern, boolean expected) throws FileNotFoundException {
-        // Create new scanner and start from the REQUEST/RESPONSE part directly.
-        Scanner scanner = new Scanner(logFilePath.toFile());
-
+    private void searchForHeaders(String content, Header[] hdrs) throws FileNotFoundException {
         if (hdrs != null) {
             for (Header hdr : hdrs) {
                 // Close current scanner, reopen it and move to start pattern directly...
-                scanner.close();
-                scanner = new Scanner(logFilePath.toFile());
-                searchInFile(scanner, startPattern, logFilePath, expected);
-                searchInFile(scanner, "\\s+header=" + hdr.getName() + "=" + hdr.getValue(), logFilePath, expected);
+                searchInFile(content, "\\s+header=" + hdr.getName() + "=" + hdr.getValue());
             }
         } else {
             // request contains no headers -> we really do not expect it to be in dump
-            searchInFile(scanner, startPattern, logFilePath, expected);
-            searchInFile(scanner, "\\s+header=", logFilePath, false);
+            searchInFile(content, "\\s+header=", false);
         }
-
-        scanner.close();
     }
 
     /**
-     * Searches in file using {@link Scanner} instance for given pattern.
+     * Searches in given content for given pattern.
      *
-     * @param scanner instance of the file scanner
-     * @param pattern pattern that is searched in the file
-     * @param logFilePath path to the file (just for logging purpose)
-     * @param expected whether given pattern is expected to be in file or not
+     * @param content content of the file as a string
+     * @param regExp regular expression that is searched in the file
      */
-    private void searchInFile(Scanner scanner, String pattern, Path logFilePath, boolean expected) {
-        String result = null;
+    private void searchInFile(String content, String regExp) {
+        searchInFile(content, regExp, true);
+    }
 
-        // try to find particular line in the file...
-        while (scanner.hasNextLine()) {
-            result = scanner.findInLine(Pattern.compile(pattern));
-            if (result == null && scanner.hasNextLine()) {
-                scanner.nextLine();
-            } else {
-                break;
-            }
-        }
+    /**
+     * Searches in given content for given pattern.
+     *
+     * @param content content of the file as a string
+     * @param regExp regular expression that is searched in the file
+     * @param expected whether searching pattern is expected to be found or not
+     */
+    private void searchInFile(String content, String regExp, boolean expected) {
+        Pattern pattern = Pattern.compile(regExp);
+        Matcher m = pattern.matcher(content);
 
-        if (expected) {
-            Assert.assertNotNull("The '" + pattern + "' WAS NOT found in log file ('" + logFilePath.toString() + "')", result);
-        } else {
-            Assert.assertNull("The '" + pattern + "' was found in log file ('" + logFilePath.toString() + "')", result);
-        }
+        Assert.assertEquals("Searching for pattern: '" + regExp + "' in log file ('" + logFilePath.toString() + "')", expected,
+                m.find());
     }
 }
