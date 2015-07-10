@@ -69,10 +69,11 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
             { InfinispanSchema.VERSION_1_1, 31 },
             { InfinispanSchema.VERSION_1_2, 35 },
             { InfinispanSchema.VERSION_1_3, 35 },
-            { InfinispanSchema.VERSION_1_4, 73 },
-            { InfinispanSchema.VERSION_1_5, 73 },
-            { InfinispanSchema.VERSION_2_0, 77 },
-            { InfinispanSchema.VERSION_3_0, 77 },
+            { InfinispanSchema.VERSION_1_4, 35 },
+            { InfinispanSchema.VERSION_1_5, 35 },
+            { InfinispanSchema.VERSION_2_0, 39 },
+            { InfinispanSchema.VERSION_3_0, 39 },
+            { InfinispanSchema.VERSION_4_0, 39 },
         };
         return Arrays.asList(data);
     }
@@ -81,33 +82,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         return new JGroupsSubsystemInitialization();
     }
-/*
-    @Override
-    protected String normalizeXML(String xml) throws Exception {
-        QName test = new QName("urn.org.jboss.test:1.0", "test");
-        // We need to add a wrapper element around the 2 subsystem elements, to make it valid xml
-        XMLEventReader reader = XMLInputFactory.newInstance().createXMLEventReader(new StringReader(String.format("<%1$s xmlns=\"%2$s\">%3$s</%1$s>", test.getLocalPart(), test.getNamespaceURI(), xml)));
-        // Strip jgroups subsystem from xml - since this will not be written
-        QName jgroups = new QName(JGroupsSchema.CURRENT.getNamespaceUri(), SUBSYSTEM);
-        StringWriter output = new StringWriter();
-        XMLEventWriter eventWriter = XMLOutputFactory.newInstance().createXMLEventWriter(output);
-        XMLEvent event = reader.nextEvent();
-        while (!event.isEndDocument()) {
-            if (event.isStartElement() && event.asStartElement().getName().equals(jgroups)) {
-                // Swallow jgroups subsystem
-                while (!(event.isEndElement() && event.asEndElement().getName().equals(jgroups))) {
-                    event = reader.nextEvent();
-                }
-            } else if (!(event.isStartElement() && event.asStartElement().getName().equals(test)) && !(event.isEndElement() && event.asEndElement().getName().equals(test))) {
-                eventWriter.add(event);
-            }
-            event = reader.nextEvent();
-        }
-        eventWriter.add(event);
-        eventWriter.close();
-        return super.normalizeXML(output.toString());
-    }
-*/
+
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled);

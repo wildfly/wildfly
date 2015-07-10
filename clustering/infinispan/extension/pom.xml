@@ -111,13 +111,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-query</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-directory-provider</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>

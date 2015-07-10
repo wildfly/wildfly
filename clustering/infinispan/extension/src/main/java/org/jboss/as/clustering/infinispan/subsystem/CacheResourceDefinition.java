@@ -74,17 +74,21 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .setValidator(new ModuleIdentifierValidator(true))
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition INDEXING = new SimpleAttributeDefinitionBuilder(ModelKeys.INDEXING, ModelType.STRING, true)
             .setXmlName(Attribute.INDEX.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<>(Index.class, true, false))
+            .setValidator(new EnumValidator<>(Index.class, true, false, Index.NONE))
             .setDefaultValue(new ModelNode().set(Index.NONE.name()))
+            .setDeprecated(InfinispanModel.VERSION_4_0_0.getVersion())
             .build();
 
+    @Deprecated
     static final SimpleMapAttributeDefinition INDEXING_PROPERTIES = new SimpleMapAttributeDefinition.Builder(ModelKeys.INDEXING_PROPERTIES, true)
             .setAllowExpression(true)
             .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
+            .setDeprecated(InfinispanModel.VERSION_4_0_0.getVersion())
             .build();
 
     static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)

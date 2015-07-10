@@ -27,7 +27,7 @@
         <alias>alias1</alias>
         <alias>alias2</alias>
         <transport executor="transport-executor" lock-timeout="120000" stack="tcp" site="site" rack="rack" machine="machine"/>
-        <local-cache name="local" batching="true" indexing="LOCAL" start="EAGER">
+        <local-cache name="local" batching="true" indexing="NONE" start="EAGER">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"/>
             <eviction max-entries="20000" strategy="LIRS"/>
@@ -55,7 +55,7 @@
             </store>
             <state-transfer enabled="true" timeout="60000" flush-timeout="60000"/>
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" batching="true" indexing="ALL" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2">
+        <distributed-cache name="dist" mode="SYNC" batching="true" indexing="NONE" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" virtual-nodes="2">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>
