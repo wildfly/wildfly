@@ -38,6 +38,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
 import org.jboss.as.test.integration.ws.wsse.ServiceIface;
@@ -79,6 +80,7 @@ public class EJBSignEncryptTestCase {
     }
 
     @Test
+    @Ignore("WFLY-4901")
     public void encryptedAndSignedRequest() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBEncryptSecurityService");
         URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-encrypt/EJBEncryptSecurityService?wsdl");
