@@ -54,8 +54,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Arquillian.class)
 public class HibernateSecondLevelCacheTestCase {
 
-    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory</property>";
-    private static final String MODULE_DEPENDENCIES = "Dependencies: org.infinispan,org.hibernate.envers export,org.hibernate\n";
+    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.jboss.as.jpa.hibernate5.infinispan.InfinispanRegionFactory</property>";
+    private static final String MODULE_DEPENDENCIES = "Dependencies: org.infinispan,org.hibernate.envers export,org.hibernate, org.javassist\n";
 
     private static final String ARCHIVE_NAME = "hibernateSecondLevel_test";
 

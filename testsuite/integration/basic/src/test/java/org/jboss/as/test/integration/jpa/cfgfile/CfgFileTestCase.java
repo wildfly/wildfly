@@ -99,9 +99,9 @@ public class CfgFileTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         Map<String, Object> props = sfsb1.getEMFProperties();
 
-        assertEquals("Value for org.hsqldb.jdbcDriver", "org.hsqldb.jdbcDriver", props.get("connection.driver_class").toString());
+        assertEquals("Value for org.hsqldb.jdbcDriver", "org.hsqldb.jdbcDriver", props.get("hibernate.connection.driver_class").toString());
         assertEquals("Value for hibernate.connection.datasource", "java:jboss/datasources/ExampleDS", props.get("hibernate.connection.datasource").toString());
-        assertEquals("Value for dialect", "org.hibernate.dialect.HSQLDialect", props.get("dialect").toString());
+        assertEquals("Value for dialect", "org.hibernate.dialect.HSQLDialect", props.get("hibernate.dialect").toString());
     }
     
 }
