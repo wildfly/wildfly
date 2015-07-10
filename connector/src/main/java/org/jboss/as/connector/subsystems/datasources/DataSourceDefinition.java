@@ -25,8 +25,6 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
@@ -34,8 +32,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DUMP_QUEUED_THREADS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_ADD_TRANSFORMER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
@@ -60,7 +56,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -168,17 +163,9 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
         return accessConstraints;
     }
 
-    static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE)
-                .getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
-                        CONNECTION_LISTENER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
-                )
+    static void registerTransformers120(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
+        builder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -195,106 +182,19 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                         return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
                     }
                 }, STATISTICS_ENABLED)
-                .addRejectCheck(RejectAttributeChecker.DEFINED,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
-                        CONNECTION_LISTENER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        CONNECTABLE, TRACKING
-                )
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
-                 /*These are nillable in the old model, but appear as not nillable in CompareModelUtils due to problems in the resource description
-                  (leave the line commented out so no one else gets confused)
-                  .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.EXCEPTION_SORTER_PROPERTIES, Constants.REAUTHPLUGIN_PROPERTIES, Constants.STALE_CONNECTION_CHECKER_PROPERTIES, Constants.VALID_CONNECTION_CHECKER_PROPERTIES)*/
-                        //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
-                //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
-                .end()
-                .addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)
-                    .inheritResourceAttributeDefinitions()
-                    .setCustomOperationTransformer(ENABLE_TRANSFORMER)
-                    .end()
-                .addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)
-                    .inheritResourceAttributeDefinitions()
-                    .setCustomOperationTransformer(ENABLE_TRANSFORMER)
-                    .end()
-                .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
-                    .inheritResourceAttributeDefinitions()
-                    .setCustomOperationTransformer(ENABLE_ADD_TRANSFORMER)
-                    .end()
+                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
+                    @Override
+                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        return attributeValue.equals(new ModelNode(false));
+                    }
+                }, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
                 .end()
                 .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
                 .end();
-
-        ConnectionPropertyDefinition.registerTransformers11x(builder);
     }
-
-    static void registerTransformers111(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
-                builder.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
-                        CONNECTION_LISTENER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
-                )
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
-                        .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-                            @Override
-                            public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                                return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
-                            }
-
-                            @Override
-                            protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                                                              TransformationContext context) {
-                                //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
-                                return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
-                            }
-                        }, STATISTICS_ENABLED).addRejectCheck(RejectAttributeChecker.DEFINED,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
-                        CONNECTION_LISTENER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        CONNECTABLE, TRACKING
-                )
-                //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
-                //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
-                .end()
-                .addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)
-                    .inheritResourceAttributeDefinitions()
-                    .setCustomOperationTransformer(ENABLE_TRANSFORMER)
-                    .end()
-                .addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)
-                    .inheritResourceAttributeDefinitions()
-                    .setCustomOperationTransformer(ENABLE_TRANSFORMER)
-                    .end()
-                .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
-                    .inheritResourceAttributeDefinitions()
-                    .setCustomOperationTransformer(ENABLE_ADD_TRANSFORMER)
-                    .end()
-                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
-                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
-                .end()
-                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
-                .end();
-
-        ConnectionPropertyDefinition.registerTransformers11x(builder);
-    }
-
 
     static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
