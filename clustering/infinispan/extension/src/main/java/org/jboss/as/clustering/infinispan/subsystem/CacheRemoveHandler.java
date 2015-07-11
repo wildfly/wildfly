@@ -36,14 +36,9 @@ public class CacheRemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        // we also need the containerModel to re-install cache services
         PathAddress address = context.getCurrentAddress();
         CacheType type = CacheType.forName(address.getLastElement().getKey());
-
-        PathAddress containerAddress = address.subAddress(0, address.size() - 1);
-        ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
-
-        type.getAddHandler().removeRuntimeServices(context, operation, containerModel, model);
+        type.getAddHandler().removeRuntimeServices(context, operation);
     }
 
     @Override

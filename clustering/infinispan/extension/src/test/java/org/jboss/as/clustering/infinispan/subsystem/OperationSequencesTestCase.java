@@ -44,23 +44,23 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // add a local cache
         result = servicesA.executeOperation(addCacheOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // remove the cache container
         result = servicesA.executeOperation(removeContainerOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // add the same cache container
         result = servicesA.executeOperation(addContainerOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // add the same local cache
         result = servicesA.executeOperation(addCacheOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
     }
 
     @Test
@@ -76,19 +76,19 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // add a local cache
         result = servicesA.executeOperation(addCacheOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // remove the cache container
         result = servicesA.executeOperation(removeContainerOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // remove the cache container again
         result = servicesA.executeOperation(removeContainerOp);
-        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), FAILED, result.get(OUTCOME).asString());
     }
 
     @Test
@@ -108,17 +108,17 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // add a local cache
         result = servicesA.executeOperation(addCacheOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // remove the cache container
         // the remove has OperationContext.setRollbackOnly() injected
         // and so is expected to fail
         result = servicesA.executeOperation(removeContainerOp);
-        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), FAILED, result.get(OUTCOME).asString());
 
         // need to check that all services are correctly re-installed
         ServiceName containerServiceName = CacheContainerServiceName.CACHE_CONTAINER.getServiceName("maximal2");
@@ -143,15 +143,15 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // add a local cache
         ModelNode result = servicesA.executeOperation(addOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // remove the local cache
         result = servicesA.executeOperation(removeOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // add the same local cache
         result = servicesA.executeOperation(addOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
     }
 
     @Test
@@ -166,14 +166,14 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // add a local cache
         ModelNode result = servicesA.executeOperation(addOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // remove the local cache
         result = servicesA.executeOperation(removeOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // remove the same local cache
         result = servicesA.executeOperation(removeOp);
-        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), FAILED, result.get(OUTCOME).asString());
     }
 }

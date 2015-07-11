@@ -154,7 +154,7 @@ public class CacheAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel) {
+    void removeRuntimeServices(OperationContext context, ModelNode operation) {
         PathAddress address = Operations.getPathAddress(operation);
         String containerName = address.getElement(address.size() - 2).getValue();
         String cacheName = address.getElement(address.size() - 1).getValue();
