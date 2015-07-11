@@ -34,7 +34,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -237,7 +236,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
         super(TransactionExtension.SUBSYSTEM_PATH,
                 TransactionExtension.getResourceDescriptionResolver(),
-                TransactionSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
+                TransactionSubsystemAdd.INSTANCE, TransactionSubsystemRemove.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
