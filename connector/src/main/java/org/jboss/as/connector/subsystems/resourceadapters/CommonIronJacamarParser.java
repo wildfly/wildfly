@@ -27,8 +27,12 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUND
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
@@ -54,6 +58,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
@@ -824,11 +830,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (Capacity.Tag.forName(reader.getLocalName())) {
                         case INCREMENTER: {
-                            parseExtension(reader, reader.getLocalName(), operation, CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES);
+                            parseExtension(reader, reader.getLocalName(), operation, CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_INCREMENTER_MODULE, CAPACITY_INCREMENTER_MODULE_SLOT);
                             break;
                         }
                         case DECREMENTER: {
-                            parseExtension(reader, reader.getLocalName(), operation, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES);
+                            parseExtension(reader, reader.getLocalName(), operation, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_DECREMENTER_MODULE, CAPACITY_DECREMENTER_MODULE_SLOT);
                             break;
                         }
 
@@ -880,7 +886,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             break;
                         }
                         case RECOVER_PLUGIN: {
-                            parseExtension(reader, tag.getLocalName(), node, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+                            parseExtension(reader, tag.getLocalName(), node, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES, RECOVERLUGIN_MODULE, RECOVERLUGIN_MODULE_SLOT);
                             break;
                         }
                         default:

@@ -110,7 +110,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         }
         context.removeService(CommonDeploymentService.getServiceName(bindInfo));
         context.removeService(dataSourceServiceName.append(Constants.STATISTICS));
-
+        context.removeService(AbstractDataSourceService.SERVICE_NAME_BASE.append("extension", jndiName));
 
         final ServiceName driverDemanderServiceName = ServiceName.JBOSS.append("driver-demander").append(jndiName);
         final ServiceController<?> driverDemanderController = registry.getService(driverDemanderServiceName);

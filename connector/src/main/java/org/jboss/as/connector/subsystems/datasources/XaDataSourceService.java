@@ -27,6 +27,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecovery;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecoveryRegistry;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
@@ -39,7 +40,7 @@ public class XaDataSourceService extends AbstractDataSourceService {
 
     private final InjectedValue<ModifiableXaDataSource> dataSourceConfig = new InjectedValue<ModifiableXaDataSource>();
 
-    public XaDataSourceService(final String dsName, final ContextNames.BindInfo jndiName, final ClassLoader classLoader) {
+    public XaDataSourceService(final String dsName, final ContextNames.BindInfo jndiName, final ModuleClassLoader classLoader) {
         super(dsName, jndiName, classLoader);
     }
 

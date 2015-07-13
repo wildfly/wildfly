@@ -48,6 +48,10 @@ import org.jboss.jca.common.api.metadata.ds.Validation;
  */
 public class Constants {
 
+    public static final String MODULE_NAME = "module";
+
+    public static final String MODULE_SLOT_NAME = "module-slot";
+
     private static final String MIN_POOL_SIZE_NAME = "min-pool-size";
 
     private static final String INITIAL_POOL_SIZE_NAME = "initial-pool-size";
@@ -74,9 +78,17 @@ public class Constants {
 
     private static final String CAPACITY_INCREMENTER_CLASS_NAME = "capacity-incrementer-class";
 
+    private static final String CAPACITY_INCREMENTER_MODULE_NAME = "capacity-incrementer-module-name";
+
+    private static final String CAPACITY_INCREMENTER_MODULE_SLOT_NAME = "capacity-incrementer-module-slot";
+
     private static final String CAPACITY_INCREMENTER_PROPERTIES_NAME = "capacity-incrementer-properties";
 
     private static final String CAPACITY_DECREMENTER_CLASS_NAME = "capacity-decrementer-class";
+
+    private static final String CAPACITY_DECREMENTER_MODULE_NAME = "capacity-decrementer-module-name";
+
+    private static final String CAPACITY_DECREMENTER_MODULE_SLOT_NAME = "capacity-decrementer-module-slot";
 
     private static final String CAPACITY_DECREMENTER_PROPERTIES_NAME = "capacity-decrementer-properties";
 
@@ -142,6 +154,16 @@ public class Constants {
             .setAllowExpression(true)
             .build();
 
+    public static SimpleAttributeDefinition CAPACITY_INCREMENTER_MODULE = new SimpleAttributeDefinitionBuilder(CAPACITY_INCREMENTER_MODULE_NAME, ModelType.STRING, true)
+            .setXmlName(MODULE_NAME)
+            .setAllowExpression(true)
+            .build();
+
+    public static SimpleAttributeDefinition CAPACITY_INCREMENTER_MODULE_SLOT = new SimpleAttributeDefinitionBuilder(CAPACITY_INCREMENTER_MODULE_SLOT_NAME, ModelType.STRING, true)
+            .setXmlName(MODULE_SLOT_NAME)
+            .setAllowExpression(false)
+            .build();
+
     public static PropertiesAttributeDefinition CAPACITY_INCREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_INCREMENTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
@@ -164,6 +186,16 @@ public class Constants {
     public static SimpleAttributeDefinition CAPACITY_DECREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_DECREMENTER_CLASS_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .build();
+
+    public static SimpleAttributeDefinition CAPACITY_DECREMENTER_MODULE = new SimpleAttributeDefinitionBuilder(CAPACITY_DECREMENTER_MODULE_NAME, ModelType.STRING, true)
+            .setXmlName(MODULE_NAME)
+            .setAllowExpression(true)
+            .build();
+
+    public static SimpleAttributeDefinition CAPACITY_DECREMENTER_MODULE_SLOT = new SimpleAttributeDefinitionBuilder(CAPACITY_DECREMENTER_MODULE_SLOT_NAME, ModelType.STRING, true)
+            .setXmlName(MODULE_SLOT_NAME)
+            .setAllowExpression(false)
             .build();
 
     public static PropertiesAttributeDefinition CAPACITY_DECREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_DECREMENTER_PROPERTIES_NAME, true)
@@ -209,7 +241,8 @@ public class Constants {
 
     public static final AttributeDefinition[] POOL_ATTRIBUTES = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,
             BACKGROUNDVALIDATION, USE_FAST_FAIL, VALIDATE_ON_MATCH, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
-            CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
+            CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_MODULE, CAPACITY_INCREMENTER_MODULE_SLOT, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_MODULE, CAPACITY_DECREMENTER_MODULE_SLOT,
+            CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
 
     public static SimpleAttributeDefinition POOL_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setStorageRuntime()

@@ -166,6 +166,10 @@ public class Constants {
 
     private static final String RECOVERLUGIN_CLASSNAME_NAME = "recovery-plugin-class-name";
 
+    private static final String RECOVERLUGIN_MODULE_NAME = "recovery-plugin-module-name";
+
+    private static final String RECOVERLUGIN_MODULE_SLOT_NAME = "recovery-plugin-module-slot";
+
     private static final String RECOVERLUGIN_PROPERTIES_NAME = "recovery-plugin-properties";
 
     private static final String NO_RECOVERY_NAME = "no-recovery";
@@ -504,6 +508,16 @@ public class Constants {
 
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .build();
+
+    static SimpleAttributeDefinition RECOVERLUGIN_MODULE = new SimpleAttributeDefinitionBuilder(RECOVERLUGIN_MODULE_NAME, ModelType.STRING, true)
+            .setXmlName(MODULE_NAME)
+            .setAllowExpression(true)
+            .build();
+
+    static SimpleAttributeDefinition RECOVERLUGIN_MODULE_SLOT = new SimpleAttributeDefinitionBuilder(RECOVERLUGIN_MODULE_SLOT_NAME, ModelType.STRING, true)
+            .setXmlName("module-slot")
+            .setAllowExpression(false)
             .build();
 
     static PropertiesAttributeDefinition RECOVERLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVERLUGIN_PROPERTIES_NAME, true)

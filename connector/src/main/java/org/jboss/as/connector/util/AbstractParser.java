@@ -24,6 +24,7 @@ package org.jboss.as.connector.util;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -90,14 +91,15 @@ public abstract class AbstractParser {
 
 
     protected void parseExtension(XMLExtendedStreamReader reader, String enclosingTag, final ModelNode operation,
-                                  final SimpleAttributeDefinition extensionClassName, final PropertiesAttributeDefinition extensionProperties)
+                                  final SimpleAttributeDefinition extensionClassName, final PropertiesAttributeDefinition extensionProperties,
+                                  final SimpleAttributeDefinition moduleDef, final SimpleAttributeDefinition moduleSlotDef)
             throws XMLStreamException, ParserException, ValidateException {
 
         for (Extension.Attribute attribute : Extension.Attribute.values()) {
             switch (attribute) {
                 case CLASS_NAME: {
-                    requireSingleAttribute(reader, attribute.getLocalName());
-                    final String value = reader.getAttributeValue(0);
+                    final String[] attrs = requireAttributes(reader, attribute.getLocalName());
+                    final String value = attrs[0];
                     extensionClassName.parseAndSetParameter(value, operation, reader);
                     break;
 
@@ -105,6 +107,16 @@ public abstract class AbstractParser {
                 default:
                     break;
             }
+        }
+
+        // module and module-slot
+        final String module = rawAttributeText(reader, moduleDef.getXmlName());
+        if (module != null) {
+            moduleDef.parseAndSetParameter(module, operation, reader);
+        }
+        final String moduleSlot = rawAttributeText(reader, moduleSlotDef.getXmlName());
+        if (moduleSlot != null) {
+            moduleSlotDef.parseAndSetParameter(moduleSlot, operation, reader);
         }
 
         while (reader.hasNext()) {

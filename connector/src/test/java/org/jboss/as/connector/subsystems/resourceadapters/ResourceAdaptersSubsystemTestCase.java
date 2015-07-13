@@ -69,7 +69,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-resource-adapters_3_0.xsd";
+        return "schema/wildfly-resource-adapters_4_0.xsd";
     }
 
     @Override
@@ -118,10 +118,34 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     }
 
     @Test
+    public void testTransformerEAP63() throws Exception {
+        testRejectingTransformer("resource-adapters-pool-20.xml", ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
+    }
+
+    @Test
+    public void testTransformerEAP64() throws Exception {
+        testRejectingTransformer("resource-adapters-pool-20.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
+    }
+
+    @Test
     public void testExpressionsEAP62() throws Exception {
         //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
         // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
         testTransformer("resource-adapters-xapool-expression.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
+    }
+
+    @Test
+    public void testExpressionsEAP63() throws Exception {
+        //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
+        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
+        testTransformer("resource-adapters-xapool-expression.xml", ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
+    }
+
+    @Test
+    public void testExpressionsEAP64() throws Exception {
+        //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
+        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
+        testTransformer("resource-adapters-xapool-expression.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
     }
 
     /**
@@ -261,7 +285,13 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                                     }
 
                                 })
-                                .addConfig(new FailedOperationTransformationConfig.AttributesPathAddressConfig(TRACKING.getName()) {
+                                .addConfig(new FailedOperationTransformationConfig.AttributesPathAddressConfig(TRACKING.getName(),
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE.getName(),
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE.getName(),
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT.getName(),
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT.getName(),
+                                        org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE.getName(),
+                                        org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE_SLOT.getName()) {
 
                                     @Override
                                     protected boolean isAttributeWritable(String attributeName) {
