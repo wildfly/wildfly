@@ -34,7 +34,7 @@ import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
-import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
+import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.group.Group;
@@ -100,8 +100,8 @@ public class CacheGroup implements Group, AutoCloseable {
         return nodes;
     }
 
-    @ViewChanged
-    public void viewChanged(ViewChangedEvent event) {
+    @Merged
+    public void merged(ViewChangedEvent event) {
         // Record view status for use by @TopologyChanged event
         this.views.put(event.getViewId(), event.isMergeView());
     }
