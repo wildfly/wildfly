@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -34,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
@@ -135,19 +137,20 @@ public class DomainAdjuster {
     }
 
     private void removeProfile(final DomainClient client, final String name) throws Exception {
+        // TODO replace everything below with this one line once WFCORE-808 is integrated:
+        //executeForResult(Util.createRemoveOperation(PathAddress.pathAddress(PROFILE, name)), client);
+
         //The profile does not allow deletion unless all child resources have been removed, so remove all the subsystems
         //individually
         final PathAddress profileAddress = PathAddress.pathAddress(PROFILE, name);
         final List<String> subsystems = getAllChildrenOfType(client, profileAddress, SUBSYSTEM);
+        final ModelNode compositeOp = Util.createEmptyOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
+        final ModelNode steps = compositeOp.get(STEPS);
         for (String subsystem : subsystems) {
-            removeSubsystem(client, profileAddress, subsystem);
+            steps.add(Util.createRemoveOperation(profileAddress.append(SUBSYSTEM, subsystem)));
         }
+        executeForResult(compositeOp, client);
         executeForResult(Util.createRemoveOperation(profileAddress), client);
-    }
-
-    private void removeSubsystem(final DomainClient client, final PathAddress profileAddress,
-                                 final String subsystem) throws Exception {
-        executeForResult(Util.createRemoveOperation(profileAddress.append(SUBSYSTEM, subsystem)), client);
     }
 
     private List<String> getAllChildrenOfType(final DomainClient client,
