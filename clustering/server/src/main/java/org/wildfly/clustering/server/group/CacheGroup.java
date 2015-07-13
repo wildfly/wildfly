@@ -34,6 +34,7 @@ import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
@@ -100,6 +101,7 @@ public class CacheGroup implements Group, AutoCloseable {
         return nodes;
     }
 
+    @Merged
     @ViewChanged
     public void viewChanged(ViewChangedEvent event) {
         // Record view status for use by @TopologyChanged event
