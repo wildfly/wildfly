@@ -116,17 +116,15 @@ public class TelemetryService implements Service<TelemetryService> {
                         try {
                             JdrReport report = jdrCollector.collect();
                             sendJdr(report.getLocation(), report.getJdrUuid());
+                        }
+                        catch (Exception e) {
+                            ROOT_LOGGER.couldNotGenerateJdr(e);
+                        }
+                        try {
                             output.wait(frequency * MILLISECOND_TO_DAY);
                         } catch (InterruptedException e) {
                             ROOT_LOGGER.threadInterrupted(e);
                             return;
-                        } catch (Exception e) {
-                            ROOT_LOGGER.couldNotGenerateJdr(e);
-                            try {
-                                output.wait(frequency * MILLISECOND_TO_DAY);
-                            } catch (InterruptedException e2) {
-                                ROOT_LOGGER.threadInterrupted(e);
-                            }
                         }
                     }
                 }
