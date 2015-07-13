@@ -99,16 +99,17 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
             final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
             final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
-            Deployment deployment = deploymentService.getDeployment();
-            SessionManager sessionManager = deployment.getSessionManager();
 
             SessionStat stat = SessionStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
-            SessionManagerStatistics sms = sessionManager instanceof SessionManagerStatistics ? (SessionManagerStatistics) sessionManager : null;
 
             if (stat == null) {
                 context.getFailureDescription().set(UndertowLogger.ROOT_LOGGER.unknownMetric(operation.require(ModelDescriptionConstants.NAME).asString()));
             } else {
                 ModelNode result = new ModelNode();
+                Deployment deployment = deploymentService.getDeployment();
+                SessionManager sessionManager = deployment.getSessionManager();
+                SessionManagerStatistics sms = sessionManager.getStatistics();
+
                 switch (stat) {
                     case ACTIVE_SESSIONS:
                         result.set(sessionManager.getActiveSessions().size());
@@ -163,10 +164,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
                 }
                 context.getResult().set(result);
             }
-
-            context.stepCompleted();
         }
-
     }
 
     public enum SessionStat {

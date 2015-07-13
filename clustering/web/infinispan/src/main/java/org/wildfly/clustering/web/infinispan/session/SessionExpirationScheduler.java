@@ -21,8 +21,7 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import static java.security.AccessController.doPrivileged;
-
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,7 +58,8 @@ public class SessionExpirationScheduler implements Scheduler {
     }
 
     private static ThreadFactory createThreadFactory() {
-        return doPrivileged(new PrivilegedAction<ThreadFactory>() {
+        return AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
+            @Override
             public ThreadFactory run() {
                 return new JBossThreadFactory(new ThreadGroup(SessionExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
             }

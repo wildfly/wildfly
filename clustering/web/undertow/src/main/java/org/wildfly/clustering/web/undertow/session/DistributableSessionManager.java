@@ -31,6 +31,7 @@ import io.undertow.server.session.SessionManagerStatistics;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -41,13 +42,15 @@ import org.wildfly.clustering.web.session.SessionManager;
  * Adapts a distributable {@link SessionManager} to an Undertow {@link io.undertow.server.session.SessionManager}.
  * @author Paul Ferraro
  */
-public class DistributableSessionManager implements UndertowSessionManager {
+public class DistributableSessionManager implements UndertowSessionManager, SessionManagerStatistics {
 
     private static final int MAX_SESSION_ID_GENERATION_ATTEMPTS = 10;
 
     private final String deploymentName;
     private final SessionListeners sessionListeners = new SessionListeners();
     private final SessionManager<LocalSessionContext, Batch> manager;
+    private final AtomicLong createdSessionCount = new AtomicLong();
+    private volatile long started;
 
     public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager) {
         this.deploymentName = deploymentName;
@@ -67,6 +70,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
     @Override
     public void start() {
         this.manager.start();
+        this.started = System.currentTimeMillis();
     }
 
     @Override
@@ -99,6 +103,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
             Session<LocalSessionContext> session = this.manager.createSession(id);
             io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batch);
             this.sessionListeners.sessionCreated(adapter, exchange);
+            this.createdSessionCount.incrementAndGet();
             return adapter;
         } catch (RuntimeException | Error e) {
             batch.discard();
@@ -172,9 +177,50 @@ public class DistributableSessionManager implements UndertowSessionManager {
         return this.deploymentName;
     }
 
-    //@Override
+    @Override
     public SessionManagerStatistics getStatistics() {
-        return null;
+        return this;
+    }
+
+    @Override
+    public long getCreatedSessionCount() {
+        return this.createdSessionCount.get();
+    }
+
+    @Override
+    public long getMaxActiveSessions() {
+        return this.manager.getMaxActiveSessions();
+    }
+
+    @Override
+    public long getActiveSessionCount() {
+        return this.manager.getActiveSessions().size();
+    }
+
+    @Override
+    public long getExpiredSessionCount() {
+        return this.manager.getStatistics().getExpiredSessionCount();
+    }
+
+    @Override
+    public long getRejectedSessions() {
+        // We never reject sessions
+        return 0;
+    }
+
+    @Override
+    public long getMaxSessionAliveTime() {
+        return this.manager.getStatistics().getMaxSessionLifetime(TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public long getAverageSessionAliveTime() {
+        return this.manager.getStatistics().getMeanSessionLifetime(TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public long getStartTime() {
+        return this.started;
     }
 
     @Override
