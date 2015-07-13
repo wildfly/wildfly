@@ -13,7 +13,6 @@ import static org.jboss.logging.Logger.Level.*;
  * Telemetry logger
  *
  * @author <a href="mailto:jkinlaw@redhat.com">Josh Kinlaw</a>
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 @MessageLogger(projectCode = "WFLYTELEMTRY", length = 4)
 public interface TelemetryLogger extends BasicLogger {

@@ -20,6 +20,8 @@ import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 
 import com.redhat.gss.redhat_support_lib.helpers.ConfigHelper;
 
+import static com.redhat.gss.redhat_support_lib.logger.RedHatSupportLibLogger.ROOT_LOGGER;
+
 public class CustomHttpEngine extends ApacheHttpClient4Engine {
 
     public CustomHttpEngine(ConfigHelper config) {
@@ -43,11 +45,9 @@ public class CustomHttpEngine extends ApacheHttpClient4Engine {
         try {
             client.setSslcontext(createGullibleSslContext());
         } catch (KeyManagementException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            ROOT_LOGGER.couldNotInitializeCustomHttpEngine(e);
         } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            ROOT_LOGGER.couldNotInitializeCustomHttpEngine(e);
         }
         this.httpClient = client.build();
     }
