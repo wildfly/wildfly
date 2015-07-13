@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.web.undertow.session;
 
-import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
+
+import io.undertow.server.session.Session;
+import io.undertow.server.session.SessionManagerStatistics;
 
 /**
- * A factory for creating a session manager.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory<B extends Batch> {
-    /**
-     * Create as session manager using the specified context and identifier factory.
-     * @param context a session context
-     * @param idFactory a session identifier factory
-     * @return a new session manager
-     */
-    <C> SessionManager<C, B> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory, Recordable<ImmutableSession> inactiveSessionRecorder);
+public interface RecordableSessionManagerStatistics extends SessionManagerStatistics, Recordable<Session> {
 }

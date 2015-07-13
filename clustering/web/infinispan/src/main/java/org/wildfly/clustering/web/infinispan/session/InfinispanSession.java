@@ -60,9 +60,6 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
 
     @Override
     public SessionAttributes getAttributes() {
-        if (!this.valid.get()) {
-            throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
-        }
         return this.attributes;
     }
 
@@ -81,9 +78,6 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
 
     @Override
     public SessionMetaData getMetaData() {
-        if (!this.valid.get()) {
-            throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
-        }
         return this.metaData;
     }
 

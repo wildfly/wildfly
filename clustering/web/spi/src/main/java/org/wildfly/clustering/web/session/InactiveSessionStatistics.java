@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.session;
 
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
- * A factory for creating a session manager.
+ * Statistics for inactive sessions.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory<B extends Batch> {
+public interface InactiveSessionStatistics {
+
     /**
-     * Create as session manager using the specified context and identifier factory.
-     * @param context a session context
-     * @param idFactory a session identifier factory
-     * @return a new session manager
+     * @return The number of expired sessions
      */
-    <C> SessionManager<C, B> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory, Recordable<ImmutableSession> inactiveSessionRecorder);
+    long getExpiredSessionCount();
+
+    /**
+     * @return The longest a session has been alive using the specified unit
+     */
+    long getMaxSessionLifetime(TimeUnit unit);
+
+    /**
+     * @return The average session lifetime using the specified unit
+     */
+    long getMeanSessionLifetime(TimeUnit unit);
 }

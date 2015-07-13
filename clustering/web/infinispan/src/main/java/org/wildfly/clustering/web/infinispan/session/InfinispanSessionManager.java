@@ -58,6 +58,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.infinispan.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.Node;
@@ -94,6 +95,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     private final boolean persistent;
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
     private final SessionIdentifierFilter filter = new SessionIdentifierFilter();
+    private final Recordable<ImmutableSession> recorder;
 
     volatile CommandDispatcher<Scheduler> dispatcher;
     private volatile Scheduler scheduler;
@@ -107,6 +109,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         this.dispatcherFactory = configuration.getCommandDispatcherFactory();
         this.nodeFactory = configuration.getNodeFactory();
         this.maxActiveSessions = configuration.getMaxActiveSessions();
+        this.recorder = configuration.getInactiveSessionRecorder();
         Configuration config = this.cache.getCacheConfiguration();
         // If cache is clustered or configured with a write-through cache store
         // then we need to trigger any HttpSessionActivationListeners per request
@@ -116,6 +119,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
     @Override
     public void start() {
+        if (this.recorder != null) {
+            this.recorder.reset();
+        }
         this.identifierFactory.start();
         final List<Scheduler> schedulers = new ArrayList<>(2);
         schedulers.add(new SessionExpirationScheduler(this.batcher, new ExpiredSessionRemover<>(this.factory)));
@@ -283,6 +289,16 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         return result;
     }
 
+    @Override
+    public int getMaxActiveSessions() {
+        return this.maxActiveSessions;
+    }
+
+    @Override
+    public long getActiveSessionCount() {
+        return this.getActiveSessions().size();
+    }
+
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<String, ?> event) {
         if (!event.isPre() && !this.persistent) {
@@ -331,6 +347,10 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
                         HttpSessionBindingListener listener = (HttpSessionBindingListener) attribute;
                         listener.valueUnbound(new HttpSessionBindingEvent(httpSession, name, attribute));
                     }
+                }
+
+                if (this.recorder != null) {
+                    this.recorder.record(session);
                 }
             }
         }
@@ -421,6 +441,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
         @Override
         public SessionMetaData getMetaData() {
+            if (!this.isValid()) {
+                throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
+            }
             return this.session.getMetaData();
         }
 
@@ -436,6 +459,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
         @Override
         public SessionAttributes getAttributes() {
+            if (!this.isValid()) {
+                throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
+            }
             return this.session.getAttributes();
         }
 

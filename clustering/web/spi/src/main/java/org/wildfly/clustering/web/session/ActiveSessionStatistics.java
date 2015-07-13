@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.session;
 
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
-
 /**
- * A factory for creating a session manager.
+ * Statistics for active sessions.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory<B extends Batch> {
+public interface ActiveSessionStatistics {
     /**
-     * Create as session manager using the specified context and identifier factory.
-     * @param context a session context
-     * @param idFactory a session identifier factory
-     * @return a new session manager
+     * @return the maximum number of active sessions allowed by this session manager
      */
-    <C> SessionManager<C, B> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory, Recordable<ImmutableSession> inactiveSessionRecorder);
+    int getMaxActiveSessions();
+
+    /**
+     * @return The number of active sessions
+     */
+    long getActiveSessionCount();
 }

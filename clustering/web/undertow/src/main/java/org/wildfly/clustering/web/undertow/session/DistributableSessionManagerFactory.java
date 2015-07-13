@@ -49,9 +49,11 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
 
     @Override
     public io.undertow.server.session.SessionManager createSessionManager(Deployment deployment) {
+        boolean statisticsEnabled = deployment.getDeploymentInfo().getMetricsCollector() != null;
+        RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
         SessionContext context = new UndertowSessionContext(deployment);
         IdentifierFactory<String> factory = new IdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
-        final SessionManager<LocalSessionContext, Batch> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory());
+        final SessionManager<LocalSessionContext, Batch> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory(), inactiveSessionStatistics);
         DeploymentInfo info = deployment.getDeploymentInfo();
         ThreadSetupAction action = new ThreadSetupAction() {
             @Override
@@ -70,6 +72,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
         };
         info.addThreadSetupAction(action);
-        return new DistributableSessionManager(info.getDeploymentName(), manager);
+        RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics) : null;
+        return new DistributableSessionManager(info.getDeploymentName(), manager, statistics);
     }
 }

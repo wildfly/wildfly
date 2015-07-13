@@ -65,31 +65,11 @@ public class InfinispanSessionTestCase {
     @Test
     public void getAttributes() {
         assertSame(this.attributes, this.session.getAttributes());
-        
-        this.session.invalidate();
-        
-        IllegalStateException exception = null;
-        try {
-            this.session.getAttributes();
-        } catch (IllegalStateException e) {
-            exception = e;
-        }
-        assertNotNull(exception);
     }
     
     @Test
     public void getMetaData() {
         assertSame(this.metaData, this.session.getMetaData());
-        
-        this.session.invalidate();
-        
-        IllegalStateException exception = null;
-        try {
-            this.session.getMetaData();
-        } catch (IllegalStateException e) {
-            exception = e;
-        }
-        assertNotNull(exception);
     }
     
     @Test
