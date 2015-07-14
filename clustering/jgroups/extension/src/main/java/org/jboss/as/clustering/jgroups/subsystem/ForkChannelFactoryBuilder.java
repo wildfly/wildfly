@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.clustering.jgroups.ForkChannelFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -48,12 +49,14 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class ForkChannelFactoryBuilder implements Builder<ChannelFactory>, Value<ChannelFactory> {
 
+    private final CapabilityServiceSupport support;
     private final String channelName;
     private final InjectedValue<Channel> parentChannel = new InjectedValue<>();
     private final InjectedValue<ChannelFactory> parentFactory = new InjectedValue<>();
     private final List<ValueDependency<ProtocolConfiguration>> protocols = new LinkedList<>();
 
-    public ForkChannelFactoryBuilder(String channelName) {
+    public ForkChannelFactoryBuilder(CapabilityServiceSupport support, String channelName) {
+        this.support = support;
         this.channelName = channelName;
     }
 
@@ -81,7 +84,7 @@ public class ForkChannelFactoryBuilder implements Builder<ChannelFactory>, Value
     }
 
     public ProtocolConfigurationBuilder addProtocol(String type) {
-        ProtocolConfigurationBuilder builder = new ProtocolConfigurationBuilder(this.channelName, type);
+        ProtocolConfigurationBuilder builder = new ProtocolConfigurationBuilder(this.support, this.channelName, type);
         this.protocols.add(new InjectedValueDependency<>(builder, ProtocolConfiguration.class));
         return builder;
     }

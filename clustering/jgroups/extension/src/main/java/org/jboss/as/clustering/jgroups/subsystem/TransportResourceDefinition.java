@@ -128,11 +128,13 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     // the list of attributes used by the transport resource
+    @SuppressWarnings("deprecation")
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
             ProtocolResourceDefinition.TYPE, ProtocolResourceDefinition.MODULE, SHARED, ProtocolResourceDefinition.SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING,
             ProtocolResourceDefinition.PROPERTIES, DEFAULT_EXECUTOR, OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE
     };
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
@@ -184,6 +186,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
         registration.registerSubModel(new PropertyResourceDefinition());

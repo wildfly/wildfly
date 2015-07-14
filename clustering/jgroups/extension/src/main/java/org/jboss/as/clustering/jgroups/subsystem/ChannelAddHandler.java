@@ -106,7 +106,7 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
 
         // Install fork channel factory
-        new ForkChannelFactoryBuilder(name).build(target).install();
+        new ForkChannelFactoryBuilder(context.getCapabilityServiceSupport(), name).build(target).install();
 
         // Install fork channel factory jndi binding
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name), ChannelFactory.class).build(target).install();

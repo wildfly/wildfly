@@ -117,6 +117,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
         super.registerOperations(registration);
