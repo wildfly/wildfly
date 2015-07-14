@@ -26,9 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -53,16 +51,8 @@ class HostDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setElementValidator(new StringLengthValidator(1))
-            .setAttributeParser(new AttributeParser() {
-                @Override
-                public void parseAndSetParameter(AttributeDefinition attribute, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
-                    if (value == null) { return; }
-                    for (String element : value.split(",")) {
-                        ModelNode paramVal = parse(attribute, element, reader);
-                        operation.get(attribute.getName()).add(paramVal);
-                    }
-                }
-            })
+            .setAllowExpression(true)
+            .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
             .setAttributeMarshaller(new DefaultAttributeMarshaller() {
                 @Override
                 public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
@@ -73,11 +63,8 @@ class HostDefinition extends PersistentResourceDefinition {
                             builder.append(p.asString()).append(", ");
                         }
                     }
-                    if (builder.length() > 3) {
-                        builder.setLength(builder.length() - 2);
-                    }
                     if (builder.length() > 0) {
-                        writer.writeAttribute(attribute.getXmlName(), builder.toString());
+                        writer.writeAttribute(attribute.getXmlName(), builder.substring(0, builder.length() - 2));
                     }
                 }
             })
