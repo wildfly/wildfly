@@ -153,11 +153,11 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         @Override
         public void submitTask(final Runnable task) {
+            final ContextHandle contextHandle = createContextHandle();
             // Wrap the runnable to setup the context for the thread
             final Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    final ContextHandle contextHandle = createContextHandle();
                     final Handle handle = contextHandle.setup();
                     try {
                         task.run();
