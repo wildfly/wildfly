@@ -23,6 +23,7 @@ package org.jboss.as.jsr77.subsystem;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
@@ -30,6 +31,11 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class JSR77ManagementRootResource extends SimpleResourceDefinition {
+
+    static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
+    static final RuntimeCapability<Void> JSR77_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.jsr77")
+            .addRequirements(JMX_CAPABILITY)
+            .build();
 
     static JSR77ManagementRootResource INSTANCE = new JSR77ManagementRootResource();
 
