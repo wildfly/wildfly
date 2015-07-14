@@ -60,7 +60,6 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
             .setXmlName(Attribute.DEFAULT.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .build()
     ;
 
