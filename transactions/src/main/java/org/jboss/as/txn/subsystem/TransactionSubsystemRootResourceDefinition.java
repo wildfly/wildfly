@@ -49,7 +49,6 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -116,19 +115,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG)
             .build();
-
-    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.RELATIVE_TO)
-            .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDeprecated(ModelVersion.create(1,4))
-            .setAllowExpression(true).build();
-
-    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.PATH)
-            .setDefaultValue(new ModelNode().set("var"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDeprecated(ModelVersion.create(1,4))
-            .setAllowNull(true)
-            .setAllowExpression(true).build();
 
     //coordinator environment
     public static final SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(CommonAttributes.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
@@ -244,7 +230,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     // all attributes
     static final AttributeDefinition[] attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
-            PROCESS_ID_SOCKET_MAX_PORTS, RELATIVE_TO, PATH, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
+            PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
@@ -253,7 +239,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_0 = new AttributeDefinition[] {
             DEFAULT_TIMEOUT, STATISTICS_ENABLED, ENABLE_STATISTICS, ENABLE_TSM_STATUS, NODE_IDENTIFIER, OBJECT_STORE_PATH, OBJECT_STORE_RELATIVE_TO,
-            PATH, PROCESS_ID_SOCKET_BINDING, PROCESS_ID_SOCKET_MAX_PORTS, RECOVERY_LISTENER, RELATIVE_TO, BINDING, STATUS_BINDING
+            PROCESS_ID_SOCKET_BINDING, PROCESS_ID_SOCKET_MAX_PORTS, RECOVERY_LISTENER, BINDING, STATUS_BINDING
     };
 
     static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_1 = new AttributeDefinition[] {

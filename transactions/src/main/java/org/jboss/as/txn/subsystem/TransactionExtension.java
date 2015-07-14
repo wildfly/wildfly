@@ -119,13 +119,6 @@ public class TransactionExtension implements Extension {
                    .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO)
                    .build();
             registration.registerOperationHandler(objectStorePathHandler.getOperationDefinition(), objectStorePathHandler);
-
-            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                    .setPathAttribute(TransactionSubsystemRootResourceDefinition.PATH)
-                    .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.RELATIVE_TO)
-                    .setDeprecated(ModelVersion.create(1,4))
-                    .build();
-            registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
         }
 
 
