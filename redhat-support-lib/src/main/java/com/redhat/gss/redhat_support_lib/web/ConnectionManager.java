@@ -78,16 +78,13 @@ public class ConnectionManager {
 
     public FTPClient getFTP() throws IOException, FTPException {
         FTPClient ftp = null;
-                + config.getFtpUsername() + ", " + config.getFtpPassword());
         if (config.getProxyUrl() == null) {
             ftp = new FTPClient();
-            System.out.println("created new ftp: " + ftp);
         } else {
             ftp = new FTPHTTPClient(config.getProxyUrl().getHost(),
                     config.getProxyPort(), config.getProxyUser(),
                     config.getProxyPassword());
         }
-                + config.getFtpPort());
         ftp.connect(config.getFtpHost(), config.getFtpPort());
         if (!ftp.login(config.getFtpUsername(), config.getFtpPassword())) {
             throw new FTPException("Error during FTP login");
