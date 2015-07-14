@@ -53,6 +53,7 @@ public class RelayResourceDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SITE, ProtocolResourceDefinition.PROPERTIES };
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
@@ -72,6 +73,7 @@ public class RelayResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
         registration.registerSubModel(new RemoteSiteResourceDefinition());

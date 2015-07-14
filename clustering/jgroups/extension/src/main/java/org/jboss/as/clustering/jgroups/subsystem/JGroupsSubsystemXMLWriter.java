@@ -100,6 +100,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writer.writeEndElement();
     }
 
+    @SuppressWarnings("deprecation")
     private static void writeTransport(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeStartElement(Element.TRANSPORT.getLocalName());
         writeProtocolAttributes(writer, property);

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -45,8 +46,8 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
     private final List<ValueDependency<RemoteSiteConfiguration>> sites = new LinkedList<>();
     private String siteName = null;
 
-    public RelayConfigurationBuilder(String stackName) {
-        super(stackName, RelayConfiguration.PROTOCOL_NAME);
+    public RelayConfigurationBuilder(CapabilityServiceSupport support, String stackName) {
+        super(support, stackName, RelayConfiguration.PROTOCOL_NAME);
     }
 
     @Override

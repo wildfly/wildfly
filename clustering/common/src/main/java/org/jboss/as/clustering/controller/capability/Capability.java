@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,41 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.jgroups.subsystem;
+package org.jboss.as.clustering.controller.capability;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.modules.ModuleIdentifier;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtocolConfigurationBuilder extends AbstractProtocolConfigurationBuilder<ProtocolConfiguration> {
+public enum Capability {
+    OUTBOUND_SOCKET_BINDING("org.wildfly.network.outbound-socket-binding"),
+    SOCKET_BINDING("org.wildfly.network.socket-binding"),
+    ;
+    private final String baseName;
 
-    public ProtocolConfigurationBuilder(CapabilityServiceSupport support, String stackName, String name) {
-        super(support, stackName, name);
+    Capability(String baseName) {
+        this.baseName = baseName;
     }
 
-    @Override
-    public ProtocolConfigurationBuilder setModule(ModuleIdentifier module) {
-        super.setModule(module);
-        return this;
-    }
-
-    @Override
-    public ProtocolConfigurationBuilder setSocketBinding(String socketBindingName) {
-        super.setSocketBinding(socketBindingName);
-        return this;
-    }
-
-    @Override
-    public ProtocolConfigurationBuilder addProperty(String name, String value) {
-        super.addProperty(name, value);
-        return this;
-    }
-
-    @Override
-    public ProtocolConfiguration getValue() {
-        return this;
+    public ServiceName getServiceName(CapabilityServiceSupport support, String name) {
+        return support.getCapabilityServiceName(this.baseName, name);
     }
 }

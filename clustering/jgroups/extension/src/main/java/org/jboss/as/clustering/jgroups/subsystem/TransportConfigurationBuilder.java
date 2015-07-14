@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.capability.Capability;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
@@ -39,8 +41,8 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
     private boolean shared = TransportResourceDefinition.SHARED.getDefaultValue().asBoolean();
     private Topology topology = null;
 
-    public TransportConfigurationBuilder(String stackName, String name) {
-        super(stackName, name);
+    public TransportConfigurationBuilder(CapabilityServiceSupport support, String stackName, String name) {
+        super(support, stackName, name);
     }
 
     @Override
@@ -77,7 +79,7 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
 
     public TransportConfigurationBuilder setDiagnosticsSocket(String socketBindingName) {
         if (socketBindingName != null) {
-            this.diagnosticsSocketBinding = new InjectedValueDependency<>(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class);
+            this.diagnosticsSocketBinding = new InjectedValueDependency<>(Capability.SOCKET_BINDING.getServiceName(this.support, socketBindingName), SocketBinding.class);
         }
         return this;
     }

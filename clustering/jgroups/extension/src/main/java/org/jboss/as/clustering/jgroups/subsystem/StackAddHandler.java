@@ -66,7 +66,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
         String rack = ModelNodes.asString(TransportResourceDefinition.RACK.resolveModelAttribute(context, transport));
         String site = ModelNodes.asString(TransportResourceDefinition.SITE.resolveModelAttribute(context, transport));
 
-        JChannelFactoryBuilder builder = new JChannelFactoryBuilder(name);
+        JChannelFactoryBuilder builder = new JChannelFactoryBuilder(context.getCapabilityServiceSupport(), name);
         TransportConfigurationBuilder transportBuilder = builder.setTransport(type)
                 .setModule(ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, transport)))
                 .setShared(TransportResourceDefinition.SHARED.resolveModelAttribute(context, transport).asBoolean())
@@ -121,16 +121,16 @@ public class StackAddHandler extends AbstractAddStepHandler {
         context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name));
 
         Property transport = model.get(TransportResourceDefinition.WILDCARD_PATH.getKey()).asProperty();
-        context.removeService(new TransportConfigurationBuilder(name, transport.getName()).getServiceName());
+        context.removeService(new TransportConfigurationBuilder(context.getCapabilityServiceSupport(), name, transport.getName()).getServiceName());
 
         if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
             for (Property protocol : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                context.removeService(new ProtocolConfigurationBuilder(name, protocol.getName()).getServiceName());
+                context.removeService(new ProtocolConfigurationBuilder(context.getCapabilityServiceSupport(), name, protocol.getName()).getServiceName());
             }
         }
 
         if (model.hasDefined(RelayResourceDefinition.PATH.getKey())) {
-            context.removeService(new RelayConfigurationBuilder(name).getServiceName());
+            context.removeService(new RelayConfigurationBuilder(context.getCapabilityServiceSupport(), name).getServiceName());
             ModelNode relay = model.get(RelayResourceDefinition.PATH.getKeyValuePair());
             if (relay.hasDefined(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey())) {
                 for (Property remoteSite: relay.get(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
