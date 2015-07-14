@@ -44,6 +44,15 @@ public class ContainerManagedConcurrencyInterceptorFactory extends ComponentInst
 
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
-        return new ContainerManagedConcurrencyInterceptor((LockableComponent) component);
+        final LockableComponent lockableComponent = (LockableComponent) component;
+        synchronized (lockableComponent) {
+            Interceptor interceptor = lockableComponent.getInterceptor();
+            if(interceptor != null) {
+                return interceptor;
+            }
+            interceptor = new ContainerManagedConcurrencyInterceptor((LockableComponent) component);
+            lockableComponent.setInterceptor(interceptor);
+            return interceptor;
+        }
     }
 }

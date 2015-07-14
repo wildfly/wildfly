@@ -87,8 +87,6 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     public SingletonComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                          final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
-        // add container managed concurrency interceptor to the component
-        this.addConcurrencyManagementInterceptor();
 
         getConfigurators().add(new ComponentConfigurator() {
             @Override
@@ -184,6 +182,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         super.setupViewInterceptors(view);
         addViewSerializationInterceptor(view);
 
+        // add container managed concurrency interceptor to the component
+        this.addConcurrencyManagementInterceptor(view);
+
         // add instance associating interceptor at the start of the interceptor chain
         view.getConfigurators().addFirst(new ViewConfigurator() {
             @Override
@@ -236,16 +237,17 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         throw EjbLogger.ROOT_LOGGER.ejb2xViewNotApplicableForSingletonBeans();
     }
 
-    private void addConcurrencyManagementInterceptor() {
-        this.getConfigurators().add(new ComponentConfigurator() {
+    private void addConcurrencyManagementInterceptor(final ViewDescription view) {
+        view.getConfigurators().add(new ViewConfigurator() {
             @Override
-            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                final SingletonComponentDescription singletonComponentDescription = (SingletonComponentDescription) description;
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+
+                final SingletonComponentDescription singletonComponentDescription = (SingletonComponentDescription) componentConfiguration.getComponentDescription();
                 // we don't care about BEAN managed concurrency, so just return
                 if (singletonComponentDescription.getConcurrencyManagementType() == ConcurrencyManagementType.BEAN) {
                     return;
                 }
-                configuration.addComponentInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR, false);
+                configuration.addViewInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.View.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
             }
         });
     }
