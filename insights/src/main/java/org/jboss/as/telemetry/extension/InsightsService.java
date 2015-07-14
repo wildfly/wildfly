@@ -32,8 +32,7 @@ import static org.jboss.as.insights.logger.InsightsLogger.ROOT_LOGGER;
  */
 public class InsightsService implements Service<InsightsService> {
 
-    // public static final long MILLISECOND_TO_DAY = 86400000;
-    public static final long MILLISECOND_TO_DAY = 1; // for testing purposes
+    public static final long MILLISECOND_TO_DAY = 86400000;
 
     private static volatile InsightsService instance;
 
