@@ -1,6 +1,6 @@
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.telemetry">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.insights">
     <resources>
-        <resource-root path="jboss-as-telemetry.jar"/>
+        <resource-root path="jboss-as-insights.jar"/>
     </resources>
     
     <dependencies>

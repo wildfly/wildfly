@@ -33,8 +33,8 @@
     	<relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-telemetry</artifactId>
-    <name>WildFly: Telemetry</name>
+    <artifactId>wildfly-insights</artifactId>
+    <name>WildFly: Insights</name>
 
     <dependencies>
 	<dependency>
@@ -162,17 +162,17 @@
 
                                 <delete dir="target/module" />
                                 <property name="module.dir" value="target/module/${module.path}/main" />
-                				<property name="wildfly_dir" value="../build/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/telemetry/main" />
-                				<property name="dist_dir" value="../dist/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/telemetry/main" />
+                				<property name="wildfly_dir" value="../build/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/insights/main" />
+                				<property name="dist_dir" value="../dist/target/${server.output.dir.prefix}-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/insights/main" />
 
                                 <copy file="src/main/resources/module/main/module.xml" tofile="${module.dir}/module.xml" />
-                                <copy file="target/${project.artifactId}.jar" tofile="${module.dir}/jboss-as-telemetry.jar" />
+                                <copy file="target/${project.artifactId}.jar" tofile="${module.dir}/jboss-as-insights.jar" />
 
                 				<copy file="src/main/resources/module/main/module.xml" tofile="${wildfly_dir}/module.xml" />
-                                <copy file="target/${project.artifactId}.jar" tofile="${wildfly_dir}/jboss-as-telemetry.jar" />
+                                <copy file="target/${project.artifactId}.jar" tofile="${wildfly_dir}/jboss-as-insights.jar" />
 
                 				<copy file="src/main/resources/module/main/module.xml" tofile="${dist_dir}/module.xml" />
-                                <copy file="target/${project.artifactId}.jar" tofile="${dist_dir}/jboss-as-telemetry.jar" />
+                                <copy file="target/${project.artifactId}.jar" tofile="${dist_dir}/jboss-as-insights.jar" />
 
                                 <echo>Module ${module.name} has been created in the target/module directory. Copy to your WildFly installation.</echo>
                             </target>

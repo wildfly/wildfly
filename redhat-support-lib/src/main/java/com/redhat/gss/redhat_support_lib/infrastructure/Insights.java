@@ -20,14 +20,14 @@ import com.redhat.gss.redhat_support_lib.web.ConnectionManager;
 
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 
-public class Telemetries {
+public class Insights {
 
     private ConnectionManager connectionManager = null;
 
     public static final String MACHINE_ID = "machine_id";
     public static final String HOSTNAME = "hostname";
 
-    public Telemetries(ConnectionManager connectionManager) {
+    public Insights(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
     }
 

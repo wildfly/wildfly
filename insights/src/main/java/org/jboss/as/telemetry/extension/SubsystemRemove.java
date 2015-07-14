@@ -1,4 +1,4 @@
-package org.jboss.as.telemetry.extension;
+package org.jboss.as.insights.extension;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 

@@ -1,4 +1,4 @@
-package org.jboss.as.telemetry.extension;
+package org.jboss.as.insights.extension;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -25,8 +25,8 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
     /** {@inheritDoc} */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        TelemetrySubsystemDefinition.FREQUENCY.validateAndSet(operation, model);
-        TelemetrySubsystemDefinition.ENABLED.validateAndSet(operation, model);
+        InsightsSubsystemDefinition.FREQUENCY.validateAndSet(operation, model);
+        InsightsSubsystemDefinition.ENABLED.validateAndSet(operation, model);
     }
 
     /** {@inheritDoc} */
@@ -34,10 +34,10 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
 
-        long frequency = TelemetrySubsystemDefinition.FREQUENCY.resolveModelAttribute(context, model).asLong();
-        boolean enabled = TelemetrySubsystemDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
-        TelemetryService service = TelemetryService.getInstance(frequency, enabled);
-        ServiceName name = TelemetryService.createServiceName();
+        long frequency = InsightsSubsystemDefinition.FREQUENCY.resolveModelAttribute(context, model).asLong();
+        boolean enabled = InsightsSubsystemDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
+        InsightsService service = InsightsService.getInstance(frequency, enabled);
+        ServiceName name = InsightsService.createServiceName();
         ServiceRegistry registry = context.getServiceRegistry(false);
         JdrReportCollector jdrCollector = JdrReportCollector.class.cast(registry.getRequiredService(JdrReportService.SERVICE_NAME).getValue());
         service.setJdrReportCollector(jdrCollector);

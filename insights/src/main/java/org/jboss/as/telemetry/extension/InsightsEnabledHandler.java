@@ -1,4 +1,4 @@
-package org.jboss.as.telemetry.extension;
+package org.jboss.as.insights.extension;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
@@ -8,22 +8,21 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:jkinlaw@redhat.com">Josh Kinlaw</a>
  */
-public class TelemetryFrequencyHandler extends AbstractWriteAttributeHandler<Void> {
+public class InsightsEnabledHandler extends AbstractWriteAttributeHandler<Void> {
 
-    public static final TelemetryFrequencyHandler INSTANCE = new TelemetryFrequencyHandler();
+    public static final InsightsEnabledHandler INSTANCE = new InsightsEnabledHandler();
 
-    private TelemetryFrequencyHandler() {
-        super(TelemetrySubsystemDefinition.FREQUENCY);
+    private InsightsEnabledHandler() {
+        super(InsightsSubsystemDefinition.ENABLED);
     }
 
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
             ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-        if (attributeName.equals(TelemetryExtension.FREQUENCY)) {
-            TelemetryService service = (TelemetryService) context.getServiceRegistry(true).getRequiredService(TelemetryService.createServiceName()).getValue();
-            service.setFrequency(resolvedValue.asLong());
+        if (attributeName.equals(InsightsExtension.ENABLED)) {
+            InsightsService service = (InsightsService) context.getServiceRegistry(true).getRequiredService(InsightsService.createServiceName()).getValue();
+            service.setEnabled(resolvedValue.asBoolean());
             context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
         }
-
         return false;
     }
 

@@ -1,4 +1,4 @@
-package org.jboss.as.telemetry.extension;
+package org.jboss.as.insights.extension;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -11,30 +11,30 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:jkinlaw@redhat.com">Josh Kinlaw</a>
  */
-public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
+public class InsightsSubsystemDefinition extends SimpleResourceDefinition {
 
-    public static final TelemetrySubsystemDefinition INSTANCE = new TelemetrySubsystemDefinition();
+    public static final InsightsSubsystemDefinition INSTANCE = new InsightsSubsystemDefinition();
 
     protected static final SimpleAttributeDefinition FREQUENCY =
-            new SimpleAttributeDefinitionBuilder(TelemetryExtension.FREQUENCY, ModelType.LONG)
+            new SimpleAttributeDefinitionBuilder(InsightsExtension.FREQUENCY, ModelType.LONG)
                     .setAllowExpression(true)
-                    .setXmlName(TelemetryExtension.FREQUENCY)
+                    .setXmlName(InsightsExtension.FREQUENCY)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(1000))
                     .setAllowNull(true)
                     .build();
 
     protected static final SimpleAttributeDefinition ENABLED =
-            new SimpleAttributeDefinitionBuilder(TelemetryExtension.ENABLED, ModelType.BOOLEAN)
+            new SimpleAttributeDefinitionBuilder(InsightsExtension.ENABLED, ModelType.BOOLEAN)
                     .setAllowExpression(true)
-                    .setXmlName(TelemetryExtension.ENABLED)
+                    .setXmlName(InsightsExtension.ENABLED)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .setAllowNull(true)
                     .build();
 
     protected static final SimpleAttributeDefinition RHNUID =
-            new SimpleAttributeDefinitionBuilder(TelemetryExtension.RHNUID, ModelType.STRING)
+            new SimpleAttributeDefinitionBuilder(InsightsExtension.RHNUID, ModelType.STRING)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(""))
@@ -42,7 +42,7 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleAttributeDefinition RHNPW =
-            new SimpleAttributeDefinitionBuilder(TelemetryExtension.RHNPW, ModelType.STRING)
+            new SimpleAttributeDefinitionBuilder(InsightsExtension.RHNPW, ModelType.STRING)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(""))
@@ -50,7 +50,7 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleAttributeDefinition PROXYUSER =
-            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_USER, ModelType.STRING)
+            new SimpleAttributeDefinitionBuilder(InsightsExtension.PROXY_USER, ModelType.STRING)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(""))
@@ -58,7 +58,7 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleAttributeDefinition PROXYPASSWORD =
-            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_PASSWORD, ModelType.STRING)
+            new SimpleAttributeDefinitionBuilder(InsightsExtension.PROXY_PASSWORD, ModelType.STRING)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(""))
@@ -66,7 +66,7 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleAttributeDefinition PROXYPORT =
-            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_PORT, ModelType.STRING)
+            new SimpleAttributeDefinitionBuilder(InsightsExtension.PROXY_PORT, ModelType.STRING)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(""))
@@ -74,16 +74,16 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleAttributeDefinition PROXYURL =
-            new SimpleAttributeDefinitionBuilder(TelemetryExtension.PROXY_URL, ModelType.STRING)
+            new SimpleAttributeDefinitionBuilder(InsightsExtension.PROXY_URL, ModelType.STRING)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(""))
                     .setAllowNull(true)
                     .build();
 
-    private TelemetrySubsystemDefinition() {
-        super(TelemetryExtension.SUBSYSTEM_PATH,
-                TelemetryExtension.getResourceDescriptionResolver(null),
+    private InsightsSubsystemDefinition() {
+        super(InsightsExtension.SUBSYSTEM_PATH,
+                InsightsExtension.getResourceDescriptionResolver(null),
                 //We always need to add an 'add' operation
                 SubsystemAdd.INSTANCE,
                 //Every resource that is added, normally needs a remove operation
@@ -97,7 +97,7 @@ public class TelemetrySubsystemDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(FREQUENCY, null, TelemetryFrequencyHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(ENABLED, null, TelemetryEnabledHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(FREQUENCY, null, InsightsFrequencyHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(ENABLED, null, InsightsEnabledHandler.INSTANCE);
     }
 }

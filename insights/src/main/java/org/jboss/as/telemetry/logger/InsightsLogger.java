@@ -1,4 +1,4 @@
-package org.jboss.as.telemetry.logger;
+package org.jboss.as.insights.logger;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
@@ -10,30 +10,30 @@ import org.jboss.logging.annotations.MessageLogger;
 import static org.jboss.logging.Logger.Level.*;
 
 /**
- * Telemetry logger
+ * Insights logger
  *
  * @author <a href="mailto:jkinlaw@redhat.com">Josh Kinlaw</a>
  */
 @MessageLogger(projectCode = "WFLYTELEMTRY", length = 4)
-public interface TelemetryLogger extends BasicLogger {
+public interface InsightsLogger extends BasicLogger {
     /**
-     * A logger with the category of the default telemetry package.
+     * A logger with the category of the default insights package.
      */
-    TelemetryLogger ROOT_LOGGER = Logger.getMessageLogger(
-            TelemetryLogger.class, "org.jboss.as.telemetry.extension");
+    InsightsLogger ROOT_LOGGER = Logger.getMessageLogger(
+            InsightsLogger.class, "org.jboss.as.insights.extension");
 
     /**
-     * Telemetry could not create JDR.
+     * Insights could not create JDR.
      */
     @LogMessage(level = ERROR)
     @Message(id = 1, value = "Could not generate JDR.")
     void couldNotGenerateJdr(@Cause Throwable cause);
 
     /**
-     * Telemetry thread incurred an InterruptedException.
+     * Insights thread incurred an InterruptedException.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 2, value = "Telemetry thread has been interrupted.")
+    @Message(id = 2, value = "Insights thread has been interrupted.")
     void threadInterrupted(@Cause Throwable cause);
 
     /**
@@ -43,46 +43,46 @@ public interface TelemetryLogger extends BasicLogger {
      *            new frequency value
      */
     @LogMessage(level = INFO)
-    @Message(id = 3, value = "Frequency of Telemetry Subsystem updated to %s")
+    @Message(id = 3, value = "Frequency of Insights Subsystem updated to %s")
     void frequencyUpdated(String var);
 
     /**
      * System was enabled
      */
     @LogMessage(level = INFO)
-    @Message(id = 4, value = "Telemetry Subsystem Enabled")
-    void telemetryEnabled();
+    @Message(id = 4, value = "Insights Subsystem Enabled")
+    void insightsEnabled();
 
     /**
      * System was enabled
      */
     @LogMessage(level = INFO)
-    @Message(id = 5, value = "Telemetry Subsystem Disabled")
-    void telemetryDisabled();
+    @Message(id = 5, value = "Insights Subsystem Disabled")
+    void insightsDisabled();
 
     /**
-     * Could not update/create telemetry.properties
+     * Could not update/create insights.properties
      */
     @LogMessage(level = ERROR)
-    @Message(id = 6, value = "Could not create/update telemetry.properties file with given username and password.")
+    @Message(id = 6, value = "Could not create/update insights.properties file with given username and password.")
     void couldNotCreateEditPropertiesFile(@Cause Throwable cause);
 
     /**
-     * Could not close telemetry.properties
+     * Could not close insights.properties
      */
     @LogMessage(level = ERROR)
-    @Message(id = 7, value = "Could not close telemetry.properties file.")
+    @Message(id = 7, value = "Could not close insights.properties file.")
     void couldNotClosePropertiesFile(@Cause Throwable cause);
 
     /**
-     * Could not load telemetry.properties
+     * Could not load insights.properties
      */
     @LogMessage(level = ERROR)
-    @Message(id = 8, value = "Could not load telemetry.properties file.")
+    @Message(id = 8, value = "Could not load insights.properties file.")
     void couldNotLoadPropertiesFile(@Cause Throwable cause);
 
     /**
-     * Could not load telemetry.properties
+     * Could not load insights.properties
      */
     @LogMessage(level = ERROR)
     @Message(id = 9, value = "Could not register system with Insights")
@@ -106,7 +106,7 @@ public interface TelemetryLogger extends BasicLogger {
      * Could not start thread
      */
     @LogMessage(level = ERROR)
-    @Message(id = 12, value = "Could not start Telemetry thread")
+    @Message(id = 12, value = "Could not start Insights thread")
     void couldNotStartThread(@Cause Throwable cause);
 
     /**

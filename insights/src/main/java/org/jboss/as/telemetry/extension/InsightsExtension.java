@@ -1,4 +1,4 @@
-package org.jboss.as.telemetry.extension;
+package org.jboss.as.insights.extension;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -29,7 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 /**
  * @author <a href="jkinlaw@redhat.com">Josh Kinlaw</a>
  */
-public class TelemetryExtension implements Extension {
+public class InsightsExtension implements Extension {
 
     protected static final String ENABLED = "enabled";
     protected static final String FREQUENCY = "frequency";
@@ -39,18 +39,18 @@ public class TelemetryExtension implements Extension {
     public static final String PROXY_PASSWORD = "proxyPassword";
     public static final String PROXY_URL = "proxyUrl";
     public static final String PROXY_PORT = "proxyPort";
-    protected static final String TYPE = "telemetryType";
+    protected static final String TYPE = "insightsType";
     protected static final PathElement TYPE_PATH = PathElement.pathElement(TYPE);
 
     /**
      * The name space used for the {@code subsystem} element
      */
-    public static final String NAMESPACE = "urn:org.jboss.as.telemetry:1.0";;
+    public static final String NAMESPACE = "urn:org.jboss.as.insights:1.0";;
 
     /**
      * The name of our subsystem within the model.
      */
-    public static final String SUBSYSTEM_NAME = "telemetry";
+    public static final String SUBSYSTEM_NAME = "insights";
 
     /**
      * Version of the subsystem used for registering
@@ -63,11 +63,11 @@ public class TelemetryExtension implements Extension {
     private final SubsystemParser parser = new SubsystemParser();
 
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
-    private static final String RESOURCE_NAME = TelemetryExtension.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = InsightsExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         String prefix = SUBSYSTEM_NAME + (keyPrefix == null ? "" : "." + keyPrefix);
-        return new StandardResourceDescriptionResolver(prefix, RESOURCE_NAME, TelemetryExtension.class.getClassLoader(), true, true);
+        return new StandardResourceDescriptionResolver(prefix, RESOURCE_NAME, InsightsExtension.class.getClassLoader(), true, true);
     }
 
     @Override
@@ -78,10 +78,10 @@ public class TelemetryExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ModelVersion.create(MAJOR_VERSION));
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(TelemetrySubsystemDefinition.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(InsightsSubsystemDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         if (context.isRuntimeOnlyRegistrationValid()) {
-            registration.registerOperationHandler(TelemetryRequestHandler.DEFINITION, TelemetryRequestHandler.INSTANCE);
+            registration.registerOperationHandler(InsightsRequestHandler.DEFINITION, InsightsRequestHandler.INSTANCE);
         }
         subsystem.registerXMLElementWriter(parser);
     }
@@ -108,7 +108,7 @@ public class TelemetryExtension implements Extension {
          */
         @Override
         public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(TelemetryExtension.NAMESPACE, false);
+            context.startSubsystemElement(InsightsExtension.NAMESPACE, false);
             writer.writeEndElement();
         }
     }

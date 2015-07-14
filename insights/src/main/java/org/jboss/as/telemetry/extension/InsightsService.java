@@ -1,4 +1,4 @@
-package org.jboss.as.telemetry.extension;
+package org.jboss.as.insights.extension;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,21 +25,22 @@ import org.jboss.msc.service.StopContext;
 import com.redhat.gss.redhat_support_lib.errors.RequestException;
 import com.redhat.gss.redhat_support_lib.api.API;
 
-import static org.jboss.as.telemetry.logger.TelemetryLogger.ROOT_LOGGER;
+import static org.jboss.as.insights.logger.InsightsLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:jkinlaw@redhat.com">Josh Kinlaw</a>
  */
-public class TelemetryService implements Service<TelemetryService> {
+public class InsightsService implements Service<InsightsService> {
 
-    // public static final long MILLISECOND_TO_DAY = 86400000;
-    public static final long MILLISECOND_TO_DAY = 1; // for testing purposes
+    public static final long MILLISECOND_TO_DAY = 86400000;
+
+    private static volatile InsightsService instance;
 
     public static final String JBOSS_PROPERTY_DIR = "jboss.server.data.dir";
 
-    public static final String TELEMETRY_PROPERTY_FILE_NAME = "telemetry.properties";
+    public static final String TELEMETRY_PROPERTY_FILE_NAME = "insights.properties";
 
-    public static final String TELEMETRY_DESCRIPTION = "Properties file consisting of RHN login information and telemetry/insights URL";
+    public static final String TELEMETRY_DESCRIPTION = "Properties file consisting of RHN login information and insights/insights URL";
 
     public static final String DEFAULT_BASE_URL = "https://api.access.redhat.com";
     public static final String DEFAULT_TELEMETRY_ENDPOINT = "/r/insights/v1/uploads/";
@@ -53,7 +54,7 @@ public class TelemetryService implements Service<TelemetryService> {
     public static final String URL = "url";
     public static final String USER_AGENT = "userAgent";
     public static final String BASE_URI = "baseUri";
-    public static final String TELEMETRY_ENDPOINT = "telemetryEndpoint";
+    public static final String TELEMETRY_ENDPOINT = "insightsEndpoint";
     public static final String SYSTEM_ENDPOINT = "systemEndpoint";
 
     public static final String JDR_DESCRIPTION = "JDR for UUID {uuid}";
@@ -61,9 +62,9 @@ public class TelemetryService implements Service<TelemetryService> {
     /**
      * Endpoint of url which when added to the end of the url reveals the
      * location of where to send the JDR Should take the format of
-     * /telemetry/endpoint/
+     * /insights/endpoint/
      */
-    private String telemetryEndpoint;
+    private String insightsEndpoint;
 
     /**
      * Endponit of url which when added to the end of the url reveals the
@@ -85,17 +86,17 @@ public class TelemetryService implements Service<TelemetryService> {
 
     private API api;
 
-    private TelemetryService(long tick, boolean enabled) {
+    private InsightsService(long tick, boolean enabled) {
         this.frequency = tick;
         this.enabled = enabled;
         setConnectionManager();
     }
 
-    public static TelemetryService getInstance(long tick, boolean enabled) {
+    public static InsightsService getInstance(long tick, boolean enabled) {
         if (instance == null) {
-            synchronized (TelemetryService.class) {
+            synchronized (InsightsService.class) {
                 if (instance == null) {
-                    instance = new TelemetryService(tick, enabled);
+                    instance = new InsightsService(tick, enabled);
                 }
             }
         } else {
@@ -131,7 +132,7 @@ public class TelemetryService implements Service<TelemetryService> {
     }
 
     @Override
-    public TelemetryService getValue() throws IllegalStateException,
+    public InsightsService getValue() throws IllegalStateException,
             IllegalArgumentException {
         return this;
     }
@@ -162,7 +163,7 @@ public class TelemetryService implements Service<TelemetryService> {
                 Properties properties = new Properties();
                 fis = new FileInputStream(file.getPath());
                 properties.load(fis);
-                properties.setProperty(TelemetryExtension.FREQUENCY, ""
+                properties.setProperty(InsightsExtension.FREQUENCY, ""
                         + frequency);
                 fileOut = new FileOutputStream(file);
                 properties.store(fileOut, TELEMETRY_DESCRIPTION);
@@ -193,7 +194,7 @@ public class TelemetryService implements Service<TelemetryService> {
 
     public static ServiceName createServiceName() {
         return ServiceName.JBOSS
-                .append(org.jboss.as.telemetry.extension.TelemetryExtension.SUBSYSTEM_NAME);
+                .append(org.jboss.as.insights.extension.InsightsExtension.SUBSYSTEM_NAME);
     }
 
     public boolean getEnabled() {
@@ -203,7 +204,7 @@ public class TelemetryService implements Service<TelemetryService> {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         if (enabled && (output == null || !output.isAlive())) {
-            ROOT_LOGGER.telemetryEnabled();
+            ROOT_LOGGER.insightsEnabled();
             output = initializeOutput();
             try {
                 this.start(null);
@@ -211,7 +212,7 @@ public class TelemetryService implements Service<TelemetryService> {
                 ROOT_LOGGER.couldNotStartThread(e);
             }
         } else if (!enabled) {
-            ROOT_LOGGER.telemetryDisabled();
+            ROOT_LOGGER.insightsDisabled();
         }
         synchronized (output) {
             output.notify();
@@ -241,13 +242,13 @@ public class TelemetryService implements Service<TelemetryService> {
     private File getPropertiesFile() {
         String jbossConfig = System.getProperty(JBOSS_PROPERTY_DIR);
         String propertiesFilePath = jbossConfig + File.separator
-                + TelemetryExtension.SUBSYSTEM_NAME + File.separator
+                + InsightsExtension.SUBSYSTEM_NAME + File.separator
                 + TELEMETRY_PROPERTY_FILE_NAME;
         return new File(propertiesFilePath);
     }
 
     /**
-     * Set RHN login credentials and write to telemetry config file
+     * Set RHN login credentials and write to insights config file
      *
      * @param rhnUid
      * @param rhnPw
@@ -277,13 +278,13 @@ public class TelemetryService implements Service<TelemetryService> {
                 properties
                         .setProperty(SYSTEM_ENDPOINT, DEFAULT_SYSTEM_ENDPOINT);
             }
-            if (!properties.containsKey(TelemetryExtension.FREQUENCY)) {
-                properties.setProperty(TelemetryExtension.FREQUENCY, ""
+            if (!properties.containsKey(InsightsExtension.FREQUENCY)) {
+                properties.setProperty(InsightsExtension.FREQUENCY, ""
                         + frequency);
             }
-            if (!properties.containsKey(TelemetryExtension.ENABLED)) {
+            if (!properties.containsKey(InsightsExtension.ENABLED)) {
                 properties
-                        .setProperty(TelemetryExtension.ENABLED, "" + enabled);
+                        .setProperty(InsightsExtension.ENABLED, "" + enabled);
             }
             properties.setProperty(USERNAME, rhnUid);
             properties.setProperty(PASSWORD, rhnPw);
@@ -323,8 +324,8 @@ public class TelemetryService implements Service<TelemetryService> {
                 fis = new FileInputStream(file.getPath());
                 properties.load(fis);
             }
-            properties.setProperty(TelemetryExtension.PROXY_PORT, proxyPort);
-            properties.setProperty(TelemetryExtension.PROXY_URL, proxyUrl);
+            properties.setProperty(InsightsExtension.PROXY_PORT, proxyPort);
+            properties.setProperty(InsightsExtension.PROXY_URL, proxyUrl);
             fileOut = new FileOutputStream(file);
             properties.store(fileOut, TELEMETRY_DESCRIPTION);
         } catch (IOException e) {
@@ -361,8 +362,8 @@ public class TelemetryService implements Service<TelemetryService> {
                 fis = new FileInputStream(file.getPath());
                 properties.load(fis);
             }
-            properties.setProperty(TelemetryExtension.PROXY_PASSWORD, proxyPwd);
-            properties.setProperty(TelemetryExtension.PROXY_USER, proxyUser);
+            properties.setProperty(InsightsExtension.PROXY_PASSWORD, proxyPwd);
+            properties.setProperty(InsightsExtension.PROXY_USER, proxyUser);
             fileOut = new FileOutputStream(file);
             properties.store(fileOut, TELEMETRY_DESCRIPTION);
         } catch (IOException e) {
@@ -397,7 +398,7 @@ public class TelemetryService implements Service<TelemetryService> {
         String userAgent = null;
         String jbossConfig = System.getProperty(JBOSS_PROPERTY_DIR);
         String propertiesFilePath = jbossConfig + File.separator
-                + TelemetryExtension.SUBSYSTEM_NAME + File.separator
+                + InsightsExtension.SUBSYSTEM_NAME + File.separator
                 + TELEMETRY_PROPERTY_FILE_NAME;
         Properties properties = new Properties();
         FileInputStream fis = null;
@@ -410,7 +411,7 @@ public class TelemetryService implements Service<TelemetryService> {
                 username = properties.getProperty(USERNAME);
                 password = properties.getProperty(PASSWORD);
                 url = properties.getProperty(URL);
-                telemetryEndpoint = properties.getProperty(TELEMETRY_ENDPOINT);
+                insightsEndpoint = properties.getProperty(TELEMETRY_ENDPOINT);
                 systemEndpoint = properties.getProperty(SYSTEM_ENDPOINT);
                 api = new API(propertiesFilePath);
                 // this.connectionManager = new ConnectionManager(
@@ -436,12 +437,12 @@ public class TelemetryService implements Service<TelemetryService> {
         String systemUrl = "";
         try {
             systemUrl = systemEndpoint;
-            Response response = api.getTelemetries().get(systemUrl + uuid);
+            Response response = api.getInsights().get(systemUrl + uuid);
             com.redhat.gss.redhat_support_lib.infrastructure.System system = response
                     .readEntity(com.redhat.gss.redhat_support_lib.infrastructure.System.class);
             // if system is unregistered then attempt to register system
             if (system.getUnregistered_at() != null) {
-                api.getTelemetries().addSystem(systemUrl, uuid,
+                api.getInsights().addSystem(systemUrl, uuid,
                         InetAddress.getLocalHost().getHostName());
             }
         } catch (RequestException e) {
@@ -449,7 +450,7 @@ public class TelemetryService implements Service<TelemetryService> {
             if (e.getMessage().contains(
                     "" + Response.Status.NOT_FOUND.getStatusCode())) {
                 try {
-                    api.getTelemetries().addSystem(systemUrl, uuid,
+                    api.getInsights().addSystem(systemUrl, uuid,
                             InetAddress.getLocalHost().getHostName());
                 } catch (RequestException exception) {
                     ROOT_LOGGER.couldNotRegisterSystem(exception);
@@ -467,7 +468,7 @@ public class TelemetryService implements Service<TelemetryService> {
             ROOT_LOGGER.couldNotFindSystem(e);
         }
         try {
-            api.getTelemetries().upload((telemetryEndpoint + uuid), file,
+            api.getInsights().upload((insightsEndpoint + uuid), file,
                     description);
         } catch (FileNotFoundException e) {
             wasSuccessful = false;
