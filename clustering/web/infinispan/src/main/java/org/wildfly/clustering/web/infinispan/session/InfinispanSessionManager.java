@@ -94,6 +94,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     private final boolean persistent;
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
     private final SessionIdentifierFilter filter = new SessionIdentifierFilter();
+    private final Statistics statistics = new SimpleStatistics();
 
     volatile CommandDispatcher<Scheduler> dispatcher;
     private volatile Scheduler scheduler;
@@ -162,6 +163,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         this.dispatcher.close();
         this.scheduler.close();
         this.identifierFactory.stop();
+        this.statistics.reset();
     }
 
     boolean isPersistent() {
@@ -281,6 +283,16 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
             }
         }
         return result;
+    }
+
+    @Override
+    public int getMaxActiveSessions() {
+        return this.maxActiveSessions;
+    }
+
+    @Override
+    public Statistics getStatistics() {
+        return this.statistics;
     }
 
     @CacheEntryActivated
@@ -421,6 +433,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
         @Override
         public SessionMetaData getMetaData() {
+            if (!this.isValid()) {
+                throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
+            }
             return this.session.getMetaData();
         }
 
@@ -436,6 +451,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
         @Override
         public SessionAttributes getAttributes() {
+            if (!this.isValid()) {
+                throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
+            }
             return this.session.getAttributes();
         }
 

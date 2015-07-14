@@ -35,6 +35,7 @@ import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
  */
 public class SimpleSessionMetaDataExternalizer extends AbstractSimpleExternalizer<SimpleSessionMetaData> {
     private static final long serialVersionUID = 1371677643229192026L;
+    private static final TimeUnit SERIALIZED_UNIT = TimeUnit.SECONDS;
 
     public SimpleSessionMetaDataExternalizer() {
         super(SimpleSessionMetaData.class);
@@ -44,14 +45,14 @@ public class SimpleSessionMetaDataExternalizer extends AbstractSimpleExternalize
     public void writeObject(ObjectOutput output, SimpleSessionMetaData metaData) throws IOException {
         output.writeLong(metaData.getCreationTime().getTime());
         output.writeLong(metaData.getLastAccessedTime().getTime());
-        output.writeInt((int) metaData.getMaxInactiveInterval(TimeUnit.SECONDS));
+        output.writeInt((int) metaData.getMaxInactiveInterval(SERIALIZED_UNIT));
     }
 
     @Override
     public SimpleSessionMetaData readObject(ObjectInput input) throws IOException {
         Date creationTime = new Date(input.readLong());
         Date lastAccessedTime = new Date(input.readLong());
-        Time maxInactiveInterval = new Time(input.readInt(), TimeUnit.SECONDS);
+        Time maxInactiveInterval = new Time(input.readInt(), SERIALIZED_UNIT);
         return new SimpleSessionMetaData(creationTime, lastAccessedTime, maxInactiveInterval);
     }
 }

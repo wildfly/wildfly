@@ -94,4 +94,14 @@ public interface SessionManager<L, B extends Batch> extends IdentifierFactory<St
      * @return a read-only session or null if none exists
      */
     ImmutableSession viewSession(String id);
+
+    /**
+     * @return the maximum number of active sessions allowed by this session manager
+     */
+    int getMaxActiveSessions();
+
+    /**
+     * @return statistics for this session manager
+     */
+    Statistics getStatistics();
 }
