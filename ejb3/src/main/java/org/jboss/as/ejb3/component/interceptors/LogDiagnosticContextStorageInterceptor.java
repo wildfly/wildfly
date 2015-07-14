@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.component.interceptors;
 
 import static org.jboss.as.ejb3.component.interceptors.StoredLogDiagnosticContext.KEY;
 
+import java.util.Map;
+
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -62,8 +64,9 @@ public final class LogDiagnosticContextStorageInterceptor implements Interceptor
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        if(MDC.getMap() != null){
-            context.putPrivateData(KEY, new StoredLogDiagnosticContext(MDC.getMap(), NDC.get()));
+        final Map<String, Object> mdc = MDC.getMap();
+        if(mdc != null){
+            context.putPrivateData(KEY, new StoredLogDiagnosticContext(mdc, NDC.get()));
             try {
                 return context.proceed();
             } finally {
