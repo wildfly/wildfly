@@ -42,6 +42,7 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.inject.InjectionException;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -753,4 +754,12 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 70, value = "A container-managed extended persistence context can only be initiated within the scope of a stateful session bean (persistence unit '%s').")
     IllegalStateException xpcOnlyFromSFSB(String scopedPuName);
 
+    /**
+     * Likely means that the transaction manager does not implement the org.jboss.tm.listener.TransactionListenerRegistry class.
+     *
+     * @param cause the cause of the error.
+     * @return
+     */
+    @Message(id = 71, value = "Could not obtain TransactionListenerRegistry from transaction manager")
+    InjectionException errorGettingTransactionListenerRegistry(@Cause Throwable cause);
 }
