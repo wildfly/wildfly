@@ -265,6 +265,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void parseTransport(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, Attribute.TYPE);
@@ -470,6 +471,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void parseRemoteSite(XMLExtendedStreamReader reader, PathAddress relayAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         String site = require(reader, Attribute.NAME);
         PathAddress address = relayAddress.append(RemoteSiteResourceDefinition.pathElement(site));
