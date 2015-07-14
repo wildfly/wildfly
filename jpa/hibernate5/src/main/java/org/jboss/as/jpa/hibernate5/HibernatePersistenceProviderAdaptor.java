@@ -44,6 +44,7 @@ import org.jipijapa.plugin.spi.TwoPhaseBootstrapCapable;
  */
 public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor, TwoPhaseBootstrapCapable {
 
+    public static final String NAMING_STRATEGY_JPA_COMPLIANT_IMPL = "org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl";
     private volatile JtaManager jtaManager;
     private volatile Platform platform;
     private static final String SHARED_CACHE_MODE = "javax.persistence.sharedCache.mode";
@@ -54,22 +55,6 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         if (this.jtaManager != jtaManager) {
             this.jtaManager = jtaManager;
         }
-
-        // TODO: resolve http://lists.jboss.org/pipermail/hibernate-dev/2013-July/010140.html which seems to be a
-        // Hibernate service loader related leak and uncomment the following)
-        // also remove the appServerJtaPlatform and stop setting AvailableSettings.JTA_PLATFORM
-/*
-        // specify JTA integration to use with Hibernate
-        if (DefaultJtaPlatform.getDelegate() == null ||
-                DefaultJtaPlatform.getDelegate().getJtaManager() != jtaManager) {
-            synchronized (DefaultJtaPlatform.class) {
-                if (DefaultJtaPlatform.getDelegate() == null ||
-                    DefaultJtaPlatform.getDelegate().getJtaManager() != jtaManager) {
-                    DefaultJtaPlatform.setDelegate(new JBossAppServerJtaPlatform(jtaManager));
-                }
-            }
-        }
-*/
     }
 
     @Override
@@ -84,6 +69,8 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
         putPropertyIfAbsent(pu, properties, AvailableSettings.JPAQL_STRICT_COMPLIANCE, "true"); // JIPI-24 ignore jpql aliases case
         putPropertyIfAbsent(pu, properties, AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
+        putPropertyIfAbsent(pu, properties, AvailableSettings.KEYWORD_AUTO_QUOTING_ENABLED,"false");
+        putPropertyIfAbsent(pu, properties, AvailableSettings.IMPLICIT_NAMING_STRATEGY, NAMING_STRATEGY_JPA_COMPLIANT_IMPL);
         putPropertyIfAbsent(pu, properties, org.hibernate.ejb.AvailableSettings.SCANNER, HibernateArchiveScanner.class);
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
         putPropertyIfAbsent(pu, properties, AvailableSettings.JTA_PLATFORM,  new JBossAppServerJtaPlatform(jtaManager));
