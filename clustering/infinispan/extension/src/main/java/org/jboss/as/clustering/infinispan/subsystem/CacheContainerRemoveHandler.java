@@ -48,7 +48,7 @@ public class CacheContainerRemoveHandler extends AbstractRemoveStepHandler {
             if (model.hasDefined(type.pathElement().getKey())) {
                 for (Property property: model.get(type.pathElement().getKey()).asPropertyList()) {
                     ModelNode removeOperation = Util.createRemoveOperation(address.append(type.pathElement(property.getName())));
-                    addHandler.removeRuntimeServices(context, removeOperation, model, property.getValue());
+                    addHandler.removeRuntimeServices(context, removeOperation);
                 }
             }
         }
