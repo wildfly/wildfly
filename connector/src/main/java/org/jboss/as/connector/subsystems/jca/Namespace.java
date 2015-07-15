@@ -38,12 +38,14 @@ public enum Namespace {
 
     JCA_2_0("urn:jboss:domain:jca:2.0"),
 
-    JCA_3_0("urn:jboss:domain:jca:3.0");
+    JCA_3_0("urn:jboss:domain:jca:3.0"),
+
+    JCA_4_0("urn:jboss:domain:jca:4.0");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = JCA_3_0;
+    public static final Namespace CURRENT = JCA_4_0;
 
     private final String name;
 
