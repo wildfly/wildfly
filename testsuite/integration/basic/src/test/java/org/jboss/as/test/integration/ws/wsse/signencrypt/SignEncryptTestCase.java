@@ -37,6 +37,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
@@ -55,6 +56,7 @@ import org.jboss.as.test.integration.ws.wsse.ServiceIface;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-4901")
 public class SignEncryptTestCase {
 
     private static Logger log = Logger.getLogger(SignEncryptTestCase.class.getName());

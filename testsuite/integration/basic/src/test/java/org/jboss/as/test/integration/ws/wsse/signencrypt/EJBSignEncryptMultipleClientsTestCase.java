@@ -59,6 +59,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-4901")
 public class EJBSignEncryptMultipleClientsTestCase {
 
     private static Logger log = Logger.getLogger(EJBSignEncryptMultipleClientsTestCase.class.getName());
