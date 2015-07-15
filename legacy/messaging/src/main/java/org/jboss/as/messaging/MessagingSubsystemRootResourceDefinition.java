@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
@@ -38,4 +39,13 @@ public class MessagingSubsystemRootResourceDefinition extends ModelOnlyResourceD
                 MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME));
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+
+        MigrateOperation.registerOperations(resourceRegistration, getResourceDescriptionResolver());
+    }
+
+
 }

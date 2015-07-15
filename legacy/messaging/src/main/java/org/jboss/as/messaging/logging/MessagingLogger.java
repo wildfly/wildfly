@@ -799,4 +799,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 78, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
     IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
+
+    @Message(id = 79, value = "The migrate operation can not be performed: the server must be in admin-only mode")
+    OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
 }
