@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -80,7 +81,7 @@ public class DataSourceDisable implements OperationStepHandler {
 
                         final ServiceRegistry registry = context.getServiceRegistry(true);
 
-                        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+                        final ServiceName dataSourceServiceName = context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY_NAME, dsName, DataSource.class);
                         final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
                         if (dataSourceController != null) {
                             if (ServiceController.State.UP.equals(dataSourceController.getState())) {

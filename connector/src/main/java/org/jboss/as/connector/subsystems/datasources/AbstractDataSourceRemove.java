@@ -51,6 +51,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
     private AbstractDataSourceAdd addHandler;
 
     protected AbstractDataSourceRemove(final AbstractDataSourceAdd addHandler) {
+        super(Capabilities.DATA_SOURCE_CAPABILITY);
         this.addHandler = addHandler;
     }
 
@@ -101,7 +102,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
             context.removeService(xaDataSourceConfigServiceName);
         }
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceName = Capabilities.DATA_SOURCE_CAPABILITY.getCapabilityServiceName(dsName);
         final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
         if (dataSourceController != null) {
             context.removeService(dataSourceServiceName);
@@ -122,7 +123,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        addHandler.performRuntime(context, operation, /* resource (unused there anyway) */ null, model);
+        addHandler.performRuntime(context, operation, model);
 
         boolean enabled = ! operation.hasDefined(ENABLED.getName()) || ENABLED.resolveModelAttribute(context, model).asBoolean();
         if (context.isNormalServer() && enabled) {

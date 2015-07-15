@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -350,7 +349,7 @@ public class Constants {
             .setAllowExpression(true)
             .build();
 
-    static SimpleAttributeDefinition CONNECTION_PROPERTIES = new SimpleAttributeDefinitionBuilder(CONNECTION_PROPERTIES_NAME, ModelType.STRING, true)
+    static final PropertiesAttributeDefinition CONNECTION_PROPERTIES = new PropertiesAttributeDefinition.Builder(CONNECTION_PROPERTIES_NAME, true)
             .setXmlName(DataSource.Tag.CONNECTION_PROPERTY.getLocalName())
             .setAllowExpression(true)
             .build();
@@ -586,7 +585,7 @@ public class Constants {
             USERNAME, PASSWORD, SECURITY_DOMAIN,
             REAUTH_PLUGIN_CLASSNAME,
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY,
-            ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS, CONNECTION_PROPERTIES,
+            ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS,
             PREPARED_STATEMENTS_CACHE_SIZE,
             SHARE_PREPARED_STATEMENTS,
             TRACK_STATEMENTS,
@@ -612,6 +611,7 @@ public class Constants {
             EXCEPTION_SORTER_PROPERTIES,
             STALE_CONNECTION_CHECKER_PROPERTIES,
             VALID_CONNECTION_CHECKER_PROPERTIES, CONNECTION_LISTENER_PROPERTIES,
+            CONNECTION_PROPERTIES,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
 
     };
@@ -694,7 +694,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
     };
 
-    static SimpleAttributeDefinition XADATASOURCE_PROPERTIES = new SimpleAttributeDefinitionBuilder(XADATASOURCEPROPERTIES_NAME, ModelType.STRING, false)
+    static final PropertiesAttributeDefinition XADATASOURCE_PROPERTIES = new PropertiesAttributeDefinition.Builder(XADATASOURCEPROPERTIES_NAME, false)
             .setXmlName(XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName())
             .setAllowExpression(true)
             .build();
