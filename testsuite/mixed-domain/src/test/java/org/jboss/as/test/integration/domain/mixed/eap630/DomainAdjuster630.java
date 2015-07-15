@@ -182,7 +182,9 @@ public class DomainAdjuster630 extends DomainAdjuster {
 
     private Collection<? extends ModelNode> removeIo(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
-        //io and extension don't exist
+        //io and extension don't exist so remove them
+        //We also must remove the remoting requirement for io worker capability
+        list.add(createRemoveOperation(subsystem.getParent().append(SUBSYSTEM, "remoting").append("configuration", "endpoint")));
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.io")));
         return list;
@@ -244,7 +246,9 @@ public class DomainAdjuster630 extends DomainAdjuster {
     private Collection<? extends ModelNode> adjustRemoting(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
         //The endpoint configuration does not exist
-        list.add(createRemoveOperation(subsystem.append("configuration", "endpoint")));
+        // BES 2015/07/15 -- this is done in removeIO now so the io worker capability and the requirement for it
+        // both go in the same op
+        //list.add(createRemoveOperation(subsystem.append("configuration", "endpoint")));
 
         //Replace the http-remoting connector with a normal remoting-connector. This needs the remoting socket binding,
         //so add that too
