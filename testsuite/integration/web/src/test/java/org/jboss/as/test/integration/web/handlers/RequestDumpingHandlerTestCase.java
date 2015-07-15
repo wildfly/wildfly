@@ -121,6 +121,9 @@ public class RequestDumpingHandlerTestCase {
         }
     }
 
+    private final int TOTAL_DELAY = 3000;
+    private final int SLEEP_TIMEOUT = 200;
+
     private static Logger log = Logger.getLogger(RequestDumpingHandlerTestCase.class);
 
     /** Path to custom server log file. */
@@ -233,7 +236,7 @@ public class RequestDumpingHandlerTestCase {
         StringBuilder sb = new StringBuilder();
 
         while (scanner.hasNextLine()) {
-            sb.append(scanner.nextLine());
+            sb.append("\n" + scanner.nextLine());
         }
         scanner.close();
 
@@ -241,22 +244,42 @@ public class RequestDumpingHandlerTestCase {
     }
 
     /**
-     * Searching log for request dump of request to particular path.
+     * Searching log for request dump of request to particular path. If no such request dump is found there is sanity loop to
+     * ensure that system has had enough time to write data to the disk.
      * 
      * @param logFilePath path to log file
      * @param path URI path searched for in log file
      * @param expected whether we expect to find given path
      * @throws FileNotFoundException
      */
-    private void testLogForDumpWithURL(Path logFilePath, String path, boolean expected) throws FileNotFoundException {
-        String content = readLogFile(logFilePath);
-
+    private void testLogForDumpWithURL(Path logFilePath, String path, boolean expected) throws Exception {
         Pattern pattern = Pattern.compile("-+REQUEST-+.+" + path + ".+-+RESPONSE-+", Pattern.DOTALL);
-        Matcher m = pattern.matcher(content);
+        Matcher m;
 
-        // Search for pattern...
+        long startTime = System.currentTimeMillis();
+        boolean hasFound = false;
+        long currTime;
+        String content;
+
+        // Give system time to write data on disk...
+        do {
+            currTime = System.currentTimeMillis();
+            content = readLogFile(logFilePath);
+            m = pattern.matcher(content);
+
+            // Search for pattern...
+            if (m.find()) {
+                hasFound = true;
+                break;
+            }
+            Thread.sleep(SLEEP_TIMEOUT);
+        } while (currTime - startTime < TOTAL_DELAY);
+
+        log.info("I have read following content of the file '" + logFilePath + "':\n" + content + "\n---END-OF-FILE-OUTPUT---");
+
+        // Finally compare search result with our expectation...
         Assert.assertEquals("Searching for pattern: '" + pattern + "' in log file ('" + logFilePath.toString() + "')",
-                expected, m.find());
+                expected, hasFound);
     }
 
     /**
