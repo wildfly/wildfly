@@ -50,7 +50,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition {
     }
 
     // attributes
-    public static SimpleAttributeDefinition STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
+    public static SimpleAttributeDefinition STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, false)
             .setXmlName(Attribute.STACK.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)

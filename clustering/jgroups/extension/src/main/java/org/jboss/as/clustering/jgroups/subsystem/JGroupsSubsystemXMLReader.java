@@ -23,6 +23,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -47,17 +49,18 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         this.schema = schema;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> result) throws XMLStreamException {
 
         Map<PathAddress, ModelNode> operations = new LinkedHashMap<>();
+        List<ModelNode> channelsWithoutExplicitStack = new LinkedList<>();
 
         PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
         if (!this.schema.since(JGroupsSchema.VERSION_3_0)) {
-            @SuppressWarnings("deprecation")
             String defaultStack = require(reader, Attribute.DEFAULT_STACK);
             JGroupsSubsystemResourceDefinition.DEFAULT_STACK.parseAndSetParameter(defaultStack, operation, reader);
         }
@@ -67,7 +70,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             switch (element) {
                 case CHANNELS: {
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
-                        this.parseChannels(reader, address, operations);
+                        this.parseChannels(reader, address, operations, channelsWithoutExplicitStack);
                         break;
                     }
                 }
@@ -89,10 +92,25 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
+        if (!channelsWithoutExplicitStack.isEmpty()) {
+            ModelNode defaultStack = operation.get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName());
+            for (ModelNode channelOp : channelsWithoutExplicitStack) {
+                channelOp.get(ChannelResourceDefinition.STACK.getName()).set(defaultStack);
+            }
+        }
+
+        if (!operation.hasDefined(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName()) && operation.hasDefined(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.getName())) {
+            ModelNode defaultChannel = operation.get(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.getName());
+            if (!defaultChannel.getType().equals(ModelType.EXPRESSION)) {
+                ModelNode defaultStack = operations.get(address.append(ChannelResourceDefinition.pathElement(defaultChannel.asString()))).get(ChannelResourceDefinition.STACK.getName());
+                operation.get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName()).set(defaultStack);
+            }
+        }
+
         result.addAll(operations.values());
     }
 
-    private void parseChannels(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private void parseChannels(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations, List<ModelNode> channelsWithoutExplicitStack) throws XMLStreamException {
 
         ModelNode operation = operations.get(address);
 
@@ -115,7 +133,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case CHANNEL: {
-                    this.parseChannel(reader, address, operations);
+                    this.parseChannel(reader, address, operations, channelsWithoutExplicitStack);
                     break;
                 }
                 default: {
@@ -125,11 +143,13 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
-    private void parseChannel(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private void parseChannel(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations, List<ModelNode> channelsWithoutExplicitStack) throws XMLStreamException {
         String name = require(reader, Attribute.NAME);
         PathAddress address = subsystemAddress.append(ChannelResourceDefinition.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
+
+        boolean stackDefined = false;
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
@@ -141,6 +161,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     break;
                 }
                 case STACK: {
+                    stackDefined = true;
                     ChannelResourceDefinition.STACK.parseAndSetParameter(value, operation, reader);
                     break;
                 }
@@ -152,6 +173,10 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
+        }
+
+        if (!stackDefined) {
+            channelsWithoutExplicitStack.add(operation);
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
@@ -212,8 +237,10 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT: {
-                    JGroupsSubsystemResourceDefinition.DEFAULT_STACK.parseAndSetParameter(value, operation, reader);
-                    break;
+                    if (!this.schema.since(JGroupsSchema.VERSION_4_0)) {
+                        JGroupsSubsystemResourceDefinition.DEFAULT_STACK.parseAndSetParameter(value, operation, reader);
+                        break;
+                    }
                 }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
