@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
-import org.jboss.as.clustering.controller.transform.DefaultValueAttributeConverter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
@@ -35,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
