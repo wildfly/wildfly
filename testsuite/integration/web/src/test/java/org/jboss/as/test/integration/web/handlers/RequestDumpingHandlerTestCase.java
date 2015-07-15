@@ -316,8 +316,8 @@ public class RequestDumpingHandlerTestCase {
         searchInFile(request, "\\s+remoteAddr=");
         searchInFile(request, "\\s+remoteHost=");
         searchInFile(request, "\\s+scheme=http");
-        searchInFile(request, "\\s+host=" + host);
-        searchInFile(request, "\\s+serverPort=" + port);
+        searchInFile(request, "\\s+host=" + Pattern.quote(host));
+        searchInFile(request, "\\s+serverPort=" + Pattern.quote(String.valueOf(port)));
 
         // Now check response dump part...
         searchInFile(response, "-+RESPONSE-+");
@@ -340,7 +340,7 @@ public class RequestDumpingHandlerTestCase {
         if (hdrs != null) {
             for (Header hdr : hdrs) {
                 // Close current scanner, reopen it and move to start pattern directly...
-                searchInFile(content, "\\s+header=" + hdr.getName() + "=" + hdr.getValue());
+                searchInFile(content, "\\s+header=" + Pattern.quote(hdr.getName()) + "=" + Pattern.quote(hdr.getValue()));
             }
         } else {
             // request contains no headers -> we really do not expect it to be in dump
