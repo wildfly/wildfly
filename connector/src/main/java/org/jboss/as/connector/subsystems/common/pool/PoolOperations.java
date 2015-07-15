@@ -52,10 +52,12 @@ public abstract class PoolOperations implements OperationStepHandler {
 
 
     private final PoolMatcher matcher;
+    private final boolean disallowMonitor;
 
-    protected PoolOperations(PoolMatcher matcher) {
+    protected PoolOperations(PoolMatcher matcher, boolean disallowMonitor) {
         super();
         this.matcher = matcher;
+        this.disallowMonitor = disallowMonitor;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -72,7 +74,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
+                    final ServiceController<?> managementRepoService = context.getServiceRegistry(disallowMonitor).getService(
                             ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);
                     if (managementRepoService != null) {
                         ModelNode operationResult = null;
@@ -110,7 +112,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         public static final FlushIdleConnectionInPool RA_INSTANCE = new FlushIdleConnectionInPool(new RaPoolMatcher());
 
         protected FlushIdleConnectionInPool(PoolMatcher matcher) {
-            super(matcher);
+            super(matcher, true);
         }
 
         @Override
@@ -131,7 +133,7 @@ public abstract class PoolOperations implements OperationStepHandler {
             public static final DumpQueuedThreadInPool RA_INSTANCE = new DumpQueuedThreadInPool(new RaPoolMatcher());
 
             protected DumpQueuedThreadInPool(PoolMatcher matcher) {
-                super(matcher);
+                super(matcher, false);
             }
 
             @Override
@@ -156,7 +158,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         public static final FlushAllConnectionInPool RA_INSTANCE = new FlushAllConnectionInPool(new RaPoolMatcher());
 
         protected FlushAllConnectionInPool(PoolMatcher matcher) {
-            super(matcher);
+            super(matcher, true);
         }
 
         @Override
@@ -177,7 +179,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         public static final FlushInvalidConnectionInPool RA_INSTANCE = new FlushInvalidConnectionInPool(new RaPoolMatcher());
 
         protected FlushInvalidConnectionInPool(PoolMatcher matcher) {
-            super(matcher);
+            super(matcher, true);
         }
 
         @Override
@@ -198,7 +200,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         public static final FlushGracefullyConnectionInPool RA_INSTANCE = new FlushGracefullyConnectionInPool(new RaPoolMatcher());
 
         protected FlushGracefullyConnectionInPool(PoolMatcher matcher) {
-            super(matcher);
+            super(matcher, true);
         }
 
         @Override
@@ -219,7 +221,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         public static final TestConnectionInPool RA_INSTANCE = new TestConnectionInPool(new RaPoolMatcher());
 
         protected TestConnectionInPool(PoolMatcher matcher) {
-            super(matcher);
+            super(matcher, true);
         }
 
         @Override
