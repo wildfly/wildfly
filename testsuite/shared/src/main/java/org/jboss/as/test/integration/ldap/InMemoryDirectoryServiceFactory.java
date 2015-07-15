@@ -36,19 +36,21 @@ import org.apache.directory.api.ldap.model.schema.SchemaManager;
 import org.apache.directory.api.ldap.model.schema.comparators.NormalizingComparator;
 import org.apache.directory.api.ldap.model.schema.registries.ComparatorRegistry;
 import org.apache.directory.api.ldap.model.schema.registries.SchemaLoader;
-import org.apache.directory.api.ldap.schemaloader.JarLdifSchemaLoader;
-import org.apache.directory.api.ldap.schemamanager.impl.DefaultSchemaManager;
+import org.apache.directory.api.ldap.schema.loader.JarLdifSchemaLoader;
+import org.apache.directory.api.ldap.schema.manager.impl.DefaultSchemaManager;
 import org.apache.directory.api.util.exception.Exceptions;
 import org.apache.directory.server.constants.ServerDNConstants;
 import org.apache.directory.server.core.DefaultDirectoryService;
 import org.apache.directory.server.core.api.CacheService;
 import org.apache.directory.server.core.api.DirectoryService;
+import org.apache.directory.server.core.api.DnFactory;
 import org.apache.directory.server.core.api.InstanceLayout;
 import org.apache.directory.server.core.api.partition.Partition;
 import org.apache.directory.server.core.api.schema.SchemaPartition;
 import org.apache.directory.server.core.factory.AvlPartitionFactory;
 import org.apache.directory.server.core.factory.DirectoryServiceFactory;
 import org.apache.directory.server.core.factory.PartitionFactory;
+import org.apache.directory.server.core.shared.DefaultDnFactory;
 import org.apache.directory.server.i18n.I18n;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +118,7 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
         CacheConfiguration defaultCache = new CacheConfiguration("default", 1).eternal(false).timeToIdleSeconds(30)
                 .timeToLiveSeconds(30).overflowToDisk(false);
         ehCacheConfig.addDefaultCache(defaultCache);
-        CacheService cacheService = new CacheService(new CacheManager(ehCacheConfig));
+        CacheService cacheService = new CacheService(CacheManager.create(ehCacheConfig));
         directoryService.setCacheService(cacheService);
 
         // Init the schema
@@ -141,8 +143,10 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
             throw new Exception(I18n.err(I18n.ERR_317, Exceptions.printErrors(errors)));
         }
 
+        cacheService.initialize(null);
+        DnFactory dnFactory = new DefaultDnFactory( schemaManager, cacheService.getCache( "dnCache" ) );
         // Init system partition
-        Partition systemPartition = partitionFactory.createPartition(directoryService.getSchemaManager(), "system",
+        Partition systemPartition = partitionFactory.createPartition(directoryService.getSchemaManager(), dnFactory, "system",
                 ServerDNConstants.SYSTEM_DN, 500, new File(directoryService.getInstanceLayout().getPartitionsDirectory(),
                         "system"));
         systemPartition.setSchemaManager(directoryService.getSchemaManager());
