@@ -25,10 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.Configuration;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.directory.api.ldap.model.constants.SchemaConstants;
 import org.apache.directory.api.ldap.model.schema.LdapComparator;
@@ -41,7 +37,6 @@ import org.apache.directory.api.ldap.schemamanager.impl.DefaultSchemaManager;
 import org.apache.directory.api.util.exception.Exceptions;
 import org.apache.directory.server.constants.ServerDNConstants;
 import org.apache.directory.server.core.DefaultDirectoryService;
-import org.apache.directory.server.core.api.CacheService;
 import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.api.InstanceLayout;
 import org.apache.directory.server.core.api.partition.Partition;
@@ -52,6 +47,10 @@ import org.apache.directory.server.core.factory.PartitionFactory;
 import org.apache.directory.server.i18n.I18n;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+//import net.sf.ehcache.CacheManager;
+//import net.sf.ehcache.config.CacheConfiguration;
+//import net.sf.ehcache.config.Configuration;
 
 /**
  * Factory for a fast (mostly in-memory-only) ApacheDS DirectoryService. Use only for tests!!
@@ -112,12 +111,12 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
         directoryService.setInstanceLayout(instanceLayout);
 
         // EhCache in disabled-like-mode
-        Configuration ehCacheConfig = new Configuration();
-        CacheConfiguration defaultCache = new CacheConfiguration("default", 1).eternal(false).timeToIdleSeconds(30)
-                .timeToLiveSeconds(30).overflowToDisk(false);
-        ehCacheConfig.addDefaultCache(defaultCache);
-        CacheService cacheService = new CacheService(new CacheManager(ehCacheConfig));
-        directoryService.setCacheService(cacheService);
+//        Configuration ehCacheConfig = new Configuration();
+//        CacheConfiguration defaultCache = new CacheConfiguration("default", 1).eternal(false).timeToIdleSeconds(30)
+//                .timeToLiveSeconds(30).overflowToDisk(false);
+//        ehCacheConfig.addDefaultCache(defaultCache);
+//        CacheService cacheService = new CacheService(new CacheManager(ehCacheConfig));
+//        directoryService.setCacheService(cacheService);
 
         // Init the schema
         // SchemaLoader loader = new SingleLdifSchemaLoader();
