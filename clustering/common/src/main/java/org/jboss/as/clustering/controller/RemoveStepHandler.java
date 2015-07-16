@@ -25,16 +25,11 @@ package org.jboss.as.clustering.controller;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -50,41 +45,6 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     public RemoveStepHandler(ResourceDescriptionResolver resolver, ResourceServiceHandler handler) {
         this.resolver = resolver;
         this.handler = handler;
-    }
-
-    @Override
-    protected void performRemove(OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        if (resource.getChildTypes().isEmpty()) {
-            context.removeResource(PathAddress.EMPTY_ADDRESS);
-        } else {
-            // First call remove operations for children
-            for (String childType : resource.getChildTypes()) {
-                for (final Resource.ResourceEntry entry : resource.getChildren(childType)) {
-                    if (!entry.isRuntime()) {
-                        PathElement path = entry.getPathElement();
-                        OperationStepHandler childHandler = context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(path), ModelDescriptionConstants.REMOVE);
-                        PathAddress childAddress = address.append(path);
-                        context.addStep(Util.createRemoveOperation(childAddress), childHandler, OperationContext.Stage.MODEL);
-                    }
-                }
-            }
-            // Then remove this resource
-            OperationStepHandler handler = new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-                    // Remove operations on children may have added further steps, so defer resource removal if necessary
-                    if (resource.getChildTypes().isEmpty()) {
-                        context.removeResource(PathAddress.EMPTY_ADDRESS);
-                    } else {
-                        context.addStep(operation, this, OperationContext.Stage.MODEL);
-                    }
-                }
-            };
-            context.addStep(operation, handler, OperationContext.Stage.MODEL);
-        }
     }
 
     @Override

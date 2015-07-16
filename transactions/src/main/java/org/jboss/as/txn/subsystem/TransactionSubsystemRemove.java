@@ -37,7 +37,7 @@ class TransactionSubsystemRemove extends ReloadRequiredRemoveStepHandler {
     /**
      * Suppresses removal of the log-store=log-store child, as that remove op handler is a no-op.
      */
-    //@Override
+    @Override
     protected boolean removeChildRecursively(PathElement child) {
         return !TransactionExtension.LOG_STORE_PATH.equals(child);
     }
