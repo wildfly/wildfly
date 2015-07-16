@@ -24,12 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Handler for JGroups subsystem remove operations.
@@ -42,45 +37,6 @@ public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
     JGroupsSubsystemRemoveHandler(boolean allowRuntimeOnlyRegistration) {
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
-    }
-    /**
-     * TODO remove this and the performRemove override once a core release
-     * with WFCORE-808 is merged.
-     */
-    protected boolean removeChildRecursively(PathElement child) {
-        return false;
-    }
-
-    @Override
-    protected void performRemove(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-
-        context.addStep(operation, new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                JGroupsSubsystemRemoveHandler.super.performRemove(context, operation, model);
-            }
-        }, OperationContext.Stage.MODEL, true);
-
-        if (model.hasDefined(StackResourceDefinition.WILDCARD_PATH.getKey())) {
-            ModelNode stacks = model.get(StackResourceDefinition.WILDCARD_PATH.getKey());
-            if (stacks.isDefined()) {
-                for (Property stack: stacks.asPropertyList()) {
-                    PathAddress stackAddress = address.append(StackResourceDefinition.pathElement(stack.getName()));
-                    context.addStep(Util.createRemoveOperation(stackAddress), new StackRemoveHandler(), OperationContext.Stage.MODEL, true);
-                }
-            }
-        }
-
-        if (model.hasDefined(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
-            ModelNode channels = model.get(ChannelResourceDefinition.WILDCARD_PATH.getKey());
-            if (channels.isDefined()) {
-                for (Property channel: channels.asPropertyList()) {
-                    PathAddress channelAddress = address.append(ChannelResourceDefinition.pathElement(channel.getName()));
-                    context.addStep(Util.createRemoveOperation(channelAddress), new ChannelRemoveHandler(this.allowRuntimeOnlyRegistration), OperationContext.Stage.MODEL, true);
-                }
-            }
-        }
     }
 
     @Override
