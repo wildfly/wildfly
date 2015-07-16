@@ -12,7 +12,7 @@ And of course Java EE!
 Building
 -------------------
 
-Ensure you have JDK 7 (or newer) installed
+Ensure you have JDK 8 (or newer) installed
 
 > java -version
 
@@ -24,7 +24,7 @@ On Windows use the corresponding batch script
 
 > build.bat
 
-If you already have Maven 3.2.1 (or newer) installed you can use it directly
+If you already have Maven 3.2.5 (or newer) installed you can use it directly
 
 > mvn install
 
@@ -47,11 +47,11 @@ To stop the server, press Ctrl + C, or use the admin console
 
 > $ ./jboss-cli.sh --connect command=:shutdown
 
-More information: https://docs.jboss.org/author/display/WFLY9/Getting+Started+Guide
+More information: https://docs.jboss.org/author/display/WFLY10/Getting+Started+Guide
 
 Contributing
 ------------------
-https://community.jboss.org/wiki/HackingOnWildFly
+https://developer.jboss.org/wiki/HackingOnWildFly
 
 Running the Testsuite
 --------------------
@@ -75,9 +75,9 @@ To run all the tests
 Using Eclipse
 -------------
 1. Install the latest version of eclipse
-2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using java 7
+2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using Java 8
 3. Launch eclipse and install the m2e plugin, make sure it uses your repo configs
-   (get it from: http://www.eclipse.org/m2e/download/
+   (get it from: http://www.eclipse.org/m2e/
    or install "Maven Integration for Eclipse" from the Eclipse Marketplace)
 4. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted
    set forbidden reference to WARNING
@@ -86,7 +86,7 @@ Using Eclipse
 6. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
    and deselect all actions except for "Remove trailing whitespace"
 7. Use import on the root pom, which will pull in all modules
-8. Wait (m2e takes awhile on initial import)
+8. Wait (m2e takes a while on initial import)
 
 License
 -------

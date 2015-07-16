@@ -1,13 +1,13 @@
-AS7 testsuite
---------------
+WildFly Testsuite
+=================
 
-This directory contains the AS7 testsuite in its new format, as described in https://docspace.corp.redhat.com/docs/DOC-74146
+This directory contains the WildFly testsuite in its new format, as described at https://docs.jboss.org/author/display/WFLY10/Testsuite
 
 Some points to note:
 
 
 1. Defined modules
-==================
+------------------
 
 The testsuite has the following maven modules:
 
@@ -17,7 +17,7 @@ The testsuite has the following maven modules:
 
 
 2. Defined directories and files
-================================
+--------------------------------
 
    testsuite/pom.xml - this has a header describing the purpose of the pom and what should and should not go in it
    testsuite/integration/pom.xml - this has a header describing the purpose of the pom and what should and should not go in it
@@ -34,7 +34,7 @@ For each logical grouping of tests X (e.g. basic integration, clustering, compat
 
 
 3. Defined profiles
-===================
+-------------------
 
 maven build profiles are used to control:
 * testsuite modules enabled
@@ -48,7 +48,7 @@ maven build profiles are used to control:
 - there are profiles for api, domain and integration
 
 3.2 test cases to be executed
----------------------
+-----------------------------
 
 - for each logical set of test cases X in module Y, the profile is named X.Y.tests.profile and is enabled by -DX.Y.tests
 - e.g.,  the clustering tests are defined in profile clustering.integration.tests.profile, enabled by -Dclustering.integration.tests
@@ -65,20 +65,22 @@ All of these are activated independently of each other, unlike the -P usage.
 
 
 4. Executing tests from the command line
-========================================
+----------------------------------------
 
 Tests are run either when running the build.sh and build.bat shell scripts in the main build directory,
 or using integration-tests.sh / .bat. The first way also runs the unit tests.
 
-# run the default module and its tests (-Dintegration.module -Dsmoke.integration.tests)
+Run the default module and its tests (-Dintegration.module -Dsmoke.integration.tests)
+
 > ./build.sh clean test
 
-# run a selected set of modules and tests
+Run a selected set of modules and tests
+
 > ./build.sh clean test -Ddomain-tests -Dintegration.module -Dbasic.integration.tests
 
 
 5. Building server configurations
-=================================
+---------------------------------
 
 Whenever we fire a surefire execution, this causes Arquillian to start a server(s), execute tests and then shutdown
 the server(s). Starting a server in multiple executions kills the logs of previous executions, and so it's recommended
@@ -96,7 +98,7 @@ Building server configurations is achieved in two different ways, depending on r
 
 In the shared build of target/jbossas in testsuite/pom.xml, i'm creating the server configuration using
 the maven-resources-plugin, but this requires two separate executions:
-(i) one to copy the as 7 distro to a new directory (in generate-test-resources)
+(i) one to copy the WildFly distribution to a new directory (in generate-test-resources)
 (ii) one to overwrite / add some files from src/resources/test-configs to the distribution copy
 (in process-test-resources)
 
@@ -145,7 +147,7 @@ on the command line, such as:
 7. Changing the database
 ------------------------
 
-The prototype also contains a profile which shows how the default database for AS 7 can be changed.
+The prototype also contains a profile which shows how the default database for WildFly can be changed.
 
 > mvn clean test -Dds=mysql51 <module targets> <test targets>
 
