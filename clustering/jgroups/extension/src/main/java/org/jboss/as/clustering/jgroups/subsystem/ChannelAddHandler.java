@@ -73,7 +73,7 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
             PathAddress address = context.getCurrentAddress();
             PathAddress subsystemAddress = address.subAddress(0, address.size() - 1);
             // Lookup the name of the default stack if necessary
-            PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement((stack != null) ? stack : JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, context.readResourceFromRoot(subsystemAddress, false).getModel()).asString()));
+            PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement(stack));
 
             context.addStep(new ProtocolResourceRegistrationHandler(name, stackAddress), OperationContext.Stage.MODEL);
         }

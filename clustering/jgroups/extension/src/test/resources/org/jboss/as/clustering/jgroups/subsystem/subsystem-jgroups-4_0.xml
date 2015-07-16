@@ -1,6 +1,6 @@
-<subsystem xmlns="urn:jboss:domain:jgroups:3.0">
-    <channels default="ee">
-        <channel name="ee">
+<subsystem xmlns="urn:jboss:domain:jgroups:4.0">
+    <channels default="${test.channel:ee}">
+        <channel name="ee" stack="${test.expr:maximal}">
             <fork name="web">
                 <protocol type="CENTRAL_LOCK">
                     <property name="num_backups">1</property>
@@ -9,7 +9,7 @@
         </channel>
         <channel name="bridge" stack="minimal"/>
     </channels>
-    <stacks default="${test.expr:maximal}">
+    <stacks>
         <stack name="minimal">
             <transport type="UDP"/>
         </stack>

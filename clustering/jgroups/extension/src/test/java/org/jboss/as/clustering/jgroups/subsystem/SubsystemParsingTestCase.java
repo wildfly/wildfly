@@ -49,6 +49,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -80,8 +81,18 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                 { JGroupsSchema.VERSION_1_1, 20 },
                 { JGroupsSchema.VERSION_2_0, 22 },
                 { JGroupsSchema.VERSION_3_0, 29 },
+                { JGroupsSchema.VERSION_4_0, 29 },
         };
         return Arrays.asList(data);
+    }
+
+    @Override
+    public void testSubsystem() throws Exception {
+        // Cannot reliably test prior schema versions where default-stack is required but channels are recreated from
+        // infinispan subsystem parser.
+        Assume.assumeTrue(schema.since(JGroupsSchema.VERSION_3_0));
+
+        super.testSubsystem();
     }
 
     private KernelServices buildKernelServices() throws Exception {
@@ -155,6 +166,12 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         ModelNode modelA = services.readWholeModel();
         String marshalled = services.getPersistedSubsystemXml();
         ModelNode modelB = this.buildKernelServices(marshalled).readWholeModel();
+
+        // Spoof the model for prior versions where default-stack is required but channels are recreated from
+        // infinispan subsystem parser.
+        if (!schema.since(JGroupsSchema.VERSION_3_0)) {
+            modelA.get("subsystem", "jgroups", "default-stack").set(new ModelNode());
+        }
 
         // Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);

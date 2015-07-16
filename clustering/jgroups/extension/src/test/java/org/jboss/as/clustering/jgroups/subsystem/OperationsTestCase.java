@@ -15,10 +15,9 @@ import org.junit.Test;
 *
 * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
 */
-
 public class OperationsTestCase extends OperationTestCaseBase {
 
-    /*
+    /**
      * Tests access to subsystem attributes
      */
     @Test
@@ -26,18 +25,18 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         KernelServices services = this.buildKernelServices();
 
-        // read the default stack
-        ModelNode result = services.executeOperation(getSubsystemReadOperation(ModelKeys.DEFAULT_STACK));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("maximal", result.get(RESULT).resolve().asString());
+        // read the default channel
+        ModelNode result = services.executeOperation(getSubsystemReadOperation(ModelKeys.DEFAULT_CHANNEL));
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("ee", result.get(RESULT).resolve().asString());
 
-        // write the default stack
-        result = services.executeOperation(getSubsystemWriteOperation(ModelKeys.DEFAULT_STACK, "new-default"));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
+        // write the default channel
+        result = services.executeOperation(getSubsystemWriteOperation(ModelKeys.DEFAULT_CHANNEL, "new-default"));
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
 
-        // re-read the default stack
-        result = services.executeOperation(getSubsystemReadOperation(ModelKeys.DEFAULT_STACK));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
+        // re-read the default channel
+        result = services.executeOperation(getSubsystemReadOperation(ModelKeys.DEFAULT_CHANNEL));
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-default", result.get(RESULT).asString());
     }
 

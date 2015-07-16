@@ -56,6 +56,7 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     public static final SimpleAttributeDefinition DEFAULT_STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_STACK, ModelType.STRING, true)
             .setXmlName(Attribute.DEFAULT.getLocalName())
             .setAllowExpression(true)
