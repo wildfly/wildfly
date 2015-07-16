@@ -37,9 +37,8 @@ public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
     private transient int hashCode;
 
     /**
-     * @param object
-     * @param context
-     * @throws IOException
+     * @param object the object to be marshalled
+     * @param context the marshalling context
      */
     public HashableMarshalledValue(T object, MarshallingContext context) {
         super(object, context);
@@ -57,7 +56,7 @@ public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
 
     @Override
     public boolean equals(Object object) {
-        if ((object != null) && !(object instanceof HashableMarshalledValue)) {
+        if (object instanceof HashableMarshalledValue) {
             HashableMarshalledValue<?> value = (HashableMarshalledValue<?>) object;
             return (this.hashCode == value.hashCode()) && super.equals(object);
         }

@@ -107,6 +107,7 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
 
     private final boolean allowRuntimeOnlyRegistration;
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             OperationTransformer putPropertyTransformer = new OperationTransformer() {
@@ -161,6 +162,7 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
         // child resources

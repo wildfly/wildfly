@@ -25,6 +25,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.capability.Capability;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
@@ -44,6 +46,7 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolConfiguration> implements Builder<P>, Value<P>, ProtocolConfiguration {
 
+    final CapabilityServiceSupport support;
     final String stackName;
     final String name;
 
@@ -51,7 +54,8 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
     private ModuleIdentifier module = ProtocolConfiguration.DEFAULT_MODULE;
     private ValueDependency<SocketBinding> socketBinding;
 
-    public AbstractProtocolConfigurationBuilder(String stackName, String name) {
+    public AbstractProtocolConfigurationBuilder(CapabilityServiceSupport support, String stackName, String name) {
+        this.support = support;
         this.stackName = stackName;
         this.name = name;
     }
@@ -77,7 +81,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
 
     public AbstractProtocolConfigurationBuilder<P> setSocketBinding(String socketBindingName) {
         if (socketBindingName != null) {
-            this.socketBinding = new InjectedValueDependency<>(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class);
+            this.socketBinding = new InjectedValueDependency<>(Capability.SOCKET_BINDING.getServiceName(this.support, socketBindingName), SocketBinding.class);
         }
         return this;
     }

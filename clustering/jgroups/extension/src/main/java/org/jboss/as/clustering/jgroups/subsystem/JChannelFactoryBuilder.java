@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
@@ -57,6 +58,7 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<ChannelFactory>, ProtocolStackConfiguration {
 
+    private final CapabilityServiceSupport support;
     private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
@@ -65,7 +67,8 @@ public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<Ch
     private final List<ValueDependency<ProtocolConfiguration>> protocols = new LinkedList<>();
     private ValueDependency<RelayConfiguration> relay = null;
 
-    public JChannelFactoryBuilder(String name) {
+    public JChannelFactoryBuilder(CapabilityServiceSupport support, String name) {
+        this.support = support;
         this.name = name;
     }
 
@@ -99,19 +102,19 @@ public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<Ch
     }
 
     public TransportConfigurationBuilder setTransport(String type) {
-        TransportConfigurationBuilder builder = new TransportConfigurationBuilder(this.name, type);
+        TransportConfigurationBuilder builder = new TransportConfigurationBuilder(this.support, this.name, type);
         this.transport = new InjectedValueDependency<>(builder, TransportConfiguration.class);
         return builder;
     }
 
     public ProtocolConfigurationBuilder addProtocol(String type) {
-        ProtocolConfigurationBuilder builder = new ProtocolConfigurationBuilder(this.name, type);
+        ProtocolConfigurationBuilder builder = new ProtocolConfigurationBuilder(this.support, this.name, type);
         this.protocols.add(new InjectedValueDependency<>(builder, ProtocolConfiguration.class));
         return builder;
     }
 
     public RelayConfigurationBuilder setRelay(String site) {
-        RelayConfigurationBuilder builder = new RelayConfigurationBuilder(this.name).setSiteName(site);
+        RelayConfigurationBuilder builder = new RelayConfigurationBuilder(this.support, this.name).setSiteName(site);
         this.relay = new InjectedValueDependency<>(builder, RelayConfiguration.class);
         return builder;
     }

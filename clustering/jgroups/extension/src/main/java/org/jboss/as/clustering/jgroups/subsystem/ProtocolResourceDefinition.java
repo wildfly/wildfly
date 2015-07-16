@@ -99,6 +99,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING, PROPERTIES };
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
@@ -107,7 +108,6 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Translate /subsystem=jgroups/stack=*/protocol=*:add() -> /subsystem=jgroups/stack=*:add-protocol()
             OperationTransformer addTransformer = new OperationTransformer() {
-                @SuppressWarnings("deprecation")
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
@@ -119,7 +119,6 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
 
             // Translate /subsystem=jgroups/stack=*/protocol=*:remove() -> /subsystem=jgroups/stack=*:remove-protocol()
             OperationTransformer removeTransformer = new OperationTransformer() {
-                @SuppressWarnings("deprecation")
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
@@ -139,6 +138,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     /*
      * Builds transformations common to both protocols and transport.
      */
+    @SuppressWarnings("deprecation")
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
@@ -207,6 +207,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
         registration.registerSubModel(new PropertyResourceDefinition());

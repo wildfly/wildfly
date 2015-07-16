@@ -112,6 +112,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition START = new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
             .setXmlName(Attribute.START.getLocalName())
             .setAllowExpression(true)

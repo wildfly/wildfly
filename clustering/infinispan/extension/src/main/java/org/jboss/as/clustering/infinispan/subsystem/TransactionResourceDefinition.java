@@ -99,6 +99,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
 
     private final boolean allowRuntimeOnlyRegistration;
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 

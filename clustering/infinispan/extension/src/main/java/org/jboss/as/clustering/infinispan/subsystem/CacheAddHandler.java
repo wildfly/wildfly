@@ -47,6 +47,7 @@ import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationB
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.capability.Capability;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -391,7 +392,7 @@ public class CacheAddHandler extends AbstractAddStepHandler {
                             // Do nothing
                         }
                     };
-                    configBuilder.addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding), OutboundSocketBinding.class, injector);
+                    configBuilder.addDependency(Capability.OUTBOUND_SOCKET_BINDING.getServiceName(context.getCapabilityServiceSupport(), outboundSocketBinding), OutboundSocketBinding.class, injector);
                 }
                 builder.remoteCacheName(RemoteStoreResourceDefinition.CACHE.resolveModelAttribute(context, store).asString());
                 builder.socketTimeout(RemoteStoreResourceDefinition.SOCKET_TIMEOUT.resolveModelAttribute(context, store).asLong());
