@@ -206,7 +206,6 @@ public class DsParser extends AbstractParser {
                     switch (DataSources.Tag.forName(reader.getLocalName())) {
                         case DATASOURCE: {
                             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                                case DATASOURCES_1_0:
                                 case DATASOURCES_1_1:
                                 case DATASOURCES_2_0:
                                     parseDataSource_1_0(reader, list, parentAddress);
@@ -222,7 +221,6 @@ public class DsParser extends AbstractParser {
                         }
                         case XA_DATASOURCE: {
                             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                                case DATASOURCES_1_0:
                                 case DATASOURCES_1_1:
                                 case DATASOURCES_2_0:
                                     parseXADataSource_1_0(reader, list, parentAddress);

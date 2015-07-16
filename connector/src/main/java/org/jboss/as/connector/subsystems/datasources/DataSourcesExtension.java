@@ -187,7 +187,6 @@ public class DataSourcesExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_1.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_2.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_2_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
@@ -344,7 +343,7 @@ public class DataSourcesExtension implements Extension {
                             for (Property connectionProperty : dataSourceNode.get(CONNECTION_LISTENER_PROPERTIES.getName())
                                     .asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
+                                                .getValue().asString(),
                                         org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
                                                 .getLocalName());
                             }
@@ -358,14 +357,14 @@ public class DataSourcesExtension implements Extension {
                         if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_CLASS.getName())) {
                             writer.writeStartElement(Capacity.Tag.INCREMENTER.getLocalName());
                             CAPACITY_INCREMENTER_CLASS.marshallAsAttribute(dataSourceNode, writer);
-                            CAPACITY_INCREMENTER_PROPERTIES.marshallAsElement(dataSourceNode,writer);
+                            CAPACITY_INCREMENTER_PROPERTIES.marshallAsElement(dataSourceNode, writer);
 
                             writer.writeEndElement();
                         }
                         if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_CLASS.getName())) {
                             writer.writeStartElement(Capacity.Tag.DECREMENTER.getLocalName());
                             CAPACITY_DECREMENTER_CLASS.marshallAsAttribute(dataSourceNode, writer);
-                            CAPACITY_DECREMENTER_PROPERTIES.marshallAsElement(dataSourceNode,writer);
+                            CAPACITY_DECREMENTER_PROPERTIES.marshallAsElement(dataSourceNode, writer);
 
                             writer.writeEndElement();
                         }
@@ -400,7 +399,7 @@ public class DataSourcesExtension implements Extension {
                         if (dataSourceNode.hasDefined(REAUTHPLUGIN_PROPERTIES.getName())) {
                             for (Property connectionProperty : dataSourceNode.get(REAUTHPLUGIN_PROPERTIES.getName()).asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
+                                                .getValue().asString(),
                                         org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
                                                 .getLocalName());
                             }
@@ -434,7 +433,7 @@ public class DataSourcesExtension implements Extension {
                         if (dataSourceNode.hasDefined(RECOVER_PLUGIN_PROPERTIES.getName())) {
                             for (Property connectionProperty : dataSourceNode.get(RECOVER_PLUGIN_PROPERTIES.getName()).asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
+                                                .getValue().asString(),
                                         org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
                                                 .getLocalName());
                             }
@@ -469,7 +468,7 @@ public class DataSourcesExtension implements Extension {
                             for (Property connectionProperty : dataSourceNode.get(VALID_CONNECTION_CHECKER_PROPERTIES.getName())
                                     .asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
+                                                .getValue().asString(),
                                         org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
                                                 .getLocalName());
                             }
@@ -491,7 +490,7 @@ public class DataSourcesExtension implements Extension {
                             for (Property connectionProperty : dataSourceNode.get(STALE_CONNECTION_CHECKER_PROPERTIES.getName())
                                     .asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
+                                                .getValue().asString(),
                                         org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
                                                 .getLocalName());
                             }
@@ -507,7 +506,7 @@ public class DataSourcesExtension implements Extension {
                             for (Property connectionProperty : dataSourceNode.get(EXCEPTION_SORTER_PROPERTIES.getName())
                                     .asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
+                                                .getValue().asString(),
                                         org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
                                                 .getLocalName());
                             }
@@ -584,7 +583,6 @@ public class DataSourcesExtension implements Extension {
         }
 
 
-
         private boolean hasAnyOf(ModelNode node, SimpleAttributeDefinition... names) {
             for (SimpleAttributeDefinition current : names) {
                 if (has(node, current.getName())) {
@@ -613,41 +611,19 @@ public class DataSourcesExtension implements Extension {
 
             try {
                 String localName = null;
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case DATASOURCES_1_0: {
-                        localName = reader.getLocalName();
-                        Element element = Element.forName(reader.getLocalName());
-                        SUBSYSTEM_DATASOURCES_LOGGER.tracef("%s -> %s", localName, element);
-                        switch (element) {
-                            case SUBSYSTEM: {
+                localName = reader.getLocalName();
+                Element element = Element.forName(reader.getLocalName());
+                SUBSYSTEM_DATASOURCES_LOGGER.tracef("%s -> %s", localName, element);
+                switch (element) {
+                    case SUBSYSTEM: {
 
-                                final DsParser parser = new DsParser();
-                                parser.parse(reader, list, address);
-                                requireNoContent(reader);
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                    case DATASOURCES_1_1:
-                    case DATASOURCES_1_2:
-                    case DATASOURCES_2_0:
-                    case DATASOURCES_3_0:{
-                        localName = reader.getLocalName();
-                        Element element = Element.forName(reader.getLocalName());
-                        SUBSYSTEM_DATASOURCES_LOGGER.tracef("%s -> %s", localName, element);
-                        switch (element) {
-                            case SUBSYSTEM: {
-
-                                final DsParser parser = new DsParser();
-                                parser.parse(reader, list, address);
-                                requireNoContent(reader);
-                                break;
-                            }
-                        }
+                        final DsParser parser = new DsParser();
+                        parser.parse(reader, list, address);
+                        requireNoContent(reader);
                         break;
                     }
                 }
+
             } catch (Exception e) {
                 throw new XMLStreamException(e);
             }
