@@ -120,7 +120,7 @@
                 allowing you to test AJAX more easily -->
             <dependency>
                 <groupId>org.jboss.arquillian.graphene</groupId>
-                <artifactId>arquillian-graphene</artifactId>
+                <artifactId>graphene-webdriver</artifactId>
                 <version>${version.org.jboss.arquillian.graphene}</version>
                 <type>pom</type>
             </dependency>
