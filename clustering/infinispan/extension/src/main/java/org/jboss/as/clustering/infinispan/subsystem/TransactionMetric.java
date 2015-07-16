@@ -56,7 +56,7 @@ public enum TransactionMetric implements Metric<TxInterceptor> {
     ;
     private final AttributeDefinition definition;
 
-    private TransactionMetric(String name, ModelType type) {
+    TransactionMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

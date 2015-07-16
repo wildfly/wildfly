@@ -153,7 +153,7 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
     ;
     private final AttributeDefinition definition;
 
-    private CacheMetric(String name, ModelType type) {
+    CacheMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

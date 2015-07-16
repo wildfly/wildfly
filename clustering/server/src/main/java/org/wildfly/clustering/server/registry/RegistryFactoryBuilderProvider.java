@@ -62,4 +62,9 @@ public class RegistryFactoryBuilderProvider implements CacheGroupBuilderProvider
         Builder<Registry<Object, Object>> registryBuilder = new RegistryBuilder<>(containerName, cacheName);
         return Arrays.asList(builder, bindingBuilder, registryBuilder);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

@@ -40,4 +40,9 @@ public class LocalSingletonServiceBuilderFactoryBuilderProvider implements Local
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         return Collections.<Builder<?>>singleton(new LocalSingletonServiceBuilderFactoryBuilder<>(containerName, cacheName));
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

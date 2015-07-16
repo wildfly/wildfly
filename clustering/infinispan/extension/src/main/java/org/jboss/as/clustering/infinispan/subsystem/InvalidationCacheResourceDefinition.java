@@ -22,7 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
@@ -33,13 +38,25 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    static final PathElement pathElement(String name) {
+        return PathElement.pathElement("invalidation-cache", name);
+    }
+
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(CacheType.INVALIDATION.pathElement());
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     InvalidationCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(CacheType.INVALIDATION, pathManager, allowRuntimeOnlyRegistration);
+        super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceServiceHandler handler = new InvalidationCacheServiceHandler();
+        new AddStepHandler(this.getResourceDescriptionResolver(), handler).addAttributes(ClusteredCacheResourceDefinition.Attribute.class).addAttributes(CacheResourceDefinition.Attribute.class).register(registration);
+        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
     }
 }

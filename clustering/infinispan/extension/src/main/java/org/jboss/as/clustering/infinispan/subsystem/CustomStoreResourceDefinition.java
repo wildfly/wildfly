@@ -22,12 +22,15 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -41,34 +44,52 @@ import org.jboss.dmr.ModelType;
  */
 public class CustomStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
+    static final PathElement LEGACY_PATH = PathElement.pathElement("store", "STORE");
+    static final PathElement PATH = pathElement("custom");
 
-    // attributes
-    static final SimpleAttributeDefinition CLASS = new SimpleAttributeDefinitionBuilder(ModelKeys.CLASS, ModelType.STRING, false)
-            .setXmlName(Attribute.CLASS.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        CLASS("class", ModelType.STRING)
+        ;
+        private final AttributeDefinition definition;
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CLASS };
+        Attribute(String name, ModelType type) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
     CustomStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(StoreType.CUSTOM, allowRuntimeOnlyRegistration);
+        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new CustomStoreBuilderFactory());
+        new AddStepHandler(this.getResourceDescriptionResolver(), handler).addAttributes(Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class).register(registration);
+        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
     }
 }

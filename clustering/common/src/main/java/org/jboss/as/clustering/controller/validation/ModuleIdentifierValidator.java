@@ -30,8 +30,8 @@ import org.jboss.modules.ModuleIdentifier;
 
 public class ModuleIdentifierValidator extends ModelTypeValidator {
 
-    public ModuleIdentifierValidator(boolean nullable) {
-        super(ModelType.STRING, nullable, false);
+    public ModuleIdentifierValidator(boolean nullable, boolean allowExpressions) {
+        super(ModelType.STRING, nullable, allowExpressions);
     }
 
     @Override

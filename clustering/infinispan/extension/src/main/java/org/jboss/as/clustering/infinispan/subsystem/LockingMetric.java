@@ -56,7 +56,7 @@ public enum LockingMetric implements Metric<LockManagerImpl> {
     ;
     private final AttributeDefinition definition;
 
-    private LockingMetric(String name, ModelType type) {
+    LockingMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

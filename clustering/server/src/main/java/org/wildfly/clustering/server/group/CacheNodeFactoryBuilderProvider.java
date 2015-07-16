@@ -38,4 +38,9 @@ public class CacheNodeFactoryBuilderProvider implements LocalCacheGroupBuilderPr
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         return Collections.<Builder<?>>singleton(new CacheNodeFactoryBuilder(containerName, cacheName));
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

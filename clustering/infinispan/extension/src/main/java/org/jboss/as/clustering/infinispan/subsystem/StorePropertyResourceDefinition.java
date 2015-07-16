@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -34,6 +35,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -47,16 +49,15 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 @Deprecated
-public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
+public class StorePropertyResourceDefinition extends SimpleResourceDefinition implements Registration {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.PROPERTY, name);
+        return PathElement.pathElement(ModelDescriptionConstants.PROPERTY, name);
     }
 
-    // attributes
-    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelKeys.VALUE, ModelType.STRING, false)
+    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
@@ -66,7 +67,7 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
     }
 
     StorePropertyResourceDefinition() {
-        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(ModelKeys.PROPERTY));
+        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(WILDCARD_PATH));
         this.setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion());
     }
 
@@ -79,7 +80,7 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) {
                 PathAddress address = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
-                ModelNode getOperation = Operations.createMapGetOperation(address, StoreResourceDefinition.PROPERTIES.getName(), key);
+                ModelNode getOperation = Operations.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
                 context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
             }
         };
@@ -89,7 +90,7 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
                 PathAddress address = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
                 String value = Operations.getAttributeValue(operation).asString();
-                ModelNode putOperation = Operations.createMapPutOperation(address, StoreResourceDefinition.PROPERTIES.getName(), key, value);
+                ModelNode putOperation = Operations.createMapPutOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
@@ -105,7 +106,7 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
                 String name = context.getCurrentAddressValue();
                 String value = operation.get(VALUE.getName()).asString();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, StoreResourceDefinition.PROPERTIES.getName(), name, value);
+                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, StoreResourceDefinition.Attribute.PROPERTIES, name, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
@@ -117,10 +118,15 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
                 context.removeResource(PathAddress.EMPTY_ADDRESS);
                 String name = context.getCurrentAddressValue();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, StoreResourceDefinition.PROPERTIES.getName(), name);
+                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, StoreResourceDefinition.Attribute.PROPERTIES, name);
                 context.addStep(putOperation, MapOperations.MAP_REMOVE_HANDLER, context.getCurrentStage());
             }
         };
         this.registerRemoveOperation(registration, removeHandler);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerSubModel(this);
     }
 }

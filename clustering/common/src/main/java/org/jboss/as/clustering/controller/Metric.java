@@ -18,18 +18,10 @@
  */
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 /**
  * Interface to be implemented by metric enumerations.
  * @author Paul Ferraro
  * @param <C> metric context
  */
-public interface Metric<C> extends Executable<C> {
-
-    /**
-     * The definition of this metric.
-     * @return an attribute definition
-     */
-    AttributeDefinition getDefinition();
+public interface Metric<C> extends Attribute, Executable<C> {
 }

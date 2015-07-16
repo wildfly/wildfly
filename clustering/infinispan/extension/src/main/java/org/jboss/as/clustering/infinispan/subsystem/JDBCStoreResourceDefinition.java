@@ -23,20 +23,18 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.persistence.jdbc.DatabaseType;
+import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -44,120 +42,48 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
+public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final SimpleAttributeDefinition DATA_SOURCE = new SimpleAttributeDefinitionBuilder(ModelKeys.DATASOURCE, ModelType.STRING, false)
-            .setXmlName(Attribute.DATASOURCE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        DATA_SOURCE("datasource", ModelType.STRING, false, null),
+        DIALECT("dialect", ModelType.STRING, true, new EnumValidator<>(DatabaseType.class, true, true)),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition DIALECT = new SimpleAttributeDefinitionBuilder(ModelKeys.DIALECT, ModelType.STRING, true)
-            .setXmlName(Attribute.DIALECT.getLocalName())
-            .setValidator(new EnumValidator<>(DatabaseType.class, true, true))
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        Attribute(String name, ModelType type, boolean allowNull, ParameterValidator validator) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(allowNull)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setValidator(validator)
+                    .build();
+        }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DATA_SOURCE, DIALECT };
-
-    static final SimpleAttributeDefinition BATCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.BATCH_SIZE, ModelType.INT, true)
-            .setXmlName(Attribute.BATCH_SIZE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(100))
-            .build();
-
-    static final SimpleAttributeDefinition FETCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_SIZE, ModelType.INT, true)
-            .setXmlName(Attribute.FETCH_SIZE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(100))
-            .build();
-
-    static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(ModelKeys.PREFIX, ModelType.STRING, true)
-            .setXmlName(Attribute.PREFIX.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    static final SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinitionBuilder("name", ModelType.STRING, true)
-            .setXmlName("name")
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set("name"))
-            .build();
-
-    static final SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinitionBuilder("type", ModelType.STRING, true)
-            .setXmlName("type")
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set("type"))
-            .build();
-
-    static final AttributeDefinition[] COLUMN_ATTRIBUTES = new AttributeDefinition[] { COLUMN_NAME, COLUMN_TYPE };
-
-    static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.ID_COLUMN, COLUMN_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("column")
-            .build();
-
-    static final ObjectTypeAttributeDefinition DATA_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.DATA_COLUMN, COLUMN_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("column")
-            .build();
-
-    static final ObjectTypeAttributeDefinition TIMESTAMP_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.TIMESTAMP_COLUMN, COLUMN_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("column")
-            .build();
-
-    static final AttributeDefinition[] TABLE_ATTRIBUTES = new AttributeDefinition[] { PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN };
-
-    @Deprecated
-    static final ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.ENTRY_TABLE, TABLE_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("table")
-            .build();
-
-    @Deprecated
-    static final ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BUCKET_TABLE, TABLE_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("table")
-            .build();
-
-    static final ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.STRING_KEYED_TABLE, TABLE_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("table")
-            .build();
-
-    static final ObjectTypeAttributeDefinition BINARY_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BINARY_KEYED_TABLE, TABLE_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("table")
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, DIALECT)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, DIALECT);
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.DIALECT.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.DIALECT.getDefinition())
+                    .end();
         }
 
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    JDBCStoreResourceDefinition(StoreType store, boolean allowRuntimeOnlyRegistration) {
-        super(store, allowRuntimeOnlyRegistration);
+    JDBCStoreResourceDefinition(PathElement path, InfinispanResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration) {
+        super(path, resolver, allowRuntimeOnlyRegistration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
     }
 }

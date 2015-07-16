@@ -27,16 +27,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices();
 
         // read the default stack
-        ModelNode result = services.executeOperation(getSubsystemReadOperation(ModelKeys.DEFAULT_STACK));
+        ModelNode result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinition.DEFAULT_STACK));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("maximal", result.get(RESULT).resolve().asString());
 
         // write the default stack
-        result = services.executeOperation(getSubsystemWriteOperation(ModelKeys.DEFAULT_STACK, "new-default"));
+        result = services.executeOperation(getSubsystemWriteOperation(JGroupsSubsystemResourceDefinition.DEFAULT_STACK, "new-default"));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the default stack
-        result = services.executeOperation(getSubsystemReadOperation(ModelKeys.DEFAULT_STACK));
+        result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinition.DEFAULT_STACK));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-default", result.get(RESULT).asString());
     }
@@ -50,16 +50,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices();
 
         // read the transport rack attribute
-        ModelNode result = services.executeOperation(getTransportReadOperation("maximal", "TCP", ModelKeys.RACK));
+        ModelNode result = services.executeOperation(getTransportReadOperation("maximal", "TCP", TransportResourceDefinition.RACK));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("rack1", result.get(RESULT).resolve().asString());
 
         // write the rack attribute
-        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", ModelKeys.RACK, "new-rack"));
+        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", TransportResourceDefinition.RACK, "new-rack"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the rack attribute
-        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", ModelKeys.RACK));
+        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", TransportResourceDefinition.RACK));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
@@ -75,11 +75,11 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // write the rack attribute
-        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", ModelKeys.RACK, "new-rack"));
+        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", TransportResourceDefinition.RACK, "new-rack"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the rack attribute
-        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", ModelKeys.RACK));
+        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", TransportResourceDefinition.RACK));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
@@ -151,16 +151,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // read the socket binding attribute
-        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING));
+        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", ProtocolResourceDefinition.SOCKET_BINDING));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("jgroups-mping", result.get(RESULT).asString());
 
         // write the attribute
-        result = services.executeOperation(getProtocolWriteOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING, "new-socket-binding"));
+        result = services.executeOperation(getProtocolWriteOperation("maximal", "MPING", ProtocolResourceDefinition.SOCKET_BINDING, "new-socket-binding"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the attribute
-        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING));
+        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", ProtocolResourceDefinition.SOCKET_BINDING));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-socket-binding", result.get(RESULT).asString());
     }

@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
@@ -94,7 +95,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
     };
 
     PropertyResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(ModelKeys.PROPERTY));
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
         this.setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion());
     }
 
@@ -106,7 +107,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) {
                 PathAddress address = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
-                ModelNode getOperation = Operations.createMapGetOperation(address, ProtocolResourceDefinition.PROPERTIES.getName(), key);
+                ModelNode getOperation = Operations.createMapGetOperation(address, new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), key);
                 context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
             }
         };
@@ -117,7 +118,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
                 PathAddress address = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
                 String value = Operations.getAttributeValue(operation).asString();
-                ModelNode putOperation = Operations.createMapPutOperation(address, ProtocolResourceDefinition.PROPERTIES.getName(), key, value);
+                ModelNode putOperation = Operations.createMapPutOperation(address, new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), key, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
@@ -134,7 +135,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
                 String name = context.getCurrentAddressValue();
                 String value = operation.get(VALUE.getName()).asString();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, ProtocolResourceDefinition.PROPERTIES.getName(), name, value);
+                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), name, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
@@ -147,7 +148,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
                 context.removeResource(PathAddress.EMPTY_ADDRESS);
                 String name = context.getCurrentAddressValue();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, ProtocolResourceDefinition.PROPERTIES.getName(), name);
+                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), name);
                 context.addStep(putOperation, MapOperations.MAP_REMOVE_HANDLER, context.getCurrentStage());
             }
         };

@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,14 +43,14 @@ public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements R
     private final OperationExecutor<C> executor;
 
     public <O extends Enum<O> & Operation<C>> OperationHandler(OperationExecutor<C> executor, Class<O> operationClass) {
-        this(executor, operationClass.getEnumConstants());
+        this(executor, EnumSet.allOf(operationClass));
     }
 
     public OperationHandler(OperationExecutor<C> executor, Operation<C>[] operations) {
         this(executor, Arrays.asList(operations));
     }
 
-    public OperationHandler(OperationExecutor<C> executor, Iterable<Operation<C>> operations) {
+    public OperationHandler(OperationExecutor<C> executor, Iterable<? extends Operation<C>> operations) {
         this.executor = executor;
         for (Operation<C> operation : operations) {
             this.operations.put(operation.getDefinition().getName(), operation);

@@ -32,7 +32,8 @@ public enum Mode {
     ASYNC(false),
     ;
     private final boolean sync;
-    private Mode(boolean sync) {
+
+    Mode(boolean sync) {
         this.sync = sync;
     }
 
@@ -46,11 +47,5 @@ public enum Mode {
 
     public boolean isSynchronous() {
         return this.sync;
-    }
-
-    @Override
-    public String toString() {
-        // remove conversion to lower case (AS7-3478)
-         return this.name();
     }
 }

@@ -23,15 +23,18 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.commons.api.BasicCacheContainer;
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.AttributeParsers;
+import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -46,67 +49,66 @@ import org.jboss.dmr.ModelType;
  */
 public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+    static final PathElement LEGACY_PATH = PathElement.pathElement("remote-store", "REMOTE_STORE");
+    static final PathElement PATH = pathElement("remote");
 
-    // attributes
-    static final SimpleAttributeDefinition CACHE = new SimpleAttributeDefinitionBuilder(ModelKeys.CACHE, ModelType.STRING, true)
-            .setXmlName(Attribute.CACHE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME))
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        CACHE("cache", ModelType.STRING, new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME)),
+        SOCKET_TIMEOUT("socket-timeout", ModelType.LONG, new ModelNode(60000L)),
+        TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, new ModelNode(true)),
+        SOCKET_BINDINGS("remote-servers")
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition TCP_NO_DELAY = new SimpleAttributeDefinitionBuilder(ModelKeys.TCP_NO_DELAY, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.TCP_NO_DELAY.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(true))
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+                    .build();
+        }
 
-    static final SimpleAttributeDefinition SOCKET_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_TIMEOUT, ModelType.LONG, true)
-            .setXmlName(Attribute.SOCKET_TIMEOUT.getLocalName())
-            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(60000L))
-            .build();
+        Attribute(String name) {
+            this.definition = new StringListAttributeDefinition.Builder(name)
+                    .setAttributeParser(AttributeParsers.COLLECTION)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setMinSize(1)
+                    .build();
+        }
 
-    // the remote servers parameter is required (not null), and the list of remote-server objects must have size >= 1
-    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelKeys.OUTBOUND_SOCKET_BINDING, ModelType.STRING)
-            .setAllowNull(false)
-            .setXmlName(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName())
-            .build();
-
-    static final ObjectTypeAttributeDefinition REMOTE_SERVER = ObjectTypeAttributeDefinition. Builder.of(ModelKeys.REMOTE_SERVER, OUTBOUND_SOCKET_BINDING)
-            .setAllowNull(false)
-            .setSuffix("remote-server")
-            .build();
-
-    static final ObjectListAttributeDefinition REMOTE_SERVERS = ObjectListAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVERS, REMOTE_SERVER)
-            .setAllowNull(false)
-            .setMinSize(1)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS };
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
     RemoteStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(StoreType.REMOTE, allowRuntimeOnlyRegistration);
+        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RemoteStoreBuilderFactory());
+        new AddStepHandler(this.getResourceDescriptionResolver(), handler).addAttributes(Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class).register(registration);
+        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
     }
 }

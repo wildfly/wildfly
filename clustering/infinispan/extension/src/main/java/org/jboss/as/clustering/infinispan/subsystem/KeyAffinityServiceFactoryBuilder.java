@@ -63,7 +63,7 @@ public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServ
         this.containerName = containerName;
     }
 
-    public KeyAffinityServiceFactoryBuilder bufferSize(int size) {
+    public KeyAffinityServiceFactoryBuilder setBufferSize(int size) {
         this.bufferSize = size;
         return this;
     }

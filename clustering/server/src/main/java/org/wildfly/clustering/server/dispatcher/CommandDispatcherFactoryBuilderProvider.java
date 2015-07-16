@@ -58,4 +58,9 @@ public class CommandDispatcherFactoryBuilderProvider implements GroupBuilderProv
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), CommandDispatcherFactory.class);
         return Arrays.asList(builder, bindingBuilder);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }
