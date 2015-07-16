@@ -26,13 +26,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.jboss.as.test.integration.domain.management.cli.CloneProfileTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DomainDeployWithRuntimeNameTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DomainDeploymentOverlayTestCase;
+import org.jboss.as.test.integration.domain.management.cli.HierarchicalCompositionTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
-import org.jboss.as.test.integration.domain.management.cli.CloneProfileTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.junit.AfterClass;
@@ -53,7 +54,8 @@ import org.junit.runners.Suite;
         RolloutPlanTestCase.class,
         DomainDeployWithRuntimeNameTestCase.class,
         DataSourceTestCase.class,
-        CloneProfileTestCase.class
+        CloneProfileTestCase.class,
+        HierarchicalCompositionTestCase.class
 })
 public class CLITestSuite {
 
