@@ -29,6 +29,8 @@ import java.io.IOException;
 
 import javax.transaction.Synchronization;
 import javax.transaction.Transaction;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -38,6 +40,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -218,4 +221,7 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 30, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
     IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
+
+    @Message(id = 31, value = "The attribute '%s' is no longer supported")
+    XMLStreamException unsupportedAttribute(String attribute, @Param Location location);
 }

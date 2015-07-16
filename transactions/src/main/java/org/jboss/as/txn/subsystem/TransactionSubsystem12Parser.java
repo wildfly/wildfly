@@ -41,6 +41,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -220,11 +221,8 @@ class TransactionSubsystem12Parser implements XMLStreamConstants, XMLElementRead
                     TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.parseAndSetParameter(value, operation, reader);
                     break;
                 case PATH:
-                    TransactionSubsystemRootResourceDefinition.PATH.parseAndSetParameter(value, operation, reader);
-                    break;
                 case RELATIVE_TO:
-                    TransactionSubsystemRootResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, operation, reader);
-                    break;
+                    throw TransactionLogger.ROOT_LOGGER.unsupportedAttribute(attribute.getLocalName(), reader.getLocation());
                 default:
                     throw unexpectedAttribute(reader, i);
             }

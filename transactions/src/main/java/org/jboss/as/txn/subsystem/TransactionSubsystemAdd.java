@@ -158,8 +158,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private void populateModelWithCoreEnvConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
         //core environment
         TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.validateAndSet(operation, model);
-        TransactionSubsystemRootResourceDefinition.PATH.validateAndSet(operation, model);
-        TransactionSubsystemRootResourceDefinition.RELATIVE_TO.validateAndSet(operation, model);
 
         // We have some complex logic for the 'process-id' stuff because of the alternatives
         if (operation.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()) && operation.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
@@ -352,11 +350,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Configure the core configuration.
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, coreEnvModel).asString();
-        final String varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, coreEnvModel).asString();
-        final String varDirPath = TransactionSubsystemRootResourceDefinition.PATH.resolveModelAttribute(context, coreEnvModel).asString();
         TransactionLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", nodeIdentifier);
-        TransactionLogger.ROOT_LOGGER.debugf("varDirPathRef=%s, varDirPath=%s%n", varDirPathRef, varDirPath);
-        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, varDirPath, varDirPathRef);
+        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier);
 
         String socketBindingName = null;
         if (TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.resolveModelAttribute(context, coreEnvModel).asBoolean(false)) {
@@ -377,9 +372,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
             coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
         }
-        coreEnvBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, coreEnvironmentService.getPathManagerInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        coreEnvBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 
     private void performRecoveryEnvBoottime(OperationContext context, ModelNode model, final boolean jts, List<ServiceName> deps) throws OperationFailedException {
