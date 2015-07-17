@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.ee.datasourcedefinition;
 
 import javax.annotation.Resource;
 import javax.annotation.sql.DataSourceDefinition;
+import javax.annotation.sql.DataSourceDefinitions;
 import javax.ejb.Stateless;
 import javax.sql.DataSource;
 
@@ -31,12 +32,19 @@ import java.sql.SQLException;
 /**
  * @author Stuart Douglas
  */
-@DataSourceDefinition(
-        name = "java:comp/ds",
-        user = "sa",
-        password = "sa",
-        className = "org.h2.jdbcx.JdbcDataSource",
-        url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+@DataSourceDefinitions({
+        @DataSourceDefinition(
+                name = "java:comp/ds",
+                user = "sa",
+                password = "sa",
+                className = "org.h2.jdbcx.JdbcDataSource",
+                url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+        ),
+        @DataSourceDefinition(
+                name = "java:comp/dse",
+                className = "org.jboss.as.test.integration.ee.datasourcedefinition.EmbeddedDataSource"
+        )
+}
 )
 @Stateless
 public class DataSourceBean {
@@ -56,6 +64,8 @@ public class DataSourceBean {
     @Resource(lookup="org.jboss.as.test.integration.ee.datasourcedefinition.DataSourceBean/dataSource3")
     private DataSource dataSource4;
 
+    @Resource(lookup="java:comp/dse")
+    private DataSource dataSource5;
 
     public void createTable() throws SQLException {
         dataSource.getConnection().createStatement().execute("create table if not exists coffee(id int not null);");
@@ -84,5 +94,9 @@ public class DataSourceBean {
 
     public DataSource getDataSource4() {
         return dataSource4;
+    }
+
+    public DataSource getDataSource5() {
+        return dataSource5;
     }
 }
