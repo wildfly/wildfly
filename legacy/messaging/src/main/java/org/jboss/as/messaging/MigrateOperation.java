@@ -118,6 +118,7 @@ public class MigrateOperation implements OperationStepHandler {
 
     private static final String MESSAGING_ACTIVEMQ_EXTENSION = "org.wildfly.extension.messaging-activemq";
     private static final String MESSAGING_ACTIVEMQ_MODULE = "org.wildfly.extension.messaging-activemq";
+    private static final String MESSAGING_MODULE = "org.jboss.as.messaging";
 
     private static final String NEW_ENTRY_SUFFIX = "-new";
     private static final String HORNETQ_NETTY_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
@@ -340,17 +341,24 @@ public class MigrateOperation implements OperationStepHandler {
             ModelNode newAddress = transformAddress(legacyAddOp.get(OP_ADDR).clone());
             newAddOp.get(OP_ADDR).set(newAddress);
 
+            PathAddress address = PathAddress.pathAddress(newAddress);
+
+            // migrate server resource
+            if (address.size() == 2 && "server".equals(address.getLastElement().getKey())) {
+                migrateServer(newAddOp, warnings);
+            }
+
             if (newAddress.asList().size() > 2) {
-                Property subsystemSubresource = newAddress.asPropertyList().get(1);
-                if (subsystemSubresource.getName().equals("server")) {
-                    Property serverSubresource = newAddress.asPropertyList().get(2);
-                    switch (serverSubresource.getName()) {
+                // element 0 is subsystem=messaging-activemq
+                String parentType = address.getElement(1).getKey();
+                String resourceType = address.getElement(2).getKey();
+                if ("server".equals(parentType)) {
+                    switch (resourceType) {
                         case BROADCAST_GROUP:
                             migrateBroadcastGroup(newAddOp, warnings);
                             break;
                         case CONNECTION_FACTORY:
                             if (addLegacyEntries) {
-                                PathAddress address = PathAddress.pathAddress(newAddress);
                                 PathAddress legacyConnectionFactoryAddress = address.getParent().append("legacy-connection-factory", address.getLastElement().getValue());
                                 final ModelNode addLegacyConnectionFactoryOp = legacyAddOp.clone();
                                 addLegacyConnectionFactoryOp.get(OP_ADDR).set(legacyConnectionFactoryAddress.toModelNode());
@@ -383,13 +391,12 @@ public class MigrateOperation implements OperationStepHandler {
                         case HTTP_CONNECTOR:
                         case REMOTE_CONNECTOR:
                         case CONNECTOR_SERVICE:
-                            if (newAddress.asPropertyList().size() > 3) {
+                            if (address.size() == 4) {
                                 // if there are any param resource underneath connectors, acceptors, and connector-services
                                 // add them directly to their parent add operation in their params attribute
-                                String name = newAddress.asPropertyList().get(3).getValue().asString();
+                                String name = address.getLastElement().getValue();
                                 ModelNode value = newAddOp.get(VALUE);
-                                PathAddress currentAddress = pathAddress(newAddress);
-                                ModelNode parentAddOp = newAddOperations.get(currentAddress.getParent());
+                                ModelNode parentAddOp = newAddOperations.get(address.getParent());
                                 parentAddOp.get("params").add(new Property(name, value));
                                 continue;
                             }
@@ -398,7 +405,7 @@ public class MigrateOperation implements OperationStepHandler {
                 }
             }
 
-            newAddOperations.put(pathAddress(newAddOp.get(OP_ADDR)), newAddOp);
+            newAddOperations.put(address, newAddOp);
         }
     }
 
@@ -500,4 +507,17 @@ public class MigrateOperation implements OperationStepHandler {
         addOperation.get(FACTORY_CLASS.getName()).set(newFactoryClass);
     }
 
+
+    private void migrateServer(ModelNode addOperation, List<String> warnings) {
+        discardInterceptors(addOperation, CommonAttributes.REMOTING_INCOMING_INTERCEPTORS.getName(), warnings);
+        discardInterceptors(addOperation, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS.getName(), warnings);
+    }
+
+    private void discardInterceptors(ModelNode addOperation, String legacyInterceptorsAttributeName, List<String> warnings) {
+        if (!addOperation.get(legacyInterceptorsAttributeName).isDefined()) {
+            return;
+        }
+        warnings.add(ROOT_LOGGER.couldNotMigrateInterceptors(legacyInterceptorsAttributeName));
+        addOperation.remove(legacyInterceptorsAttributeName);
+    }
 }

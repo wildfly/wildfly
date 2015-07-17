@@ -808,4 +808,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 81, value = "Migration failed, see results for more details.")
     String migrationFailed();
+
+    @Message(id = 82, value = "Classes providing the %s are discarded during the migration. To use them in the new messaging-activemq subsystem, you will have to extend the Artemis-based Interceptor.")
+    String couldNotMigrateInterceptors(String legacyInterceptorsAttributeName);
 }

@@ -95,7 +95,8 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode warnings = response.get(RESULT, "migration-warnings");
         // 6 warnings about broadcast-group attributes that can not be migrated.
-        assertEquals(6, warnings.asList().size());
+        // 2 warnings about interceptors that can not be migrated.
+        assertEquals(8, warnings.asList().size());
 
         model = services.readWholeModel();
 
