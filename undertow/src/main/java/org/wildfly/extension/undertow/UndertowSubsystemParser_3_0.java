@@ -249,7 +249,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD,
                                         ModClusterDefinition.CONNECTION_IDLE_TIMEOUT,
                                         ModClusterDefinition.REQUEST_QUEUE_SIZE,
-                                        ModClusterDefinition.SECURITY_REALM)
+                                        ModClusterDefinition.SECURITY_REALM,
+                                        ModClusterDefinition.USE_ALIAS)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)

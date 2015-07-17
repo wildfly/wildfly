@@ -172,4 +172,5 @@ public interface Constants {
     String ENABLE = "enable";
     String DISABLE = "disable";
     String LOAD = "load";
+    String USE_ALIAS = "use-alias";
 }
