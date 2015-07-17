@@ -160,6 +160,8 @@
                 <xs:attribute name="enabled-protocols" use="optional" type="xs:string"/>
                 <xs:attribute name="enable-http2" use="optional" type="xs:string"/>
                 <xs:attribute name="enable-spdy" use="optional" type="xs:string"/>
+                <xs:attribute name="ssl-session-cache-size" use="optional" type="xs:string"/>
+                <xs:attribute name="ssl-session-timeout" use="optional" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

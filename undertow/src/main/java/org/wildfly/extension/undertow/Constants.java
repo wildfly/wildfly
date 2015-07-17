@@ -198,4 +198,13 @@ public interface Constants {
     String ENABLE_NODES = "enable-nodes";
     String DISABLE_NODES = "disable-nodes";
     String STOP_NODES = "stop-nodes";
+    String DEFAULT_SESSION_TIMEOUT = "default-session-timeout";
+    String PREDICATE = "predicate";
+    String SSL_SESSION_CACHE_SIZE = "ssl-session-cache-size";
+    String SSL_SESSION_TIMEOUT = "ssl-session-timeout";
+    String VERIFY_CLIENT = "verify-client";
+    String ENABLED_CIPHER_SUITES = "enabled-cipher-suites";
+    String ENABLED_PROTOCOLS = "enabled-protocols";
+    String ENABLE_HTTP2 = "enable-http2";
+    String ENABLE_SPDY = "enable-spdy";
 }

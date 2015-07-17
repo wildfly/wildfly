@@ -30,6 +30,8 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.List;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -326,4 +328,18 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 76, value = "Cannot remove resource of type %s")
     IllegalArgumentException cannotRemoveResourceOfType(String type);
+
+    @Message(id = 77, value = "Migrate operation only allowed in admin only mode")
+    OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
+
+    @LogMessage(level = WARN)
+    @Message(id = 78, value = "Could not migrate resource %s")
+    void couldNotMigrateResource(ModelNode node);
+
+    @LogMessage(level = WARN)
+    @Message(id = 79, value = "Could not migrate attribute %s from resource %s")
+    void couldNotMigrateResource(String attribute, PathAddress node);
+
+    @Message(id = 80, value = "Could not migrate SSL connector as no SSL config is defined")
+    OperationFailedException noSslConfig();
 }

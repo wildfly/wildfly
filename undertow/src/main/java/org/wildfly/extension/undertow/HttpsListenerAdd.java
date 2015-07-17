@@ -47,6 +47,8 @@ public class HttpsListenerAdd extends ListenerAdd {
         HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model,builder);
         HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveOption(context, model, builder);
         HttpsListenerResourceDefinition.ENABLED_PROTOCOLS.resolveOption(context, model, builder);
+        HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE.resolveOption(context, model, builder);
+        HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT.resolveOption(context, model, builder);
 
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
         HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model,listenerBuilder);
