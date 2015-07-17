@@ -51,6 +51,8 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_USER_TRANSACTION_REGISTRY = JBOSS_TXN.append("UserTransactionRegistry");
 
+    public static final ServiceName JBOSS_TXN_TRANSACTION_LISTENER_REGISTRY = JBOSS_TXN.append("TransactionListenerRegistry");
+
     public static final ServiceName JBOSS_TXN_SYNCHRONIZATION_REGISTRY = JBOSS_TXN.append("TransactionSynchronizationRegistry");
 
     public static final ServiceName JBOSS_TXN_JTA_ENVIRONMENT = JBOSS_TXN.append("JTAEnvironment");

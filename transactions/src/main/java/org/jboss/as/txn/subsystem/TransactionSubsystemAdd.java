@@ -83,6 +83,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.tm.JBossXATerminator;
+import org.jboss.tm.listener.TransactionListenerRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
@@ -433,6 +434,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         transactionManagerServiceServiceBuilder
                 .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
                 .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, UserTransactionRegistry.class, transactionManagerService.getUserTransactionRegistry())
+                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_LISTENER_REGISTRY, TransactionListenerRegistry.class, transactionManagerService.getTransactionListenerRegistry())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
