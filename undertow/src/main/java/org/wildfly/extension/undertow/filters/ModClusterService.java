@@ -59,11 +59,12 @@ public class ModClusterService extends FilterService {
     private final int cachedConnections;
     private final int connectionIdleTimeout;
     private final int requestQueueSize;
+    private final boolean useAlias;
 
     private ModCluster modCluster;
     private MCMPConfig config;
 
-    ModClusterService(ModelNode model, long healthCheckInterval, int maxRequestTime, long removeBrokenNodes, int advertiseFrequency, String advertisePath, String advertiseProtocol, String securityKey, Predicate managementAccessPredicate, int connectionsPerThread, int cachedConnections, int connectionIdleTimeout, int requestQueueSize) {
+    ModClusterService(ModelNode model, long healthCheckInterval, int maxRequestTime, long removeBrokenNodes, int advertiseFrequency, String advertisePath, String advertiseProtocol, String securityKey, Predicate managementAccessPredicate, int connectionsPerThread, int cachedConnections, int connectionIdleTimeout, int requestQueueSize, boolean useAlias) {
         super(ModClusterDefinition.INSTANCE, model);
         this.healthCheckInterval = healthCheckInterval;
         this.maxRequestTime = maxRequestTime;
@@ -77,6 +78,7 @@ public class ModClusterService extends FilterService {
         this.cachedConnections = cachedConnections;
         this.connectionIdleTimeout = connectionIdleTimeout;
         this.requestQueueSize = requestQueueSize;
+        this.useAlias = useAlias;
     }
 
     @Override
@@ -105,7 +107,10 @@ public class ModClusterService extends FilterService {
                 .setCacheConnections(cachedConnections)
                 .setQueueNewRequests(requestQueueSize > 0)
                 .setRequestQueueSize(requestQueueSize)
-                .setRemoveBrokenNodes(removeBrokenNodes);
+                .setRemoveBrokenNodes(removeBrokenNodes)
+                .setTtl(connectionIdleTimeout)
+                .setMaxConnections(connectionsPerThread)
+                .setUseAlias(useAlias);
 
         modCluster = modClusterBuilder
                 .build();
@@ -200,7 +205,8 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.CONNECTIONS_PER_THREAD.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(operationContext, model).asInt(),
-                ModClusterDefinition.REQUEST_QUEUE_SIZE.resolveModelAttribute(operationContext, model).asInt());
+                ModClusterDefinition.REQUEST_QUEUE_SIZE.resolveModelAttribute(operationContext, model).asInt(),
+                ModClusterDefinition.USE_ALIAS.resolveModelAttribute(operationContext, model).asBoolean());
         ServiceBuilder<FilterService> builder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.advertiseSocketBinding);
