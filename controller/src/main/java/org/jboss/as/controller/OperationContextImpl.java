@@ -1086,7 +1086,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                         authResp = authorizeResource(true, false);
                         authResp.addOperationResult(operationName, authResult);
                     }
-                    authResult = authResp.validateAddAttributeEffects(ADD, targetAction.getActionEffects());
+                    authResult = authResp.validateAddAttributeEffects(ADD, targetAction.getActionEffects(), activeStep.operation);
                 }
             }
 
@@ -1143,7 +1143,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             assert authResp != null : "no AuthorizationResponse";
             String opName = activeStep.operation.get(OP).asString();
             authResp.addOperationResult(opName, authResult);
-            authResult = authResp.validateAddAttributeEffects(opName, writeEffect);
+            authResult = authResp.validateAddAttributeEffects(opName, writeEffect, activeStep.operation);
             authResp.addOperationResult(opName, authResult);
             if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
                 throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
@@ -1175,21 +1175,25 @@ final class OperationContextImpl extends AbstractOperationContext {
                     return effectResult;
                 }
             }
+            AuthorizationResult errResult = null;
+
             if (allAttributes) {
                 ImmutableManagementResourceRegistration mrr = authResp.targetResource.getResourceRegistration();
                 ModelNode model = authResp.targetResource.getResource().getModel();
                 Set<Action.ActionEffect> attributeEffects = actionEffects.isEmpty() ? authResp.standardAction.getActionEffects() : actionEffects;
+
                 for (String attr : mrr.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
                     ModelNode currentValue = model.has(attr) ? model.get(attr) : new ModelNode();
                     AuthorizationResult attrResult = authorize(opId, attr, currentValue, attributeEffects);
                     if (attrResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                        return attrResult;
+
+                        errResult = attrResult;
                     }
                 }
                 authResp.attributesComplete = true;
             }
 
-            return AuthorizationResult.PERMITTED;
+            return errResult != null ? errResult : AuthorizationResult.PERMITTED;
         }
     }
 
@@ -1750,7 +1754,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             operationResults.put(operationName, result);
         }
 
-        private AuthorizationResult validateAddAttributeEffects(String operationName, Set<ActionEffect> actionEffects) {
+        private AuthorizationResult validateAddAttributeEffects(String operationName, Set<ActionEffect> actionEffects, ModelNode operation) {
             AuthorizationResult basic = operationResults.get(operationName);
             assert basic != null : " no basic authorization has been performed for operation 'add'";
             if (basic.getDecision() == Decision.DENY) {
@@ -1763,7 +1767,11 @@ final class OperationContextImpl extends AbstractOperationContext {
                     if (attrDenied) {
                         attributeWasDenied = true;
                         // See if we even care about this attribute
-                        if (model.hasDefined(attrName) || isAddableAttribute(attrName, resourceRegistration)) {
+                        // BES 2014/11/11 -- currently "model" is always undefined at this point, so testing it is silly,
+                        // but I leave it in here as a 2nd line of defense in case we rework something and this check
+                        // gets run after model gets populated
+                        if (operation.hasDefined(attrName) || model.hasDefined(attrName) ||
+                                isAddableAttribute(attrName, resourceRegistration)) {
                             Map<ActionEffect, AuthorizationResult> attrResults = attributeResultEntry.getValue();
                             for (ActionEffect actionEffect : actionEffects) {
                                 AuthorizationResult authResult = attrResults.get(actionEffect);
