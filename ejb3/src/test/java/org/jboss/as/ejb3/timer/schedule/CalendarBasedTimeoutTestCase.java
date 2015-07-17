@@ -126,8 +126,6 @@ public class CalendarBasedTimeoutTestCase {
             testRun29thOfFeb();
             testSomeSpecificTime();
             testEvery10Seconds();
-            testWithStartInThePast();
-            testWithStartInTheFutureAndLaterSchedule();
         }
     }
 
@@ -497,93 +495,6 @@ public class CalendarBasedTimeoutTestCase {
 
         }
 
-    }
-
-    /**
-     * Create a Timeout with a Schedule start date in the past (day before) to ensure the time is set correctly.
-     * The schedule is on the first day of month to ensure that the calculated time must be moved to the next month.
-     *
-     * The test is run for each day of a whole year.
-     */
-    //@Test
-    public void testWithStartInThePast() {
-        Calendar start = new GregorianCalendar(this.timezone);
-        start.clear();
-        start.set(2014, 3, 18);
-        Calendar end = (Calendar) start.clone();
-        end.add(Calendar.YEAR, 1);
-        do {
-            // setup schedule
-            ScheduleExpression schedule = this.getTimezoneSpecificScheduleExpression();
-            schedule.month("*");
-            schedule.dayOfMonth("1");
-            schedule.hour("0-1");
-            schedule.minute("0");
-            schedule.second("0/5");
-            Calendar scheduleStart = (Calendar) start.clone();
-            // subtract one day
-            scheduleStart.add(Calendar.DAY_OF_MONTH, -1);
-            if(scheduleStart.get(Calendar.DAY_OF_MONTH) == 1) {
-                // if the previous day is 1, subtract one more day
-                scheduleStart.add(Calendar.DAY_OF_MONTH, -1);
-            }
-            schedule.start(scheduleStart.getTime());
-            // create calendar timeout and retrieve first timeout
-            CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
-            Calendar firstTimeout = calendarTimeout.getFirstTimeout();
-            // assert first timeout result
-            if(firstTimeout.get(Calendar.DAY_OF_MONTH) != 1 ||
-                    firstTimeout.get(Calendar.HOUR_OF_DAY) != 0 ||
-                    firstTimeout.get(Calendar.MINUTE) != 0 ||
-                    firstTimeout.get(Calendar.SECOND) != 0) {
-                Assert.fail(timeZoneDisplayName);
-            }
-            // move to next day
-            start.add(Calendar.DAY_OF_MONTH,1);
-        } while (start.before(end));
-    }
-
-    /**
-     * Check a Timeout if the Schedule start date in the future (day after)
-     * The schedule is on the first day of month to ensure that the calculated time must be moved to the next month.
-     *
-     * The test is run for each day of a whole year.
-     */
-    //@Test
-    public void testWithStartInTheFutureAndLaterSchedule() {
-        Calendar start = new GregorianCalendar(this.timezone);
-        start.clear();
-        start.set(2014, 3, 18);
-        Calendar end = (Calendar) start.clone();
-        end.add(Calendar.YEAR, 1);
-        do {
-            // setup schedule
-            ScheduleExpression schedule = this.getTimezoneSpecificScheduleExpression();
-            schedule.month("*");
-            schedule.dayOfMonth("1");
-            schedule.hour("0-12");
-            schedule.minute("0/5");
-            schedule.second("0");
-            Calendar scheduleStart = (Calendar) start.clone();
-            // add one day
-            scheduleStart.add(Calendar.DAY_OF_MONTH, 1);
-            if(scheduleStart.get(Calendar.DAY_OF_MONTH) == 1) {
-                // if the next day is 1, add one more day, to avoid first timeout by advancing minutes only
-                scheduleStart.add(Calendar.DAY_OF_MONTH, 1);
-            }
-            schedule.start(scheduleStart.getTime());
-            // create calendar timeout and retrieve first timeout
-            CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
-            Calendar firstTimeout = calendarTimeout.getFirstTimeout();
-            // assert first timeout result
-            if(firstTimeout.get(Calendar.DAY_OF_MONTH) != 1 ||
-                    firstTimeout.get(Calendar.HOUR_OF_DAY) != 0 ||
-                    firstTimeout.get(Calendar.MINUTE) != 0) {
-                Assert.fail(timeZoneDisplayName);
-            }
-            // move to next day
-            start.add(Calendar.DAY_OF_MONTH,1);
-        } while (start.before(end));
     }
 
     private ScheduleExpression getTimezoneSpecificScheduleExpression() {
