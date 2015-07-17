@@ -239,13 +239,16 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
     }
 
     private Host getUndertowHost(final ServerHostInfo info) {
-        for (Server server : getUndertowService().getServers()) {
-            if (info.getServerInstanceName() != null && !server.getName().equals(info.getServerInstanceName())) {
-                continue;
-            }
-            for (Host undertowHost : server.getHosts()) {
-                if (undertowHost.getName().equals(info.getHost())) {
-                    return undertowHost;
+        UndertowService us = getUndertowService();
+        if (us != null) {
+            for (Server server : getUndertowService().getServers()) {
+                if (info.getServerInstanceName() != null && !server.getName().equals(info.getServerInstanceName())) {
+                    continue;
+                }
+                for (Host undertowHost : server.getHosts()) {
+                    if (undertowHost.getName().equals(info.getHost())) {
+                        return undertowHost;
+                    }
                 }
             }
         }
