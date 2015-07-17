@@ -57,7 +57,7 @@ public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
 
     @Override
     public boolean equals(Object object) {
-        if ((object != null) && (object instanceof HashableMarshalledValue)) {
+        if (object instanceof HashableMarshalledValue) {
             HashableMarshalledValue<?> value = (HashableMarshalledValue<?>) object;
             return (this.hashCode == value.hashCode()) && super.equals(object);
         }
