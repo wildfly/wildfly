@@ -22,14 +22,10 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.api.jms.management.JMSServerControl;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 
@@ -48,17 +44,6 @@ public class ConnectionFactoryRemove extends AbstractRemoveStepHandler {
         final String name = context.getCurrentAddressValue();
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
         context.removeService(JMSServices.getConnectionFactoryBaseServiceName(serviceName).append(name));
-
-        ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        JMSServerControl control = JMSServerControl.class.cast(server.getManagementService().getResource(ResourceNames.JMS_SERVER));
-        if (control != null) {
-            try {
-                control.destroyConnectionFactory(name);
-            } catch (Exception e) {
-                throw new OperationFailedException(e);
-            }
-        }
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

@@ -81,7 +81,6 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
             executeOperation(writeAttribute);
             fail("it is not possible to define a discovery group when the connector attribute is already defined");
         } catch (MgmtOperationException e) {
-            e.printStackTrace();
             assertEquals(FAILED, e.getResult().get(OUTCOME).asString());
             assertEquals(true, e.getResult().get(ROLLED_BACK).asBoolean());
             assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains("WFLYMSGAMQ0019"));
