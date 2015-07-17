@@ -22,6 +22,9 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.server.Services.addServerExecutorDependency;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -106,10 +109,6 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.jipijapa.plugin.spi.Platform;
 import org.jipijapa.plugin.spi.TwoPhaseBootstrapCapable;
 
-
-import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.server.Services.addServerExecutorDependency;
-
 /**
  * Handle the installation of the Persistence Unit service
  *
@@ -170,12 +169,14 @@ public class PersistenceUnitServiceHandler {
             PersistenceUnitMetadataHolder holder;
             ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
 
+            String deploymentRootName = null;
             // handle persistence.xml definition in the root of the war
             if (deploymentRoot != null &&
                 (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
                 holder.getPersistenceUnits().size() > 0) {
                 // assemble and install the PU service
                 puList.add(holder);
+                deploymentRootName = deploymentRoot.getRootName();
             }
 
             // look for persistence.xml in war files in the META-INF/persistence.xml directory
@@ -195,7 +196,7 @@ public class PersistenceUnitServiceHandler {
                 deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, new WebNonTxEmCloserAction());
             }
 
-            ROOT_LOGGER.tracef("install persistence unit definitions for war %s", deploymentRoot.getRootName());
+            ROOT_LOGGER.tracef("install persistence unit definitions for war %s", deploymentRootName);
             addPuService(phaseContext, puList, startEarly, platform);
         }
     }

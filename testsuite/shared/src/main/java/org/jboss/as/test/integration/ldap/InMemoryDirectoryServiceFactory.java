@@ -94,7 +94,7 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
      * {@inheritDoc}
      */
     public void init(String name) throws Exception {
-        if ((directoryService != null) && directoryService.isStarted()) {
+        if ((directoryService == null) || directoryService.isStarted()) {
             return;
         }
 
