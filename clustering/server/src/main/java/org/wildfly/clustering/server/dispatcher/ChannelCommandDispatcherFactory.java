@@ -37,6 +37,7 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 import org.jgroups.Address;
+import org.jgroups.Channel;
 import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
 import org.jgroups.Message;
@@ -84,10 +85,12 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 return correlator;
             }
         };
-        this.dispatcher.setChannel(config.getChannel());
+        Channel channel = config.getChannel();
+        this.dispatcher.setChannel(channel);
         this.dispatcher.setRequestHandler(this);
         this.dispatcher.setMembershipListener(this);
         this.dispatcher.start();
+        this.view.compareAndSet(null, channel.getView());
     }
 
     @Override
@@ -200,16 +203,18 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     @Override
     public void viewAccepted(View view) {
         View oldView = this.view.getAndSet(view);
-        List<Node> oldNodes = this.getNodes(oldView);
-        List<Node> newNodes = this.getNodes(view);
+        if (oldView != null) {
+            List<Node> oldNodes = this.getNodes(oldView);
+            List<Node> newNodes = this.getNodes(view);
 
-        List<Address> leftMembers = View.leftMembers(oldView, view);
-        if (leftMembers != null) {
-            this.nodeFactory.invalidate(leftMembers);
-        }
+            List<Address> leftMembers = View.leftMembers(oldView, view);
+            if (leftMembers != null) {
+                this.nodeFactory.invalidate(leftMembers);
+            }
 
-        for (Listener listener: this.listeners) {
-            listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
+            for (Listener listener: this.listeners) {
+                listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
+            }
         }
     }
 
