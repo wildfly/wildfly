@@ -29,9 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.common.XaPool;
-import org.jboss.jca.common.api.metadata.ds.DsPool;
 import org.jboss.jca.common.api.metadata.ds.DsXaPool;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 
@@ -128,11 +126,11 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             setStringIfNotNull(context, dataSource.getXaPool().getCapacity().getDecrementer().getClassName());
 
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES.getName())) {
-            Pool pool = dataSource.getXaPool();
-            if (pool == null || ((DsPool) pool).getCapacity() == null || ((DsPool) pool).getCapacity().getIncrementer() == null)
+            XaPool pool = dataSource.getXaPool();
+            if (pool == null || ((DsXaPool) pool).getCapacity() == null || ((DsXaPool) pool).getCapacity().getIncrementer() == null)
                 return;
 
-            final Map<String, String> propertiesMap = ((DsPool) pool).getCapacity().getIncrementer().getConfigPropertiesMap();
+            final Map<String, String> propertiesMap = ((DsXaPool) pool).getCapacity().getIncrementer().getConfigPropertiesMap();
             if (propertiesMap == null) {
                 return;
             }
@@ -142,11 +140,11 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
 
 
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName())) {
-            Pool pool = dataSource.getXaPool();
-            if (pool == null || ((DsPool) pool).getCapacity() == null || ((DsPool) pool).getCapacity().getDecrementer() == null)
+            XaPool pool = dataSource.getXaPool();
+            if (pool == null || ((DsXaPool) pool).getCapacity() == null || ((DsXaPool) pool).getCapacity().getDecrementer() == null)
                 return;
 
-            final Map<String, String> propertiesMap = ((DsPool) pool).getCapacity().getDecrementer().getConfigPropertiesMap();
+            final Map<String, String> propertiesMap = ((DsXaPool) pool).getCapacity().getDecrementer().getConfigPropertiesMap();
             if (propertiesMap == null) {
                 return;
             }
