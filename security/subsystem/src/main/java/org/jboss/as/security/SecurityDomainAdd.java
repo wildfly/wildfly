@@ -135,12 +135,21 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
      * Private to ensure a singleton.
      */
     private SecurityDomainAdd() {
-        super(Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attribute : SecurityDomainResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
+        }
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+        // register the security realm capabality if the export-elytron-realm attribute has been set.
+        ModelNode elytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, resource.getModel());
+        if (elytronRealm.isDefined()) {
+            context.registerCapability(Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY.fromBaseCapability(elytronRealm.asString()), null);
         }
     }
 
@@ -164,7 +173,6 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         final ApplicationPolicy applicationPolicy = createApplicationPolicy(context, securityDomain, model);
         final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(context, securityDomain, model);
         final String cacheType = getAuthenticationCacheType(model);
-        final boolean exportElytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, model).asBoolean();
 
         final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
                 applicationPolicy, jsseSecurityDomain, cacheType);
@@ -193,8 +201,9 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         }
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-        if (exportElytronRealm) {
-            final ServiceName realmServiceName = context.getCapabilityServiceName(Capabilities.SECURITY_REALM_CAPABILITY, securityDomain, SecurityRealm.class);
+        final ModelNode elytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, model);
+        if (elytronRealm.isDefined()) {
+            final ServiceName realmServiceName = context.getCapabilityServiceName(Capabilities.SECURITY_REALM_CAPABILITY, elytronRealm.asString(), SecurityRealm.class);
             final DomainContextRealmService domainContextRealmService = new DomainContextRealmService();
             target.addService(realmServiceName, domainContextRealmService)
                     .addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, domainContextRealmService.getSecurityDomainContextInjector())

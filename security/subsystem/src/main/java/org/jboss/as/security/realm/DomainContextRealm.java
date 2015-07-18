@@ -45,25 +45,25 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  * <p>
  * A {@link org.wildfly.security.auth.server.SecurityRealm} implementation that delegates credential verification to the
  * underlying {@link org.jboss.as.security.plugins.SecurityDomainContext}. This realm is exported as a capability by the
- * security subsystem if the {@code export-elytron-realm} attribute is set to {@code true} in the security domain
- * configuration. The example bellow illustrates how to export a realm for the security domain {@code LegacyDomain}:
+ * security subsystem if the {@code export-elytron-realm} attribute is defined in the security domain configuration. The
+ * example bellow illustrates how to export a realm for the security domain {@code legacy-domain}:
  *
  * <pre>
- *     &lt;security-domain name="Legacy" cache-type="default" export-elytron-realm="true"&gt;
+ *     &lt;security-domain name="legacy-domain" cache-type="default" export-elytron-realm="legacy-realm"&gt;
  *         ...
  *     &lt;/security-domain&gt;
  * </pre>
  *</p>
  * <p>
- * The security domain name is used as the dynamic name of the exported realm. This is the name that must be used in the
- * {@code Elytron} subsystem to reference this {@link org.jboss.as.security.plugins.SecurityDomainContext} based realm.
- * So, for the above example, an {@code Elytron} configuration would look like this:
+ * The value of {@code export-elytron-realm} attribute is used as the dynamic name of the exported realm. This is the
+ * name that must be used in the {@code Elytron} subsystem to reference this {@link org.jboss.as.security.plugins.SecurityDomainContext}
+ * based realm. So, for the above example, an {@code Elytron} configuration would look like this:
  *
  * <pre>
  *     &lt;subsystem xmlns="urn:wildfly:elytron:1.0"&gt;
  *         &lt;security-domains&gt;
- *             &lt;security-domain name="ApplicationDomain" default-realm="Legacy"&gt;
- *                 &lt;realm name="Legacy"/&gt;
+ *             &lt;security-domain name="ApplicationDomain" default-realm="legacy-realm"&gt;
+ *                 &lt;realm name="legacy-realm"/&gt;
  *             &lt;/security-domain&gt;
  *         &lt;/security-domains&gt;
  *     &lt;/subsystem&gt;

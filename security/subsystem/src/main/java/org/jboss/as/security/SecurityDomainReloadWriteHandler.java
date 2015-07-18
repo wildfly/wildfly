@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class SecurityDomainReloadWriteHandler extends RestartParentWriteAttributeHandler {
 
-    protected SecurityDomainReloadWriteHandler(final AttributeDefinition... definition) {
+    protected SecurityDomainReloadWriteHandler(final AttributeDefinition ... definition) {
         super(Constants.SECURITY_DOMAIN, definition);
     }
 
@@ -53,7 +53,10 @@ public class SecurityDomainReloadWriteHandler extends RestartParentWriteAttribut
     protected void removeServices(final OperationContext context, final ServiceName parentService, final ModelNode parentModel) throws OperationFailedException {
         super.removeServices(context, parentService, parentModel);
         // make sure the security realm service is also removed.
-        ServiceName serviceName = Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY.getCapabilityServiceName(parentService.getSimpleName());
-        context.removeService(serviceName);
+        ModelNode elytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, parentModel);
+        if (elytronRealm.isDefined()) {
+            ServiceName serviceName = Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY.getCapabilityServiceName(elytronRealm.asString());
+            context.removeService(serviceName);
+        }
     }
 }

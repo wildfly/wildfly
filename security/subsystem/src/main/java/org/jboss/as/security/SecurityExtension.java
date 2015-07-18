@@ -60,7 +60,6 @@ import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -166,8 +165,7 @@ import org.jboss.msc.service.ServiceName;
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE);
         final ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
-        securityDomain.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                            SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+        securityDomain.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecurityDomainResourceDefinition.CACHE_TYPE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
                 .end();
@@ -233,8 +231,7 @@ import org.jboss.msc.service.ServiceName;
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
-        securityDomain.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+        securityDomain.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
                 .end();
 
@@ -272,8 +269,7 @@ import org.jboss.msc.service.ServiceName;
         // fully compatible if this attribute is left undefined or if its set to false.
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
-        securityDomain.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
+        securityDomain.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM)
                 .end();
 

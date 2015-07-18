@@ -32,7 +32,6 @@ import org.jboss.msc.service.ServiceName;
  * @author Jason T. Greene
  */
 public abstract class SecurityDomainReloadAddHandler extends RestartParentResourceAddHandler {
-
     protected SecurityDomainReloadAddHandler() {
         super(Constants.SECURITY_DOMAIN);
     }
@@ -52,7 +51,10 @@ public abstract class SecurityDomainReloadAddHandler extends RestartParentResour
     protected void removeServices(final OperationContext context, final ServiceName parentService, final ModelNode parentModel) throws OperationFailedException {
         super.removeServices(context, parentService, parentModel);
         // make sure the security realm service is also removed.
-        ServiceName serviceName = Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY.getCapabilityServiceName(parentService.getSimpleName());
-        context.removeService(serviceName);
+        ModelNode elytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, parentModel);
+        if (elytronRealm.isDefined()) {
+            ServiceName serviceName = Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY.getCapabilityServiceName(elytronRealm.asString());
+            context.removeService(serviceName);
+        }
     }
 }

@@ -118,14 +118,11 @@ public class SecurityDomainModelv20UnitTestCase extends AbstractSubsystemBaseTes
         assertTrue(legacyServices.isSuccessfulBoot());
 
         // the elytron domain should be rejected because it has defined the export-elytron-realm attribute as true.
-        PathAddress domainAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement(Constants.SECURITY_DOMAIN, "elytron"));
+        PathAddress domainAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement(Constants.SECURITY_DOMAIN, "legacy-domain"));
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version,
                 builder.parseXmlResource("securitysubsystemv20.xml"),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(PathAddress.pathAddress(domainAddress),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE));
-
-        // we should not get any errors for the other2 domain - the export-elytron-realm attribute has been set to false,
-        // making it compatible with older versions of the model.
     }
 }
