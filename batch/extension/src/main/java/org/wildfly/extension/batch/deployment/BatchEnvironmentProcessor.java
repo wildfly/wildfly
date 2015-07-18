@@ -42,6 +42,7 @@ import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.wildfly.extension.batch.BatchServiceNames;
@@ -75,7 +76,10 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
             // Create the batch environment
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, JobRepositoryFactory.getInstance().getJobRepository(moduleDescription), deploymentUnit.getName());
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, deploymentUnit.getName());
+            // Set the value for the job-repository, this can't be a capability as the JDBC job repository cannot be constructed
+            // until deployment time because the default JNDI data-source name is only known during DUP processing
+            service.getJobRepositoryInjector().setValue(new ImmediateValue<>(JobRepositoryFactory.getInstance().getJobRepository(moduleDescription)));
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
             // Register the required services
             serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
