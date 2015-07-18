@@ -30,6 +30,7 @@ import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
+import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -38,6 +39,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
+import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.as.test.integration.batch.common.JobExecutionMarshaller;
 import org.jboss.as.test.integration.batch.common.StartBatchServlet;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -56,6 +58,9 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
 
     @ArquillianResource
     private ManagementClient managementClient;
+
+    @Inject
+    private CountingItemWriter countingItemWriter;
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -110,7 +115,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
             // Check that count
-            Assert.assertEquals(10, CountingItemWriter.WRITTEN_ITEMS.size());
+            Assert.assertEquals(10, countingItemWriter.getWrittenItemSize());
 
             // Suspend the server
             managementClient.getControllerClient().execute(Operations.createOperation("suspend"));
@@ -136,7 +141,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
             // Check that count
-            Assert.assertEquals(20, CountingItemWriter.WRITTEN_ITEMS.size());
+            Assert.assertEquals(20, countingItemWriter.getWrittenItemSize());
         } finally {
             managementClient.getControllerClient().execute(Operations.createOperation("resume"));
         }

@@ -20,55 +20,56 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.batch.chunk;
+package org.jboss.as.test.integration.batch.common;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.ItemReader;
+import javax.batch.api.chunk.ItemWriter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @Named
-public class CountingItemReader implements ItemReader {
+@Singleton
+public class CountingItemWriter implements ItemWriter {
+
+    private final List<Object> writtenItems = Collections.synchronizedList(new ArrayList<>());
 
     @Inject
-    @BatchProperty(name = "reader.start")
-    private int start;
-
-    @Inject
-    @BatchProperty(name = "reader.end")
-    private int end;
-
-    private final AtomicInteger counter = new AtomicInteger();
+    @BatchProperty(name = "writer.sleep.time")
+    private long sleep;
 
     @Override
     public void open(final Serializable checkpoint) throws Exception {
-        if (end == 0) {
-            end = 10;
-        }
-        counter.set(start);
     }
 
     @Override
     public void close() throws Exception {
-        counter.set(0);
     }
 
     @Override
-    public Object readItem() throws Exception {
-        final int result = counter.incrementAndGet();
-        if (result > end) {
-            return null;
+    public void writeItems(final List<Object> items) throws Exception {
+        writtenItems.addAll(items);
+        if (sleep > 0) {
+            TimeUnit.MILLISECONDS.sleep(sleep);
         }
-        return result;
     }
 
     @Override
     public Serializable checkpointInfo() throws Exception {
-        return counter.get();
+        synchronized (writtenItems) {
+            return new ArrayList<>(writtenItems);
+        }
+    }
+
+    public int getWrittenItemSize() {
+        return writtenItems.size();
     }
 }

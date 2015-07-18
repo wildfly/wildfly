@@ -20,15 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.batch.chunk;
+package org.jboss.as.test.integration.batch.common;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.ItemWriter;
+import javax.batch.api.chunk.ItemReader;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -36,34 +33,42 @@ import javax.inject.Named;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @Named
-public class CountingItemWriter implements ItemWriter {
-
-    static final List<Object> WRITTEN_ITEMS = Collections.synchronizedList(new ArrayList<>());
+public class CountingItemReader implements ItemReader {
 
     @Inject
-    @BatchProperty(name = "writer.sleep.time")
-    private long sleep;
+    @BatchProperty(name = "reader.start")
+    private int start;
+
+    @Inject
+    @BatchProperty(name = "reader.end")
+    private int end;
+
+    private final AtomicInteger counter = new AtomicInteger();
 
     @Override
     public void open(final Serializable checkpoint) throws Exception {
+        if (end == 0) {
+            end = 10;
+        }
+        counter.set(start);
     }
 
     @Override
     public void close() throws Exception {
+        counter.set(0);
     }
 
     @Override
-    public void writeItems(final List<Object> items) throws Exception {
-        WRITTEN_ITEMS.addAll(items);
-        if (sleep > 0) {
-            TimeUnit.MILLISECONDS.sleep(sleep);
+    public Object readItem() throws Exception {
+        final int result = counter.incrementAndGet();
+        if (result > end) {
+            return null;
         }
+        return result;
     }
 
     @Override
     public Serializable checkpointInfo() throws Exception {
-        synchronized (WRITTEN_ITEMS) {
-            return new ArrayList<>(WRITTEN_ITEMS);
-        }
+        return counter.get();
     }
 }
