@@ -88,6 +88,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         this.dispatcher.setRequestHandler(this);
         this.dispatcher.setMembershipListener(this);
         this.dispatcher.start();
+        viewAccepted(this.dispatcher.getChannel().getView());
     }
 
     @Override
