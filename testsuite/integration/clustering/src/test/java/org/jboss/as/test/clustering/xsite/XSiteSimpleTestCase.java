@@ -47,6 +47,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -72,6 +73,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("Intermittently fails")
 public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
