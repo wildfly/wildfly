@@ -46,15 +46,16 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
+            <xs:element name="properties" minOccurs="0" maxOccurs="1" type="genericPropertiesType"/>
             <xs:element name="orb" minOccurs="0" maxOccurs="1" type="orbConfigType"/>
             <xs:element name="tcp" minOccurs="0" maxOccurs="1" type="tcpConfigType"/>
             <xs:element name="initializers" minOccurs="0" maxOccurs="1" type="initializersConfigType"/>
             <xs:element name="naming" minOccurs="0" maxOccurs="1" type="namingConfigType"/>
             <xs:element name="security" minOccurs="0" maxOccurs="1" type="securityConfigType"/>
             <xs:element name="client-transport" minOccurs="0" maxOccurs="1" type="iorClientTransportConfigType"/>
+            <xs:element name="transport-config" type="iorTransportConfigType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="as-context" minOccurs="0" maxOccurs="1" type="iorASContextType"/>
             <xs:element name="sas-context" minOccurs="0" maxOccurs="1" type="iorSASContextType"/>
-            <xs:element name="properties" minOccurs="0" maxOccurs="1" type="genericPropertiesType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -71,6 +72,7 @@
         <xs:attribute name="giop-version" type="xs:string" use="optional" default="1.2"/>
         <xs:attribute name="socket-binding" type="xs:string" use="optional" default="iiop"/>
         <xs:attribute name="ssl-socket-binding" type="xs:string" use="optional" default="iiop-ssl"/>
+        <xs:attribute name="persistent-server-id" type="xs:string" use="optional" default="1"/>
     </xs:complexType>
 
     <xs:complexType name="tcpConfigType">
