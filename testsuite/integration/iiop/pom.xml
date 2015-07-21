@@ -118,6 +118,8 @@
                                         combine.children="append">
                                         <arquillian.launch>iiop</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <!-- EJB client library hack, see WFLY-4973-->
+                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                     </systemPropertyVariables>
                                     <argLine>
                                         -Djava.endorsed.dirs=${project.build.directory}/endorsed

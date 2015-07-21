@@ -46,6 +46,8 @@
                         <systemPropertyVariables combine.children="append">
                             <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                             <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                            <!-- EJB client library hack, see WFLY-4973-->
+                            <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
