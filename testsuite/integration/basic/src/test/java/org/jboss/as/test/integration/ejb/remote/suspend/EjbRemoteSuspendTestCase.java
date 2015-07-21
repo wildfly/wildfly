@@ -33,6 +33,7 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -78,6 +79,7 @@ public class EjbRemoteSuspendTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testSuspendedCallRejected() throws Exception {
         final Echo localEcho = (Echo) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + EchoBean.class.getSimpleName() + "!" + Echo.class.getName() + "?stateful");
         final String message = "Silence!";
@@ -98,6 +100,24 @@ public class EjbRemoteSuspendTestCase {
             op = new ModelNode();
             op.get(ModelDescriptionConstants.OP).set("resume");
             managementClient.getControllerClient().execute(op);
+            //we need to make sure the module availbility message has been recieved
+            //(this is why we have InSequence, so avoid two sleep() calls)
+            //otherwise the test might fail intermittently if the message has not been recieved when the
+            //next test is started
+
+            //this is a somewhat weird construct, basically we just wait up to 5 seconds for the connection
+            //to become usable again
+            long fin = System.currentTimeMillis() + 5000;
+            while (true) {
+                try {
+                    localEcho.echo(message);
+                    break;
+                } catch(Exception e) {
+                    if(System.currentTimeMillis() > fin) {
+                        throw e;
+                    }
+                }
+            }
 
         }
     }
@@ -105,6 +125,7 @@ public class EjbRemoteSuspendTestCase {
 
 
     @Test
+    @InSequence(2)
     public void testStatefulEjbCreationRejected() throws Exception {
 
         ModelNode op = new ModelNode();
@@ -120,7 +141,6 @@ public class EjbRemoteSuspendTestCase {
             op = new ModelNode();
             op.get(ModelDescriptionConstants.OP).set("resume");
             managementClient.getControllerClient().execute(op);
-
         }
     }
 }
