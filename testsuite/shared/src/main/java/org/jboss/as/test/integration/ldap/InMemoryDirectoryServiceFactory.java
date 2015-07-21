@@ -188,7 +188,7 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
      */
     @Override
     public DirectoryService getDirectoryService() throws Exception {
-        return new WrapperDirectoryService(directoryService, cacheManager);
+        return cacheManager != null ? new WrapperDirectoryService(directoryService, cacheManager) : directoryService;
     }
 
     /**
