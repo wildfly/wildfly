@@ -112,9 +112,9 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
     @Test
     public void testEjb20TopicMDBs() {
         sendTextMessage("Say hello to the topic", topic);
-        final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(1000));
+        final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Reply message was null on reply queue: " + replyQueueA, replyA);
-        final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(1000));
+        final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Reply message was null on reply queue: " + replyQueueB, replyB);
     }
 }
