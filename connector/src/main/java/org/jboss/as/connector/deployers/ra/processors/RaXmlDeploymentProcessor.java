@@ -58,8 +58,6 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private ConnectorXmlDescriptor connectorXmlDescriptor;
-
     public RaXmlDeploymentProcessor() {
 
     }
@@ -78,7 +76,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
 
 
-        connectorXmlDescriptor = deploymentUnit
+        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit
                 .getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if (connectorXmlDescriptor == null) {
             return; // Skip non ra deployments
