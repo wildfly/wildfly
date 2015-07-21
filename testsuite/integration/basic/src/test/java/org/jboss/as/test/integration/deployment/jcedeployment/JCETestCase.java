@@ -21,6 +21,12 @@
  */
 package org.jboss.as.test.integration.deployment.jcedeployment;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.net.URL;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -37,12 +43,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.File;
-import java.net.URL;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
 
 /**
  * This tests a JCE provider bundled in an EAR.
@@ -63,7 +63,7 @@ public class JCETestCase {
         jce.as(ZipExporter.class).exportTo(jceJar, true);
         final File signedJceJar = new File("target/jcetestsigned.jar");
         JavaArchive signedJce;
-        if (isOracleJVM())  {
+        if (isJCETestable())  {
             // see genkey-jcetest-keystore in pom.xml for the keystore creation
             final JarSignerUtil signer = new JarSignerUtil(new File("../jcetest.keystore"), "password", "password", /* alias */ "test");
             signer.sign(jceJar, signedJceJar);
@@ -89,19 +89,27 @@ public class JCETestCase {
 
     @Test
     public void testJCE() throws Exception {
-        if(isOracleJVM()) {
+        if(isJCETestable()) {
             String result = performCall(url, "controller");
             assertEquals("ok", result);
         } else {
-            log.info("skipping the test since it can run on Oracle JDK only");
+            log.info("Skipping test as 'javax.crypto.JarVerifier' does not contain a field called 'providerValidator'.");
         }
     }
 
     private String performCall(final URL url, final String urlPattern) throws Exception {
         return HttpRequest.get(url.toExternalForm() + urlPattern, 1000, SECONDS);
     }
-    
-    private static boolean isOracleJVM() {
-        return "Oracle Corporation".equalsIgnoreCase(System.getProperty("java.vm.vendor"));
+
+    private static boolean isJCETestable() {
+        try {
+            final Class<?> cls = Class.forName("javax.crypto.JarVerifier");
+            cls.getDeclaredField("providerValidator");
+        } catch (Exception e) {
+            return false;
+        }
+
+        return true;
+
     }
 }
