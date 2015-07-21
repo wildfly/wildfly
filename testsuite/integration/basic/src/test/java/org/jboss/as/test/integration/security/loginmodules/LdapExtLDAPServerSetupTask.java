@@ -127,7 +127,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
 
     //@formatter:off
     @CreateDS(
-        name = "JBossDS",
+        name = "JBossDS-LdapExtLDAPServerSetupTask",
         factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {

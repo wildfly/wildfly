@@ -332,7 +332,7 @@ public class OutboundLdapConnectionTestCase {
      */
     //@formatter:off
     @CreateDS(
-            name = "JBossDS",
+            name = "JBossDS-OutboundLdapConnectionTestCase",
             factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
             partitions = {
                 @CreatePartition(

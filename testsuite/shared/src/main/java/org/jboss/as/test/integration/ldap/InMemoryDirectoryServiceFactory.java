@@ -125,10 +125,10 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
             return;
         }
 
-        directoryService.setInstanceId(name);
+        directoryService.setInstanceId(name + this.hashCode());
 
         // instance layout
-        InstanceLayout instanceLayout = new InstanceLayout(System.getProperty("java.io.tmpdir") + "/server-work-" + name);
+        InstanceLayout instanceLayout = new InstanceLayout(System.getProperty("java.io.tmpdir") + "/server-work-" + directoryService.getInstanceId());
         if (instanceLayout.getInstanceDirectory().exists()) {
             try {
                 FileUtils.deleteDirectory(instanceLayout.getInstanceDirectory());
@@ -169,7 +169,6 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
             throw new Exception(I18n.err(I18n.ERR_317, Exceptions.printErrors(errors)));
         }
 
-        cacheService.initialize(null);
         DnFactory dnFactory = new DefaultDnFactory( schemaManager, cacheService.getCache( "dnCache" ) );
         // Init system partition
         Partition systemPartition = partitionFactory.createPartition(directoryService.getSchemaManager(), dnFactory, "system",

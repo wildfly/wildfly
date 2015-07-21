@@ -81,7 +81,7 @@ public class LdapServerSetupTask implements ServerSetupTask {
     }
 
     @CreateDS(
-             name = "JBossDS",
+             name = "JBossDS-LdapServerSetupTask",
              factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
              partitions =
              {
