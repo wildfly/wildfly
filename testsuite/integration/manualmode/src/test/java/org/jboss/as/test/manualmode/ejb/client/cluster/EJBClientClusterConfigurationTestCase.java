@@ -49,6 +49,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -74,6 +75,7 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("Intermittently fails")
 public class EJBClientClusterConfigurationTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientClusterConfigurationTestCase.class);
