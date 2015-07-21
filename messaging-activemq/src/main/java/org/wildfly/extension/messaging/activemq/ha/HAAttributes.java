@@ -88,6 +88,7 @@ public class HAAttributes {
             .build();
 
     public static AttributeDefinition EXCLUDED_CONNECTORS = new StringListAttributeDefinition.Builder("excluded-connectors")
+            .setAllowNull(true)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setRestartAllServices()
