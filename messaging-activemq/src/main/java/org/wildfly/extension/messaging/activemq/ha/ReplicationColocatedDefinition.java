@@ -36,7 +36,6 @@ import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.MAX_BACKU
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.REQUEST_BACKUP;
 import static org.wildfly.extension.messaging.activemq.ha.ManagementHelper.createAddOperation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -109,10 +108,9 @@ public class ReplicationColocatedDefinition extends PersistentResourceDefinition
                 .setMaxBackups(MAX_BACKUPS.resolveModelAttribute(context, model).asInt())
                 .setBackupPortOffset(BACKUP_PORT_OFFSET.resolveModelAttribute(context, model).asInt());
 
-        ModelNode connectors = EXCLUDED_CONNECTORS.resolveModelAttribute(context, model);
-        if (connectors.isDefined()) {
-            List<String> connectorNames = new ArrayList<>(connectors.keys());
-            haPolicyConfiguration.setExcludedConnectors(connectorNames);
+        List<String> connectors = EXCLUDED_CONNECTORS.unwrap(context, model);
+        if (!connectors.isEmpty()) {
+            haPolicyConfiguration.setExcludedConnectors(connectors);
         }
 
         ModelNode masterConfigurationModel = model.get(CONFIGURATION, MASTER);
