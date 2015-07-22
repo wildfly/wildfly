@@ -124,17 +124,18 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        addHandler.performRuntime(context, operation, model);
 
-        boolean enabled = ! operation.hasDefined(ENABLED.getName()) || ENABLED.resolveModelAttribute(context, model).asBoolean();
+        boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
         if (context.isNormalServer() && enabled) {
+            addHandler.firstRuntimeStep(context, operation, model);
+
             final ManagementResourceRegistration datasourceRegistration = context.getResourceRegistrationForUpdate();
             PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
             Resource resource = context.getOriginalRootResource();
             for (PathElement element : addr) {
                 resource = resource.getChild(element);
             }
-            DataSourceEnable.addServices(context, operation, datasourceRegistration,
+            AbstractDataSourceAdd.secondRuntimeStep(context, operation, datasourceRegistration,
                     Resource.Tools.readModel(resource), this instanceof XaDataSourceRemove);
         }
     }

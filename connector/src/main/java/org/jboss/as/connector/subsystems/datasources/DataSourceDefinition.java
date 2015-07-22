@@ -26,12 +26,12 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DUMP_QUEUED_THREADS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
@@ -65,7 +65,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelNode;
 
 /**
- *
  * @author Stefano Maestri
  */
 public class DataSourceDefinition extends SimpleResourceDefinition {
@@ -97,7 +96,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
         if (!deployed) {
             resourceRegistration.registerOperationHandler(DATASOURCE_ENABLE, DataSourceEnable.LOCAL_INSTANCE);
 
-            resourceRegistration.registerOperationHandler(DATASOURCE_DISABLE, DataSourceDisable.LOCAL_INSTANCE);
+            resourceRegistration.registerOperationHandler(DATASOURCE_DISABLE, DataSourceDisable.INSTANCE);
         }
         if (registerRuntimeOnly) {
             resourceRegistration.registerOperationHandler(FLUSH_IDLE_CONNECTION, PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE);
@@ -122,29 +121,23 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
             }
 
         } else {
-            DisableRequiredWriteAttributeHandler disableRequiredWriteHandler = new DisableRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE);
-            ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED.toArray(new SimpleAttributeDefinition[DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED.size()]));
+            ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE);
             for (final SimpleAttributeDefinition attribute : DATASOURCE_ATTRIBUTE) {
                 if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
                 } else {
-                    if (DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED.contains(attribute)) {
-                        resourceRegistration.registerReadWriteAttribute(attribute, null, reloadRequiredWriteAttributeHandler);
-                    } else {
-                        resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredWriteHandler);
-                    }
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, reloadRequiredWriteAttributeHandler);
                 }
             }
-            DisableRequiredWriteAttributeHandler disableRequiredPropertiesWriteHandler = new DisableRequiredWriteAttributeHandler(DATASOURCE_PROPERTIES_ATTRIBUTES);
+            ReloadRequiredWriteAttributeHandler reloadRequiredPropertiesWriteHandler = new ReloadRequiredWriteAttributeHandler(DATASOURCE_PROPERTIES_ATTRIBUTES);
             for (final PropertiesAttributeDefinition attribute : DATASOURCE_PROPERTIES_ATTRIBUTES) {
                 if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
                 } else {
-                    resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredPropertiesWriteHandler);
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, reloadRequiredPropertiesWriteHandler);
                 }
             }
         }
-
 
 
     }
@@ -188,7 +181,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                         return attributeValue.equals(new ModelNode(false));
                     }
                 }, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED).end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
                 .end()
@@ -221,7 +215,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                         return attributeValue.equals(new ModelNode(false));
                     }
                 }, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED).end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
                 .end()

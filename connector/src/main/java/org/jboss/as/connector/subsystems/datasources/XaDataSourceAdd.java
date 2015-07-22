@@ -35,7 +35,6 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * Operation handler responsible for adding a XA data-source.
  *
- * @author John Bailey
  * @author Stefano Maestri
  */
 public class XaDataSourceAdd extends AbstractDataSourceAdd {
@@ -47,6 +46,11 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
 
     protected AbstractDataSourceService createDataSourceService(final String dsName, final String jndiName) throws OperationFailedException {
         return new XaDataSourceService(dsName, ContextNames.bindInfoFor(jndiName));
+    }
+
+    @Override
+    protected boolean isXa() {
+        return true;
     }
 
     @Override
