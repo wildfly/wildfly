@@ -30,7 +30,6 @@ import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -87,7 +86,8 @@ public class HAAttributes {
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition EXCLUDED_CONNECTORS = new StringListAttributeDefinition.Builder("excluded-connectors")
+    public static StringListAttributeDefinition EXCLUDED_CONNECTORS = new StringListAttributeDefinition.Builder("excluded-connectors")
+            .setAllowNull(true)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setRestartAllServices()
