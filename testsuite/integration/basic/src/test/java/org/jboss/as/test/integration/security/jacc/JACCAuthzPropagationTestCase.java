@@ -62,6 +62,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({ JACCAuthzPropagationTestCase.SecurityDomainsSetup.class })
 @RunAsClient
+@Ignore("See WFLY-4989")
 public class JACCAuthzPropagationTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(JACCAuthzPropagationTestCase.class);

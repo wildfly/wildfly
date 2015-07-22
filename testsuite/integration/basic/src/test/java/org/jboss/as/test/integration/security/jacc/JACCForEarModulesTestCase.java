@@ -69,6 +69,7 @@ import org.junit.runner.RunWith;
 @ServerSetup({ JACCForEarModulesTestCase.SecurityDomainsSetup.class })
 @RunAsClient
 @Category(CommonCriteria.class)
+@Ignore("See WFLY-4990")
 public class JACCForEarModulesTestCase {
 
     private static final String SECURITY_DOMAIN_NAME = "jacc-test";
