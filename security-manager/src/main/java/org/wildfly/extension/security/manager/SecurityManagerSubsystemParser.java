@@ -24,7 +24,6 @@
 package org.wildfly.extension.security.manager;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
-import static org.wildfly.extension.security.manager.PermissionResourceDefinition.PermissionResourceXMLBuilder;
 
 import java.util.List;
 
@@ -54,32 +53,8 @@ class SecurityManagerSubsystemParser implements XMLStreamConstants, XMLElementRe
 
     static {
         xmlDescription = builder(SecurityManagerRootDefinition.INSTANCE)
-                .addChild(builder(DeploymentPermissionsResourceDefinition.INSTANCE)
+                .addChild(new DeploymentPermissionsResourceDefinition.DeploymentPermissionsResourceXMLBuilder()
                         .setXmlElementName(Constants.DEPLOYMENT_PERMISSIONS)
-                        .addChild(builder(new PermissionSetResourceDefinition(Constants.MINIMUM_SET))
-                                .setXmlElementName(Constants.MINIMUM_SET)
-                                .addChild(new PermissionResourceXMLBuilder(PermissionResourceDefinition.INSTANCE)
-                                        .setXmlElementName(Constants.PERMISSION)
-                                        .addAttributes(
-                                                PermissionResourceDefinition.CLASS,
-                                                PermissionResourceDefinition.NAME,
-                                                PermissionResourceDefinition.ACTIONS,
-                                                PermissionResourceDefinition.MODULE
-                                        )
-                                )
-                        )
-                        .addChild(builder(new PermissionSetResourceDefinition(Constants.MAXIMUM_SET))
-                                .setXmlElementName(Constants.MAXIMUM_SET)
-                                .addChild(new PermissionResourceXMLBuilder(PermissionResourceDefinition.INSTANCE)
-                                        .setXmlElementName(Constants.PERMISSION)
-                                        .addAttributes(
-                                                PermissionResourceDefinition.CLASS,
-                                                PermissionResourceDefinition.NAME,
-                                                PermissionResourceDefinition.ACTIONS,
-                                                PermissionResourceDefinition.MODULE
-                                        )
-                                )
-                        )
                 )
                 .build();
     }

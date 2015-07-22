@@ -23,6 +23,14 @@
 
 package org.wildfly.extension.security.manager;
 
+import static org.wildfly.extension.security.manager.Constants.DEFAULT_VALUE;
+import static org.wildfly.extension.security.manager.Constants.DEPLOYMENT_PERMISSIONS;
+import static org.wildfly.extension.security.manager.Constants.MAXIMUM_PERMISSIONS;
+import static org.wildfly.extension.security.manager.Constants.MINIMUM_PERMISSIONS;
+import static org.wildfly.extension.security.manager.Constants.PERMISSION_ACTIONS;
+import static org.wildfly.extension.security.manager.Constants.PERMISSION_MODULE;
+import static org.wildfly.extension.security.manager.Constants.PERMISSION_NAME;
+
 import java.security.AllPermission;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +45,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -46,8 +53,6 @@ import org.jboss.modules.security.LoadedPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
 import org.wildfly.extension.security.manager.deployment.PermissionsParseProcessor;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.wildfly.extension.security.manager.Constants.*;
 
 /**
  * Handler that adds the security manager subsystem. It instantiates the permissions specified in the subsystem configuration
@@ -97,14 +102,15 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
 
         // get the minimum set of deployment permissions.
         final List<PermissionFactory> minimumSet = this.retrievePermissionSet(context,
-                this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MINIMUM_SET, DEFAULT_VALUE));
+                this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MINIMUM_PERMISSIONS));
 
         // get the maximum set of deployment permissions.
         final List<PermissionFactory> maximumSet = this.retrievePermissionSet(context,
-                this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MAXIMUM_SET, DEFAULT_VALUE));
+                this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MAXIMUM_PERMISSIONS));
 
-        if (maximumSet.isEmpty())
+        if (maximumSet.isEmpty()) {
             maximumSet.add(new ImmediatePermissionFactory(new AllPermission()));
+        }
 
         // TODO validate the permission sets: the minimum-set must be implied by the maximum-set.
 
@@ -112,7 +118,7 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                  processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_PERMISSIONS,
-                        new PermissionsParseProcessor(minimumSet, maximumSet));
+                         new PermissionsParseProcessor(minimumSet, maximumSet));
             }
         }, OperationContext.Stage.RUNTIME);
     }
@@ -129,19 +135,18 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
 
         final List<PermissionFactory> permissions = new ArrayList<PermissionFactory>();
 
-        if (node != null && node.hasDefined(PERMISSION)) {
-            for (Property property : node.get(PERMISSION).asPropertyList()) {
-                ModelNode permissionNode = property.getValue();
-                String permissionClass = PermissionResourceDefinition.CLASS.resolveModelAttribute(context, permissionNode).asString();
+        if (node != null && node.isDefined()) {
+            for (ModelNode permissionNode : node.asList()) {
+                String permissionClass = DeploymentPermissionsResourceDefinition.CLASS.resolveModelAttribute(context, permissionNode).asString();
                 String permissionName = null;
                 if (permissionNode.hasDefined(PERMISSION_NAME))
-                    permissionName = PermissionResourceDefinition.NAME.resolveModelAttribute(context, permissionNode).asString();
+                    permissionName = DeploymentPermissionsResourceDefinition.NAME.resolveModelAttribute(context, permissionNode).asString();
                 String permissionActions = null;
                 if (permissionNode.hasDefined(PERMISSION_ACTIONS))
-                    permissionActions = PermissionResourceDefinition.ACTIONS.resolveModelAttribute(context, permissionNode).asString();
+                    permissionActions = DeploymentPermissionsResourceDefinition.ACTIONS.resolveModelAttribute(context, permissionNode).asString();
                 String moduleName = null;
                 if(permissionNode.hasDefined(PERMISSION_MODULE)) {
-                    moduleName =  PermissionResourceDefinition.MODULE.resolveModelAttribute(context, permissionNode).asString();
+                    moduleName =  DeploymentPermissionsResourceDefinition.MODULE.resolveModelAttribute(context, permissionNode).asString();
                 }
                 ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
                 if(moduleName != null) {
