@@ -30,6 +30,7 @@ import javax.net.ssl.TrustManager;
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.server.i18n.I18n;
 import org.apache.directory.server.ldap.LdapServer;
+import org.apache.directory.server.protocol.shared.transport.TcpTransport;
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.filterchain.IoFilterChainBuilder;
 import org.apache.mina.filter.ssl.SslFilter;
@@ -44,7 +45,7 @@ import org.jboss.as.test.manualmode.security.TrustAndStoreTrustManager;
 //todo this class needs to go currently it is only here to override the original class that is part of apacheds and it only add TrustAndStoreTrustManager
 public class LdapsInitializer {
 
-    public static IoFilterChainBuilder init(LdapServer server) throws LdapException {
+    public static IoFilterChainBuilder init(LdapServer server, TcpTransport transport) throws LdapException {
         SSLContext sslCtx;
         try {
             // Initialize the SSLContext to work with our key managers.
@@ -58,11 +59,26 @@ public class LdapsInitializer {
         DefaultIoFilterChainBuilder chain = new DefaultIoFilterChainBuilder();
         SslFilter sslFilter = new SslFilter(sslCtx);
 
-        List<String> cipherSuites = server.getEnabledCipherSuites();
+        List<String> cipherSuites = transport.getCipherSuite();
         if ((cipherSuites != null) && !cipherSuites.isEmpty()) {
             sslFilter.setEnabledCipherSuites(cipherSuites.toArray(new String[cipherSuites.size()]));
         }
         sslFilter.setWantClientAuth(true);
+
+        // The protocols
+        List<String> enabledProtocols = transport.getEnabledProtocols();
+
+        if ((enabledProtocols != null) && !enabledProtocols.isEmpty()) {
+            sslFilter.setEnabledProtocols(enabledProtocols.toArray(new String[enabledProtocols.size()]));
+        } else {
+            // Be sure we disable SSLV3
+            sslFilter.setEnabledProtocols(new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" });
+        }
+
+        // The remaining SSL parameters
+        sslFilter.setNeedClientAuth(transport.isNeedClientAuth());
+        //sslFilter.setWantClientAuth(transport.isWantClientAuth());
+
         chain.addLast("sslFilter", sslFilter);
         return chain;
     }

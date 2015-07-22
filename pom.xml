@@ -118,7 +118,7 @@
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>3.0.5</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.3</version.org.apache.cxf.xjcplugins>
-        <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
+        <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpclient>4.3.6</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpasyncclient>4.0.1</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.httpcomponents.httpcore>4.3.3</version.org.apache.httpcomponents.httpcore>
@@ -313,14 +313,6 @@
 
     <build>
         <plugins>
-            <!-- to deal with type 'bundle' dependencies -->
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <inherited>true</inherited>
-                <extensions>true</extensions>
-            </plugin>
-
            <!-- Zanata translations -->
             <plugin>
               <groupId>org.zanata</groupId>
