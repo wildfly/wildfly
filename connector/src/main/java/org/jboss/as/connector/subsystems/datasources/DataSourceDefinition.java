@@ -196,6 +196,23 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 .end();
     }
 
+    static void registerTransformers130(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
+                    @Override
+                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        return attributeValue.equals(new ModelNode(false));
+                    }
+                }, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
+    }
+
     static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
