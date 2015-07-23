@@ -76,13 +76,19 @@ class HostDefinition extends PersistentResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition DEFAULT_RESPONSE_CODE = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_RESPONSE_CODE, ModelType.INT, true)
-    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-    .setValidator(new IntRangeValidator(400, 599, true, true))
-    .setDefaultValue(new ModelNode(404))
-    .build();
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setValidator(new IntRangeValidator(400, 599, true, true))
+            .setDefaultValue(new ModelNode(404))
+            .setAllowExpression(true)
+            .build();
+    static final SimpleAttributeDefinition DISABLE_CONSOLE_REDIRECT = new SimpleAttributeDefinitionBuilder("disable-console-redirect", ModelType.BOOLEAN, true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
 
     static final HostDefinition INSTANCE = new HostDefinition();
-    private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE));
+    private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT));
     private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
             LocationDefinition.INSTANCE,
             AccessLogDefinition.INSTANCE,

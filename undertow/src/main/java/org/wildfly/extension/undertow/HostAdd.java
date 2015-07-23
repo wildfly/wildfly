@@ -49,7 +49,7 @@ class HostAdd extends AbstractAddStepHandler {
     static final HostAdd INSTANCE = new HostAdd();
 
     private HostAdd() {
-        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE);
+        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT);
     }
 
     @Override
@@ -68,6 +68,7 @@ class HostAdd extends AbstractAddStepHandler {
         final String serverName = serverAddress.getLastElement().getValue();
         final boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
         final int defaultResponseCode = HostDefinition.DEFAULT_RESPONSE_CODE.resolveModelAttribute(context, model).asInt();
+        final boolean enableConsoleRedirect = !HostDefinition.DISABLE_CONSOLE_REDIRECT.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
 
@@ -85,24 +86,26 @@ class HostAdd extends AbstractAddStepHandler {
 
         builder.install();
 
-        // Setup the web console redirect
-        final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
-        // A standalone server is the only process type with a console redirect
-        if (context.getProcessType() == ProcessType.STANDALONE_SERVER) {
-            final ConsoleRedirectService redirectService = new ConsoleRedirectService();
-            final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
-                    .addDependency(UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, redirectService.getHttpManagementInjector())
-                    .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
-                    .setInitialMode(Mode.PASSIVE);
-            redirectBuilder.install();
-        } else {
-            // Other process types don't have a console, not depending on the UndertowHttpManagementService should
-            // result in a null dependency in the service and redirect accordingly
-            final ConsoleRedirectService redirectService = new ConsoleRedirectService();
-            final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
-                    .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
-                    .setInitialMode(Mode.PASSIVE);
-            redirectBuilder.install();
+        if (enableConsoleRedirect) {
+            // Setup the web console redirect
+            final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
+            // A standalone server is the only process type with a console redirect
+            if (context.getProcessType() == ProcessType.STANDALONE_SERVER) {
+                final ConsoleRedirectService redirectService = new ConsoleRedirectService();
+                final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
+                        .addDependency(UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, redirectService.getHttpManagementInjector())
+                        .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
+                        .setInitialMode(Mode.PASSIVE);
+                redirectBuilder.install();
+            } else {
+                // Other process types don't have a console, not depending on the UndertowHttpManagementService should
+                // result in a null dependency in the service and redirect accordingly
+                final ConsoleRedirectService redirectService = new ConsoleRedirectService();
+                final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
+                        .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
+                        .setInitialMode(Mode.PASSIVE);
+                redirectBuilder.install();
+            }
         }
     }
 
