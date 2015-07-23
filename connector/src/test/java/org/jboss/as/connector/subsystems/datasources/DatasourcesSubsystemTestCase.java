@@ -93,6 +93,25 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformer("datasources-full-expression111.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 2, 0));
     }
 
+    @Test
+    public void testTransformerEAP63() throws Exception {
+        testTransformer("datasources-full.xml", ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
+    }
+
+    @Test
+    public void testTransformerExpressionEAP63() throws Exception {
+        testTransformer("datasources-full-expression111.xml", ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
+    }
+
+    @Test
+    public void testTransformerEAP64() throws Exception {
+        testTransformer("datasources-full.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
+    }
+
+    @Test
+    public void testTransformerExpressionEAP64() throws Exception {
+        testTransformer("datasources-full-expression111.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
+    }
 
     @Test
     public void testTransformerWF8() throws Exception {
@@ -117,8 +136,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         } else {
             initializer.addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion());
         }
-        initializer.addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
-                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
+        initializer.addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.0.28.Final")
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.0.28.Final")
 
                 .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
