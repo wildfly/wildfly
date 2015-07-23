@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -47,8 +48,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Test xsite functionality on a 4-node, 3-site test deployment:
@@ -74,6 +77,12 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
+
+    private static final boolean IS_WINDOWS;
+
+    static {
+        IS_WINDOWS = WildFlySecurityManager.getPropertyPrivileged("os.name", "").toLowerCase(Locale.ROOT).contains("windows");
+    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
@@ -136,6 +145,9 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
 
             throws IllegalStateException, IOException, URISyntaxException {
+
+        // Ignore on Windows, see WFLY-4999
+        Assume.assumeFalse(IS_WINDOWS);
 
         HttpClient client = HttpClients.createDefault();
 
