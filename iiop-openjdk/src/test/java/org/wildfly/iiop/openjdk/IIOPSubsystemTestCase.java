@@ -74,6 +74,18 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("expressions-1.0.xml");
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-iiop-openjdk_1_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/iiop-openjdk.xml"
+        };
+    }
+
     @Test
     public void testParseEmptySubsystem() throws Exception {
         // parse the subsystem xml into operations.
@@ -140,6 +152,7 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
         // parse the subsystem xml and install into the first controller.
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "<orb socket-binding=\"iiop\" ssl-socket-binding=\"iiop-ssl\"/>"+
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new AdditionalInitialization(){
