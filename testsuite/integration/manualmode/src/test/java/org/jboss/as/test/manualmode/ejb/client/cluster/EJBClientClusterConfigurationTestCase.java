@@ -48,9 +48,11 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.api.Authentication;
 
 import javax.naming.Context;
@@ -60,6 +62,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Locale;
 import java.util.Properties;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
@@ -89,6 +92,12 @@ public class EJBClientClusterConfigurationTestCase {
     // These should match what's configured in arquillian.xml for -Djboss.node.name of each server instance
     private static final String DEFAULT_JBOSSAS_NODE_NAME = "default-jbossas";
     private static final String JBOSSAS_WITH_OUTBOUND_CONNECTION_NODE_NAME = "jbossas-with-remote-outbound-connection";
+
+    private static final boolean IS_WINDOWS;
+
+    static {
+        IS_WINDOWS = WildFlySecurityManager.getPropertyPrivileged("os.name", "").toLowerCase(Locale.ROOT).contains("windows");
+    }
 
     @ArquillianResource
     private ContainerController container;
@@ -148,6 +157,9 @@ public class EJBClientClusterConfigurationTestCase {
      */
     @Test
     public void testServerToServerClusterFormation() throws Exception {
+        // Ignore on Windows, see WFLY-4421
+        Assume.assumeFalse(IS_WINDOWS);
+
         // First start the default server
         this.container.start(DEFAULT_JBOSSAS);
 
