@@ -59,13 +59,13 @@ public class BatchJobResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(RUNNING_EXECUTIONS, new JobOperationStepHandler() {
+        resourceRegistration.registerReadOnlyAttribute(RUNNING_EXECUTIONS, new JobOperationUpdateStepHandler() {
             @Override
             protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
                 model.set(jobOperator.getRunningExecutions(jobName).size());
             }
         });
-        resourceRegistration.registerReadOnlyAttribute(INSTANCE_COUNT, new JobOperationStepHandler() {
+        resourceRegistration.registerReadOnlyAttribute(INSTANCE_COUNT, new JobOperationUpdateStepHandler() {
             @Override
             protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
                 model.set(jobOperator.getJobInstanceCount(jobName));

@@ -24,6 +24,9 @@ package org.wildfly.extension.batch.jberet.deployment;
 
 import javax.batch.operations.JobOperator;
 
+import java.util.Properties;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -33,7 +36,7 @@ import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
 
 /**
- * A handler to assist with updating the dynamic batch job resources.
+ * A handler to assist with batch operations that require a {@linkplain JobOperator}.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -43,30 +46,39 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
         final PathAddress address = context.getCurrentAddress();
         final ServiceController<?> controller = context.getServiceRegistry(false).getService(BatchServiceNames.jobOperatorServiceName(address));
         final JobOperator jobOperator = (JobOperator) controller.getService();
-        final String jobName = getJobName(address);
-        updateModel(context, context.getResult(), jobOperator, jobName);
+        execute(context, operation, jobOperator);
     }
 
     /**
-     * Updates the model with information from the {@link javax.batch.operations.JobOperator JobOperator}.
+     * Executes the step. Includes the {@linkplain JobOperator} for convenience.
      *
      * @param context     the operation context used
-     * @param model       the model to update
+     * @param operation   the operation for the step
      * @param jobOperator the job operator
-     * @param jobName     the name of the job
      *
-     * @throws OperationFailedException if an update failure occurs
+     * @throws OperationFailedException if there is a step failure
      */
-    protected abstract void updateModel(OperationContext context, ModelNode model, JobOperator jobOperator, String jobName) throws OperationFailedException;
+    protected abstract void execute(OperationContext context, ModelNode operation, JobOperator jobOperator) throws OperationFailedException;
 
-    /**
-     * Gets the job from from the address.
-     *
-     * @param address the address to get the job name from
-     *
-     * @return the job name
-     */
-    static String getJobName(final PathAddress address) {
-        return address.getLastElement().getValue();
+    static ModelNode resolveValue(final OperationContext context, final ModelNode operation, final AttributeDefinition attribute) throws OperationFailedException {
+        final ModelNode value = new ModelNode();
+        if (operation.has(attribute.getName())) {
+            value.set(operation.get(attribute.getName()));
+        }
+        return attribute.resolveValue(context, value);
+    }
+
+    static Properties resolvePropertyValue(final OperationContext context, final ModelNode operation, final AttributeDefinition attribute) throws OperationFailedException {
+        // Get the properties
+        final Properties properties = new Properties();
+        if (operation.hasDefined(attribute.getName())) {
+            resolveValue(context, operation, attribute).asPropertyList()
+                    .forEach(p -> properties.put(p.getName(), p.getValue().asString()));
+        }
+        return properties;
+    }
+
+    static OperationFailedException createOperationFailure(final Throwable cause) {
+        return new OperationFailedException(cause.getLocalizedMessage(), cause);
     }
 }
