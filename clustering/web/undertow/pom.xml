@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-clustering-web</artifactId>
-        <version>8.2.1.Final-SNAPSHOT</version>
+        <version>8.2.1.Final</version>
     </parent>
 
     <artifactId>wildfly-clustering-web-undertow</artifactId>

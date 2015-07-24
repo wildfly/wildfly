@@ -36,7 +36,7 @@
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-build-config</artifactId>
     <name>WildFly: Build Configuration</name>
-    <version>8.2.1.Final-SNAPSHOT</version>
+    <version>8.2.1.Final</version>
 
     <licenses>
         <license>

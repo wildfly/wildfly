@@ -28,12 +28,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-jsf-parent</artifactId>
-        <version>8.2.1.Final-SNAPSHOT</version>
+        <version>8.2.1.Final</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jsf-installer</artifactId>
-    <version>8.2.1.Final-SNAPSHOT</version>
+    <version>8.2.1.Final</version>
     <packaging>jar</packaging>
 
     <name>WildFly: JSF Multi-JSF installer</name>

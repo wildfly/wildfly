@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-core-model-test</artifactId>
-        <version>8.2.1.Final-SNAPSHOT</version>
+        <version>8.2.1.Final</version>
     </parent>
     <!--
       Just here for the tests module to include as an optional dependency to avoid picking up
@@ -41,7 +41,7 @@
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-core-model-test-controller-optional</artifactId>
     <name>WildFly: Core Model Test Controller Optional</name>
-    <version>8.2.1.Final-SNAPSHOT</version>
+    <version>8.2.1.Final</version>
 
     <dependencies>
         <dependency>
