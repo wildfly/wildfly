@@ -172,7 +172,12 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 }
 
                 if (entityManager1 == null) {
-                    entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties), synchronizationType);
+                    if (SynchronizationType.UNSYNCHRONIZED.equals(synchronizationType)) {
+                        entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(synchronizationType, properties), synchronizationType);
+                    }
+                    else {
+                        entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties), synchronizationType);
+                    }
                     createdNewExtendedPersistence = true;
                     if (ROOT_LOGGER.isDebugEnabled())
                         ROOT_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s, useDeepInheritance = %b", unitName, useDeepInheritance);

@@ -58,7 +58,6 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     private final String puScopedName;          // Scoped name of the persistent unit
     private final Map properties;
     private transient EntityManagerFactory emf;
-    private transient boolean isJPA21=true;          // true if persistence provider supports JPA 2.1
     private final SynchronizationType synchronizationType;
     private transient Boolean deferDetach;
 
@@ -113,7 +112,6 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         final ServiceController<?> controller = currentServiceContainer().getService(JPAServiceNames.getPUServiceName(puScopedName));
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) controller.getService();
         emf = persistenceUnitService.getEntityManagerFactory();
-        isJPA21 = true;
     }
 
     private static ServiceContainer currentServiceContainer() {
@@ -164,27 +162,16 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
 
     private EntityManager createEntityManager(
         EntityManagerFactory emf, Map properties, final SynchronizationType synchronizationType) {
-        if (isJPA21()) {
-            try {
-                return emf.createEntityManager(synchronizationType, properties); // properties may be null in jpa 2.1
-            } catch (AbstractMethodError consideredNotJPA21Exception) {          // dealing with JPA 1.0 or 2.0 provider?
-                setJPA21(false);
-            }
-
+        // only JPA 2.1 applications can specify UNSYNCHRONIZED.
+        // Default is SYNCHRONIZED if synchronizationType is not passed to createEntityManager
+        if (SynchronizationType.UNSYNCHRONIZED.equals(synchronizationType)) {
+            return emf.createEntityManager(synchronizationType, properties); // properties may be null in jpa 2.1
         }
 
         if (properties != null && properties.size() > 0) {
             return emf.createEntityManager(properties);
         }
         return emf.createEntityManager();
-    }
-
-    private boolean isJPA21() {
-        return isJPA21;
-    }
-
-    private void setJPA21(boolean value) {
-        isJPA21 = value;
     }
 
     /**
