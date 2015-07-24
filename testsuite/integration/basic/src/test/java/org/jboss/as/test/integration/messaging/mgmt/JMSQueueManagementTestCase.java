@@ -86,7 +86,7 @@ public class JMSQueueManagementTestCase {
     @Before
     public void addQueues() throws Exception {
 
-        adminSupport = JMSOperationsProvider.getInstance(managementClient);
+        adminSupport = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
         count++;
         adminSupport.createJmsQueue(getQueueName(), EXPORTED_PREFIX + getQueueJndiName());
@@ -437,11 +437,6 @@ public class JMSQueueManagementTestCase {
 
         // remove the queue
         adminSupport.removeJmsQueue(getQueueName());
-        try {
-            consumer.receive(5000);
-            fail("consumer is not valid after the queue is removed");
-        } catch (javax.jms.IllegalStateException e) {
-        }
         // add the queue back
         adminSupport.createJmsQueue(getQueueName(), EXPORTED_PREFIX + getQueueJndiName());
 
