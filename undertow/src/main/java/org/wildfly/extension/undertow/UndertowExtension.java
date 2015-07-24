@@ -65,6 +65,7 @@ public class UndertowExtension implements Extension {
     protected static final PathElement PATH_SSO = PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON);
     public static final PathElement BALANCER = PathElement.pathElement(Constants.BALANCER);
     public static final PathElement CONTEXT = PathElement.pathElement(Constants.CONTEXT);
+    public static final PathElement LOAD_BALANCING_GROUP = PathElement.pathElement(Constants.LOAD_BALANCING_GROUP);
     public static final PathElement NODE = PathElement.pathElement(Constants.NODE);
     public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";

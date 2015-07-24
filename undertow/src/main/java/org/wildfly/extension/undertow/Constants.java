@@ -194,4 +194,8 @@ public interface Constants {
     String MAX_ATTEMPTS = "max-attempts";
     String FLUSH_PACKETS = "flush-packets";
     String QUEUE_NEW_REQUESTS = "queue-new-requests";
+    String STOP = "stop";
+    String ENABLE_NODES = "enable-nodes";
+    String DISABLE_NODES = "disable-nodes";
+    String STOP_NODES = "stop-nodes";
 }

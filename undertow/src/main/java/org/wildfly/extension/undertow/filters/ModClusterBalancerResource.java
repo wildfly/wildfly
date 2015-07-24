@@ -26,6 +26,7 @@ import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 import io.undertow.server.handlers.proxy.mod_cluster.ModClusterStatus;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.Constants;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static org.wildfly.extension.undertow.Constants.LOAD_BALANCING_GROUP;
 import static org.wildfly.extension.undertow.Constants.NODE;
 
 public class ModClusterBalancerResource implements Resource.ResourceEntry {
@@ -67,6 +69,8 @@ public class ModClusterBalancerResource implements Resource.ResourceEntry {
     public boolean hasChild(final PathElement element) {
         if (NODE.equals(element.getKey())) {
             return getChildrenNames(NODE).contains(element.getValue());
+        } else if (LOAD_BALANCING_GROUP.equals(element.getKey())) {
+            return getChildrenNames(LOAD_BALANCING_GROUP).contains(element.getValue());
         }
         return false;
     }
@@ -75,6 +79,11 @@ public class ModClusterBalancerResource implements Resource.ResourceEntry {
     public Resource getChild(final PathElement element) {
         if (NODE.equals(element.getKey())) {
             if (getChildrenNames(NODE).contains(element.getValue())) {
+                return new ModClusterNodeResource(element.getValue(), this.name, modClusterName);
+            }
+            return null;
+        } else if (LOAD_BALANCING_GROUP.equals(element.getKey())) {
+            if (getChildrenNames(LOAD_BALANCING_GROUP).contains(element.getValue())) {
                 return new ModClusterNodeResource(element.getValue(), this.name, modClusterName);
             }
             return null;
@@ -89,6 +98,11 @@ public class ModClusterBalancerResource implements Resource.ResourceEntry {
                 return new ModClusterNodeResource(element.getValue(), this.name, modClusterName);
             }
             throw new NoSuchResourceException(element);
+        } else if (LOAD_BALANCING_GROUP.equals(element.getKey())) {
+            if (getChildrenNames(LOAD_BALANCING_GROUP).contains(element.getValue())) {
+                return new ModClusterNodeResource(element.getValue(), this.name, modClusterName);
+            }
+            throw new NoSuchResourceException(element);
         }
         throw new NoSuchResourceException(element);
     }
@@ -97,13 +111,16 @@ public class ModClusterBalancerResource implements Resource.ResourceEntry {
     public boolean hasChildren(final String childType) {
         if (NODE.equals(childType)) {
             return !getChildrenNames(NODE).isEmpty();
+        } else if (LOAD_BALANCING_GROUP.equals(childType)) {
+            return !getChildrenNames(LOAD_BALANCING_GROUP).isEmpty();
         }
         return false;
     }
 
     @Override
     public Resource navigate(final PathAddress address) {
-        if (address.size() > 0 && NODE.equals(address.getElement(0).getKey())) {
+        final String element = address.getElement(0).getKey();
+        if (address.size() > 0 && (NODE.equals(element) || LOAD_BALANCING_GROUP.equals(element))) {
             final Resource subResource = requireChild(address.getElement(0));
             if(address.size() == 1) {
                 return subResource;
@@ -135,6 +152,20 @@ public class ModClusterBalancerResource implements Resource.ResourceEntry {
                 result.add(node.getName());
             }
             return result;
+        } else if(LOAD_BALANCING_GROUP.equals(childType)) {
+
+            ModClusterService service = ModClusterResource.service(modClusterName);
+            if (service == null) {
+                return Collections.emptySet();
+            }
+            ModCluster modCluster = service.getModCluster();
+            ModClusterStatus status = modCluster.getController().getStatus();
+            final Set<String> result = new LinkedHashSet<>();
+            ModClusterStatus.LoadBalancer balancer = status.getLoadBalancer(this.name);
+            for (ModClusterStatus.Node node : balancer.getNodes()) {
+                result.add(node.getDomain());
+            }
+            return result;
         }
         return null;
     }
@@ -146,6 +177,13 @@ public class ModClusterBalancerResource implements Resource.ResourceEntry {
             final Set<ResourceEntry> result = new LinkedHashSet<>(names.size());
             for (String name : names) {
                 result.add(new ModClusterNodeResource(name, this.name, modClusterName));
+            }
+            return result;
+        } else if(LOAD_BALANCING_GROUP.equals(childType)) {
+            final Set<String> names = getChildrenNames(childType);
+            final Set<ResourceEntry> result = new LinkedHashSet<>(names.size());
+            for (String name : names) {
+                result.add(new PlaceholderResource.PlaceholderResourceEntry(PathElement.pathElement(LOAD_BALANCING_GROUP, name)));
             }
             return result;
         }

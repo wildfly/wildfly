@@ -90,6 +90,7 @@ public class ModClusterBalancerDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(ModClusterNodeDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(ModClusterLoadBalancingGroupDefinition.INSTANCE);
     }
 
     @Override
