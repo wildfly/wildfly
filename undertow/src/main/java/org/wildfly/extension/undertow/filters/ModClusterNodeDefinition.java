@@ -40,7 +40,7 @@ import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
- * Runtime representation of a mod_cluster balancer
+ * Runtime representation of a mod_cluster node
  *
  * @author Stuart Douglas
  */
@@ -55,6 +55,67 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final AttributeDefinition STATUS = new SimpleAttributeDefinitionBuilder(Constants.STATUS, ModelType.STRING)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition LOAD_BALANCING_GROUP = new SimpleAttributeDefinitionBuilder(Constants.LOAD_BALANCING_GROUP, ModelType.STRING)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition CACHE_CONNECTIONS = new SimpleAttributeDefinitionBuilder(Constants.CACHE_CONNECTIONS, ModelType.INT)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition MAX_CONNECTIONS = new SimpleAttributeDefinitionBuilder(Constants.MAX_CONNECTIONS, ModelType.INT)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition OPEN_CONNECTIONS = new SimpleAttributeDefinitionBuilder(Constants.OPEN_CONNECTIONS, ModelType.INT)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition PING = new SimpleAttributeDefinitionBuilder(Constants.PING, ModelType.INT)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition READ = new SimpleAttributeDefinitionBuilder(Constants.READ, ModelType.LONG)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition REQUEST_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(Constants.REQUEST_QUEUE_SIZE, ModelType.INT)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.TIMEOUT, ModelType.INT)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition WRITTEN = new SimpleAttributeDefinitionBuilder(Constants.WRITTEN, ModelType.LONG)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition TTL = new SimpleAttributeDefinitionBuilder(Constants.TTL, ModelType.LONG)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+
+    public static final AttributeDefinition FLUSH_PACKETS = new SimpleAttributeDefinitionBuilder(Constants.FLUSH_PACKETS, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
+    public static final AttributeDefinition QUEUE_NEW_REQUESTS = new SimpleAttributeDefinitionBuilder(Constants.QUEUE_NEW_REQUESTS, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setStorageRuntime()
             .build();
@@ -108,6 +169,90 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
                 context.getResult().set(new ModelNode(ctx.getStatus().name()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(LOAD_BALANCING_GROUP, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getDomain()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(CACHE_CONNECTIONS, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getCacheConnections()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(MAX_CONNECTIONS, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getMaxConnections()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(OPEN_CONNECTIONS, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getOpenConnections()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(PING, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getPing()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(READ, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getRead()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(REQUEST_QUEUE_SIZE, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getRequestQueueSize()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(TIMEOUT, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getTimeout()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(WRITTEN, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getTransferred()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(TTL, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getTtl()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(FLUSH_PACKETS, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.isFlushPackets()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(QUEUE_NEW_REQUESTS, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.isQueueNewRequests()));
             }
         });
     }

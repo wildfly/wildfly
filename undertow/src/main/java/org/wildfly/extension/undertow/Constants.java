@@ -173,4 +173,29 @@ public interface Constants {
     String DISABLE = "disable";
     String LOAD = "load";
     String USE_ALIAS = "use-alias";
+    String LOAD_BALANCING_GROUP = "load-balancing-group";
+    String CACHE_CONNECTIONS = "cache-connections";
+    String FLUSH_WAIT = "flush-wait";
+    String MAX_CONNECTIONS = "max-connections";
+    String OPEN_CONNECTIONS = "open-connections";
+    String PING = "ping";
+    String READ = "read";
+    String SMAX = "smax";
+    String TIMEOUT = "timeout";
+    String WRITTEN = "written";
+    String TTL = "ttl";
+
+    String STICKY_SESSION = "sticky-session";
+    String STICKY_SESSION_COOKIE = "sticky-session-cookie";
+    String STICKY_SESSION_PATH = "sticky-session-path";
+    String STICKY_SESSION_FORCE = "sticky-session-force";
+    String STICKY_SESSION_REMOVE= "sticky-session-remove";
+    String WAIT_WORKER = "wait-worker";
+    String MAX_ATTEMPTS = "max-attempts";
+    String FLUSH_PACKETS = "flush-packets";
+    String QUEUE_NEW_REQUESTS = "queue-new-requests";
+    String STOP = "stop";
+    String ENABLE_NODES = "enable-nodes";
+    String DISABLE_NODES = "disable-nodes";
+    String STOP_NODES = "stop-nodes";
 }
