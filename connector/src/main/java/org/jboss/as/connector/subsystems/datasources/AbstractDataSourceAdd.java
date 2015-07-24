@@ -46,6 +46,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
@@ -88,6 +89,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
         // The STATISTICS_ENABLED.resolveModelAttribute(context, model) call should remain as it serves to validate that any
         // expression in the model can be resolved to a correct value.
@@ -114,7 +116,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName, jndiName);
 
         final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
-        final ServiceName dataSourceServiceNameAlias = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceNameAlias = AbstractDataSourceService.getServiceName(bindInfo);
         final ServiceName dataSourceServiceName = context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY_NAME, dsName, DataSource.class);
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(

@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -44,7 +45,7 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
     }
 
     protected AbstractDataSourceService createDataSourceService(final String dsName,final String jndiName) throws OperationFailedException {
-        return new LocalDataSourceService(dsName, jndiName);
+        return new LocalDataSourceService(dsName, ContextNames.bindInfoFor(jndiName));
     }
 
     @Override

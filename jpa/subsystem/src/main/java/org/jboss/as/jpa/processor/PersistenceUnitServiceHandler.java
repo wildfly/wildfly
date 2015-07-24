@@ -43,7 +43,6 @@ import javax.persistence.spi.PersistenceProviderResolverHolder;
 import javax.sql.DataSource;
 import javax.validation.ValidatorFactory;
 
-import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -361,27 +360,17 @@ public class PersistenceUnitServiceHandler {
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
             if (jtaDataSource != null && jtaDataSource.length() > 0) {
-                if (jtaDataSource.startsWith("java:")) {
-                    if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
-                        useDefaultDataSource = true;
-                    }
-                    else {
-                        builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
-                        useDefaultDataSource = false;
-                    }
-                } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
+                if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
+                    useDefaultDataSource = true;
+                }
+                else {
+                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 }
             }
             if (nonJtaDataSource != null && nonJtaDataSource.length() > 0) {
-                if (nonJtaDataSource.startsWith("java:")) {
-                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
-                    useDefaultDataSource = false;
-                } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<>(service.getNonJtaDataSourceInjector(), DataSource.class));
-                    useDefaultDataSource = false;
-                }
+                builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
+                useDefaultDataSource = false;
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
@@ -398,7 +387,7 @@ public class PersistenceUnitServiceHandler {
                 }
                 if (defaultJtaDataSource != null &&
                     !defaultJtaDataSource.isEmpty()) {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(ContextNames.bindInfoFor(defaultJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     ROOT_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
@@ -499,27 +488,17 @@ public class PersistenceUnitServiceHandler {
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
             if (jtaDataSource != null && jtaDataSource.length() > 0) {
-                if (jtaDataSource.startsWith("java:")) {
-                    if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
-                        useDefaultDataSource = true;
-                    }
-                    else {
-                        builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
-                        useDefaultDataSource = false;
-                    }
-                } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
+                if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
+                    useDefaultDataSource = true;
+                }
+                else {
+                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 }
             }
             if (nonJtaDataSource != null && nonJtaDataSource.length() > 0) {
-                if (nonJtaDataSource.startsWith("java:")) {
-                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
-                    useDefaultDataSource = false;
-                } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<>(service.getNonJtaDataSourceInjector(), DataSource.class));
-                    useDefaultDataSource = false;
-                }
+                builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
+                useDefaultDataSource = false;
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
@@ -536,7 +515,7 @@ public class PersistenceUnitServiceHandler {
                 }
                 if (defaultJtaDataSource != null &&
                     !defaultJtaDataSource.isEmpty()) {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(ContextNames.bindInfoFor(defaultJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     ROOT_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
@@ -624,27 +603,17 @@ public class PersistenceUnitServiceHandler {
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
             if (jtaDataSource != null && jtaDataSource.length() > 0) {
-                if (jtaDataSource.startsWith("java:")) {
-                    if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
-                        useDefaultDataSource = true;
-                    }
-                    else {
-                        builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
-                        useDefaultDataSource = false;
-                    }
-                } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
+                if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
+                    useDefaultDataSource = true;
+                }
+                else {
+                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 }
             }
             if (nonJtaDataSource != null && nonJtaDataSource.length() > 0) {
-                if (nonJtaDataSource.startsWith("java:")) {
-                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
-                    useDefaultDataSource = false;
-                } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<>(service.getNonJtaDataSourceInjector(), DataSource.class));
-                    useDefaultDataSource = false;
-                }
+                builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
+                useDefaultDataSource = false;
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
@@ -661,7 +630,7 @@ public class PersistenceUnitServiceHandler {
                 }
                 if (defaultJtaDataSource != null &&
                     !defaultJtaDataSource.isEmpty()) {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(ContextNames.bindInfoFor(defaultJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     ROOT_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }

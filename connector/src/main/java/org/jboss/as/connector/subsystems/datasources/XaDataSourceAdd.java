@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOU
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -45,7 +46,7 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
     }
 
     protected AbstractDataSourceService createDataSourceService(final String dsName, final String jndiName) throws OperationFailedException {
-        return new XaDataSourceService(dsName, jndiName);
+        return new XaDataSourceService(dsName, ContextNames.bindInfoFor(jndiName));
     }
 
     @Override

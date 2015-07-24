@@ -134,6 +134,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final String poolName = uniqueName(context, jndiName);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), jndiName);
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final boolean securityEnabled = phaseContext.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED);
         try {
@@ -156,9 +157,9 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                         jndiName, false, false, Defaults.CONNECTABLE, Defaults.TRACKING, properties,
                         className, null, null,
                         xaPool, null, null);
-                final XaDataSourceService xds = new XaDataSourceService(jndiName, jndiName, module.getClassLoader());
+                final XaDataSourceService xds = new XaDataSourceService(bindInfo.getBinderServiceName().getCanonicalName(), bindInfo, module.getClassLoader());
                 xds.getDataSourceConfigInjector().inject(dataSource);
-                startDataSource(xds, jndiName, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, securityEnabled);
+                startDataSource(xds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, securityEnabled);
             } else {
                 final DsPoolImpl commonPool = new DsPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : Integer.valueOf(minPoolSize),
                                                              initialPoolSize < 0 ? Defaults.INITIAL_POOL_SIZE : Integer.valueOf(initialPoolSize),
@@ -166,9 +167,9 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                                                              Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, Boolean.FALSE, null, null);
                 final ModifiableDataSource dataSource = new ModifiableDataSource(url, null, className, null, transactionIsolation(), properties,
                         null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM, transactional, Defaults.CONNECTABLE, Defaults.TRACKING, commonPool, null);
-                final LocalDataSourceService ds = new LocalDataSourceService(jndiName, jndiName, module.getClassLoader());
+                final LocalDataSourceService ds = new LocalDataSourceService(bindInfo.getBinderServiceName().getCanonicalName(), bindInfo, module.getClassLoader());
                 ds.getDataSourceConfigInjector().inject(dataSource);
-                startDataSource(ds, jndiName, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, securityEnabled);
+                startDataSource(ds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, securityEnabled);
             }
 
         } catch (Exception e) {
@@ -211,14 +212,13 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
     }
 
     private void startDataSource(final AbstractDataSourceService dataSourceService,
-                                 final String jndiName,
+                                 final ContextNames.BindInfo bindInfo,
                                  final EEModuleDescription moduleDescription,
                                  final ResolutionContext context,
                                  final ServiceTarget serviceTarget,
                                  final ServiceBuilder valueSourceServiceBuilder, final Injector<ManagedReferenceFactory> injector, boolean securityEnabled) {
 
-
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append("DataSourceDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.getServiceName(bindInfo);
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(
                         serviceTarget.addService(dataSourceServiceName, dataSourceService),
@@ -239,7 +239,6 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                     dataSourceService.getSubjectFactoryInjector());
         }
 
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), jndiName);
 
         final DataSourceReferenceFactoryService referenceFactoryService = new DataSourceReferenceFactoryService();
         final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
