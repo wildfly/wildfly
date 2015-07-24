@@ -38,6 +38,7 @@ import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 import static org.jboss.as.controller.operations.common.Util.createOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
@@ -163,8 +164,12 @@ public class MigrateOperation implements OperationStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // transform the legacy add operations and put them in migrationOperations
                 transformResources(legacyModelAddOps, migrationOperations, addLegacyEntries);
+
                 // put the /subsystem=messaging:remove operation
                 removeMessagingSubsystem(migrationOperations);
+
+                PathAddress parentAddress = context.getCurrentAddress().getParent();
+                fixAddressesForDomainMode(parentAddress, migrationOperations);
 
                 if (describe) {
                     // :describe-migration operation
@@ -179,6 +184,28 @@ public class MigrateOperation implements OperationStepHandler {
                 }
             }
         }, MODEL);
+    }
+
+    /**
+     * In domain mode, the subsystem are under /profile=XXX.
+     * This method fixes the address by prepending the addresses (that start with /subsystem) with the current
+     * operation parent so that is works both in standalone (parent = EMPTY_ADDRESS) and domain mode
+     * (parent = /profile=XXX)
+     */
+    private void fixAddressesForDomainMode(PathAddress parentAddress, Map<PathAddress, ModelNode> migrationOperations) {
+        // in standalone mode, do nothing
+        if (parentAddress.size() == 0) {
+            return;
+        }
+
+        // use a linked hash map to preserve operations order
+        Map<PathAddress, ModelNode> fixedMigrationOperations = new LinkedHashMap<>(migrationOperations);
+        migrationOperations.clear();
+        for (Map.Entry<PathAddress, ModelNode> entry : fixedMigrationOperations.entrySet()) {
+            PathAddress fixedAddress = parentAddress.append(entry.getKey());
+            entry.getValue().get(ADDRESS).set(fixedAddress.toModelNode());
+            migrationOperations.put(fixedAddress, entry.getValue());
+        }
     }
 
 
