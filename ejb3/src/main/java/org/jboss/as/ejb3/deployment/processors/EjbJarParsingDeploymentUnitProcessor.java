@@ -39,6 +39,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
+import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser11;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.cache.EJBBoundCacheParser;
 import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
@@ -291,7 +292,8 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
     static Map<String, AbstractMetaDataParser<?>> createJbossEjbJarParsers() {
         Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
-        parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
+        parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI_1_0, new EJBBoundClusteringMetaDataParser());
+        parsers.put(EJBBoundClusteringMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundClusteringMetaDataParser11.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI_1_0, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundSecurityMetaDataParser11.INSTANCE);

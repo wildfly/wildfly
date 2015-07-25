@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,30 @@
 
 package org.jboss.as.ejb3.clustering;
 
-import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
- * @author Jaikiran Pai
+ * A service installed as a singleton, it is UP only on the master node of a the cluster.
+ *
  * @author Flavia Rainone
  */
-public class EJBBoundClusteringMetaData extends AbstractEJBBoundMetaData {
+public class ClusteredSingletonService implements Service<Void> {
 
-    private static final long serialVersionUID = 4149623336107841341L;
-    private boolean singleton;
-
-    public void setClusteredSingleton(boolean singleton) {
-        this.singleton = singleton;
+    public void start(StartContext context) throws StartException {
+        ROOT_LOGGER.logClusterSigletonNode();
     }
 
-    public boolean isClusteredSingleton() {
-        return singleton;
+    public void stop(StopContext context) {
+        ROOT_LOGGER.logNoLongerClusterSigletonNode();
+    }
+
+    @Override
+    public Void getValue() {
+        return null;
     }
 }

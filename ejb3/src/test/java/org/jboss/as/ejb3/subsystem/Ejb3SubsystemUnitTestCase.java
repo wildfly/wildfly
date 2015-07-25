@@ -42,6 +42,7 @@ import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.wildfly.clustering.singleton.SingletonPolicy;
 
 /**
  * Test case for testing the integrity of the EJB3 subsystem.
@@ -57,10 +58,17 @@ import org.junit.Test;
 
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
+    private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(
+            SingletonPolicy.CAPABILITY_NAME.concat(".default"));
+
     public Ejb3SubsystemUnitTestCase() {
         super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());
     }
 
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return ADDITIONAL_INITIALIZATION;
+    }
 
     @Override
     protected String getSubsystemXml() throws IOException {

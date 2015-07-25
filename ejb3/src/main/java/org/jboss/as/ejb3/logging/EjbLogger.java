@@ -3083,4 +3083,12 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 477, value = "MDB delivery group is missing: %s")
     DeploymentUnitProcessingException missingMdbDeliveryGroup(String deliveryGroupName);
 
+    @LogMessage(level = INFO)
+    @Message(id = 478, value = "This node is now the active cluster singleton")
+    void logClusterSigletonNode();
+
+    @LogMessage(level = INFO)
+    @Message(id = 479, value = "This node is no longer the active cluster singleton, or the cluster singleton is no longer in use")
+    void logNoLongerClusterSigletonNode();
+
 }
