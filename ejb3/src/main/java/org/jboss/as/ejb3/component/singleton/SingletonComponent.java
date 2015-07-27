@@ -182,12 +182,12 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
     @Override
-    public void setInterceptor(Interceptor interceptor) {
+    public void setConcurrencyManagementInterceptor(Interceptor interceptor) {
         this.interceptor = interceptor;
     }
 
     @Override
-    public Interceptor getInterceptor() {
+    public Interceptor getConcurrencyManagementInterceptor() {
         return this.interceptor;
     }
 

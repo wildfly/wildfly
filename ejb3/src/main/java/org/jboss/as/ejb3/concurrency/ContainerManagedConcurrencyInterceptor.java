@@ -29,6 +29,7 @@ import org.jboss.invocation.InterceptorContext;
 import javax.ejb.LockType;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -46,7 +47,10 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
 
     private final LockableComponent lockableComponent;
 
-    public ContainerManagedConcurrencyInterceptor(LockableComponent component) {
+    private final Map<Method, Method> viewMethodToComponentMethodMap;
+
+    public ContainerManagedConcurrencyInterceptor(LockableComponent component, Map<Method, Method> viewMethodToComponentMethodMap) {
+        this.viewMethodToComponentMethodMap = viewMethodToComponentMethodMap;
         if (component == null) {
             throw EjbLogger.ROOT_LOGGER.componentIsNull(LockableComponent.class.getName());
         }
@@ -62,9 +66,13 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         final InvocationContext invocationContext = context.getInvocationContext();
         LockableComponent lockableComponent = this.getLockableComponent();
         // get the invoked method
-        Method invokedMethod = invocationContext.getMethod();
-        if (invokedMethod == null) {
+        Method method = invocationContext.getMethod();
+        if (method == null) {
             throw EjbLogger.ROOT_LOGGER.invocationNotApplicableForMethodInvocation(invocationContext);
+        }
+        Method invokedMethod = viewMethodToComponentMethodMap.get(method);
+        if(invokedMethod == null) {
+            invokedMethod = method;
         }
         // get the Lock applicable for this method
         Lock lock = getLock(lockableComponent, invokedMethod);
