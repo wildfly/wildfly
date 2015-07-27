@@ -101,7 +101,7 @@
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.surefire.plugin>2.17</version.surefire.plugin>
         <version.org.wildfly.plugins.maven.plugin>1.0.2.Final</version.org.wildfly.plugins.maven.plugin>
-        <version.io.undertow>1.2.8.Final</version.io.undertow>
+        <version.io.undertow>1.2.9.Final</version.io.undertow>
     </properties>
 
     <dependencyManagement>
