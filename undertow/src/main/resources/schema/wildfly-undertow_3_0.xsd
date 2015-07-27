@@ -266,8 +266,8 @@
         <xs:attribute name="generate-strings-as-char-arrays" default="false" type="xs:boolean"/>
         <xs:attribute name="error-on-use-bean-invalid-class-attribute" default="false" type="xs:boolean"/>
         <xs:attribute name="scratch-dir" type="xs:string"/>
-        <xs:attribute name="source-vm" default="1.6" type="xs:string"/>
-        <xs:attribute name="target-vm" default="1.6" type="xs:string"/>
+        <xs:attribute name="source-vm" default="1.8" type="xs:string"/>
+        <xs:attribute name="target-vm" default="1.8" type="xs:string"/>
         <xs:attribute name="java-encoding" default="UTF8" type="xs:string"/>
         <xs:attribute name="x-powered-by" default="true" type="xs:boolean"/>
         <xs:attribute name="display-source-fragment" default="true" type="xs:boolean"/>

@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * test JDK8 code constructs inside JSPs
  * See WFLY-2690
  */
 @RunWith(Arquillian.class)
