@@ -40,6 +40,8 @@ import java.util.Collection;
 
 import org.apache.activemq.artemis.jms.bridge.QualityOfServiceMode;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshallers;
+import org.jboss.as.controller.AttributeParsers;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -94,12 +96,10 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
 
-    // FIXME Attribute can not be parsed https://issues.jboss.org/browse/WFCORE-691
     public static final PropertiesAttributeDefinition SOURCE_CONTEXT = new PropertiesAttributeDefinition.Builder("source-context", true)
             .setAttributeGroup(SOURCE)
-            .setWrapXmlElement(true)
-            .setWrapperElement("context")
-            .setXmlName("property")
+            .setAttributeParser(new AttributeParsers.PropertiesParser())
+            .setAttributeMarshaller(new AttributeMarshallers.PropertiesAttributeMarshaller())
             .setAllowExpression(true)
             .build();
 
@@ -131,12 +131,10 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
 
-    // FIXME Attribute can not be parsed https://issues.jboss.org/browse/WFCORE-691
     public static final PropertiesAttributeDefinition TARGET_CONTEXT = new PropertiesAttributeDefinition.Builder("target-context", true)
             .setAttributeGroup(TARGET)
-            .setWrapXmlElement(true)
-            .setWrapperElement("context")
-            .setXmlName("property")
+            .setAttributeParser(new AttributeParsers.PropertiesParser())
+            .setAttributeMarshaller(new AttributeMarshallers.PropertiesAttributeMarshaller())
             .setAllowExpression(true)
             .build();
 

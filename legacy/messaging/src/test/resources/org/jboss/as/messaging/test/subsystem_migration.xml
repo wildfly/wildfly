@@ -456,14 +456,32 @@
 
     <hornetq-server name="empty"/>
 
-    <jms-bridge>
+    <jms-bridge  module="org.another.mq.broker">
         <source>
             <connection-factory name="/cf/sourceCF" />
             <destination name="/topic/anotherSourceTopic" />
+            <user>${jms-bridge.source.user:foo}</user>
+            <password>${jms-bridge.source.password:bar}</password>
+            <context>
+                <property key="java.naming.factory.initial"  value="${java.naming.factory.initial:org.jnp.interfaces.NamingContextFactory}" />
+                <property key="java.naming.provider.url"     value="${java.naming.provider.url:jnp://localhost:1099}" />
+                <property key="java.naming.factory.url.pkgs" value="${java.naming.factory.url.pkgs:org.jboss.naming:org.jnp.interfaces}"/>
+                <property key="jnp.timeout"                  value="${jnp.timeout:5000}"/>
+                <property key="jnp.sotimeout"                value="${jnp.sotimeout:5000}"/>
+            </context>
         </source>
         <target>
             <connection-factory name="/cf/targetCF" />
             <destination name="anotherMQ/jms/queue/anotherTargetQueue" />
+            <user>${jms-bridge.target.user:foo}</user>
+            <password>${jms-bridge.target.password:bar}</password>
+            <context>
+                <property key="java.naming.factory.initial"  value="${java.naming.factory.initial:org.jnp.interfaces.NamingContextFactory}" />
+                <property key="java.naming.provider.url"     value="${java.naming.provider.url:jnp://localhost:1099}" />
+                <property key="java.naming.factory.url.pkgs" value="${java.naming.factory.url.pkgs:org.jboss.naming:org.jnp.interfaces}"/>
+                <property key="jnp.timeout"                  value="${jnp.timeout:5000}"/>
+                <property key="jnp.sotimeout"                value="${jnp.sotimeout:5000}"/>
+            </context>
         </target>
         <quality-of-service>${quality.of.service:AT_MOST_ONCE}</quality-of-service>
         <failure-retry-interval>${failure.retry.interval:45678}</failure-retry-interval>
