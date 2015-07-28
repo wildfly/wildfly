@@ -43,8 +43,8 @@ import org.apache.directory.api.ldap.model.schema.SchemaManager;
 import org.apache.directory.api.ldap.model.schema.comparators.NormalizingComparator;
 import org.apache.directory.api.ldap.model.schema.registries.ComparatorRegistry;
 import org.apache.directory.api.ldap.model.schema.registries.SchemaLoader;
-import org.apache.directory.api.ldap.schemaloader.JarLdifSchemaLoader;
-import org.apache.directory.api.ldap.schemamanager.impl.DefaultSchemaManager;
+import org.apache.directory.api.ldap.schema.loader.JarLdifSchemaLoader;
+import org.apache.directory.api.ldap.schema.manager.impl.DefaultSchemaManager;
 import org.apache.directory.api.ldap.util.tree.DnNode;
 import org.apache.directory.api.util.exception.Exceptions;
 import org.apache.directory.server.constants.ServerDNConstants;
@@ -547,16 +547,6 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
         }
 
         @Override
-        public void setContextCsn(String lastCommittedCsnVal) {
-            wrapped.setContextCsn(lastCommittedCsnVal);
-        }
-
-        @Override
-        public String getContextCsn() {
-            return wrapped.getContextCsn();
-        }
-
-        @Override
         public void setSyncPeriodMillis(long syncPeriodMillis) {
             wrapped.setSyncPeriodMillis(syncPeriodMillis);
         }
@@ -604,6 +594,11 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
         @Override
         public void setCacheService(CacheService cacheService) {
             wrapped.setCacheService(cacheService);
+        }
+
+        @Override
+        public void setDnFactory(DnFactory dnFactory) {
+            wrapped.setDnFactory(dnFactory);
         }
 
     }
