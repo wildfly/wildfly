@@ -54,9 +54,10 @@ public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceD
         super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(ClusteredCacheResourceDefinition.Attribute.class).addAttributes(CacheResourceDefinition.Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(ClusteredCacheResourceDefinition.Attribute.class).addAttributes(CacheResourceDefinition.Attribute.class).addAttributes(CacheResourceDefinition.DeprecatedAttribute.class);
         ResourceServiceHandler handler = new ReplicatedCacheServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.Attribute.*;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -45,31 +47,20 @@ import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 
 /**
- * Handler for JGroups subsystem add operations.
- *
  * @author Paul Ferraro
- * @author Richard Achmatowicz (c) 2011 Red Hat, Inc
  */
-public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
-
-    JGroupsSubsystemAddHandler() {
-        super(JGroupsSubsystemResourceDefinition.ATTRIBUTES);
-    }
+public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
+    public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         ROOT_LOGGER.activatingSubsystem();
 
-        installRuntimeServices(context, operation, model);
-    }
-
-    static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ServiceTarget target = context.getServiceTarget();
 
         new ProtocolDefaultsBuilder().build(target).install();
 
-        String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
+        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
+
         if (!defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
             for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
                 new AliasServiceBuilder<>(factory.getServiceName(), factory.getServiceName(defaultChannel), Object.class).build(target).install();
@@ -87,22 +78,28 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
             }
         }
 
-        String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
+        @SuppressWarnings("deprecation")
+        String defaultStack = ModelNodes.asString(DEFAULT_STACK.getDefinition().resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
+
         if (!defaultStack.equals(ProtocolStackServiceNameFactory.DEFAULT_STACK)) {
             new AliasServiceBuilder<>(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultStack), ChannelFactory.class).build(target).install();
         }
     }
 
-    static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         // remove the ProtocolDefaultsService
-        context.removeService(ProtocolDefaultsBuilder.SERVICE_NAME);
+        context.removeService(new ProtocolDefaultsBuilder().getServiceName());
 
-        String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
+        @SuppressWarnings("deprecation")
+        String defaultStack = ModelNodes.asString(DEFAULT_STACK.getDefinition().resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
+
         if ((defaultStack != null) && !defaultStack.equals(ProtocolStackServiceNameFactory.DEFAULT_STACK)) {
             context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName());
         }
 
-        String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
+        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
+
         if ((defaultChannel != null) && !defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
 
             for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {

@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,9 @@ import org.jboss.dmr.ModelNode;
  * @author Paul Ferraro
  */
 public final class Operations {
+
+    private static final String INDEX = "index";
+    private static final String KEY = "key";
 
     /**
      * Returns the address of the specified operation
@@ -122,6 +126,31 @@ public final class Operations {
     }
 
     /**
+     * Creates an indexed add operation using the specified address and parameters
+     * @param address a path address
+     * @param parameters a map of values per attribute
+     * @return an add operation
+     */
+    public static ModelNode createAddOperation(PathAddress address, int index) {
+        return createAddOperation(address, index, Collections.emptyMap());
+    }
+
+    /**
+     * Creates an indexed add operation using the specified address and parameters
+     * @param address a path address
+     * @param parameters a map of values per attribute
+     * @return an add operation
+     */
+    public static ModelNode createAddOperation(PathAddress address, int index, Map<Attribute, ModelNode> parameters) {
+        ModelNode operation = Util.createAddOperation(address);
+        operation.get(ModelDescriptionConstants.ADD_INDEX).set(index);
+        for (Map.Entry<Attribute, ModelNode> entry : parameters.entrySet()) {
+            operation.get(entry.getKey().getDefinition().getName()).set(entry.getValue());
+        }
+        return operation;
+    }
+
+    /**
      * Creates a read-attribute operation using the specified address and name.
      * @param address a resource path
      * @param attribute an attribute
@@ -193,7 +222,7 @@ public final class Operations {
 
     private static ModelNode createListElementOperation(OperationDefinition definition, PathAddress address, Attribute attribute, int index) {
         ModelNode operation = createAttributeOperation(definition.getName(), address, attribute);
-        operation.get("index").set(new ModelNode(index));
+        operation.get(INDEX).set(new ModelNode(index));
         return operation;
     }
 
@@ -213,7 +242,7 @@ public final class Operations {
 
     private static ModelNode createMapEntryOperation(OperationDefinition definition, PathAddress address, Attribute attribute, String key) {
         ModelNode operation = createAttributeOperation(definition.getName(), address, attribute);
-        operation.get("key").set(key);
+        operation.get(KEY).set(key);
         return operation;
     }
 

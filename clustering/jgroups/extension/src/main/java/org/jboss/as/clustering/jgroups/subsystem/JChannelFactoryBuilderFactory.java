@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.controller.PathAddress;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * @author Paul Ferraro
- * @author Richard Achmatowicz (c) 2011 Red Hat, Inc.
  */
-public class StackRemoveHandler extends AbstractRemoveStepHandler {
+public class JChannelFactoryBuilderFactory implements ResourceServiceBuilderFactory<ChannelFactory> {
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        StackAddHandler.removeRuntimeServices(context, operation, model);
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        StackAddHandler.installRuntimeServices(context, operation, model);
+    public ResourceServiceBuilder<ChannelFactory> createBuilder(PathAddress address) {
+        return new JChannelFactoryBuilder(address.getLastElement().getValue());
     }
 }

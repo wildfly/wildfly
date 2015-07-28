@@ -51,19 +51,19 @@ public class ExpirationResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "EXPIRATION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        INTERVAL("interval", ModelType.LONG, new ModelNode(60000L)),
-        LIFESPAN("lifespan", ModelType.LONG, new ModelNode(-1L)),
-        MAX_IDLE("max-idle", ModelType.LONG, new ModelNode(-1L)),
+        INTERVAL("interval", new ModelNode(60000L)),
+        LIFESPAN("lifespan", new ModelNode(-1L)),
+        MAX_IDLE("max-idle", new ModelNode(-1L)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelNode defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.LONG)
                     .setAllowExpression(true)
                     .setAllowNull(true)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .build();
         }
 

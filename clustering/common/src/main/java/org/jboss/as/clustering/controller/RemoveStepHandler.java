@@ -42,6 +42,10 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     private final RemoveStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
 
+    public RemoveStepHandler(RemoveStepHandlerDescriptor descriptor) {
+        this(descriptor, null);
+    }
+
     public RemoveStepHandler(RemoveStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
         this.descriptor = descriptor;
         this.handler = handler;
@@ -49,12 +53,16 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        this.handler.removeServices(context, model);
+        if (this.handler != null) {
+            this.handler.removeServices(context, model);
+        }
     }
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        this.handler.installServices(context, model);
+        if (this.handler != null) {
+            this.handler.installServices(context, model);
+        }
     }
 
     @Override

@@ -38,7 +38,7 @@ public interface AddStepHandlerDescriptor extends RemoveStepHandlerDescriptor {
     Collection<AttributeDefinition> getAttributes();
 
     /**
-     * Extra parameters (not specified by {@link #getAttributes()}) for the add operation.  These parameters are not part of the persistent model.
+     * Extra parameters (not specified by {@link #getAttributes()}) for the add operation.
      * @return a collection of attributes
      */
     Collection<AttributeDefinition> getExtraParameters();

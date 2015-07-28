@@ -56,6 +56,7 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
         Attribute(String name, ModelType type) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
+                    .setAllowNull(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }

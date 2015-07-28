@@ -32,7 +32,9 @@ import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
+import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -48,8 +50,6 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ListOperations;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
@@ -73,15 +73,18 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
         return PathElement.pathElement("cache-container", containerName);
     }
 
+    @Deprecated
     static final AttributeDefinition ALIAS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
             .setAllowExpression(false)
             .build();
 
+    @Deprecated
     static final OperationDefinition ALIAS_ADD = new SimpleOperationDefinitionBuilder("add-alias", new InfinispanResourceDescriptionResolver(WILDCARD_PATH))
             .setParameters(ALIAS)
             .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
+    @Deprecated
     static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", new InfinispanResourceDescriptionResolver(WILDCARD_PATH))
             .setParameters(ALIAS)
             .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
@@ -89,33 +92,20 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         ALIASES("aliases"),
-        MODULE("module", ModelType.STRING, new ModelNode("org.jboss.as.clustering.infinispan"), new ModuleIdentifierValidator(true, true)),
-        DEFAULT_CACHE("default-cache", ModelType.STRING, null, null),
-        @Deprecated EVICTION_EXECUTOR("eviction-executor", ModelType.STRING, null, null, InfinispanModel.VERSION_3_0_0),
-        JNDI_NAME("jndi-name", ModelType.STRING, null, null),
-        @Deprecated LISTENER_EXECUTOR("listener-executor", ModelType.STRING, null, null, InfinispanModel.VERSION_3_0_0),
-        @Deprecated REPLICATION_QUEUE_EXECUTOR("replication-queue-executor", ModelType.STRING, null, null, InfinispanModel.VERSION_3_0_0),
-        @Deprecated START("start", ModelType.STRING, new ModelNode(StartMode.LAZY.name()), new EnumValidator<>(StartMode.class, true, true), InfinispanModel.VERSION_3_0_0),
-        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, new ModelNode(false), null),
+        MODULE("module", ModelType.STRING, new ModelNode("org.jboss.as.clustering.infinispan"), new ModuleIdentifierValidatorBuilder()),
+        DEFAULT_CACHE("default-cache", ModelType.STRING, null),
+        JNDI_NAME("jndi-name", ModelType.STRING, null),
+        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, new ModelNode(false)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidator validator) {
-            this.definition = createBuilder(name, type, defaultValue, validator).build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type, defaultValue).build();
         }
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidator validator, InfinispanModel deprecation) {
-            this.definition = createBuilder(name, type, defaultValue, validator).setDeprecated(deprecation.getVersion()).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidator validator) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setAllowNull(true)
-                    .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setValidator(validator)
-            ;
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
         }
 
         Attribute(String name) {
@@ -130,6 +120,50 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
+    }
+
+    @Deprecated
+    enum ExecutorAttribute implements org.jboss.as.clustering.controller.Attribute {
+        EVICTION("eviction-executor"),
+        LISTENER("listener-executor"),
+        REPLICATION_QUEUE("replication-queue-executor"),
+        ;
+        private final AttributeDefinition definition;
+
+        ExecutorAttribute(String name) {
+            this.definition = createBuilder(name, ModelType.STRING, null).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        START("start", ModelType.STRING, new ModelNode(StartMode.LAZY.name()), new EnumValidatorBuilder<>(StartMode.class), InfinispanModel.VERSION_3_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator, InfinispanModel deprecation) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion());
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+        ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -204,6 +238,8 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+        new ReloadRequiredWriteAttributeHandler(ExecutorAttribute.class).register(registration);
+        new ReloadRequiredWriteAttributeHandler(DeprecatedAttribute.class).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new CacheContainerMetricExecutor(), CacheContainerMetric.class).register(registration);
@@ -212,7 +248,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ExecutorAttribute.class).addAttributes(DeprecatedAttribute.class);
         ResourceServiceHandler handler = new CacheContainerServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

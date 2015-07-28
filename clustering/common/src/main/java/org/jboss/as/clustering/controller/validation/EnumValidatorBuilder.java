@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.jgroups.subsystem;
+package org.jboss.as.clustering.controller.validation;
 
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtocolConfigurationBuilder extends AbstractProtocolConfigurationBuilder<ProtocolConfiguration> {
+public class EnumValidatorBuilder<E extends Enum<E>> extends AbstractParameterValidatorBuilder {
 
-    public ProtocolConfigurationBuilder(String stackName, String name) {
-        super(stackName, name);
+    private final Class<E> enumClass;
+    private final E[] allowed;
+
+    public EnumValidatorBuilder(Class<E> enumClass) {
+        this(enumClass, enumClass.getEnumConstants());
+    }
+
+    public EnumValidatorBuilder(Class<E> enumClass, @SuppressWarnings("unchecked") E... allowed) {
+        this.enumClass = enumClass;
+        this.allowed = allowed;
     }
 
     @Override
-    public ProtocolConfiguration getValue() {
-        return this;
+    public ParameterValidator build() {
+        return new EnumValidator<>(this.enumClass, this.allowsUndefined, this.allowsExpressions, this.allowed);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.clustering.jgroups.subsystem;
+
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.*;
 
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceTarget;
@@ -49,47 +49,16 @@ import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 
 /**
- * Handler for /subsystem=jgroups/channel=*:add() operations
  * @author Paul Ferraro
  */
-public class ChannelAddHandler extends AbstractAddStepHandler {
-
-    private final boolean allowRuntimeOnlyRegistration;
-
-    ChannelAddHandler(boolean allowRuntimeOnlyRegistration) {
-        super(ChannelResourceDefinition.ATTRIBUTES);
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
-    }
+public class ChannelServiceHandler implements ResourceServiceHandler {
 
     @Override
-    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.populateModel(context, operation, resource);
-
-        // Register runtime resource children for channel protocols
-        if (this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
-            String name = context.getCurrentAddressValue();
-            String stack = ModelNodes.asString(ChannelResourceDefinition.STACK.resolveModelAttribute(context, resource.getModel()));
-
-            PathAddress address = context.getCurrentAddress();
-            PathAddress subsystemAddress = address.subAddress(0, address.size() - 1);
-            // Lookup the name of the default stack if necessary
-            PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement((stack != null) ? stack : JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, context.readResourceFromRoot(subsystemAddress, false).getModel()).asString()));
-
-            context.addStep(new ProtocolResourceRegistrationHandler(name, stackAddress), OperationContext.Stage.MODEL);
-        }
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        installRuntimeServices(context, operation, model);
-    }
-
-    static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
+    public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
-        String stack = ModelNodes.asString(ChannelResourceDefinition.STACK.resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
+        String stack = ModelNodes.asString(STACK.getDefinition().resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
 
-        ModuleIdentifier module = ModelNodes.asModuleIdentifier(ChannelResourceDefinition.MODULE.resolveModelAttribute(context, model));
+        ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
 
         ServiceTarget target = context.getServiceTarget();
 
@@ -120,7 +89,8 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
+    @Override
+    public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
 
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());

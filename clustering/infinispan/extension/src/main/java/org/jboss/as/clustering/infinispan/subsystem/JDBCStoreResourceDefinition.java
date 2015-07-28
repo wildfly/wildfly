@@ -24,12 +24,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -45,18 +45,26 @@ import org.jboss.dmr.ModelType;
 public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DATA_SOURCE("datasource", ModelType.STRING, false, null),
-        DIALECT("dialect", ModelType.STRING, true, new EnumValidator<>(DatabaseType.class, true, true)),
+        DATA_SOURCE("datasource", ModelType.STRING, false),
+        DIALECT("dialect", ModelType.STRING, true, new EnumValidatorBuilder<>(DatabaseType.class)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, boolean allowNull, ParameterValidator validator) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, boolean allowNull) {
+            this.definition = createBuilder(name, type, allowNull).build();
+        }
+
+        Attribute(String name, ModelType type, boolean allowNull, ParameterValidatorBuilder validator) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, allowNull);
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        }
+
+        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, boolean allowNull) {
+            return new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setAllowNull(allowNull)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setValidator(validator)
-                    .build();
+            ;
         }
 
         @Override

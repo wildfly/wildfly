@@ -63,7 +63,7 @@ public class JGroupsSubsystemInitialization extends AdditionalInitialization imp
         new JGroupsExtension().initialize(registry.getExtensionContext(this.module, registration, ExtensionRegistryType.MASTER));
 
         Resource subsystem = Resource.Factory.create();
-        subsystem.getModel().get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName()).set("tcp");
+        subsystem.getModel().get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).set("tcp");
         root.registerChild(JGroupsSubsystemResourceDefinition.PATH, subsystem);
 
         Resource channel = Resource.Factory.create();

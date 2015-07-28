@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.jgroups.subsystem;
+package org.jboss.as.clustering.controller.validation;
 
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtocolConfigurationBuilder extends AbstractProtocolConfigurationBuilder<ProtocolConfiguration> {
+public class IntRangeValidatorBuilder extends AbstractParameterValidatorBuilder {
 
-    public ProtocolConfigurationBuilder(String stackName, String name) {
-        super(stackName, name);
+    private volatile int min = Integer.MIN_VALUE;
+    private volatile int max = Integer.MAX_VALUE;
+
+    public IntRangeValidatorBuilder min(int min) {
+        this.min = min;
+        return this;
+    }
+
+    public IntRangeValidatorBuilder max(int max) {
+        this.max = max;
+        return this;
     }
 
     @Override
-    public ProtocolConfiguration getValue() {
-        return this;
+    public ParameterValidator build() {
+        return new IntRangeValidator(this.min, this.max, this.allowsUndefined, this.allowsExpressions);
     }
 }

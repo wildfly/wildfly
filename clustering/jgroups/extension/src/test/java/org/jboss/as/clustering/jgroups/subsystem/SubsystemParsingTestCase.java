@@ -21,13 +21,6 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.ModelKeys.CHANNEL;
-import static org.jboss.as.clustering.jgroups.subsystem.ModelKeys.FORK;
-import static org.jboss.as.clustering.jgroups.subsystem.ModelKeys.PROTOCOL;
-import static org.jboss.as.clustering.jgroups.subsystem.ModelKeys.STACK;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -202,7 +195,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
         for (int i = 0; i < protocolList.length; i++) {
             ModelNode protocol = new ModelNode();
-            protocol.get(ModelKeys.TYPE).set(protocolList[i]) ;
+            protocol.get("type").set(protocolList[i]) ;
             protocol.get("socket-binding").set("jgroups-udp");
             protocols.add(protocol);
         }
@@ -247,44 +240,46 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      */
     @Test
     public void testIndexedAdds() throws Exception {
-        if (schema.getMajor() < 3) {
-            return;
-        }
+        if (!this.schema.since(JGroupsSchema.VERSION_3_0)) return;
+
         final KernelServices services = this.buildKernelServices();
-        ModelNode originalModel = services.readWholeModel();
 
-        final ModelNode originalFork = originalModel.get(SUBSYSTEM, getMainSubsystemName(), CHANNEL, "ee", FORK, "web");
-        Assert.assertTrue(originalFork.isDefined());
-        originalFork.protect();
-        Assert.assertTrue(0 < originalFork.get(PROTOCOL).keys().size());
+        ModelNode originalSubsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
+        ModelNode originalChannelModel = originalSubsystemModel.get(ChannelResourceDefinition.pathElement("ee").getKeyValuePair());
+        ModelNode originalForkModel = originalChannelModel.get(ForkResourceDefinition.pathElement("web").getKeyValuePair());
+
+        Assert.assertTrue(originalForkModel.isDefined());
+        originalForkModel.protect();
+        Assert.assertTrue(0 < originalForkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().size());
+
+        ModelNode originalStackModel = originalSubsystemModel.get(StackResourceDefinition.pathElement("maximal").getKeyValuePair());
+        Assert.assertTrue(originalStackModel.isDefined());
+        originalStackModel.protect();
 
 
-        final ModelNode originalStack = originalModel.get(SUBSYSTEM, getMainSubsystemName(), STACK, "maximal");
-        Assert.assertTrue(originalStack.isDefined());
-        originalStack.protect();
-
-
-        final PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM, getMainSubsystemName());
-        final PathAddress forkAddress = subsystemAddress.append(CHANNEL, "ee").append(FORK, "web");
-        final PathAddress stackAddress = subsystemAddress.append(STACK, "maximal");
+        final PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+        final PathAddress forkAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement("ee")).append(ForkResourceDefinition.pathElement("web"));
+        final PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement("maximal"));
 
         //Check the fork protocols honour indexed adds by inserting a protocol at the start
-        ModelNode add = Util.createAddOperation(forkAddress.append(PROTOCOL, "MERGE2"));
-        add.get(ADD_INDEX).set(0);
+        ModelNode add = Operations.createAddOperation(forkAddress.append(ProtocolResourceDefinition.pathElement("MERGE2")), 0);
         ModelTestUtils.checkOutcome(services.executeOperation(add));
-        final ModelNode fork = services.readWholeModel().get(SUBSYSTEM, getMainSubsystemName(), CHANNEL, "ee", FORK, "web");
-        Assert.assertEquals(originalFork.keys().size() + 1, fork.get(PROTOCOL).keys().size());
-        Assert.assertEquals("MERGE2", fork.get(PROTOCOL).keys().iterator().next());
+
+        ModelNode subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
+        ModelNode channelModel = subsystemModel.get(ChannelResourceDefinition.pathElement("ee").getKeyValuePair());
+        ModelNode forkModel = channelModel.get(ForkResourceDefinition.pathElement("web").getKeyValuePair());
+
+        Assert.assertEquals(originalForkModel.keys().size() + 1, forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().size());
+        Assert.assertEquals("MERGE2", forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().iterator().next());
 
         //Check the stack protocols honour indexed adds by removing a protocol in the middle and readding it
-        ModelNode remove = Util.createRemoveOperation(stackAddress.append(PROTOCOL, "FD"));
+        ModelNode remove = Util.createRemoveOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")));
         ModelTestUtils.checkOutcome(services.executeOperation(remove));
-        add = Util.createAddOperation(stackAddress.append(PROTOCOL, "FD"));
-        add.get(ADD_INDEX).set(3); //The original index of the FD protocol
+        add = Operations.createAddOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")), 3); //The original index of the FD protocol
         ModelTestUtils.checkOutcome(services.executeOperation(add));
-        final ModelNode stack = services.readWholeModel().get(SUBSYSTEM, getMainSubsystemName(), STACK, "maximal");
-        Assert.assertEquals(originalStack, stack);
+
+        subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
+        ModelNode stackModel = subsystemModel.get(StackResourceDefinition.pathElement("maximal").getKeyValuePair());
+        Assert.assertEquals(originalStackModel, stackModel);
     }
-
-
 }

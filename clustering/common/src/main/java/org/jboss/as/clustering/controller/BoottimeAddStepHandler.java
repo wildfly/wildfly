@@ -50,6 +50,14 @@ public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler imple
     }
 
     @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
+            definition.validateOperation(operation);
+        }
+        super.populateModel(operation, model);
+    }
+
+    @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         this.handler.installServices(context, resource.getModel());
     }
