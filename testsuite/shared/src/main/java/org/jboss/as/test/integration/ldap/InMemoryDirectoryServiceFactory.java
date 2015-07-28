@@ -88,6 +88,8 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
 
     private static Logger LOG = LoggerFactory.getLogger(InMemoryDirectoryServiceFactory.class);
 
+    private static volatile int counter = 1;
+
     private final DirectoryService directoryService;
     private final PartitionFactory partitionFactory;
     private CacheManager cacheManager;
@@ -126,7 +128,9 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
             return;
         }
 
-        directoryService.setInstanceId(name + this.hashCode());
+        int id = counter++;
+
+        directoryService.setInstanceId(name + id);
 
         // instance layout
         InstanceLayout instanceLayout = new InstanceLayout(System.getProperty("java.io.tmpdir") + "/server-work-" + directoryService.getInstanceId());
@@ -140,8 +144,10 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
         directoryService.setInstanceLayout(instanceLayout);
 
         // EhCache in disabled-like-mode
+        String cacheName = "ApacheDSTestCache-" +  id;
         Configuration ehCacheConfig = new Configuration();
-        CacheConfiguration defaultCache = new CacheConfiguration("ApacheDSTestCache", 1).eternal(false).timeToIdleSeconds(30)
+        ehCacheConfig.setName(cacheName);
+        CacheConfiguration defaultCache = new CacheConfiguration(cacheName, 1).eternal(false).timeToIdleSeconds(30)
                 .timeToLiveSeconds(30).overflowToDisk(false);
         ehCacheConfig.addDefaultCache(defaultCache);
         cacheManager = new CacheManager(ehCacheConfig);
