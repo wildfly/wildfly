@@ -4,9 +4,12 @@ import org.jboss.as.test.clustering.twoclusters.bean.SerialBean;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Remove;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class CommonStatefulSBImpl implements CommonStatefulSB {
 
     private SerialBean bean;
