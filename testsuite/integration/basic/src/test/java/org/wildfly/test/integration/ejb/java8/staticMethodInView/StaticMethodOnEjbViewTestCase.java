@@ -42,7 +42,6 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(Arquillian.class)
-@Ignore("WFLY-4316")
 public class StaticMethodOnEjbViewTestCase {
 
     @Inject

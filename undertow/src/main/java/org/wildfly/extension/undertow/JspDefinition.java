@@ -135,14 +135,14 @@ class JspDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.SOURCE_VM, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
-                    .setDefaultValue(new ModelNode("1.7"))
+                    .setDefaultValue(new ModelNode("1.8"))
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition TARGET_VM =
             new SimpleAttributeDefinitionBuilder(Constants.TARGET_VM, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
-                    .setDefaultValue(new ModelNode("1.7"))
+                    .setDefaultValue(new ModelNode("1.8"))
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition JAVA_ENCODING =
