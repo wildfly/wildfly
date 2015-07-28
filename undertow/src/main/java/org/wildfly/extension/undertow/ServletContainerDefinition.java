@@ -95,7 +95,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .build();
 
     protected static final AttributeDefinition DEFAULT_SESSION_TIMEOUT =
-            new SimpleAttributeDefinitionBuilder("default-session-timeout", ModelType.INT, true)
+            new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SESSION_TIMEOUT, ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .setMeasurementUnit(MeasurementUnit.MINUTES)
