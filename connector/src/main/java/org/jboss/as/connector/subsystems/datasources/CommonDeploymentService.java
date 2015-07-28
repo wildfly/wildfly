@@ -24,6 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -33,7 +34,11 @@ import org.jboss.msc.service.StopContext;
 
 public class CommonDeploymentService implements Service<CommonDeployment> {
 
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source").append("common-deployment");
+    private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source").append("common-deployment");
+
+    public static ServiceName getServiceName(ContextNames.BindInfo bindInfo) {
+        return SERVICE_NAME_BASE.append(bindInfo.getBinderServiceName().getCanonicalName());
+    }
 
     private CommonDeployment value;
 

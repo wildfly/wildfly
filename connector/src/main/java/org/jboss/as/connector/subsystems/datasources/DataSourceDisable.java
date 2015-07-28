@@ -78,6 +78,7 @@ public class DataSourceDisable implements OperationStepHandler {
                         final ModelNode address = operation.require(OP_ADDR);
                         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
                         final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
+                        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
                         final ServiceRegistry registry = context.getServiceRegistry(true);
 
@@ -92,7 +93,7 @@ public class DataSourceDisable implements OperationStepHandler {
                         } else {
                             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.serviceNotAvailable("Data-source", dsName));
                         }
-                        context.removeService(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName));
+                        context.removeService(CommonDeploymentService.getServiceName(bindInfo));
                         context.removeService(dataSourceServiceName.append(Constants.STATISTICS));
                         final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(dsName);
                         final ServiceController<?> referenceController = registry.getService(referenceServiceName);
@@ -100,7 +101,7 @@ public class DataSourceDisable implements OperationStepHandler {
                             context.removeService(referenceController);
                         }
 
-                        final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
+                        final ServiceName binderServiceName = bindInfo.getBinderServiceName();
 
                         final ServiceController<?> binderController = registry.getService(binderServiceName);
                         if (binderController != null) {

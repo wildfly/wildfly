@@ -105,6 +105,7 @@ public class DataSourceEnable implements OperationStepHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final List<ServiceName> serviceNames = registry.getServiceNames();
 
@@ -197,8 +198,7 @@ public class DataSourceEnable implements OperationStepHandler {
         }
 
         final ServiceName dataSourceServiceName = context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY_NAME, dsName, DataSource.class);
-        final ServiceName dataSourceServiceNameAlias = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName).append(Constants.STATISTICS);
-
+        final ServiceName dataSourceServiceNameAlias = AbstractDataSourceService.getServiceName(bindInfo);
 
         final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
 
@@ -207,9 +207,9 @@ public class DataSourceEnable implements OperationStepHandler {
                 final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
                 DataSourceStatisticsService statsService = new DataSourceStatisticsService(datasourceRegistration, statsEnabled);
                 serviceTarget.addService(dataSourceServiceName.append(Constants.STATISTICS), statsService)
-                        .addAliases(dataSourceServiceNameAlias)
+                        .addAliases(dataSourceServiceNameAlias.append(Constants.STATISTICS))
                         .addDependency(dataSourceServiceName)
-                        .addDependency(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName), CommonDeployment.class, statsService.getCommonDeploymentInjector())
+                        .addDependency(CommonDeploymentService.getServiceName(bindInfo), CommonDeployment.class, statsService.getCommonDeploymentInjector())
                         .setInitialMode(ServiceController.Mode.PASSIVE)
                         .install();
                 dataSourceController.setMode(ServiceController.Mode.ACTIVE);
@@ -229,7 +229,6 @@ public class DataSourceEnable implements OperationStepHandler {
 
         referenceBuilder.install();
 
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(bindInfo.getBinderServiceName(), binderService)
