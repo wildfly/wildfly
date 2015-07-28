@@ -274,7 +274,6 @@
         <module>ee</module>
         <module>ejb3</module>
         <module>embedded</module>
-        <module>feature-pack</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -303,6 +302,7 @@
         <module>web-common</module>
         <module>servlet-dist</module>
         <module>servlet-feature-pack</module>
+        <module>feature-pack</module>
         <module>webservices</module>
         <module>weld</module>
         <module>xts</module>
