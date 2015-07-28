@@ -56,6 +56,7 @@ public class ViewConfiguration {
     private final Set<Method> asyncMethods = new HashSet<Method>();
     private final Map<Class<?>, Object> privateData = new HashMap<Class<?>, Object>();
     private final List<DependencyConfigurator<ViewService>> dependencies = new ArrayList<DependencyConfigurator<ViewService>>();
+    private final Map<Method, Method> viewToComponentMethodMap = new HashMap<>();
     private ViewInstanceFactory viewInstanceFactory;
 
     /**
@@ -296,5 +297,9 @@ public class ViewConfiguration {
 
     public List<DependencyConfigurator<ViewService>> getDependencies() {
         return dependencies;
+    }
+
+    public Map<Method, Method> getViewToComponentMethodMap() {
+        return viewToComponentMethodMap;
     }
 }

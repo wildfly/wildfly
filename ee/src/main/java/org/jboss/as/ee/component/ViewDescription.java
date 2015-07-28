@@ -214,6 +214,7 @@ public class ViewDescription {
 
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+                    configuration.getViewToComponentMethodMap().put(method, componentMethod);
                 }
             }
 

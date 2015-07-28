@@ -70,7 +70,7 @@ public interface LockableComponent {
      */
     String getComponentName();
 
-    void setInterceptor(Interceptor interceptor);
+    void setConcurrencyManagementInterceptor(Interceptor interceptor);
 
-    Interceptor getInterceptor();
+    Interceptor getConcurrencyManagementInterceptor();
 }
