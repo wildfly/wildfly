@@ -2310,6 +2310,17 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-batch-jberet</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-bean-validation</artifactId>
             <exclusions>
                 <exclusion>

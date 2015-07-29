@@ -4,7 +4,7 @@
    <subsystems name="default">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>logging.xml</subsystem>
-      <subsystem>batch.xml</subsystem>
+      <subsystem>batch-jberet.xml</subsystem>
       <subsystem>bean-validation.xml</subsystem>
       <subsystem>datasources.xml</subsystem>
       <subsystem>ee.xml</subsystem>
@@ -34,7 +34,7 @@
    <subsystems name="ha">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>logging.xml</subsystem>
-      <subsystem>batch.xml</subsystem>
+      <subsystem>batch-jberet.xml</subsystem>
       <subsystem>bean-validation.xml</subsystem>
       <subsystem>datasources.xml</subsystem>
       <subsystem>ee.xml</subsystem>
@@ -67,7 +67,7 @@
    <subsystems name="full">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>logging.xml</subsystem>
-      <subsystem>batch.xml</subsystem>
+      <subsystem>batch-jberet.xml</subsystem>
       <subsystem>bean-validation.xml</subsystem>
       <subsystem>datasources.xml</subsystem>
       <subsystem supplement="full">ee.xml</subsystem>
@@ -100,7 +100,7 @@
    <subsystems name="full-ha">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
       <subsystem>logging.xml</subsystem>
-      <subsystem>batch.xml</subsystem>
+      <subsystem>batch-jberet.xml</subsystem>
       <subsystem>bean-validation.xml</subsystem>
       <subsystem>datasources.xml</subsystem>
       <subsystem supplement="full">ee.xml</subsystem>

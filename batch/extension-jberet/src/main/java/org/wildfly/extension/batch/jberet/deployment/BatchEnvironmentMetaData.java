@@ -20,50 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.batch.chunk;
+package org.wildfly.extension.batch.jberet.deployment;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.ItemWriter;
-import javax.inject.Inject;
-import javax.inject.Named;
+import java.util.concurrent.ExecutorService;
+
+import org.jberet.repository.JobRepository;
 
 /**
+ * Represents environment objects created via a deployment descriptor.
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@Named
-public class CountingItemWriter implements ItemWriter {
+class BatchEnvironmentMetaData {
+    private final JobRepository jobRepository;
+    private final ExecutorService executorService;
 
-    static final List<Object> WRITTEN_ITEMS = Collections.synchronizedList(new ArrayList<>());
-
-    @Inject
-    @BatchProperty(name = "writer.sleep.time")
-    private long sleep;
-
-    @Override
-    public void open(final Serializable checkpoint) throws Exception {
+    protected BatchEnvironmentMetaData(final JobRepository jobRepository, final ExecutorService executorService) {
+        this.jobRepository = jobRepository;
+        this.executorService = executorService;
     }
 
-    @Override
-    public void close() throws Exception {
+    public JobRepository getJobRepository() {
+        return jobRepository;
     }
 
-    @Override
-    public void writeItems(final List<Object> items) throws Exception {
-        WRITTEN_ITEMS.addAll(items);
-        if (sleep > 0) {
-            TimeUnit.MILLISECONDS.sleep(sleep);
-        }
-    }
-
-    @Override
-    public Serializable checkpointInfo() throws Exception {
-        synchronized (WRITTEN_ITEMS) {
-            return new ArrayList<>(WRITTEN_ITEMS);
-        }
+    public ExecutorService getExecutorService() {
+        return executorService;
     }
 }

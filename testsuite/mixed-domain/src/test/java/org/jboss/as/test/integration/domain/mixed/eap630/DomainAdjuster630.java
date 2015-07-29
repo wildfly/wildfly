@@ -48,7 +48,7 @@ import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.as.test.integration.domain.mixed.LegacySubsystemConfigurationUtil;
 import org.jboss.as.weld.WeldExtension;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.batch.BatchSubsystemExtension;
+import org.wildfly.extension.batch.jberet.BatchSubsystemDefinition;
 import org.wildfly.extension.beanvalidation.BeanValidationExtension;
 import org.wildfly.extension.clustering.singleton.SingletonDeployerExtension;
 import org.wildfly.extension.io.IOExtension;
@@ -68,7 +68,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
-        list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, BatchSubsystemExtension.SUBSYSTEM_NAME)));
+        list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, BatchSubsystemDefinition.NAME)));
         list.addAll(removeBeanValidation(profileAddress.append(SUBSYSTEM, BeanValidationExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustEe(profileAddress.append(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustEjb3(profileAddress.append(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)));
@@ -97,7 +97,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
         final List<ModelNode> list = new ArrayList<>();
         //batch and extension don't exist
         list.add(createRemoveOperation(subsystem));
-        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.batch")));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.batch.jberet")));
         return list;
     }
 

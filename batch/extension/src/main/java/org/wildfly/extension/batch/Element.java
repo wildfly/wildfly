@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public enum Element {
+enum Element {
 
     UNKNOWN(null),
     JDBC(BatchConstants.JDBC),

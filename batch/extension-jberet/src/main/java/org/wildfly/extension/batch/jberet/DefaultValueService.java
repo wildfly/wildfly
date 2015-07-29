@@ -20,55 +20,45 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.batch.chunk;
+package org.wildfly.extension.batch.jberet;
 
-import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.ItemReader;
-import javax.inject.Inject;
-import javax.inject.Named;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
+ * A simple service for storing a default value from another service.
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@Named
-public class CountingItemReader implements ItemReader {
+public class DefaultValueService<T> implements Service<T> {
 
-    @Inject
-    @BatchProperty(name = "reader.start")
-    private int start;
+    public static <T> DefaultValueService<T> create() {
+        return new DefaultValueService<>();
+    }
 
-    @Inject
-    @BatchProperty(name = "reader.end")
-    private int end;
+    private final InjectedValue<T> injector = new InjectedValue<>();
 
-    private final AtomicInteger counter = new AtomicInteger();
+    private volatile T instance;
 
     @Override
-    public void open(final Serializable checkpoint) throws Exception {
-        if (end == 0) {
-            end = 10;
-        }
-        counter.set(start);
+    public void start(final StartContext context) throws StartException {
+        instance = injector.getValue();
     }
 
     @Override
-    public void close() throws Exception {
-        counter.set(0);
+    public void stop(final StopContext context) {
+        instance = null;
     }
 
     @Override
-    public Object readItem() throws Exception {
-        final int result = counter.incrementAndGet();
-        if (result > end) {
-            return null;
-        }
-        return result;
+    public T getValue() throws IllegalStateException, IllegalArgumentException {
+        return instance;
     }
 
-    @Override
-    public Serializable checkpointInfo() throws Exception {
-        return counter.get();
+    protected InjectedValue<T> getInjector() {
+        return injector;
     }
 }
