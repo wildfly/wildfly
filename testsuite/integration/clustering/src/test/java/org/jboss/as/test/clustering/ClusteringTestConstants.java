@@ -78,7 +78,7 @@ public interface ClusteringTestConstants {
     /**
      * TODO: This will be removed.
      */
-    int GRACE_TIME_TO_MEMBERSHIP_CHANGE = 10000;
+    int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
 
     int CLUSTER_ESTABLISHMENT_WAIT_MS = TimeoutUtil.adjust(100);
     int CLUSTER_ESTABLISHMENT_LOOP_COUNT = 20;
