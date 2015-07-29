@@ -1,8 +1,8 @@
- _       ___ __    __________         ____ 
-| |     / (_) /___/ / ____/ /_  __   / __ \
-| | /| / / / / __  / /_  / / / / /  / /_/ /
-| |/ |/ / / / /_/ / __/ / / /_/ /   \__, /
-|__/|__/_/_/\__,_/_/   /_/\__, /   /____/
+ _       ___ __    __________         _______
+| |     / (_) /___/ / ____/ /_  __   <  / __ \
+| | /| / / / / __  / /_  / / / / /   / / / / /
+| |/ |/ / / / /_/ / __/ / / /_/ /   / / /_/ /
+|__/|__/_/_/\__,_/_/   /_/\__, /   /_/\____/
                          /____/
 
 Welcome to WildFly (formerly known as JBoss Application Server)
@@ -26,20 +26,20 @@ Key Features
 
 Release Notes
 -------------
-You can obtain the 9.0.0.Beta1 release notes here:
+You can obtain the 10.0.0.Beta1 release notes here:
 
-https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12313721&version=12321687
+https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12313721&version=12327160
 
 Getting Started
 ---------------
-WildFly requires JDK 1.7 or later. For information regarding installation
+WildFly requires JDK 1.8 or later. For information regarding installation
 of the JDK, see http://www.oracle.com/technetwork/java/index.html
 
 WildFly has two modes of operation: Standalone and Domain. For more
 information regarding these modes, please refer to the documentation 
 available on the JBoss.org site:
 
-https://docs.jboss.org/author/display/WFLY9/Documentation
+https://docs.jboss.org/author/display/WFLY10/Documentation
 
 
 Starting a Standalone Server
