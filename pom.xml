@@ -1788,6 +1788,18 @@
 
             <dependency>
                 <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-cli</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-commons</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -1800,6 +1812,12 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-dto</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
             </dependency>
 
             <dependency>

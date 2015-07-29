@@ -1402,6 +1402,11 @@
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-cli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-commons</artifactId>
             <exclusions>
                 <exclusion>
@@ -1420,6 +1425,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-dto</artifactId>
         </dependency>
 
         <dependency>

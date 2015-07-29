@@ -509,6 +509,10 @@ public class ServerDefinition extends PersistentResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
+
+        ExportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
+        ImportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
+
         if (registerRuntimeOnly) {
             ActiveMQServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
             JMSServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());

@@ -37,6 +37,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -802,4 +803,9 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 82, value = "Unsupported type of connector factory for legacy resource: %s")
     StartException unsupportedConnectorFactoryForLegacy(String connectorFactoryClassName);
 
+    @Message(id = 83, value = "The %s operation can not be performed: the server must be in %s mode")
+    OperationFailedException managementOperationAllowedOnlyInRunningMode(String operationName, RunningMode mode);
+
+    @Message(id = 84, value = "The server does not define any in-vm connector. One is required to be able to import a journal")
+    OperationFailedException noInVMConnector();
 }
