@@ -4,27 +4,22 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERIODIC_ROTATING_FILE_HANDLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.net.SocketPermission;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.PropertyPermission;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -34,14 +29,19 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.integration.security.common.SecurityTestConstants;
+import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.integration.web.websocket.WebSocketTestCase;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,6 +78,21 @@ public class RequestDumpingHandlerTestCase {
         private static final PathAddress ADDR_LOGGER = PathAddress.pathAddress().append(SUBSYSTEM, "logging")
                 .append(LOGGER, LOGGER_NAME);
 
+        private static final File WORK_DIR = new File("https-workdir");
+        public static final File SERVER_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_KEYSTORE);
+        public static final File SERVER_TRUSTSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_TRUSTSTORE);
+        public static final File CLIENT_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_KEYSTORE);
+        public static final File CLIENT_TRUSTSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_TRUSTSTORE);
+        public static final File UNTRUSTED_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.UNTRUSTED_KEYSTORE);
+
+        private static final String HTTPS = "https";
+        private static final String HTTPS_LISTENER_PATH = "subsystem=undertow/server=default-server/https-listener=" + HTTPS;
+
+        private static final String HTTPS_REALM = "httpsRealm";
+        private static final String HTTPS_REALM_PATH = "core-service=management/security-realm=" + HTTPS_REALM;
+        private static final String HTTPS_REALM_AUTH_PATH = HTTPS_REALM_PATH + "/authentication=truststore";
+        private static final String HTTPS_REALM_SSL_PATH = HTTPS_REALM_PATH + "/server-identity=ssl";
+
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             // Retrieve original path to server log files
@@ -105,6 +120,33 @@ public class RequestDumpingHandlerTestCase {
             handlers.add(new ModelNode(FILE_HANDLER_NAME));
             op.get("handlers").set(handlers);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            // Set HTTPS listener...
+            FileUtils.deleteDirectory(WORK_DIR);
+            WORK_DIR.mkdirs();
+            Utils.createKeyMaterial(WORK_DIR);
+
+            // add new HTTPS_REALM with SSL
+            ModelNode operation = createOpNode(HTTPS_REALM_PATH, ModelDescriptionConstants.ADD);
+            Utils.applyUpdate(operation, managementClient.getControllerClient());
+
+            operation = createOpNode(HTTPS_REALM_AUTH_PATH, ModelDescriptionConstants.ADD);
+            operation.get("keystore-path").set(SERVER_TRUSTSTORE_FILE.getAbsolutePath());
+            operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
+            Utils.applyUpdate(operation, managementClient.getControllerClient());
+
+            operation = createOpNode(HTTPS_REALM_SSL_PATH, ModelDescriptionConstants.ADD);
+            operation.get(PROTOCOL).set("TLSv1");
+            operation.get("keystore-path").set(SERVER_KEYSTORE_FILE.getAbsolutePath());
+            operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
+            Utils.applyUpdate(operation, managementClient.getControllerClient());
+
+            operation = createOpNode(HTTPS_LISTENER_PATH, ModelDescriptionConstants.ADD);
+            operation.get("socket-binding").set(HTTPS);
+            operation.get("security-realm").set(HTTPS_REALM);
+            Utils.applyUpdate(operation, managementClient.getControllerClient());
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
 
         @Override
@@ -118,19 +160,41 @@ public class RequestDumpingHandlerTestCase {
 
             // Delete custom server log file
             Files.delete(logFilePath);
+
+            // Delete folder with HTTPS files
+            FileUtils.deleteDirectory(WORK_DIR);
+
+            // Delete HTTPS specific configuration
+            op = createOpNode(HTTPS_REALM_SSL_PATH, ModelDescriptionConstants.REMOVE);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            op = createOpNode(HTTPS_REALM_AUTH_PATH, ModelDescriptionConstants.REMOVE);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+
+            op = createOpNode(HTTPS_LISTENER_PATH, ModelDescriptionConstants.REMOVE);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+
+            op = createOpNode(HTTPS_REALM_PATH, ModelDescriptionConstants.REMOVE);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
     }
-
-    private final int TOTAL_DELAY = 3000;
-    private final int SLEEP_TIMEOUT = 200;
 
     private static Logger log = Logger.getLogger(RequestDumpingHandlerTestCase.class);
 
     /** Path to custom server log file. */
     private static Path logFilePath;
 
+    private final String HTTPS_PORT = "8443";
+
     private final static String DEPLOYMENT = "no-req-dump";
     private final static String DEPLOYMENT_DUMP = "req-dump";
+    private final static String DEPLOYMENT_WS = "req-dump-ws";
 
     @Deployment(name = DEPLOYMENT_DUMP)
     public static WebArchive deployWithReqDump() {
@@ -151,6 +215,24 @@ public class RequestDumpingHandlerTestCase {
         return war;
     }
 
+    @Deployment(name = DEPLOYMENT_WS)
+    public static WebArchive deploy() {
+        WebArchive war = ShrinkWrap
+                .create(WebArchive.class, DEPLOYMENT_WS + ".war")
+                .addPackage(WebSocketTestCase.class.getPackage())
+                .addClass(TestSuiteEnvironment.class)
+                .addAsManifestResource(createPermissionsXmlAsset(
+                // Needed for the TestSuiteEnvironment.getServerAddress()
+                        new PropertyPermission("management.address", "read"), new PropertyPermission("node0", "read"),
+                        // Needed for the serverContainer.connectToServer()
+                        new SocketPermission("*:8080", "connect,resolve")), "permissions.xml")
+                .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
+                        "services/javax.websocket.ContainerProvider")
+                .addAsWebInfResource(RequestDumpingHandlerTestCase.class.getPackage(), "jboss-web-req-dump.xml",
+                        "jboss-web.xml");
+        return war;
+    }
+
     /**
      * Testing app has already defined request dumper handler. This test checks that when a request to URL is performed then
      * request detail data is stored in proper format in the proper log file.
@@ -158,7 +240,7 @@ public class RequestDumpingHandlerTestCase {
     @Test
     @OperateOnDeployment(DEPLOYMENT_DUMP)
     public void testReqDumpHandlerOn(@ArquillianResource URL url) throws Exception {
-        commonTestBody(url, true);
+        new RequestDumpingHandlerTestImpl.HttpRequestDumpingHandlerTestImpl(url.toURI(), logFilePath, true);
     }
 
     /**
@@ -168,208 +250,30 @@ public class RequestDumpingHandlerTestCase {
     @Test
     @OperateOnDeployment(DEPLOYMENT)
     public void testReqDumpHandlerOff(@ArquillianResource URL url) throws Exception {
-        commonTestBody(url, false);
+        new RequestDumpingHandlerTestImpl.HttpRequestDumpingHandlerTestImpl(url.toURI(), logFilePath, false);
     }
 
     /**
-     * Common test body part.
-     *
-     * @param url deployment URL
-     * @param requestDumperOn whether RequestDumpingHandler is turned on
-     * @throws Exception
+     * Testing app has request dumper handler registered. This test checks that request dump over the HTTPS is generated
+     * correctly.
      */
-    private void commonTestBody(@ArquillianResource URL url, boolean requestDumperOn) throws Exception {
-        // Test that there is no request dump for current URL before actual HTTP request OR no custom log file exists at all...
-        if (logFilePath.toFile().exists() && logFilePath.toFile().isFile()) {
-            testLogForDumpWithURL(logFilePath, url.getFile(), false);
-        } else {
-            log.info("The log file ('" + logFilePath + "') does not exist yet, that is ok.");
-        }
-
-        Header reqHdrs[] = null;
-        Header respHdrs[] = null;
-        // Perform HTTP request...
-        CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-        try {
-            HttpGet httpget = new HttpGet(url.toExternalForm() + "file.txt");
-            reqHdrs = httpget.getAllHeaders();
-
-            HttpResponse response = httpclient.execute(httpget);
-            respHdrs = response.getAllHeaders();
-
-            HttpEntity entity = response.getEntity();
-
-            StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(200, statusLine.getStatusCode());
-
-            String result = EntityUtils.toString(entity);
-            Assert.assertEquals("Could not reach expected content via http request", "A file", result);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.close();
-        }
-
-        // Test whether there is request dump for particular URL after the HTTP request executed...
-        testLogForDumpWithURL(logFilePath, url.getFile(), requestDumperOn);
-
-        if (requestDumperOn) {
-            // If we expect request dump -> check its data.
-            checkReqDumpData(logFilePath, reqHdrs, respHdrs, url.getHost(), url.getPort());
-        }
+    @Test
+    @OperateOnDeployment(DEPLOYMENT_DUMP)
+    public void testReqDumpHandlerOnHttps(@ArquillianResource URL url) throws Exception {
+        URL httpsUrl = new URL("https://" + url.getHost() + ":" + HTTPS_PORT + url.getPath() + "file.txt");
+        new RequestDumpingHandlerTestImpl.HttpsRequestDumpingHandlerTestImpl(httpsUrl.toURI(), logFilePath, true);
     }
 
     /**
-     * Reads content of the file into a string variable.
-     * 
-     * @param logFilePath
-     * @return content of the file as a string
-     * @throws FileNotFoundException
+     * Testing app has request dumper handler registered. This test checks that request dump over the Websockets is generated
+     * correctly.
      */
-    private String readLogFile(Path logFilePath) throws FileNotFoundException {
-        Assert.assertTrue("Log file ('" + logFilePath + "') does not exist", logFilePath.toFile().exists());
-        Assert.assertTrue("The '" + logFilePath + "' is not a file", logFilePath.toFile().isFile());
-
-        // logfile exists -> read its content...
-        Scanner scanner = new Scanner(logFilePath.toFile());
-        StringBuilder sb = new StringBuilder();
-
-        while (scanner.hasNextLine()) {
-            sb.append("\n" + scanner.nextLine());
-        }
-        scanner.close();
-
-        return sb.toString();
+    @Test
+    @OperateOnDeployment(DEPLOYMENT_WS)
+    public void testReqDumpHandlerOnWebsockets(@ArquillianResource URL url) throws Exception {
+        URI wsUri = new URI("ws", "", TestSuiteEnvironment.getServerAddress(), 8080, "/" + DEPLOYMENT_WS + "/websocket/Stuart",
+                "", "");
+        new RequestDumpingHandlerTestImpl.WsRequestDumpingHandlerTestImpl(wsUri, logFilePath, true);
     }
 
-    /**
-     * Searching log for request dump of request to particular path. If no such request dump is found there is sanity loop to
-     * ensure that system has had enough time to write data to the disk.
-     * 
-     * @param logFilePath path to log file
-     * @param path URI path searched for in log file
-     * @param expected whether we expect to find given path
-     * @throws FileNotFoundException
-     */
-    private void testLogForDumpWithURL(Path logFilePath, String path, boolean expected) throws Exception {
-        Pattern pattern = Pattern.compile("-+REQUEST-+.+" + path + ".+-+RESPONSE-+", Pattern.DOTALL);
-        Matcher m;
-
-        long startTime = System.currentTimeMillis();
-        boolean hasFound = false;
-        long currTime;
-        String content;
-
-        // Give system time to write data on disk...
-        do {
-            currTime = System.currentTimeMillis();
-            content = readLogFile(logFilePath);
-            m = pattern.matcher(content);
-
-            // Search for pattern...
-            if (m.find()) {
-                hasFound = true;
-                break;
-            }
-            Thread.sleep(SLEEP_TIMEOUT);
-        } while (currTime - startTime < TOTAL_DELAY);
-
-        log.info("I have read following content of the file '" + logFilePath + "':\n" + content + "\n---END-OF-FILE-OUTPUT---");
-
-        // Finally compare search result with our expectation...
-        Assert.assertEquals("Searching for pattern: '" + pattern + "' in log file ('" + logFilePath.toString() + "')",
-                expected, hasFound);
-    }
-
-    /**
-     * Check request dumper data.
-     *
-     * @param logFilePath path to log file
-     * @param reqHdrs request headers
-     * @param respHdrs response headers
-     * @param host server IP address
-     * @param port server listening port
-     * @throws FileNotFoundException
-     */
-    private void checkReqDumpData(Path logFilePath, Header[] reqHdrs, Header[] respHdrs, String host, int port)
-            throws FileNotFoundException {
-        String content = readLogFile(logFilePath);
-
-        // Split into request and response part:
-        String request = content.substring(0, content.indexOf("-RESPONSE-"));
-        String response = content.substring(content.indexOf("-RESPONSE-"), content.length());
-
-        // Check request dump part...
-        searchInFile(request, "-+REQUEST-+");
-        searchInFile(request, "\\s+URI=/req-dump/file\\.txt");
-        searchInFile(request, "\\s+characterEncoding=");
-        searchInFile(request, "\\s+contentLength=");
-        searchInFile(request, "\\s+contentType=");
-
-        searchForHeaders(request, reqHdrs);
-
-        searchInFile(request, "\\s+locale=\\[.*\\]");
-        searchInFile(request, "\\s+method=GET");
-        searchInFile(request, "\\s+protocol=");
-        searchInFile(request, "\\s+queryString=");
-        searchInFile(request, "\\s+remoteAddr=");
-        searchInFile(request, "\\s+remoteHost=");
-        searchInFile(request, "\\s+scheme=http");
-        searchInFile(request, "\\s+host=" + Pattern.quote(host));
-        searchInFile(request, "\\s+serverPort=" + Pattern.quote(String.valueOf(port)));
-
-        // Now check response dump part...
-        searchInFile(response, "-+RESPONSE-+");
-        searchInFile(response, "\\s+contentLength=");
-        searchInFile(response, "\\s+contentType=text/plain");
-
-        searchForHeaders(response, respHdrs);
-
-        searchInFile(response, "\\s+status=200");
-    }
-
-    /**
-     * Search for request and response headers. Respect that they might be in different order.
-     *
-     * @param content content in which is searched
-     * @param hdrs array of headers which should be searched for
-     * @throws FileNotFoundException
-     */
-    private void searchForHeaders(String content, Header[] hdrs) throws FileNotFoundException {
-        if (hdrs != null) {
-            for (Header hdr : hdrs) {
-                // Close current scanner, reopen it and move to start pattern directly...
-                searchInFile(content, "\\s+header=" + Pattern.quote(hdr.getName()) + "=" + Pattern.quote(hdr.getValue()));
-            }
-        } else {
-            // request contains no headers -> we really do not expect it to be in dump
-            searchInFile(content, "\\s+header=", false);
-        }
-    }
-
-    /**
-     * Searches in given content for given pattern.
-     *
-     * @param content content of the file as a string
-     * @param regExp regular expression that is searched in the file
-     */
-    private void searchInFile(String content, String regExp) {
-        searchInFile(content, regExp, true);
-    }
-
-    /**
-     * Searches in given content for given pattern.
-     *
-     * @param content content of the file as a string
-     * @param regExp regular expression that is searched in the file
-     * @param expected whether searching pattern is expected to be found or not
-     */
-    private void searchInFile(String content, String regExp, boolean expected) {
-        Pattern pattern = Pattern.compile(regExp);
-        Matcher m = pattern.matcher(content);
-
-        Assert.assertEquals("Searching for pattern: '" + regExp + "' in log file ('" + logFilePath.toString() + "')", expected,
-                m.find());
-    }
 }
