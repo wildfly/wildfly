@@ -48,7 +48,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -77,12 +76,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
-
-    private static final boolean IS_WINDOWS;
-
-    static {
-        IS_WINDOWS = WildFlySecurityManager.getPropertyPrivileged("os.name", "").toLowerCase(Locale.ROOT).contains("windows");
-    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
@@ -143,11 +136,7 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
-
             throws IllegalStateException, IOException, URISyntaxException {
-
-        // Ignore on Windows, see WFLY-4999
-        Assume.assumeFalse(IS_WINDOWS);
 
         HttpClient client = HttpClients.createDefault();
 
