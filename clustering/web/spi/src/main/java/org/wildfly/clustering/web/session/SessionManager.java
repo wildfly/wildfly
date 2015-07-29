@@ -28,7 +28,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 
-public interface SessionManager<L, B extends Batch> extends IdentifierFactory<String> {
+public interface SessionManager<L, B extends Batch> extends IdentifierFactory<String>, ActiveSessionStatistics {
 
     /**
      * Indicates whether or not the session with the specified identifier is known to this session manager.

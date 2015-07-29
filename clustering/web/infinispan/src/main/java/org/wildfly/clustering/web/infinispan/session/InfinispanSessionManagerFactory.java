@@ -39,6 +39,7 @@ import org.wildfly.clustering.marshalling.SimpleMarshallingContextFactory;
 import org.jboss.modules.Module;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
@@ -51,6 +52,7 @@ import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesCac
 import org.wildfly.clustering.web.infinispan.session.fine.FineSessionCacheEntry;
 import org.wildfly.clustering.web.infinispan.session.fine.FineSessionFactory;
 import org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeCacheKey;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
@@ -69,7 +71,7 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
     }
 
     @Override
-    public <L> SessionManager<L, TransactionBatch> createSessionManager(final SessionContext context, IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
+    public <L> SessionManager<L, TransactionBatch> createSessionManager(final SessionContext context, IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory, final Recordable<ImmutableSession> inactiveSessionRecorder) {
         final Batcher<TransactionBatch> batcher = new InfinispanBatcher(this.config.getCache());
         final Cache<String, ?> cache = this.config.getCache();
         final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(identifierFactory, cache, this.config.getKeyAffinityServiceFactory());
@@ -110,6 +112,11 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
             @Override
             public int getMaxActiveSessions() {
                 return maxActiveSessions;
+            }
+
+            @Override
+            public Recordable<ImmutableSession> getInactiveSessionRecorder() {
+                return inactiveSessionRecorder;
             }
         };
         return new InfinispanSessionManager<>(this.getSessionFactory(context, localContextFactory), config);

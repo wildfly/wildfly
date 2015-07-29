@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * Struct for specifying a time duration.
  * @author Paul Ferraro
  */
-public class Time {
+public class Time implements Comparable<Time> {
     private final long value;
     private final TimeUnit unit;
 
@@ -46,6 +46,12 @@ public class Time {
 
     public long convert(TimeUnit unit) {
         return unit.convert(this.value, this.unit);
+    }
+
+    @Override
+    public int compareTo(Time time) {
+        TimeUnit compareUnit = TimeUnit.values()[Math.min(this.unit.ordinal(), time.unit.ordinal())];
+        return Long.compare(this.convert(compareUnit), time.convert(compareUnit));
     }
 
     @Override
