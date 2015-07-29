@@ -396,31 +396,40 @@ public class DistributableSessionTestCase {
         AuthenticatedSession auth = new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
         Account oldAccount = mock(Account.class);
         AuthenticatedSession oldAuth = new AuthenticatedSession(oldAccount, HttpServletRequest.FORM_AUTH);
+        ArgumentCaptor<AuthenticatedSession> capturedAuth = ArgumentCaptor.forClass(AuthenticatedSession.class);
 
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getAttributes()).thenReturn(attributes);
-        when(attributes.setAttribute(name, auth)).thenReturn(oldAuth);
+        when(attributes.setAttribute(same(name), capturedAuth.capture())).thenReturn(oldAuth);
         
         AuthenticatedSession result = (AuthenticatedSession) this.adapter.setAttribute(name, auth);
         
+        assertSame(auth.getAccount(), capturedAuth.getValue().getAccount());
+        assertSame(auth.getMechanism(), capturedAuth.getValue().getMechanism());
+
         assertSame(oldAccount, result.getAccount());
         assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
         
         verify(context).close();
         
-        reset(context);
-        
-        when(attributes.setAttribute(name, auth)).thenReturn(null);
+        reset(context, attributes);
+
+        capturedAuth = ArgumentCaptor.forClass(AuthenticatedSession.class);
+
+        when(attributes.setAttribute(same(name), capturedAuth.capture())).thenReturn(null);
         
         result = (AuthenticatedSession) this.adapter.setAttribute(name, auth);
         
+        assertSame(auth.getAccount(), capturedAuth.getValue().getAccount());
+        assertSame(auth.getMechanism(), capturedAuth.getValue().getMechanism());
+
         assertNull(result);
         
         verify(context).close();
         
-        reset(context);
+        reset(context, attributes);
         
         auth = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
         AuthenticatedSession oldSession = new AuthenticatedSession(oldAccount, HttpServletRequest.BASIC_AUTH);

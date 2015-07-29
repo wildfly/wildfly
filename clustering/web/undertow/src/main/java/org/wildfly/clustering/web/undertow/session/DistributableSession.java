@@ -141,7 +141,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
             if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) value;
-                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, auth);
+                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, new ImmutableAuthenticatedSession(auth));
             }
             if (!(value instanceof Serializable)) {
                 throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
