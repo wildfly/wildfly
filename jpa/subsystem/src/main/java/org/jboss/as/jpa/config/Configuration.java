@@ -52,7 +52,7 @@ public class Configuration {
     /**
      * Hibernate OGM persistence provider
      */
-    public static final String PROVIDER_MODULE_HIBERNATE_OGM = "org.hibernate:ogm";
+    public static final String PROVIDER_MODULE_HIBERNATE_OGM = "org.hibernate.ogm";
 
     public static final String PROVIDER_MODULE_ECLIPSELINK = "org.eclipse.persistence";
 
