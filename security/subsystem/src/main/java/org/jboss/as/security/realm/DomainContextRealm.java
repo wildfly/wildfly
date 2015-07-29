@@ -86,7 +86,7 @@ public class DomainContextRealm implements SecurityRealm {
     }
 
     @Override
-    public CredentialSupport getCredentialSupport(final Class<?> credentialType) throws RealmUnavailableException {
+    public CredentialSupport getCredentialSupport(final Class<?> credentialType, final String algorithmName) throws RealmUnavailableException {
         if (char[].class.isAssignableFrom(credentialType) || String.class.isAssignableFrom(credentialType) || ClearPassword.class.isAssignableFrom(credentialType)) {
             return CredentialSupport.VERIFIABLE_ONLY;
         }
@@ -109,12 +109,12 @@ public class DomainContextRealm implements SecurityRealm {
         }
 
         @Override
-        public CredentialSupport getCredentialSupport(final Class<?> credentialType) throws RealmUnavailableException {
-            return DomainContextRealm.this.getCredentialSupport(credentialType);
+        public CredentialSupport getCredentialSupport(final Class<?> credentialType, final String algorithmName) throws RealmUnavailableException {
+            return DomainContextRealm.this.getCredentialSupport(credentialType, algorithmName);
         }
 
         @Override
-        public <C> C getCredential(final Class<C> credentialType) throws RealmUnavailableException {
+        public <C> C getCredential(final Class<C> credentialType, final String algorithmName) throws RealmUnavailableException {
             return null;
         }
 
