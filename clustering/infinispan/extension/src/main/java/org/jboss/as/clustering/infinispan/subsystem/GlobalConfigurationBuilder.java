@@ -36,7 +36,7 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.Services;
@@ -54,7 +54,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.infinispan.spi.io.SimpleExternalizer;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -80,9 +80,9 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
     }
 
     @Override
-    public Builder<GlobalConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(resolver, model));
-        this.statisticsEnabled = STATISTICS_ENABLED.getDefinition().resolveModelAttribute(resolver, model).asBoolean();
+    public Builder<GlobalConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
+        this.statisticsEnabled = STATISTICS_ENABLED.getDefinition().resolveModelAttribute(context, model).asBoolean();
         return this;
     }
 
@@ -120,7 +120,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
                 .enabled(this.statisticsEnabled)
                 .cacheManagerName(this.name)
                 .mBeanServerLookup(new MBeanServerProvider(this.server.getValue()))
-                .jmxDomain(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(CacheServiceNameFactory.DEFAULT_CACHE).getParent().getCanonicalName())
+                .jmxDomain(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(CacheServiceName.DEFAULT_CACHE).getParent().getCanonicalName())
                 .allowDuplicateDomains(true);
 
         return builder.build();

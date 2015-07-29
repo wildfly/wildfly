@@ -22,6 +22,10 @@
 
 package org.jboss.as.clustering.msc;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
@@ -29,10 +33,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
-
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Map;
 
 /**
  * Helper methods for interacting with a modular service container.
@@ -108,7 +108,7 @@ public class ServiceContainerHelper {
      * @param controller a service controller
      * @throws StartException if the specified service could not be started
      */
-    public static void start(final ServiceController<?> controller) throws StartException {
+    public static <T> void start(final ServiceController<T> controller) throws StartException {
         transition(controller, State.UP);
     }
 
@@ -116,7 +116,7 @@ public class ServiceContainerHelper {
      * Ensures the specified service is stopped.
      * @param controller a service controller
      */
-    public static void stop(ServiceController<?> controller) {
+    public static <T> void stop(ServiceController<T> controller) {
         try {
             transition(controller, State.DOWN);
         } catch (StartException e) {
@@ -129,7 +129,7 @@ public class ServiceContainerHelper {
      * Ensures the specified service is removed.
      * @param controller a service controller
      */
-    public static void remove(ServiceController<?> controller) {
+    public static <T> void remove(ServiceController<T> controller) {
         try {
             transition(controller, State.REMOVED);
         } catch (StartException e) {
@@ -138,31 +138,31 @@ public class ServiceContainerHelper {
         }
     }
 
-    private static void transition(final ServiceController<?> targetController, State targetState) throws StartException {
+    private static <T> void transition(final ServiceController<T> targetController, final State targetState) throws StartException {
         // Short-circuit if the service is already at the target state
         if (targetController.getState() == targetState) return;
 
-        final StabilityMonitor monitor = new StabilityMonitor();
+        StabilityMonitor monitor = new StabilityMonitor();
+        monitor.addController(targetController);
         try {
-            if (targetController.getSubstate().isRestState()) {
-                // Force service to transition to desired state
-                Mode targetMode = modeToggle.get(targetState).get(targetController.getMode());
-                if (targetMode != null) {
-                    targetController.setMode(targetMode);
-                }
+            // Force service to transition to desired state
+            Mode targetMode = modeToggle.get(targetState).get(targetController.getMode());
+            if (targetMode != null) {
+                targetController.setMode(targetMode);
             }
-            monitor.addController(targetController);
+
             monitor.awaitStability();
-            if (targetState == State.UP) {
-                StartException exception = targetController.getStartException();
-                if (exception != null) {
-                    throw exception;
-                }
-            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
             monitor.removeController(targetController);
+        }
+
+        if (targetState == State.UP) {
+            StartException exception = targetController.getStartException();
+            if (exception != null) {
+                throw exception;
+            }
         }
     }
 

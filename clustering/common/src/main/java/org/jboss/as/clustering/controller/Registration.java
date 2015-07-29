@@ -26,6 +26,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Implemented by a resource artifact that can register itself.
+ * This allows a resource to encapsulates specific registration details (e.g. resource aliases) from the parent resource.
  * @author Paul Ferraro
  */
 public interface Registration {

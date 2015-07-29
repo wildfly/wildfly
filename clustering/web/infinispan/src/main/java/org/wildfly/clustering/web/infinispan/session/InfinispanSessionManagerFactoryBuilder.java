@@ -37,9 +37,9 @@ import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 import org.wildfly.clustering.spi.GroupServiceName;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
@@ -54,7 +54,7 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
         if (!baseServiceName.isParentOf(serviceName)) {
             serviceName = baseServiceName.append(serviceName);
         }
-        return (serviceName.length() < 4) ? serviceName.append(CacheServiceNameFactory.DEFAULT_CACHE) : serviceName;
+        return (serviceName.length() < 4) ? serviceName.append(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP) : serviceName;
     }
 
     private final SessionManagerConfiguration configuration;

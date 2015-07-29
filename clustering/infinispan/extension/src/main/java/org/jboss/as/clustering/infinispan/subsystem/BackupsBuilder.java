@@ -37,7 +37,7 @@ import org.infinispan.configuration.cache.SitesConfigurationBuilder;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -69,7 +69,7 @@ public class BackupsBuilder extends CacheComponentBuilder<SitesConfiguration> im
     }
 
     @Override
-    public Builder<SitesConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
+    public Builder<SitesConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.backups.clear();
         if (model.hasDefined(BackupResourceDefinition.WILDCARD_PATH.getKey())) {
             SitesConfigurationBuilder builder = new ConfigurationBuilder().sites();
@@ -78,13 +78,13 @@ public class BackupsBuilder extends CacheComponentBuilder<SitesConfiguration> im
                 ModelNode backup = property.getValue();
                 BackupConfigurationBuilder backupBuilder = builder.addBackup();
                 backupBuilder.site(siteName)
-                        .enabled(ENABLED.getDefinition().resolveModelAttribute(resolver, backup).asBoolean())
-                        .backupFailurePolicy(ModelNodes.asEnum(FAILURE_POLICY.getDefinition().resolveModelAttribute(resolver, backup), BackupFailurePolicy.class))
-                        .replicationTimeout(TIMEOUT.getDefinition().resolveModelAttribute(resolver, backup).asLong())
-                        .strategy(ModelNodes.asEnum(STRATEGY.getDefinition().resolveModelAttribute(resolver, backup), BackupStrategy.class))
+                        .enabled(ENABLED.getDefinition().resolveModelAttribute(context, backup).asBoolean())
+                        .backupFailurePolicy(ModelNodes.asEnum(FAILURE_POLICY.getDefinition().resolveModelAttribute(context, backup), BackupFailurePolicy.class))
+                        .replicationTimeout(TIMEOUT.getDefinition().resolveModelAttribute(context, backup).asLong())
+                        .strategy(ModelNodes.asEnum(STRATEGY.getDefinition().resolveModelAttribute(context, backup), BackupStrategy.class))
                         .takeOffline()
-                            .afterFailures(TAKE_OFFLINE_AFTER_FAILURES.getDefinition().resolveModelAttribute(resolver, backup).asInt())
-                            .minTimeToWait(TAKE_OFFLINE_MIN_WAIT.getDefinition().resolveModelAttribute(resolver, backup).asLong())
+                            .afterFailures(TAKE_OFFLINE_AFTER_FAILURES.getDefinition().resolveModelAttribute(context, backup).asInt())
+                            .minTimeToWait(TAKE_OFFLINE_MIN_WAIT.getDefinition().resolveModelAttribute(context, backup).asLong())
                 ;
                 this.backups.put(siteName, backupBuilder.create());
             }

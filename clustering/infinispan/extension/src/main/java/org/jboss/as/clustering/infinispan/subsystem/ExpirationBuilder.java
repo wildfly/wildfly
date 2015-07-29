@@ -30,7 +30,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.ExpirationConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -47,10 +47,10 @@ public class ExpirationBuilder extends CacheComponentBuilder<ExpirationConfigura
     }
 
     @Override
-    public Builder<ExpirationConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.builder.wakeUpInterval(INTERVAL.getDefinition().resolveModelAttribute(resolver, model).asLong());
-        this.builder.lifespan(LIFESPAN.getDefinition().resolveModelAttribute(resolver, model).asLong());
-        this.builder.maxIdle(MAX_IDLE.getDefinition().resolveModelAttribute(resolver, model).asLong());
+    public Builder<ExpirationConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.builder.wakeUpInterval(INTERVAL.getDefinition().resolveModelAttribute(context, model).asLong());
+        this.builder.lifespan(LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong());
+        this.builder.maxIdle(MAX_IDLE.getDefinition().resolveModelAttribute(context, model).asLong());
         return this;
     }
 

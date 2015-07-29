@@ -21,18 +21,13 @@
  */
 package org.wildfly.clustering.server.singleton;
 
-import java.io.Serializable;
-
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
 /**
- * Service for building {@link SingletonService} instances.
+ * Service for building {@link CacheSingletonServiceBuilder} instances.
  * @author Paul Ferraro
  */
 public class CacheSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
@@ -46,30 +41,7 @@ public class CacheSingletonServiceBuilderFactory implements SingletonServiceBuil
     }
 
     @Override
-    public <T extends Serializable> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, Service<T> service) {
-        final SingletonService<T> singleton = new SingletonService<>(name, service);
-        return new SingletonServiceBuilder<T>() {
-            @Override
-            public SingletonServiceBuilder<T> requireQuorum(int quorum) {
-                singleton.setQuorum(quorum);
-                return this;
-            }
-
-            @Override
-            public SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy policy) {
-                singleton.setElectionPolicy(policy);
-                return this;
-            }
-
-            @Override
-            public ServiceBuilder<T> build(ServiceTarget target) {
-                return singleton.build(target, CacheSingletonServiceBuilderFactory.this.containerName, CacheSingletonServiceBuilderFactory.this.cacheName);
-            }
-
-            @Override
-            public ServiceName getServiceName() {
-                return name;
-            }
-        };
+    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, Service<T> service) {
+        return new CacheSingletonServiceBuilder<>(name, service, this.containerName, this.cacheName);
     }
 }

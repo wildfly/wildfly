@@ -22,7 +22,7 @@
 package org.wildfly.clustering.server.singleton;
 
 import org.wildfly.clustering.server.CacheServiceNameProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.singleton.SingletonServiceName;
 
 /**
  * Provides the service name of a {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
@@ -35,6 +35,6 @@ public class SingletonServiceBuilderFactoryServiceNameProvider extends CacheServ
      * @param cacheName
      */
     public SingletonServiceBuilderFactoryServiceNameProvider(String containerName, String cacheName) {
-        super(CacheGroupServiceName.SINGLETON_SERVICE_BUILDER, containerName, cacheName);
+        super(SingletonServiceName.BUILDER, containerName, cacheName);
     }
 }

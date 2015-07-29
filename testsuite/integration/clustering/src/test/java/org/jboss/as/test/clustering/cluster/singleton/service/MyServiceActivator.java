@@ -25,6 +25,7 @@ package org.jboss.as.test.clustering.cluster.singleton.service;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.singleton.SingletonServiceName;
 import org.wildfly.clustering.singleton.election.NamePreference;
 import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
@@ -42,7 +43,6 @@ import org.jboss.msc.value.InjectedValue;
 public class MyServiceActivator implements ServiceActivator {
 
     private static final String CONTAINER_NAME = "server";
-    private static final String CACHE_NAME = "default";
     public static final String PREFERRED_NODE = NODE_2;
 
     @Override
@@ -54,7 +54,7 @@ public class MyServiceActivator implements ServiceActivator {
     private static void install(ServiceName name, int quorum, ServiceActivatorContext context) {
         InjectedValue<ServerEnvironment> env = new InjectedValue<>();
         MyService service = new MyService(env);
-        ServiceController<?> factoryService = context.getServiceRegistry().getRequiredService(SingletonServiceBuilderFactory.SERVICE_NAME.append(CONTAINER_NAME, CACHE_NAME));
+        ServiceController<?> factoryService = context.getServiceRegistry().getRequiredService(SingletonServiceName.BUILDER.getServiceName(CONTAINER_NAME));
         SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) factoryService.getValue();
         factory.createSingletonServiceBuilder(name, service)
             .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE)))

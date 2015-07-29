@@ -36,7 +36,7 @@ import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
@@ -98,9 +98,9 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
     }
 
     @Override
-    public Builder<Configuration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(resolver, model));
-        this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(STATISTICS_ENABLED.getDefinition().resolveModelAttribute(resolver, model).asBoolean()).create();
+    public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
+        this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(STATISTICS_ENABLED.getDefinition().resolveModelAttribute(context, model).asBoolean()).create();
         return this;
     }
 

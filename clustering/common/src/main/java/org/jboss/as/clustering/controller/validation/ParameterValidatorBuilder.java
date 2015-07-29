@@ -23,6 +23,10 @@ package org.jboss.as.clustering.controller.validation;
 
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 
+/**
+ * Builder for a {@link ParameterValidator}.
+ * @author Paul Ferraro
+ */
 public interface ParameterValidatorBuilder {
     /**
      * Builds the validator.

@@ -34,7 +34,7 @@ import org.infinispan.configuration.cache.HashConfiguration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.distribution.group.Grouper;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -66,16 +66,16 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
     }
 
     @Override
-    public Builder<Configuration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.getDefinition().resolveModelAttribute(resolver, model), ConsistentHashStrategy.class);
-        long l1Lifespan = L1_LIFESPAN.getDefinition().resolveModelAttribute(resolver, model).asLong();
+    public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.getDefinition().resolveModelAttribute(context, model), ConsistentHashStrategy.class);
+        long l1Lifespan = L1_LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong();
         this.hash = new ConfigurationBuilder().clustering().hash()
-                .capacityFactor(CAPACITY_FACTOR.getDefinition().resolveModelAttribute(resolver, model).asInt())
-                .numOwners(OWNERS.getDefinition().resolveModelAttribute(resolver, model).asInt())
-                .numSegments(SEGMENTS.getDefinition().resolveModelAttribute(resolver, model).asInt())
+                .capacityFactor(CAPACITY_FACTOR.getDefinition().resolveModelAttribute(context, model).asInt())
+                .numOwners(OWNERS.getDefinition().resolveModelAttribute(context, model).asInt())
+                .numSegments(SEGMENTS.getDefinition().resolveModelAttribute(context, model).asInt())
                 .l1().enabled(l1Lifespan > 0).lifespan(l1Lifespan)
                 .hash().create();
-        return super.configure(resolver, model);
+        return super.configure(context, model);
     }
 
     @Override

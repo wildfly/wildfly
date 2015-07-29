@@ -29,7 +29,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceNameFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
@@ -65,7 +64,7 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
             }
         }
 
-        for (CacheContainerServiceNameFactory factory : CacheContainerComponent.values()) {
+        for (CacheContainerComponent factory : CacheContainerComponent.values()) {
             context.removeService(factory.getServiceName(name));
         }
     }

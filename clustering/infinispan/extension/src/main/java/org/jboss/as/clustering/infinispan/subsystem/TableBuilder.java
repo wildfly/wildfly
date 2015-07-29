@@ -32,7 +32,7 @@ import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurat
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder.StringTableManipulationConfigurationBuilder;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -51,16 +51,16 @@ public class TableBuilder extends CacheComponentBuilder<TableManipulationConfigu
     }
 
     @Override
-    public Builder<TableManipulationConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.builder.idColumnName(ID.getColumnName().getDefinition().resolveModelAttribute(resolver, model).asString())
-                .idColumnType(ID.getColumnType().getDefinition().resolveModelAttribute(resolver, model).asString())
-                .dataColumnName(DATA.getColumnName().getDefinition().resolveModelAttribute(resolver, model).asString())
-                .dataColumnType(DATA.getColumnType().getDefinition().resolveModelAttribute(resolver, model).asString())
-                .timestampColumnName(TIMESTAMP.getColumnName().getDefinition().resolveModelAttribute(resolver, model).asString())
-                .timestampColumnType(TIMESTAMP.getColumnType().getDefinition().resolveModelAttribute(resolver, model).asString())
-                .batchSize(BATCH_SIZE.getDefinition().resolveModelAttribute(resolver, model).asInt())
-                .fetchSize(FETCH_SIZE.getDefinition().resolveModelAttribute(resolver, model).asInt())
-                .tableNamePrefix(this.prefixAttribute.getDefinition().resolveModelAttribute(resolver, model).asString())
+    public Builder<TableManipulationConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.builder.idColumnName(ID.getColumnName().getDefinition().resolveModelAttribute(context, model).asString())
+                .idColumnType(ID.getColumnType().getDefinition().resolveModelAttribute(context, model).asString())
+                .dataColumnName(DATA.getColumnName().getDefinition().resolveModelAttribute(context, model).asString())
+                .dataColumnType(DATA.getColumnType().getDefinition().resolveModelAttribute(context, model).asString())
+                .timestampColumnName(TIMESTAMP.getColumnName().getDefinition().resolveModelAttribute(context, model).asString())
+                .timestampColumnType(TIMESTAMP.getColumnType().getDefinition().resolveModelAttribute(context, model).asString())
+                .batchSize(BATCH_SIZE.getDefinition().resolveModelAttribute(context, model).asInt())
+                .fetchSize(FETCH_SIZE.getDefinition().resolveModelAttribute(context, model).asInt())
+                .tableNamePrefix(this.prefixAttribute.getDefinition().resolveModelAttribute(context, model).asString())
         ;
         return this;
     }

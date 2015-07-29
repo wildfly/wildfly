@@ -25,25 +25,25 @@ package org.jboss.as.clustering.controller;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Generic remove operation step handler that delegates service removal/recovery to a dedicated {@link ResourceServiceHandler}
- * and recursively removes any child resources and their associated services.
+ * Generic remove operation step handler that delegates service removal/recovery to a dedicated {@link ResourceServiceHandler}.
  * @author Paul Ferraro
  */
 public class RemoveStepHandler extends AbstractRemoveStepHandler implements Registration {
 
-    private final ResourceDescriptionResolver resolver;
+    private final RemoveStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
 
-    public RemoveStepHandler(ResourceDescriptionResolver resolver, ResourceServiceHandler handler) {
-        this.resolver = resolver;
+    public RemoveStepHandler(RemoveStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+        this.descriptor = descriptor;
         this.handler = handler;
     }
 
@@ -58,7 +58,17 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     }
 
     @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
+        for (Capability capability : this.descriptor.getCapabilities()) {
+            context.deregisterCapability(capability.getRuntimeCapability(address).getName());
+        }
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+    }
+
+    @Override
     public void register(ManagementResourceRegistration registration) {
-        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.resolver).withFlag(OperationEntry.Flag.RESTART_RESOURCE_SERVICES).build(), this);
+        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.descriptor.getDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_RESOURCE_SERVICES).build(), this);
     }
 }

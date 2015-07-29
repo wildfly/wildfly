@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
@@ -110,8 +111,9 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
     @Override
     public void registerOperations(final ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(JDBCStoreResourceDefinition.Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StringKeyedJDBCStoreBuilderFactory());
-        new AddStepHandler(this.getResourceDescriptionResolver(), handler) {
+        new AddStepHandler(descriptor, handler) {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 super.execute(context, operation);
@@ -125,8 +127,8 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                     context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(StringTableResourceDefinition.PATH), ModelDescriptionConstants.ADD), context.getCurrentStage());
                 }
             }
-        }.addAttributes(JDBCStoreResourceDefinition.Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class).register(registration);
-        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
+        }.register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {

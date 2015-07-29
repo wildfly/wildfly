@@ -28,7 +28,7 @@ import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -50,11 +50,11 @@ public class StoreWriteBehindBuilder extends CacheComponentBuilder<AsyncStoreCon
     }
 
     @Override
-    public Builder<AsyncStoreConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.builder.flushLockTimeout(FLUSH_LOCK_TIMEOUT.getDefinition().resolveModelAttribute(resolver, model).asLong());
-        this.builder.modificationQueueSize(MODIFICATION_QUEUE_SIZE.getDefinition().resolveModelAttribute(resolver, model).asInt());
-        this.builder.shutdownTimeout(SHUTDOWN_TIMEOUT.getDefinition().resolveModelAttribute(resolver, model).asLong());
-        this.builder.threadPoolSize(THREAD_POOL_SIZE.getDefinition().resolveModelAttribute(resolver, model).asInt());
+    public Builder<AsyncStoreConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.builder.flushLockTimeout(FLUSH_LOCK_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
+        this.builder.modificationQueueSize(MODIFICATION_QUEUE_SIZE.getDefinition().resolveModelAttribute(context, model).asInt());
+        this.builder.shutdownTimeout(SHUTDOWN_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
+        this.builder.threadPoolSize(THREAD_POOL_SIZE.getDefinition().resolveModelAttribute(context, model).asInt());
         return this;
     }
 }

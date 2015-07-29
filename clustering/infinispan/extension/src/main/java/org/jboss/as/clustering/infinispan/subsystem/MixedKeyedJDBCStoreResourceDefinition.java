@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -86,8 +87,9 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
 
     @Override
     public void registerOperations(final ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(JDBCStoreResourceDefinition.Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new MixedKeyedJDBCStoreBuilderFactory());
-        new AddStepHandler(this.getResourceDescriptionResolver(), handler) {
+        new AddStepHandler(descriptor, handler) {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 super.execute(context, operation);
@@ -107,8 +109,8 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
                     context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(path), ModelDescriptionConstants.ADD), context.getCurrentStage());
                 }
             }
-        }.addAttributes(JDBCStoreResourceDefinition.Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class).register(registration);
-        new RemoveStepHandler(this.getResourceDescriptionResolver(), handler).register(registration);
+        }.register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     @Override

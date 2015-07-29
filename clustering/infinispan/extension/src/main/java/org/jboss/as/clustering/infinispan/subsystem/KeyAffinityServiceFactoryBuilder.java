@@ -89,6 +89,7 @@ public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServ
         final ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
         final String namePattern = "KeyAffinityService Thread Pool -- %t";
         final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+            @Override
             public JBossThreadFactory run() {
                 return new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
             }

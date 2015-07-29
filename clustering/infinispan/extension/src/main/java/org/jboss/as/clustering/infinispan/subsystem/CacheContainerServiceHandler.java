@@ -42,12 +42,12 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceNameFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
 
 /**
@@ -93,15 +93,15 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         }
         bindingBuilder.build(target).install();
 
-        if ((defaultCache != null) && !defaultCache.equals(CacheServiceNameFactory.DEFAULT_CACHE)) {
-            for (CacheServiceNameFactory nameFactory : CacheServiceName.values()) {
+        if ((defaultCache != null) && !defaultCache.equals(CacheServiceName.DEFAULT_CACHE)) {
+            for (SubGroupServiceNameFactory nameFactory : CacheServiceName.values()) {
                 new AliasServiceBuilder<>(nameFactory.getServiceName(name), nameFactory.getServiceName(name, defaultCache), Object.class).build(target).install();
             }
 
-            new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(name, CacheServiceNameFactory.DEFAULT_CACHE), CacheServiceName.CACHE.getServiceName(name), Cache.class).build(target).install();
+            new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(name, CacheServiceName.DEFAULT_CACHE), CacheServiceName.CACHE.getServiceName(name), Cache.class).build(target).install();
 
             for (CacheGroupAliasBuilderProvider provider : ServiceLoader.load(CacheGroupAliasBuilderProvider.class, CacheGroupAliasBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(name, CacheServiceNameFactory.DEFAULT_CACHE, defaultCache)) {
+                for (Builder<?> builder : provider.getBuilders(name, CacheServiceName.DEFAULT_CACHE, defaultCache)) {
                     builder.build(target).install();
                 }
             }
@@ -113,23 +113,23 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         String name = context.getCurrentAddressValue();
 
         String defaultCache = ModelNodes.asString(CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE.getDefinition().resolveModelAttribute(context, model));
-        if ((defaultCache != null) && !defaultCache.equals(CacheServiceNameFactory.DEFAULT_CACHE)) {
+        if ((defaultCache != null) && !defaultCache.equals(CacheServiceName.DEFAULT_CACHE)) {
             for (CacheGroupAliasBuilderProvider provider : ServiceLoader.load(CacheGroupAliasBuilderProvider.class, CacheGroupAliasBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(name, CacheServiceNameFactory.DEFAULT_CACHE, defaultCache)) {
+                for (Builder<?> builder : provider.getBuilders(name, CacheServiceName.DEFAULT_CACHE, defaultCache)) {
                     context.removeService(builder.getServiceName());
                 }
             }
 
-            context.removeService(new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(name, CacheServiceNameFactory.DEFAULT_CACHE), CacheServiceName.CACHE.getServiceName(name), Cache.class).getServiceName());
+            context.removeService(new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(name, CacheServiceName.DEFAULT_CACHE), CacheServiceName.CACHE.getServiceName(name), Cache.class).getServiceName());
 
-            for (CacheServiceNameFactory nameFactory : CacheServiceName.values()) {
+            for (SubGroupServiceNameFactory nameFactory : CacheServiceName.values()) {
                 context.removeService(nameFactory.getServiceName(name));
             }
         }
 
         context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());
 
-        for (CacheContainerServiceNameFactory factory : CacheContainerServiceName.values()) {
+        for (GroupServiceNameFactory factory : CacheContainerServiceName.values()) {
             context.removeService(factory.getServiceName(name));
         }
     }

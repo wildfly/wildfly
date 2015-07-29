@@ -25,7 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
@@ -44,7 +44,7 @@ public class NoStoreBuilder extends CacheComponentBuilder<PersistenceConfigurati
     }
 
     @Override
-    public Builder<PersistenceConfiguration> configure(ExpressionResolver resolver, ModelNode model) {
+    public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) {
         return this;
     }
 }

@@ -25,13 +25,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * Enumerates the configurable cache components
  * @author Paul Ferraro
  */
-public enum CacheComponent implements CacheServiceNameFactory {
+public enum CacheComponent implements SubGroupServiceNameFactory {
 
     EVICTION(EvictionResourceDefinition.PATH),
     EXPIRATION(ExpirationResourceDefinition.PATH),
@@ -59,7 +59,7 @@ public enum CacheComponent implements CacheServiceNameFactory {
 
     @Override
     public ServiceName getServiceName(String container) {
-        return this.getServiceName(container, DEFAULT_CACHE);
+        return this.getServiceName(container, DEFAULT_SUB_GROUP);
     }
 
     @Override

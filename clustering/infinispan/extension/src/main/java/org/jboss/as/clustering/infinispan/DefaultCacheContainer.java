@@ -37,7 +37,7 @@ import org.infinispan.notifications.Listener;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
@@ -171,7 +171,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     private String getCacheName(String name) {
-        return ((name == null) || name.equals(CacheServiceNameFactory.DEFAULT_CACHE)) ? this.defaultCacheName : name;
+        return ((name == null) || name.equals(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) ? this.defaultCacheName : name;
     }
 
     /**

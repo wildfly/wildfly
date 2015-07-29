@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.SitesConfiguration;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
@@ -105,8 +106,9 @@ public class BackupResourceDefinition extends SimpleResourceDefinition implement
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        new RestartParentAddHandler<>(this.getResourceDescriptionResolver(), this.parentBuilderFactory).addAttributes(Attribute.class).register(registration);
-        new RestartParentRemoveHandler<>(this.getResourceDescriptionResolver(), this.parentBuilderFactory).register(registration);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        new RestartParentAddHandler<>(descriptor, this.parentBuilderFactory).register(registration);
+        new RestartParentRemoveHandler<>(descriptor, this.parentBuilderFactory).register(registration);
 
         if (this.runtimeRegistration) {
             new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);

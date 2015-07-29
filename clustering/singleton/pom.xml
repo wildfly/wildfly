@@ -33,18 +33,12 @@
     </parent>
 
     <artifactId>wildfly-clustering-singleton</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <name>WildFly: Singleton service API</name>
+    <name>WildFly: Singleton modules</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>api</module>
+        <module>extension</module>
+    </modules>
 </project>

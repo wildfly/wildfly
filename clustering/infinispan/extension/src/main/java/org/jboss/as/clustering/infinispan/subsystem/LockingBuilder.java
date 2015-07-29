@@ -33,7 +33,7 @@ import org.infinispan.configuration.cache.LockingConfigurationBuilder;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
@@ -55,11 +55,11 @@ public class LockingBuilder extends CacheComponentBuilder<LockingConfiguration> 
     }
 
     @Override
-    public Builder<LockingConfiguration> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.builder.lockAcquisitionTimeout(ACQUIRE_TIMEOUT.getDefinition().resolveModelAttribute(resolver, model).asLong());
-        this.builder.concurrencyLevel(CONCURRENCY.getDefinition().resolveModelAttribute(resolver, model).asInt());
-        this.builder.isolationLevel(ModelNodes.asEnum(ISOLATION.getDefinition().resolveModelAttribute(resolver, model), IsolationLevel.class));
-        this.builder.useLockStriping(STRIPING.getDefinition().resolveModelAttribute(resolver, model).asBoolean());
+    public Builder<LockingConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.builder.lockAcquisitionTimeout(ACQUIRE_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
+        this.builder.concurrencyLevel(CONCURRENCY.getDefinition().resolveModelAttribute(context, model).asInt());
+        this.builder.isolationLevel(ModelNodes.asEnum(ISOLATION.getDefinition().resolveModelAttribute(context, model), IsolationLevel.class));
+        this.builder.useLockStriping(STRIPING.getDefinition().resolveModelAttribute(context, model).asBoolean());
         return this;
     }
 }

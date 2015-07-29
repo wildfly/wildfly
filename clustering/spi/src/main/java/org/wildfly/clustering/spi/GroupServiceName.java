@@ -1,6 +1,7 @@
 package org.wildfly.clustering.spi;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
 
 /**
  * Set of {@link ServiceName} factories for group-based services.
@@ -40,4 +41,8 @@ public enum GroupServiceName implements GroupServiceNameFactory {
             return "group";
         }
     },
+    ;
+
+    public static final String BASE_NAME = "clustering";
+    static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append(BASE_NAME);
 }

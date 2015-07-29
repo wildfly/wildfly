@@ -21,13 +21,8 @@
  */
 package org.wildfly.clustering.server.singleton;
 
-import java.io.Serializable;
-
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
@@ -38,29 +33,7 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 public class LocalSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
 
     @Override
-    public <T extends Serializable> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, final Service<T> service) {
-        return new SingletonServiceBuilder<T>() {
-            @Override
-            public SingletonServiceBuilder<T> requireQuorum(int quorum) {
-                // Quorum requirements are inconsequential to a local singleton
-                return this;
-            }
-
-            @Override
-            public SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy policy) {
-                // Election policies are inconsequential to a local singleton
-                return this;
-            }
-
-            @Override
-            public ServiceBuilder<T> build(ServiceTarget target) {
-                return target.addService(name, service);
-            }
-
-            @Override
-            public ServiceName getServiceName() {
-                return name;
-            }
-        };
+    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, final Service<T> service) {
+        return new LocalSingletonServiceBuilder<>(name, service);
     }
 }

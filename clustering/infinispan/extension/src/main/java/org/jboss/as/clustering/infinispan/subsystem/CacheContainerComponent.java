@@ -25,12 +25,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceNameFactory;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
 
 /**
  * @author Paul Ferraro
  */
-public enum CacheContainerComponent implements CacheContainerServiceNameFactory {
+public enum CacheContainerComponent implements GroupServiceNameFactory {
 
     SITE("site"),
     TRANSPORT(JGroupsTransportResourceDefinition.PATH),

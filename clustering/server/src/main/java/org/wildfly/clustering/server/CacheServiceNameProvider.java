@@ -23,8 +23,8 @@
 package org.wildfly.clustering.server;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceNameFactory;
 
 /**
  * Provides a service name for a cache-based service.
@@ -34,9 +34,9 @@ public class CacheServiceNameProvider implements ServiceNameProvider {
 
     protected final String containerName;
     protected final String cacheName;
-    private final CacheGroupServiceNameFactory factory;
+    private final SubGroupServiceNameFactory factory;
 
-    public CacheServiceNameProvider(CacheGroupServiceNameFactory factory, String containerName, String cacheName) {
+    public CacheServiceNameProvider(SubGroupServiceNameFactory factory, String containerName, String cacheName) {
         this.factory = factory;
         this.containerName = containerName;
         this.cacheName = cacheName;

@@ -36,7 +36,7 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -74,9 +74,9 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
     }
 
     @Override
-    public Builder<CacheContainer> configure(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
+    public Builder<CacheContainer> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.aliases.clear();
-        this.aliases.addAll(ModelNodes.asStringList(ALIASES.getDefinition().resolveModelAttribute(resolver, model)));
+        this.aliases.addAll(ModelNodes.asStringList(ALIASES.getDefinition().resolveModelAttribute(context, model)));
         return this;
     }
 
