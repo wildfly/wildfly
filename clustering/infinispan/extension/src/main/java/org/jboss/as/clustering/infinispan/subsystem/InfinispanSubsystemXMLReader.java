@@ -528,10 +528,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case ASYNC_MARSHALLING: {
-                if (this.schema.since(InfinispanSchema.VERSION_1_2)) {
-                    readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.Attribute.ASYNC_MARSHALLING);
-                    break;
+                if (!this.schema.since(InfinispanSchema.VERSION_1_2) && this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
                 }
+                ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
+                break;
             }
             default: {
                 this.parseCacheAttribute(reader, index, address, operations);
@@ -655,7 +656,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
-                    ROOT_LOGGER.attributeDeprecated(XMLAttribute.FLUSH_TIMEOUT.getLocalName(), XMLElement.STATE_TRANSFER.getLocalName());
+                    ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case CHUNK_SIZE: {
@@ -1414,7 +1415,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case FLUSH_LOCK_TIMEOUT: {
-                    readAttribute(reader, i, operation, StoreWriteBehindResourceDefinition.Attribute.FLUSH_LOCK_TIMEOUT);
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case MODIFICATION_QUEUE_SIZE: {
@@ -1422,7 +1426,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case SHUTDOWN_TIMEOUT: {
-                    readAttribute(reader, i, operation, StoreWriteBehindResourceDefinition.Attribute.SHUTDOWN_TIMEOUT);
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case THREAD_POOL_SIZE: {

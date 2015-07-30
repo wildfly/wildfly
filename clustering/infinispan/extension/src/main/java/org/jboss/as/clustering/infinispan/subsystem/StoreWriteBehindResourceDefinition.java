@@ -54,20 +54,13 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
     static final PathElement PATH = pathElement("behind");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(5000L)),
         MODIFICATION_QUEUE_SIZE("modification-queue-size", ModelType.INT, new ModelNode(1024)),
-        SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(25000L)),
         THREAD_POOL_SIZE("thread-pool-size", ModelType.INT, new ModelNode(1)),
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setAllowNull(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                    .build();
+            this.definition = createBuilder(name, type, defaultValue).build();
         }
 
         @Override
@@ -76,11 +69,37 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
         }
     }
 
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(5000L), InfinispanModel.VERSION_4_0_0),
+        SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(25000L), InfinispanModel.VERSION_4_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+        ;
+    }
+
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.FLUSH_LOCK_TIMEOUT.getDefinition()), Attribute.FLUSH_LOCK_TIMEOUT.getDefinition());
+            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(DeprecatedAttribute.FLUSH_LOCK_TIMEOUT.getDefinition()), DeprecatedAttribute.FLUSH_LOCK_TIMEOUT.getDefinition());
         }
     }
 
@@ -91,11 +110,12 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+        new ReloadRequiredWriteAttributeHandler(DeprecatedAttribute.class).register(registration);
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(DeprecatedAttribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StoreWriteBehindBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

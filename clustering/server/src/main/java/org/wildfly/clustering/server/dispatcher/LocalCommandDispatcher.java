@@ -58,6 +58,7 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private static ThreadFactory createThreadFactory() {
         return doPrivileged(new PrivilegedAction<ThreadFactory>() {
+            @Override
             public ThreadFactory run() {
                 return new JBossThreadFactory(new ThreadGroup(LocalCommandDispatcher.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
             }

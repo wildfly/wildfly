@@ -22,10 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.ClusteredCacheResourceDefinition.Attribute.ASYNC_MARSHALLING;
-import static org.jboss.as.clustering.infinispan.subsystem.ClusteredCacheResourceDefinition.Attribute.QUEUE_FLUSH_INTERVAL;
-import static org.jboss.as.clustering.infinispan.subsystem.ClusteredCacheResourceDefinition.Attribute.QUEUE_SIZE;
-import static org.jboss.as.clustering.infinispan.subsystem.ClusteredCacheResourceDefinition.Attribute.REMOTE_TIMEOUT;
+import static org.jboss.as.clustering.infinispan.subsystem.ClusteredCacheResourceDefinition.Attribute.*;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ClusteringConfiguration;
@@ -64,7 +61,6 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
             int queueSize = QUEUE_SIZE.getDefinition().resolveModelAttribute(context, model).asInt();
 
             builder.async()
-                    .asyncMarshalling(ASYNC_MARSHALLING.getDefinition().resolveModelAttribute(context, model).asBoolean())
                     .useReplQueue(queueSize > 0)
                     .replQueueInterval(QUEUE_FLUSH_INTERVAL.getDefinition().resolveModelAttribute(context, model).asLong())
                     .replQueueMaxElements(queueSize)

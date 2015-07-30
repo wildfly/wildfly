@@ -22,14 +22,14 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR;
 import static org.infinispan.factories.KnownComponentNames.GLOBAL_MARSHALLER;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.factories.GlobalComponentRegistry;
+import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
@@ -49,7 +49,8 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 public class ChannelTransport extends JGroupsTransport {
 
     final ChannelFactory factory;
-    private TimeService timeService;
+
+    private volatile ScheduledExecutorService timeoutExecutor;
 
     public ChannelTransport(Channel channel, ChannelFactory factory) {
         super(channel);
@@ -58,17 +59,15 @@ public class ChannelTransport extends JGroupsTransport {
 
     @Override
     @Inject
-    public void initialize(@ComponentName(GLOBAL_MARSHALLER) StreamingMarshaller marshaller,
-                           @ComponentName(ASYNC_TRANSPORT_EXECUTOR) ExecutorService asyncExecutor,
-                           CacheManagerNotifier notifier, GlobalComponentRegistry gcr,
-                           TimeService timeService, InboundInvocationHandler globalHandler) {
-        super.initialize(marshaller, asyncExecutor, notifier, gcr, timeService, globalHandler);
-        this.timeService = timeService;
+    public void initialize(@ComponentName(GLOBAL_MARSHALLER) StreamingMarshaller marshaller, CacheManagerNotifier notifier, GlobalComponentRegistry gcr, TimeService timeService,
+                           InboundInvocationHandler globalHandler, @ComponentName(KnownComponentNames.ASYNC_REPLICATION_QUEUE_EXECUTOR) ScheduledExecutorService timeoutExecutor) {
+        super.initialize(marshaller, notifier, gcr, timeService, globalHandler, timeoutExecutor);
+        this.timeoutExecutor = timeoutExecutor;
     }
 
     @Override
     protected void initRPCDispatcher() {
-        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.asyncExecutor, this.timeService, this.globalHandler);
+        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.globalHandler, this.timeoutExecutor);
         MarshallerAdapter adapter = new MarshallerAdapter(this.marshaller) {
             @Override
             public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
