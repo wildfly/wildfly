@@ -71,14 +71,14 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
 
         boolean rcPresent = context.getOriginalRootResource().hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
         String contextService = null;
-        if(model.hasDefined(ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {
+        if(model.hasDefined(CommonAttributes.CONTEXT_SERVICE)) {
             contextService = ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
         if (contextService != null) {
             serviceBuilder.addDependency(ConcurrentServiceNames.getContextServiceServiceName(contextService), ContextServiceImpl.class, service.getContextServiceInjector());
         }
         String threadFactory = null;
-        if(model.hasDefined(ManagedExecutorServiceResourceDefinition.THREAD_FACTORY)) {
+        if(model.hasDefined(CommonAttributes.THREAD_FACTORY)) {
             threadFactory = ManagedExecutorServiceResourceDefinition.THREAD_FACTORY_AD.resolveModelAttribute(context, model).asString();
         }
         if (threadFactory != null) {
