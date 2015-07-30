@@ -142,7 +142,7 @@
         <version.org.glassfish.javax.json>1.0.3</version.org.glassfish.javax.json>
         <version.org.hibernate>5.0.0.CR2</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.0.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.validator>5.2.0.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>5.2.1.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.hql>1.1.0.Final</version.org.hibernate.hql>
         <version.org.hibernate.search>5.4.0.Alpha1</version.org.hibernate.search>
