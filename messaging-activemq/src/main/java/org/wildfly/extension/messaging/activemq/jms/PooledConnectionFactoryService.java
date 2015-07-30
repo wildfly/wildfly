@@ -100,6 +100,7 @@ import org.jboss.jca.common.metadata.spec.RequiredConfigPropertyImpl;
 import org.jboss.jca.common.metadata.spec.ResourceAdapterImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.inject.Injector;
@@ -176,6 +177,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private String serverName;
     private final String jgroupsChannelName;
     private final boolean createBinderService;
+    private ResourceAdapterActivatorService activator;
 
    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize) {
         this.name = name;
@@ -379,7 +381,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             ConnectionDefinition common = createConnDef(transactionSupport, bindInfo.getBindName(), minPoolSize, maxPoolSize);
             Activation activation = createActivation(common, transactionSupport);
 
-            ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, activation,
+            activator = new ResourceAdapterActivatorService(cmd, activation,
                     PooledConnectionFactoryService.class.getClassLoader(), name);
             activator.setBindInfo(bindInfo);
             activator.setCreateBinderService(createBinderService);
@@ -515,7 +517,11 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
 
     public void stop(StopContext context) {
-        // Service context takes care of this
+        // https://issues.jboss.org/browse/WFLY-3355
+        if (activator != null) {
+            String bootstrapContextIdentifier = activator.getDeploymentMD().getBootstrapContextIdentifier();
+            BootstrapContextCoordinator.getInstance().removeBootstrapContext(bootstrapContextIdentifier);
+        }
     }
 
     public Injector<Object> getTransactionManager() {
