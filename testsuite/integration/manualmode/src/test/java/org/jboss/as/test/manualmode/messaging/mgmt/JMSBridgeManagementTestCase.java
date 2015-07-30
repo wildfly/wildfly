@@ -19,65 +19,68 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.messaging.mgmt;
+package org.jboss.as.test.manualmode.messaging.mgmt;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTION_FACTORY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_BRIDGE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_ENABLED;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.STARTED;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.ENTRIES;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.DURABLE;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SUBSYSTEM_NAME;
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
-import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
-import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
-import static org.jboss.as.messaging.CommonAttributes.STARTED;
-import static org.jboss.as.messaging.CommonAttributes.SECURITY_ENABLED;
-import static org.jboss.as.messaging.MessagingExtension.SUBSYSTEM_NAME;
 
 /**
  * @author baranowb
@@ -87,11 +90,12 @@ import static org.jboss.as.messaging.MessagingExtension.SUBSYSTEM_NAME;
 @RunAsClient
 public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
 
-    @ContainerResource
     private ManagementClient managementClient;
+    @ArquillianResource
+    private static ContainerController container;
 
     static final PathAddress ADDRESS_HORNETQ = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
-            PathElement.pathElement(HORNETQ_SERVER, "default"));
+            PathElement.pathElement(SERVER, "default"));
     static final PathAddress ADDRESS_XA_CONNECTION_FACTORY = ADDRESS_HORNETQ.append(PathElement.pathElement(CONNECTION_FACTORY,
             "XAConnectionFactory"));
     static final PathAddress ADDRESS_QUEUE_SOURCE = ADDRESS_HORNETQ.append(PathElement.pathElement(JMS_QUEUE, "sourceQueue"));
@@ -106,22 +110,30 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
     static final PathAddress ADDRESS_NETTY_CONNECTOR = ADDRESS_HORNETQ.append(PathElement.pathElement("remote-connector", "netty"));
     static final PathAddress ADDRESS_NETTY_ACCEPTOR = ADDRESS_HORNETQ.append(PathElement.pathElement("remote-acceptor", "netty"));
 
+    public static final String CONTAINER = "jbossas-messaging-ha-server1";
+    public static final String DEPLOYMENT_NAME = "DUMMY";
+    
     private List<ServerSetupTask> tasks = new ArrayList<ServerSetupTask>(4);
     private List<ServerSetupTask> tasksToClean = new ArrayList<ServerSetupTask>(4);
     
     public JMSBridgeManagementTestCase(){
-        tasks.add(new DisableHornetQSecruity());
+        
         tasks.add(new SetupNetty());
         tasks.add(new SetupConnectionFactory());
         tasks.add(new SetupQueuesFactory());
         tasks.add(new SetupJMSBridge());
+        tasks.add(new DisableHornetQSecruity());
     }
 
     @Before
     public void setup() throws Exception{
+        this.container.start(CONTAINER);
+        Assert.assertTrue(this.container.isStarted(CONTAINER));
+        this.managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(), TestSuiteEnvironment.getServerAddress(),
+                TestSuiteEnvironment.getServerPort(),CONTAINER);
         for(ServerSetupTask t:this.tasks){
             this.tasksToClean.add(t);
-            t.setup(this.managementClient, "fake");
+            t.setup(this.managementClient, CONTAINER);
         }
     }
 
@@ -129,18 +141,31 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
     public void cleanup(){
         try{
             for(ServerSetupTask sst:this.tasksToClean){
-                sst.tearDown(this.managementClient, "fake");
+                sst.tearDown(this.managementClient, CONTAINER);
             }
         }catch(Exception e){
             
         }
         this.tasksToClean.clear();
+        try{
+            reload();
+        }catch(Exception e){
+            
+        }
     }
 
+    @Deployment(name = DEPLOYMENT_NAME, managed = false)
+    @TargetsContainer(CONTAINER)
+    public static Archive<?> getDeployment() {
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
+        ja.addPackage(JMSBridgeManagementTestCase.class.getPackage());
+        return ja;
+    }
+    
     @Test
     public void testStopStart() throws Exception {
         //actually even checking state seems enough, but lets try a circle.
-        reload(this.managementClient);
+        reload();
         final ModelControllerClient client = this.managementClient.getControllerClient();
         ModelNode operation = Util.createOperation(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(ADDRESS_JMS_BRIDGE));
         operation.get(INCLUDE_RUNTIME).set(true);
@@ -169,24 +194,9 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
     protected ModelControllerClient getModelControllerClient() {
         return this.managementClient.getControllerClient();
     }
-    public static void reload(final ManagementClient managementClient) throws Exception {
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set("reload");
-        managementClient.getControllerClient().execute(operation);
-        boolean reloaded = false;
-        int i = 0;
-        while (!reloaded) {
-            try {
-                Thread.sleep(5000);
-                if (managementClient.isServerInRunningState())
-                    reloaded = true;
-            } catch (Throwable t) {
-                // nothing to do, just waiting
-            } finally {
-                if (!reloaded && i++ > 10)
-                    throw new Exception("Server reloading failed");
-            }
-        }
+
+    public void reload() throws Exception {
+        executeReloadAndWaitForCompletion(this.managementClient.getControllerClient(), 100000);
     }
     
     
@@ -195,9 +205,9 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final ModelNode operation = Util.createAddOperation(ADDRESS_XA_CONNECTION_FACTORY);
-            operation.get("factory-type").set("XA_GENERIC");
-            operation.get("connector", "netty").set("netty");
-            operation.get("entries").add("java:jboss/jms/XAConnectionFactory")
+            operation.get(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.getName()).set("XA_GENERIC");
+            operation.get(CommonAttributes.CONNECTORS).add("netty");
+            operation.get(ENTRIES).add("java:jboss/jms/XAConnectionFactory")
                     .add("java:jboss/exported/jms/XAConnectionFactory");
 
             ModelNode result = managementClient.getControllerClient().execute(operation);
@@ -210,7 +220,7 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
         }
     }
 
-    static class SetupQueuesFactory implements ServerSetupTask {
+    class SetupQueuesFactory implements ServerSetupTask {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
@@ -229,14 +239,14 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
         private ModelNode setUpQueue(final ModelControllerClient client, final String name, final PathAddress address)
                 throws IOException {
             final ModelNode operation = Util.createAddOperation(address);
-            operation.get("entries").add("java:jboss/jms/queue/" + name).add("java:jboss/exported/jms/queue/" + name);
-            operation.get("durable").set(true);
+            operation.get(ENTRIES).add("java:jboss/jms/queue/" + name).add("java:jboss/exported/jms/queue/" + name);
+            operation.get(DURABLE.getName()).set(true);
             return client.execute(operation);
 
         }
     }
 
-    static class DisableHornetQSecruity implements ServerSetupTask {
+    class DisableHornetQSecruity implements ServerSetupTask {
         // read/store and in case 'true', change it back to it, since this test does not need security
         private boolean oldValue = true;
 
@@ -269,30 +279,31 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
 
     }
 
-    static class SetupJMSBridge implements ServerSetupTask {
+    class SetupJMSBridge implements ServerSetupTask {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final ModelNode operation = Util.createAddOperation(ADDRESS_JMS_BRIDGE);
 
-            // final ModelNode source = operation.get("source");
-            operation.get("source-connection-factory").set("java:jboss/jms/XAConnectionFactory");
-            operation.get("source-destination").set("java:jboss/jms/queue/sourceQueue");
+             // final ModelNode source = operation.get("source");
+            operation.get(JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY.getName()).set("java:jboss/jms/XAConnectionFactory");
+            operation.get(JMSBridgeDefinition.SOURCE_DESTINATION.getName()).set("java:jboss/jms/queue/sourceQueue");
 
             // final ModelNode target = operation.get("target");
-            operation.get("target-connection-factory").set("jms/XAConnectionFactory");
-            operation.get("target-destination").set("/jms/queue/targetQueue");
-            operation.get("target-context", "java.naming.factory.initial").set(
+            operation.get(JMSBridgeDefinition.TARGET_CONNECTION_FACTORY.getName()).set("jms/XAConnectionFactory");
+            operation.get(JMSBridgeDefinition.TARGET_DESTINATION.getName()).set("/jms/queue/targetQueue");
+            
+            operation.get(JMSBridgeDefinition.TARGET_CONTEXT.getName(), "java.naming.factory.initial").set(
                     "org.jboss.naming.remote.client.InitialContextFactory");
-            operation.get("target-context", "java.naming.provider.url").set("http-remoting://localhost:8080 ");
+            operation.get(JMSBridgeDefinition.TARGET_CONTEXT.getName(), "java.naming.provider.url").set("http-remoting://localhost:8080 ");
 
             // other conf opts if need be
-            operation.get("quality-of-service").set("ONCE_AND_ONLY_ONCE");
-            operation.get("failure-retry-interval").set(60);
-            operation.get("max-retries").set("-1");
-            operation.get("max-batch-size").set("10");
-            operation.get("max-batch-time").set("500");
-            operation.get("add-messageID-in-header").set("true");
+            operation.get(JMSBridgeDefinition.QUALITY_OF_SERVICE.getName()).set("ONCE_AND_ONLY_ONCE");
+            operation.get(JMSBridgeDefinition.FAILURE_RETRY_INTERVAL.getName()).set(60);
+            operation.get(JMSBridgeDefinition.MAX_RETRIES.getName()).set("-1");
+            operation.get(JMSBridgeDefinition.MAX_BATCH_SIZE.getName()).set("10");
+            operation.get(JMSBridgeDefinition.MAX_BATCH_TIME.getName()).set("500");
+            operation.get(JMSBridgeDefinition.ADD_MESSAGE_ID_IN_HEADER.getName()).set("true");
 
             final ModelNode result = managementClient.getControllerClient().execute(operation);
             Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
@@ -304,7 +315,7 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
         }
     }
 
-    static class SetupNetty implements ServerSetupTask{
+    class SetupNetty implements ServerSetupTask{
 
         @Override
         public void setup(ManagementClient managementClient, String arg1) throws Exception {
@@ -319,18 +330,18 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
 
 
             operation = Util.createAddOperation(ADDRESS_NETTY_CONNECTOR);
-            operation.get("socket-binding").set("for-netty");
+            operation.get(CommonAttributes.SOCKET_BINDING.getName()).set("for-netty");
            
             result = managementClient.getControllerClient().execute(operation);
             Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
             
             
             operation = Util.createAddOperation(ADDRESS_NETTY_ACCEPTOR);
-            operation.get("socket-binding").set("for-netty");
+            operation.get(CommonAttributes.SOCKET_BINDING.getName()).set("for-netty");
            
             result = managementClient.getControllerClient().execute(operation);
             Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
-            reload(managementClient);
+            reload();
 
         }
 
