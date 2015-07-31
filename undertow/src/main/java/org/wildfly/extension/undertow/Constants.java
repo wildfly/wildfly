@@ -208,4 +208,5 @@ public interface Constants {
     String ENABLE_HTTP2 = "enable-http2";
     String ENABLE_SPDY = "enable-spdy";
     String URI = "uri";
+    String ALIASES = "aliases";
 }

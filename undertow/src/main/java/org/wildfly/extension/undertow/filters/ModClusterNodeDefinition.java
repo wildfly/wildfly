@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -125,6 +126,10 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
 
+    public static final AttributeDefinition ALIASES = new PrimitiveListAttributeDefinition.Builder(Constants.ALIASES, ModelType.STRING)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
 
     public final OperationDefinition ENABLE = new SimpleOperationDefinition(Constants.ENABLE, getResourceDescriptionResolver());
     public final OperationDefinition DISABLE = new SimpleOperationDefinition(Constants.DISABLE, getResourceDescriptionResolver());
@@ -275,6 +280,17 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
                 context.getResult().set(new ModelNode(ctx.getUri().toString()));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(ALIASES, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                ModelNode list = new ModelNode(ModelType.LIST);
+                for(String alias : ctx.getAliases()) {
+                    list.add(alias);
+                }
+                context.getResult().set(list);
             }
         });
     }
