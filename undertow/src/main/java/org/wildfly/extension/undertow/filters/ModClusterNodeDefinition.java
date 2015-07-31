@@ -122,6 +122,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
     public final OperationDefinition ENABLE = new SimpleOperationDefinition(Constants.ENABLE, getResourceDescriptionResolver());
     public final OperationDefinition DISABLE = new SimpleOperationDefinition(Constants.DISABLE, getResourceDescriptionResolver());
+    public final OperationDefinition STOP = new SimpleOperationDefinition(Constants.STOP, getResourceDescriptionResolver());
 
 
     ModClusterNodeDefinition() {
@@ -149,6 +150,14 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
                 for(ModClusterStatus.Context n : ctx.getContexts()) {
                     n.disable();
+                }
+            }
+        });
+        resourceRegistration.registerOperationHandler(STOP, new AbstractNodeOperation() {
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                for(ModClusterStatus.Context n : ctx.getContexts()) {
+                    n.stop();
                 }
             }
         });
