@@ -207,4 +207,5 @@ public interface Constants {
     String ENABLED_PROTOCOLS = "enabled-protocols";
     String ENABLE_HTTP2 = "enable-http2";
     String ENABLE_SPDY = "enable-spdy";
+    String URI = "uri";
 }
