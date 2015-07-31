@@ -62,6 +62,7 @@ public class ModClusterContextDefinition extends SimpleResourceDefinition {
 
     public final OperationDefinition ENABLE = new SimpleOperationDefinition(Constants.ENABLE, getResourceDescriptionResolver());
     public final OperationDefinition DISABLE = new SimpleOperationDefinition(Constants.DISABLE, getResourceDescriptionResolver());
+    public final OperationDefinition STOP = new SimpleOperationDefinition(Constants.STOP, getResourceDescriptionResolver());
 
     ModClusterContextDefinition() {
         super(UndertowExtension.CONTEXT, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "node", "context"), null, null, true);
@@ -100,6 +101,13 @@ public class ModClusterContextDefinition extends SimpleResourceDefinition {
             @Override
             protected void handleContext(OperationContext context, ModClusterStatus.Context ctx, ModelNode operation) throws OperationFailedException {
                 ctx.disable();
+            }
+        });
+        resourceRegistration.registerOperationHandler(STOP, new AbstractContextOperation() {
+
+            @Override
+            protected void handleContext(OperationContext context, ModClusterStatus.Context ctx, ModelNode operation) throws OperationFailedException {
+                ctx.stop();
             }
         });
     }
