@@ -62,7 +62,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
     }
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STACK("stack", ModelType.STRING, null),
+        STACK("stack", ModelType.STRING, null), // 'stack' is required since model 4.0.0
         MODULE("module", ModelType.STRING, new ModelNode("org.wildfly.clustering.server"), new ModuleIdentifierValidatorBuilder()),
         ;
         private final AttributeDefinition definition;
@@ -79,7 +79,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
         private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
             return new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setAllowNull(defaultValue != null)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             ;
@@ -119,7 +119,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
                     PathAddress address = context.getCurrentAddress();
                     PathAddress subsystemAddress = address.subAddress(0, address.size() - 1);
                     // Lookup the name of the default stack if necessary
-                    PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement((stack != null) ? stack : JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().resolveModelAttribute(context, context.readResourceFromRoot(subsystemAddress, false).getModel()).asString()));
+                    PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement(stack));
 
                     context.addStep(new ProtocolResourceRegistrationHandler(name, stackAddress), OperationContext.Stage.MODEL);
                 }

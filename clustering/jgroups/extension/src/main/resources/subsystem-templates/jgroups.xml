@@ -2,11 +2,11 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
     <extension-module>org.jboss.as.clustering.jgroups</extension-module>
-    <subsystem xmlns="urn:jboss:domain:jgroups:3.0">
+    <subsystem xmlns="urn:jboss:domain:jgroups:4.0">
         <channels default="ee">
-            <channel name="ee"/>
+            <channel name="ee" stack="udp"/>
         </channels>
-        <stacks default="udp">
+        <stacks>
             <stack name="udp">
                 <transport type="UDP" socket-binding="jgroups-udp">
                     <?UDP-PROPERTIES?>
