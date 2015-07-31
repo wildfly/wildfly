@@ -87,6 +87,19 @@ public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefini
                 }
             }
         });
+        resourceRegistration.registerOperationHandler(STOP_NODES, new AbstractGroupOperation() {
+
+            @Override
+            protected void handleGroup(OperationContext context, ModClusterStatus.LoadBalancer balancer, String groupName, ModelNode operation) {
+                for(ModClusterStatus.Node node : balancer.getNodes()) {
+                    if(groupName.equals(node.getDomain())) {
+                        for(ModClusterStatus.Context n : node.getContexts()) {
+                            n.stop();
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private abstract class AbstractGroupOperation implements OperationStepHandler {
