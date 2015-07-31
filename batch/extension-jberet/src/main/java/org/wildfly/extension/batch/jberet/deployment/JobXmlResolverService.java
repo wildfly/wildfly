@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -178,7 +179,7 @@ class JobXmlResolverService implements Service<JobXmlResolver>, JobXmlResolver {
 
     @Override
     public synchronized Collection<String> getJobXmlNames(final ClassLoader classLoader) {
-        return cachedJobInfo.keySet();
+        return new ArrayList<>(cachedJobInfo.keySet());
     }
 
     @Override
