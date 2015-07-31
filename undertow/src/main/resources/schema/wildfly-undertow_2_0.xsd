@@ -272,7 +272,6 @@
 
     <xs:complexType name="filterType">
         <xs:sequence>
-            <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="connection-limit" type="connection-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
@@ -433,11 +432,6 @@
         <xs:attribute name="max-regions" use="optional" type="xs:string"/>
     </xs:complexType>
 
-    <xs:complexType name="basic-authType">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="security-domain" use="required" type="xs:string"/>
-
-    </xs:complexType>
     <xs:complexType name="connection-limitType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="max-concurrent-requests" use="required" type="xs:integer"/>
