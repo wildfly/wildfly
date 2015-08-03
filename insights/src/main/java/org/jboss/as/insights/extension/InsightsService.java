@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.insights.extension;
 
 import java.io.File;
@@ -405,11 +426,9 @@ public class InsightsService implements Service<InsightsService> {
                 + InsightsExtension.SUBSYSTEM_NAME + File.separator
                 + TELEMETRY_PROPERTY_FILE_NAME;
         Properties properties = new Properties();
-        FileInputStream fis = null;
         File file = new File(propertiesFilePath);
         if (file.exists()) {
-            try {
-                fis = new FileInputStream(propertiesFilePath);
+            try (FileInputStream fis = new FileInputStream(propertiesFilePath)) {
                 properties.load(fis);
                 // setting required fields
                 username = properties.getProperty(USERNAME);
@@ -422,14 +441,6 @@ public class InsightsService implements Service<InsightsService> {
                 // new ConfigHelper(propertiesFilePath));
             } catch (IOException e) {
                 ROOT_LOGGER.couldNotLoadPropertiesFile(e);
-            } finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (IOException e) {
-                        ROOT_LOGGER.couldNotClosePropertiesFile(e);
-                    }
-                }
             }
         }
     }
@@ -477,13 +488,7 @@ public class InsightsService implements Service<InsightsService> {
         } catch (FileNotFoundException e) {
             wasSuccessful = false;
             ROOT_LOGGER.couldNotFindJdr(e);
-        } catch (MalformedURLException e) {
-            wasSuccessful = false;
-            ROOT_LOGGER.couldNotUploadJdr(e);
-        } catch (ParseException e) {
-            wasSuccessful = false;
-            ROOT_LOGGER.couldNotUploadJdr(e);
-        } catch (RequestException e) {
+        } catch (MalformedURLException|ParseException|RequestException e) {
             wasSuccessful = false;
             ROOT_LOGGER.couldNotUploadJdr(e);
         }

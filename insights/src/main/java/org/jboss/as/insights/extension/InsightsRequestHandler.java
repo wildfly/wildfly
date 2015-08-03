@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.insights.extension;
 
 import org.jboss.as.controller.OperationContext;
@@ -29,14 +50,14 @@ public class InsightsRequestHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        final String rhnUid = operation.require(InsightsExtension.RHNUID).asString();
-        final String rhnPw = operation.require(InsightsExtension.RHNPW).asString();
+        final String rhnUid = InsightsSubsystemDefinition.RHNUID.resolveModelAttribute(context, operation).asString();//operation.require(InsightsExtension.RHNUID).asString();
+        final String rhnPw = InsightsSubsystemDefinition.RHNPW.resolveModelAttribute(context, operation).asString();//operation.require(InsightsExtension.RHNPW).asString();
 
         if(operation.has(InsightsExtension.PROXY_PASSWORD) && operation.has(InsightsExtension.PROXY_USER)) {
-            String proxyPwd = operation.get(InsightsExtension.PROXY_PASSWORD).asString();
-            String proxyPort = operation.get(InsightsExtension.PROXY_PORT).asString();
-            String proxyUrl = operation.get(InsightsExtension.PROXY_URL).asString();
-            String proxyUser = operation.get(InsightsExtension.PROXY_USER).asString();
+            String proxyPwd = InsightsSubsystemDefinition.PROXYPASSWORD.resolveModelAttribute(context, operation).asString();//operation.get(InsightsExtension.PROXY_PASSWORD).asString();
+            String proxyPort = InsightsSubsystemDefinition.PROXYPORT.resolveModelAttribute(context, operation).asString();//operation.get(InsightsExtension.PROXY_PORT).asString();
+            String proxyUrl = InsightsSubsystemDefinition.PROXYURL.resolveModelAttribute(context, operation).asString();//operation.get(InsightsExtension.PROXY_URL).asString();
+            String proxyUser = InsightsSubsystemDefinition.PROXYUSER.resolveModelAttribute(context, operation).asString();//operation.get(InsightsExtension.PROXY_USER).asString();
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

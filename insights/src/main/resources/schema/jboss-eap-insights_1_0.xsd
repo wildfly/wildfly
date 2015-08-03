@@ -5,5 +5,6 @@
             attributeFormDefault="unqualified"
             version="1.0">
 
-    <xs:element name="insights" type="subsystemType"/>
+    <xs:element name="subsystem" type="subsystemType"/>
+    <xs:complexType name="subsystemType"/>
 </xs:schema>
