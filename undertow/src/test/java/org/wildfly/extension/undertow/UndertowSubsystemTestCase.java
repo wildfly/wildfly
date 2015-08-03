@@ -31,6 +31,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -133,6 +135,8 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         hostSC.setMode(ServiceController.Mode.ACTIVE);
         Host host = hostSC.getValue();
         Assert.assertEquals(1, host.getFilters().size());
+        Assert.assertEquals(3, host.getAllAliases().size());
+        Assert.assertEquals("default-alias", new ArrayList<>(host.getAllAliases()).get(1));
 
 
         final ServiceName locationServiceName = UndertowService.locationServiceName("some-server", "default-host", "/");

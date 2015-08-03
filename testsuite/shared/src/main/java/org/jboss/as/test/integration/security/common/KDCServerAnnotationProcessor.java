@@ -30,7 +30,6 @@ import org.apache.directory.server.annotations.CreateKdcServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.AnnotationUtils;
 import org.apache.directory.server.core.api.DirectoryService;
-import static org.apache.directory.server.factory.ServerAnnotationProcessor.createTransport;
 import org.apache.directory.server.i18n.I18n;
 import org.apache.directory.server.kerberos.ChangePasswordConfig;
 import org.apache.directory.server.kerberos.KerberosConfig;
@@ -160,7 +159,38 @@ public class KDCServerAnnotationProcessor {
 
     }
 
+    private static Transport createTransport( CreateTransport transportBuilder, int startPort )
+    {
+        String protocol = transportBuilder.protocol();
+        int port = transportBuilder.port();
+        int nbThreads = transportBuilder.nbThreads();
+        int backlog = transportBuilder.backlog();
+        String address = transportBuilder.address();
+
+        if ( port == -1 )
+        {
+            port = AvailablePortFinder.getNextAvailable( startPort );
+            startPort = port + 1;
+        }
+
+        if ( protocol.equalsIgnoreCase( "TCP" ) )
+        {
+            Transport tcp = new TcpTransport( address, port, nbThreads, backlog );
+            return tcp;
+        }
+        else if ( protocol.equalsIgnoreCase( "UDP" ) )
+        {
+            UdpTransport udp = new UdpTransport( address, port );
+            return udp;
+        }
+        else
+        {
+            throw new IllegalArgumentException( I18n.err( I18n.ERR_689, protocol ) );
+        }
+    }
+
 }
+
 
 /**
  *

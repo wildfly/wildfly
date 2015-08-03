@@ -33,7 +33,7 @@ import org.wildfly.clustering.server.CacheBuilderFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
+import org.wildfly.clustering.spi.GroupServiceName;
 
 /**
  * Provides the requisite builders for a {@link ServiceProviderRegistrationFactory} created from the specified factory.
@@ -53,8 +53,13 @@ public class ServiceProviderRegistrationFactoryBuilderProvider implements CacheG
     @Override
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         Builder<ServiceProviderRegistrationFactory> builder = this.factory.createBuilder(containerName, cacheName);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceNameFactory.BASE_NAME, CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.toString(), containerName, cacheName).getAbsoluteName());
+        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.toString(), containerName, cacheName).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), ServiceProviderRegistrationFactory.class);
         return Arrays.asList(builder, bindingBuilder);
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
     }
 }

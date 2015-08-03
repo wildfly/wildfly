@@ -109,7 +109,16 @@ public class DataSourceDefinitionTestCase {
         Assert.assertNotNull(bean.getDataSource2());
         Assert.assertNotNull(bean.getDataSource3());
         Assert.assertNotNull(bean.getDataSource4());
-
     }
 
+    /**
+     * Tests an embedded datasource resource def.
+     * @throws NamingException
+     * @throws SQLException
+     */
+    @Test
+    public void testEmbeddedDatasource() throws NamingException, SQLException {
+        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        Assert.assertEquals(bean.getDataSource5().getConnection().nativeSQL("dse"),"dse");
+    }
 }

@@ -27,6 +27,9 @@ import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+
 /**
  * An {@link org.jboss.invocation.InterceptorFactory} which returns a new instance of {@link ContainerManagedConcurrencyInterceptor} on each
  * invocation to {@link #create(org.jboss.invocation.InterceptorFactoryContext)}. This {@link org.jboss.invocation.InterceptorFactory} can be used
@@ -36,14 +39,24 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class ContainerManagedConcurrencyInterceptorFactory extends ComponentInstanceInterceptorFactory {
 
-    public static final ContainerManagedConcurrencyInterceptorFactory INSTANCE = new ContainerManagedConcurrencyInterceptorFactory();
+    private final Map<Method, Method> viewMethodToComponentMethodMap;
 
-    private ContainerManagedConcurrencyInterceptorFactory() {
+    public ContainerManagedConcurrencyInterceptorFactory(Map<Method, Method> viewMethodToComponentMethodMap) {
 
+        this.viewMethodToComponentMethodMap = viewMethodToComponentMethodMap;
     }
 
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
-        return new ContainerManagedConcurrencyInterceptor((LockableComponent) component);
+        final LockableComponent lockableComponent = (LockableComponent) component;
+        synchronized (lockableComponent) {
+            Interceptor interceptor = lockableComponent.getConcurrencyManagementInterceptor();
+            if(interceptor != null) {
+                return interceptor;
+            }
+            interceptor = new ContainerManagedConcurrencyInterceptor((LockableComponent) component, viewMethodToComponentMethodMap);
+            lockableComponent.setConcurrencyManagementInterceptor(interceptor);
+            return interceptor;
+        }
     }
 }

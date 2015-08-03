@@ -84,7 +84,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
     }
 
     public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig,
-            final List<ServiceName> dependencies, final boolean jmxSubsystemAvailable) {
+            final List<ServiceName> dependencies, final boolean jmxSubsystemAvailable, final boolean requireUndertow) {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
         if (jmxSubsystemAvailable) {
             builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
@@ -92,7 +92,11 @@ public final class ServerConfigService implements Service<ServerConfig> {
             serverConfig.getMBeanServerInjector().setValue(new ImmediateValue<MBeanServer>(null));
         }
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
-        builder.addDependency(DependencyType.REQUIRED, UndertowService.UNDERTOW, UndertowService.class, serverConfig.getUndertowServiceInjector());
+        if (requireUndertow) {
+            builder.addDependency(DependencyType.REQUIRED, UndertowService.UNDERTOW, UndertowService.class, serverConfig.getUndertowServiceInjector());
+        } else {
+            serverConfig.getUndertowServiceInjector().setValue(new ImmediateValue<UndertowService>(null));
+        }
         for (ServiceName dep : dependencies) {
             builder.addDependency(dep);
         }

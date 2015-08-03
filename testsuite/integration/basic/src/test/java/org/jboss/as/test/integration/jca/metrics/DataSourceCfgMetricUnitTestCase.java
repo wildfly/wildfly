@@ -97,11 +97,6 @@ public class DataSourceCfgMetricUnitTestCase  extends JCAMetrictsTestBase {
     }
 
     @Test(expected=Exception.class)
-    public void testWrongUseTryLockProperty()throws Exception {
-    	setBadModel("wrong-use-try-lock-property.xml");
-    }
-
-    @Test(expected=Exception.class)
     public void testWrongAllocRetryProperty()throws Exception {
     	setBadModel("wrong-alloc-retry-property.xml");
     }

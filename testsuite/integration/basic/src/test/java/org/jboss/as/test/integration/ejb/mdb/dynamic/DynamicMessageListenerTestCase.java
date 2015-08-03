@@ -24,13 +24,14 @@ package org.jboss.as.test.integration.ejb.mdb.dynamic;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.adapter.TelnetResourceAdapter;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.application.MyMdb;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TelnetInputStream;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TelnetPrintStream;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TelnetServer;
-import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -56,6 +57,10 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DynamicMessageListenerTestCase {
+
+    @ContainerResource
+    private ManagementClient managementClient;
+
     private static void assertEmptyLine(final DataInputStream in) throws IOException {
         assertEquals("", in.readLine());
     }
@@ -79,7 +84,8 @@ public class DynamicMessageListenerTestCase {
 
     @Test
     public void test1() throws Exception {
-        final Socket socket = new Socket(EJBManagementUtil.getNodeName(), 2020);
+
+        final Socket socket = new Socket(managementClient.getWebUri().getHost(), 2020);
         final OutputStream sockOut = socket.getOutputStream();
         final DataInputStream in = new DataInputStream(new TelnetInputStream(socket.getInputStream(), sockOut));
         final PrintStream out = new TelnetPrintStream(sockOut);

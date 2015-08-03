@@ -44,9 +44,9 @@ public class ConfigurationBuilder implements Builder<Configuration>, Service<Con
     private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
     private final String containerName;
     private final String cacheName;
-    private final ConfigurationFactory factory;
+    private final ConfigurationBuilderFactory factory;
 
-    public ConfigurationBuilder(String containerName, String cacheName, ConfigurationFactory factory) {
+    public ConfigurationBuilder(String containerName, String cacheName, ConfigurationBuilderFactory factory) {
         this.containerName = containerName;
         this.cacheName = cacheName;
         this.factory = factory;
@@ -72,7 +72,7 @@ public class ConfigurationBuilder implements Builder<Configuration>, Service<Con
 
     @Override
     public void start(StartContext context) throws StartException {
-        this.container.getValue().defineConfiguration(this.cacheName, this.factory.createConfiguration());
+        this.container.getValue().defineConfiguration(this.cacheName, this.factory.createConfigurationBuilder().build());
     }
 
     @Override

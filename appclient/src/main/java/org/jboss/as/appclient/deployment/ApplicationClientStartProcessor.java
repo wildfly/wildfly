@@ -39,6 +39,7 @@ import org.jboss.as.appclient.service.DefaultApplicationClientCallbackHandler;
 import org.jboss.as.appclient.service.RealmCallbackWrapper;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -46,7 +47,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
@@ -77,13 +77,12 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final ApplicationClientMetaData appClientData = deploymentUnit.getAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
-
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         //setup the callback handler
         final CallbackHandler callbackHandler;
         if (appClientData != null && appClientData.getCallbackHandler() != null && !appClientData.getCallbackHandler().isEmpty()) {
             try {
-                final Class<?> callbackClass = classIndex.classIndex(appClientData.getCallbackHandler()).getModuleClass();
+                final Class<?> callbackClass = ClassLoadingUtils.loadClass(appClientData.getCallbackHandler(), module);
                 callbackHandler = new RealmCallbackWrapper((CallbackHandler) callbackClass.newInstance());
             } catch (ClassNotFoundException e) {
                 throw AppClientLogger.ROOT_LOGGER.couldNotLoadCallbackClass(appClientData.getCallbackHandler());
@@ -94,7 +93,6 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
             callbackHandler = new DefaultApplicationClientCallbackHandler();
         }
 
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         Boolean activate = deploymentUnit.getAttachment(AppClientAttachments.START_APP_CLIENT);
         if (activate == null || !activate) {
             return;
@@ -108,7 +106,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         Method mainMethod = null;
         Class<?> klass = mainClass;
         while (klass != Object.class) {
-            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(klass);
+            final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(klass);
             mainMethod = index.getMethod(void.class, "main", String[].class);
             if (mainMethod != null) {
                 break;

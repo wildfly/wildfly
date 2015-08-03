@@ -22,11 +22,13 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -103,6 +105,19 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    public void testTransformer820() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_2_0_FINAL;
+        this.testTransformation(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
+                formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
+                "org.infinispan:infinispan-core:6.0.2.Final",
+                "org.infinispan:infinispan-commons:6.0.2.Final",
+                "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final",
+                formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version),
+                "org.jgroups:jgroups:3.4.5.Final"
+        );
+    }
+
+    @Test
     @Ignore(value = "WFLY-4515")
     public void testTransformer620() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
@@ -151,12 +166,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Verify that mode=BATCH is translated to mode=NONE, batching=true
-            ModelNode cache = transformed.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(CacheType.LOCAL.pathElement("local").getKeyValuePair());
-            Assert.assertTrue(cache.hasDefined(CacheResourceDefinition.BATCHING.getName()));
-            Assert.assertTrue(cache.get(CacheResourceDefinition.BATCHING.getName()).asBoolean());
+            ModelNode cache = transformed.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(LocalCacheResourceDefinition.pathElement("local").getKeyValuePair());
+            Assert.assertTrue(cache.hasDefined(CacheResourceDefinition.Attribute.BATCHING.getDefinition().getName()));
+            Assert.assertTrue(cache.get(CacheResourceDefinition.Attribute.BATCHING.getDefinition().getName()).asBoolean());
             ModelNode transaction = cache.get(TransactionResourceDefinition.PATH.getKeyValuePair());
-            if (transaction.hasDefined(TransactionResourceDefinition.MODE.getName())) {
-                Assert.assertEquals(TransactionMode.NONE.name(), transaction.get(TransactionResourceDefinition.MODE.getName()).asString());
+            if (transaction.hasDefined(TransactionResourceDefinition.Attribute.MODE.getDefinition().getName())) {
+                Assert.assertEquals(TransactionMode.NONE.name(), transaction.get(TransactionResourceDefinition.Attribute.MODE.getDefinition().getName()).asString());
             }
         }
     }
@@ -188,6 +203,15 @@ public class TransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testRejections810() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
+        this.testRejections(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
+                "org.infinispan:infinispan-core:6.0.2.Final",
+                "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final"
+        );
+    }
+
+    @Test
+    public void testRejections820() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_2_0_FINAL;
         this.testRejections(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
                 "org.infinispan:infinispan-core:6.0.2.Final",
                 "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final"
@@ -236,12 +260,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
-            for (CacheType type: CacheType.values()) {
-                if (type.hasSharedState()) {
-                    PathAddress cacheAddress = containerAddress.append(type.pathElement());
-                    config.addFailedAttribute(cacheAddress.append(BackupSiteResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-                    config.addFailedAttribute(cacheAddress.append(BackupForResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-                }
+            for (PathElement path : Arrays.asList(DistributedCacheResourceDefinition.WILDCARD_PATH, ReplicatedCacheResourceDefinition.WILDCARD_PATH)) {
+                PathAddress cacheAddress = containerAddress.append(path);
+                config.addFailedAttribute(cacheAddress.append(BackupResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+                config.addFailedAttribute(cacheAddress.append(BackupForResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             }
         }
 

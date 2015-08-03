@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow.security;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,14 +42,14 @@ public class WebUtil {
     public static String deriveUsefulInfo(HttpServletRequest httpRequest) {
         StringBuilder sb = new StringBuilder();
         sb.append("[").append(httpRequest.getContextPath());
-        sb.append(":cookies=").append(httpRequest.getCookies()).append(":headers=");
+        sb.append(":cookies=").append(Arrays.toString(httpRequest.getCookies())).append(":headers=");
         // Append Header information
         Enumeration<?> en = httpRequest.getHeaderNames();
         while (en.hasMoreElements()) {
             String headerName = (String) en.nextElement();
             sb.append(headerName).append("=");
             // Ensure HTTP Basic Password is not logged
-            if (headerName.contains("authorization") == false)
+            if (!headerName.contains("authorization"))
                 sb.append(httpRequest.getHeader(headerName)).append(",");
         }
         sb.append("]");

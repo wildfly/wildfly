@@ -22,13 +22,10 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Map;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -43,7 +40,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -269,58 +265,10 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     }
 
     static void registerTransformers(SubsystemRegistration subsystemRegistration) {
-        registerTransformers_1_1_0(subsystemRegistration);
-        registerTransformers_1_2_0(subsystemRegistration);
         registerTransformers_1_2_1(subsystemRegistration);
         registerTransformers_3_0_0(subsystemRegistration);
     }
 
-    private static void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
-
-        ModelVersion subsystem110 = ModelVersion.create(1, 1);
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance()
-                .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
-                .setDiscard(DiscardAttributeChecker.ALWAYS, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS) //always discard, as this only affects logging
-                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-                    @Override
-                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return EjbLogger.ROOT_LOGGER.rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
-                    }
-
-                    @Override
-                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                                                      TransformationContext context) {
-                        return attributeValue.isDefined() && attributeValue.asBoolean();
-                    }
-                }, EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)
-                // We can always discard this attribute, because it's meaningless without the security-manager subsystem, and
-                // a legacy slave can't have that subsystem in its profile.
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)
-                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME)
-                .end();
-        EJB3RemoteResourceDefinition.registerTransformers_1_1_0(builder);
-        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, EJB3SubsystemModel.THREAD_POOL);
-        StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(builder);
-        PassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
-        FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
-        ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
-        TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
-        builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
-    }
-
-    private static void registerTransformers_1_2_0(SubsystemRegistration subsystemRegistration) {
-        registerTransformers1_2(subsystemRegistration, ModelVersion.create(1, 2, 0));
-    }
 
     private static void registerTransformers_1_2_1(SubsystemRegistration subsystemRegistration) {
         registerTransformers1_2(subsystemRegistration, ModelVersion.create(1, 2, 1));

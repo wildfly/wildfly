@@ -77,8 +77,8 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
 
     @Test
     public void testSingletonService(
-            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            @ArquillianResource(MyServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(MyServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
 
         // Needed to be able to inject ArquillianResource

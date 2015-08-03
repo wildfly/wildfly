@@ -37,6 +37,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
+@Deprecated
 public class BasicAuthHandler extends Filter {
 
     public static final BasicAuthHandler INSTANCE = new BasicAuthHandler();

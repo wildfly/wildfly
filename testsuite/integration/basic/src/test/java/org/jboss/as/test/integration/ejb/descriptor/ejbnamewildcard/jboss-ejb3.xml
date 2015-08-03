@@ -1,0 +1,42 @@
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+        http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+	version="3.1" impl-version="2.0">
+
+	<assembly-descriptor>
+
+		<exclude-list>
+			<method>
+				<ejb-name>*</ejb-name>
+				<method-name>wildcardExcludedMethod</method-name>
+			</method>
+			<method>
+				<ejb-name>BeanTwo</ejb-name>
+				<method-name>localExcludedMethod</method-name>
+			</method>
+		</exclude-list>
+
+		<method-permission>
+			<method>
+				<ejb-name>*</ejb-name>
+				<method-name>wildcardRestrictedMethod</method-name>
+			</method>
+			<method>
+				<ejb-name>BeanTwo</ejb-name>
+				<method-name>localRestrictedMethod</method-name>
+			</method>
+			<role-name>admin</role-name>
+		</method-permission>
+
+		<method-permission>
+			<method>
+				<ejb-name>*</ejb-name>
+				<method-name>*</method-name>
+			</method>
+			<unchecked />
+		</method-permission>
+
+	</assembly-descriptor>
+
+</jboss:ejb-jar>

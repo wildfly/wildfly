@@ -3,7 +3,7 @@
 <config>
    <subsystems>
       <subsystem>logging.xml</subsystem>
-      <subsystem>batch.xml</subsystem>
+      <subsystem>batch-jberet.xml</subsystem>
       <subsystem>bean-validation.xml</subsystem>
       <subsystem>datasources.xml</subsystem>
       <subsystem>deployment-scanner.xml</subsystem>

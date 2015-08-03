@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>10.0.0.Alpha5-SNAPSHOT</version>
+        <version>10.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-feature-pack</artifactId>
@@ -692,6 +692,17 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jpa</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>jipijapa-hibernate5</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1391,6 +1402,11 @@
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-cli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-commons</artifactId>
             <exclusions>
                 <exclusion>
@@ -1409,6 +1425,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-dto</artifactId>
         </dependency>
 
         <dependency>
@@ -1791,17 +1812,6 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-engine</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-infinispan</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2199,7 +2209,17 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-singleton</artifactId>
+            <artifactId>wildfly-clustering-singleton-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-singleton-extension</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2280,6 +2300,17 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-batch</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-batch-jberet</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

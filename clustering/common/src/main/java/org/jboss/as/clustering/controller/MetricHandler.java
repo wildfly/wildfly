@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,14 +43,14 @@ public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements Regi
     private final MetricExecutor<C> executor;
 
     public <M extends Enum<M> & Metric<C>> MetricHandler(MetricExecutor<C> executor, Class<M> metricClass) {
-        this(executor, metricClass.getEnumConstants());
+        this(executor, EnumSet.allOf(metricClass));
     }
 
     public MetricHandler(MetricExecutor<C> executor, Metric<C>[] metrics) {
         this(executor, Arrays.asList(metrics));
     }
 
-    public MetricHandler(MetricExecutor<C> executor, Iterable<Metric<C>> metrics) {
+    public MetricHandler(MetricExecutor<C> executor, Iterable<? extends Metric<C>> metrics) {
         this.executor = executor;
         for (Metric<C> metric : metrics) {
             this.metrics.put(metric.getDefinition().getName(), metric);

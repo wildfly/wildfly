@@ -22,11 +22,11 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -40,12 +40,12 @@ import org.jboss.msc.service.ServiceTarget;
 public class DataSourceAdd extends AbstractDataSourceAdd {
     static final DataSourceAdd INSTANCE = new DataSourceAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        populateAddModel(operation, model, CONNECTION_PROPERTIES.getName(), DATASOURCE_ATTRIBUTE, DATASOURCE_PROPERTIES_ATTRIBUTES);
+    private DataSourceAdd() {
+        super(join(DATASOURCE_ATTRIBUTE, DATASOURCE_PROPERTIES_ATTRIBUTES));
     }
 
     protected AbstractDataSourceService createDataSourceService(final String dsName,final String jndiName) throws OperationFailedException {
-        return new LocalDataSourceService(dsName, jndiName);
+        return new LocalDataSourceService(dsName, ContextNames.bindInfoFor(jndiName));
     }
 
     @Override

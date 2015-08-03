@@ -41,11 +41,11 @@ import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 
@@ -61,7 +61,6 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         final Collection<ComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
@@ -69,20 +68,20 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
         if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
             return;
         }
-        if (classIndex == null || componentConfigurations == null || componentConfigurations.isEmpty()) {
+        if (componentConfigurations == null || componentConfigurations.isEmpty()) {
             return;
         }
 
         for (final ComponentDescription description : componentConfigurations) {
-            processComponentConfig(applicationClasses, classIndex, deploymentReflectionIndex, description);
+            processComponentConfig(applicationClasses, deploymentReflectionIndex, description, deploymentUnit);
         }
     }
 
-    private void processComponentConfig(final EEApplicationClasses applicationClasses, final DeploymentClassIndex classIndex, final DeploymentReflectionIndex deploymentReflectionIndex, final ComponentDescription description) throws DeploymentUnitProcessingException {
+    private void processComponentConfig(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final ComponentDescription description, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
 
         final Class<?> componentClass;
         try {
-            componentClass = classIndex.classIndex(description.getComponentClassName()).getModuleClass();
+            componentClass = ClassLoadingUtils.loadClass(description.getComponentClassName(), deploymentUnit);
         } catch (ClassNotFoundException e) {
             //just ignore the class for now.
             //if it is an optional component this is ok, if it is not an optional component

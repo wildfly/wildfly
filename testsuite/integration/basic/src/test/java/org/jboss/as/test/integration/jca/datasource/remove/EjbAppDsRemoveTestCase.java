@@ -30,6 +30,7 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +44,7 @@ import static org.junit.Assert.fail;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(AbstractDsRemove.DataSourceSetupTask.class)
+@Ignore("WFLY-4972")
 public class EjbAppDsRemoveTestCase extends AbstractDsRemove {
 
     private static final String MODULE_NAME = "remove-ds";

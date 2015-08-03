@@ -38,4 +38,9 @@ public class ChannelNodeFactoryBuilderProvider implements ClusteredGroupBuilderP
     public Collection<Builder<?>> getBuilders(String group, ModuleIdentifier module) {
         return Collections.<Builder<?>>singleton(new ChannelNodeFactoryBuilder(group));
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

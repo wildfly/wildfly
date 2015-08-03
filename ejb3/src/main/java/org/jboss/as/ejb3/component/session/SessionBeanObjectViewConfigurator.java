@@ -147,7 +147,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
 
         Class<?> clazz = componentClass;
         while (clazz != Object.class) {
-            final ClassReflectionIndex<?> classIndex = index.getClassIndex(clazz);
+            final ClassReflectionIndex classIndex = index.getClassIndex(clazz);
             Method ret = classIndex.getMethod(Void.TYPE, "ejbRemove");
             if (ret != null) {
                 return ret;

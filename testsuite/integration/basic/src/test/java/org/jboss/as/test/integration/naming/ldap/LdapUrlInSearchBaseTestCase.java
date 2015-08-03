@@ -140,7 +140,7 @@ public class LdapUrlInSearchBaseTestCase {
      */
     //@formatter:off
     @CreateDS(
-        name = "JBossDS",
+        name = "JBossDS-LdapUrlInSearchBaseTestCase",
         factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {

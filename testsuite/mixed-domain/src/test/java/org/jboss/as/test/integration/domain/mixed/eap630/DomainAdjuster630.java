@@ -48,8 +48,9 @@ import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.as.test.integration.domain.mixed.LegacySubsystemConfigurationUtil;
 import org.jboss.as.weld.WeldExtension;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.batch.BatchSubsystemExtension;
+import org.wildfly.extension.batch.jberet.BatchSubsystemDefinition;
 import org.wildfly.extension.beanvalidation.BeanValidationExtension;
+import org.wildfly.extension.clustering.singleton.SingletonDeployerExtension;
 import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
@@ -67,7 +68,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
-        list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, BatchSubsystemExtension.SUBSYSTEM_NAME)));
+        list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, BatchSubsystemDefinition.NAME)));
         list.addAll(removeBeanValidation(profileAddress.append(SUBSYSTEM, BeanValidationExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustEe(profileAddress.append(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustEjb3(profileAddress.append(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)));
@@ -81,7 +82,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.addAll(removeSecurityManager(profileAddress.append(SecurityManagerExtension.SUBSYSTEM_PATH)));
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
         list.addAll(replaceActiveMqWithMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
-
+        list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, SingletonDeployerExtension.SUBSYSTEM_NAME)));
 
         //Temporary workaround, something weird is going on in infinispan/jgroups so let's get rid of those for now
         //TODO Reenable these subsystems, it is important to see if we boot with them configured although the tests don't use clustering
@@ -92,12 +93,11 @@ public class DomainAdjuster630 extends DomainAdjuster {
     }
 
 
-
     private Collection<? extends ModelNode> removeBatch(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
         //batch and extension don't exist
         list.add(createRemoveOperation(subsystem));
-        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.batch")));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.batch.jberet")));
         return list;
     }
 
@@ -107,6 +107,15 @@ public class DomainAdjuster630 extends DomainAdjuster {
         //bean-validation and extension don't exist
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.bean-validation")));
+        return list;
+    }
+
+
+    private Collection<? extends ModelNode> removeSingletonDeployer(PathAddress subsystem) {
+        List<ModelNode> list = new ArrayList<>(2);
+        //singleton subsystem and extension doesn't exist
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.singleton")));
         return list;
     }
 
@@ -182,7 +191,9 @@ public class DomainAdjuster630 extends DomainAdjuster {
 
     private Collection<? extends ModelNode> removeIo(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
-        //io and extension don't exist
+        //io and extension don't exist so remove them
+        //We also must remove the remoting requirement for io worker capability
+        list.add(createRemoveOperation(subsystem.getParent().append(SUBSYSTEM, "remoting").append("configuration", "endpoint")));
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.io")));
         return list;
@@ -244,7 +255,9 @@ public class DomainAdjuster630 extends DomainAdjuster {
     private Collection<? extends ModelNode> adjustRemoting(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
         //The endpoint configuration does not exist
-        list.add(createRemoveOperation(subsystem.append("configuration", "endpoint")));
+        // BES 2015/07/15 -- this is done in removeIO now so the io worker capability and the requirement for it
+        // both go in the same op
+        //list.add(createRemoveOperation(subsystem.append("configuration", "endpoint")));
 
         //Replace the http-remoting connector with a normal remoting-connector. This needs the remoting socket binding,
         //so add that too

@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>10.0.0.Alpha5-SNAPSHOT</version>
+        <version>10.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-jsr77</artifactId>
@@ -49,10 +49,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-jmx</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

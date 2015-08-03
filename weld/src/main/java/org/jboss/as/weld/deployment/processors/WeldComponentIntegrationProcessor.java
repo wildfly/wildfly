@@ -41,6 +41,7 @@ import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
 import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateful.SerializedCdiInterceptorsKey;
@@ -51,8 +52,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.WeldStartService;
@@ -70,6 +69,7 @@ import org.jboss.as.weld.util.Utils;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -87,7 +87,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
 
         if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return;
@@ -116,14 +115,14 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                     final Class<?> componentClass = configuration.getComponentClass();
                     final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-                    final ModuleClassLoader classLoader = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
+                    final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+                    final ModuleClassLoader classLoader = module.getClassLoader();
 
                     //get the interceptors so they can be injected as well
                     final Set<Class<?>> interceptorClasses = new HashSet<Class<?>>();
                     for (InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
                         try {
-                            final ClassIndex index = classIndex.classIndex(interceptorDescription.getInterceptorClassName());
-                            interceptorClasses.add(index.getModuleClass());
+                            interceptorClasses.add(ClassLoadingUtils.loadClass(interceptorDescription.getInterceptorClassName(), module));
                         } catch (ClassNotFoundException e) {
                             throw WeldLogger.ROOT_LOGGER.couldNotLoadInterceptorClass(interceptorDescription.getInterceptorClassName(), e);
                         }

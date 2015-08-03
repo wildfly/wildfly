@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-testsuite</artifactId>
-        <version>10.0.0.Alpha5-SNAPSHOT</version>
+        <version>10.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -61,6 +61,7 @@
                 <module>multinode</module>
                 <module>manualmode</module>
                 <module>picketlink</module>
+                <module>secman</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -79,6 +80,7 @@
                 <module>multinode</module>
                 <module>manualmode</module>
                 <module>picketlink</module>
+                <module>secman</module>
             </modules>
         </profile>
 
@@ -182,13 +184,12 @@
             </modules>
         </profile>
 
+        <!-- -Dts.secman -->
         <profile>
-            <id>ts.integ.group.java8</id>
-            <activation>
-                <jdk>1.8</jdk>
-            </activation>
+            <id>ts.integ.group.secman</id>
+            <activation><property><name>ts.secman</name></property></activation>
             <modules>
-                <module>java8</module>
+                <module>secman</module>
             </modules>
         </profile>
     </profiles>

@@ -155,19 +155,16 @@ public class SimpleMarshalledValueFactoryTestCase {
 
     private static byte[] marshall(Object mv) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(mv);
-        oos.close();
+        try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            oos.writeObject(mv);
+        }
         return baos.toByteArray();
     }
 
     private static Object unmarshall(byte[] bytes) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        ObjectInputStream ois = new ObjectInputStream(bais);
-        try {
+        try (ObjectInputStream ois = new ObjectInputStream(bais)) {
             return ois.readObject();
-        } finally {
-            ois.close();
         }
     }
 }

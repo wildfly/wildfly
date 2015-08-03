@@ -53,7 +53,7 @@ import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 import org.jboss.metadata.ejb.spec.PersistenceType;
@@ -127,7 +127,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
 
     @Override
-    public final ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    public final ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         final ComponentConfiguration configuration = createEntityBeanConfiguration(classIndex, moduleClassLoader, moduleLoader);
         configuration.getCreateDependencies().add(new ConfigInjectingConfigurator(this));
         // add the timer interceptor
@@ -140,7 +140,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         return configuration;
     }
 
-    protected ComponentConfiguration createEntityBeanConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    protected ComponentConfiguration createEntityBeanConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
         configuration.setComponentCreateServiceFactory(EntityBeanComponentCreateService.FACTORY);

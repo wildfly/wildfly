@@ -54,7 +54,7 @@ public class MethodAnnotationAggregator {
         Class<?> c = componentClass;
         while (c != null && c != Object.class) {
 
-            final ClassReflectionIndex<?> classIndex = index.getClassIndex(c);
+            final ClassReflectionIndex classIndex = index.getClassIndex(c);
 
             final EEModuleClassDescription description = applicationClasses.getClassByName(c.getName());
             if (description != null) {
@@ -84,7 +84,7 @@ public class MethodAnnotationAggregator {
 
             //we store all the method identifiers
             //so we can check if a method is overriden
-            for (Method method : classIndex.getMethods()) {
+            for (Method method : (Iterable<Method>)classIndex.getMethods()) {
                 //we do not have to worry about private methods being overridden
                 if (!Modifier.isPrivate(method.getModifiers())) {
                     methodIdentifiers.add(MethodIdentifier.getIdentifierForMethod(method));

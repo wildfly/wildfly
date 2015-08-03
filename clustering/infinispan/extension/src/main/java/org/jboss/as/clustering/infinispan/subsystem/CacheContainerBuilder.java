@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,8 +32,13 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -48,23 +55,29 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 @Listener
-public class CacheContainerBuilder implements Builder<CacheContainer>, Service<CacheContainer> {
+public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContainer>, Service<CacheContainer> {
 
     private final InjectedValue<GlobalConfiguration> configuration = new InjectedValue<>();
     private final List<String> aliases = new LinkedList<>();
     private final String name;
-    private final String defaultCache;
 
+    private volatile String defaultCache;
     private volatile CacheContainer container;
 
-    public CacheContainerBuilder(String name, String defaultCache) {
+    public CacheContainerBuilder(String name) {
         this.name = name;
-        this.defaultCache = defaultCache;
     }
 
     @Override
     public ServiceName getServiceName() {
         return CacheContainerServiceName.CACHE_CONTAINER.getServiceName(this.name);
+    }
+
+    @Override
+    public Builder<CacheContainer> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.aliases.clear();
+        this.aliases.addAll(ModelNodes.asStringList(ALIASES.getDefinition().resolveModelAttribute(context, model)));
+        return this;
     }
 
     @Override
@@ -78,8 +91,8 @@ public class CacheContainerBuilder implements Builder<CacheContainer>, Service<C
         return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
-    public CacheContainerBuilder addAlias(String alias) {
-        this.aliases.add(alias);
+    CacheContainerBuilder setDefaultCache(String defaultCache) {
+        this.defaultCache = defaultCache;
         return this;
     }
 

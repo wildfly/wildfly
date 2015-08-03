@@ -64,7 +64,7 @@ public class MethodResolutionUtils {
 
         Class<?> clazz = componentClass;
         while (clazz != Object.class && clazz != null) {
-            final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(clazz);
+            final ClassReflectionIndex classIndex = reflectionIndex.getClassIndex(clazz);
             if (parameters == null) {
                 final Collection<Method> methods = classIndex.getAllMethods(methodName);
                 if(!methods.isEmpty()) {

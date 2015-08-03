@@ -22,12 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -42,7 +37,6 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Assert;
@@ -91,70 +85,10 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformer_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    public void testTransformerEAP620() throws Exception {
+        testTransformer_1_2_x(ModelTestControllerVersion.EAP_6_2_0, 1);
     }
 
-    @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
-    public void testTransformerEAP600() throws Exception {
-        testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
-    }
-
-    @Test
-    public void testTransformerEAP601() throws Exception {
-        testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
-    }
-
-    /**
-     * Tests transformation of model from 2.0.0 version into 1.1.0 version, where
-     * all operations in the XML file are expected to transform successfully.
-     *
-     * @throws Exception
-     */
-    private void testTransformer_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = "transform_1_1_0.xml";   //This has no expressions not understood by 1.1.0
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource(subsystemXml);
-
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-registry:" + controllerVersion.getMavenGavVersion())
-                .skipReverseControllerCheck()
-                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())))
-                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement("strict-max-bean-instance-pool")));
-
-        // boot the models
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertNotNull(mainServices);
-        Assert.assertNotNull(legacyServices);
-        // check that the transformed model is the same as the model built from transformed operations
-        checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
-    }
-
-    @Test
-    public void testTransformerAS720() throws Exception {
-        testTransformer_1_2_x(ModelTestControllerVersion.V7_2_0_FINAL, 0);
-    }
-
-    @Test
-    public void testTransformerEAP610() throws Exception {
-        testTransformer_1_2_x(ModelTestControllerVersion.EAP_6_1_0, 1);
-    }
-
-    @Test
-    public void testTransformerEAP611() throws Exception {
-        testTransformer_1_2_x(ModelTestControllerVersion.EAP_6_1_1, 1);
-    }
 
     /**
      * Tests transformation of model from 1.2.0 version into 1.1.0 version.
@@ -183,53 +117,12 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
     }
 
-    @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
 
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressionsEAP600() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
-    }
-
-    @Test
-    public void testRejectExpressionsAS601() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
-    }
-
-    private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        // create builder for legacy subsystem version
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-registry:" + controllerVersion.getMavenGavVersion())
-        ;
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
-
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        List<ModelNode> xmlOps = builder.parseXmlResource("transform_1_1_0_expressions.xml");
-        // for each operation, check installs in main and if it fails in legacy, that it is noted in the failure config
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, getConfig_1_1_0());
-    }
 
     @Ignore
     @Test
-    public void testRejectBadAttributesAs720() throws Exception {
-        testRejectBadAttributes_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    public void testRejectBadAttributesEAP62() throws Exception {
+        testRejectBadAttributes_1_2_0(ModelTestControllerVersion.EAP_6_2_0);
     }
 
 
@@ -265,72 +158,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_2_0, xmlOps, getConfig_1_2_0());
     }
 
-
-    @Test
-    public void testRejectFileStorePathExpressionsAS713() throws Exception {
-        testRejectFileStorePathExpressions(ModelTestControllerVersion.V7_1_3_FINAL, true);
-    }
-
-    private void testRejectFileStorePathExpressions(ModelTestControllerVersion controllerVersion, boolean expectReject) throws Exception {
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        // create builder for legacy subsystem version
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-registry:" + controllerVersion.getMavenGavVersion())
-        ;
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
-
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        List<ModelNode> xmlOps = builder.parseXmlResource("timer_path_expr.xml");
-
-        FailedOperationTransformationConfig failedConfig = expectReject ? getFileStorePathConfig() : new FailedOperationTransformationConfig();
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, failedConfig);
-    }
-
-    /*
-     * Specifies the operations for which we expect transformation failure when:
-     * - transforming from current to model version 1.1.0
-     * - using the XML configuration file transform_1_1_0_expressions.xml
-     */
-    private FailedOperationTransformationConfig getConfig_1_1_0() {
-        PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
-        FailedOperationTransformationConfig.RejectExpressionsConfig keepaliveOnly =
-                new FailedOperationTransformationConfig.RejectExpressionsConfig(PoolAttributeDefinitions.KEEPALIVE_TIME);
-
-        return new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress,
-                        FailedOperationTransformationConfig.ChainedConfig.createBuilder(
-                                EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS,
-                                EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN,
-                                EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,
-                                EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS,
-                                EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
-                                .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS))
-                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN))
-                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
-                                .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)).build())
-                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL)),
-                        keepaliveOnly)
-                .addFailedAttribute(subsystemAddress.append(StrictMaxPoolResourceDefinition.INSTANCE.getPathElement()),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT))
-                .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(FileDataStoreResourceDefinition.PATH))
-                .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH, RemoteConnectorChannelCreationOptionResource.INSTANCE.getPathElement()),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE))
-                .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rejected")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemModel.DATABASE_DATA_STORE_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                ;
-    }
-
     /*
      * Specifies the operations for which we expect transformation failure when:
      * - transforming from current to model version 1.2.0
@@ -349,16 +176,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemModel.DATABASE_DATA_STORE_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE)
         ;
     }
-
-    private FailedOperationTransformationConfig getFileStorePathConfig() {
-        return new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
-                .addFailedAttribute(PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH, EJB3SubsystemModel.TIMER_SERVICE_PATH,
-                        PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store")),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(FileDataStoreResourceDefinition.PATH));
-    }
-
-
 
     private static final ModelFixer V_1_1_0_FIXER = new ModelFixer()  {
 

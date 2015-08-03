@@ -25,11 +25,5 @@ import org.jboss.as.controller.AttributeDefinition;
  * @author Paul Ferraro
  * @param <C> metric context
  */
-public interface Metric<C> extends Executable<C> {
-
-    /**
-     * The definition of this metric.
-     * @return an attribute definition
-     */
-    AttributeDefinition getDefinition();
+public interface Metric<C> extends Definable<AttributeDefinition>, Executable<C> {
 }

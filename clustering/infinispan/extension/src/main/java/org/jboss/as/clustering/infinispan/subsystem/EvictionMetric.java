@@ -42,7 +42,7 @@ public enum EvictionMetric implements Metric<Cache<?, ?>> {
     ;
     private final AttributeDefinition definition;
 
-    private EvictionMetric(String name, ModelType type) {
+    EvictionMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

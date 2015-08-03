@@ -137,7 +137,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                     if (ds.isEnabled() && ds.getDriver() != null) {
                         try {
                             final String jndiName = Util.cleanJndiName(ds.getJndiName(), ds.isUseJavaContext());
-                            LocalDataSourceService lds = new LocalDataSourceService(jndiName, jndiName);
+                            LocalDataSourceService lds = new LocalDataSourceService(jndiName, ContextNames.bindInfoFor(jndiName));
                             lds.getDataSourceConfigInjector().inject(buildDataSource(ds));
                             final String dsName = ds.getJndiName();
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, false);
@@ -159,7 +159,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                     if (xads.isEnabled() && xads.getDriver() != null) {
                         try {
                             String jndiName = Util.cleanJndiName(xads.getJndiName(), xads.isUseJavaContext());
-                            XaDataSourceService xds = new XaDataSourceService(jndiName, jndiName);
+                            XaDataSourceService xds = new XaDataSourceService(jndiName, ContextNames.bindInfoFor(jndiName));
                             xds.getDataSourceConfigInjector().inject(buildXaDataSource(xads));
                             final String dsName = xads.getJndiName();
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, true);
@@ -282,8 +282,9 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final Resource resource,
                                  final String managementName, boolean securityEnabled) {
 
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.getServiceName(bindInfo);
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(
                         serviceTarget.addService(dataSourceServiceName, dataSourceService),
@@ -314,7 +315,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             DataSourceStatisticsService statsService = new DataSourceStatisticsService(registration, false );
                             serviceTarget.addService(dataSourceServiceName.append(Constants.STATISTICS), statsService)
                                     .addDependency(dataSourceServiceName)
-                                    .addDependency(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName), CommonDeployment.class, statsService.getCommonDeploymentInjector())
+                                    .addDependency(CommonDeploymentService.getServiceName(bindInfo), CommonDeployment.class, statsService.getCommonDeploymentInjector())
                                     .setInitialMode(ServiceController.Mode.PASSIVE)
                                     .install();
             DataSourceStatisticsService.registerStatisticsResources(resource);
@@ -333,7 +334,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 referenceFactoryService).addDependency(dataSourceServiceName, javax.sql.DataSource.class,
                 referenceFactoryService.getDataSourceInjector());
 
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(bindInfo.getBinderServiceName(), binderService)

@@ -290,7 +290,7 @@ public class SPNEGOLoginModuleTestCase {
      */
     //@formatter:off
     @CreateDS(
-        name = "JBossDS",
+        name = "JBossDS-SPNEGOLoginModuleTestCase",
         factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {

@@ -44,4 +44,9 @@ public class CacheGroupBuilderProvider implements org.wildfly.clustering.spi.Cac
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         return Collections.<Builder<?>>singleton(this.factory.createBuilder(containerName, cacheName));
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

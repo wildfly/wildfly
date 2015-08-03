@@ -36,10 +36,6 @@
                 output-file="standalone/configuration/standalone-full.xml"/>
         <standalone
                 template="configuration/standalone/template.xml"
-                subsystems="configuration/standalone/subsystems-full-hornetq.xml"
-                output-file="standalone/configuration/standalone-full-hornetq.xml"/>
-        <standalone
-                template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-ha.xml"
                 output-file="standalone/configuration/standalone-ha.xml">
             <property name="jgroups.supplement" value="" />
@@ -52,20 +48,14 @@
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
-                subsystems="configuration/standalone/subsystems-full-ha-hornetq.xml"
-                output-file="standalone/configuration/standalone-full-ha-hornetq.xml">
-            <property name="jgroups.supplement" value="" />
-        </standalone>
+                subsystems="configuration/standalone/subsystems-full-ha.xml"
+                output-file="docs/examples/configs/standalone-ec2-full-ha.xml">
+                <property name="jgroups.supplement" value="ec2" />
+       </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-elytron.xml"
                 output-file="standalone/configuration/standalone-elytron.xml"/>
-        <standalone
-                template="configuration/standalone/template.xml"
-                subsystems="configuration/standalone/subsystems-full-ha.xml"
-                output-file="docs/examples/configs/standalone-ec2-full-ha.xml">
-            <property name="jgroups.supplement" value="ec2" />
-        </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-ha.xml"

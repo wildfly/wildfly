@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -40,18 +41,18 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         StateTransferResourceDefinition.buildTransformation(version, builder);
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
-            builder.rejectChildResource(BackupSiteResourceDefinition.WILDCARD_PATH);
+            builder.rejectChildResource(BackupResourceDefinition.WILDCARD_PATH);
             builder.rejectChildResource(BackupForResourceDefinition.PATH);
         } else {
-            BackupSiteResourceDefinition.buildTransformation(version, builder);
+            BackupsResourceDefinition.buildTransformation(version, builder);
             BackupForResourceDefinition.buildTransformation(version, builder);
         }
 
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    SharedStateCacheResourceDefinition(CacheType type, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(type, pathManager, allowRuntimeOnlyRegistration);
+    SharedStateCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(path, pathManager, allowRuntimeOnlyRegistration);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         super.registerChildren(registration);
 
         registration.registerSubModel(new StateTransferResourceDefinition());
-        registration.registerSubModel(new BackupSiteResourceDefinition(this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new BackupsResourceDefinition(this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new BackupForResourceDefinition());
     }
 }

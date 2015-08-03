@@ -51,6 +51,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
     private AbstractDataSourceAdd addHandler;
 
     protected AbstractDataSourceRemove(final AbstractDataSourceAdd addHandler) {
+        super(Capabilities.DATA_SOURCE_CAPABILITY);
         this.addHandler = addHandler;
     }
 
@@ -61,7 +62,8 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
 
-        final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        final ServiceName binderServiceName = bindInfo.getBinderServiceName();
         final ServiceController<?> binderController = registry.getService(binderServiceName);
         if (binderController != null) {
             context.removeService(binderServiceName);
@@ -101,12 +103,12 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
             context.removeService(xaDataSourceConfigServiceName);
         }
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceName = Capabilities.DATA_SOURCE_CAPABILITY.getCapabilityServiceName(dsName);
         final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
         if (dataSourceController != null) {
             context.removeService(dataSourceServiceName);
         }
-        context.removeService(CommonDeploymentService.SERVICE_NAME_BASE.append(jndiName));
+        context.removeService(CommonDeploymentService.getServiceName(bindInfo));
         context.removeService(dataSourceServiceName.append(Constants.STATISTICS));
 
 
@@ -122,7 +124,7 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        addHandler.performRuntime(context, operation, /* resource (unused there anyway) */ null, model);
+        addHandler.performRuntime(context, operation, model);
 
         boolean enabled = ! operation.hasDefined(ENABLED.getName()) || ENABLED.resolveModelAttribute(context, model).asBoolean();
         if (context.isNormalServer() && enabled) {

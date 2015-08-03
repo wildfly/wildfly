@@ -60,6 +60,7 @@ import org.junit.runner.RunWith;
 @ServerSetup({ JACCTranslateServletDDTestCase.SecurityDomainsSetup.class })
 @RunAsClient
 @Category(CommonCriteria.class)
+@Ignore("WFLY-4991")
 public class JACCTranslateServletDDTestCase {
     private static final String SECURITY_DOMAIN_NAME = "jacc-test";
     private static final String WEBAPP_NAME = "jacc-test.war";

@@ -22,9 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.BoottimeAddStepHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -55,19 +58,22 @@ public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinit
     private final boolean allowRuntimeOnlyRegistration;
 
     InfinispanSubsystemResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(PATH, new InfinispanResourceDescriptionResolver(), new InfinispanSubsystemAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, new InfinispanResourceDescriptionResolver());
         this.pathManager = pathManager;
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        super.registerOperations(registration);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
+        ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
+        new BoottimeAddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(new CacheContainerResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration));
+        new CacheContainerResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
     }
 }

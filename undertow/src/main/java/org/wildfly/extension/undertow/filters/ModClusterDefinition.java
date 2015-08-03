@@ -22,11 +22,9 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import io.undertow.predicate.Predicate;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -38,15 +36,19 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowService;
 
-import io.undertow.predicate.Predicate;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.proxy.ProxyHandler;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * mod_cluster front end handler. This acts like a filter, but does not re-use a lot of the filter code as it
@@ -157,9 +159,16 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setValidator(new StringLengthValidator(1))
             .build();
 
+
+    public static final SimpleAttributeDefinition USE_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.USE_ALIAS, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
     public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL,
                 ADVERTISE_PATH, ADVERTISE_FREQUENCY, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
-            CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM));
+            CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, USE_ALIAS));
     public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();
 
     private ModClusterDefinition() {
@@ -182,6 +191,11 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     }
 
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(ModClusterBalancerDefinition.INSTANCE);
+    }
+
     static class ModClusterAdd extends AbstractAddStepHandler {
 
         @Override
@@ -196,6 +210,19 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String name = address.getLastElement().getValue();
             ModClusterService.install(name, context.getServiceTarget(), model, context);
+        }
+
+        @Override
+        protected Resource createResource(OperationContext context, ModelNode operation) {
+            if (context.isDefaultRequiresRuntime()) {
+                // Wrap a standard Resource impl in our custom variant that understands runtime-only children
+                Resource delegate = Resource.Factory.create();
+                Resource result = new ModClusterResource(delegate, context.getCurrentAddressValue());
+                context.addResource(PathAddress.EMPTY_ADDRESS, result);
+                return result;
+            } else {
+                return super.createResource(context, operation);
+            }
         }
     }
 }

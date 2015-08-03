@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -73,7 +74,7 @@ public class JSR77ManagementExtension  implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         // Register the root subsystem resource.
-        final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(JSR77ManagementRootResource.INSTANCE);
+        final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(new JSR77ManagementRootResource(context.getProcessType() == ProcessType.APPLICATION_CLIENT));
 
         // Mandatory describe operation
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);

@@ -55,7 +55,7 @@ public class ForkAddHandler extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        installRuntimeServices(context, operation, resource.getModel());
+        installRuntimeServices(context, operation, Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
     }
 
     static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

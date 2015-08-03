@@ -57,8 +57,6 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
 
         TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.marshallAsAttribute(node, writer);
-        TransactionSubsystemRootResourceDefinition.PATH.marshallAsAttribute(node, writer);
-        TransactionSubsystemRootResourceDefinition.RELATIVE_TO.marshallAsAttribute(node, writer);
 
         writeProcessId(writer, node);
 

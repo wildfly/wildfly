@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Collection;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -31,15 +29,13 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Will be removed very soon - once it is no longer referenced.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ReloadRequiredAddStepHandler extends AbstractAddStepHandler {
 
     public ReloadRequiredAddStepHandler(AttributeDefinition... attributes) {
-        super(attributes);
-    }
-
-    public ReloadRequiredAddStepHandler(Collection<AttributeDefinition> attributes) {
         super(attributes);
     }
 

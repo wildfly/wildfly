@@ -53,8 +53,8 @@ public class DistributableSessionManagerTestCase {
     private final String deploymentName = "mydeployment.war";
     private final SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
     private final SessionListener listener = mock(SessionListener.class);
-
-    private DistributableSessionManager adapter = new DistributableSessionManager(this.deploymentName, this.manager);
+    private final RecordableSessionManagerStatistics statistics = mock(RecordableSessionManagerStatistics.class);
+    private DistributableSessionManager adapter = new DistributableSessionManager(this.deploymentName, this.manager, this.statistics);
 
     @Before
     public void init() {
@@ -71,6 +71,7 @@ public class DistributableSessionManagerTestCase {
         this.adapter.start();
         
         verify(this.manager).start();
+        verify(this.statistics).reset();
     }
 
     @Test
@@ -104,14 +105,15 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
-        
+
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
-        
+
         assertNotNull(sessionAdapter);
-        
+
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(config).setSessionId(exchange, sessionId);
         verifyZeroInteractions(batch);
+        verify(this.statistics).record(sessionAdapter);
 
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -142,6 +144,7 @@ public class DistributableSessionManagerTestCase {
         
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verifyZeroInteractions(batch);
+        verify(this.statistics).record(sessionAdapter);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -170,6 +173,7 @@ public class DistributableSessionManagerTestCase {
         assertNotNull(sessionAdapter);
         
         verifyZeroInteractions(batch);
+        verifyZeroInteractions(this.statistics);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -303,5 +307,10 @@ public class DistributableSessionManagerTestCase {
         assertNull(result);
 
         verify(batch).discard();
+    }
+
+    @Test
+    public void getStatistics() {
+        assertSame(this.statistics, this.adapter.getStatistics());
     }
 }

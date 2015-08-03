@@ -134,7 +134,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
 
     //@formatter:off
     @CreateDS(
-        name = "JBossDS",
+        name = "JBossDS-KerberosServerSetupTask",
         factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {

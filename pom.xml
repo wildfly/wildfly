@@ -26,12 +26,12 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>17</version>
+      <version>19</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
-    <version>10.0.0.Alpha5-SNAPSHOT</version>
+    <version>10.0.0.Beta1-SNAPSHOT</version>
 
     <name>WildFly: Parent Aggregator</name>
     <description>WildFly: Parent Aggregator</description>
@@ -67,11 +67,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
 
-        <!-- sticking with 3.1 as 3.2 has problems with partial recompile -->
-        <version.compiler.plugin>3.1</version.compiler.plugin>
-        <version.checkstyle.plugin>2.15</version.checkstyle.plugin>
-        <version.checkstyle>6.3</version.checkstyle>
-        <version.enforcer.plugin>1.4</version.enforcer.plugin>
         <version.surefire.plugin>2.17</version.surefire.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
@@ -88,11 +83,11 @@
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
         <version.com.fasterxml.classmate>1.1.0</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.5.1</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.5.2</version.com.fasterxml.jackson>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>18.0</version.com.google.guava>
         <version.com.h2database>1.3.173</version.com.h2database>
-        <version.com.sun.faces>2.2.11-jbossorg-1</version.com.sun.faces>
+        <version.com.sun.faces>2.2.12-jbossorg-2</version.com.sun.faces>
         <version.com.sun.istack>2.21</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.com.sun.xsom>20140925</version.com.sun.xsom>
@@ -107,7 +102,7 @@
         <version.groovy-all>2.4.3</version.groovy-all>
         <version.httpunit>1.7</version.httpunit>
         <version.io.netty>4.0.26.Final</version.io.netty>
-        <version.io.undertow.jastow>2.0.0.Beta1</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.0.0.Beta2</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.2</version.javax.enterprise>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
@@ -123,7 +118,7 @@
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>3.0.5</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.3</version.org.apache.cxf.xjcplugins>
-        <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
+        <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpclient>4.3.6</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpasyncclient>4.0.1</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.httpcomponents.httpcore>4.3.3</version.org.apache.httpcomponents.httpcore>
@@ -145,29 +140,29 @@
         <version.org.glassfish.javax.el>3.0.1-b08-jbossorg-1</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.0.3</version.org.glassfish.javax.json>
-        <version.org.hibernate>4.3.10.Final</version.org.hibernate>
-        <version.org.hibernate.commons.annotations>4.0.5.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.validator>5.1.3.Final</version.org.hibernate.validator>
+        <version.org.hibernate>5.0.0.CR2</version.org.hibernate>
+        <version.org.hibernate.commons.annotations>5.0.0.Final</version.org.hibernate.commons.annotations>
+        <version.org.hibernate.validator>5.2.1.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.hql>1.1.0.Final</version.org.hibernate.hql>
-        <version.org.hibernate.search>5.2.0.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>5.4.0.Alpha1</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <version.org.infinispan>7.2.3.Final</version.org.infinispan>
         <version.org.jasypt>1.9.1</version.org.jasypt>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
-        <version.org.jberet>1.1.0.Final</version.org.jberet>
+        <version.org.jberet>1.2.0.Alpha2</version.org.jberet>
         <version.org.jdom>1.1.3</version.org.jdom>
         <version.org.jboss.activemq.artemis.integration>1.0.1</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.common.jboss-common-beans>2.0.0.Final</version.org.jboss.common.jboss-common-beans>
-        <version.org.jboss.hal.release-stream>2.8.0</version.org.jboss.hal.release-stream>
-        <version.org.jboss.ejb-client>2.1.1.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.hal.release-stream>2.8.3</version.org.jboss.hal.release-stream>
+        <version.org.jboss.ejb-client>2.1.2.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.1.0</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>1.0.7.Final</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>1.2.4.Final</version.org.jboss.ironjacamar>
-        <version.org.jboss.jboss-transaction-spi>7.1.1.Final</version.org.jboss.jboss-transaction-spi>
-        <version.org.jboss.narayana>5.1.1.Final</version.org.jboss.narayana>
+        <version.org.jboss.ironjacamar>1.2.5.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.jboss-transaction-spi>7.3.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.metadata>10.0.0.Beta2</version.org.jboss.metadata>
+        <version.org.jboss.narayana>5.2.0.Final</version.org.jboss.narayana>
         <version.org.jboss.mod_cluster>1.3.1.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.0.4.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
@@ -187,7 +182,7 @@
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>1.0.4.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
-        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.11</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
+        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.12</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
@@ -204,8 +199,8 @@
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.3.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.2.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
         <version.org.jboss.spec.javax.websockets>1.1.1.Final</version.org.jboss.spec.javax.websockets>
-        <version.org.jboss.weld.weld>2.3.0.Beta1</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>2.3.Beta1</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>2.3.0.Beta3</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>2.3.Beta2</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.3.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>3.0.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>3.0.0.Final</version.org.jboss.ws.common>
@@ -224,9 +219,9 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.build-tools>1.1.0.Beta1</version.org.wildfly.build-tools>
-        <version.org.wildfly.checkstyle-config>1.0.3.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>2.0.0.Alpha7-SNAPSHOT</version.org.wildfly.core>
-        <version.org.wildfly.arquillian>1.0.0.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.checkstyle-config>1.0.4.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.core>2.0.0.Alpha12</version.org.wildfly.core>
+        <version.org.wildfly.arquillian>1.0.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.security.elytron-subsystem>1.0.0.Alpha1</version.org.wildfly.security.elytron-subsystem>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11</version.sun.jaxb>
@@ -319,14 +314,6 @@
 
     <build>
         <plugins>
-            <!-- to deal with type 'bundle' dependencies -->
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <inherited>true</inherited>
-                <extensions>true</extensions>
-            </plugin>
-
            <!-- Zanata translations -->
             <plugin>
               <groupId>org.zanata</groupId>
@@ -863,6 +850,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-batch-jberet</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-build</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
@@ -981,7 +974,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-singleton</artifactId>
+                <artifactId>wildfly-clustering-singleton-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-singleton-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1796,6 +1794,18 @@
 
             <dependency>
                 <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-cli</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-commons</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -1808,6 +1818,12 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-dto</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
             </dependency>
 
             <dependency>
@@ -4033,12 +4049,6 @@
 
             <dependency>
                 <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search-infinispan</artifactId>
-                <version>${version.org.hibernate.search}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-backend-jms</artifactId>
                 <version>${version.org.hibernate.search}</version>
             </dependency>
@@ -4255,10 +4265,6 @@
                     <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-search-engine</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-infinispan</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
@@ -4511,6 +4517,26 @@
                     <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>jipijapa-hibernate5</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-entitymanager</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-infinispan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

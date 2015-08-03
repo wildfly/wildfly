@@ -107,11 +107,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-full.xml");
     }
 
-    @Test
-    public void testStandaloneFullHornetQ() throws Exception {
-        parseXml("standalone/configuration/standalone-full-hornetq.xml");
-    }
-
     //TODO Leave commented out until domain-jts.xml is definitely removed from the configuration
 //    @Test
 //    public void testDomainJTS() throws Exception {

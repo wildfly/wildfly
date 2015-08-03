@@ -61,7 +61,7 @@ public enum ClusteredCacheMetric implements Metric<RpcManagerImpl> {
     ;
     private final AttributeDefinition definition;
 
-    private ClusteredCacheMetric(String name, ModelType type) {
+    ClusteredCacheMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

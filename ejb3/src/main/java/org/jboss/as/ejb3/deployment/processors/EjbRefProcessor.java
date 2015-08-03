@@ -32,11 +32,11 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.EJBLocalReferenceMetaData;
 import org.jboss.metadata.javaee.spec.EJBLocalReferencesMetaData;
@@ -71,7 +71,6 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
      */
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         final RemoteEnvironment remoteEnvironment = environment.getEnvironment();
-        final DeploymentClassIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         List<BindingConfiguration> bindingDescriptions = new ArrayList<BindingConfiguration>();
 
         EJBReferencesMetaData ejbRefs = remoteEnvironment.getEjbReferences();
@@ -87,13 +86,13 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 //if a home is specified this is the type that is bound
                 if (!isEmpty(home)) {
                     try {
-                        remoteInterfaceType = index.classIndex(home).getModuleClass();
+                        remoteInterfaceType = ClassLoadingUtils.loadClass(home, deploymentUnit);
                     } catch (ClassNotFoundException e) {
                         throw EjbLogger.ROOT_LOGGER.failedToLoadViewClass(e, home);
                     }
                 } else if (!isEmpty(remoteInterface)) {
                     try {
-                        remoteInterfaceType = index.classIndex(remoteInterface).getModuleClass();
+                        remoteInterfaceType = ClassLoadingUtils.loadClass(remoteInterface, deploymentUnit);
                     } catch (ClassNotFoundException e) {
                         throw EjbLogger.ROOT_LOGGER.failedToLoadViewClass(e, remoteInterface);
                     }
@@ -151,13 +150,13 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                     //if a home is specified this is the type that is bound
                     if (!isEmpty(localHome)) {
                         try {
-                            localInterfaceType = index.classIndex(localHome).getModuleClass();
+                            localInterfaceType = ClassLoadingUtils.loadClass(localHome, deploymentUnit);
                         } catch (ClassNotFoundException e) {
                             throw EjbLogger.ROOT_LOGGER.failedToLoadViewClass(e, localHome);
                         }
                     } else if (!isEmpty(localInterface)) {
                         try {
-                            localInterfaceType = index.classIndex(localInterface).getModuleClass();
+                            localInterfaceType = ClassLoadingUtils.loadClass(localInterface, deploymentUnit);
                         } catch (ClassNotFoundException e) {
                             throw EjbLogger.ROOT_LOGGER.failedToLoadViewClass(e, localInterface);
                         }

@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>10.0.0.Alpha5-SNAPSHOT</version>
+        <version>10.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -20,6 +20,7 @@
         <module>spi</module>
         <module>hibernate4_1</module>
         <module>hibernate4_3</module>
+        <module>hibernate5</module>
         <module>eclipselink</module>
         <module>openjpa</module>
     </modules>

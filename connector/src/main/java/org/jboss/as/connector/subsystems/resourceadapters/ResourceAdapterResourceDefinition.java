@@ -114,7 +114,7 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
         ConnectionDefinitionResourceDefinition.registerTransformer200(builder);
     }
 
-    static void registerTransformers120(ResourceTransformationDescriptionBuilder parentBuilder) {
+    static void registerTransformers130(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, WM_SECURITY_MAPPING_USER, WM_SECURITY_MAPPING_GROUP,
@@ -128,29 +128,7 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
                         WM_SECURITY_DOMAIN, STATISTICS_ENABLED)
                 .end();
 
-        ConnectionDefinitionResourceDefinition.registerTransformer120(builder);
-    }
-
-    static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME)).getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WM_SECURITY_MAPPING_USER, WM_SECURITY_MAPPING_GROUP,
-                        WM_SECURITY_MAPPING_GROUPS, WM_SECURITY_MAPPING_USERS, WM_SECURITY_DEFAULT_GROUP,
-                        WM_SECURITY_DEFAULT_GROUPS, WM_SECURITY_DEFAULT_PRINCIPAL)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)), WM_SECURITY, WM_SECURITY_MAPPING_REQUIRED, STATISTICS_ENABLED)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode("other")), WM_SECURITY_DOMAIN)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WM_SECURITY, WM_SECURITY_MAPPING_USER, WM_SECURITY_MAPPING_GROUP,
-                        WM_SECURITY_MAPPING_GROUPS, WM_SECURITY_MAPPING_USERS, WM_SECURITY_DEFAULT_GROUP,
-                        WM_SECURITY_DEFAULT_GROUPS, WM_SECURITY_DEFAULT_PRINCIPAL, WM_SECURITY_MAPPING_REQUIRED,
-                        WM_SECURITY_DOMAIN, STATISTICS_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.MODULE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE)
-                //These used to be non-nillable so reject if undefined
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.BEANVALIDATIONGROUP, Constants.ARCHIVE)
-                //Expressions not allowed
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.BEANVALIDATIONGROUP, Constants.ARCHIVE)
-                .end();
-
-        ConnectionDefinitionResourceDefinition.registerTransformer110(builder);
+        ConnectionDefinitionResourceDefinition.registerTransformer130(builder);
     }
 
 

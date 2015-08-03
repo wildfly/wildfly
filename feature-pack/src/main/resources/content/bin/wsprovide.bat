@@ -51,7 +51,7 @@ if "x%JBOSS_MODULEPATH%" == "x" (
   set "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
-set JAVA_OPTS = "%JAVA_OPTS% -Dprogram.name=wsprovide.bat"
+set "JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=wsprovide.bat"
 
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_RUNJAR%" ^

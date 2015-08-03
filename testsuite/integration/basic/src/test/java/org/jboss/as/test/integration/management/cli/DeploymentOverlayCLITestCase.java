@@ -210,7 +210,7 @@ public class DeploymentOverlayCLITestCase {
         ear2.delete();
         FileUtils.deleteDirectory(ear2_exploded);
         replacedLibrary.delete();
-        replacedAjsp.delete();
+//        replacedAjsp.delete();
         addedLibrary.delete();
     }
 
@@ -234,20 +234,39 @@ public class DeploymentOverlayCLITestCase {
             ctx.handleSafe("undeploy " + ear1.getName());
             ctx.handleSafe("undeploy " + ear2.getName());
             ctx.handleSafe("deployment-overlay remove --name=overlay-test");
+            ctx.handleSafe("deployment-overlay remove --name=overlay1");
+            ctx.handleSafe("deployment-overlay remove --name=overlay2");
+            ctx.handleSafe("deployment-overlay remove --name=overlay3");
             ctx.terminateSession();
         }
     }
 
     @Test
     public void testSimpleOverride() throws Exception {
+        simpleOverrideTest(false);
+    }
+    
+    @Test
+    public void testSimpleOverrideMultipleDeploymentOverlay() throws Exception {
+        simpleOverrideTest(true);
+    }
+
+    private void simpleOverrideTest(boolean multipleOverlay) throws Exception {
 
         ctx.handle("deploy " + war1.getAbsolutePath());
         ctx.handle("deploy " + war2.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+        if(multipleOverlay){
+            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + ",a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1.getName());
+            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
+            ctx.handle("deployment-overlay add --name=overlay3 --content=WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
+            
+        }else{
+            ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
                  + ",WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
+        }
 
         String response = readResponse("deployment0");
         assertEquals("NON OVERRIDDEN", response);
@@ -272,16 +291,32 @@ public class DeploymentOverlayCLITestCase {
 
     @Test
     public void testSimpleOverrideExploded() throws Exception {
+        simpleOverrideExplodedTest(false);
+    }
+    
+    @Test
+    public void testSimpleOverrideExplodedMultipleDeploymentOverlay() throws Exception {
+        simpleOverrideExplodedTest(true);
+    }
+    
+    private void simpleOverrideExplodedTest(boolean multiple) throws Exception {
 
         ctx.handle("/deployment="+war1_exploded.getName()
                 +":add(content=[{\"path\"=>\""+war1_exploded.getAbsolutePath().replace("\\", "\\\\")+"\",\"archive\"=>false}], enabled=true)");
         ctx.handle("/deployment="+war2_exploded.getName()
                 +":add(content=[{\"path\"=>\""+war2_exploded.getAbsolutePath().replace("\\", "\\\\")+"\",\"archive\"=>false}], enabled=true)");
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+        if(multiple){
+            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + ",a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1_exploded.getName());
+            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1_exploded.getName());
+            ctx.handle("deployment-overlay add --name=overlay3 --content=WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath() + " --deployments=" + war1_exploded.getName());
+        }else{
+            ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
                 + ",WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath()
                 + " --deployments=" + war1_exploded.getName());
+        }
+        
 
         String response = readResponse("deployment0");
         assertEquals("NON OVERRIDDEN", response);
@@ -304,15 +339,28 @@ public class DeploymentOverlayCLITestCase {
         assertEquals("Added Library Servlet", HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS).trim());
     }
 
-
     @Test
     public void testSimpleOverrideInEarAtWarLevel() throws Exception {
+        simpleOverrideInEarAtWarLevelTest(false);
+    }
+    
+    @Test
+    public void testSimpleOverrideInEarAtWarLevelMultipleDeploymentOverlay() throws Exception {
+        simpleOverrideInEarAtWarLevelTest(true);
+    }
+
+    private void simpleOverrideInEarAtWarLevelTest(boolean multiple) throws Exception {
 
         ctx.handle("deploy " + ear1.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+        if(multiple){
+            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + ",a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1.getName());
+            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
+        }else{
+            ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
+        }
 
         String response = readResponse("deployment0");
         assertEquals("NON OVERRIDDEN", response);
@@ -329,16 +377,31 @@ public class DeploymentOverlayCLITestCase {
         assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
 
     }
-
+    
     @Test
     public void testSimpleOverrideInEarAtWarLevelExploded() throws Exception {
+        simpleOverrideInEarAtWarLevelExplodedTest(false);   
+    }
+    
+    @Test
+    public void testSimpleOverrideInEarAtWarLevelExplodedMultipleDeploymentOverlay() throws Exception {
+        simpleOverrideInEarAtWarLevelExplodedTest(true);   
+    }
+    
+
+    private void simpleOverrideInEarAtWarLevelExplodedTest(boolean multiple) throws Exception {
 
         ctx.handle("/deployment="+ear1_exploded.getName()
                 +":add(content=[{\"path\"=>\""+ear1_exploded.getAbsolutePath().replace("\\", "\\\\")+"\",\"archive\"=>false}], enabled=true)");
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+        if(multiple){
+            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + ",a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1.getName());
+            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
+        }else{
+            ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
+        }
 
         String response = readResponse("deployment0");
         assertEquals("NON OVERRIDDEN", response);
@@ -395,25 +458,62 @@ public class DeploymentOverlayCLITestCase {
 
     @Test
     public void testSimpleOverrideWithRedeployAffected() throws Exception {
-
+        simpleOverrideWithRedeployAffectedTest(false);
+    }
+    
+    @Test
+    public void testSimpleOverrideWithRedeployAffectedMultipleDeploymentOverlay() throws Exception {
+        simpleOverrideWithRedeployAffectedTest(true);
+    }
+    
+    private void simpleOverrideWithRedeployAffectedTest(boolean multiple) throws Exception {
         ctx.handle("deploy " + war1.getAbsolutePath());
         ctx.handle("deploy " + war2.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + " --deployments=" + war1.getName() + " --redeploy-affected");
+        String response1 = readResponse("deployment0");
+        assertEquals("NON OVERRIDDEN", response1);
+        
+        if(multiple){
+            ctx.handle("deployment-overlay add --name=overlay1 --content=a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1.getName());
+            ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+                    + " --deployments=" + war1.getName() + " --redeploy-affected");            
+        }else{
+            ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+                    + " --deployments=" + war1.getName() + " --redeploy-affected");
+        }
 
         String response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
         response = readResponse("deployment1");
         assertEquals("NON OVERRIDDEN", response);
+        
+        if(multiple){
+          //now test JSP
+            assertEquals("Replaced JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+        }
 
     }
 
     @Test
     public void testWildcardOverride() throws Exception {
+        wildcardOverrideTest(false);   
+    }
+    
+    @Test
+    public void testWildcardOverrideMultipleDeploymentOverlay() throws Exception {
+        wildcardOverrideTest(true);
+    }
+    
+    private void wildcardOverrideTest(boolean multiple) throws Exception {
 
+        if(multiple){
+            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                    + " --deployments=deployment*.war");
+        }
+        
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --deployments=deployment*.war");
+        
 
         ctx.handle("deploy " + war1.getAbsolutePath());
         ctx.handle("deploy " + war2.getAbsolutePath());
@@ -425,14 +525,34 @@ public class DeploymentOverlayCLITestCase {
         assertEquals("OVERRIDDEN", response);
         response = readResponse("another");
         assertEquals("NON OVERRIDDEN", response);
+        
+        if(multiple){
+            assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+            assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment1/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+        }
+        
     }
 
     @Test
     public void testWildcardOverrideWithRedeployAffected() throws Exception {
+        wildcardOverrideWithRedeployAffectedTest(false);
+    }
+    
+    @Test
+    public void testWildcardOverrideWithRedeployAffectedMultipleDeploymentOverlay() throws Exception {
+        wildcardOverrideWithRedeployAffectedTest(true);
+    }
+    
+    private void wildcardOverrideWithRedeployAffectedTest(boolean multiple) throws Exception {
 
         ctx.handle("deploy " + war1.getAbsolutePath());
         ctx.handle("deploy " + war2.getAbsolutePath());
         ctx.handle("deploy " + war3.getAbsolutePath());
+        
+        if(multiple){
+            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                    + " --deployments=deployment*.war");
+        }
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --deployments=deployment*.war --redeploy-affected");
@@ -444,6 +564,11 @@ public class DeploymentOverlayCLITestCase {
         assertEquals("OVERRIDDEN", response);
         response = readResponse("another");
         assertEquals("NON OVERRIDDEN", response);
+        
+        if(multiple){
+            assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+            assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment1/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+        }
     }
 
     @Test
@@ -567,6 +692,99 @@ public class DeploymentOverlayCLITestCase {
         assertEquals("OVERRIDDEN", response);
     }
 
+    @Test
+    public void testSimpleOverrideRemoveOverlay() throws Exception {
+        ctx.handle("deploy " + war1.getAbsolutePath());
+        ctx.handle("deploy " + war2.getAbsolutePath());
+
+        
+        ctx.handle("deployment-overlay add --name="
+                + "overlay-test --content="
+                + "WEB-INF/web.xml=" + overrideXml.getAbsolutePath()+","
+                + "a.jsp=" + replacedAjsp.getAbsolutePath() + ","
+                + "WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()+","
+                + "WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath()
+                + " --deployments=" + war1.getName());
+        
+
+        String response = readResponse("deployment0");
+        assertEquals("NON OVERRIDDEN", response);
+        response = readResponse("deployment1");
+        assertEquals("NON OVERRIDDEN", response);
+
+        ctx.handle("/deployment=" + war1.getName() + ":redeploy");
+        ctx.handle("/deployment=" + war2.getName() + ":redeploy");
+
+        response = readResponse("deployment0");
+        assertEquals("OVERRIDDEN", response);
+        response = readResponse("deployment1");
+        assertEquals("NON OVERRIDDEN", response);
+
+        //now test JSP
+        assertEquals("Replaced JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+        //now test Libraries
+        assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+        assertEquals("Added Library Servlet", HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS).trim());
+        
+        
+        ctx.handleSafe("deployment-overlay remove --name=overlay-test");
+        ctx.handle("/deployment=" + war1.getName() + ":redeploy");
+        
+        response = readResponse("deployment0");
+        assertEquals("NON OVERRIDDEN", response);
+        
+        //now test Libraries
+        assertEquals("Original Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+        try{
+//            Assert.assertNotEquals("Added Library Servlet", HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS).trim());
+            HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS);
+            Assert.fail();
+        }catch (IOException e){
+            //ok
+        }
+        //now test JSP
+        assertEquals("Original JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+    }
+    
+    @Test
+    public void testSimpleOverrideRemoveOverlay2() throws Exception {
+        ctx.handle("deploy " + war1.getAbsolutePath());
+        ctx.handle("deploy " + war2.getAbsolutePath());
+
+        
+        ctx.handle("deployment-overlay add --name="
+                + "overlay-test --content="
+                + "a.jsp=" + replacedAjsp.getAbsolutePath() + ","
+                + " --deployments=" + war1.getName());
+        
+
+        String response = readResponse("deployment0");
+        assertEquals("NON OVERRIDDEN", response);
+        response = readResponse("deployment1");
+        assertEquals("NON OVERRIDDEN", response);
+
+        ctx.handle("/deployment=" + war1.getName() + ":redeploy");
+        ctx.handle("/deployment=" + war2.getName() + ":redeploy");
+
+        response = readResponse("deployment0");
+        assertEquals("NON OVERRIDDEN", response);
+        response = readResponse("deployment1");
+        assertEquals("NON OVERRIDDEN", response);
+
+        //now test JSP
+        assertEquals("Replaced JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+
+        ctx.handleSafe("deployment-overlay remove --name=overlay-test");
+        ctx.handle("/deployment=" + war1.getName() + ":redeploy");
+        
+        response = readResponse("deployment0");
+        assertEquals("NON OVERRIDDEN", response);
+        
+        //now test JSP
+        assertEquals("Original JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+    }
+    
+    
     protected String readResponse(String warName) throws IOException, ExecutionException, TimeoutException,
             MalformedURLException {
         return HttpRequest.get(baseUrl + warName + "/SimpleServlet?env-entry=overlay-test", 10, TimeUnit.SECONDS).trim();

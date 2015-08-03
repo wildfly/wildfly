@@ -87,11 +87,11 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean jmxAvailable = isJMXSubsystemAvailable(context);
         if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true, context);
-            ServerConfigService.install(serviceTarget, serverConfig, getServerConfigDependencies(context, appclient), jmxAvailable);
+            ServerConfigService.install(serviceTarget, serverConfig, getServerConfigDependencies(context, appclient), jmxAvailable, false);
         }
         if (!appclient) {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
-            ServerConfigService.install(serviceTarget, serverConfig, getServerConfigDependencies(context, appclient), jmxAvailable);
+            ServerConfigService.install(serviceTarget, serverConfig, getServerConfigDependencies(context, appclient), jmxAvailable, true);
         }
         XTSClientIntegrationService.install(serviceTarget);
     }

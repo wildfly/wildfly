@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-clustering</artifactId>
-        <version>10.0.0.Alpha5-SNAPSHOT</version>
+        <version>10.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-server</artifactId>
@@ -64,7 +64,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-singleton</artifactId>
+            <artifactId>wildfly-clustering-singleton-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

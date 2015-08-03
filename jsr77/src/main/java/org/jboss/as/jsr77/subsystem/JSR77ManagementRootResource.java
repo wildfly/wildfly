@@ -23,6 +23,7 @@ package org.jboss.as.jsr77.subsystem;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
@@ -31,12 +32,19 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
  */
 public class JSR77ManagementRootResource extends SimpleResourceDefinition {
 
-    static JSR77ManagementRootResource INSTANCE = new JSR77ManagementRootResource();
+    static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
 
-    private JSR77ManagementRootResource() {
+    static final RuntimeCapability<Void> JSR77_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.jsr77")
+            .addRequirements(JMX_CAPABILITY)
+            .build();
+
+    static final RuntimeCapability<Void> JSR77_APPCLIENT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.jsr77")
+            .build();
+
+    JSR77ManagementRootResource(boolean appclient) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JSR77ManagementExtension.SUBSYSTEM_NAME),
                 JSR77ManagementExtension.getResourceDescriptionResolver(JSR77ManagementExtension.SUBSYSTEM_NAME),
-                JSR77ManagementSubsystemAdd.INSTANCE, JSR77ManagementSubsystemRemove.INSTANCE);
+                new JSR77ManagementSubsystemAdd(appclient), JSR77ManagementSubsystemRemove.INSTANCE);
     }
 
 }
