@@ -90,7 +90,8 @@ public class DatabaseCertLoginModuleTestCase extends AbstractCertificateLoginMod
         final WebArchive war = ShrinkWrap.create(WebArchive.class, APP_NAME + ".war");
         war.addClasses(AddRoleLoginModule.class, SimpleServlet.class, SimpleSecuredServlet.class, PrincipalPrintingServlet.class);
         war.addAsWebInfResource(DatabaseCertLoginModuleTestCase.class.getPackage(), "web.xml", "web.xml");
-        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(SECURITY_DOMAIN_CERT), "jboss-web.xml");
+        war.addAsWebInfResource(DatabaseCertLoginModuleTestCase.class.getPackage(), "jboss-web-db.xml", "jboss-web.xml");
+
 
         return war;
     }

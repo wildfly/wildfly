@@ -210,4 +210,5 @@ public interface Constants {
     String URI = "uri";
     String ALIASES = "aliases";
     String ELECTED = "elected";
+    String PROACTIVE_AUTHENTICATION = "proactive-authentication";
 }
