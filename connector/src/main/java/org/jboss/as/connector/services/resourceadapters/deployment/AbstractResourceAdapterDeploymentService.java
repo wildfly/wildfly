@@ -63,6 +63,7 @@ import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.common.api.metadata.spec.XsdString;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
@@ -200,6 +201,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 }
             }
+
+            if (value.getDeployment() != null && value.getDeployment().getBootstrapContextIdentifier() != null) {
+                BootstrapContextCoordinator.getInstance().removeBootstrapContext(value.getDeployment().getBootstrapContextIdentifier());
+            }
         }
         if (raRepositoryRegistrationId != null  && raRepository != null && raRepository.getValue() != null) {
             try {
@@ -222,7 +227,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 DEPLOYMENT_CONNECTOR_LOGGER.debug("Failed to unregister RA from MDR", e);
             }
         }
-
     }
 
     public Injector<AS7MetadataRepository> getMdrInjector() {
