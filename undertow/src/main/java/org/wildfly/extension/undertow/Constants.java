@@ -209,4 +209,5 @@ public interface Constants {
     String ENABLE_SPDY = "enable-spdy";
     String URI = "uri";
     String ALIASES = "aliases";
+    String ELECTED = "elected";
 }

@@ -131,6 +131,12 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
 
+
+    public static final AttributeDefinition ELECTED = new SimpleAttributeDefinitionBuilder(Constants.ELECTED, ModelType.INT)
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
+
     public final OperationDefinition ENABLE = new SimpleOperationDefinition(Constants.ENABLE, getResourceDescriptionResolver());
     public final OperationDefinition DISABLE = new SimpleOperationDefinition(Constants.DISABLE, getResourceDescriptionResolver());
     public final OperationDefinition STOP = new SimpleOperationDefinition(Constants.STOP, getResourceDescriptionResolver());
@@ -291,6 +297,13 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
                     list.add(alias);
                 }
                 context.getResult().set(list);
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(ELECTED, new AbstractNodeOperation() {
+
+            @Override
+            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(new ModelNode(ctx.getElected()));
             }
         });
     }
