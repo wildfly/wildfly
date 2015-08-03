@@ -106,7 +106,12 @@ public class ModClusterBalancerDefinition extends SimpleResourceDefinition {
 
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.LoadBalancer ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getStickySessionCookie()));
+                final String stickySessionCookie = ctx.getStickySessionCookie();
+                if(stickySessionCookie == null) {
+                    context.getResult().set(new ModelNode());
+                } else {
+                    context.getResult().set(new ModelNode(stickySessionCookie));
+                }
             }
         });
 
@@ -114,7 +119,12 @@ public class ModClusterBalancerDefinition extends SimpleResourceDefinition {
 
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.LoadBalancer ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getStickySessionPath()));
+                final String stickySessionPath = ctx.getStickySessionPath();
+                if(stickySessionPath == null) {
+                    context.getResult().set(new ModelNode());
+                } else {
+                    context.getResult().set(new ModelNode(stickySessionPath));
+                }
             }
         });
 
