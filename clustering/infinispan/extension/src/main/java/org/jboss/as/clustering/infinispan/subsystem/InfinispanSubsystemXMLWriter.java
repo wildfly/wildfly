@@ -131,9 +131,10 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeEndElement();
     }
 
+    @SuppressWarnings("deprecation")
     private static void writeCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writer.writeAttribute(XMLAttribute.NAME.getLocalName(), name);
-        writeAttributes(writer, cache, EnumSet.complementOf(EnumSet.of(CacheResourceDefinition.Attribute.INDEXING_PROPERTIES)));
+        writeAttributes(writer, cache, EnumSet.complementOf(EnumSet.of(CacheResourceDefinition.Attribute.INDEXING, CacheResourceDefinition.Attribute.INDEXING_PROPERTIES)));
     }
 
     private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
@@ -242,16 +243,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writeAttributes(writer, store, storeAttributes);
             writeStoreElements(writer, store);
             writer.writeEndElement();
-        }
-
-        if (cache.hasDefined(IndexingResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode indexing = cache.get(IndexingResourceDefinition.PATH.getKeyValuePair());
-            if (hasDefined(indexing, EnumSet.allOf(IndexingResourceDefinition.Attribute.class))) {
-                writer.writeStartElement(XMLElement.INDEXING.getLocalName());
-                writeAttributes(writer, indexing, EnumSet.complementOf(EnumSet.of(IndexingResourceDefinition.Attribute.PROPERTIES)));
-                writeElement(writer, indexing, IndexingResourceDefinition.Attribute.PROPERTIES);
-                writer.writeEndElement();
-            }
         }
 
         if (cache.hasDefined(StateTransferResourceDefinition.PATH.getKeyValuePair())) {

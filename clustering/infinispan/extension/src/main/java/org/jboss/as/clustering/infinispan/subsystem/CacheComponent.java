@@ -35,7 +35,6 @@ public enum CacheComponent implements SubGroupServiceNameFactory {
 
     EVICTION(EvictionResourceDefinition.PATH),
     EXPIRATION(ExpirationResourceDefinition.PATH),
-    INDEXING(IndexingResourceDefinition.PATH),
     LOCKING(LockingResourceDefinition.PATH),
     PERSISTENCE(StoreResourceDefinition.WILDCARD_PATH),
     STATE_TRANSFER(StateTransferResourceDefinition.PATH),
