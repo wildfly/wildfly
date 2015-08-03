@@ -1264,23 +1264,6 @@
                 <version>${version.org.wildfly.core}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.wildfly.core</groupId>
-                <artifactId>wildfly-threads</artifactId>
-                <version>${version.org.wildfly.core}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.core</groupId>
-                <artifactId>wildfly-threads</artifactId>
-                <version>${version.org.wildfly.core}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.core</groupId>
-                <artifactId>wildfly-threads</artifactId>
-                <version>${version.org.wildfly.core}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
