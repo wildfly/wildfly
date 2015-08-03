@@ -116,6 +116,14 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build(); //30 minutes
 
+
+    protected static final AttributeDefinition PROACTIVE_AUTH =
+            new SimpleAttributeDefinitionBuilder(Constants.PROACTIVE_AUTH, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build(); //30 minutes
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
@@ -127,7 +135,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             EAGER_FILTER_INIT,
             DEFAULT_SESSION_TIMEOUT,
             DISABLE_CACHING_FOR_SECURED_PAGES,
-            DIRECTORY_LISTING
+            DIRECTORY_LISTING,
+            PROACTIVE_AUTH
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();

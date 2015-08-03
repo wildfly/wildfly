@@ -205,6 +205,7 @@
         <xs:attribute name="default-session-timeout" type="xs:integer" use="optional" default="30"/>
         <xs:attribute name="disable-caching-for-secured-pages" type="xs:boolean" use="optional" default="true"/>
         <xs:attribute name="directory-listing" type="xs:boolean" use="optional" />
+        <xs:attribute name="proactive-auth" type="xs:string" use="optional" default="false" />
     </xs:complexType>
 
     <xs:complexType name="mime-mappingsType">
@@ -527,5 +528,6 @@
         <xs:attribute name="connection-idle-timeout" type="xs:int" use="optional" />
         <xs:attribute name="request-queue-size" type="xs:int" use="optional" />
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
+        <xs:attribute name="use-alias" type="xs:string" use="optional" default="false" />
     </xs:complexType>
 </xs:schema>

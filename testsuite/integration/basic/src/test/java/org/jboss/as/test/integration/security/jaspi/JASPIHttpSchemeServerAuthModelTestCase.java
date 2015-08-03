@@ -63,6 +63,7 @@ public class JASPIHttpSchemeServerAuthModelTestCase {
 
         war.add(new StringAsset("Welcome"), "index.jsp");
 
+        war.add(new StringAsset("Unsecured"), "unsecured/index.jsp");
         return war;
 
     }
@@ -74,6 +75,21 @@ public class JASPIHttpSchemeServerAuthModelTestCase {
         HttpResponse httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI()));
 
         assertEquals(401, httpResponse.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void testAuthNotRequired(@ArquillianResource URL webAppURL) throws Exception {
+        DefaultHttpClient httpClient = new DefaultHttpClient();
+
+        HttpResponse httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "unsecured/index.jsp"));
+
+        assertEquals(200, httpResponse.getStatusLine().getStatusCode());
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+        httpResponse.getEntity().writeTo(bos);
+
+        assertTrue(new String(bos.toByteArray()).contains("Unsecured"));
     }
 
     @Test
