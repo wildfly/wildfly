@@ -201,7 +201,12 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getDomain()));
+                final String domain = ctx.getDomain();
+                if(domain == null) {
+                    context.getResult().set(new ModelNode());
+                } else {
+                    context.getResult().set(new ModelNode(domain));
+                }
             }
         });
         resourceRegistration.registerReadOnlyAttribute(CACHE_CONNECTIONS, new AbstractNodeOperation() {
