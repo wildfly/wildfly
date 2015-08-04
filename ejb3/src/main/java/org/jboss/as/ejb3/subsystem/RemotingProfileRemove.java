@@ -24,10 +24,10 @@ package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.dmr.ModelNode;
@@ -37,19 +37,18 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class RemotingProfileRemove extends ServiceRemoveStepHandler {
+public class RemotingProfileRemove extends AbstractRemoveStepHandler {
 
     public static final RemotingProfileRemove INSTANCE = new RemotingProfileRemove();
 
     private RemotingProfileRemove() {
-        super(RemotingProfileService.BASE_SERVICE_NAME, null);
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(serviceName(name, address));
+        context.removeService(RemotingProfileService.BASE_SERVICE_NAME.append(name));
     }
 
     @Override
