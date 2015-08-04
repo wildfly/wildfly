@@ -47,6 +47,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
      * {@inheritDoc}
      * @see org.jboss.staxmapper.XMLElementWriter#writeContent(org.jboss.staxmapper.XMLExtendedStreamWriter, java.lang.Object)
      */
+    @SuppressWarnings("deprecation")
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(InfinispanSchema.CURRENT.getNamespaceUri(), false);
@@ -62,11 +63,13 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeAttribute(XMLAttribute.NAME.getLocalName(), containerName);
 
                     writeAttributes(writer, container, EnumSet.allOf(CacheContainerResourceDefinition.Attribute.class));
+                    writeAttributes(writer, container, EnumSet.allOf(CacheContainerResourceDefinition.ExecutorAttribute.class));
 
                     if (container.hasDefined(JGroupsTransportResourceDefinition.PATH.getKeyValuePair())) {
                         writer.writeStartElement(XMLElement.TRANSPORT.getLocalName());
                         ModelNode transport = container.get(JGroupsTransportResourceDefinition.PATH.getKeyValuePair());
                         writeAttributes(writer, transport, EnumSet.allOf(JGroupsTransportResourceDefinition.Attribute.class));
+                        writeAttributes(writer, transport, EnumSet.allOf(JGroupsTransportResourceDefinition.ExecutorAttribute.class));
                         writer.writeEndElement();
                     }
 
@@ -131,10 +134,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeEndElement();
     }
 
-    @SuppressWarnings("deprecation")
     private static void writeCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writer.writeAttribute(XMLAttribute.NAME.getLocalName(), name);
-        writeAttributes(writer, cache, EnumSet.complementOf(EnumSet.of(CacheResourceDefinition.Attribute.INDEXING, CacheResourceDefinition.Attribute.INDEXING_PROPERTIES)));
+        writeAttributes(writer, cache, EnumSet.allOf(CacheResourceDefinition.Attribute.class));
     }
 
     private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
@@ -263,8 +265,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeStartElement(XMLElement.BACKUP.getLocalName());
                     writer.writeAttribute(XMLAttribute.SITE.getLocalName(), property.getName());
                     ModelNode backup = property.getValue();
-                    EnumSet<BackupResourceDefinition.Attribute> takeOfflineAttributes = EnumSet.of(BackupResourceDefinition.Attribute.TAKE_OFFLINE_AFTER_FAILURES, BackupResourceDefinition.Attribute.TAKE_OFFLINE_MIN_WAIT);
-                    writeAttributes(writer, backup, EnumSet.complementOf(takeOfflineAttributes));
+                    writeAttributes(writer, backup, EnumSet.allOf(BackupResourceDefinition.Attribute.class));
+                    EnumSet<BackupResourceDefinition.TakeOfflineAttribute> takeOfflineAttributes = EnumSet.allOf(BackupResourceDefinition.TakeOfflineAttribute.class);
                     if (hasDefined(backup, takeOfflineAttributes)) {
                         writer.writeStartElement(XMLElement.TAKE_OFFLINE.getLocalName());
                         writeAttributes(writer, backup, takeOfflineAttributes);

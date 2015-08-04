@@ -63,29 +63,12 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CHANNEL("channel", ModelType.STRING, null),
-        @Deprecated CLUSTER("cluster", ModelType.STRING, null, InfinispanModel.VERSION_3_0_0),
-        EXECUTOR("executor", ModelType.STRING, null),
         LOCK_TIMEOUT("lock-timeout", ModelType.LONG, new ModelNode(240000L)),
-        @Deprecated STACK("stack", ModelType.STRING, null, InfinispanModel.VERSION_3_0_0),
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = createBuilder(name, type, defaultValue).build();
-        }
-
-        Attribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setAllowNull(true)
-                    .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-            ;
         }
 
         @Override
@@ -94,6 +77,50 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
     }
 
+    @Deprecated
+    enum ExecutorAttribute implements org.jboss.as.clustering.controller.Attribute {
+        TRANSPORT("executor"),
+        ;
+        private final AttributeDefinition definition;
+
+        ExecutorAttribute(String name) {
+            this.definition = createBuilder(name, ModelType.STRING, null).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        CLUSTER("cluster", ModelType.STRING, null, InfinispanModel.VERSION_3_0_0),
+        STACK("stack", ModelType.STRING, null, InfinispanModel.VERSION_3_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+        ;
+    }
+
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
@@ -112,8 +139,8 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                         if (channel.getType() == ModelType.STRING) {
                             channelName = channel.asString();
                         }
-                    } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.getName())) {
-                        ModelNode defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.getName());
+                    } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName())) {
+                        ModelNode defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName());
                         if (defaultChannel.getType() == ModelType.STRING) {
                             channelName = defaultChannel.asString();
                         }
@@ -123,13 +150,13 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                     PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channelName));
                     try {
                         ModelNode channel = context.readResourceFromRoot(channelAddress).getModel();
-                        if (channel.hasDefined(ChannelResourceDefinition.STACK.getName())) {
-                            ModelNode stack = channel.get(ChannelResourceDefinition.STACK.getName());
+                        if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
+                            ModelNode stack = channel.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName());
                             if (stack.getType() == ModelType.STRING) {
                                 stackName = stack.asString();
                             }
-                        } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName())) {
-                            ModelNode defaultStack = subsystemModel.get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName());
+                        } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName())) {
+                            ModelNode defaultStack = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName());
                             if (defaultStack.getType() == ModelType.STRING) {
                                 stackName = defaultStack.asString();
                             }
@@ -159,8 +186,8 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                             if (channel.getType() == ModelType.STRING) {
                                 channelName = channel.asString();
                             }
-                        } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.getName())) {
-                            ModelNode defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.getName());
+                        } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName())) {
+                            ModelNode defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName());
                             if (defaultChannel.getType() == ModelType.STRING) {
                                 channelName = defaultChannel.asString();
                             }
@@ -169,13 +196,13 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                             PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channelName));
                             try {
                                 ModelNode channel = context.readResourceFromRoot(channelAddress).getModel();
-                                if (channel.hasDefined(ChannelResourceDefinition.STACK.getName())) {
-                                    ModelNode stack = channel.get(ChannelResourceDefinition.STACK.getName());
+                                if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
+                                    ModelNode stack = channel.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName());
                                     if (stack.getType() == ModelType.STRING) {
                                         value.set(stack.asString());
                                     }
-                                } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName())) {
-                                    ModelNode defaultStack = subsystemModel.get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName());
+                                } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName())) {
+                                    ModelNode defaultStack = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName());
                                     if (defaultStack.getType() == ModelType.STRING) {
                                         value.set(defaultStack.asString());
                                     }
@@ -188,9 +215,9 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                 }
             };
             builder.getAttributeBuilder()
-                    .addRejectCheck(new SimpleRejectAttributeChecker(stackRejecter), Attribute.STACK.getDefinition())
-                    .setValueConverter(new SimpleAttributeConverter(stackConverter), Attribute.STACK.getDefinition())
-                    .addRename(Attribute.CHANNEL.getDefinition(), Attribute.CLUSTER.getDefinition().getName())
+                    .addRejectCheck(new SimpleRejectAttributeChecker(stackRejecter), DeprecatedAttribute.STACK.getDefinition())
+                    .setValueConverter(new SimpleAttributeConverter(stackConverter), DeprecatedAttribute.STACK.getDefinition())
+                    .addRename(Attribute.CHANNEL.getDefinition(), DeprecatedAttribute.CLUSTER.getDefinition().getName())
                     .end();
         }
     }
@@ -201,7 +228,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ExecutorAttribute.class).addAttributes(DeprecatedAttribute.class);
         ResourceServiceHandler handler = new JGroupsTransportServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
@@ -210,6 +237,8 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+        new ReloadRequiredWriteAttributeHandler(ExecutorAttribute.class).register(registration);
+        new ReloadRequiredWriteAttributeHandler(DeprecatedAttribute.class).register(registration);
     }
 
     @Override

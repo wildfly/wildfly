@@ -27,11 +27,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -55,7 +61,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * Builder for a service that provides a {@link ChannelFactory} for creating channels.
  * @author Paul Ferraro
  */
-public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<ChannelFactory>, ProtocolStackConfiguration {
+public class JChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFactory>, Value<ChannelFactory>, ProtocolStackConfiguration {
 
     private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
@@ -94,26 +100,30 @@ public class JChannelFactoryBuilder implements Builder<ChannelFactory>, Value<Ch
     }
 
     @Override
+    public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        if (!model.hasDefined(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
+            throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(this.name);
+        }
+
+        Property transport = model.get(TransportResourceDefinition.WILDCARD_PATH.getKey()).asProperty();
+
+        this.transport = new InjectedValueDependency<>(new TransportConfigurationBuilder(this.name, transport.getName()), TransportConfiguration.class);
+        this.protocols.clear();
+
+        if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property protocol : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                this.protocols.add(new InjectedValueDependency<>(new ProtocolConfigurationBuilder(this.name, protocol.getName()), ProtocolConfiguration.class));
+            }
+        }
+
+        this.relay = model.hasDefined(RelayResourceDefinition.PATH.getKey()) ? new InjectedValueDependency<>(new RelayConfigurationBuilder(this.name), RelayConfiguration.class) : null;
+
+        return this;
+    }
+
+    @Override
     public ChannelFactory getValue() {
         return new JChannelFactory(this);
-    }
-
-    public TransportConfigurationBuilder setTransport(String type) {
-        TransportConfigurationBuilder builder = new TransportConfigurationBuilder(this.name, type);
-        this.transport = new InjectedValueDependency<>(builder, TransportConfiguration.class);
-        return builder;
-    }
-
-    public ProtocolConfigurationBuilder addProtocol(String type) {
-        ProtocolConfigurationBuilder builder = new ProtocolConfigurationBuilder(this.name, type);
-        this.protocols.add(new InjectedValueDependency<>(builder, ProtocolConfiguration.class));
-        return builder;
-    }
-
-    public RelayConfigurationBuilder setRelay(String site) {
-        RelayConfigurationBuilder builder = new RelayConfigurationBuilder(this.name).setSiteName(site);
-        this.relay = new InjectedValueDependency<>(builder, RelayConfiguration.class);
-        return builder;
     }
 
     @Override

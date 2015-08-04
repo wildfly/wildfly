@@ -22,58 +22,45 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RestartParentResourceHandlerBase;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * {@link org.jboss.as.controller.RestartParentWriteAttributeHandler} that leverages a {@link ResourceServiceBuilderFactory} for service recreation.
+ * Generic operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource and delegates operation execution and registration to another {@link OperationStepHandler}.
  * @author Paul Ferraro
  */
-public class RestartParentWriteAttributeHandler<T> extends org.jboss.as.controller.RestartParentWriteAttributeHandler implements Registration {
+public class RestartParentResourceStepHandler<T> extends RestartParentResourceHandlerBase implements Registration {
 
-    private final ResourceServiceBuilderFactory<T> builderFactory;
-    private final Map<String, AttributeDefinition> attributes = new HashMap<>();
+    private final ResourceServiceBuilderFactory<T> parentFactory;
+    private final OperationStepHandler handler;
+    private final Registration registration;
 
-    public <E extends Enum<E> & Attribute> RestartParentWriteAttributeHandler(ResourceServiceBuilderFactory<T> builderFactory, Class<E> enumClass) {
-        this(builderFactory, EnumSet.allOf(enumClass));
-    }
-
-    public RestartParentWriteAttributeHandler(ResourceServiceBuilderFactory<T> builderFactory, Attribute... attributes) {
-        this(builderFactory, Arrays.asList(attributes));
-    }
-
-    public RestartParentWriteAttributeHandler(ResourceServiceBuilderFactory<T> builderFactory, Iterable<? extends Attribute> attributes) {
+    public <H extends OperationStepHandler & Registration> RestartParentResourceStepHandler(H handler, ResourceServiceBuilderFactory<T> parentFactory) {
         super(null);
-        this.builderFactory = builderFactory;
-        for (Attribute attribute : attributes) {
-            AttributeDefinition definition = attribute.getDefinition();
-            this.attributes.put(definition.getName(), definition);
-        }
+        this.handler = handler;
+        this.registration = handler;
+        this.parentFactory = parentFactory;
     }
 
     @Override
-    protected AttributeDefinition getAttributeDefinition(String name) {
-        return this.attributes.get(name);
+    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+        this.handler.execute(context, operation);
     }
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        this.builderFactory.createBuilder(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
+        this.parentFactory.createBuilder(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return this.builderFactory.createBuilder(parentAddress).getServiceName();
+        return this.parentFactory.createBuilder(parentAddress).getServiceName();
     }
 
     @Override
@@ -83,8 +70,6 @@ public class RestartParentWriteAttributeHandler<T> extends org.jboss.as.controll
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        for (AttributeDefinition attribute : this.attributes.values()) {
-            registration.registerReadWriteAttribute(attribute, null, this);
-        }
+        this.registration.register(registration);
     }
 }

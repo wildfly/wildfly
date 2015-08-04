@@ -59,7 +59,7 @@ public enum XMLElement {
     STRING_KEYED_JDBC_STORE("string-keyed-jdbc-store"),
     BINARY_KEYED_JDBC_STORE("binary-keyed-jdbc-store"),
     MIXED_KEYED_JDBC_STORE("mixed-keyed-jdbc-store"),
-    @Deprecated INDEXING(CacheResourceDefinition.Attribute.INDEXING),
+    @Deprecated INDEXING(CacheResourceDefinition.DeprecatedAttribute.INDEXING),
     LOCAL_CACHE(LocalCacheResourceDefinition.WILDCARD_PATH),
     LOCKING(LockingResourceDefinition.PATH),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
@@ -72,7 +72,7 @@ public enum XMLElement {
     STRING_KEYED_TABLE("string-keyed-table"),
     TAKE_OFFLINE("take-offline"),
     TIMESTAMP_COLUMN(TableResourceDefinition.ColumnAttribute.TIMESTAMP),
-    TRANSACTION(TransactionResourceDefinition.PATH.getValue()),
+    TRANSACTION(TransactionResourceDefinition.PATH),
     TRANSPORT(TransportResourceDefinition.WILDCARD_PATH),
     WRITE_BEHIND("write-behind"),
     ;

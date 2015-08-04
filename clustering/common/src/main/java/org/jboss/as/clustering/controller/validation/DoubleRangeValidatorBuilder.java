@@ -32,11 +32,9 @@ import org.jboss.dmr.ModelType;
  * A builder for creating a range validator for {@link ModelType#DOUBLE} parameters.
  * @author Paul Ferraro
  */
-public class DoubleRangeValidatorBuilder implements ParameterValidatorBuilder {
+public class DoubleRangeValidatorBuilder extends AbstractParameterValidatorBuilder {
     private Bound upperBound;
     private Bound lowerBound;
-    private boolean allowsUndefined = false;
-    private boolean allowsExpression = false;
 
     /**
      * Sets an inclusive lower bound of this validator.
@@ -75,29 +73,11 @@ public class DoubleRangeValidatorBuilder implements ParameterValidatorBuilder {
     }
 
     /**
-     * Indicates whether {@link ModelType#UNDEFINED} is allowed
-     * @param allowsUndefined indicates whether {@link ModelType#UNDEFINED} is allowed
-     */
-    public DoubleRangeValidatorBuilder allowUndefined(boolean allowsUndefined) {
-        this.allowsUndefined = allowsUndefined;
-        return this;
-    }
-
-    /**
-     * Indicates whether {@link ModelType#EXPRESSION} is allowed
-     * @param allowExpressions whether {@link ModelType#EXPRESSION} is allowed
-     */
-    public DoubleRangeValidatorBuilder allowExpression(boolean allowsExpressions) {
-        this.allowsExpression = allowsExpressions;
-        return this;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     public ParameterValidator build() {
-        return new DoubleRangeValidator(this.lowerBound, this.upperBound, this.allowsUndefined, this.allowsExpression);
+        return new DoubleRangeValidator(this.lowerBound, this.upperBound, this.allowsUndefined, this.allowsExpressions);
     }
 
     private static class Bound {

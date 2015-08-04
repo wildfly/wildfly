@@ -22,6 +22,12 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.RemoteSiteResourceDefinition.Attribute.*;
+
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -38,12 +44,13 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class RemoteSiteConfigurationBuilder implements Builder<RemoteSiteConfiguration>, Value<RemoteSiteConfiguration>, RemoteSiteConfiguration {
+public class RemoteSiteConfigurationBuilder implements ResourceServiceBuilder<RemoteSiteConfiguration>, Value<RemoteSiteConfiguration>, RemoteSiteConfiguration {
 
     private final InjectedValue<Channel> channel = new InjectedValue<>();
     private final String stackName;
     private final String siteName;
-    private String channelName;
+
+    private volatile String channelName;
 
     public RemoteSiteConfigurationBuilder(String stackName, String siteName) {
         this.stackName = stackName;
@@ -68,8 +75,9 @@ public class RemoteSiteConfigurationBuilder implements Builder<RemoteSiteConfigu
         return this;
     }
 
-    public RemoteSiteConfigurationBuilder setChannel(String channelName) {
-        this.channelName = channelName;
+    @Override
+    public Builder<RemoteSiteConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.channelName = CHANNEL.getDefinition().resolveModelAttribute(context, model).asString();
         return this;
     }
 

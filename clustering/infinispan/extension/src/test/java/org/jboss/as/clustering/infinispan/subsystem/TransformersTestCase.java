@@ -155,6 +155,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         return services;
     }
 
+    @SuppressWarnings("deprecation")
     private void testTransformation(InfinispanModel model, ModelTestControllerVersion controller, String... dependencies) throws Exception {
         ModelVersion version = model.getVersion();
         KernelServices services = this.buildKernelServices(controller, version, dependencies);
@@ -167,8 +168,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Verify that mode=BATCH is translated to mode=NONE, batching=true
             ModelNode cache = transformed.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(LocalCacheResourceDefinition.pathElement("local").getKeyValuePair());
-            Assert.assertTrue(cache.hasDefined(CacheResourceDefinition.Attribute.BATCHING.getDefinition().getName()));
-            Assert.assertTrue(cache.get(CacheResourceDefinition.Attribute.BATCHING.getDefinition().getName()).asBoolean());
+            Assert.assertTrue(cache.hasDefined(CacheResourceDefinition.DeprecatedAttribute.BATCHING.getDefinition().getName()));
+            Assert.assertTrue(cache.get(CacheResourceDefinition.DeprecatedAttribute.BATCHING.getDefinition().getName()).asBoolean());
             ModelNode transaction = cache.get(TransactionResourceDefinition.PATH.getKeyValuePair());
             if (transaction.hasDefined(TransactionResourceDefinition.Attribute.MODE.getDefinition().getName())) {
                 Assert.assertEquals(TransactionMode.NONE.name(), transaction.get(TransactionResourceDefinition.Attribute.MODE.getDefinition().getName()).asString());

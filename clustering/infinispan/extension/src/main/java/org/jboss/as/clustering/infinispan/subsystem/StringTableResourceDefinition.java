@@ -90,7 +90,7 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
                             }
                         }
                     }
-                    return value.isDefined() ? Operations.createWriteAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.Attribute.TABLE, value) : Operations.createUndefineAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.Attribute.TABLE);
+                    return value.isDefined() ? Operations.createWriteAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.DeprecatedAttribute.TABLE, value) : Operations.createUndefineAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.DeprecatedAttribute.TABLE);
                 }
             };
             builder.addRawOperationTransformationOverride(ModelDescriptionConstants.ADD, new SimpleOperationTransformer(addTransformer));
@@ -99,7 +99,7 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress storeAddress = Operations.getPathAddress(operation).getParent();
-                    return Operations.createUndefineAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.Attribute.TABLE);
+                    return Operations.createUndefineAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.DeprecatedAttribute.TABLE);
                 }
             };
             builder.addRawOperationTransformationOverride(ModelDescriptionConstants.REMOVE, new SimpleOperationTransformer(removeTransformer));

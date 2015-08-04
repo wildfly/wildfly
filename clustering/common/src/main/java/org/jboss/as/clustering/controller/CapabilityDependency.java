@@ -31,10 +31,6 @@ import org.wildfly.clustering.service.InjectedValueDependency;
  */
 public class CapabilityDependency<T> extends InjectedValueDependency<T> {
 
-    public CapabilityDependency(OperationContext context, Capability capability, Class<T> targetClass) {
-        super(context.getCapabilityServiceName(capability.getDefinition().getName(), targetClass), targetClass);
-    }
-
     public CapabilityDependency(OperationContext context, Capability capability, String name, Class<T> targetClass) {
         super(context.getCapabilityServiceName(capability.getDefinition().getName(), name, targetClass), targetClass);
     }

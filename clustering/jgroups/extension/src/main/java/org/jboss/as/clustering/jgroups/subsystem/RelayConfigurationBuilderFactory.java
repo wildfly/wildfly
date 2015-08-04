@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,18 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.controller.PathAddress;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtocolConfigurationBuilder extends AbstractProtocolConfigurationBuilder<ProtocolConfiguration> {
-
-    public ProtocolConfigurationBuilder(String stackName, String name) {
-        super(stackName, name);
-    }
+public class RelayConfigurationBuilderFactory implements ResourceServiceBuilderFactory<RelayConfiguration> {
 
     @Override
-    public ProtocolConfiguration getValue() {
-        return this;
+    public ResourceServiceBuilder<RelayConfiguration> createBuilder(PathAddress address) {
+        return new RelayConfigurationBuilder(address.getParent().getLastElement().getValue());
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,15 +25,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -48,38 +46,24 @@ import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 
 /**
- * Add operation handler for fork resources.
  * @author Paul Ferraro
  */
-public class ForkAddHandler extends AbstractAddStepHandler {
+public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFactory> {
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        installRuntimeServices(context, operation, Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
+    ForkServiceHandler(ResourceServiceBuilderFactory<ChannelFactory> factory) {
+        super(factory);
     }
 
-    static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
+
+        super.installServices(context, model);
 
         PathAddress address = context.getCurrentAddress();
-        String name = address.getElement(address.size() - 1).getValue();
-        String channel = address.getElement(address.size() - 2).getValue();
+        String name = address.getLastElement().getValue();
+        String channel = address.getParent().getLastElement().getValue();
 
         ServiceTarget target = context.getServiceTarget();
-
-        ForkChannelFactoryBuilder builder = new ForkChannelFactoryBuilder(name);
-
-        if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-            for (Property property : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                String protocolName = property.getName();
-                ModelNode protocol = property.getValue();
-                ProtocolConfigurationBuilder protocolBuilder = builder.addProtocol(protocolName)
-                        .setModule(ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, protocol)))
-                        .setSocketBinding(ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, protocol)));
-                StackAddHandler.addProtocolProperties(context, protocol, protocolBuilder).build(target).install();
-            }
-        }
-
-        builder.build(target).install();
 
         // Install channel factory alias
         new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channel), ChannelFactory.class).build(target).install();
@@ -101,7 +85,8 @@ public class ForkAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
+    @Override
+    public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
 
         String name = context.getCurrentAddressValue();
 
@@ -116,5 +101,7 @@ public class ForkAddHandler extends AbstractAddStepHandler {
         for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
             context.removeService(factory.getServiceName(name));
         }
+
+        super.removeServices(context, model);
     }
 }

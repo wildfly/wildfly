@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.BackupResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.infinispan.subsystem.BackupResourceDefinition.TakeOfflineAttribute.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,8 +84,8 @@ public class BackupsBuilder extends CacheComponentBuilder<SitesConfiguration> im
                         .replicationTimeout(TIMEOUT.getDefinition().resolveModelAttribute(context, backup).asLong())
                         .strategy(ModelNodes.asEnum(STRATEGY.getDefinition().resolveModelAttribute(context, backup), BackupStrategy.class))
                         .takeOffline()
-                            .afterFailures(TAKE_OFFLINE_AFTER_FAILURES.getDefinition().resolveModelAttribute(context, backup).asInt())
-                            .minTimeToWait(TAKE_OFFLINE_MIN_WAIT.getDefinition().resolveModelAttribute(context, backup).asLong())
+                            .afterFailures(AFTER_FAILURES.getDefinition().resolveModelAttribute(context, backup).asInt())
+                            .minTimeToWait(MIN_WAIT.getDefinition().resolveModelAttribute(context, backup).asLong())
                 ;
                 this.backups.put(siteName, backupBuilder.create());
             }

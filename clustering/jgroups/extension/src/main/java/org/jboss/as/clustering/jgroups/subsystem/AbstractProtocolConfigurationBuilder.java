@@ -22,10 +22,18 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition.Attribute.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -42,10 +50,10 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolConfiguration> implements Builder<P>, Value<P>, ProtocolConfiguration {
+public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolConfiguration> implements ResourceServiceBuilder<P>, Value<P>, ProtocolConfiguration {
 
-    final String stackName;
-    final String name;
+    private final String stackName;
+    private final String name;
 
     private final Map<String, String> properties = new HashMap<>();
     private ModuleIdentifier module = ProtocolConfiguration.DEFAULT_MODULE;
@@ -70,20 +78,16 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
         return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
-    public AbstractProtocolConfigurationBuilder<P> setModule(ModuleIdentifier module) {
-        this.module = module;
-        return this;
-    }
-
-    public AbstractProtocolConfigurationBuilder<P> setSocketBinding(String socketBindingName) {
-        if (socketBindingName != null) {
-            this.socketBinding = new InjectedValueDependency<>(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class);
+    @Override
+    public Builder<P> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
+        String binding = ModelNodes.asString(SOCKET_BINDING.getDefinition().resolveModelAttribute(context, model));
+        if (binding != null) {
+            this.socketBinding = new InjectedValueDependency<>(SocketBinding.JBOSS_BINDING_NAME.append(binding), SocketBinding.class);
         }
-        return this;
-    }
-
-    public AbstractProtocolConfigurationBuilder<P> addProperty(String name, String value) {
-        this.properties.put(name, value);
+        for (Property property : ModelNodes.asPropertyList(PROPERTIES.getDefinition().resolveModelAttribute(context, model))) {
+            this.properties.put(property.getName(), property.getValue().asString());
+        }
         return this;
     }
 

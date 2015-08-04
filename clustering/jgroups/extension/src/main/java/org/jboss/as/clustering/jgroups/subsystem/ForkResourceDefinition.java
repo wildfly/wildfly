@@ -22,30 +22,71 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Definition of a fork resource.
  * @author Paul Ferraro
  */
-public class ForkResourceDefinition extends SimpleResourceDefinition {
+public class ForkResourceDefinition extends SimpleResourceDefinition implements Registration {
+
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     public static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.FORK, name);
+        return PathElement.pathElement("fork", name);
     }
 
-    private final boolean allowRuntimeOnlyRegistration;
+    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = new ForkChannelFactoryBuilderFactory();
+    final boolean allowRuntimeOnlyRegistration;
 
     ForkResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH), new ForkAddHandler(), new ForkRemoveHandler(allowRuntimeOnlyRegistration));
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
+        ResourceServiceHandler handler = new ForkServiceHandler(this.builderFactory);
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler) {
+            @Override
+            protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+                super.performRemove(context, operation, model);
+                if (ForkResourceDefinition.this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
+                    Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+                    for (ResourceEntry entry: resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
+                        context.removeResource(PathAddress.pathAddress(entry.getPathElement()));
+                    }
+                    context.getResourceRegistrationForUpdate().unregisterOverrideModel(context.getCurrentAddressValue());
+                }
+            }
+        }.register(registration);
+    }
+
+    @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(new ForkProtocolResourceDefinition(this.allowRuntimeOnlyRegistration));
+        new ForkProtocolResourceDefinition(this.builderFactory, this.allowRuntimeOnlyRegistration).register(registration);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerSubModel(this);
     }
 }

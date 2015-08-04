@@ -25,7 +25,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.jgroups.ForkChannelFactory;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -39,6 +44,7 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -46,7 +52,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * Builder for a service that provides a {@link ChannelFactory} for creating fork channels.
  * @author Paul Ferraro
  */
-public class ForkChannelFactoryBuilder implements Builder<ChannelFactory>, Value<ChannelFactory> {
+public class ForkChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFactory>, Value<ChannelFactory> {
 
     private final String channelName;
     private final InjectedValue<Channel> parentChannel = new InjectedValue<>();
@@ -64,11 +70,15 @@ public class ForkChannelFactoryBuilder implements Builder<ChannelFactory>, Value
 
     @Override
     public ServiceBuilder<ChannelFactory> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
+        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(ChannelServiceName.CONNECTOR.getServiceName(this.channelName), Channel.class, this.parentChannel)
                 .addDependency(ChannelServiceName.FACTORY.getServiceName(this.channelName), ChannelFactory.class, this.parentFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
+        for (Dependency dependency : this.protocols) {
+            dependency.register(builder);
+        }
+        return builder;
     }
 
     @Override
@@ -80,9 +90,14 @@ public class ForkChannelFactoryBuilder implements Builder<ChannelFactory>, Value
         return new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue(), protocols);
     }
 
-    public ProtocolConfigurationBuilder addProtocol(String type) {
-        ProtocolConfigurationBuilder builder = new ProtocolConfigurationBuilder(this.channelName, type);
-        this.protocols.add(new InjectedValueDependency<>(builder, ProtocolConfiguration.class));
-        return builder;
+    @Override
+    public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.protocols.clear();
+        if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property protocol : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                this.protocols.add(new InjectedValueDependency<>(new ProtocolConfigurationBuilder(this.channelName, protocol.getName()), ProtocolConfiguration.class));
+            }
+        }
+        return this;
     }
 }

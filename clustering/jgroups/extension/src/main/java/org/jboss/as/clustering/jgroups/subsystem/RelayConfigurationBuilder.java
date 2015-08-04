@@ -22,17 +22,21 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.RelayResourceDefinition.Attribute.*;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
+import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -42,16 +46,13 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuilder<RelayConfiguration> implements RelayConfiguration {
 
+    private final String stackName;
     private final List<ValueDependency<RemoteSiteConfiguration>> sites = new LinkedList<>();
-    private String siteName = null;
+    private volatile String siteName = null;
 
     public RelayConfigurationBuilder(String stackName) {
         super(stackName, RelayConfiguration.PROTOCOL_NAME);
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(this.stackName).append("relay");
+        this.stackName = stackName;
     }
 
     @Override
@@ -64,36 +65,20 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
     }
 
     @Override
+    public Builder<RelayConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.sites.clear();
+        this.siteName = SITE.getDefinition().resolveModelAttribute(context, model).asString();
+        if (model.hasDefined(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property remoteSiteProperty: model.get(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                String remoteSiteName = remoteSiteProperty.getName();
+                this.sites.add(new InjectedValueDependency<>(new RemoteSiteConfigurationBuilder(this.stackName, remoteSiteName), RemoteSiteConfiguration.class));
+            }
+        }
+        return super.configure(context, model);
+    }
+
+    @Override
     public RelayConfiguration getValue() {
-        return this;
-    }
-
-    public RelayConfigurationBuilder setSiteName(String siteName) {
-        this.siteName = siteName;
-        return this;
-    }
-
-    public RemoteSiteConfigurationBuilder addRemoteSite(String name, String channel) {
-        RemoteSiteConfigurationBuilder builder = new RemoteSiteConfigurationBuilder(this.stackName, name).setChannel(channel);
-        this.sites.add(new InjectedValueDependency<>(builder, RemoteSiteConfiguration.class));
-        return builder;
-    }
-
-    @Override
-    public RelayConfigurationBuilder setModule(ModuleIdentifier module) {
-        super.setModule(module);
-        return this;
-    }
-
-    @Override
-    public RelayConfigurationBuilder setSocketBinding(String socketBindingName) {
-        super.setSocketBinding(socketBindingName);
-        return this;
-    }
-
-    @Override
-    public RelayConfigurationBuilder addProperty(String name, String value) {
-        super.addProperty(name, value);
         return this;
     }
 

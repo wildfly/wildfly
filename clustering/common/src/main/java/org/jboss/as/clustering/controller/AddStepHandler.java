@@ -43,6 +43,10 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     private final AddStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
 
+    public AddStepHandler(AddStepHandlerDescriptor descriptor) {
+        this(descriptor, null);
+    }
+
     public AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
         super(descriptor.getAttributes());
         this.descriptor = descriptor;
@@ -50,17 +54,39 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     }
 
     @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
+            definition.validateOperation(operation);
+        }
+        super.populateModel(operation, model);
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        this.handler.installServices(context, model);
+        if (this.handler != null) {
+            this.handler.installServices(context, model);
+        }
     }
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-        try {
-            this.handler.removeServices(context, resource.getModel());
-        } catch (OperationFailedException e) {
-            throw new IllegalStateException(e);
+        if (this.handler != null) {
+            try {
+                this.handler.removeServices(context, resource.getModel());
+            } catch (OperationFailedException e) {
+                throw new IllegalStateException(e);
+            }
         }
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
+        for (Capability capability : this.descriptor.getCapabilities()) {
+            context.registerCapability(capability.getRuntimeCapability(address), null);
+        }
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
     }
 
     @Override
@@ -73,15 +99,5 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             builder.addParameter(parameter);
         }
         registration.registerOperationHandler(builder.build(), this);
-    }
-
-    @Override
-    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-        // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
-        for (Capability capability : this.descriptor.getCapabilities()) {
-            context.registerCapability(capability.getRuntimeCapability(address), null);
-        }
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
     }
 }

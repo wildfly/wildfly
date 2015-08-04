@@ -24,33 +24,39 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public enum Element {
+public enum XMLElement {
     // must be first
-    UNKNOWN(null),
+    UNKNOWN(""),
 
-    CHANNEL(ModelKeys.CHANNEL),
+    CHANNEL(ChannelResourceDefinition.WILDCARD_PATH),
     CHANNELS("channels"),
     DEFAULT_THREAD_POOL("default-thread-pool"),
-    FORK(ModelKeys.FORK),
+    FORK(ForkResourceDefinition.WILDCARD_PATH),
     INTERNAL_THREAD_POOL("internal-thread-pool"),
     OOB_THREAD_POOL("oob-thread-pool"),
-    PROPERTY(ModelKeys.PROPERTY),
-    PROTOCOL(ModelKeys.PROTOCOL),
-    RELAY(ModelKeys.RELAY),
-    REMOTE_SITE(ModelKeys.REMOTE_SITE),
-    STACK(ModelKeys.STACK),
+    PROPERTY(ModelDescriptionConstants.PROPERTY),
+    PROTOCOL(ProtocolResourceDefinition.WILDCARD_PATH),
+    RELAY(RelayResourceDefinition.WILDCARD_PATH),
+    REMOTE_SITE(RemoteSiteResourceDefinition.WILDCARD_PATH),
+    STACK(StackResourceDefinition.WILDCARD_PATH),
     STACKS("stacks"),
-    THREAD_FACTORY(ModelKeys.THREAD_FACTORY),
     TIMER_THREAD_POOL("timer-thread-pool"),
-    TRANSPORT(ModelKeys.TRANSPORT),
+    TRANSPORT(TransportResourceDefinition.WILDCARD_PATH),
     ;
 
     private final String name;
 
-    Element(final String name) {
+    XMLElement(PathElement path) {
+        this.name = path.isWildcard() ? path.getKey() : path.getValue();
+    }
+
+    XMLElement(String name) {
         this.name = name;
     }
 
@@ -63,10 +69,10 @@ public enum Element {
         return this.name;
     }
 
-    private static final Map<String, Element> elements = new HashMap<>();
+    private static final Map<String, XMLElement> elements = new HashMap<>();
 
     static {
-        for (Element element : values()) {
+        for (XMLElement element : values()) {
             String name = element.getLocalName();
             if (name != null) {
                 elements.put(name, element);
@@ -74,8 +80,8 @@ public enum Element {
         }
     }
 
-    public static Element forName(String localName) {
-        Element element = elements.get(localName);
+    public static XMLElement forName(String localName) {
+        XMLElement element = elements.get(localName);
         return (element != null) ? element : UNKNOWN;
     }
 }

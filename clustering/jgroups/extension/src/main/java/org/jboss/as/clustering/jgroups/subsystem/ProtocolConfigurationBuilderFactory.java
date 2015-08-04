@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,21 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.controller.PathAddress;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
  * @author Paul Ferraro
+ * @param <T>
  */
-public class ProtocolConfigurationBuilder extends AbstractProtocolConfigurationBuilder<ProtocolConfiguration> {
-
-    public ProtocolConfigurationBuilder(String stackName, String name) {
-        super(stackName, name);
-    }
+public class ProtocolConfigurationBuilderFactory implements ResourceServiceBuilderFactory<ProtocolConfiguration> {
 
     @Override
-    public ProtocolConfiguration getValue() {
-        return this;
+    public ResourceServiceBuilder<ProtocolConfiguration> createBuilder(PathAddress address) {
+        String protocol = address.getLastElement().getValue();
+        String stack = address.getParent().getLastElement().getValue();
+        return new ProtocolConfigurationBuilder(stack, protocol);
     }
 }

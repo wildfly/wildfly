@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,28 +24,38 @@ package org.jboss.as.clustering.controller.validation;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
- * {@link ModelTypeValidator} that validates that a given value is a valid {@link ModuleIdentifier}.
+ * {@link ParameterValidatorBuilder} that builds a validator that validates that a given value is a valid {@link ModuleIdentifier}.
+ * @author Paul Ferraro
  */
-public class ModuleIdentifierValidator extends ModelTypeValidator {
-
-    public ModuleIdentifierValidator(boolean nullable, boolean allowExpressions) {
-        super(ModelType.STRING, nullable, allowExpressions);
-    }
+public class ModuleIdentifierValidatorBuilder extends AbstractParameterValidatorBuilder {
 
     @Override
-    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-        super.validateParameter(parameterName, value);
-        if (value.isDefined()) {
-            String module = value.asString();
-            try {
-                ModuleIdentifier.fromString(module);
-            } catch (IllegalArgumentException e) {
-                throw new OperationFailedException(e.getMessage() + ": " + module, e);
+    public ParameterValidator build() {
+        return new ModuleIdentifierValidator(this.allowsUndefined, this.allowsExpressions);
+    }
+
+    private static class ModuleIdentifierValidator extends ModelTypeValidator {
+
+        ModuleIdentifierValidator(boolean allowsUndefined, boolean allowsExpression) {
+            super(ModelType.STRING, allowsUndefined, allowsExpression);
+        }
+
+        @Override
+        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+            super.validateParameter(parameterName, value);
+            if (value.isDefined()) {
+                String module = value.asString();
+                try {
+                    ModuleIdentifier.fromString(module);
+                } catch (IllegalArgumentException e) {
+                    throw new OperationFailedException(e.getMessage() + ": " + module, e);
+                }
             }
         }
     }
