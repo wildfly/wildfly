@@ -53,6 +53,7 @@
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
                 <property name="location">${java.io.tmpdir}</property>
             </store>
+            <partition-handling enabled="false"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
             <backup-for remote-cache="users" remote-site="LON"/>
         </replicated-cache>
@@ -74,6 +75,7 @@
                     <timestamp-column name="version" type="BIGINT"/>
                 </string-keyed-table>
             </mixed-keyed-jdbc-store>
+            <partition-handling enabled="true"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>

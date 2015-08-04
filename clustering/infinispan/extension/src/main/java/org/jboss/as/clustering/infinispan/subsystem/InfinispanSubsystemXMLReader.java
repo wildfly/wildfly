@@ -298,6 +298,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private static void addSharedStateCacheOperations(PathAddress address, Map<PathAddress, ModelNode> operations) {
         addCacheOperations(address, operations);
 
+        PathAddress partitionHandlingAddress = address.append(PartitionHandlingResourceDefinition.PATH);
+        operations.put(partitionHandlingAddress, Util.createAddOperation(partitionHandlingAddress));
+
         PathAddress stateTransferAddress = address.append(StateTransferResourceDefinition.PATH);
         operations.put(stateTransferAddress, Util.createAddOperation(stateTransferAddress));
 
@@ -627,10 +630,35 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
             }
+            case PARTITION_HANDLING: {
+                if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    this.parsePartitionHandling(reader, address, operations);
+                    break;
+                }
+            }
             default: {
                 this.parseCacheElement(reader, address, operations);
             }
         }
+    }
+
+    private void parsePartitionHandling(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+
+        ModelNode operation = operations.get(cacheAddress.append(PartitionHandlingResourceDefinition.PATH));
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case ENABLED: {
+                    readAttribute(reader, i, operation, PartitionHandlingResourceDefinition.Attribute.ENABLED);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
     }
 
     private void parseStateTransfer(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {

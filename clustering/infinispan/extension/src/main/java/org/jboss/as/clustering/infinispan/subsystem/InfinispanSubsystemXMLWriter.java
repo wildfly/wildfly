@@ -247,6 +247,16 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
+        if (cache.hasDefined(PartitionHandlingResourceDefinition.PATH.getKeyValuePair())) {
+            ModelNode partitionHandling = cache.get(PartitionHandlingResourceDefinition.PATH.getKeyValuePair());
+            EnumSet<PartitionHandlingResourceDefinition.Attribute> attributes = EnumSet.allOf(PartitionHandlingResourceDefinition.Attribute.class);
+            if (hasDefined(partitionHandling, attributes)) {
+                writer.writeStartElement(XMLElement.PARTITION_HANDLING.getLocalName());
+                writeAttributes(writer, partitionHandling, attributes);
+                writer.writeEndElement();
+            }
+        }
+
         if (cache.hasDefined(StateTransferResourceDefinition.PATH.getKeyValuePair())) {
             ModelNode stateTransfer = cache.get(StateTransferResourceDefinition.PATH.getKeyValuePair());
             EnumSet<StateTransferResourceDefinition.Attribute> attributes = EnumSet.allOf(StateTransferResourceDefinition.Attribute.class);

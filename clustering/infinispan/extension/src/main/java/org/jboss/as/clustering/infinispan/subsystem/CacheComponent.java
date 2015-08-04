@@ -38,6 +38,7 @@ public enum CacheComponent implements SubGroupServiceNameFactory {
     LOCKING(LockingResourceDefinition.PATH),
     PERSISTENCE(StoreResourceDefinition.WILDCARD_PATH),
     STATE_TRANSFER(StateTransferResourceDefinition.PATH),
+    PARTITION_HANDLING(PartitionHandlingResourceDefinition.PATH),
     STORE_WRITE(StoreWriteResourceDefinition.WILDCARD_PATH),
     TRANSACTION(TransactionResourceDefinition.PATH),
     BINARY_TABLE(StoreResourceDefinition.WILDCARD_PATH, BinaryTableResourceDefinition.PATH),
