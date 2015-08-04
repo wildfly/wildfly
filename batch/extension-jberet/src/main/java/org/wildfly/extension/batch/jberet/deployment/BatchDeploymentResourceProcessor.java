@@ -62,6 +62,7 @@ public class BatchDeploymentResourceProcessor implements DeploymentUnitProcessor
                     final String jobName = jobXmlResolverService.resolveJobName(jobXml, moduleClassLoader);
                     // Add the job information to the service
                     jobOperatorService.addAllowedJob(jobXml, jobName);
+                    BatchLogger.LOGGER.debugf("Added job XML %s with job name %s to allowed jobs for deployment %s", jobXml, jobName, deploymentUnit.getName());
                     // Register the a resource for each job found
                     final PathAddress jobAddress = PathAddress.pathAddress(BatchJobResourceDefinition.JOB, jobName);
                     if (!deploymentResourceSupport.hasDeploymentSubModel(BatchSubsystemDefinition.NAME, jobAddress)) {
