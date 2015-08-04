@@ -67,7 +67,7 @@ public class DataSourceStatisticsService implements Service<ManagementResourceRe
     @Override
     public void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting DataSourceStatisticsService");
-        synchronized (this) {
+        synchronized (JDBC_STATISTICS) {
             CommonDeployment deploymentMD = injectedDeploymentMD.getValue();
 
 
@@ -101,9 +101,11 @@ public class DataSourceStatisticsService implements Service<ManagementResourceRe
 
     @Override
     public void stop(StopContext context) {
-        if (registration != null) {
-            registration.unregisterSubModel(JDBC_STATISTICS);
-            registration.unregisterSubModel(POOL_STATISTICS);
+        synchronized (JDBC_STATISTICS) {
+            if (registration != null) {
+                registration.unregisterSubModel(JDBC_STATISTICS);
+                registration.unregisterSubModel(POOL_STATISTICS);
+            }
         }
     }
 
@@ -119,20 +121,24 @@ public class DataSourceStatisticsService implements Service<ManagementResourceRe
 
 
     public static void registerStatisticsResources(Resource datasourceResource) {
-        if (!datasourceResource.hasChild(JDBC_STATISTICS)) {
-            datasourceResource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
-        }
-        if (!datasourceResource.hasChild(POOL_STATISTICS)) {
-            datasourceResource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(POOL_STATISTICS));
+        synchronized (JDBC_STATISTICS) {
+            if (!datasourceResource.hasChild(JDBC_STATISTICS)) {
+                datasourceResource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
+            }
+            if (!datasourceResource.hasChild(POOL_STATISTICS)) {
+                datasourceResource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(POOL_STATISTICS));
+            }
         }
     }
 
     public static void removeStatisticsResources(Resource datasourceResource) {
-        if (datasourceResource.hasChild(JDBC_STATISTICS)) {
-            datasourceResource.removeChild(JDBC_STATISTICS);
-        }
-        if (datasourceResource.hasChild(POOL_STATISTICS)) {
-            datasourceResource.removeChild(POOL_STATISTICS);
+        synchronized (JDBC_STATISTICS) {
+            if (datasourceResource.hasChild(JDBC_STATISTICS)) {
+                datasourceResource.removeChild(JDBC_STATISTICS);
+            }
+            if (datasourceResource.hasChild(POOL_STATISTICS)) {
+                datasourceResource.removeChild(POOL_STATISTICS);
+            }
         }
     }
 
