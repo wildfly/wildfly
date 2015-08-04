@@ -246,11 +246,12 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
             session.invalidate();
             return null;
         }
-        this.cancel(session);
+        ImmutableSession immutableSession = this.persistent ? this.factory.createImmutableSession(id, value) : session;
+        this.cancel(immutableSession);
         if (this.persistent) {
-            triggerPostActivationEvents(session);
+            triggerPostActivationEvents(immutableSession);
         }
-        return new SchedulableSession(session);
+        return new SchedulableSession(session, immutableSession);
     }
 
     @Override
@@ -258,7 +259,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         Session<L> session = this.factory.createSession(id, this.factory.createValue(id, null));
         final Time time = this.defaultMaxInactiveInterval;
         session.getMetaData().setMaxInactiveInterval(time.getValue(), time.getUnit());
-        return new SchedulableSession(session);
+        return new SchedulableSession(session, session);
     }
 
     @Override
@@ -429,9 +430,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     // Session decorator that performs scheduling on close().
     private class SchedulableSession implements Session<L> {
         private final Session<L> session;
+        private final ImmutableSession immutableSession;
 
-        SchedulableSession(Session<L> session) {
+        SchedulableSession(Session<L> session, ImmutableSession immutableSession) {
             this.session = session;
+            this.immutableSession = immutableSession;
         }
 
         @Override
@@ -473,10 +476,10 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         @Override
         public void close() {
             if (isPersistent()) {
-                triggerPrePassivationEvents(this.session);
+                triggerPrePassivationEvents(this.immutableSession);
             }
             this.session.close();
-            InfinispanSessionManager.this.schedule(this.session);
+            InfinispanSessionManager.this.schedule(this.immutableSession);
         }
 
         @Override
