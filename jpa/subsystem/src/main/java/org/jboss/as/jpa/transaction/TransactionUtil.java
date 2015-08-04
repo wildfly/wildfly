@@ -24,8 +24,9 @@ package org.jboss.as.jpa.transaction;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
+import java.util.EnumSet;
+
 import javax.persistence.EntityManager;
-import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -35,6 +36,13 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.tm.TxUtils;
+import org.jboss.tm.listener.EventType;
+import org.jboss.tm.listener.TransactionEvent;
+import org.jboss.tm.listener.TransactionListener;
+import org.jboss.tm.listener.TransactionListenerRegistry;
+import org.jboss.tm.listener.TransactionListenerRegistryLocator;
+import org.jboss.tm.listener.TransactionListenerRegistryUnavailableException;
+import org.jboss.tm.listener.TransactionTypeNotSupported;
 
 /**
  * Transaction utilities for JPA
@@ -45,11 +53,30 @@ public class TransactionUtil {
 
     private static volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private static volatile TransactionManager transactionManager;
+    private static volatile TransactionListenerRegistry transactionListenerRegistry;
+    private static final EnumSet<EventType> eventTypes = EnumSet.of(EventType.ASSOCIATED, EventType.DISASSOCIATING);
 
     public static void setTransactionManager(TransactionManager tm) {
-        if (transactionManager == null) {
+        if (transactionManager != tm) {
             transactionManager = tm;
         }
+    }
+
+    public static void clearTransactionManager() {
+        transactionManager = null;
+    }
+
+
+    public static void setTransactionListenerRegistry() throws TransactionListenerRegistryUnavailableException {
+        TransactionListenerRegistry tlr = TransactionListenerRegistryLocator.getTransactionListenerRegistry();
+        if (transactionListenerRegistry != tlr) {
+            transactionListenerRegistry = tlr;
+        }
+
+    }
+
+    public static void clearTransactionListenerRegistry() {
+        transactionListenerRegistry = null;
     }
 
     public static TransactionManager getTransactionManager() {
@@ -57,9 +84,13 @@ public class TransactionUtil {
     }
 
     public static void setTransactionSynchronizationRegistry(TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
-        if (TransactionUtil.transactionSynchronizationRegistry == null) {
+        if (TransactionUtil.transactionSynchronizationRegistry != transactionSynchronizationRegistry) {
             TransactionUtil.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
         }
+    }
+
+    public static void clearTransactionSynchronizationRegistry() {
+        transactionSynchronizationRegistry = null;
     }
 
     public static boolean isInTx() {
@@ -80,7 +111,14 @@ public class TransactionUtil {
     }
 
     public static void registerSynchronization(EntityManager entityManager, String puScopedName) {
-        getTransactionSynchronizationRegistry().registerInterposedSynchronization(new SessionSynchronization(entityManager, puScopedName));
+        SessionSynchronization sessionSynchronization = new SessionSynchronization(entityManager, puScopedName);
+        getTransactionSynchronizationRegistry().registerInterposedSynchronization(sessionSynchronization);
+
+        try {
+            transactionListenerRegistry.addListener(getTransaction(), sessionSynchronization, eventTypes);
+        } catch (TransactionTypeNotSupported transactionTypeNotSupported) {
+            throw JpaLogger.ROOT_LOGGER.errorGettingTransaction(transactionTypeNotSupported);
+        }
     }
 
     public static Transaction getTransaction() {
@@ -127,9 +165,11 @@ public class TransactionUtil {
         getTransactionSynchronizationRegistry().putResource(scopedPuName, entityManager);
     }
 
-    private static class SessionSynchronization implements Synchronization {
+    private static class SessionSynchronization implements Synchronization, TransactionListener {
         private EntityManager manager;  // the underlying entity manager
         private String scopedPuName;
+        private transient boolean transactionDisassociatedFromApplication = false;
+        private transient boolean afterCompletionCalled = false;
 
         public SessionSynchronization(EntityManager session, String scopedPuName) {
             this.manager = session;
@@ -137,47 +177,50 @@ public class TransactionUtil {
         }
 
         public void beforeCompletion() {
+            afterCompletionCalled = false;
         }
 
-        public void afterCompletion(int status) {
+        public synchronized void afterCompletion(int status) {
             /**
-             * If its not safe (safeToClose returns false) to close the EntityManager now,
-             * any connections joined to the JTA transaction
-             * will be released by the JCA connection pool manager.  When the JTA Transaction is no longer
-             * referencing the EntityManager, it will be eligible for garbage collection.
-             * See AS7-6586 for more details.
+             * Note: synchronization is to protect against two concurrent threads from closing the EntityManager (manager)
+             * at the same time.
              */
-            if (safeToClose(status)) {
-                try {
-                    if (ROOT_LOGGER.isDebugEnabled())
-                        ROOT_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
-                    manager.close();
-                } catch (Exception ignored) {
-                    if (ROOT_LOGGER.isDebugEnabled())
-                        ROOT_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (", scopedPuName);
-                }
-            }
-            // The TX reference to the entity manager, should be cleared by the TM
-
+            afterCompletionCalled = true;
+            safeCloseEntityManager();
         }
 
         /**
-         * AS7-6586 requires that the container avoid closing the EntityManager while the application
-         * may be using the EntityManager in a different thread.  If the transaction has been rolled
-         * back, will check if the current thread is the Arjuna transaction manager Reaper thread.  It is not
-         * safe to call EntityManager.close from the Reaper thread, so false is returned.
-         *
-         * TODO: switch to depend on JBTM-1556 instead of checking the current thread name.
-         *
-         * @param status of transaction.
-         * @return
+         * After the JTA transaction is ended (Synchronization.afterCompletion has been called) and
+         * the JTA transaction is no longer associated with application thread (application thread called
+         * transaction.rollback/commit/suspend), the entity manager can safely be closed.
          */
-        private boolean safeToClose(int status) {
-            if (Status.STATUS_COMMITTED != status) {
-                return !TxUtils.isTransactionManagerTimeoutThread();
+        private void safeCloseEntityManager() {
+            if ( afterCompletionCalled == true && transactionDisassociatedFromApplication == true) {
+                if (manager != null) {
+                    try {
+                        if (ROOT_LOGGER.isDebugEnabled())
+                            ROOT_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
+                        manager.close();
+                    } catch (Exception ignored) {
+                        if (ROOT_LOGGER.isDebugEnabled())
+                            ROOT_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (", scopedPuName);
+                    }
+                    manager = null;
+                }
             }
+        }
 
-            return true;
+        @Override
+        public synchronized void onEvent(TransactionEvent transactionEvent) {
+            if (transactionEvent.getTypes().contains(EventType.ASSOCIATED)) {
+                // application thread is now associated with JTA transaction
+                transactionDisassociatedFromApplication = false;
+            }
+            else if(transactionEvent.getTypes().contains(EventType.DISASSOCIATING)) {
+                // application thread is no longer associated with JTA transaction
+                transactionDisassociatedFromApplication = true;
+            }
+            safeCloseEntityManager();
         }
     }
 

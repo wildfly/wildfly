@@ -43,6 +43,7 @@ import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.management.DynamicManagementStatisticsResource;
 import org.jboss.as.jpa.management.EntityManagerFactoryLookup;
 import org.jboss.as.jpa.management.ManagementResourceDefinition;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.processor.CacheDeploymentHelper;
 import org.jboss.as.jpa.processor.PersistenceUnitServiceHandler;
 import org.jboss.as.jpa.subsystem.JPAExtension;
@@ -62,6 +63,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.tm.listener.TransactionListenerRegistryUnavailableException;
 import org.jipijapa.management.spi.Statistics;
 import org.jipijapa.plugin.spi.ManagementAdaptor;
 
@@ -112,10 +114,17 @@ public class JPAService implements Service<Void> {
             new Injector<TransactionManager>() {
                 public void inject(final TransactionManager value) throws InjectionException {
                     TransactionUtil.setTransactionManager(value);
+                    // as soon as TM is known, TLR should also be available
+                    try {
+                        TransactionUtil.setTransactionListenerRegistry();
+                    } catch (TransactionListenerRegistryUnavailableException e) {
+                        throw JpaLogger.ROOT_LOGGER.errorGettingTransactionListenerRegistry(e);
+                    }
                 }
 
                 public void uninject() {
-                    // injector.uninject();
+                    TransactionUtil.clearTransactionManager();
+                    TransactionUtil.clearTransactionListenerRegistry();
                 }
             };
         // set the transaction service registry to be accessible via TransactionUtil (after service is installed below)
@@ -127,7 +136,7 @@ public class JPAService implements Service<Void> {
                 }
 
                 public void uninject() {
-                    // injector.uninject();
+                    TransactionUtil.clearTransactionSynchronizationRegistry();
                 }
             };
 
