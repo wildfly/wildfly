@@ -118,7 +118,6 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
         Assert.assertEquals(9895, serverConfig.getWebServicePort());
         Assert.assertEquals(9944, serverConfig.getWebServiceSecurePort());
         Assert.assertEquals("https", serverConfig.getWebServiceUriScheme());
-        Assert.assertEquals("s/jaxws-jbws2150-codefirst/xx\\/jaxws-jbws2150-codefirst/g", serverConfig.getWebServicePathRewriteRule());
 
         //Client & Endpoint predefined configuration tests
         //HACK: we need to manually reload the client/endpoint configs as the ServerConfigService is actually not starting in this test;
