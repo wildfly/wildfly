@@ -75,6 +75,7 @@
         <xs:attribute name="tcp-keep-alive" type="xs:boolean"/>
         <xs:attribute name="read-timeout" type="xs:long"/>
         <xs:attribute name="write-timeout" type="xs:long"/>
+        <xs:attribute name="max-connections" type="xs:int"/>
     </xs:complexType>
 
     <xs:complexType name="listener-type">

@@ -636,6 +636,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         addConnector.get(Constants.RESOLVE_PEER_ADDRESS).set(newAddOp.get(WebConnectorDefinition.ENABLE_LOOKUPS.getName()));
         addConnector.get(Constants.MAX_POST_SIZE).set(newAddOp.get(WebConnectorDefinition.MAX_POST_SIZE.getName()));
         addConnector.get(Constants.REDIRECT_SOCKET).set(newAddOp.get(WebConnectorDefinition.REDIRECT_BINDING.getName()));
+        addConnector.get(Constants.MAX_CONNECTIONS).set(newAddOp.get(WebConnectorDefinition.MAX_CONNECTIONS.getName()));
         //TODO: secure
         //TODO: max save post size
         //TODO: proxy binding
@@ -643,7 +644,7 @@ public class WebMigrateOperation implements OperationStepHandler {
             //TODO: migrate executor to worker
             UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.EXECUTOR.getName(), pathAddress(newAddOp.get(ADDRESS)));
         }
-        //TODO: expose max connections
+
         newAddOperations.put(pathAddress(newAddOp.get(OP_ADDR)), addConnector);
     }
 
