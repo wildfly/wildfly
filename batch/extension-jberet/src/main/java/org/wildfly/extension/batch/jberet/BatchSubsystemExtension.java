@@ -25,10 +25,10 @@ package org.wildfly.extension.batch.jberet;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceDefinition;
 import org.wildfly.extension.batch.jberet.deployment.BatchJobExecutionResourceDefinition;
 import org.wildfly.extension.batch.jberet.deployment.BatchJobResourceDefinition;
 
@@ -58,10 +58,7 @@ public class BatchSubsystemExtension implements Extension {
         subsystem.registerXMLElementWriter(new BatchSubsystemWriter());
         // Register the deployment resources
         if (context.isRuntimeOnlyRegistrationValid()) {
-            final SimpleResourceDefinition deploymentResource = new SimpleResourceDefinition(
-                    BatchSubsystemDefinition.SUBSYSTEM_PATH,
-                    BatchResourceDescriptionResolver.getResourceDescriptionResolver("deployment"));
-            final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(deploymentResource);
+            final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(new BatchDeploymentResourceDefinition());
             final ManagementResourceRegistration jobRegistration = deployments.registerSubModel(BatchJobResourceDefinition.INSTANCE);
             jobRegistration.registerSubModel(new BatchJobExecutionResourceDefinition()).setRuntimeOnly(true);
         }
