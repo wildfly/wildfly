@@ -57,7 +57,7 @@
                         key-alias="${prop.key-alias:test}"
                         password="${prop.password:changeit}"
                         cipher-suite="${prop.cipher-suite:SSL_RSA_WITH_3DES_EDE_CBC_SHA}"
-                        protocol="${prop.native:SSLv3}"
+                        protocol="${prop.native:TLSv1.2}"
                         verify-client="${prop.verify-client:true}"
                         verify-depth="${prop.verify-depth:3}"
                         certificate-file="${prop.certificate-file:certificate-file.ext}"
