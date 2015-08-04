@@ -35,6 +35,26 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.nio.file.FileSystems;
 import java.security.AllPermission;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
+import java.time.MonthDay;
+import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DecimalStyle;
+import java.time.temporal.ValueRange;
+import java.time.temporal.WeekFields;
+import java.time.zone.ZoneOffsetTransitionRule;
+import java.time.zone.ZoneOffsetTransitionRule.TimeDefinition;
+import java.time.zone.ZoneRules;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
@@ -66,8 +86,8 @@ public class MutableDetectorTestCase {
         assertFalse(MutableDetector.isMutable(Collections.EMPTY_SET));
         assertFalse(MutableDetector.isMutable(Boolean.TRUE));
         assertFalse(MutableDetector.isMutable(Character.valueOf('a')));
+        assertFalse(MutableDetector.isMutable(this.getClass()));
         assertFalse(MutableDetector.isMutable(Currency.getInstance(Locale.US)));
-        assertFalse(MutableDetector.isMutable(TimeUnit.DAYS));
         assertFalse(MutableDetector.isMutable(Locale.getDefault()));
         assertFalse(MutableDetector.isMutable(Byte.valueOf(Integer.valueOf(1).byteValue())));
         assertFalse(MutableDetector.isMutable(Short.valueOf(Integer.valueOf(1).shortValue())));
@@ -83,6 +103,7 @@ public class MutableDetectorTestCase {
         assertFalse(MutableDetector.isMutable("test"));
         assertFalse(MutableDetector.isMutable(TimeZone.getDefault()));
         assertFalse(MutableDetector.isMutable(UUID.randomUUID()));
+        assertFalse(MutableDetector.isMutable(TimeUnit.DAYS));
         File file = new File(System.getProperty("user.home"));
         assertFalse(MutableDetector.isMutable(file));
         assertFalse(MutableDetector.isMutable(file.toURI()));
@@ -90,9 +111,33 @@ public class MutableDetectorTestCase {
         assertFalse(MutableDetector.isMutable(FileSystems.getDefault().getRootDirectories().iterator().next()));
         assertFalse(MutableDetector.isMutable(new AllPermission()));
         assertFalse(MutableDetector.isMutable(new ImmutableObject()));
+
+        assertFalse(MutableDetector.isMutable(DateTimeFormatter.BASIC_ISO_DATE));
+        assertFalse(MutableDetector.isMutable(DecimalStyle.STANDARD));
+        assertFalse(MutableDetector.isMutable(Duration.ZERO));
+        assertFalse(MutableDetector.isMutable(Instant.now()));
+        assertFalse(MutableDetector.isMutable(LocalDate.now()));
+        assertFalse(MutableDetector.isMutable(LocalDateTime.now()));
+        assertFalse(MutableDetector.isMutable(LocalTime.now()));
+        assertFalse(MutableDetector.isMutable(MonthDay.now()));
+        assertFalse(MutableDetector.isMutable(Period.ZERO));
+        assertFalse(MutableDetector.isMutable(ValueRange.of(0L, 10L)));
+        assertFalse(MutableDetector.isMutable(WeekFields.ISO));
+        assertFalse(MutableDetector.isMutable(Year.now()));
+        assertFalse(MutableDetector.isMutable(YearMonth.now()));
+        assertFalse(MutableDetector.isMutable(ZoneOffset.UTC));
+        assertFalse(MutableDetector.isMutable(ZoneRules.of(ZoneOffset.UTC).nextTransition(Instant.now())));
+        assertFalse(MutableDetector.isMutable(ZoneOffsetTransitionRule.of(Month.JANUARY, 1, DayOfWeek.SUNDAY, LocalTime.MIDNIGHT, true, TimeDefinition.STANDARD, ZoneOffset.UTC, ZoneOffset.ofHours(1), ZoneOffset.ofHours(2))));
+        assertFalse(MutableDetector.isMutable(ZoneRules.of(ZoneOffset.UTC)));
+        assertFalse(MutableDetector.isMutable(ZonedDateTime.now()));
+        assertFalse(MutableDetector.isMutable(new JCIPImmutableObject()));
     }
 
     @Immutable
     static class ImmutableObject {
+    }
+
+    @net.jcip.annotations.Immutable
+    static class JCIPImmutableObject {
     }
 }
