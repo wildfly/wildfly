@@ -23,7 +23,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +54,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> result) throws XMLStreamException {
 
         Map<PathAddress, ModelNode> operations = new LinkedHashMap<>();
-        List<ModelNode> channelsWithoutExplicitStack = new LinkedList<>();
 
         PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
@@ -71,7 +69,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             switch (element) {
                 case CHANNELS: {
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
-                        this.parseChannels(reader, address, operations, channelsWithoutExplicitStack);
+                        this.parseChannels(reader, address, operations);
                         break;
                     }
                 }
@@ -93,17 +91,26 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        if (!channelsWithoutExplicitStack.isEmpty()) {
+        // Version prior to 4_0 schema did not require stack being defined,
+        // thus iterate over channel add operations and set the stack explicitly.
+        if (!this.schema.since(JGroupsSchema.VERSION_4_0)) {
             ModelNode defaultStack = operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName());
-            for (ModelNode channelOp : channelsWithoutExplicitStack) {
-                channelOp.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).set(defaultStack);
+
+            for (Map.Entry<PathAddress, ModelNode> entry : operations.entrySet()) {
+                PathAddress opAddr = entry.getKey();
+                if (opAddr.getLastElement().getKey().equals(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
+                    ModelNode op = entry.getValue();
+                    if (!op.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
+                        op.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).set(defaultStack);
+                    }
+                }
             }
         }
 
         result.addAll(operations.values());
     }
 
-    private void parseChannels(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations, List<ModelNode> channelsWithoutExplicitStack) throws XMLStreamException {
+    private void parseChannels(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         ModelNode operation = operations.get(address);
 
@@ -125,7 +132,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case CHANNEL: {
-                    this.parseChannel(reader, address, operations, channelsWithoutExplicitStack);
+                    this.parseChannel(reader, address, operations);
                     break;
                 }
                 default: {
@@ -135,13 +142,11 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
-    private void parseChannel(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations, List<ModelNode> channelsWithoutExplicitStack) throws XMLStreamException {
+    private void parseChannel(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         String name = require(reader, XMLAttribute.NAME);
         PathAddress address = subsystemAddress.append(ChannelResourceDefinition.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
-
-        boolean stackDefined = false;
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
@@ -153,7 +158,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
                 case STACK: {
                     readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.STACK);
-                    stackDefined = true;
                     break;
                 }
                 case MODULE: {
@@ -164,10 +168,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
-        }
-
-        if (!stackDefined) {
-            channelsWithoutExplicitStack.add(operation);
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
