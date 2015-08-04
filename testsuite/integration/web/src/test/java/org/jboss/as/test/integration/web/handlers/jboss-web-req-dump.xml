@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<jboss-web>
+    <http-handler>
+        <class-name>io.undertow.server.handlers.RequestDumpingHandler</class-name>
+        <module>io.undertow.core</module>
+    </http-handler>
+</jboss-web>
