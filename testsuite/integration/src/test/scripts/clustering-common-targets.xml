@@ -85,6 +85,13 @@
                 </transform-params>
             </execute-xslt-transform>
 
+            <!-- Change stack in messaging subsystem too -->
+            <execute-xslt-transform transform="changeMessagingJGroupsStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="stack" expression="@{defaultStack}"/>
+                </transform-params>
+            </execute-xslt-transform>
+
         </sequential>
     </macrodef>
 
