@@ -60,7 +60,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-jca_3_0.xsd";
+        return "schema/wildfly-jca_4_0.xsd";
     }
 
     @Override
@@ -99,6 +99,16 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformerWF8WithExpressions() throws Exception {
         testTransformerWF(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, ModelVersion.create(2, 0, 0), "jca-full-expression.xml");
+    }
+
+    @Test
+    public void testTransformer300() throws Exception {
+        testTransformerWF(ModelTestControllerVersion.WILDFLY_8_2_0_FINAL, ModelVersion.create(3, 0, 0), "jca-full.xml");
+    }
+
+    @Test
+    public void testTransformer300WithExpressions() throws Exception {
+        testTransformerWF(ModelTestControllerVersion.WILDFLY_8_2_0_FINAL, ModelVersion.create(3, 0, 0), "jca-full-expression.xml");
     }
 
     /**
@@ -165,7 +175,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());

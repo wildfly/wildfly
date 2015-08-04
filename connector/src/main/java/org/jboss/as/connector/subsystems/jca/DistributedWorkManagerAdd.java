@@ -67,14 +67,11 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
 
     public static final DistributedWorkManagerAdd INSTANCE = new DistributedWorkManagerAdd();
 
-
-
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         for (JcaDistributedWorkManagerDefinition.DWmParameters parameter : JcaDistributedWorkManagerDefinition.DWmParameters.values()) {
             parameter.getAttribute().validateAndSet(operation, model);
         }
-
     }
 
     @Override
@@ -147,16 +144,10 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
             namedDistributedWorkManager.setSelector(new PingTime());
         }
 
-        String jgroupsStack = model.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute().getName()) ?
-                JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute().resolveModelAttribute(context, model).asString() :
-                "udp";
-        String channelName = JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute().resolveModelAttribute(context, model).asString();
-        Long requestTimeout = JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute().resolveModelAttribute(context, model).asLong();
-
-        DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager, channelName, requestTimeout);
+        DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager);
         ServiceBuilder<DistributedWorkManager> builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
-        builder.addDependency(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(jgroupsStack), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
+        builder.addDependency(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
 
 
         builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name), Executor.class, wmService.getExecutorLongInjector());
@@ -176,17 +167,17 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
                 .addDependency(ConnectorServices.WORKMANAGER_SERVICE.append(name), DistributedWorkManager.class, dwmStatsService.getDistributedWorkManagerInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE).install();
         PathElement peDistributedWm = PathElement.pathElement(org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_NAME, "distributed");
-                PathElement peLocaldWm = PathElement.pathElement(org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_NAME, "local");
+        PathElement peLocaldWm = PathElement.pathElement(org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_NAME, "local");
 
-                final Resource wmResource = new IronJacamarResource.IronJacamarRuntimeResource();
+        final Resource wmResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
-                if (!resource.hasChild(peLocaldWm))
-                    resource.registerChild(peLocaldWm, wmResource);
+        if (!resource.hasChild(peLocaldWm))
+            resource.registerChild(peLocaldWm, wmResource);
 
 
-                final Resource dwmResource = new IronJacamarResource.IronJacamarRuntimeResource();
+        final Resource dwmResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
-                if (!resource.hasChild(peDistributedWm))
-                    resource.registerChild(peDistributedWm, dwmResource);
+        if (!resource.hasChild(peDistributedWm))
+            resource.registerChild(peDistributedWm, dwmResource);
     }
 }

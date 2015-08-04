@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jca:3.0">
+<subsystem xmlns="urn:jboss:domain:jca:4.0">
   <!--Optional:-->
   <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
   <!--Optional:-->
@@ -65,7 +65,6 @@
       <max-threads count="50"/>
       <keepalive-time time="10" unit="seconds"/>
     </short-running-threads>
-    <transport jgroups-stack="udp" jgroups-cluster="myChannel" request-timeout="100000"/>
   </distributed-workmanager>
   <bootstrap-contexts>
     <!--1 or more repetitions:-->
