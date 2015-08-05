@@ -53,7 +53,7 @@ import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.singleton.Singleton;
@@ -71,7 +71,8 @@ import org.wildfly.clustering.spi.GroupServiceName;
 public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, Service<T>, ServiceProviderRegistration.Listener, SingletonContext<T>, Singleton {
 
     private final InjectedValue<Group> group = new InjectedValue<>();
-    private final InjectedValue<ServiceProviderRegistrationFactory> registrationFactory = new InjectedValue<>();
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<ServiceProviderRegistry> registry = new InjectedValue<>();
     private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
     private final Service<T> service;
     final ServiceName targetServiceName;
@@ -81,11 +82,11 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
     private final String containerName;
     private final String cacheName;
 
-    volatile ServiceProviderRegistration registration;
+    volatile ServiceProviderRegistration<ServiceName> registration;
     volatile CommandDispatcher<SingletonContext<T>> dispatcher;
     volatile boolean started = false;
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
-    private volatile ServiceRegistry registry;
+    private volatile ServiceRegistry serviceRegistry;
     volatile int quorum = 1;
 
     public CacheSingletonServiceBuilder(ServiceName serviceName, Service<T> service, String containerName, String cacheName) {
@@ -118,7 +119,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
         final ServiceBuilder<T> singletonBuilder = new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
                 .addAliases(this.singletonServiceName.append("singleton"))
                 .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
-                .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION.getServiceName(this.containerName, this.cacheName), ServiceProviderRegistrationFactory.class, this.registrationFactory)
+                .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(this.containerName, this.cacheName), ServiceProviderRegistry.class, this.registry)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(this.containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addListener(listener)
         ;
@@ -188,9 +189,10 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     @Override
     public void start(StartContext context) {
-        this.registry = context.getController().getServiceContainer();
+        this.serviceRegistry = context.getController().getServiceContainer();
         this.dispatcher = this.dispatcherFactory.getValue().<SingletonContext<T>>createCommandDispatcher(this.singletonServiceName, this);
-        this.registration = this.registrationFactory.getValue().createRegistration(this.singletonServiceName, this);
+        ServiceProviderRegistry<ServiceName> registry = this.registry.getValue();
+        this.registration = registry.register(this.singletonServiceName, this);
         this.started = true;
     }
 
@@ -244,7 +246,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     private void startNewMaster() {
         this.master.set(true);
-        ServiceController<?> service = this.registry.getRequiredService(this.targetServiceName);
+        ServiceController<?> service = this.serviceRegistry.getRequiredService(this.targetServiceName);
         try {
             ServiceContainerHelper.start(service);
         } catch (StartException e) {
@@ -271,7 +273,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
     @Override
     public void stopOldMaster() {
         if (this.master.compareAndSet(true, false)) {
-            ServiceContainerHelper.stop(this.registry.getRequiredService(this.targetServiceName));
+            ServiceContainerHelper.stop(this.serviceRegistry.getRequiredService(this.targetServiceName));
         }
     }
 

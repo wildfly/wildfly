@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,11 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.spi;
+package org.wildfly.clustering.server.provider;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Installer for clustered cache-based services.
+ * Command to obtain the service providers known to a node.
  * @author Paul Ferraro
  */
-public interface ClusteredCacheGroupBuilderProvider extends CacheGroupBuilderProvider {
+public class GetLocalServicesCommand<T> implements Command<List<T>, Set<T>> {
+    private static final long serialVersionUID = -6038614943434229434L;
+
+    @Override
+    public List<T> execute(Set<T> services) {
+        return new ArrayList<>(services);
+    }
 }

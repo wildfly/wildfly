@@ -19,30 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+package org.wildfly.clustering.server.group;
+
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.server.CacheBuilderFactory;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.ClusteredCacheGroupBuilderProvider;
 
 /**
- * Provides the requisite builders for a clustered {@link ServiceProviderRegistrationFactory}.
+ * Provides the requisite builders for a clustered cache-based {@link Group} service.
  * @author Paul Ferraro
  */
-public class CacheServiceProviderRegistrationFactoryBuilderProvider extends ServiceProviderRegistrationFactoryBuilderProvider implements ClusteredCacheGroupBuilderProvider {
+public class DistributedCacheGroupBuilderProvider extends CacheGroupBuilderProvider implements org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider {
 
-    private static final CacheBuilderFactory<ServiceProviderRegistrationFactory> FACTORY = new CacheBuilderFactory<ServiceProviderRegistrationFactory>() {
+    private static final CacheBuilderFactory<Group> FACTORY = new CacheBuilderFactory<Group>() {
         @Override
-        public Builder<ServiceProviderRegistrationFactory> createBuilder(String containerName, String cacheName) {
-            return new CacheServiceProviderRegistrationFactoryBuilder(containerName, cacheName);
+        public Builder<Group> createBuilder(String containerName, String cacheName) {
+            return new CacheGroupBuilder(containerName, cacheName);
         }
     };
 
-    /**
-     * @param factory
-     */
-    public CacheServiceProviderRegistrationFactoryBuilderProvider() {
+    public DistributedCacheGroupBuilderProvider() {
         super(FACTORY);
     }
 }

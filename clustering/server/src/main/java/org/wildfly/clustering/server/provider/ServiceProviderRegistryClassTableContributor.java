@@ -21,20 +21,19 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 
-import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.marshalling.ClassTableContributor;
 
 /**
- * Command to obtain the service providers known to a node.
+ * ClassTable contributor for the marshaller of a {@link ServiceProviderRegistration}.
  * @author Paul Ferraro
  */
-public class ServiceRegistryCommand implements Command<List<Object>, ServiceRegistry> {
-    private static final long serialVersionUID = -6038614943434229434L;
+public class ServiceProviderRegistryClassTableContributor implements ClassTableContributor {
 
     @Override
-    public List<Object> execute(ServiceRegistry registry) {
-        return new ArrayList<>(registry.getServices());
+    public Collection<Class<?>> getKnownClasses() {
+        return Collections.<Class<?>>singleton(GetLocalServicesCommand.class);
     }
 }

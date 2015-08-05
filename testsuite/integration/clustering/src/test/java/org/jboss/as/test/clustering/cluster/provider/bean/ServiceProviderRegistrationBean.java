@@ -11,19 +11,19 @@ import javax.ejb.Startup;
 
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 
 @Singleton
 @Startup
 @Local(ServiceProviderRegistration.class)
-public class ServiceProviderRegistrationBean implements ServiceProviderRegistration, ServiceProviderRegistration.Listener {
+public class ServiceProviderRegistrationBean implements ServiceProviderRegistration<String>, ServiceProviderRegistration.Listener {
     @Resource(lookup = "java:jboss/clustering/providers/server/default")
-    private ServiceProviderRegistrationFactory factory;
-    private ServiceProviderRegistration registration;
+    private ServiceProviderRegistry<String> factory;
+    private ServiceProviderRegistration<String> registration;
 
     @PostConstruct
     public void init() {
-        this.registration = this.factory.createRegistration("ServiceProviderRegistrationTestCase", this);
+        this.registration = this.factory.register("ServiceProviderRegistrationTestCase", this);
     }
 
     @PreDestroy
@@ -32,7 +32,7 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
     }
 
     @Override
-    public Object getService() {
+    public String getService() {
         return this.registration.getService();
     }
 

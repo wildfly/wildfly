@@ -21,29 +21,28 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.CacheBuilderFactory;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
 
 /**
- * Provides the requisite builders for a non-clustered {@link ServiceProviderRegistrationFactory}.
+ * Provides the requisite builders for a clustered {@link ServiceProviderRegistrationFactory}.
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistrationFactoryBuilderProvider extends ServiceProviderRegistrationFactoryBuilderProvider implements LocalCacheGroupBuilderProvider {
+public class CacheServiceProviderRegistryBuilderProvider extends ServiceProviderRegistryBuilderProvider implements DistributedCacheGroupBuilderProvider {
 
-    private static final CacheBuilderFactory<ServiceProviderRegistrationFactory> FACTORY = new CacheBuilderFactory<ServiceProviderRegistrationFactory>() {
+    private static final CacheBuilderFactory<ServiceProviderRegistry<Object>> FACTORY = new CacheBuilderFactory<ServiceProviderRegistry<Object>>() {
         @Override
-        public Builder<ServiceProviderRegistrationFactory> createBuilder(String containerName, String cacheName) {
-            return new LocalServiceProviderRegistrationFactoryBuilder(containerName, cacheName);
+        public Builder<ServiceProviderRegistry<Object>> createBuilder(String containerName, String cacheName) {
+            return new CacheServiceProviderRegistryBuilder<>(containerName, cacheName);
         }
     };
 
     /**
-     * @param containerName
-     * @param cacheName
+     * @param factory
      */
-    public LocalServiceProviderRegistrationFactoryBuilderProvider() {
+    public CacheServiceProviderRegistryBuilderProvider() {
         super(FACTORY);
     }
 }

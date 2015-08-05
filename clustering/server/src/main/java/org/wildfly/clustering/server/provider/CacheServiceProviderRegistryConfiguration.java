@@ -31,13 +31,13 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 
 /**
- * Configuration for a {@link CacheServiceProviderRegistrationFactoryBuilder}.
+ * Configuration for a {@link CacheServiceProviderRegistryBuilder}.
  * @author Paul Ferraro
  */
-public interface CacheServiceProviderRegistrationFactoryConfiguration {
+public interface CacheServiceProviderRegistryConfiguration<T> {
     Object getId();
     Group getGroup();
-    Cache<Object, Set<Node>> getCache();
+    Cache<T, Set<Node>> getCache();
     CommandDispatcherFactory getCommandDispatcherFactory();
     Batcher<? extends Batch> getBatcher();
 }

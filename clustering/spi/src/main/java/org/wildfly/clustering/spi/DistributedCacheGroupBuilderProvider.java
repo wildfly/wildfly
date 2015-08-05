@@ -19,27 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.wildfly.clustering.server.group;
-
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.CacheBuilderFactory;
-import org.wildfly.clustering.service.Builder;
+package org.wildfly.clustering.spi;
 
 /**
- * Provides the requisite builders for a clustered cache-based {@link Group} service.
+ * Installer for clustered cache-based services.
  * @author Paul Ferraro
  */
-public class ClusteredCacheGroupBuilderProvider extends CacheGroupBuilderProvider implements org.wildfly.clustering.spi.ClusteredCacheGroupBuilderProvider {
-
-    private static final CacheBuilderFactory<Group> FACTORY = new CacheBuilderFactory<Group>() {
-        @Override
-        public Builder<Group> createBuilder(String containerName, String cacheName) {
-            return new CacheGroupBuilder(containerName, cacheName);
-        }
-    };
-
-    public ClusteredCacheGroupBuilderProvider() {
-        super(FACTORY);
-    }
+public interface DistributedCacheGroupBuilderProvider extends CacheGroupBuilderProvider {
 }

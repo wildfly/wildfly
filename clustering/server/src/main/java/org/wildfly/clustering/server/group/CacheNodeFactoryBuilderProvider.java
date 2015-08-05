@@ -25,14 +25,14 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.ClusteredCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
 import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for both local and clustered service implementations of a {@link org.wildfly.clustering.group.NodeFactory} for a cache.
  * @author Paul Ferraro
  */
-public class CacheNodeFactoryBuilderProvider implements LocalCacheGroupBuilderProvider, ClusteredCacheGroupBuilderProvider {
+public class CacheNodeFactoryBuilderProvider implements LocalCacheGroupBuilderProvider, DistributedCacheGroupBuilderProvider {
 
     @Override
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {

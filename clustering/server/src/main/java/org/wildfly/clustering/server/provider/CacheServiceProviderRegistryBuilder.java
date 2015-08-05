@@ -38,7 +38,7 @@ import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
@@ -48,25 +48,25 @@ import org.wildfly.clustering.spi.GroupServiceName;
  * Builds a clustered {@link ServiceProviderRegistrationFactory} service.
  * @author Paul Ferraro
  */
-public class CacheServiceProviderRegistrationFactoryBuilder extends ServiceProviderRegistrationFactoryServiceNameProvider implements Builder<ServiceProviderRegistrationFactory>, Service<ServiceProviderRegistrationFactory>, CacheServiceProviderRegistrationFactoryConfiguration {
+public class CacheServiceProviderRegistryBuilder<T> extends ServiceProviderRegistryServiceNameProvider implements Builder<ServiceProviderRegistry<T>>, Service<ServiceProviderRegistry<T>>, CacheServiceProviderRegistryConfiguration<T> {
 
     private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
     private final InjectedValue<Group> group = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
 
-    private volatile CacheServiceProviderRegistrationFactory factory = null;
+    private volatile CacheServiceProviderRegistry<T> factory = null;
 
     /**
      * @param containerName
      * @param cacheName
      */
-    public CacheServiceProviderRegistrationFactoryBuilder(String containerName, String cacheName) {
+    public CacheServiceProviderRegistryBuilder(String containerName, String cacheName) {
         super(containerName, cacheName);
     }
 
     @Override
-    public ServiceBuilder<ServiceProviderRegistrationFactory> build(ServiceTarget target) {
+    public ServiceBuilder<ServiceProviderRegistry<T>> build(ServiceTarget target) {
         return new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
                 .addDependency(CacheServiceName.CACHE.getServiceName(this.containerName, this.cacheName), Cache.class, this.cache)
                 .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
@@ -75,13 +75,13 @@ public class CacheServiceProviderRegistrationFactoryBuilder extends ServiceProvi
     }
 
     @Override
-    public ServiceProviderRegistrationFactory getValue() {
-        return this.factory;
+    public ServiceProviderRegistry<T> getValue() {
+        return new ServiceProviderRegistrationFactoryAdapter<>(this.factory);
     }
 
     @Override
     public void start(StartContext context) {
-        this.factory = new CacheServiceProviderRegistrationFactory(this);
+        this.factory = new CacheServiceProviderRegistry<>(this);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class CacheServiceProviderRegistrationFactoryBuilder extends ServiceProvi
     }
 
     @Override
-    public Cache<Object, Set<Node>> getCache() {
+    public Cache<T, Set<Node>> getCache() {
         return this.cache.getValue();
     }
 
