@@ -77,7 +77,18 @@ public class ManagedObjectHandlerRegistry {
     public Set<ObjectName> queryNames(ModelController controller, ObjectName name, QueryExp query){
         Set<ObjectName> result = new HashSet<ObjectName>();
         for (Handler handler : getHandlers(name)) {
-            result.addAll(handler.queryObjectNames(new ModelReader(controller), name, query));
+            Set<ObjectName> foundNames = handler.queryObjectNames(new ModelReader(controller), name, query);
+            if (name == null) {
+                //No filter
+                result.addAll(foundNames);
+            } else {
+                //Check that the name matches the found ones
+                for (ObjectName found : foundNames) {
+                    if (name.apply(found)) {
+                        result.add(found);
+                    }
+                }
+            }
         }
         return result;
     }
@@ -119,6 +130,7 @@ public class ManagedObjectHandlerRegistry {
         if (!isMyDomain(name)) {
             return Collections.emptySet();
         }
+
 
         String property = name.getKeyProperty(Handler.J2EE_TYPE);
         if (property != null) {
