@@ -148,11 +148,13 @@ public class DataSourceJdbcStatisticsTestCase {
             }
 
             operation = new ModelNode();
-            operation.get(OP).set("enable");
+            operation.get(OP).set("write-attribute");
+            operation.get("name").set("enabled");
+            operation.get("value").set(true);
             operation.get(OP_ADDR).set(address);
 
             executeOperation(operation);
-
+            reload();
             return address;
         }
 

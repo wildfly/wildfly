@@ -35,7 +35,7 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * Operation handler responsible for adding a DataSource.
  *
- * @author John Bailey
+ * @author Stefano Maestrioperation2.get(OP).set("write-attribute");
  */
 public class DataSourceAdd extends AbstractDataSourceAdd {
     static final DataSourceAdd INSTANCE = new DataSourceAdd();
@@ -49,6 +49,11 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
     }
 
     @Override
+    protected boolean isXa() {
+        return false;
+    }
+
+    @Override
     protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
             AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException {
@@ -59,4 +64,6 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
                 ((LocalDataSourceService) dataSourceService).getDataSourceConfigInjector());
 
     }
+
+
 }

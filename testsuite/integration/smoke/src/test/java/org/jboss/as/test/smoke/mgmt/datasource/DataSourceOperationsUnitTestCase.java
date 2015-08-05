@@ -79,7 +79,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set("MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
-        operation.get("enabled").set(false);
+        operation.get("enabled").set(true);
 
 
         operation.get("driver-name").set("h2");
@@ -90,12 +90,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         operation.get("password").set("sa");
 
         executeOperation(operation);
-
-        final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
-        operation2.get(OP_ADDR).set(address);
-
-        executeOperation(operation2);
 
         testConnection("MyNewDs");
 
@@ -108,108 +102,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         Assert.assertNotNull(findNodeWithProperty(newList, "jndi-name", "java:jboss/datasources/MyNewDs"));
     }
 
-    /**
-     * AS7-1202 test for enable datasource
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testAddDisabledDsEnableItAndTestConnection() throws Exception {
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "datasources");
-        address.add("data-source", "MyNewDs");
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("add");
-        operation.get(OP_ADDR).set(address);
-
-        operation.get("name").set("MyNewDs");
-        operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
-        operation.get("enabled").set(false);
-
-        operation.get("driver-name").set("h2");
-        operation.get("pool-name").set("MyNewDs_Pool");
-
-        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        operation.get("user-name").set("sa");
-        operation.get("password").set("sa");
-
-        executeOperation(operation);
-
-        final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
-        operation2.get(OP_ADDR).set(address);
-
-        executeOperation(operation2);
-
-        testConnection("MyNewDs");
-
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
-
-        remove(address);
-
-        Assert.assertNotNull("Reparsing failed:", newList);
-
-        Assert.assertNotNull(findNodeWithProperty(newList, "jndi-name", "java:jboss/datasources/MyNewDs"));
-    }
-
-    @Test
-    public void testAddDsWithConnectionProperties() throws Exception {
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "datasources");
-        address.add("data-source", "MyNewDs");
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("add");
-        operation.get(OP_ADDR).set(address);
-
-        operation.get("name").set("MyNewDs");
-        operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
-        operation.get("enabled").set(false);
-
-
-        operation.get("driver-name").set("h2");
-        operation.get("pool-name").set("MyNewDs_Pool");
-
-        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        operation.get("user-name").set("sa");
-        operation.get("password").set("sa");
-
-        executeOperation(operation);
-
-
-        final ModelNode connectionPropertyAddress = address.clone();
-        connectionPropertyAddress.add("connection-properties", "MyKey");
-        connectionPropertyAddress.protect();
-
-        final ModelNode connectionPropertyOperation = new ModelNode();
-        connectionPropertyOperation.get(OP).set("add");
-        connectionPropertyOperation.get(OP_ADDR).set(connectionPropertyAddress);
-
-
-        connectionPropertyOperation.get("value").set("MyValue");
-
-
-        executeOperation(connectionPropertyOperation);
-
-        final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
-        operation2.get(OP_ADDR).set(address);
-
-        executeOperation(operation2);
-
-        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
-
-        remove(address);
-
-        Assert.assertNotNull("Reparsing failed:", newList);
-
-        Assert.assertNotNull(findNodeWithProperty(newList, "jndi-name", "java:jboss/datasources/MyNewDs"));
-    }
 
     @Test
     public void testAddAndRemoveSameName() throws Exception {
@@ -318,16 +210,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         executeOperation(xaDatasourcePropertyOperation);
 
-
-        final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
-        operation2.get(OP_ADDR).set(address);
-
-        executeOperation(operation2);
-
-
-        testConnectionXA(dsName);
-
         remove(address);
     }
 
@@ -374,7 +256,9 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         executeOperation(xaDatasourcePropertyOperation);
 
         final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
+        operation2.get(OP).set("write-attribute");
+        operation2.get("name").set("enabled");
+        operation2.get("value").set(true);
         operation2.get(OP_ADDR).set(address);
 
         executeOperation(operation2);
@@ -392,72 +276,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
     }
 
-    /**
-     * AS7-1201 test for en/diable xa datasources
-     * <p/>
-     * DO NOT RE-ENABLE THIS TEST WITHOUT ACTUALLY FIXING THE PROBLEM
-     * <p/>
-     * It fails INTERMITTENTLY. This means that it is not enough to just run it once, decide it passes and submit it.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void disableAndReEnableXaDs() throws Exception {
-        final String dsName = "XaDsNameDisEn";
-        final String jndiDsName = "XaJndiDsNameDisEn";
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "datasources");
-        address.add("xa-data-source", dsName);
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("add");
-        operation.get(OP_ADDR).set(address);
-
-        operation.get("name").set(dsName);
-        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
-        operation.get("enabled").set(false);
-
-
-        operation.get("driver-name").set("h2");
-        operation.get("pool-name").set(dsName + "_Pool");
-
-        operation.get("user-name").set("sa");
-        operation.get("password").set("sa");
-
-        final ModelNode enableOperation = new ModelNode();
-        enableOperation.get(OP).set("enable");
-        enableOperation.get(OP_ADDR).set(address);
-
-        final ModelNode disableOperation = new ModelNode();
-        disableOperation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        disableOperation.get(OP).set("disable");
-        disableOperation.get(OP_ADDR).set(address);
-
-        executeOperation(operation);
-
-        final ModelNode xaDatasourcePropertiesAddress = address.clone();
-        xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
-        xaDatasourcePropertiesAddress.protect();
-        final ModelNode xaDatasourcePropertyOperation = new ModelNode();
-        xaDatasourcePropertyOperation.get(OP).set("add");
-        xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
-        xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
-
-        executeOperation(xaDatasourcePropertyOperation);
-
-        executeOperation(enableOperation);
-
-        testConnectionXA(dsName);
-
-        executeOperation(disableOperation);
-        executeOperation(enableOperation);
-
-        testConnectionXA(dsName);
-
-        remove(address);
-    }
 
     @Test
     public void testReadInstalledDrivers() throws Exception {
@@ -523,7 +341,9 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
 
         final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
+        operation2.get(OP).set("write-attribute");
+        operation2.get("name").set("enabled");
+        operation2.get("value").set(true);
         operation2.get(OP_ADDR).set(address);
 
         executeOperation(operation2);
@@ -671,119 +491,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         Assert.assertNotNull("xa-datasource-properties not propagated ", findNodeWithProperty(newList, "value", "jdbc:h2:mem:test"));
     }
 
-    @Test
-    public void testXaDsWithSystemProperties() throws Exception {
-
-        final ModelNode propAddress = new ModelNode();
-        propAddress.add("system-property", "sql.parameter");
-        propAddress.protect();
-
-        final ModelNode propOperation = new ModelNode();
-        propOperation.get(OP).set("add");
-        propOperation.get(OP_ADDR).set(propAddress);
-        propOperation.get("value").set("sa");
-        executeOperation(propOperation);
-
-        final String dsName = "XaDsName2";
-        final String jndiDsName = "XaJndiDsName2";
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "datasources");
-        address.add("xa-data-source", dsName);
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("add");
-        operation.get(OP_ADDR).set(address);
-
-        operation.get("name").set(dsName);
-        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
-        operation.get("enabled").set(false);
-
-
-        operation.get("driver-name").set("h2");
-        operation.get("pool-name").set(dsName + "_Pool");
-
-        operation.get("user-name").set("${sql.parameter}");
-        operation.get("password").set("${sql.parameter}");
-
-        executeOperation(operation);
-
-        final ModelNode xaDatasourcePropertiesAddress = address.clone();
-        xaDatasourcePropertiesAddress.add("xa-datasource-properties", "URL");
-        xaDatasourcePropertiesAddress.protect();
-        final ModelNode xaDatasourcePropertyOperation = new ModelNode();
-        xaDatasourcePropertyOperation.get(OP).set("add");
-        xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
-        xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
-
-        executeOperation(xaDatasourcePropertyOperation);
-
-        final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
-        operation2.get(OP_ADDR).set(address);
-
-        executeOperation(operation2);
-
-        testConnectionXA(dsName);
-
-        remove(address);
-        remove(propAddress);
-
-    }
-
-    /**
-     * test case for AS7-3316 issue -  datasource with system properties
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testDsWithSystemProperties() throws Exception {
-        final ModelNode propAddress = new ModelNode();
-        propAddress.add("system-property", "sql.parameter");
-        propAddress.protect();
-
-        final ModelNode propOperation = new ModelNode();
-        propOperation.get(OP).set("add");
-        propOperation.get(OP_ADDR).set(propAddress);
-        propOperation.get("value").set("sa");
-        executeOperation(propOperation);
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "datasources");
-        address.add("data-source", "MyNewDs");
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("add");
-        operation.get(OP_ADDR).set(address);
-
-        operation.get("name").set("MyNewDs");
-        operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
-        operation.get("enabled").set(false);
-
-
-        operation.get("driver-name").set("h2");
-        operation.get("pool-name").set("MyNewDs_Pool");
-
-        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        operation.get("user-name").set("${sql.parameter}");
-        operation.get("password").set("${sql.parameter}");
-
-        executeOperation(operation);
-
-        final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("enable");
-        operation2.get(OP_ADDR).set(address);
-
-        executeOperation(operation2);
-
-        testConnection("MyNewDs");
-
-        remove(address);
-        remove(propAddress);
-
-    }
 
 
 }
