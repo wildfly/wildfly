@@ -60,11 +60,11 @@ public class BatchDeploymentResourceProcessor implements DeploymentUnitProcessor
             final JobOperatorService jobOperatorService = new JobOperatorService(moduleClassLoader);
 
             // Get all the job XML service
-            final JobXmlResolverService jobXmlResolverService = (JobXmlResolverService) phaseContext.getServiceRegistry().getService(BatchServiceNames.jobXmlResolverServiceName(deploymentUnit)).getValue();
+            final WildFlyJobXmlResolver jobXmlResolver = deploymentUnit.getAttachment(WildFlyJobXmlResolver.JOB_XML_RESOLVER);
             // Process each job XML file
-            for (String jobXml : jobXmlResolverService.getJobXmlNames(moduleClassLoader)) {
+            for (String jobXml : jobXmlResolver.getJobXmlNames(moduleClassLoader)) {
                 try {
-                    final String jobName = jobXmlResolverService.resolveJobName(jobXml, moduleClassLoader);
+                    final String jobName = jobXmlResolver.resolveJobName(jobXml, moduleClassLoader);
                     // Add the job information to the service
                     jobOperatorService.addAllowedJob(jobXml, jobName);
                     BatchLogger.LOGGER.debugf("Added job XML %s with job name %s to allowed jobs for deployment %s", jobXml, jobName, deploymentUnit.getName());
