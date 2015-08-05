@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -47,6 +48,7 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.wildfly.extension.batch.BatchServiceNames;
 import org.wildfly.extension.batch._private.BatchLogger;
+import org.wildfly.extension.batch.jberet.deployment.JobXmlResolverService;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.jberet.services.BatchEnvironmentService;
@@ -113,7 +115,10 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 jobXmlResolverService = new JobXmlResolverService();
             }
             // Install the job XML resolver service
-            serviceTarget.addService(BatchServiceNames.jobXmlResolverServiceName(deploymentUnit), jobXmlResolverService).install();
+            Services.addServerExecutorDependency(
+                    serviceTarget.addService(org.wildfly.extension.batch.jberet.BatchServiceNames.jobXmlResolverServiceName(deploymentUnit), jobXmlResolverService),
+                    jobXmlResolverService.getExecutorServiceInjector(), false)
+                    .install();
             // Add a dependency to the job XML resolver service
             serviceBuilder.addDependency(BatchServiceNames.jobXmlResolverServiceName(deploymentUnit), JobXmlResolver.class, service.getJobXmlResolverInjector());
 

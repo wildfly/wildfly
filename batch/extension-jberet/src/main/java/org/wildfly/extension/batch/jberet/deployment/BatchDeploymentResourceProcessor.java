@@ -33,7 +33,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
-import org.wildfly.extension.batch.jberet.BatchSubsystemDefinition;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
 
 /**
@@ -42,6 +41,12 @@ import org.wildfly.extension.batch.jberet._private.BatchLogger;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class BatchDeploymentResourceProcessor implements DeploymentUnitProcessor {
+    private final String subsystemName;
+
+    public BatchDeploymentResourceProcessor(final String subsystemName) {
+        this.subsystemName = subsystemName;
+    }
+
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -65,8 +70,8 @@ public class BatchDeploymentResourceProcessor implements DeploymentUnitProcessor
                     BatchLogger.LOGGER.debugf("Added job XML %s with job name %s to allowed jobs for deployment %s", jobXml, jobName, deploymentUnit.getName());
                     // Register the a resource for each job found
                     final PathAddress jobAddress = PathAddress.pathAddress(BatchJobResourceDefinition.JOB, jobName);
-                    if (!deploymentResourceSupport.hasDeploymentSubModel(BatchSubsystemDefinition.NAME, jobAddress)) {
-                        deploymentResourceSupport.registerDeploymentSubResource(BatchSubsystemDefinition.NAME,
+                    if (!deploymentResourceSupport.hasDeploymentSubModel(subsystemName, jobAddress)) {
+                        deploymentResourceSupport.registerDeploymentSubResource(subsystemName,
                                 jobAddress, new BatchJobExecutionResource(jobOperatorService, jobName));
                     }
                 } catch (Exception e) {

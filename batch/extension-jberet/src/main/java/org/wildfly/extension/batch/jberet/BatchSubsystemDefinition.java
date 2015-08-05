@@ -153,7 +153,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                     processorTarget.addDeploymentProcessor(NAME,
                             Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent));
                     processorTarget.addDeploymentProcessor(NAME,
-                            Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor());
+                            Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor(NAME));
 
                 }
             }, OperationContext.Stage.RUNTIME);

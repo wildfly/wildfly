@@ -43,6 +43,11 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jberet</artifactId>
         </dependency>
+        <!-- Used to inherit some stuff from the new subsystem -->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-batch-jberet</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>

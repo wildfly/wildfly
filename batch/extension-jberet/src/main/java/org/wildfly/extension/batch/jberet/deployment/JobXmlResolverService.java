@@ -55,7 +55,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class JobXmlResolverService implements Service<JobXmlResolver>, JobXmlResolver {
+public class JobXmlResolverService implements Service<JobXmlResolver>, JobXmlResolver {
     private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
     private final Set<JobXmlResolver> jobXmlResolvers;
     private final Map<String, String> cachedJobInfo;
@@ -187,7 +187,7 @@ class JobXmlResolverService implements Service<JobXmlResolver>, JobXmlResolver {
         return cachedJobInfo.get(jobXml);
     }
 
-    protected Injector<ExecutorService> getExecutorServiceInjector() {
+    public Injector<ExecutorService> getExecutorServiceInjector() {
         return executor;
     }
 }
