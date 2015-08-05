@@ -57,7 +57,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 import org.wildfly.clustering.jgroups.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 
 /**
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -147,7 +147,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager);
         ServiceBuilder<DistributedWorkManager> builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
-        builder.addDependency(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
+        builder.addDependency(ChannelServiceName.FACTORY.getServiceName(), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
 
 
         builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name), Executor.class, wmService.getExecutorLongInjector());
