@@ -103,6 +103,7 @@
         <version.httpunit>1.7</version.httpunit>
         <version.io.netty>4.0.26.Final</version.io.netty>
         <version.io.undertow.jastow>2.0.0.Beta2</version.io.undertow.jastow>
+        <version.io.undertow.js>1.0.0.Alpha2</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.2</version.javax.enterprise>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
@@ -258,6 +259,7 @@
         <org.jboss.model.test.cache.root>[pom.xml,testsuite]</org.jboss.model.test.cache.root>
         <!-- Location relative to root that will be used for the cached legacy classpaths used by subsystem-test and core-model-test-->
         <org.jboss.model.test.classpath.cache>target/model-test-classpath-cache</org.jboss.model.test.classpath.cache>
+        <version.com.github.spullara.mustache>0.8.13</version.com.github.spullara.mustache>
     </properties>
 
     <modules>
@@ -1371,6 +1373,13 @@
                 <groupId>com.github.relaxng</groupId>
                 <artifactId>relaxngDatatype</artifactId>
                 <version>${version.com.github.relaxng}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.github.spullara.mustache.java</groupId>
+                <artifactId>compiler</artifactId>
+                <version>${version.com.github.spullara.mustache}</version>
             </dependency>
 
             <dependency>
@@ -4602,6 +4611,12 @@
                 <groupId>io.undertow.jastow</groupId>
                 <artifactId>jastow</artifactId>
                 <version>${version.io.undertow.jastow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow.js</groupId>
+                <artifactId>undertow-js</artifactId>
+                <version>${version.io.undertow.js}</version>
             </dependency>
 
             <dependency>
