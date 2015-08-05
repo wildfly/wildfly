@@ -985,7 +985,11 @@ public class PersistenceUnitServiceHandler {
     private static PersistenceProvider getProviderByName(PersistenceUnitMetadata pu, List<PersistenceProvider> providers) {
         String providerName = pu.getPersistenceProviderClassName();
         for (PersistenceProvider provider : providers) {
-            if (provider.getClass().getName().equals(providerName)) {
+            if (providerName == null ||
+                    provider.getClass().getName().equals(providerName) ||
+                    // WFLY-4931 allow legacy Hibernate persistence provider name org.hibernate.ejb.HibernatePersistence to be used.
+                    (provider.getClass().getName().equals(Configuration.PROVIDER_CLASS_DEFAULT) && providerName.equals(Configuration.PROVIDER_CLASS_HIBERNATE4_1))
+                    ) {
                 return provider;                    // return the provider that matched classname
             }
         }
