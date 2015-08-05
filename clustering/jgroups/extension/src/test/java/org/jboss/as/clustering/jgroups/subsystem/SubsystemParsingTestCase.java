@@ -31,15 +31,15 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -86,7 +86,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     private KernelServicesBuilder createKernelServicesBuilder() {
-        return this.createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        return this.createKernelServicesBuilder(this.createAdditionalInitialization());
     }
 
     private KernelServicesBuilder createKernelServicesBuilder(String xml) throws XMLStreamException {
@@ -94,9 +94,8 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
-    protected ValidationConfiguration getModelValidationConfiguration() {
-        // use this configuration to report any exceptional cases for DescriptionProviders
-        return new ValidationConfiguration();
+    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr");
     }
 
     /*

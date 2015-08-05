@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -80,7 +80,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new JGroupsSubsystemInitialization();
+        return new JGroupsSubsystemInitialization().require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2");
     }
 
     @Override
@@ -97,12 +97,6 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private static void purgeJGroupsModel(ModelNode model) {
         model.get(JGroupsSubsystemResourceDefinition.PATH.getKey()).remove(JGroupsSubsystemResourceDefinition.PATH.getValue());
-    }
-
-    @Override
-    protected ValidationConfiguration getModelValidationConfiguration() {
-        // use this configuration to report any exceptional cases for DescriptionProviders
-        return new ValidationConfiguration();
     }
 
     /**

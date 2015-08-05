@@ -52,7 +52,7 @@ public class ForkProtocolResourceDefinition extends ProtocolResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addCapabilities(Capability.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
         new RestartParentResourceStepHandler<ChannelFactory>(new AddStepHandler(descriptor, handler), this.parentBuilderFactory) {
             @Override

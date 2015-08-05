@@ -22,12 +22,13 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceDefinition.*;
+import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceDefinition.Attribute.*;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jboss.as.clustering.controller.CapabilityDependency;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
@@ -81,12 +82,12 @@ public abstract class ElectionPolicyBuilder extends ElectionPolicyServiceNamePro
     public Builder<SingletonElectionPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.preferences.clear();
         this.dependencies.clear();
-        for (String bindingName : ModelNodes.asStringList(Attribute.SOCKET_BINDING_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
-            CapabilityDependency<OutboundSocketBinding> binding = new CapabilityDependency<>(context, Capability.SOCKET_BINDING_PREFERENCE, bindingName, OutboundSocketBinding.class);
+        for (String bindingName : ModelNodes.asStringList(SOCKET_BINDING_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
+            CapabilityDependency<OutboundSocketBinding> binding = new CapabilityDependency<>(context, RequiredCapability.OUTBOUND_SOCKET_BINDING, bindingName, OutboundSocketBinding.class);
             this.preferences.add(new OutboundSocketBindingPreference(binding));
             this.dependencies.add(binding);
         }
-        for (String nodeName : ModelNodes.asStringList(ElectionPolicyResourceDefinition.Attribute.NAME_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
+        for (String nodeName : ModelNodes.asStringList(NAME_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
             this.preferences.add(new NamePreference(nodeName));
         }
         return this;

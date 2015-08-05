@@ -91,5 +91,7 @@ public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler imple
             builder.addParameter(parameter);
         }
         registration.registerOperationHandler(builder.build(), this);
+
+        new CapabilityRegistration(this.descriptor.getCapabilities()).register(registration);
     }
 }

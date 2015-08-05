@@ -76,21 +76,26 @@ public class ElectionPolicyResourceDefinition extends SimpleResourceDefinition i
         private final AttributeDefinition definition;
 
         private Attribute(String name, String alternative) {
-            this(name, alternative, null);
+            this.definition = createBuilder(name, alternative).build();
         }
 
-        private Attribute(String name, String alternative, CapabilityReferenceRecorder capability) {
-            this.definition = new StringListAttributeDefinition.Builder(name)
-                    .setAllowExpression(true)
-                    .setAllowNull(true)
-                    .setAlternatives(alternative)
-                    .setCapabilityReference(capability)
+        private Attribute(String name, String alternative, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, alternative)
+                    .setCapabilityReference(reference)
                     .build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        private static StringListAttributeDefinition.Builder createBuilder(String name, String alternative) {
+            return new StringListAttributeDefinition.Builder(name)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setAlternatives(alternative)
+            ;
         }
     }
 

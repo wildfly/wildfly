@@ -21,41 +21,34 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.io.Serializable;
-
 import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.StackResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistryType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 
 /**
  * Initializer for the JGroups subsystem.
  * @author Paul Ferraro
  */
-public class JGroupsSubsystemInitialization extends AdditionalInitialization implements Serializable {
+public class JGroupsSubsystemInitialization extends AdditionalInitialization {
     private static final long serialVersionUID = -4433079373360352449L;
+
     private final String module = "jgroups";
-    private final RunningMode mode;
 
     public JGroupsSubsystemInitialization() {
-        this(RunningMode.ADMIN_ONLY);
+        super();
     }
 
     public JGroupsSubsystemInitialization(RunningMode mode) {
-        this.mode = mode;
-    }
-
-    @Override
-    protected RunningMode getRunningMode() {
-        return this.mode;
+        super(mode);
     }
 
     @Override
@@ -64,6 +57,7 @@ public class JGroupsSubsystemInitialization extends AdditionalInitialization imp
 
         Resource subsystem = Resource.Factory.create();
         subsystem.getModel().get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).set("tcp");
+        subsystem.getModel().get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName()).set("maximal-channel");
         root.registerChild(JGroupsSubsystemResourceDefinition.PATH, subsystem);
 
         Resource channel = Resource.Factory.create();
@@ -74,5 +68,7 @@ public class JGroupsSubsystemInitialization extends AdditionalInitialization imp
 
         Resource transport = Resource.Factory.create();
         stack.registerChild(TransportResourceDefinition.pathElement("TCP"), transport);
+
+        super.initializeExtraSubystemsAndModel(registry, root, registration, capabilityRegistry);
     }
 }

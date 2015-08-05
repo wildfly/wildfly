@@ -26,7 +26,7 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -63,8 +63,8 @@ public class StringKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcStringBase
     }
 
     @Override
-    JdbcStringBasedStoreConfigurationBuilder createStore(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.builder = super.createStore(resolver, model);
+    JdbcStringBasedStoreConfigurationBuilder createStore(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.builder = super.createStore(context, model);
         return this.builder;
     }
 }
