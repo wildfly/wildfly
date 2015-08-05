@@ -45,7 +45,7 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
     @Override
     public final void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final PathAddress address = context.getCurrentAddress();
-        final ServiceController<?> controller = context.getServiceRegistry(false).getService(BatchServiceNames.jobOperatorServiceName(address));
+        final ServiceController<?> controller = context.getServiceRegistry(true).getService(BatchServiceNames.jobOperatorServiceName(address));
         final JobOperator jobOperator = (JobOperator) controller.getService();
         execute(context, operation, jobOperator);
     }
