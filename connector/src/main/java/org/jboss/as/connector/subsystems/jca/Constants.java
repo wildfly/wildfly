@@ -46,4 +46,6 @@ public class Constants {
 
     static final String BOOTSTRAP_CONTEXT = "bootstrap-context";
 
+    public static final String NON_JTA_DATASOURCE_BOOTSTRAP_CONTEXT ="NonJTADataSourceBootstrapContext";
+
 }

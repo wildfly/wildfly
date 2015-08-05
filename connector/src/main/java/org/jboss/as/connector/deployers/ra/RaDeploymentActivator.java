@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.deployers.ra;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
+
 import org.jboss.as.connector.deployers.ds.processors.DriverProcessor;
 import org.jboss.as.connector.deployers.ds.processors.StructureDriverProcessor;
 import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
@@ -32,17 +34,28 @@ import org.jboss.as.connector.deployers.ra.processors.RaStructureProcessor;
 import org.jboss.as.connector.deployers.ra.processors.RaXmlDependencyProcessor;
 import org.jboss.as.connector.deployers.ra.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.ra.processors.RarDependencyProcessor;
+import org.jboss.as.connector.services.bootstrap.NamedBootstrapContext;
+import org.jboss.as.connector.services.bootstrap.NonJTADataSourceBootStrapContextService;
 import org.jboss.as.connector.services.mdr.MdrService;
+import org.jboss.as.connector.services.rarepository.NonJTADataSourceRaRepositoryService;
 import org.jboss.as.connector.services.rarepository.RaRepositoryService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.connector.services.resourceadapters.repository.ManagementRepositoryService;
+import org.jboss.as.connector.subsystems.jca.Constants;
+import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.txn.service.TxnServices;
+import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
+import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.tm.JBossXATerminator;
 
 /**
  * Service activator which installs the various service required for rar
@@ -70,6 +83,22 @@ public class RaDeploymentActivator {
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         raRepositoryService.getTransactionIntegrationInjector())
             .install();
+
+        NonJTADataSourceRaRepositoryService nonJTADataSourceRaRepositoryService = new NonJTADataSourceRaRepositoryService();
+        serviceTarget.addService(ConnectorServices.NON_JTA_DS_RA_REPOSITORY_SERVICE, nonJTADataSourceRaRepositoryService)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, nonJTADataSourceRaRepositoryService.getMdrInjector())
+                .install();
+
+        String name = Constants.NON_JTA_DATASOURCE_BOOTSTRAP_CONTEXT;
+        CloneableBootstrapContext ctx = new NamedBootstrapContext(name);
+        final NonJTADataSourceBootStrapContextService bootCtxService = new NonJTADataSourceBootStrapContextService(ctx, name);
+        serviceTarget
+                .addService(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(name), bootCtxService)
+                .addDependency(ServiceBuilder.DependencyType.REQUIRED, ConnectorServices.WORKMANAGER_SERVICE.append(DEFAULT_NAME), WorkManager.class, bootCtxService.getWorkManagerValueInjector())
+                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, bootCtxService.getXaTerminatorInjector())
+                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, bootCtxService.getJcaConfigInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
         ManagementRepositoryService managementRepositoryService = new ManagementRepositoryService();
         serviceTarget.addService(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, managementRepositoryService)
