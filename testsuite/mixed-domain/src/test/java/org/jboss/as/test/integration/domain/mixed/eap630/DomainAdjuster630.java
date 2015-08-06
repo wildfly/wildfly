@@ -50,7 +50,7 @@ import org.jboss.as.weld.WeldExtension;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.batch.jberet.BatchSubsystemDefinition;
 import org.wildfly.extension.beanvalidation.BeanValidationExtension;
-import org.wildfly.extension.clustering.singleton.SingletonDeployerExtension;
+import org.wildfly.extension.clustering.singleton.SingletonExtension;
 import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
@@ -82,7 +82,7 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.addAll(removeSecurityManager(profileAddress.append(SecurityManagerExtension.SUBSYSTEM_PATH)));
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
         list.addAll(replaceActiveMqWithMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
-        list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, SingletonDeployerExtension.SUBSYSTEM_NAME)));
+        list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME)));
 
         //Temporary workaround, something weird is going on in infinispan/jgroups so let's get rid of those for now
         //TODO Reenable these subsystems, it is important to see if we boot with them configured although the tests don't use clustering
