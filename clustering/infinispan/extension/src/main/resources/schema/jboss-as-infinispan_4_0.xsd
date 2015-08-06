@@ -372,9 +372,14 @@
         <xs:complexContent>
             <xs:extension base="tns:clustered-cache">
                 <xs:sequence>
+                    <xs:element name="partition-handling" type="tns:partition-handling" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>The partition handling configuration for distributed and replicated caches.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                     <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
                         <xs:annotation>
-                            <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
+                            <xs:documentation>The state transfer configuration for distributed and replicated caches.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                     <xs:choice minOccurs="0">
@@ -737,6 +742,14 @@
         <xs:attribute name="type" type="xs:string" default="BIGINT">
             <xs:annotation>
                 <xs:documentation>The type of the column used to store the cache entry or bucket timestamp.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="partition-handling">
+        <xs:attribute name="enabled" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>If enabled, the cache will enter degraded mode upon detecting a network partition that threatens the integrity of the cache.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

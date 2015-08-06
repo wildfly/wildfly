@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,47 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.AdvancedCache;
+import org.infinispan.partitionhandling.AvailabilityMode;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
- * Backup site operations.
+ * Enumerates partition handling operations.
  * @author Paul Ferraro
  */
-public enum BackupOperation implements Operation<BackupOperationContext> {
+public enum PartitionHandlingOperation implements Operation<AdvancedCache<?, ?>> {
 
-    BRING_SITE_ONLINE("bring-site-online", false) {
+    FORCE_AVAILABLE("force-available") {
         @Override
-        public ModelNode execute(BackupOperationContext context) {
-            return new ModelNode(context.getOperations().bringSiteOnline(context.getSite()));
-        }
-    },
-    TAKE_SITE_OFFLINE("take-site-offline", false) {
-        @Override
-        public ModelNode execute(BackupOperationContext context) {
-            return new ModelNode(context.getOperations().takeSiteOffline(context.getSite()));
-        }
-    },
-    SITE_STATUS("site-status", true) {
-        @Override
-        public ModelNode execute(BackupOperationContext context) {
-            return new ModelNode(context.getOperations().siteStatus(context.getSite()));
+        public ModelNode execute(AdvancedCache<?, ?> cache) {
+            cache.setAvailability(AvailabilityMode.AVAILABLE);
+            return null;
         }
     },
     ;
     private final OperationDefinition definition;
 
-    BackupOperation(String name, boolean readOnly) {
-        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, new InfinispanResourceDescriptionResolver(BackupResourceDefinition.WILDCARD_PATH));
-        if (readOnly) {
-            builder.setReadOnly();
-        }
-        this.definition = builder.setReplyType(ModelType.STRING).setRuntimeOnly().build();
+    PartitionHandlingOperation(String name) {
+        this.definition = new SimpleOperationDefinitionBuilder(name, new InfinispanResourceDescriptionResolver(PartitionHandlingResourceDefinition.PATH)).setRuntimeOnly().build();
     }
 
     @Override

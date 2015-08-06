@@ -62,6 +62,7 @@ public enum XMLElement {
     @Deprecated INDEXING(CacheResourceDefinition.DeprecatedAttribute.INDEXING),
     LOCAL_CACHE(LocalCacheResourceDefinition.WILDCARD_PATH),
     LOCKING(LockingResourceDefinition.PATH),
+    PARTITION_HANDLING(PartitionHandlingResourceDefinition.PATH),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
     @Deprecated REHASHING("rehashing"),
     REMOTE_SERVER("remote-server"),
