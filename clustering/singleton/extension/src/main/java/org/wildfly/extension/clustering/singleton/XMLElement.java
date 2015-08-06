@@ -38,8 +38,8 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 public enum XMLElement {
 
-    DEPLOYMENT_POLICIES("deployment-policies"),
-    DEPLOYMENT_POLICY(DeploymentPolicyResourceDefinition.WILDCARD_PATH),
+    SINGLETON_POLICIES("singleton-policies"),
+    SINGLETON_POLICY(SingletonPolicyResourceDefinition.WILDCARD_PATH),
     NAME_PREFERENCES(ElectionPolicyResourceDefinition.Attribute.NAME_PREFERENCES),
     RANDOM_ELECTION_POLICY("random-election-policy"),
     SIMPLE_ELECTION_POLICY("simple-election-policy"),

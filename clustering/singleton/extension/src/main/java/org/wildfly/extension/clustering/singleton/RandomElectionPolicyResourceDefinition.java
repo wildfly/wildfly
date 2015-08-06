@@ -39,7 +39,7 @@ public class RandomElectionPolicyResourceDefinition extends ElectionPolicyResour
     static final PathElement PATH = pathElement(PATH_VALUE);
 
     RandomElectionPolicyResourceDefinition() {
-        super(PATH, new SingletonDeployerResourceDescriptionResolver(PATH, WILDCARD_PATH));
+        super(PATH, new SingletonResourceDescriptionResolver(PATH, WILDCARD_PATH));
     }
 
     @Override

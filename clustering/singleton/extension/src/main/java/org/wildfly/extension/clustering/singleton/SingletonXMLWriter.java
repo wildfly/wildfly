@@ -37,32 +37,32 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * Marshals singleton deployer subsystem configuration to XML.
  * @author Paul Ferraro
  */
-public class SingletonDeployerXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
+public class SingletonXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(SingletonDeployerSchema.CURRENT.getNamespaceUri(), false);
-        writeDeploymentPolicies(writer, context.getModelNode());
+        context.startSubsystemElement(SingletonSchema.CURRENT.getNamespaceUri(), false);
+        writeSingletonPolicies(writer, context.getModelNode());
         writer.writeEndElement();
     }
 
-    private static void writeDeploymentPolicies(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
-        writer.writeStartElement(XMLElement.DEPLOYMENT_POLICIES.getLocalName());
+    private static void writeSingletonPolicies(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        writer.writeStartElement(XMLElement.SINGLETON_POLICIES.getLocalName());
 
-        writeAttributes(writer, model, SingletonDeployerResourceDefinition.Attribute.class);
+        writeAttributes(writer, model, SingletonResourceDefinition.Attribute.class);
 
-        for (Property property : model.get(DeploymentPolicyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-            writeDeploymentPolicy(writer, property.getName(), property.getValue());
+        for (Property property : model.get(SingletonPolicyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+            writeSingletonPolicy(writer, property.getName(), property.getValue());
         }
 
         writer.writeEndElement();
     }
 
-    private static void writeDeploymentPolicy(XMLExtendedStreamWriter writer, String name, ModelNode policy) throws XMLStreamException {
-        writer.writeStartElement(XMLElement.DEPLOYMENT_POLICY.getLocalName());
+    private static void writeSingletonPolicy(XMLExtendedStreamWriter writer, String name, ModelNode policy) throws XMLStreamException {
+        writer.writeStartElement(XMLElement.SINGLETON_POLICY.getLocalName());
         writer.writeAttribute(XMLAttribute.NAME.getLocalName(), name);
 
-        writeAttributes(writer, policy, DeploymentPolicyResourceDefinition.Attribute.class);
+        writeAttributes(writer, policy, SingletonPolicyResourceDefinition.Attribute.class);
 
         if (policy.hasDefined(ElectionPolicyResourceDefinition.WILDCARD_PATH.getKey())) {
             Property property = policy.get(ElectionPolicyResourceDefinition.WILDCARD_PATH.getKey()).asProperty();

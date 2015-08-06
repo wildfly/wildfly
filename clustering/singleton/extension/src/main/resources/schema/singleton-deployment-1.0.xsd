@@ -9,7 +9,7 @@
     <xs:element name="singleton-deployment" type="tns:singleton-deployment"></xs:element>
 
     <xs:complexType name="singleton-deployment">
-        <xs:attribute name="deployment-policy" type="xs:string">
+        <xs:attribute name="policy" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
                     Identifies the policy used to deploy the application.

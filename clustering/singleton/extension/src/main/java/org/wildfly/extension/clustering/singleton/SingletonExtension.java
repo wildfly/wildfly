@@ -22,28 +22,30 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
 
 /**
- * Resolves resource descriptions for the singleton deployer subsystem.
+ * Extension point for singleton deployer subsystem.
  * @author Paul Ferraro
  */
-public class SingletonDeployerResourceDescriptionResolver extends SubsystemResourceDescriptionResolver {
+public class SingletonExtension implements Extension {
 
-    SingletonDeployerResourceDescriptionResolver() {
-        this(Collections.<PathElement>emptyList());
+    public static final String SUBSYSTEM_NAME = "singleton";
+
+    @Override
+    public void initialize(ExtensionContext context) {
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, SingletonModel.CURRENT.getVersion());
+        registration.registerSubsystemModel(new SingletonResourceDefinition());
+        registration.registerXMLElementWriter(new SingletonXMLWriter());
     }
 
-    SingletonDeployerResourceDescriptionResolver(PathElement... paths) {
-        this(Arrays.asList(paths));
-    }
-
-    SingletonDeployerResourceDescriptionResolver(List<PathElement> paths) {
-        super(SingletonDeployerExtension.SUBSYSTEM_NAME, SingletonDeployerExtension.class, paths);
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        for (SingletonSchema schema: SingletonSchema.values()) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new SingletonXMLReader(schema));
+        }
     }
 }
