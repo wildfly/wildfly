@@ -51,9 +51,7 @@ public class StoreWriteBehindBuilder extends CacheComponentBuilder<AsyncStoreCon
 
     @Override
     public Builder<AsyncStoreConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.flushLockTimeout(FLUSH_LOCK_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
         this.builder.modificationQueueSize(MODIFICATION_QUEUE_SIZE.getDefinition().resolveModelAttribute(context, model).asInt());
-        this.builder.shutdownTimeout(SHUTDOWN_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
         this.builder.threadPoolSize(THREAD_POOL_SIZE.getDefinition().resolveModelAttribute(context, model).asInt());
         return this;
     }

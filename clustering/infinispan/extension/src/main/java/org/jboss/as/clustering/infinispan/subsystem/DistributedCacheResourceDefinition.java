@@ -121,7 +121,13 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     @SuppressWarnings("deprecation")
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ClusteredCacheResourceDefinition.Attribute.class).addAttributes(CacheResourceDefinition.Attribute.class).addAttributes(CacheResourceDefinition.DeprecatedAttribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(ClusteredCacheResourceDefinition.Attribute.class)
+                .addAttributes(ClusteredCacheResourceDefinition.DeprecatedAttribute.class)
+                .addAttributes(CacheResourceDefinition.Attribute.class)
+                .addAttributes(CacheResourceDefinition.DeprecatedAttribute.class)
+        ;
         ResourceServiceHandler handler = new DistributedCacheServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

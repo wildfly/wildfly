@@ -46,7 +46,6 @@ import org.jboss.dmr.ModelType;
 public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, new ModelNode(false)),
         MODE("mode", ModelType.STRING, null, new EnumValidatorBuilder<>(Mode.class)),
         QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L)),
         QUEUE_SIZE("queue-size", ModelType.INT, new ModelNode(0)),
@@ -63,20 +62,36 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             this.definition = builder.setValidator(validator.configure(builder).build()).build();
         }
 
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setAllowNull(defaultValue != null)
-                    .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-            ;
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, new ModelNode(false), InfinispanModel.VERSION_4_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(defaultValue != null)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+        ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
@@ -92,6 +107,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
         new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+        new ReloadRequiredWriteAttributeHandler(DeprecatedAttribute.class).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
