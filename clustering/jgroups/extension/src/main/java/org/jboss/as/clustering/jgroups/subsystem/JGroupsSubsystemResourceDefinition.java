@@ -22,7 +22,6 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -48,7 +47,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2012 Red Hat Inc.
  */
-public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME);
 
@@ -127,10 +126,5 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
     public void registerChildren(ManagementResourceRegistration registration) {
         new ChannelResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new StackResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

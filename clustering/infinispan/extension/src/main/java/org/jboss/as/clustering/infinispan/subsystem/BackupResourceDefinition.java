@@ -28,11 +28,11 @@ import org.infinispan.configuration.cache.SitesConfiguration;
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -124,8 +124,8 @@ public class BackupResourceDefinition extends SimpleResourceDefinition implement
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-        new ReloadRequiredWriteAttributeHandler(TakeOfflineAttribute.class).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, TakeOfflineAttribute.class).register(registration);
     }
 
     @Override

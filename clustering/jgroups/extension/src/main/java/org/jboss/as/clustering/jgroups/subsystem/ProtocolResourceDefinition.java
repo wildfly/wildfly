@@ -278,7 +278,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
     @SuppressWarnings("deprecation")
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(new PropertyResourceDefinition());
+        new PropertyResourceDefinition().register(registration);
     }
 
     @Override
