@@ -25,6 +25,7 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 
 import java.io.IOException;
 
@@ -47,5 +48,10 @@ public class UndertowDefaultConfigUpgradeTestCase extends AbstractSubsystemBaseT
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, marshalled, readResource("undertow-default.xml"));
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return UndertowSubsystemTestCase.DEFAULT;
     }
 }
