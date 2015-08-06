@@ -52,8 +52,8 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.batch.deployment.BatchDependencyProcessor;
-import org.wildfly.extension.batch.deployment.BatchDeploymentResourceProcessor;
+import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
+import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProcessor;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.batch.job.repository.JobRepositoryType;
@@ -181,7 +181,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
                             Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent));
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
-                            Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor());
+                            Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor(NAME));
 
                 }
             }, OperationContext.Stage.RUNTIME);

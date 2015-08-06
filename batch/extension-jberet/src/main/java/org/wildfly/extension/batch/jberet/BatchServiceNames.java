@@ -33,17 +33,6 @@ public class BatchServiceNames {
     }
 
     /**
-     * Creates a service name for the deployment unit to define the service.
-     *
-     * @param deploymentUnit the deployment unit to create the service name for
-     *
-     * @return the service name
-     */
-    public static ServiceName jobXmlResolverServiceName(final DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getServiceName().append("batch").append("job-xml");
-    }
-
-    /**
      * Creates the service name used for the bean manager on the deployment.
      *
      * @param deploymentUnit the deployment unit to create the service name for

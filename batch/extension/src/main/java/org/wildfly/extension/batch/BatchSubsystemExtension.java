@@ -29,8 +29,8 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.wildfly.extension.batch.deployment.BatchJobExecutionResourceDefinition;
-import org.wildfly.extension.batch.deployment.BatchJobResourceDefinition;
+import org.wildfly.extension.batch.jberet.deployment.BatchJobExecutionResourceDefinition;
+import org.wildfly.extension.batch.jberet.deployment.BatchJobResourceDefinition;
 
 public class BatchSubsystemExtension implements Extension {
 

@@ -34,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
+import org.wildfly.extension.batch.jberet._private.BatchLogger;
 
 /**
  * A handler to assist with batch operations that require a {@linkplain JobOperator}.
@@ -44,7 +45,7 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
     @Override
     public final void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final PathAddress address = context.getCurrentAddress();
-        final ServiceController<?> controller = context.getServiceRegistry(false).getService(BatchServiceNames.jobOperatorServiceName(address));
+        final ServiceController<?> controller = context.getServiceRegistry(true).getService(BatchServiceNames.jobOperatorServiceName(address));
         final JobOperator jobOperator = (JobOperator) controller.getService();
         execute(context, operation, jobOperator);
     }
@@ -79,6 +80,9 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
     }
 
     static OperationFailedException createOperationFailure(final Throwable cause) {
-        return new OperationFailedException(cause.getLocalizedMessage(), cause);
+        final String msg = cause.getLocalizedMessage();
+        // OperationFailedException's don't log the cause, for debug purposes logging the failure could be useful
+        BatchLogger.LOGGER.debugf(cause, "Failed to process batch operation: %s", msg);
+        return new OperationFailedException(msg, cause);
     }
 }

@@ -22,17 +22,19 @@
 
 package org.jboss.as.test.integration.batch.deployment;
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.inject.Inject;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -53,6 +55,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunWith(Arquillian.class)
+@ServerSetup(JobControlTestCase.DebugLoggingSetup.class)
 public class JobControlTestCase extends AbstractBatchTestCase {
 
     private static final String DEPLOYMENT_NAME = "test-batch.war";
@@ -295,6 +298,32 @@ public class JobControlTestCase extends AbstractBatchTestCase {
             if (waitTimeout <= 0) {
                 throw new IllegalStateException("Batch job did not complete within allotted time.");
             }
+        }
+    }
+
+
+    static class DebugLoggingSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            // Enable debug logging for org.wildfly.extension.batch
+            final ModelNode address = Operations.createAddress("subsystem", "logging", "logger", "org.wildfly.extension.batch");
+            final ModelNode op = Operations.createAddOperation(address);
+            op.get("level").set("DEBUG");
+            execute(managementClient.getControllerClient(), op);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            execute(managementClient.getControllerClient(), Operations.createRemoveOperation(Operations.createAddress("subsystem", "logging", "logger", "org.wildfly.extension.batch")));
+        }
+
+        static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
+            final ModelNode result = client.execute(op);
+            if (!Operations.isSuccessfulOutcome(result)) {
+                Assert.fail(Operations.getFailureDescription(result).toString());
+            }
+            return result;
         }
     }
 }

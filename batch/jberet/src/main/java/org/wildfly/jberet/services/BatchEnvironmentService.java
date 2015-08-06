@@ -56,17 +56,18 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<>();
     private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
-    private final InjectedValue<JobXmlResolver> jobXmlResolverInjector = new InjectedValue<>();
     private final InjectedValue<RequestController> requestControllerInjector = new InjectedValue<>();
     private final InjectedValue<JobRepository> jobRepositoryInjector = new InjectedValue<>();
 
     private final ClassLoader classLoader;
+    private final JobXmlResolver jobXmlResolver;
     private final String deploymentName;
     private BatchEnvironment batchEnvironment = null;
     private ControlPoint controlPoint;
 
-    public BatchEnvironmentService(final ClassLoader classLoader, final String deploymentName) {
+    public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName) {
         this.classLoader = classLoader;
+        this.jobXmlResolver = jobXmlResolver;
         this.deploymentName = deploymentName;
     }
 
@@ -82,8 +83,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         }
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
                 executorServiceInjector.getValue(), transactionManagerInjector.getValue(),
-                jobRepositoryInjector.getValue(),
-                jobXmlResolverInjector.getValue(), controlPoint);
+                jobRepositoryInjector.getValue(), jobXmlResolver, controlPoint);
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -114,10 +114,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     public InjectedValue<TransactionManager> getTransactionManagerInjector() {
         return transactionManagerInjector;
-    }
-
-    public InjectedValue<JobXmlResolver> getJobXmlResolverInjector() {
-        return jobXmlResolverInjector;
     }
 
     public InjectedValue<RequestController> getRequestControllerInjector() {
