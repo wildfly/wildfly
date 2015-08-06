@@ -269,7 +269,6 @@
         <module>dist</module>
         <module>ee</module>
         <module>ejb3</module>
-        <module>embedded</module>
         <module>feature-pack</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
@@ -1073,12 +1072,6 @@
                 <artifactId>wildfly-ejb-client-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-embedded</artifactId>
-                <version>${project.version}</version>
             </dependency>
 
             <dependency>
