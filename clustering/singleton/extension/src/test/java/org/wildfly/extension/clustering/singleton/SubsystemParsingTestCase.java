@@ -49,15 +49,15 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private final int expectedOperationCount;
 
-    public SubsystemParsingTestCase(SingletonDeployerSchema schema, int expectedOperationCount) {
-        super(SingletonDeployerExtension.SUBSYSTEM_NAME, new SingletonDeployerExtension(), schema.format("subsystem-singleton-deployment-%d_%d.xml"));
+    public SubsystemParsingTestCase(SingletonSchema schema, int expectedOperationCount) {
+        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), schema.format("subsystem-singleton-%d_%d.xml"));
         this.expectedOperationCount = expectedOperationCount;
     }
 
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-                { SingletonDeployerSchema.VERSION_1_0, 5 },
+                { SingletonSchema.VERSION_1_0, 5 },
         };
         return Arrays.asList(data);
     }
@@ -117,7 +117,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         KernelServices services = this.buildKernelServices();
 
         ModelNode modelA = services.readWholeModel();
-        ModelNode operation = Operations.createDescribeOperation(PathAddress.pathAddress(SingletonDeployerResourceDefinition.PATH));
+        ModelNode operation = Operations.createDescribeOperation(PathAddress.pathAddress(SingletonResourceDefinition.PATH));
         List<ModelNode> operations = checkResultAndGetContents(services.executeOperation(operation)).asList();
 
         ModelNode modelB = this.createKernelServicesBuilder().setBootOperations(operations).build().readWholeModel();

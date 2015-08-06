@@ -22,17 +22,34 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ModelVersion;
 
 /**
+ * Enumeration of supported versions of management model.
  * @author Paul Ferraro
  */
-public class DeploymentPolicyBuilderFactory implements ResourceServiceBuilderFactory<DeploymentPolicy> {
+public enum SingletonModel {
 
-    @Override
-    public ResourceServiceBuilder<DeploymentPolicy> createBuilder(PathAddress address) {
-        return new DeploymentPolicyBuilder(address.getLastElement().getValue());
+    VERSION_1_0_0(1, 0, 0),
+    ;
+    static final SingletonModel CURRENT = VERSION_1_0_0;
+
+    private final ModelVersion version;
+
+    private SingletonModel(int major, int minor, int micro) {
+        this.version = ModelVersion.create(major, minor, micro);
+    }
+
+    public ModelVersion getVersion() {
+        return this.version;
+    }
+
+    /**
+     * Indicates whether this model is more recent than the specified version and thus requires transformation
+     * @param version a model version
+     * @return true this this model is more recent than the specified version, false otherwise
+     */
+    public boolean requiresTransformation(ModelVersion version) {
+        return ModelVersion.compare(this.version, version) < 0;
     }
 }

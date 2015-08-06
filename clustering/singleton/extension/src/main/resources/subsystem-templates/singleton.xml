@@ -2,11 +2,11 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.clustering.singleton</extension-module>
-    <subsystem xmlns="urn:jboss:domain:singleton-deployer:1.0">
-        <deployment-policies default="default">
-            <deployment-policy name="default" cache-container="server">
+    <subsystem xmlns="urn:jboss:domain:singleton:1.0">
+        <singleton-policies default="default">
+            <singleton-policy name="default" cache-container="server">
                 <simple-election-policy/>
-            </deployment-policy>
-        </deployment-policies>
+            </singleton-policy>
+        </singleton-policies>
     </subsystem>
 </config>

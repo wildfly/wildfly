@@ -20,20 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
+package org.wildfly.clustering.singleton;
 
-import org.wildfly.clustering.singleton.SingletonElectionPolicy;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.Builder;
 
 /**
- * Defines a deployment policy.
+ * Defines a singleton policy.
  * @author Paul Ferraro
  */
-public interface DeploymentPolicy {
+public interface SingletonPolicy {
 
-    SingletonServiceBuilderFactory getSingletonServiceBuilderFactory();
+    String CAPABILITY_NAME = "org.wildfly.clustering.singleton.policy";
 
-    SingletonElectionPolicy getElectionPolicy();
-
-    int getQuorum();
+    <T> Builder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service);
 }

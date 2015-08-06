@@ -28,7 +28,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.wildfly.extension.clustering.singleton.DeploymentPolicyServiceNameProvider;
+import org.wildfly.extension.clustering.singleton.SingletonPolicyBuilder;
 
 /**
  * DUP that adds a dependency on a configured deployment policy service to the next phase.
@@ -45,7 +45,7 @@ public class SingletonDeploymentDependencyProcessor implements DeploymentUnitPro
         if (unit.getParent() != null) return;
         SingletonDeploymentConfiguration config = unit.getAttachment(CONFIGURATION_KEY);
         if (config != null) {
-            context.addDependency(new DeploymentPolicyServiceNameProvider(config.getPolicy()).getServiceName(), SingletonDeploymentProcessor.POLICY_KEY);
+            context.addDependency(new SingletonPolicyBuilder(config.getPolicy()).getServiceName(), SingletonDeploymentProcessor.POLICY_KEY);
 
             // We need to allow restarting of subsequent phases
             unit.putAttachment(Attachments.ALLOW_PHASE_RESTART, Boolean.TRUE);

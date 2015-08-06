@@ -41,12 +41,12 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * Parses singleton deployer subsystem configuration from XML.
  * @author Paul Ferraro
  */
-public class SingletonDeployerXMLReader implements XMLElementReader<List<ModelNode>> {
+public class SingletonXMLReader implements XMLElementReader<List<ModelNode>> {
 
     @SuppressWarnings("unused")
-    private final SingletonDeployerSchema schema;
+    private final SingletonSchema schema;
 
-    public SingletonDeployerXMLReader(SingletonDeployerSchema schema) {
+    public SingletonXMLReader(SingletonSchema schema) {
         this.schema = schema;
     }
 
@@ -54,15 +54,15 @@ public class SingletonDeployerXMLReader implements XMLElementReader<List<ModelNo
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> result) throws XMLStreamException {
         Map<PathAddress, ModelNode> operations = new LinkedHashMap<>();
 
-        PathAddress address = PathAddress.pathAddress(SingletonDeployerResourceDefinition.PATH);
+        PathAddress address = PathAddress.pathAddress(SingletonResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             XMLElement element = XMLElement.forName(reader);
             switch (element) {
-                case DEPLOYMENT_POLICIES: {
-                    this.parseDeploymentPolicies(reader, address, operations);
+                case SINGLETON_POLICIES: {
+                    this.parseSingletonPolicies(reader, address, operations);
                     break;
                 }
                 default : {
@@ -74,14 +74,14 @@ public class SingletonDeployerXMLReader implements XMLElementReader<List<ModelNo
         result.addAll(operations.values());
     }
 
-    private void parseDeploymentPolicies(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private void parseSingletonPolicies(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); ++i) {
             XMLAttribute attribute = XMLAttribute.forName(reader, i);
             switch (attribute) {
                 case DEFAULT: {
-                    readAttribute(reader, i, operation, SingletonDeployerResourceDefinition.Attribute.DEFAULT);
+                    readAttribute(reader, i, operation, SingletonResourceDefinition.Attribute.DEFAULT);
                     break;
                 }
                 default: {
@@ -93,8 +93,8 @@ public class SingletonDeployerXMLReader implements XMLElementReader<List<ModelNo
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             XMLElement element = XMLElement.forName(reader);
             switch (element) {
-                case DEPLOYMENT_POLICY: {
-                    this.parseDeploymentPolicy(reader, address, operations);
+                case SINGLETON_POLICY: {
+                    this.parseSingletonPolicy(reader, address, operations);
                     break;
                 }
                 default : {
@@ -104,10 +104,10 @@ public class SingletonDeployerXMLReader implements XMLElementReader<List<ModelNo
         }
     }
 
-    private void parseDeploymentPolicy(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private void parseSingletonPolicy(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String name = XMLAttribute.NAME.require(reader);
-        PathAddress address = subsystemAddress.append(DeploymentPolicyResourceDefinition.pathElement(name));
+        PathAddress address = subsystemAddress.append(SingletonPolicyResourceDefinition.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -119,15 +119,15 @@ public class SingletonDeployerXMLReader implements XMLElementReader<List<ModelNo
                     break;
                 }
                 case CACHE_CONTAINER: {
-                    readAttribute(reader, i, operation, DeploymentPolicyResourceDefinition.Attribute.CACHE_CONTAINER);
+                    readAttribute(reader, i, operation, SingletonPolicyResourceDefinition.Attribute.CACHE_CONTAINER);
                     break;
                 }
                 case CACHE: {
-                    readAttribute(reader, i, operation, DeploymentPolicyResourceDefinition.Attribute.CACHE);
+                    readAttribute(reader, i, operation, SingletonPolicyResourceDefinition.Attribute.CACHE);
                     break;
                 }
                 case QUORUM: {
-                    readAttribute(reader, i, operation, DeploymentPolicyResourceDefinition.Attribute.QUORUM);
+                    readAttribute(reader, i, operation, SingletonPolicyResourceDefinition.Attribute.QUORUM);
                     break;
                 }
                 default: {

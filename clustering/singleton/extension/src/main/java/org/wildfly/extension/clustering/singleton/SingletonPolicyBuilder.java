@@ -26,62 +26,63 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
+import org.wildfly.clustering.singleton.SingletonPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.singleton.SingletonServiceName;
+import org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability;
 
 /**
- * Builds a service that provides a deployment policy.
+ * Builds a service that provides a {@link SingletonPolicy}.
  * @author Paul Ferraro
  */
-public class DeploymentPolicyBuilder extends DeploymentPolicyServiceNameProvider implements ResourceServiceBuilder<DeploymentPolicy>, DeploymentPolicy {
+public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonPolicy>, SingletonPolicy {
 
     private final InjectedValue<SingletonServiceBuilderFactory> factory = new InjectedValue<>();
     private final InjectedValue<SingletonElectionPolicy> policy = new InjectedValue<>();
+
+    private final String name;
 
     private volatile String containerName;
     private volatile String cacheName;
     private volatile int quorum;
 
-    public DeploymentPolicyBuilder(String name) {
-        super(name);
+    public SingletonPolicyBuilder(String name) {
+        this.name = name;
     }
 
     @Override
-    public ServiceBuilder<DeploymentPolicy> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<DeploymentPolicy>(this)))
+    public ServiceName getServiceName() {
+        return (this.name != null) ? Capability.POLICY.getDefinition().getCapabilityServiceName(this.name) : Capability.POLICY.getDefinition().getCapabilityServiceName();
+    }
+
+    @Override
+    public ServiceBuilder<SingletonPolicy> build(ServiceTarget target) {
+        return target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<SingletonPolicy>(this)))
                 .addDependency(SingletonServiceName.BUILDER.getServiceName(this.containerName, this.cacheName), SingletonServiceBuilderFactory.class, this.factory)
-                .addDependency(new ElectionPolicyServiceNameProvider(this.getName()).getServiceName(), SingletonElectionPolicy.class, this.policy)
+                .addDependency(new ElectionPolicyServiceNameProvider(this.name).getServiceName(), SingletonElectionPolicy.class, this.policy)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
-    public Builder<DeploymentPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.containerName = DeploymentPolicyResourceDefinition.Attribute.CACHE_CONTAINER.getDefinition().resolveModelAttribute(context, model).asString();
-        this.cacheName = DeploymentPolicyResourceDefinition.Attribute.CACHE.getDefinition().resolveModelAttribute(context, model).asString();
-        this.quorum = DeploymentPolicyResourceDefinition.Attribute.QUORUM.getDefinition().resolveModelAttribute(context, model).asInt();
+    public Builder<SingletonPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.containerName = SingletonPolicyResourceDefinition.Attribute.CACHE_CONTAINER.getDefinition().resolveModelAttribute(context, model).asString();
+        this.cacheName = SingletonPolicyResourceDefinition.Attribute.CACHE.getDefinition().resolveModelAttribute(context, model).asString();
+        this.quorum = SingletonPolicyResourceDefinition.Attribute.QUORUM.getDefinition().resolveModelAttribute(context, model).asInt();
         return this;
     }
 
     @Override
-    public SingletonServiceBuilderFactory getSingletonServiceBuilderFactory() {
-        return this.factory.getValue();
-    }
-
-    @Override
-    public SingletonElectionPolicy getElectionPolicy() {
-        return this.policy.getValue();
-    }
-
-    @Override
-    public int getQuorum() {
-        return this.quorum;
+    public <T> Builder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
+        return this.factory.getValue().createSingletonServiceBuilder(name, service).electionPolicy(this.policy.getValue()).requireQuorum(this.quorum);
     }
 }

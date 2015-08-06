@@ -41,9 +41,9 @@ import org.jboss.dmr.ModelType;
  * Definition of the singleton deployer resource.
  * @author Paul Ferraro
  */
-public class SingletonDeployerResourceDefinition extends SimpleResourceDefinition {
+public class SingletonResourceDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SingletonDeployerExtension.SUBSYSTEM_NAME);
+    static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME);
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         DEFAULT("default", ModelType.STRING),
@@ -60,15 +60,16 @@ public class SingletonDeployerResourceDefinition extends SimpleResourceDefinitio
         }
     }
 
-    SingletonDeployerResourceDefinition() {
-        super(PATH, new SingletonDeployerResourceDescriptionResolver());
+    SingletonResourceDefinition() {
+        super(PATH, new SingletonResourceDescriptionResolver());
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SingletonDeployerServiceHandler();
+        ResourceServiceHandler handler = new SingletonServiceHandler();
         new BoottimeAddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }
@@ -80,6 +81,6 @@ public class SingletonDeployerResourceDefinition extends SimpleResourceDefinitio
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        new DeploymentPolicyResourceDefinition().register(registration);
+        new SingletonPolicyResourceDefinition().register(registration);
     }
 }

@@ -38,12 +38,12 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 public enum XMLAttribute {
 
-    CACHE(DeploymentPolicyResourceDefinition.Attribute.CACHE),
-    CACHE_CONTAINER(DeploymentPolicyResourceDefinition.Attribute.CACHE_CONTAINER),
-    DEFAULT(SingletonDeployerResourceDefinition.Attribute.DEFAULT),
+    CACHE(SingletonPolicyResourceDefinition.Attribute.CACHE),
+    CACHE_CONTAINER(SingletonPolicyResourceDefinition.Attribute.CACHE_CONTAINER),
+    DEFAULT(SingletonResourceDefinition.Attribute.DEFAULT),
     NAME(ModelDescriptionConstants.NAME),
     POSITION(SimpleElectionPolicyResourceDefinition.Attribute.POSITION),
-    QUORUM(DeploymentPolicyResourceDefinition.Attribute.QUORUM),
+    QUORUM(SingletonPolicyResourceDefinition.Attribute.QUORUM),
     ;
     private final String localName;
 

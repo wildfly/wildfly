@@ -25,16 +25,16 @@ package org.wildfly.extension.clustering.singleton;
  * Enumeration of supported subsystem schemas.
  * @author Paul Ferraro
  */
-public enum SingletonDeployerSchema {
+public enum SingletonSchema {
 
     VERSION_1_0(1, 0),
     ;
-    public static final SingletonDeployerSchema CURRENT = VERSION_1_0;
+    public static final SingletonSchema CURRENT = VERSION_1_0;
 
     private final int major;
     private final int minor;
 
-    private SingletonDeployerSchema(int major, int minor) {
+    private SingletonSchema(int major, int minor) {
         this.major = major;
         this.minor = minor;
     }
@@ -44,7 +44,7 @@ public enum SingletonDeployerSchema {
      * @param a schema
      * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
      */
-    public boolean since(SingletonDeployerSchema schema) {
+    public boolean since(SingletonSchema schema) {
         return (this.major > schema.major) || ((this.major == schema.major) && (this.minor >= schema.minor));
     }
 
@@ -53,7 +53,7 @@ public enum SingletonDeployerSchema {
      * @return the namespace URI
      */
     public String getNamespaceUri() {
-        return this.format("urn:jboss:domain:singleton-deployer:%d.%d");
+        return this.format("urn:jboss:domain:singleton:%d.%d");
     }
 
     /**

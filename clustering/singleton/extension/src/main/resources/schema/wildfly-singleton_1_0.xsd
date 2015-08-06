@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema targetNamespace="urn:jboss:domain:singleton-deployer:1.0"
+<xs:schema targetNamespace="urn:jboss:domain:singleton:1.0"
             xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns:tns="urn:jboss:domain:singleton-deployer:1.0"
+            xmlns:tns="urn:jboss:domain:singleton:1.0"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="1.0">
@@ -10,19 +10,19 @@
 
     <xs:complexType name="subsystem">
         <xs:sequence>
-            <xs:element name="deployment-policies" type="tns:deployment-policies">
+            <xs:element name="singleton-policies" type="tns:singleton-policies">
                 <xs:annotation>
-                    <xs:documentation>Enumerates the deployment policies supported by this subsystem.</xs:documentation>
+                    <xs:documentation>Enumerates the singleton policies supported by this subsystem.</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="deployment-policies">
+    <xs:complexType name="singleton-policies">
         <xs:sequence>
-            <xs:element name="deployment-policy" type="tns:deployment-policy">
+            <xs:element name="singleton-policy" type="tns:singleton-policy">
                 <xs:annotation>
-                    <xs:documentation>Defines a singleton deployment policy</xs:documentation>
+                    <xs:documentation>Defines a singleton policy</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
@@ -33,7 +33,7 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="deployment-policy">
+    <xs:complexType name="singleton-policy">
         <xs:choice>
             <xs:element name="random-election-policy" type="tns:random-election-policy">
                 <xs:annotation>

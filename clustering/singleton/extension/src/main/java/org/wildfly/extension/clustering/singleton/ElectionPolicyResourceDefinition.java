@@ -50,7 +50,7 @@ public class ElectionPolicyResourceDefinition extends SimpleResourceDefinition i
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        SOCKET_BINDING_PREFERENCE("org.wildfly.clustering.singleton-deployer.deployment-policy.election-policy.socket-binding-preference", OutboundSocketBinding.class),
+        SOCKET_BINDING_PREFERENCE("org.wildfly.clustering.singleton.singleton-policy.election-policy.socket-binding-preference", OutboundSocketBinding.class),
         ;
         private final RuntimeCapability<Void> definition;
 

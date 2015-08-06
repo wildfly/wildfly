@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.clustering.singleton.DeploymentPolicy;
+import org.wildfly.clustering.singleton.SingletonPolicy;
 
 /**
  * Builds a singleton service for the next phase in the deployment chain, if configured.
@@ -36,18 +36,14 @@ import org.wildfly.extension.clustering.singleton.DeploymentPolicy;
  */
 public class SingletonDeploymentUnitPhaseBuilder implements DeploymentUnitPhaseBuilder {
 
-    private final DeploymentPolicy policy;
+    private final SingletonPolicy policy;
 
-    public SingletonDeploymentUnitPhaseBuilder(DeploymentPolicy policy) {
+    public SingletonDeploymentUnitPhaseBuilder(SingletonPolicy policy) {
         this.policy = policy;
     }
 
     @Override
     public <T> ServiceBuilder<T> build(ServiceTarget target, ServiceName name, Service<T> service) {
-
-        return this.policy.getSingletonServiceBuilderFactory().createSingletonServiceBuilder(name, service)
-                .electionPolicy(this.policy.getElectionPolicy())
-                .requireQuorum(this.policy.getQuorum())
-                .build(target).setInitialMode(ServiceController.Mode.ACTIVE);
+        return this.policy.createSingletonServiceBuilder(name, service).build(target).setInitialMode(ServiceController.Mode.ACTIVE);
     }
 }
