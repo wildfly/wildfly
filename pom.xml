@@ -2352,6 +2352,12 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-security-saml</artifactId>
                 <version>${version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
