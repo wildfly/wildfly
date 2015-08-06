@@ -23,8 +23,10 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -42,6 +44,7 @@ import org.jboss.as.clustering.controller.transform.SimpleUndefineAttributeOpera
 import org.jboss.as.clustering.controller.transform.SimpleWriteAttributeOperationTransformer;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -51,11 +54,13 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -76,9 +81,30 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         return PathElement.pathElement("transport", name);
     }
 
+    private enum Capability implements org.jboss.as.clustering.controller.Capability {
+        DIAGNOSTICS_SOCKET_BINDING("org.wildfly.clustering.transport.diagnostics-socket-binding", SocketBinding.class),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name, Class<?> serviceType) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        }
+
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+            PathAddress stackAddress = address.getParent();
+            return this.definition.fromBaseCapability(stackAddress.getLastElement().getValue() + "." + address.getLastElement().getValue());
+        }
+    }
+
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         SHARED("shared", ModelType.BOOLEAN, new ModelNode(false)),
-        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF),
+        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(RequiredCapability.SOCKET_BINDING, Capability.DIAGNOSTICS_SOCKET_BINDING)),
         SITE("site", ModelType.STRING),
         RACK("rack", ModelType.STRING),
         MACHINE("machine", ModelType.STRING),
@@ -93,8 +119,8 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
             this.definition = createBuilder(name, type).setDefaultValue(defaultValue).build();
         }
 
-        Attribute(String name, ModelType type, AccessConstraintDefinition constraint) {
-            this.definition = createBuilder(name, type).setAccessConstraints(constraint).build();
+        Attribute(String name, ModelType type, AccessConstraintDefinition constraint, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, type).setAccessConstraints(constraint).setCapabilityReference(reference).build();
         }
 
         private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
@@ -177,7 +203,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ThreadingAttribute.class).addAttributes(ProtocolResourceDefinition.Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ThreadingAttribute.class).addAttributes(ProtocolResourceDefinition.Attribute.class).addCapabilities(Capability.class).addCapabilities(ProtocolResourceDefinition.Capability.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
         new RestartParentResourceStepHandler<>(new AddStepHandler(descriptor, handler), this.parentBuilderFactory).register(registration);
         new RestartParentResourceStepHandler<>(new RemoveStepHandler(descriptor, handler), this.parentBuilderFactory).register(registration);

@@ -26,7 +26,7 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -64,8 +64,8 @@ public class BinaryKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcBinaryStor
     }
 
     @Override
-    JdbcBinaryStoreConfigurationBuilder createStore(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.builder = super.createStore(resolver, model);
+    JdbcBinaryStoreConfigurationBuilder createStore(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.builder = super.createStore(context, model);
         return this.builder;
     }
 }

@@ -25,9 +25,11 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
+import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -40,6 +42,7 @@ import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -48,6 +51,7 @@ import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
@@ -58,6 +62,7 @@ import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -76,8 +81,29 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
         return PathElement.pathElement("protocol", name);
     }
 
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        SOCKET_BINDING("org.wildfly.clustering.protocol.socket-binding", SocketBinding.class),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name, Class<?> serviceType) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        }
+
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+            PathAddress stackAddress = address.getParent();
+            return this.definition.fromBaseCapability(stackAddress.getLastElement().getValue() + "." + address.getLastElement().getValue());
+        }
+    }
+
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING, null, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF),
+        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(RequiredCapability.SOCKET_BINDING, Capability.SOCKET_BINDING)),
         MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, new ModelNode(ProtocolConfiguration.DEFAULT_MODULE.getName()), new ModuleIdentifierValidatorBuilder()),
         PROPERTIES(ModelDescriptionConstants.PROPERTIES),
         ;
@@ -88,8 +114,8 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
             this.definition = builder.setValidator(validatorBuilder.configure(builder).build()).build();
         }
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, AccessConstraintDefinition constraint) {
-            this.definition = createBuilder(name, type, defaultValue).setAccessConstraints(constraint).build();
+        Attribute(String name, ModelType type, AccessConstraintDefinition constraint, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, type, null).setAccessConstraints(constraint).setCapabilityReference(reference).build();
         }
 
         Attribute(String name) {
@@ -98,6 +124,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
                     .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
                     .setAttributeParser(AttributeParsers.COLLECTION)
                     .setDefaultValue(new ModelNode().setEmptyList())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }
 
@@ -233,7 +260,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(DeprecatedAttribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(DeprecatedAttribute.class).addCapabilities(Capability.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
         new RestartParentResourceStepHandler<>(new AddStepHandler(descriptor, handler), this.parentBuilderFactory).register(registration);
         new RestartParentResourceStepHandler<>(new RemoveStepHandler(descriptor, handler), this.parentBuilderFactory).register(registration);

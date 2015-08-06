@@ -6,11 +6,12 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.SimpleAttribute;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 
@@ -201,7 +202,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return readResource(SUBSYSTEM_XML_FILE) ;
     }
 
-    protected KernelServices buildKernelServices() throws XMLStreamException, IOException, Exception {
-        return createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(this.getSubsystemXml()).build();
+    protected KernelServices buildKernelServices() throws Exception {
+        return createKernelServicesBuilder(new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
     }
 }

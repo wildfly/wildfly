@@ -22,16 +22,39 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.OperationContext;
-import org.wildfly.clustering.service.InjectedValueDependency;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
+
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * Service dependency whose provided value is supplied by a {@link Capability}.
+ * Registration facility for capabilities.
  * @author Paul Ferraro
  */
-public class CapabilityDependency<T> extends InjectedValueDependency<T> {
+public class CapabilityRegistration implements Registration {
 
-    public CapabilityDependency(OperationContext context, Requirement requirement, String name, Class<T> targetClass) {
-        super(context.getCapabilityServiceName(requirement.getName(), name, targetClass), targetClass);
+    private final Collection<? extends Capability> capabilities;
+
+    public <E extends Enum<E> & Capability> CapabilityRegistration(Class<E> capabilityClass) {
+        this(EnumSet.allOf(capabilityClass));
+    }
+
+    public CapabilityRegistration(Capability... capabilities) {
+        this.capabilities = Arrays.asList(capabilities);
+    }
+
+    public CapabilityRegistration(Collection<? extends Capability> capabilities) {
+        this.capabilities = capabilities;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        for (Capability capability : this.capabilities) {
+            registration.registerCapability(capability.getDefinition());
+        }
     }
 }

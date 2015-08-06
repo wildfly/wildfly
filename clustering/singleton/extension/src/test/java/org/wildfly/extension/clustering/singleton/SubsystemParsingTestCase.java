@@ -29,13 +29,11 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,16 +79,8 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
-    protected ValidationConfiguration getModelValidationConfiguration() {
-        // use this configuration to report any exceptional cases for DescriptionProviders
-        return new ValidationConfiguration();
-    }
-
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(
-                RuntimeCapability.buildDynamicCapabilityName(RequiredCapability.OUTBOUND_SOCKET_BINDING.getName(), "binding0"),
-                RuntimeCapability.buildDynamicCapabilityName(RequiredCapability.OUTBOUND_SOCKET_BINDING.getName(), "binding1"));
+    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization().require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "binding0", "binding1");
     }
 
     /**

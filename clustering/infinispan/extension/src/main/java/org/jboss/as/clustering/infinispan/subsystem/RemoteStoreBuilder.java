@@ -22,10 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.SOCKET_BINDINGS;
-import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.SOCKET_TIMEOUT;
-import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.TCP_NO_DELAY;
+import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.*;
 
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -35,8 +32,10 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
+import org.jboss.as.clustering.controller.CapabilityDependency;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -45,7 +44,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Dependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
@@ -84,14 +82,14 @@ public class RemoteStoreBuilder extends StoreBuilder {
     }
 
     @Override
-    StoreConfigurationBuilder<?, ?> createStore(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
+    StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException {
         this.storeBuilder = new ConfigurationBuilder().persistence().addStore(RemoteStoreConfigurationBuilder.class)
-                .remoteCacheName(CACHE.getDefinition().resolveModelAttribute(resolver, model).asString())
-                .socketTimeout(SOCKET_TIMEOUT.getDefinition().resolveModelAttribute(resolver, model).asLong())
-                .tcpNoDelay(TCP_NO_DELAY.getDefinition().resolveModelAttribute(resolver, model).asBoolean())
+                .remoteCacheName(CACHE.getDefinition().resolveModelAttribute(context, model).asString())
+                .socketTimeout(SOCKET_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong())
+                .tcpNoDelay(TCP_NO_DELAY.getDefinition().resolveModelAttribute(context, model).asBoolean())
         ;
-        for (String binding : StringListAttributeDefinition.unwrapValue(resolver, SOCKET_BINDINGS.getDefinition().resolveModelAttribute(resolver, model))) {
-            this.bindings.add(new InjectedValueDependency<>(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(binding), OutboundSocketBinding.class));
+        for (String binding : StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.getDefinition().resolveModelAttribute(context, model))) {
+            this.bindings.add(new CapabilityDependency<>(context, RequiredCapability.OUTBOUND_SOCKET_BINDING, binding, OutboundSocketBinding.class));
         }
         return this.storeBuilder;
     }

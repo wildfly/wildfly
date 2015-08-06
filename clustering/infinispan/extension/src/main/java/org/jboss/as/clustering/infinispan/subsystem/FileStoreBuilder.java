@@ -32,7 +32,7 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -69,12 +69,12 @@ public class FileStoreBuilder extends StoreBuilder {
     }
 
     @Override
-    StoreConfigurationBuilder<?, ?> createStore(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        String relativePath = ModelNodes.asString(RELATIVE_PATH.getDefinition().resolveModelAttribute(resolver, model));
+    StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException {
+        String relativePath = ModelNodes.asString(RELATIVE_PATH.getDefinition().resolveModelAttribute(context, model));
         if (relativePath != null) {
             this.relativePath = relativePath;
         }
-        this.relativeTo = RELATIVE_TO.getDefinition().resolveModelAttribute(resolver, model).asString();
+        this.relativeTo = RELATIVE_TO.getDefinition().resolveModelAttribute(context, model).asString();
         this.builder = new ConfigurationBuilder().persistence().addSingleFileStore();
         return this.builder;
     }

@@ -99,5 +99,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             builder.addParameter(parameter);
         }
         registration.registerOperationHandler(builder.build(), this);
+
+        new CapabilityRegistration(this.descriptor.getCapabilities()).register(registration);
     }
 }
