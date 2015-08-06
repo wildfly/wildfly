@@ -21,24 +21,14 @@
  */
 package org.wildfly.clustering.provider;
 
-import java.util.Set;
-
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
-
 /**
  * A factory for creating a service provider registration.
  *
  * @author Paul Ferraro
+ * @deprecated Use {@link ServiceProviderRegistry} instead
  */
-public interface ServiceProviderRegistrationFactory {
-
-    /**
-     * Returns the group with which to register service providers.
-     *
-     * @return a group
-     */
-    Group getGroup();
+@Deprecated
+public interface ServiceProviderRegistrationFactory<T> extends ServiceProviderRegistry<T> {
 
     /**
      * Registers the local node as providing the specified service, using the specified listener.
@@ -47,13 +37,5 @@ public interface ServiceProviderRegistrationFactory {
      * @param listener a registry listener
      * @return a new service provider registration
      */
-    ServiceProviderRegistration createRegistration(Object service, ServiceProviderRegistration.Listener listener);
-
-    /**
-     * Returns the set of nodes that provide the specified service.
-     *
-     * @param service a service to obtain providers for
-     * @return a set of nodes
-     */
-    Set<Node> getProviders(Object service);
+    ServiceProviderRegistration<T> createRegistration(T service, ServiceProviderRegistration.Listener listener);
 }

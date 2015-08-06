@@ -45,7 +45,7 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 
 /**
@@ -81,7 +81,7 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name), ChannelFactory.class).build(target).install();
 
         // Install group services for channel
-        for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+        for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(name, module)) {
                 JGroupsLogger.ROOT_LOGGER.debugf("Installing %s for channel %s", builder.getServiceName(), name);
                 builder.build(target).install();
@@ -102,7 +102,7 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
         context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name));
 
-        for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+        for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(name, null)) {
                 JGroupsLogger.ROOT_LOGGER.debugf("Removing %s for channel %s", builder.getServiceName(), name);
                 context.removeService(builder.getServiceName());

@@ -19,23 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.server.CacheServiceNameProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import org.wildfly.clustering.server.CacheBuilderFactory;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 
 /**
- * Provides the service name of a {@link org.wildfly.clustering.provider.ServiceProviderRegistrationFactory}.
+ * Provides the requisite builders for a non-clustered {@link ServiceProviderRegistrationFactory}.
  * @author Paul Ferraro
  */
-public class ServiceProviderRegistrationFactoryServiceNameProvider extends CacheServiceNameProvider {
+public class LocalServiceProviderRegistryBuilderProvider extends ServiceProviderRegistryBuilderProvider implements LocalCacheGroupBuilderProvider {
+
+    private static final CacheBuilderFactory<ServiceProviderRegistry<Object>> FACTORY = new CacheBuilderFactory<ServiceProviderRegistry<Object>>() {
+        @Override
+        public Builder<ServiceProviderRegistry<Object>> createBuilder(String containerName, String cacheName) {
+            return new LocalServiceProviderRegistryBuilder<>(containerName, cacheName);
+        }
+    };
 
     /**
      * @param containerName
      * @param cacheName
      */
-    public ServiceProviderRegistrationFactoryServiceNameProvider(String containerName, String cacheName) {
-        super(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRATION, containerName, cacheName);
+    public LocalServiceProviderRegistryBuilderProvider() {
+        super(FACTORY);
     }
 }

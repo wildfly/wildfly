@@ -64,7 +64,7 @@ public enum CacheGroupServiceName implements SubGroupServiceNameFactory {
             return REGISTRY.getServiceName(container, cache).append("factory");
         }
     },
-    SERVICE_PROVIDER_REGISTRATION() {
+    SERVICE_PROVIDER_REGISTRY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
             return GroupServiceName.BASE_SERVICE_NAME.append(this.toString(), container, cache);

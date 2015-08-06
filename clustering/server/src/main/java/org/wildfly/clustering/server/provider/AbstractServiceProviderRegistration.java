@@ -25,30 +25,30 @@ import java.util.Set;
 
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 
 /**
  * Simple {@link ServiceProviderRegistration} implementation that delegates
  * {@link #getProviders()} back to the factory.
  * @author Paul Ferraro
  */
-public abstract class AbstractServiceProviderRegistration implements ServiceProviderRegistration {
+public abstract class AbstractServiceProviderRegistration<T> implements ServiceProviderRegistration<T> {
 
-    private final Object service;
-    private final ServiceProviderRegistrationFactory factory;
+    private final T service;
+    private final ServiceProviderRegistry<T> registry;
 
-    public AbstractServiceProviderRegistration(Object service, ServiceProviderRegistrationFactory factory) {
+    public AbstractServiceProviderRegistration(T service, ServiceProviderRegistry<T> registry) {
         this.service = service;
-        this.factory = factory;
+        this.registry = registry;
     }
 
     @Override
-    public Object getService() {
+    public T getService() {
         return this.service;
     }
 
     @Override
     public Set<Node> getProviders() {
-        return this.factory.getProviders(this.service);
+        return this.registry.getProviders(this.service);
     }
 }

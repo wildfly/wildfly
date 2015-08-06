@@ -29,7 +29,7 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 
@@ -37,7 +37,7 @@ import org.wildfly.clustering.spi.CacheGroupServiceName;
  * Builds a non-clustered {@link ServiceProviderRegistrationFactory} service.
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistrationFactoryBuilder extends ServiceProviderRegistrationFactoryServiceNameProvider implements Builder<ServiceProviderRegistrationFactory>, Value<ServiceProviderRegistrationFactory> {
+public class LocalServiceProviderRegistryBuilder<T> extends ServiceProviderRegistryServiceNameProvider implements Builder<ServiceProviderRegistry<T>>, Value<ServiceProviderRegistry<T>> {
 
     private final InjectedValue<Group> group = new InjectedValue<>();
 
@@ -45,19 +45,19 @@ public class LocalServiceProviderRegistrationFactoryBuilder extends ServiceProvi
      * @param containerName
      * @param cacheName
      */
-    public LocalServiceProviderRegistrationFactoryBuilder(String containerName, String cacheName) {
+    public LocalServiceProviderRegistryBuilder(String containerName, String cacheName) {
         super(containerName, cacheName);
     }
 
     @Override
-    public ServiceBuilder<ServiceProviderRegistrationFactory> build(ServiceTarget target) {
+    public ServiceBuilder<ServiceProviderRegistry<T>> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
-    public ServiceProviderRegistrationFactory getValue() {
-        return new LocalServiceProviderRegistrationFactory(this.group.getValue());
+    public ServiceProviderRegistry<T> getValue() {
+        return new ServiceProviderRegistrationFactoryAdapter<>(new LocalServiceProviderRegistry<>(this.group.getValue()));
     }
 }

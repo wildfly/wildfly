@@ -42,7 +42,7 @@ import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 
 /**
@@ -77,7 +77,7 @@ public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFact
         // Install channel jndi binding
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
 
-        for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+        for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
             Iterator<Builder<?>> groupBuilders = provider.getBuilders(channel, null).iterator();
             for (Builder<?> groupBuilder : provider.getBuilders(name, null)) {
                 new AliasServiceBuilder<>(groupBuilder.getServiceName(), groupBuilders.next().getServiceName(), Object.class).build(target).install();
@@ -90,7 +90,7 @@ public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFact
 
         String name = context.getCurrentAddressValue();
 
-        for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+        for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(name, null)) {
                 context.removeService(builder.getServiceName());
             }

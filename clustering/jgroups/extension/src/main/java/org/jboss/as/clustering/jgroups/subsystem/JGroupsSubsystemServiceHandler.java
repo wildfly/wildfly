@@ -43,7 +43,7 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 
 /**
@@ -70,7 +70,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
             new AliasServiceBuilder<>(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(ChannelServiceNameFactory.DEFAULT_CHANNEL), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
             new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
 
-            for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+            for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
                 Iterator<Builder<?>> groupBuilders = provider.getBuilders(defaultChannel, null).iterator();
                 for (Builder<?> groupBuilder : provider.getBuilders(ChannelServiceNameFactory.DEFAULT_CHANNEL, null)) {
                     new AliasServiceBuilder<>(groupBuilder.getServiceName(), groupBuilders.next().getServiceName(), Object.class).build(target).install();
@@ -102,7 +102,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
 
         if ((defaultChannel != null) && !defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
 
-            for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
+            for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
                 for (Builder<?> builder : provider.getBuilders(ChannelServiceNameFactory.DEFAULT_CHANNEL, null)) {
                     context.removeService(builder.getServiceName());
                 }
