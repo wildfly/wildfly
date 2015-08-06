@@ -90,6 +90,7 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
         return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setAllowNull(true)
+                .setDefaultValue(defaultValue)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
         ;
