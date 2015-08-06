@@ -29,11 +29,11 @@ import java.util.List;
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
@@ -97,7 +97,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
                 .setAllowExpression(true)
                 .setAllowNull(true)
                 .setDefaultValue(defaultValue)
-                .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
                 .setValidator(validatorBuilder.allowExpression(true).allowUndefined(true).build())
         ;
@@ -123,7 +123,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(this.getAttributes()).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(new TransportConfigurationBuilderFactory(), this.getAttributes()).register(registration);
     }
 
     @Override
