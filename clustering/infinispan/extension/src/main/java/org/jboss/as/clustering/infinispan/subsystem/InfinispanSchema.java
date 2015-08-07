@@ -49,7 +49,7 @@ public enum InfinispanSchema {
 
     /**
      * Indicates whether this version of the schema is greater than or equal to the version of the specified schema.
-     * @param a schema
+     * @param schema a schema version with which to compare
      * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
      */
     public boolean since(InfinispanSchema schema) {
