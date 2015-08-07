@@ -22,14 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.wildfly.clustering.service.GroupServiceNameFactory;
-
 /**
  * @author Paul Ferraro
  */
 public abstract class CacheContainerComponentBuilder<C> extends ComponentConfigurationBuilder<C> {
 
-    CacheContainerComponentBuilder(GroupServiceNameFactory factory, String containerName) {
-        super(new CacheContainerComponentServiceNameProvider(factory, containerName));
+    CacheContainerComponentBuilder(CacheContainerComponent component, String containerName) {
+        super(new CacheContainerComponentServiceNameProvider(component, containerName));
     }
 }
