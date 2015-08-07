@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
+import javax.xml.ws.spi.Provider;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -61,6 +62,13 @@ public class SimpleWebserviceEndpointTestCase {
         log.info(war.toString(true));
         return war;
     }
+    
+    @Test
+    public void testJBossWSIntegrationIsInPlace() {
+        String p = Provider.provider().getClass().getName();
+        Assert.assertTrue(p + " is not a JBossWS implementation of javax.xml.ws.spi.Provider", p.startsWith("org.jboss."));
+    }
+
 
     @Test
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
