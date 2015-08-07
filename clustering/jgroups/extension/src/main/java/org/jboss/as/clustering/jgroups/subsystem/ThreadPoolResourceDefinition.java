@@ -26,13 +26,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.RestartParentResourceStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
@@ -117,8 +116,8 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
     public void registerOperations(ManagementResourceRegistration registration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.descriptionResolver).addAttributes(this.getAttributes());
         ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = new TransportConfigurationBuilderFactory();
-        new RestartParentResourceStepHandler<>(new AddStepHandler(descriptor), transportBuilderFactory).register(registration);
-        new RestartParentResourceStepHandler<>(new RemoveStepHandler(descriptor), transportBuilderFactory).register(registration);
+        new RestartParentResourceAddStepHandler<>(transportBuilderFactory, descriptor).register(registration);
+        new RestartParentResourceRemoveStepHandler<>(transportBuilderFactory, descriptor).register(registration);
     }
 
     @Override

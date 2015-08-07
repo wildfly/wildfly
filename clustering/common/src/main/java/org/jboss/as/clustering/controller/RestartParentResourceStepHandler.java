@@ -27,30 +27,24 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceHandlerBase;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Generic operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource and delegates operation execution and registration to another {@link OperationStepHandler}.
+ * Generic operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource..
  * @author Paul Ferraro
  */
-public class RestartParentResourceStepHandler<T> extends RestartParentResourceHandlerBase implements Registration {
+public class RestartParentResourceStepHandler<T> extends RestartParentResourceHandlerBase {
 
     private final ResourceServiceBuilderFactory<T> parentFactory;
-    private final OperationStepHandler handler;
-    private final Registration registration;
 
-    public <H extends OperationStepHandler & Registration> RestartParentResourceStepHandler(H handler, ResourceServiceBuilderFactory<T> parentFactory) {
+    public <H extends OperationStepHandler & Registration> RestartParentResourceStepHandler(ResourceServiceBuilderFactory<T> parentFactory) {
         super(null);
-        this.handler = handler;
-        this.registration = handler;
         this.parentFactory = parentFactory;
     }
 
     @Override
     protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-        this.handler.execute(context, operation);
     }
 
     @Override
@@ -66,10 +60,5 @@ public class RestartParentResourceStepHandler<T> extends RestartParentResourceHa
     @Override
     protected PathAddress getParentAddress(PathAddress address) {
         return address.getParent();
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        this.registration.register(registration);
     }
 }
