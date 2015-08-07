@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
@@ -78,21 +77,18 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(StoreResourceDefinition.Attribute.class)
+                ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new CustomStoreBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
 
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
+        super.register(registration);
     }
 }

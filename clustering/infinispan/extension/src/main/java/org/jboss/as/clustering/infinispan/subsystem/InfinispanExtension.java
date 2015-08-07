@@ -48,7 +48,7 @@ public class InfinispanExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, InfinispanModel.CURRENT.getVersion());
 
-        registration.registerSubsystemModel(new InfinispanSubsystemResourceDefinition(context.getProcessType().isServer() ? context.getPathManager() : null, context.isRuntimeOnlyRegistrationValid()));
+        new InfinispanSubsystemResourceDefinition(context.getProcessType().isServer() ? context.getPathManager() : null, context.isRuntimeOnlyRegistrationValid()).register(registration);
         registration.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
 
         if (context.isRegisterTransformers()) {

@@ -26,7 +26,6 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.MetricHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
@@ -74,7 +73,7 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
                     .setAllowNull(true)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            ;
+                    ;
         }
 
         @Override
@@ -97,24 +96,17 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new EvictionBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);
         }
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
     }
 }

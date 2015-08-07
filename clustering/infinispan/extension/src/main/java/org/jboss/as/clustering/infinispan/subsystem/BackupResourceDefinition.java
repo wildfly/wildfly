@@ -25,20 +25,18 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.SitesConfiguration;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.OperationHandler;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -51,7 +49,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-public class BackupResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class BackupResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -105,7 +103,7 @@ public class BackupResourceDefinition extends SimpleResourceDefinition implement
                 .setDefaultValue(defaultValue)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-        ;
+                ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -122,24 +120,18 @@ public class BackupResourceDefinition extends SimpleResourceDefinition implement
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, TakeOfflineAttribute.class).register(registration);
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(TakeOfflineAttribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(TakeOfflineAttribute.class)
+                ;
         new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor).register(registration);
         new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor).register(registration);
 
         if (this.runtimeRegistration) {
             new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);
         }
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

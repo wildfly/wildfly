@@ -23,10 +23,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
@@ -35,7 +34,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
@@ -51,7 +49,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public abstract class StoreResourceDefinition extends SimpleResourceDefinition implements Registration {
+public abstract class StoreResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -145,18 +143,14 @@ public abstract class StoreResourceDefinition extends SimpleResourceDefinition i
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+    public void register(ManagementResourceRegistration registration) {
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new StoreMetricExecutor(), StoreMetric.class).register(registration);
         }
-    }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
         new StoreWriteBehindResourceDefinition().register(registration);
         new StoreWriteThroughResourceDefinition().register(registration);
 

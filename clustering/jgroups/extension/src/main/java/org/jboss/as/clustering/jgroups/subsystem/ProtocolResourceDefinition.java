@@ -25,16 +25,10 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.RequiredCapability;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -47,7 +41,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -71,8 +64,9 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  * Resource description for /subsystem=jgroups/stack=X/protocol=Y
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Paul Ferraro
  */
-public class ProtocolResourceDefinition extends SimpleResourceDefinition implements Registration {
+public abstract class ProtocolResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -257,35 +251,9 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
         this.parentBuilderFactory = parentBuilderFactory;
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addAttributes(DeprecatedAttribute.class)
-                .addCapabilities(Capability.class)
-        ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
-        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
-
-        for (DeprecatedAttribute attribute : DeprecatedAttribute.values()) {
-            registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
-        }
-    }
-
     @SuppressWarnings("deprecation")
     @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        new PropertyResourceDefinition().register(registration);
-    }
-
-    @Override
     public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
+        new PropertyResourceDefinition().register(registration);
     }
 }

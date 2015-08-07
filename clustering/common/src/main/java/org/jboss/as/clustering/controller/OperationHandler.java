@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  * Generic {@link org.jboss.as.controller.OperationStepHandler} for runtime operations.
  * @author Paul Ferraro
  */
-public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements Registration {
+public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements Registration<ManagementResourceRegistration> {
 
     private final Map<String, Operation<C>> operations = new HashMap<>();
     private final OperationExecutor<C> executor;
@@ -50,18 +51,14 @@ public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements R
         this(executor, Arrays.asList(operations));
     }
 
-    public OperationHandler(OperationExecutor<C> executor, Iterable<? extends Operation<C>> operations) {
+    public OperationHandler(OperationExecutor<C> executor, Collection<? extends Operation<C>> operations) {
         this.executor = executor;
-        for (Operation<C> operation : operations) {
-            this.operations.put(operation.getDefinition().getName(), operation);
-        }
+        operations.forEach(operation -> this.operations.put(operation.getDefinition().getName(), operation));
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        for (Operation<C> operation : this.operations.values()) {
-            registration.registerOperationHandler(operation.getDefinition(), this);
-        }
+        this.operations.values().forEach(operation -> registration.registerOperationHandler(operation.getDefinition(), this));
     }
 
     @Override

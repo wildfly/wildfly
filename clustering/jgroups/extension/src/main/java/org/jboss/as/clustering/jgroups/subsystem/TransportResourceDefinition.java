@@ -22,6 +22,9 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumSet;
+import java.util.stream.Collectors;
+
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RequiredCapability;
@@ -30,7 +33,6 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
@@ -200,19 +202,34 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), parentBuilderFactory);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ThreadingAttribute.class).addAttributes(ProtocolResourceDefinition.Attribute.class).addCapabilities(Capability.class).addCapabilities(ProtocolResourceDefinition.Capability.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
-        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
-        new ReloadRequiredWriteAttributeHandler(ThreadingAttribute.class) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(ProtocolResourceDefinition.Attribute.class)
+                .addExtraParameters(ThreadingAttribute.class)
+                .addExtraParameters(ProtocolResourceDefinition.DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
+                .addCapabilities(ProtocolResourceDefinition.Capability.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
+        new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
+            @Override
+            protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+                super.populateModel(operation, model);
+                // Add deprecated threading attributes to the model for now
+                for (ThreadingAttribute attribute :  EnumSet.allOf(ThreadingAttribute.class)) {
+                    attribute.getDefinition().validateAndSet(operation, model);
+                }
+            }
+        }.register(registration);
+        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+
+        new ReloadRequiredWriteAttributeHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(attribute -> attribute.getDefinition()).collect(Collectors.toList())) {
             @Override
             protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
                 // Add a new step to validate instead of doing it directly in this method.
@@ -224,7 +241,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                         ModelNode conf = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
                         // TODO doesn't cover the admin-only modes
                         if (context.getProcessType().isServer()) {
-                            for (ThreadingAttribute attribute : ThreadingAttribute.values()) {
+                            for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
                                 if (conf.hasDefined(attribute.getDefinition().getName())) {
                                     // That is not supported.
                                     throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.threadsAttributesUsedInRuntime());
@@ -235,19 +252,9 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                 }, OperationContext.Stage.MODEL);
             }
         }.register(registration);
-    }
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        super.registerChildren(registration);
+        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.register(registration));
 
-        for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
-            pool.register(registration);
-        }
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
+        super.register(registration);
     }
 }

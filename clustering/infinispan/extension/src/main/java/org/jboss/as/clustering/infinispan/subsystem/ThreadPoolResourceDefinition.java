@@ -23,13 +23,13 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -66,7 +66,7 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
  * @author Radoslav Husar
  * @version February 2015
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registration, ThreadPoolDefinition {
+public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registration<ManagementResourceRegistration>, ThreadPoolDefinition {
 
     ASYNC_OPERATIONS("async-operations", 25, 25, 1000, 60000),
     LISTENER("listener", 1, 1, 100000, 60000),
@@ -128,7 +128,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(this.getAttributes()).register(registration);
+        // No-op.
     }
 
     @Override
@@ -186,7 +186,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
         return this.keepAliveTime;
     }
 
-    Iterable<Attribute> getAttributes() {
+    Collection<Attribute> getAttributes() {
         return Arrays.asList(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime);
     }
 
@@ -194,7 +194,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
         // Nothing to transform yet
     }
 
-    public DynamicDiscardPolicy getDiscardPolicy() {
+    DynamicDiscardPolicy getDiscardPolicy() {
         return new UndefinedAttributesDiscardPolicy(this.getAttributes());
     }
 

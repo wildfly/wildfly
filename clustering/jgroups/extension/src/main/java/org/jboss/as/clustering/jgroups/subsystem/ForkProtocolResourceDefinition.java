@@ -50,12 +50,15 @@ public class ForkProtocolResourceDefinition extends ProtocolResourceDefinition {
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
-        ;
+                ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
         new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
             @Override
@@ -68,5 +71,11 @@ public class ForkProtocolResourceDefinition extends ProtocolResourceDefinition {
             }
         }.register(registration);
         new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+
+        for (DeprecatedAttribute attribute : DeprecatedAttribute.values()) {
+            registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
+        }
+
+        super.register(registration);
     }
 }

@@ -29,7 +29,6 @@ import java.util.List;
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
@@ -103,28 +102,6 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         super(PATH, new InfinispanResourceDescriptionResolver(PATH, pathElement("jdbc"), WILDCARD_PATH), allowRuntimeOnlyRegistration);
     }
 
-    @Override
-    public void registerOperations(final ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(JDBCStoreResourceDefinition.Attribute.class).addAttributes(StoreResourceDefinition.Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryKeyedJDBCStoreBuilderFactory());
-        new AddStepHandler(descriptor, handler) {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                super.execute(context, operation);
-                if (operation.hasDefined(DeprecatedAttribute.TABLE.getDefinition().getName())) {
-                    // Translate deprecated TABLE attribute into separate add table operation
-                    ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH));
-                    ModelNode parameters = operation.get(DeprecatedAttribute.TABLE.getDefinition().getName());
-                    for (Property parameter : parameters.asPropertyList()) {
-                        addTableOperation.get(parameter.getName()).set(parameter.getValue());
-                    }
-                    context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), ModelDescriptionConstants.ADD), context.getCurrentStage());
-                }
-            }
-        }.register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
-    }
-
     static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -143,26 +120,44 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
             for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(BinaryTableResourceDefinition.Attribute.class, TableResourceDefinition.Attribute.class)) {
                 for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
                     ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(address, attribute, table.get(attribute.getDefinition().getName()));
-                    context.addStep(writeAttributeOperation, new ReloadRequiredWriteAttributeHandler(attribute), context.getCurrentStage());
+                    context.addStep(writeAttributeOperation, context.getResourceRegistration().getAttributeAccess(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), attribute.getDefinition().getName()).getWriteHandler(), context.getCurrentStage());
                 }
             }
         }
     };
 
     @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        super.registerChildren(registration);
-        new BinaryTableResourceDefinition().register(registration);
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(JDBCStoreResourceDefinition.Attribute.class)
+                .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addExtraParameters(DeprecatedAttribute.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryKeyedJDBCStoreBuilderFactory());
+        new AddStepHandler(descriptor, handler) {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                super.execute(context, operation);
+                if (operation.hasDefined(DeprecatedAttribute.TABLE.getDefinition().getName())) {
+                    // Translate deprecated TABLE attribute into separate add table operation
+                    ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH));
+                    ModelNode parameters = operation.get(DeprecatedAttribute.TABLE.getDefinition().getName());
+                    for (Property parameter : parameters.asPropertyList()) {
+                        addTableOperation.get(parameter.getName()).set(parameter.getValue());
+                    }
+                    context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), ModelDescriptionConstants.ADD), context.getCurrentStage());
+                }
+            }
+        }.register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
+
         registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
-    }
 
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
+        new BinaryTableResourceDefinition().register(registration);
+
+        super.register(registration);
     }
 }

@@ -32,7 +32,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Registration facility for capabilities.
  * @author Paul Ferraro
  */
-public class CapabilityRegistration implements Registration {
+public class CapabilityRegistration implements Registration<ManagementResourceRegistration> {
 
     private final Collection<? extends Capability> capabilities;
 
@@ -48,13 +48,8 @@ public class CapabilityRegistration implements Registration {
         this.capabilities = capabilities;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void register(ManagementResourceRegistration registration) {
-        for (Capability capability : this.capabilities) {
-            registration.registerCapability(capability.getDefinition());
-        }
+        this.capabilities.forEach(capability -> registration.registerCapability(capability.getDefinition()));
     }
 }

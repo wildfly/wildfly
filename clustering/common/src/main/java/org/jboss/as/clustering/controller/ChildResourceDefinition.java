@@ -22,19 +22,21 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Collection;
-
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * Describes the common properties of a remove operation handler.
+ * Resource definition for child resources that performs all registration via {@link #register(ManagementResourceRegistration)}.
  * @author Paul Ferraro
  */
-public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescriptor, RemoveStepHandlerDescriptor {
+public abstract class ChildResourceDefinition extends AbstractResourceDefinition<ManagementResourceRegistration> {
 
-    /**
-     * Extra parameters (not specified by {@link #getAttributes()}) for the add operation.
-     * @return a collection of attributes
-     */
-    Collection<AttributeDefinition> getExtraParameters();
+    protected ChildResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
+        super(new Parameters(path, resolver));
+    }
+
+    protected ChildResourceDefinition(Parameters parameters) {
+        super(parameters);
+    }
 }
