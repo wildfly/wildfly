@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * Provides the service name for the configuration of a cache component
@@ -32,18 +31,18 @@ import org.wildfly.clustering.service.SubGroupServiceNameFactory;
  */
 public class CacheComponentServiceNameProvider implements ServiceNameProvider {
 
-    private final SubGroupServiceNameFactory factory;
+    private final CacheComponent component;
     private final String containerName;
     private final String cacheName;
 
-    public CacheComponentServiceNameProvider(SubGroupServiceNameFactory factory, String containerName, String cacheName) {
-        this.factory = factory;
+    public CacheComponentServiceNameProvider(CacheComponent component, String containerName, String cacheName) {
+        this.component = component;
         this.containerName = containerName;
         this.cacheName = cacheName;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.factory.getServiceName(this.containerName, this.cacheName);
+        return this.component.getServiceName(this.containerName, this.cacheName);
     }
 }

@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.GroupServiceNameFactory;
 import org.wildfly.clustering.service.ServiceNameProvider;
 
 /**
@@ -31,16 +30,16 @@ import org.wildfly.clustering.service.ServiceNameProvider;
  */
 public class CacheContainerComponentServiceNameProvider implements ServiceNameProvider {
 
-    private final GroupServiceNameFactory factory;
+    private final CacheContainerComponent component;
     private final String containerName;
 
-    public CacheContainerComponentServiceNameProvider(GroupServiceNameFactory factory, String containerName) {
-        this.factory = factory;
+    public CacheContainerComponentServiceNameProvider(CacheContainerComponent component, String containerName) {
+        this.component = component;
         this.containerName = containerName;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.factory.getServiceName(this.containerName);
+        return this.component.getServiceName(this.containerName);
     }
 }

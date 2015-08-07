@@ -73,16 +73,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeEndElement();
                     }
 
-                    // write any configured thread pools
-                    if (container.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
-                        writeThreadPoolElements(XMLElement.ASYNC_OPERATIONS_THREAD_POOL, ThreadPoolResourceDefinition.ASYNC_OPERATIONS, writer, container);
-                        writeThreadPoolElements(XMLElement.LISTENER_THREAD_POOL, ThreadPoolResourceDefinition.LISTENER, writer, container);
-                        writeThreadPoolElements(XMLElement.PERSISTENCE_THREAD_POOL, ThreadPoolResourceDefinition.PERSISTENCE, writer, container);
-                        writeThreadPoolElements(XMLElement.STATE_TRANSFER_THREAD_POOL, ThreadPoolResourceDefinition.STATE_TRANSFER, writer, container);
-                        writeThreadPoolElements(XMLElement.TRANSPORT_THREAD_POOL, ThreadPoolResourceDefinition.TRANSPORT, writer, container);
-                        writeScheduledThreadPoolElements(XMLElement.EXPIRATION_THREAD_POOL, ScheduledThreadPoolResourceDefinition.EXPIRATION, writer, container);
-                    }
-
                     // write any existent cache types
                     if (container.hasDefined(LocalCacheResourceDefinition.WILDCARD_PATH.getKey())) {
                         for (Property property : container.get(LocalCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
@@ -364,27 +354,5 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     private static void writeElement(XMLExtendedStreamWriter writer, ModelNode model, Attribute attribute) throws XMLStreamException {
         attribute.getDefinition().getAttributeMarshaller().marshallAsElement(attribute.getDefinition(), model, true, writer);
-    }
-
-    private static void writeThreadPoolElements(XMLElement element, ThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode container) throws XMLStreamException {
-        if (container.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
-            ModelNode threadPool = container.get(pool.getPathElement().getKeyValuePair());
-            if (hasDefined(threadPool, pool.getAttributes())) {
-                writer.writeStartElement(element.getLocalName());
-                writeAttributes(writer, threadPool, pool.getAttributes());
-                writer.writeEndElement();
-            }
-        }
-    }
-
-    private static void writeScheduledThreadPoolElements(XMLElement element, ScheduledThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode container) throws XMLStreamException {
-        if (container.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
-            ModelNode threadPool = container.get(pool.getPathElement().getKeyValuePair());
-            if (hasDefined(threadPool, pool.getAttributes())) {
-                writer.writeStartElement(element.getLocalName());
-                writeAttributes(writer, threadPool, pool.getAttributes());
-                writer.writeEndElement();
-            }
-        }
     }
 }
