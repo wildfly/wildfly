@@ -41,7 +41,7 @@
     <dependencies>
 
 		<!-- feature pack dependencies -->
-		
+
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-feature-pack</artifactId>
