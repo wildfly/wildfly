@@ -96,6 +96,31 @@
     </macrodef>
 
     <!--
+        Changes socket-binding for a given protocol in a given stack.
+    -->
+    <macrodef name="ts.config-as.change-protocol-socket-binding" description="Changes socket-binding for a given protocol in a given stack.">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="stack" default="tcp"/>
+        <attribute name="protocol" default="MPING"/>
+        <attribute name="socket-binding" default="jgroups-udp"/>
+
+        <sequential>
+            <echo message="Changes socket-binding to @{socket-binding} for @{protocol} protocol in @{stack} stack."/>
+            <execute-xslt-transform transform="changeProtocolSocketBinding.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="stack" expression="@{stack}"/>
+                    <param name="protocol" expression="@{protocol}"/>
+                    <param name="socket-binding" expression="@{socket-binding}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
         Change default cache mode in clustering server profiles.
     -->
     <macrodef name="ts.config-as.change-cache-mode" description="Change default cache mode in clustering server profiles.">
