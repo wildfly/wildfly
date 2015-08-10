@@ -5966,7 +5966,6 @@
             </dependency>
 
             <dependency>
-<<<<<<< HEAD
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
                 <version>${version.org.wildfly.arquillian}</version>
@@ -5979,8 +5978,6 @@
             </dependency>
 
             <dependency>
-=======
->>>>>>> upstream
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${version.org.yaml.snakeyaml}</version>
