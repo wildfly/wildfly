@@ -30,6 +30,7 @@ import org.jboss.as.controller.ModelVersion;
 public enum JGroupsModel {
 
     VERSION_1_2_0(1, 2, 0),
+    VERSION_1_3_0(1, 3, 0),
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
     ;
@@ -37,7 +38,7 @@ public enum JGroupsModel {
 
     private final ModelVersion version;
 
-    private JGroupsModel(int major, int minor, int micro) {
+    JGroupsModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 
