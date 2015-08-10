@@ -46,9 +46,9 @@ import org.junit.runner.RunWith;
  */
 
 @RunWith(Arquillian.class)
-public class Hibernate42xTestCase {
+public class HibernateJarsInDeploymentTestCase {
 
-    private static final String ARCHIVE_NAME = "hibernate_42x";
+    private static final String ARCHIVE_NAME = "HibernateJarsInDeploymentTestCase";
 
     private static void addHibernate42xJars(EnterpriseArchive ear) {
         final String basedir = System.getProperty("basedir");
@@ -57,7 +57,7 @@ public class Hibernate42xTestCase {
         File hibernatecore = new File(testdir, "hibernate-core.jar");
         File hibernateannotations = new File(testdir, "hibernate-commons-annotations.jar");
         File hibernateentitymanager = new File(testdir, "hibernate-entitymanager.jar");
-        File jipi = new File(testdir,"jipijapa-hibernate4-1.jar");
+        File jipi = new File(testdir,"jipijapa-hibernate5.jar");
         File dom4j = new File(testdir, "dom4j.jar");
         File antlr = new File(testdir, "antlr.jar");
         ear.addAsLibraries(
@@ -76,8 +76,8 @@ public class Hibernate42xTestCase {
         addHibernate42xJars(ear);
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        lib.addClasses(SFSB1.class, Hibernate42xTestCase.class);
-        lib.addAsManifestResource(Hibernate42xTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        lib.addClasses(SFSB1.class, HibernateJarsInDeploymentTestCase.class);
+        lib.addAsManifestResource(HibernateJarsInDeploymentTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jandex\n"), "MANIFEST.MF");
         ear.addAsModule(lib);
 
