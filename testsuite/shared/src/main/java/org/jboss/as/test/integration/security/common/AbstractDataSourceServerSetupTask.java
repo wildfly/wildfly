@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.security.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -35,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.config.DataSource;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -89,12 +89,15 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
             }
             updates.add(dsNode);
             final ModelNode enableNode = new ModelNode();
-            enableNode.get(OP).set(ENABLE);
+            enableNode.get("name").set("enabled");
+            enableNode.get("value").set(true);
+            enableNode.get(OP).set("write-attribute");
             enableNode.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_DATASOURCES);
             enableNode.get(OP_ADDR).add(DATASOURCE, name);
             updates.add(enableNode);
         }
         CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 50000);
     }
 
     /**

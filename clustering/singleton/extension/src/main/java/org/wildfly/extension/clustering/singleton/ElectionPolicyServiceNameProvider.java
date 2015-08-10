@@ -39,6 +39,6 @@ public class ElectionPolicyServiceNameProvider implements ServiceNameProvider {
 
     @Override
     public ServiceName getServiceName() {
-        return new DeploymentPolicyBuilder(this.name).getServiceName().append("election-policy");
+        return new SingletonPolicyBuilder(this.name).getServiceName().append("election-policy");
     }
 }

@@ -46,7 +46,7 @@ public class TransformUtils {
         for (Property property : legacyModel.asPropertyList()) {
             String name = property.getName();
             final ModelNode legacyValue = property.getValue();
-            if (legacyModel.isDefined()) {
+            if (legacyValue.isDefined()) {
                 final ModelNode value;
                 switch (name) {
                     case JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION:

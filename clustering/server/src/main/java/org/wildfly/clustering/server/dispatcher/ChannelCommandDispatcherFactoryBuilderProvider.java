@@ -25,13 +25,13 @@ import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.GroupBuilderFactory;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for creating a channel-based {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory}.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactoryBuilderProvider extends CommandDispatcherFactoryBuilderProvider implements ClusteredGroupBuilderProvider {
+public class ChannelCommandDispatcherFactoryBuilderProvider extends CommandDispatcherFactoryBuilderProvider implements DistributedGroupBuilderProvider {
 
     private static final GroupBuilderFactory<CommandDispatcherFactory> FACTORY = new GroupBuilderFactory<CommandDispatcherFactory>() {
         @Override

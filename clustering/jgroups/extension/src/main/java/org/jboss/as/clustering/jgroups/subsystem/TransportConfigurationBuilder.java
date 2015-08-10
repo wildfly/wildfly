@@ -22,12 +22,19 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.*;
+
+import org.jboss.as.clustering.controller.CapabilityDependency;
+import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
-import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
@@ -36,7 +43,7 @@ import org.wildfly.clustering.service.ValueDependency;
 public class TransportConfigurationBuilder extends AbstractProtocolConfigurationBuilder<TransportConfiguration> implements TransportConfiguration {
 
     private ValueDependency<SocketBinding> diagnosticsSocketBinding;
-    private boolean shared = TransportResourceDefinition.SHARED.getDefaultValue().asBoolean();
+    private boolean shared;
     private Topology topology = null;
 
     public TransportConfigurationBuilder(String stackName, String name) {
@@ -58,36 +65,10 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
     }
 
     @Override
-    public TransportConfigurationBuilder setModule(ModuleIdentifier module) {
-        super.setModule(module);
-        return this;
-    }
-
-    @Override
-    public TransportConfigurationBuilder setSocketBinding(String socketBindingName) {
-        super.setSocketBinding(socketBindingName);
-        return this;
-    }
-
-    @Override
-    public TransportConfigurationBuilder addProperty(String name, String value) {
-        super.addProperty(name, value);
-        return this;
-    }
-
-    public TransportConfigurationBuilder setDiagnosticsSocket(String socketBindingName) {
-        if (socketBindingName != null) {
-            this.diagnosticsSocketBinding = new InjectedValueDependency<>(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class);
-        }
-        return this;
-    }
-
-    public TransportConfigurationBuilder setShared(boolean shared) {
-        this.shared = shared;
-        return this;
-    }
-
-    public TransportConfigurationBuilder setTopology(final String site, final String rack, final String machine) {
+    public Builder<TransportConfiguration> configure(OperationContext context, ModelNode transport) throws OperationFailedException {
+        final String machine = ModelNodes.asString(MACHINE.getDefinition().resolveModelAttribute(context, transport));
+        final String rack = ModelNodes.asString(RACK.getDefinition().resolveModelAttribute(context, transport));
+        final String site = ModelNodes.asString(SITE.getDefinition().resolveModelAttribute(context, transport));
         if ((site != null) || (rack != null) || (machine != null)) {
             this.topology = new Topology() {
                 @Override
@@ -106,7 +87,32 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
                 }
             };
         }
-        return this;
+
+        this.shared = SHARED.getDefinition().resolveModelAttribute(context, transport).asBoolean();
+
+        String diagnosticsBinding = ModelNodes.asString(DIAGNOSTICS_SOCKET_BINDING.getDefinition().resolveModelAttribute(context, transport));
+        if (diagnosticsBinding != null) {
+            this.diagnosticsSocketBinding = new CapabilityDependency<>(context, RequiredCapability.SOCKET_BINDING, diagnosticsBinding, SocketBinding.class);
+        }
+
+        for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
+            String prefix = pool.getPrefix();
+            ModelNode model = transport.get(pool.getPathElement().getKeyValuePair());
+
+            this.getProperties().put(prefix + ".min_threads", pool.getMinThreads().getDefinition().resolveModelAttribute(context, model).asString());
+            this.getProperties().put(prefix + ".max_threads", pool.getMaxThreads().getDefinition().resolveModelAttribute(context, model).asString());
+
+            int queueSize = pool.getQueueLength().getDefinition().resolveModelAttribute(context, model).asInt();
+            if (pool != ThreadPoolResourceDefinition.TIMER) {
+                this.getProperties().put(prefix + ".queue_enabled", String.valueOf(queueSize > 0));
+            }
+            this.getProperties().put(prefix + ".queue_max_size", String.valueOf(queueSize));
+
+            // keepalive_time in milliseconds
+            this.getProperties().put(prefix + ".keep_alive_time", pool.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asString());
+        }
+
+        return super.configure(context, transport);
     }
 
     @Override

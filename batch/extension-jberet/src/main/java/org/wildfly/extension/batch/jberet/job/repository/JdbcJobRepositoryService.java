@@ -66,7 +66,6 @@ public class JdbcJobRepositoryService implements Service<JobRepository> {
         } finally {
             context.asynchronous();
         }
-        jobRepository = new JdbcRepository(dataSourceValue.getValue());
     }
 
     @Override

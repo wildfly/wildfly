@@ -30,9 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
@@ -572,7 +569,6 @@ public class Constants {
             .build();
 
 
-    static final List<SimpleAttributeDefinition> DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED = Arrays.asList(JTA, STATISTICS_ENABLED);
     static final SimpleAttributeDefinition[] DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[]{CONNECTION_URL,
             DRIVER_CLASS, Constants.DATASOURCE_CLASS, JNDI_NAME,
             DATASOURCE_DRIVER,

@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.controller;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,5 +35,5 @@ public interface Executable<C> {
      * @param context an execution context
      * @return the execution result (possibly null).
      */
-    ModelNode execute(C context);
+    ModelNode execute(C context) throws OperationFailedException;
 }

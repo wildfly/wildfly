@@ -827,6 +827,10 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 92, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
     IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
+
+    @Message(id = 93, value = "This operation is no longer supported. Only for use on legacy hosts in a domain ")
+    OperationFailedException legacyOperation();
+
 }
 
 

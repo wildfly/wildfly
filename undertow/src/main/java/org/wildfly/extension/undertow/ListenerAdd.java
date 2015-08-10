@@ -37,9 +37,9 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.OptionList;
 import org.xnio.OptionMap;
+import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
 import java.util.HashSet;
@@ -52,17 +52,17 @@ import java.util.Set;
 abstract class ListenerAdd extends AbstractAddStepHandler {
 
     ListenerAdd(ListenerResourceDefinition definition) {
-        super(definition.getAttributes());
+        super(ListenerResourceDefinition.LISTENER_CAPABILITY, definition.getAttributes());
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = context.getCurrentAddress();
-        final PathAddress parent = address.subAddress(0, address.size() - 1);
-        String name = address.getLastElement().getValue();
-        String bindingRef = ListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
-        String workerName = ListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
-        String bufferPoolName = ListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
+        final PathAddress parent = address.getParent();
+        final String name = context.getCurrentAddressValue();
+        final String bindingRef = ListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
+        final String workerName = ListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
+        final String bufferPoolName = ListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
         final boolean enabled = ListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
         final boolean peerHostLookup = ListenerResourceDefinition.RESOLVE_PEER_ADDRESS.resolveModelAttribute(context, model).asBoolean();
 
@@ -93,10 +93,13 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
             });
         }
 
+        final ServiceName socketBindingServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.SOCKET_CAPABILITY, bindingRef, SocketBinding.class);
+        final ServiceName workerServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, workerName, XnioWorker.class);
+        final ServiceName bufferPoolServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY, bufferPoolName, Pool.class);
         final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
-        serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), (Injector) service.getBufferPool())
+        serviceBuilder.addDependency(workerServiceName, XnioWorker.class, service.getWorker())
+                .addDependency(socketBindingServiceName, SocketBinding.class, service.getBinding())
+                .addDependency(bufferPoolServiceName, (Injector) service.getBufferPool())
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
         configureAdditionalDependencies(context, serviceBuilder, model, service);

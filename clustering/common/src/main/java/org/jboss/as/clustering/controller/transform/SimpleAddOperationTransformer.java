@@ -22,8 +22,14 @@
 
 package org.jboss.as.clustering.controller.transform;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationResultTransformer;
@@ -37,28 +43,39 @@ import org.jboss.dmr.ModelNode;
 public class SimpleAddOperationTransformer implements org.jboss.as.controller.transform.OperationTransformer {
 
     private final OperationTransformer transformer;
-    private final AttributeDefinition[] attributes;
+    private final List<Attribute> attributes = new LinkedList<>();
 
-    public SimpleAddOperationTransformer(final PathAddressTransformer transformer, AttributeDefinition... attributes) {
+    public SimpleAddOperationTransformer(final PathAddressTransformer transformer) {
         this.transformer = new OperationTransformer() {
             @Override
             public ModelNode transformOperation(ModelNode operation) {
                 return Util.createAddOperation(transformer.transform(Operations.getPathAddress(operation)));
             }
         };
-        this.attributes = attributes;
     }
 
-    public SimpleAddOperationTransformer(OperationTransformer transformer, AttributeDefinition... attributes) {
+    public SimpleAddOperationTransformer(OperationTransformer transformer) {
         this.transformer = transformer;
-        this.attributes = attributes;
+    }
+
+    public <E extends Enum<E> & Attribute> SimpleAddOperationTransformer addAttributes(Class<E> enumClass) {
+        return this.addAttributes(EnumSet.allOf(enumClass));
+    }
+
+    public SimpleAddOperationTransformer addAttributes(Attribute... attributes) {
+        return this.addAttributes(Arrays.asList(attributes));
+    }
+
+    public SimpleAddOperationTransformer addAttributes(Collection<? extends Attribute> attributes) {
+        this.attributes.addAll(attributes);
+        return this;
     }
 
     @Override
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
         ModelNode legacyOperation = this.transformer.transformOperation(operation);
-        for (AttributeDefinition attribute: this.attributes) {
-            String name = attribute.getName();
+        for (Attribute attribute: this.attributes) {
+            String name = attribute.getDefinition().getName();
             if (operation.hasDefined(name)) {
                 legacyOperation.get(name).set(operation.get(name));
             }

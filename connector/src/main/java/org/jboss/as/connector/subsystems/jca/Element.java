@@ -71,8 +71,6 @@ public enum Element {
 
     OPTION("option"),
 
-    TRANSPORT("transport"),
-
     TRACER("tracer");
 
 

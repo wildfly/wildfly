@@ -79,7 +79,7 @@ public class JcaExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jca";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     private static final String RESOURCE_NAME = JcaExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -114,6 +114,7 @@ public class JcaExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_1.getUriString(), ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_2_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_3_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_4_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
     }
 
     static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -233,12 +234,6 @@ public class JcaExtension implements Extension {
 
                     }
 
-                    writer.writeStartElement(Element.TRANSPORT.getLocalName());
-                    ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute()).marshallAsAttribute(property.getValue(), writer);
-                    ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute()).marshallAsAttribute(property.getValue(), writer);
-                    ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute()).marshallAsAttribute(property.getValue(), writer);
-                    writer.writeEndElement();
-
                     writer.writeEndElement();
                 }
             }
@@ -312,6 +307,7 @@ public class JcaExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case JCA_4_0:
                     case JCA_3_0:
                     case JCA_2_0:
                     case JCA_1_1: {
@@ -368,7 +364,8 @@ public class JcaExtension implements Extension {
                                 break;
                             }
                             case TRACER: {
-                                if (Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_3_0)) {
+                                if (Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_3_0) ||
+                                    Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_4_0)) {
                                     list.add(parseTracer(reader, address));
                                 } else {
                                     throw unexpectedElement(reader);
@@ -567,7 +564,8 @@ public class JcaExtension implements Extension {
                     case POLICY: {
                         switch (readerNS) {
                             case JCA_2_0:
-                            case JCA_3_0: {
+                            case JCA_3_0:
+                            case JCA_4_0: {
                                 parsePolicy(reader, distributedWorkManagerOperation);
                                 break;
                             }
@@ -580,21 +578,9 @@ public class JcaExtension implements Extension {
                     case SELECTOR: {
                         switch (readerNS) {
                             case JCA_2_0:
-                            case JCA_3_0: {
+                            case JCA_3_0:
+                            case JCA_4_0: {
                                 parseSelector(reader, distributedWorkManagerOperation);
-                                break;
-                            }
-                            default: {
-                                throw unexpectedElement(reader);
-                            }
-                        }
-                        break;
-                    }
-                    case TRANSPORT: {
-                        switch (readerNS) {
-                            case JCA_2_0:
-                            case JCA_3_0: {
-                                parseTransport(reader, distributedWorkManagerOperation);
                                 break;
                             }
                             default: {
@@ -687,39 +673,6 @@ public class JcaExtension implements Extension {
                 // Handle elements
 
             }
-        }
-
-
-        private void parseTransport(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
-
-
-            final int cnt = reader.getAttributeCount();
-            for (int i = 0; i < cnt; i++) {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case JGROUPS_STACK: {
-                        String value = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute().getXmlName());
-                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute()).parseAndSetParameter(value, operation, reader);
-                        break;
-                    }
-                    case JGROUPS_CLUSTER: {
-                        String value = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute().getXmlName());
-                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute()).parseAndSetParameter(value, operation, reader);
-                        break;
-                    }
-                    case REQUEST_TIMEOUT: {
-                        String value = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute().getXmlName());
-                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute()).parseAndSetParameter(value, operation, reader);
-                        break;
-                    }
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-            // Handle elements
-            requireNoContent(reader);
-
         }
 
         private ModelNode parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode parentOperation) throws XMLStreamException {

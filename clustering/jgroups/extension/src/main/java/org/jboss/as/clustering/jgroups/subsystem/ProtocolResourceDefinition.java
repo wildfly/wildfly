@@ -23,24 +23,34 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AttributeMarshallers;
+import org.jboss.as.clustering.controller.AttributeParsers;
+import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
+import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
@@ -51,8 +61,10 @@ import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
@@ -60,44 +72,91 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ProtocolResourceDefinition extends SimpleResourceDefinition {
+public class ProtocolResourceDefinition extends SimpleResourceDefinition implements Registration {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.PROTOCOL, name);
+        return PathElement.pathElement("protocol", name);
+    }
+
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        SOCKET_BINDING("org.wildfly.clustering.protocol.socket-binding", SocketBinding.class),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name, Class<?> serviceType) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        }
+
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+            PathAddress stackAddress = address.getParent();
+            return this.definition.fromBaseCapability(stackAddress.getLastElement().getValue() + "." + address.getLastElement().getValue());
+        }
+    }
+
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(RequiredCapability.SOCKET_BINDING, Capability.SOCKET_BINDING)),
+        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, new ModelNode(ProtocolConfiguration.DEFAULT_MODULE.getName()), new ModuleIdentifierValidatorBuilder()),
+        PROPERTIES(ModelDescriptionConstants.PROPERTIES),
+        ;
+        private final AttributeDefinition definition;
+
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
+            this.definition = builder.setValidator(validatorBuilder.configure(builder).build()).build();
+        }
+
+        Attribute(String name, ModelType type, AccessConstraintDefinition constraint, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, type, null).setAccessConstraints(constraint).setCapabilityReference(reference).build();
+        }
+
+        Attribute(String name) {
+            this.definition = new SimpleMapAttributeDefinition.Builder(name, true)
+                    .setAllowExpression(true)
+                    .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
+                    .setAttributeParser(AttributeParsers.COLLECTION)
+                    .setDefaultValue(new ModelNode().setEmptyList())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
     }
 
     @Deprecated
-    static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, true)
-            .setXmlName(Attribute.TYPE.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .build();
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        TYPE(ModelDescriptionConstants.TYPE, ModelType.STRING, null, JGroupsModel.VERSION_3_0_0),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_BINDING, ModelType.STRING, true)
-            .setXmlName(Attribute.SOCKET_BINDING.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .build();
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, JGroupsModel deprecation) {
+            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
+        }
 
-    static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
-            .setXmlName(Attribute.MODULE.getLocalName())
-            .setDefaultValue(new ModelNode(ProtocolConfiguration.DEFAULT_MODULE.getName()))
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new ModuleIdentifierValidator(true, false))
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
-    static final SimpleMapAttributeDefinition PROPERTIES = new SimpleMapAttributeDefinition.Builder("properties", true)
-            .setAllowExpression(true)
-            .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
-            .setDefaultValue(new ModelNode().setEmptyList())
-            .build();
-
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING, PROPERTIES };
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+        ;
+    }
 
     @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -112,10 +171,10 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
                     PathAddress stackAddress = address.subAddress(0, address.size() - 1);
-                    return Util.createOperation(ModelKeys.ADD_PROTOCOL, stackAddress);
+                    return Util.createOperation("add-protocol", stackAddress);
                 }
             };
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(addTransformer, ATTRIBUTES)).inheritResourceAttributeDefinitions();
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(addTransformer).addAttributes(Attribute.class)).inheritResourceAttributeDefinitions();
 
             // Translate /subsystem=jgroups/stack=*/protocol=*:remove() -> /subsystem=jgroups/stack=*:remove-protocol()
             OperationTransformer removeTransformer = new OperationTransformer() {
@@ -124,8 +183,8 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                     PathAddress address = Operations.getPathAddress(operation);
                     String protocol = address.getLastElement().getValue();
                     PathAddress stackAddress = address.subAddress(0, address.size() - 1);
-                    ModelNode legacyOperation = Util.createOperation(ModelKeys.REMOVE_PROTOCOL, stackAddress);
-                    legacyOperation.get(ProtocolResourceDefinition.TYPE.getName()).set(protocol);
+                    ModelNode legacyOperation = Util.createOperation("remove-protocol", stackAddress);
+                    legacyOperation.get(ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition().getName()).set(protocol);
                     return legacyOperation;
                 }
             };
@@ -151,15 +210,15 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
                 }
             };
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(MODULE.getDefaultValue()), MODULE)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, MODULE)
-                    .setValueConverter(typeConverter, TYPE)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.MODULE.getDefinition().getDefaultValue()), Attribute.MODULE.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.MODULE.getDefinition())
+                    .setValueConverter(typeConverter, DeprecatedAttribute.TYPE.getDefinition())
                     .end();
 
             OperationTransformer putPropertyTransformer = new OperationTransformer() {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
+                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(Attribute.PROPERTIES.getDefinition().getName())) {
                         String key = operation.get("key").asString();
                         ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
                         PathAddress address = Operations.getPathAddress(operation);
@@ -175,7 +234,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             OperationTransformer removePropertyTransformer = new OperationTransformer() {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(PROPERTIES.getName())) {
+                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(Attribute.PROPERTIES.getDefinition().getName())) {
                         String key = operation.get("key").asString();
                         PathAddress address = Operations.getPathAddress(operation);
                         return Util.createRemoveOperation(address.append(PropertyResourceDefinition.pathElement(key)));
@@ -187,28 +246,46 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
-    ProtocolResourceDefinition() {
-        this(new ReloadRequiredAddStepHandler(ATTRIBUTES));
+    final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
+
+    ProtocolResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        this(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH)).setOrderedChild(), parentBuilderFactory);
     }
 
-    ProtocolResourceDefinition(OperationStepHandler addHandler) {
-        super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH))
-                .setAddHandler(addHandler)
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
-                .setOrderedChild());
+    ProtocolResourceDefinition(Parameters parameters, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(parameters);
+        this.parentBuilderFactory = parentBuilderFactory;
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
+        ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
+        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
+
+        for (DeprecatedAttribute attribute : DeprecatedAttribute.values()) {
+            registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
         }
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(new PropertyResourceDefinition());
+        new PropertyResourceDefinition().register(registration);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerSubModel(this);
     }
 }

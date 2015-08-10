@@ -21,15 +21,18 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -40,43 +43,67 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 
 /**
  * Resource definition for subsystem=jgroups/stack=X/relay=RELAY/remote-site=Y
  *
  * @author Paul Ferraro
  */
-public class RemoteSiteResourceDefinition extends SimpleResourceDefinition {
+public class RemoteSiteResourceDefinition extends SimpleResourceDefinition implements Registration {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.REMOTE_SITE, name);
+        return PathElement.pathElement("remote-site", name);
     }
 
-    static final SimpleAttributeDefinition CHANNEL = new SimpleAttributeDefinitionBuilder(ModelKeys.CHANNEL, ModelType.STRING, false)
-            .setXmlName(Attribute.CHANNEL.getLocalName())
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        CHANNEL("channel", ModelType.STRING),
+        ;
+        private final AttributeDefinition definition;
 
-    @Deprecated
-    static final SimpleAttributeDefinition STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
-            .setXmlName(Attribute.STACK.getLocalName())
+        Attribute(String name, ModelType type) {
+            this.definition = createBuilder(name, type).setAllowNull(false).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        STACK("stack", ModelType.STRING, JGroupsModel.VERSION_3_0_0),
+        CLUSTER("cluster", ModelType.STRING, JGroupsModel.VERSION_3_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
+            this.definition = createBuilder(name, type).setAllowNull(true).setDeprecated(deprecation.getVersion()).build();
+        }
+
+        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
+            return new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+                .setAllowExpression(true)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            ;
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
+        return new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .build();
+        ;
+    }
 
-    @Deprecated
-    static final SimpleAttributeDefinition CLUSTER = new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
-            .setXmlName(Attribute.CLUSTER.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .build();
-
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CHANNEL, STACK };
-
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
@@ -90,19 +117,19 @@ public class RemoteSiteResourceDefinition extends SimpleResourceDefinition {
                 @Override
                 public void convertResourceAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
                     ModelNode remoteSite = context.readResourceFromRoot(address).getModel();
-                    String channelName = remoteSite.get(CHANNEL.getName()).asString();
-                    if (STACK.getName().equals(name)) {
+                    String channelName = remoteSite.get(Attribute.CHANNEL.getDefinition().getName()).asString();
+                    if (DeprecatedAttribute.STACK.getDefinition().getName().equals(name)) {
                         PathAddress subsystemAddress = address.subAddress(0, address.size() - 3);
                         PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channelName));
                         ModelNode channel = context.readResourceFromRoot(channelAddress).getModel();
 
-                        if (channel.hasDefined(ChannelResourceDefinition.STACK.getName())) {
-                            value.set(channel.get(ChannelResourceDefinition.STACK.getName()).asString());
+                        if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
+                            value.set(channel.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).asString());
                         } else {
                             ModelNode subsystem = context.readResourceFromRoot(subsystemAddress).getModel();
-                            value.set(subsystem.get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName()).asString());
+                            value.set(subsystem.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).asString());
                         }
-                    } else if (CLUSTER.getName().equals(name)) {
+                    } else if (DeprecatedAttribute.CLUSTER.getDefinition().getName().equals(name)) {
                         value.set(channelName);
                     } else {
                         throw new IllegalStateException();
@@ -110,21 +137,35 @@ public class RemoteSiteResourceDefinition extends SimpleResourceDefinition {
                 }
             };
             builder.getAttributeBuilder()
-                    .setValueConverter(converter, STACK, CLUSTER)
-                    .setDiscard(DiscardAttributeChecker.ALWAYS, CHANNEL)
+                    .setValueConverter(converter, DeprecatedAttribute.STACK.getDefinition(), DeprecatedAttribute.CLUSTER.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.CHANNEL.getDefinition())
                     .end();
         }
     }
 
-    RemoteSiteResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+    private final ResourceServiceBuilderFactory<RelayConfiguration> parentBuilderFactory;
+
+    RemoteSiteResourceDefinition(ResourceServiceBuilderFactory<RelayConfiguration> parentBuilderFactory) {
+        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
+        this.parentBuilderFactory = parentBuilderFactory;
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(DeprecatedAttribute.class);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RemoteSiteConfigurationBuilderFactory());
+        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attribute: ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, null, writeHandler);
-        }
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, DeprecatedAttribute.class).register(registration);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerSubModel(this);
     }
 }

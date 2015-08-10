@@ -44,12 +44,12 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -59,7 +59,6 @@ import org.wildfly.test.api.Authentication;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-4936")
 public class ClusteredMessagingTestCase {
 
     public static final String CONTAINER_0 = "messaging-container-0";
@@ -129,6 +128,10 @@ public class ClusteredMessagingTestCase {
         InitialContext contextFromServer1 = createJNDIContextFromServer1();
 
         String text = UUID.randomUUID().toString();
+
+        // WIP test if the problem is that the view is not yet propagated
+        Thread.sleep(ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
         // send to the queue on server 0
         sendMessage(contextFromServer0, jmsQueueLookup, text);
         // receive it from the queue on server 1
@@ -155,6 +158,10 @@ public class ClusteredMessagingTestCase {
             JMSConsumer consumer1 = jmsContext1.createConsumer((Destination) contextFromServer1.lookup(jmsTopicLookup));
 
             String text = UUID.randomUUID().toString();
+
+            // WIP test if the problem is that the view is not yet propagated
+            Thread.sleep(ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+
             // send a message to the topic on server 0
             sendMessage(contextFromServer0, jmsTopicLookup, text);
             // consumers receive it on both servers

@@ -64,7 +64,7 @@ public class SimpleElectionPolicyResourceDefinition extends ElectionPolicyResour
     }
 
     SimpleElectionPolicyResourceDefinition() {
-        super(PATH, new SingletonDeployerResourceDescriptionResolver(PATH, WILDCARD_PATH));
+        super(PATH, new SingletonResourceDescriptionResolver(PATH, WILDCARD_PATH));
     }
 
     @Override

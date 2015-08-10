@@ -27,6 +27,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.LockingConfiguration;
+import org.infinispan.configuration.cache.PartitionHandlingConfiguration;
 import org.infinispan.configuration.cache.SitesConfiguration;
 import org.infinispan.configuration.cache.SitesConfigurationBuilder;
 import org.infinispan.configuration.cache.StateTransferConfiguration;
@@ -43,6 +44,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
 
+    private final InjectedValue<PartitionHandlingConfiguration> partitionHandling = new InjectedValue<>();
     private final InjectedValue<StateTransferConfiguration> stateTransfer = new InjectedValue<>();
     private final InjectedValue<BackupForConfiguration> backupFor = new InjectedValue<>();
     private final InjectedValue<SitesConfiguration> backups = new InjectedValue<>();
@@ -61,6 +63,7 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         return super.build(target)
+                .addDependency(CacheComponent.PARTITION_HANDLING.getServiceName(this.containerName, this.cacheName), PartitionHandlingConfiguration.class, this.partitionHandling)
                 .addDependency(CacheComponent.STATE_TRANSFER.getServiceName(this.containerName, this.cacheName), StateTransferConfiguration.class, this.stateTransfer)
                 .addDependency(CacheComponent.BACKUPS.getServiceName(this.containerName, this.cacheName), SitesConfiguration.class, this.backups)
                 .addDependency(CacheComponent.BACKUP_FOR.getServiceName(this.containerName, this.cacheName), BackupForConfiguration.class, this.backupFor)
@@ -72,6 +75,7 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
     @Override
     public ConfigurationBuilder createConfigurationBuilder() {
         ConfigurationBuilder builder = super.createConfigurationBuilder();
+        builder.clustering().partitionHandling().read(this.partitionHandling.getValue());
         builder.clustering().stateTransfer().read(this.stateTransfer.getValue());
 
         CacheMode mode = builder.clustering().cacheMode();

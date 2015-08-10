@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -65,50 +65,24 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-            { InfinispanSchema.VERSION_1_0, 52 },
-            { InfinispanSchema.VERSION_1_1, 52 },
-            { InfinispanSchema.VERSION_1_2, 52 },
-            { InfinispanSchema.VERSION_1_3, 52 },
-            { InfinispanSchema.VERSION_1_4, 153 },
-            { InfinispanSchema.VERSION_1_5, 153 },
-            { InfinispanSchema.VERSION_2_0, 156 },
-            { InfinispanSchema.VERSION_3_0, 156 },
-            { InfinispanSchema.VERSION_4_0, 156 },
+            { InfinispanSchema.VERSION_1_0, 49 },
+            { InfinispanSchema.VERSION_1_1, 49 },
+            { InfinispanSchema.VERSION_1_2, 49 },
+            { InfinispanSchema.VERSION_1_3, 49 },
+            { InfinispanSchema.VERSION_1_4, 49 },
+            { InfinispanSchema.VERSION_1_5, 49 },
+            { InfinispanSchema.VERSION_2_0, 52 },
+            { InfinispanSchema.VERSION_3_0, 52 },
+            { InfinispanSchema.VERSION_4_0, 52 },
         };
         return Arrays.asList(data);
     }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new JGroupsSubsystemInitialization();
+        return new JGroupsSubsystemInitialization().require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2");
     }
-/*
-    @Override
-    protected String normalizeXML(String xml) throws Exception {
-        QName test = new QName("urn.org.jboss.test:1.0", "test");
-        // We need to add a wrapper element around the 2 subsystem elements, to make it valid xml
-        XMLEventReader reader = XMLInputFactory.newInstance().createXMLEventReader(new StringReader(String.format("<%1$s xmlns=\"%2$s\">%3$s</%1$s>", test.getLocalPart(), test.getNamespaceURI(), xml)));
-        // Strip jgroups subsystem from xml - since this will not be written
-        QName jgroups = new QName(JGroupsSchema.CURRENT.getNamespaceUri(), SUBSYSTEM);
-        StringWriter output = new StringWriter();
-        XMLEventWriter eventWriter = XMLOutputFactory.newInstance().createXMLEventWriter(output);
-        XMLEvent event = reader.nextEvent();
-        while (!event.isEndDocument()) {
-            if (event.isStartElement() && event.asStartElement().getName().equals(jgroups)) {
-                // Swallow jgroups subsystem
-                while (!(event.isEndElement() && event.asEndElement().getName().equals(jgroups))) {
-                    event = reader.nextEvent();
-                }
-            } else if (!(event.isStartElement() && event.asStartElement().getName().equals(test)) && !(event.isEndElement() && event.asEndElement().getName().equals(test))) {
-                eventWriter.add(event);
-            }
-            event = reader.nextEvent();
-        }
-        eventWriter.add(event);
-        eventWriter.close();
-        return super.normalizeXML(output.toString());
-    }
-*/
+
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled);
@@ -123,12 +97,6 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private static void purgeJGroupsModel(ModelNode model) {
         model.get(JGroupsSubsystemResourceDefinition.PATH.getKey()).remove(JGroupsSubsystemResourceDefinition.PATH.getValue());
-    }
-
-    @Override
-    protected ValidationConfiguration getModelValidationConfiguration() {
-        // use this configuration to report any exceptional cases for DescriptionProviders
-        return new ValidationConfiguration();
     }
 
     /**

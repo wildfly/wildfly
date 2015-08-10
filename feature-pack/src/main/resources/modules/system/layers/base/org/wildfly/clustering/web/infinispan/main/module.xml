@@ -38,6 +38,7 @@
     <dependencies>
         <module name="javax.servlet.api"/>
 
+        <module name="net.jcip"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
         <module name="org.jboss.logging"/>

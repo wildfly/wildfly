@@ -21,12 +21,14 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -49,22 +51,34 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
 
     public static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME);
 
-    // attributes
-    public static final SimpleAttributeDefinition DEFAULT_CHANNEL = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_CHANNEL, ModelType.STRING, true)
-            .setXmlName(Attribute.DEFAULT.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        DEFAULT_CHANNEL("default-channel", ModelType.STRING),
+        @Deprecated DEFAULT_STACK("default-stack", ModelType.STRING, JGroupsModel.VERSION_3_0_0),
+        ;
+        private final AttributeDefinition definition;
 
-    public static final SimpleAttributeDefinition DEFAULT_STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_STACK, ModelType.STRING, true)
-            .setXmlName(Attribute.DEFAULT.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .build()
-    ;
+        Attribute(String name, ModelType type) {
+            this.definition = createBuilder(name, type).build();
+        }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DEFAULT_CHANNEL, DEFAULT_STACK };
+        Attribute(String name, ModelType type, JGroupsModel deprecation) {
+            this.definition = createBuilder(name, type).setDeprecated(deprecation.getVersion()).build();
+        }
+
+        static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
+            return new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowNull(true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setXmlName(XMLAttribute.DEFAULT.getLocalName())
+            ;
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     private final boolean allowRuntimeOnlyRegistration;
 
@@ -73,9 +87,9 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, DEFAULT_CHANNEL)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, DEFAULT_CHANNEL)
-                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, DEFAULT_STACK)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.DEFAULT_CHANNEL.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.DEFAULT_CHANNEL.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, Attribute.DEFAULT_STACK.getDefinition())
                     .end();
 
             builder.rejectChildResource(ChannelResourceDefinition.WILDCARD_PATH);
@@ -89,27 +103,28 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
     }
 
     JGroupsSubsystemResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, new JGroupsResourceDescriptionResolver(), new JGroupsSubsystemAddHandler(), new JGroupsSubsystemRemoveHandler(allowRuntimeOnlyRegistration));
+        super(PATH, new JGroupsResourceDescriptionResolver());
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        super.registerOperations(registration);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attribute: ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, null, writeHandler);
-        }
+        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(new ChannelResourceDefinition(this.allowRuntimeOnlyRegistration));
-        registration.registerSubModel(new StackResourceDefinition(this.allowRuntimeOnlyRegistration));
+        new ChannelResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
+        new StackResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
     }
 }

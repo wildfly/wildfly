@@ -169,7 +169,8 @@ public class ModClusterService extends FilterService {
                 }
             }
         };
-        if(predicate != null) {
+        UndertowLogger.ROOT_LOGGER.debug("HttpHandler for mod_cluster MCMP created.");
+        if (predicate != null) {
             return new PredicateHandler(predicate, theHandler, next);
         } else {
             return theHandler;

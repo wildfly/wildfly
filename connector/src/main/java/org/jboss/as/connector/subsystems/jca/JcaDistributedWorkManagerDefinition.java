@@ -23,16 +23,20 @@
 package org.jboss.as.connector.subsystems.jca;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
@@ -69,10 +73,6 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
             resourceRegistration.registerReadOnlyAttribute(ad, ReadResourceNameOperationStepHandler.INSTANCE);
         }
 
-        for (final AttributeDefinition ad : DWmParameters.getReloadRequiredAttributeDefinitions()) {
-            resourceRegistration.registerReadWriteAttribute(ad, null, new ReloadRequiredWriteAttributeHandler(ad));
-        }
-
         for (final AttributeDefinition ad : DWmParameters.getRuntimeAttributeDefinitions()) {
             resourceRegistration.registerReadWriteAttribute(ad, null, JcaDistributedWorkManagerWriteHandler.INSTANCE);
         }
@@ -80,12 +80,27 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
     }
 
     @Override
-        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_SHORT_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
                 ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING), registerRuntimeOnly));
         resourceRegistration.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_LONG_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
-                        ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING), registerRuntimeOnly));
+                ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING), registerRuntimeOnly));
 
+    }
+
+    static void registerTransformers300(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DISTRIBUTED_WORK_MANAGER);
+        builder.addOperationTransformationOverride("add")
+                .inheritResourceAttributeDefinitions()
+                .setCustomOperationTransformer(new OperationTransformer() {
+                    @Override
+                    public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                            throws OperationFailedException {
+                        ModelNode copy = operation.clone();
+                        copy.add("transport-jgroups-cluster").set(address.getLastElement().toString());
+                        return new TransformedOperation(copy, TransformedOperation.ORIGINAL_RESULT);
+                    }
+                }).end();
     }
 
     public static enum DWmParameters {
@@ -121,33 +136,12 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
         SELECTOR_OPTIONS(new PropertiesAttributeDefinition.Builder("selector-options", true)
                 .setAllowExpression(true)
                 .setXmlName(Element.OPTION.getLocalName())
-                .build()),
-        TRANSPORT_JGROPUS_STACK(SimpleAttributeDefinitionBuilder.create("transport-jgroups-stack", ModelType.STRING).setAllowExpression(true)
-                .setAllowNull(true)
-                .setMeasurementUnit(MeasurementUnit.NONE)
-                .setRestartAllServices()
-                .setXmlName(Attribute.JGROUPS_STACK.getLocalName())
-                .build()),
-        TRANSPORT_JGROPUS_CLUSTER(SimpleAttributeDefinitionBuilder.create("transport-jgroups-cluster", ModelType.STRING).setAllowExpression(true)
-                .setAllowNull(true)
-                .setMeasurementUnit(MeasurementUnit.NONE)
-                .setRestartAllServices()
-                .setXmlName(Attribute.JGROUPS_CLUSTER.getLocalName())
-                .setDefaultValue(new ModelNode("jca"))
-                .build()),
-        TRANSPORT_REQUEST_TIMEOUT(SimpleAttributeDefinitionBuilder.create("transport-request-timeout", ModelType.LONG).setAllowExpression(true)
-                .setAllowNull(true)
-                .setMeasurementUnit(MeasurementUnit.NONE)
-                .setRestartAllServices()
-                .setXmlName(Attribute.REQUEST_TIMEOUT.getLocalName())
-                .setDefaultValue(new ModelNode("10000"))
                 .build());
-
 
         public static AttributeDefinition[] getAttributeDefinitions() {
             final AttributeDefinition[] returnValue = new AttributeDefinition[DWmParameters.values().length];
             int i = 0;
-            for  (DWmParameters entry : DWmParameters.values()) {
+            for (DWmParameters entry : DWmParameters.values()) {
                 returnValue[i] = entry.getAttribute();
                 i++;
             }
@@ -163,19 +157,11 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
             };
         }
 
-        public static AttributeDefinition[] getReloadRequiredAttributeDefinitions() {
+        public static AttributeDefinition[] getReadOnlyAttributeDefinitions() {
             return new AttributeDefinition[]{
-                    TRANSPORT_JGROPUS_CLUSTER.getAttribute(),
-                    TRANSPORT_JGROPUS_STACK.getAttribute(),
-                    TRANSPORT_REQUEST_TIMEOUT.getAttribute()
+                    NAME.getAttribute()
             };
         }
-
-        public static AttributeDefinition[] getReadOnlyAttributeDefinitions() {
-                    return new AttributeDefinition[]{
-                            NAME.getAttribute()
-                    };
-                }
 
         private DWmParameters(AttributeDefinition attribute) {
             this.attribute = attribute;

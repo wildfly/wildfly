@@ -215,31 +215,6 @@
                     </xs:annotation>
                 </xs:element>
             </xs:choice>
-            <xs:element name="indexing" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>
-                        Defined indexing options for cache
-                    </xs:documentation>
-                </xs:annotation>
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
-                            <xs:annotation>
-                                <xs:documentation>
-                                    Property to pass on to the indexing system.
-                                </xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                    </xs:sequence>
-                    <xs:attribute name="index" type="tns:indexing" default="NONE">
-                        <xs:annotation>
-                            <xs:documentation>
-                                The indexing mode of the cache. Defaults to NONE.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
-            </xs:element>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
@@ -356,13 +331,6 @@
     <xs:complexType name="clustered-cache" abstract="true">
         <xs:complexContent>
             <xs:extension base="tns:cache">
-                <xs:attribute name="async-marshalling" type="xs:boolean" default="false">
-                    <xs:annotation>
-                        <xs:documentation>
-                           Enables the use of asynchronous marshalling
-                        </xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
                 <xs:attribute name="mode" type="tns:mode" use="required">
                     <xs:annotation>
                         <xs:documentation>Sets the clustered cache mode, ASYNC for asynchronous operation, or SYNC for synchronous operation.</xs:documentation>
@@ -397,9 +365,14 @@
         <xs:complexContent>
             <xs:extension base="tns:clustered-cache">
                 <xs:sequence>
+                    <xs:element name="partition-handling" type="tns:partition-handling" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>The partition handling configuration for distributed and replicated caches.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                     <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
                         <xs:annotation>
-                            <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
+                            <xs:documentation>The state transfer configuration for distributed and replicated caches.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                     <xs:choice minOccurs="0">
@@ -506,25 +479,11 @@
     </xs:complexType>
 
     <xs:complexType name="write-behind">
-        <xs:attribute name="flush-lock-timeout" type="xs:int" default="1">
-            <xs:annotation>
-                <xs:documentation>
-                    Timeout to acquire the lock which guards the state to be flushed to the cache store periodically.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="modification-queue-size" type="xs:int" default="1024">
             <xs:annotation>
                 <xs:documentation>
                     Maximum number of entries in the asynchronous queue. When the queue is full, the store becomes write-through.
                     until it can accept new entries
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="shutdown-timeout" type="xs:int" default="25000">
-            <xs:annotation>
-                <xs:documentation>
-                    Timeout in milliseconds to stop the cache store.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -762,6 +721,14 @@
         <xs:attribute name="type" type="xs:string" default="BIGINT">
             <xs:annotation>
                 <xs:documentation>The type of the column used to store the cache entry or bucket timestamp.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="partition-handling">
+        <xs:attribute name="enabled" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>If enabled, the cache will enter degraded mode upon detecting a network partition that threatens the integrity of the cache.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

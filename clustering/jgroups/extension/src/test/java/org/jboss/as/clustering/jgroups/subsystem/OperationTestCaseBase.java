@@ -4,13 +4,14 @@ import java.io.IOException;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.SimpleAttribute;
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 
@@ -29,16 +30,16 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getSubsystemAddOperation(String defaultStack) {
         ModelNode operation = Util.createAddOperation(getSubsystemAddress());
-        operation.get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName()).set(defaultStack);
+        operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).set(defaultStack);
         return operation;
     }
 
-    protected static ModelNode getSubsystemReadOperation(AttributeDefinition attribute) {
-        return Operations.createReadAttributeOperation(getSubsystemAddress(), new SimpleAttribute(attribute));
+    protected static ModelNode getSubsystemReadOperation(Attribute attribute) {
+        return Operations.createReadAttributeOperation(getSubsystemAddress(), attribute);
     }
 
-    protected static ModelNode getSubsystemWriteOperation(AttributeDefinition attribute, String value) {
-        return Operations.createWriteAttributeOperation(getSubsystemAddress(), new SimpleAttribute(attribute), new ModelNode(value));
+    protected static ModelNode getSubsystemWriteOperation(Attribute attribute, String value) {
+        return Operations.createWriteAttributeOperation(getSubsystemAddress(), attribute, new ModelNode(value));
     }
 
     protected static ModelNode getSubsystemRemoveOperation() {
@@ -80,12 +81,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Util.createRemoveOperation(getTransportAddress(stackName, type));
     }
 
-    protected static ModelNode getTransportReadOperation(String stackName, String type, AttributeDefinition attribute) {
-        return Operations.createReadAttributeOperation(getTransportAddress(stackName, type), new SimpleAttribute(attribute));
+    protected static ModelNode getTransportReadOperation(String stackName, String type, Attribute attribute) {
+        return Operations.createReadAttributeOperation(getTransportAddress(stackName, type), attribute);
     }
 
-    protected static ModelNode getTransportWriteOperation(String stackName, String type, AttributeDefinition attribute, String value) {
-        return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), new SimpleAttribute(attribute), new ModelNode(value));
+    protected static ModelNode getTransportWriteOperation(String stackName, String type, Attribute attribute, String value) {
+        return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), attribute, new ModelNode(value));
     }
 
     protected static ModelNode getTransportPropertyAddOperation(String stackName, String type, String propertyName, String propertyValue) {
@@ -107,15 +108,15 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getTransportGetPropertyOperation(String stackName, String type, String propertyName) {
-        return Operations.createMapGetOperation(getTransportAddress(stackName, type), new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), propertyName);
+        return Operations.createMapGetOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
 
     protected static ModelNode getTransportPutPropertyOperation(String stackName, String type, String propertyName, String propertyValue) {
-        return Operations.createMapPutOperation(getTransportAddress(stackName, type), new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), propertyName, propertyValue);
+        return Operations.createMapPutOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName, propertyValue);
     }
 
     protected static ModelNode getTransportRemovePropertyOperation(String stackName, String type, String propertyName) {
-        return Operations.createMapRemoveOperation(getTransportAddress(stackName, type), new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), propertyName);
+        return Operations.createMapRemoveOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
 
     protected static ModelNode getProtocolAddOperation(String stackName, String type) {
@@ -131,12 +132,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createCompositeOperation(operations);
     }
 
-    protected static ModelNode getProtocolReadOperation(String stackName, String protocolName, AttributeDefinition attribute) {
-        return Operations.createReadAttributeOperation(getProtocolAddress(stackName, protocolName), new SimpleAttribute(attribute));
+    protected static ModelNode getProtocolReadOperation(String stackName, String protocolName, Attribute attribute) {
+        return Operations.createReadAttributeOperation(getProtocolAddress(stackName, protocolName), attribute);
     }
 
-    protected static ModelNode getProtocolWriteOperation(String stackName, String protocolName, AttributeDefinition attribute, String value) {
-        return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), new SimpleAttribute(attribute), new ModelNode(value));
+    protected static ModelNode getProtocolWriteOperation(String stackName, String protocolName, Attribute attribute, String value) {
+        return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), attribute, new ModelNode(value));
     }
 
     protected static ModelNode getProtocolPropertyAddOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
@@ -158,15 +159,15 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static ModelNode getProtocolGetPropertyOperation(String stackName, String protocolName, String propertyName) {
-        return Operations.createMapGetOperation(getProtocolAddress(stackName, protocolName), new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), propertyName);
+        return Operations.createMapGetOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
 
     protected static ModelNode getProtocolPutPropertyOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
-        return Operations.createMapPutOperation(getProtocolAddress(stackName, protocolName), new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), propertyName, propertyValue);
+        return Operations.createMapPutOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName, propertyValue);
     }
 
     protected static ModelNode getProtocolRemovePropertyOperation(String stackName, String protocolName, String propertyName) {
-        return Operations.createMapRemoveOperation(getProtocolAddress(stackName, protocolName), new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), propertyName);
+        return Operations.createMapRemoveOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
 
     protected static ModelNode getProtocolRemoveOperation(String stackName, String type) {
@@ -201,7 +202,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return readResource(SUBSYSTEM_XML_FILE) ;
     }
 
-    protected KernelServices buildKernelServices() throws XMLStreamException, IOException, Exception {
-        return createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(this.getSubsystemXml()).build();
+    protected KernelServices buildKernelServices() throws Exception {
+        return createKernelServicesBuilder(new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
     }
 }

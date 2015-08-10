@@ -37,10 +37,11 @@ import javax.inject.Singleton;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @Named
-@Singleton
+//@Singleton
 public class CountingItemWriter implements ItemWriter {
 
-    private final List<Object> writtenItems = Collections.synchronizedList(new ArrayList<>());
+    @Inject
+    private Counter counter;
 
     @Inject
     @BatchProperty(name = "writer.sleep.time")
@@ -56,7 +57,7 @@ public class CountingItemWriter implements ItemWriter {
 
     @Override
     public void writeItems(final List<Object> items) throws Exception {
-        writtenItems.addAll(items);
+        counter.increment(items.size());
         if (sleep > 0) {
             TimeUnit.MILLISECONDS.sleep(sleep);
         }
@@ -64,12 +65,10 @@ public class CountingItemWriter implements ItemWriter {
 
     @Override
     public Serializable checkpointInfo() throws Exception {
-        synchronized (writtenItems) {
-            return new ArrayList<>(writtenItems);
-        }
+        return counter;
     }
 
     public int getWrittenItemSize() {
-        return writtenItems.size();
+        return counter.get();
     }
 }

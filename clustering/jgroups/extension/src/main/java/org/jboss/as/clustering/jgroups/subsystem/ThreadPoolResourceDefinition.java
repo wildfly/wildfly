@@ -22,90 +22,84 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
+import org.jboss.as.clustering.controller.SimpleAttribute;
+import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
  * @author Radoslav Husar
  * @author Paul Ferraro
  * @version Aug 2014
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinition {
+public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registration {
 
-    DEFAULT(ModelKeys.DEFAULT, 20, 300, 100, 60L),
-    OOB(ModelKeys.OOB, 20, 300, 0, 60L),
-    INTERNAL(ModelKeys.INTERNAL, 2, 4, 100, 60L),
-    TIMER(ModelKeys.TIMER, 2, 4, 500, 5L),
+    DEFAULT("default", "thread_pool", 20, 300, 100, 60L),
+    OOB("oob", "oob_thread_pool", 20, 300, 0, 60L),
+    INTERNAL("internal", "internal_thread_pool", 2, 4, 100, 60L),
+    TIMER("timer", "timer", 2, 4, 500, 5L),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     private static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.THREAD_POOL, name);
+        return PathElement.pathElement("thread-pool", name);
     }
 
     private final String name;
+    private final String prefix;
     private final ResourceDescriptionResolver descriptionResolver;
-    private final SimpleAttributeDefinition minThreads;
-    private final SimpleAttributeDefinition maxThreads;
-    private final SimpleAttributeDefinition queueLength;
-    private final SimpleAttributeDefinition keepaliveTime;
+    private final Attribute minThreads;
+    private final Attribute maxThreads;
+    private final Attribute queueLength;
+    private final Attribute keepAliveTime;
 
-    private ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
+    private ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
         this.name = name;
+        this.prefix = prefix;
         this.descriptionResolver = new JGroupsResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE));
-        this.minThreads = new SimpleAttributeDefinitionBuilder(Attribute.MIN_THREADS.getLocalName(), ModelType.INT, true)
-                .setDefaultValue(new ModelNode(defaultMinThreads))
-                .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true))
+        this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
+        this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
+        this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
+        this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0)).build());
+    }
+
+    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
-                .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                .build();
-        this.maxThreads = new SimpleAttributeDefinitionBuilder(Attribute.MAX_THREADS.getLocalName(), ModelType.INT, true)
-                .setDefaultValue(new ModelNode(defaultMaxThreads))
-                .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true))
-                .setAllowExpression(true)
-                .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                .build();
-        this.queueLength = new SimpleAttributeDefinitionBuilder(Attribute.QUEUE_LENGTH.getLocalName(), ModelType.INT, true)
-                .setDefaultValue(new ModelNode(defaultQueueLength))
-                .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true))
-                .setAllowExpression(true)
-                .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                .build();
-        this.keepaliveTime = new SimpleAttributeDefinitionBuilder(Attribute.KEEPALIVE_TIME.getLocalName(), ModelType.LONG, true)
-                .setDefaultValue(new ModelNode(defaultKeepaliveTime))
-                .setValidator(new LongRangeValidator(0, Long.MAX_VALUE, false, true))
-                .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                .setAllowExpression(true)
-                .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                .build();
+                .setAllowNull(true)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+                .setValidator(validatorBuilder.allowExpression(true).allowUndefined(true).build())
+        ;
     }
 
     @Override
@@ -120,19 +114,15 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        OperationDefinition addOperation = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.descriptionResolver)
-                .setParameters(this.getAttributes())
-                .build();
-        registration.registerOperationHandler(addOperation, new ReloadRequiredAddStepHandler(this.getAttributes()));
-        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.descriptionResolver).build(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.descriptionResolver).addAttributes(this.getAttributes());
+        ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = new TransportConfigurationBuilderFactory();
+        new RestartParentResourceAddStepHandler<>(transportBuilderFactory, descriptor).register(registration);
+        new RestartParentResourceRemoveStepHandler<>(transportBuilderFactory, descriptor).register(registration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(this.getAttributes());
-        for (AttributeDefinition attribute : this.getAttributes()) {
-            registration.registerReadWriteAttribute(attribute, null, writeHandler);
-        }
+        new RestartParentResourceWriteAttributeHandler<>(new TransportConfigurationBuilderFactory(), this.getAttributes()).register(registration);
     }
 
     @Override
@@ -153,24 +143,33 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition {
         return false;
     }
 
-    AttributeDefinition[] getAttributes() {
-        return new AttributeDefinition[] { this.minThreads, this.maxThreads, this.queueLength, this.keepaliveTime };
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerSubModel(this);
     }
 
-    SimpleAttributeDefinition getMinThreads() {
+    Iterable<Attribute> getAttributes() {
+        return Arrays.asList(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime);
+    }
+
+    String getPrefix() {
+        return this.prefix;
+    }
+
+    Attribute getMinThreads() {
         return this.minThreads;
     }
 
-    SimpleAttributeDefinition getMaxThreads() {
+    Attribute getMaxThreads() {
         return this.maxThreads;
     }
 
-    SimpleAttributeDefinition getQueueLength() {
+    Attribute getQueueLength() {
         return this.queueLength;
     }
 
-    SimpleAttributeDefinition getKeepaliveTime() {
-        return this.keepaliveTime;
+    Attribute getKeepAliveTime() {
+        return this.keepAliveTime;
     }
 
     void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {

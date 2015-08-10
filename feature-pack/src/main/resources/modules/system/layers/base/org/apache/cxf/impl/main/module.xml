@@ -39,6 +39,7 @@
         <artifact name="${org.apache.cxf:cxf-rt-frontend-simple}"/>
         <artifact name="${org.apache.cxf:cxf-rt-management}"/>
         <artifact name="${org.apache.cxf:cxf-rt-security?jandex}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-security-saml}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http-hc}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-jms}"/>
@@ -88,11 +89,6 @@
         <module name="org.codehaus.woodstox" />
         <module name="org.joda.time" />
         <module name="org.opensaml" />
-        <module name="org.springframework.spring" optional="true">
-          <imports>
-            <include path="META-INF"/>
-          </imports>
-        </module>
         <module name="org.apache.cxf" export="true">
           <imports>
             <include path="META-INF/cxf"/>

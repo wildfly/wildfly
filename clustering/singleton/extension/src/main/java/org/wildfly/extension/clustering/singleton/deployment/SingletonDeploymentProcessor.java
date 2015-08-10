@@ -29,7 +29,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitPhaseBuilder;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.wildfly.extension.clustering.singleton.DeploymentPolicy;
+import org.wildfly.clustering.singleton.SingletonPolicy;
 
 /**
  * DUP that attaches the singleton DeploymentUnitPhaseBuilder if a deployment policy is attached.
@@ -37,11 +37,11 @@ import org.wildfly.extension.clustering.singleton.DeploymentPolicy;
  */
 public class SingletonDeploymentProcessor implements DeploymentUnitProcessor {
 
-    public static final AttachmentKey<DeploymentPolicy> POLICY_KEY = AttachmentKey.create(DeploymentPolicy.class);
+    public static final AttachmentKey<SingletonPolicy> POLICY_KEY = AttachmentKey.create(SingletonPolicy.class);
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
-        DeploymentPolicy policy = context.getAttachment(POLICY_KEY);
+        SingletonPolicy policy = context.getAttachment(POLICY_KEY);
         if (policy != null) {
             DeploymentUnitPhaseBuilder builder = new SingletonDeploymentUnitPhaseBuilder(policy);
             context.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_BUILDER, builder);

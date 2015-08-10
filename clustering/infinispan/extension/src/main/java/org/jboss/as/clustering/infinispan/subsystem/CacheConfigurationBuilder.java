@@ -28,7 +28,6 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.EvictionConfiguration;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
-import org.infinispan.configuration.cache.IndexingConfiguration;
 import org.infinispan.configuration.cache.JMXStatisticsConfiguration;
 import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
@@ -60,7 +59,6 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
 
     private final InjectedValue<EvictionConfiguration> eviction = new InjectedValue<>();
     private final InjectedValue<ExpirationConfiguration> expiration = new InjectedValue<>();
-    private final InjectedValue<IndexingConfiguration> indexing = new InjectedValue<>();
     private final InjectedValue<LockingConfiguration> locking = new InjectedValue<>();
     private final InjectedValue<PersistenceConfiguration> persistence = new InjectedValue<>();
     private final InjectedValue<TransactionConfiguration> transaction = new InjectedValue<>();
@@ -88,7 +86,6 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
         return new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(this.containerName, this.cacheName, this).build(target)
                 .addDependency(CacheComponent.EVICTION.getServiceName(this.containerName, this.cacheName), EvictionConfiguration.class, this.eviction)
                 .addDependency(CacheComponent.EXPIRATION.getServiceName(this.containerName, this.cacheName), ExpirationConfiguration.class, this.expiration)
-                .addDependency(CacheComponent.INDEXING.getServiceName(this.containerName, this.cacheName), IndexingConfiguration.class, this.indexing)
                 .addDependency(CacheComponent.LOCKING.getServiceName(this.containerName, this.cacheName), LockingConfiguration.class, this.locking)
                 .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.containerName, this.cacheName), PersistenceConfiguration.class, this.persistence)
                 .addDependency(CacheComponent.TRANSACTION.getServiceName(this.containerName, this.cacheName), TransactionConfiguration.class, this.transaction)
@@ -110,14 +107,12 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
 
         EvictionConfiguration eviction = this.eviction.getValue();
         ExpirationConfiguration expiration = this.expiration.getValue();
-        IndexingConfiguration indexing = this.indexing.getValue();
         LockingConfiguration locking = this.locking.getValue();
         PersistenceConfiguration persistence = this.persistence.getValue();
         TransactionConfiguration transaction = this.transaction.getValue();
 
         builder.eviction().read(eviction);
         builder.expiration().read(expiration);
-        builder.indexing().read(indexing);
         builder.locking().read(locking);
         builder.persistence().read(persistence);
         builder.transaction().read(transaction);

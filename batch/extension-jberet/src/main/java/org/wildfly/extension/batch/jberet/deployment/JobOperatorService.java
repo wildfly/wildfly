@@ -67,7 +67,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class JobOperatorService implements JobOperator, Service<JobOperator> {
+public class JobOperatorService implements JobOperator, Service<JobOperator> {
 
     private ClassLoader classLoader;
     private JobOperator delegate;

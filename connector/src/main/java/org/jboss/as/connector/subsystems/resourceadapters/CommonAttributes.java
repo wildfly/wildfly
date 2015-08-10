@@ -67,7 +67,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARA
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USETRYLOCK;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
@@ -121,7 +120,6 @@ public class CommonAttributes {
             BLOCKING_TIMEOUT_WAIT_MILLIS,
             IDLETIMEOUTMINUTES,
             XA_RESOURCE_TIMEOUT,
-            USETRYLOCK,
             BACKGROUNDVALIDATIONMILLIS,
             BACKGROUNDVALIDATION,
             USE_FAST_FAIL, VALIDATE_ON_MATCH, USE_CCM,

@@ -25,21 +25,21 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.SitesConfiguration;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.RestartParentAddHandler;
-import org.jboss.as.clustering.controller.RestartParentRemoveHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
+import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -60,30 +60,52 @@ public class BackupResourceDefinition extends SimpleResourceDefinition implement
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true), null),
-        FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name()), new EnumValidator<>(BackupFailurePolicy.class, true, true)),
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(BackupStrategy.ASYNC.name()), new EnumValidator<>(BackupStrategy.class, true, true)),
-        TAKE_OFFLINE_AFTER_FAILURES("after-failures", ModelType.INT, new ModelNode(1), null),
-        TAKE_OFFLINE_MIN_WAIT("min-wait", ModelType.LONG, new ModelNode(0L), null),
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(10000L), null),
+        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true)),
+        FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name()), new EnumValidatorBuilder<>(BackupFailurePolicy.class)),
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(BackupStrategy.ASYNC.name()), new EnumValidatorBuilder<>(BackupStrategy.class)),
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(10000L)),
         ;
         private final AttributeDefinition definition;
 
-        private Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidator validator) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setAllowNull(true)
-                    .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                    .setValidator(validator)
-                    .build();
+        private Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type, defaultValue).build();
+        }
+
+        private Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
+    }
+
+    enum TakeOfflineAttribute implements org.jboss.as.clustering.controller.Attribute {
+        AFTER_FAILURES("after-failures", ModelType.INT, new ModelNode(1)),
+        MIN_WAIT("min-wait", ModelType.LONG, new ModelNode(0L)),
+        ;
+        private final AttributeDefinition definition;
+
+        private TakeOfflineAttribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type, defaultValue).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+        ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -101,14 +123,15 @@ public class BackupResourceDefinition extends SimpleResourceDefinition implement
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, TakeOfflineAttribute.class).register(registration);
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        new RestartParentAddHandler<>(descriptor, this.parentBuilderFactory).register(registration);
-        new RestartParentRemoveHandler<>(descriptor, this.parentBuilderFactory).register(registration);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(TakeOfflineAttribute.class);
+        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor).register(registration);
+        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor).register(registration);
 
         if (this.runtimeRegistration) {
             new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);

@@ -109,7 +109,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals("new-datasource", result.get(RESULT).asString());
 
          // read the string-keyed-table attribute
-        result = servicesA.executeOperation(getMixedKeyedJDBCCacheStoreReadOperation("maximal", DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist", MixedKeyedJDBCStoreResourceDefinition.Attribute.STRING_TABLE));
+        result = servicesA.executeOperation(getMixedKeyedJDBCCacheStoreReadOperation("maximal", DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist", MixedKeyedJDBCStoreResourceDefinition.DeprecatedAttribute.STRING_TABLE));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals(stringKeyedTable.asPropertyList().size(), result.get(RESULT).asPropertyList().size());
         for (Property property : stringKeyedTable.asPropertyList()) {
@@ -255,35 +255,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertFalse(result.get(RESULT).isDefined());
 
         operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.Attribute.ALIASES, 0);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-    }
-
-    @Test
-    public void testIndexingProperties() throws Exception {
-        KernelServices services = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
-
-        PathAddress address = getCacheAddress("capedwarf", DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "tasks").append(IndexingResourceDefinition.PATH);
-        String key = "hibernate.test";
-        String value = "true";
-
-        ModelNode operation = Operations.createMapPutOperation(address, IndexingResourceDefinition.Attribute.PROPERTIES, key, value);
-        ModelNode result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createMapGetOperation(address, IndexingResourceDefinition.Attribute.PROPERTIES, key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(value, result.get(RESULT).asString());
-
-        operation = Operations.createMapRemoveOperation(address, IndexingResourceDefinition.Attribute.PROPERTIES, key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createMapGetOperation(address, IndexingResourceDefinition.Attribute.PROPERTIES, key);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());

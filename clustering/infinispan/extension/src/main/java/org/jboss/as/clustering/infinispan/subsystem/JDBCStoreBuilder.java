@@ -31,7 +31,7 @@ import org.infinispan.persistence.jdbc.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfiguration;
 import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -58,9 +58,9 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
     }
 
     @Override
-    B createStore(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
-        this.dataSource = DATA_SOURCE.getDefinition().resolveModelAttribute(resolver, model).asString();
-        B storeBuilder = new ConfigurationBuilder().persistence().addStore(this.builderClass).dialect(ModelNodes.asEnum(DIALECT.getDefinition().resolveModelAttribute(resolver, model), DatabaseType.class));
+    B createStore(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.dataSource = DATA_SOURCE.getDefinition().resolveModelAttribute(context, model).asString();
+        B storeBuilder = new ConfigurationBuilder().persistence().addStore(this.builderClass).dialect(ModelNodes.asEnum(DIALECT.getDefinition().resolveModelAttribute(context, model), DatabaseType.class));
         storeBuilder.dataSource().jndiUrl(this.dataSource);
         return storeBuilder;
     }

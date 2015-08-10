@@ -25,6 +25,7 @@ import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Backup site operations.
@@ -51,15 +52,14 @@ public enum BackupOperation implements Operation<BackupOperationContext> {
         }
     },
     ;
-
     private final OperationDefinition definition;
 
-    private BackupOperation(String name, boolean readOnly) {
+    BackupOperation(String name, boolean readOnly) {
         SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, new InfinispanResourceDescriptionResolver(BackupResourceDefinition.WILDCARD_PATH));
         if (readOnly) {
             builder.setReadOnly();
         }
-        this.definition = builder.setRuntimeOnly().build();
+        this.definition = builder.setReplyType(ModelType.STRING).setRuntimeOnly().build();
     }
 
     @Override

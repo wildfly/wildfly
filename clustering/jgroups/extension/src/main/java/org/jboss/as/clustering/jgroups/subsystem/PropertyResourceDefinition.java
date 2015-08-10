@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
@@ -58,15 +59,15 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 @Deprecated
-public class PropertyResourceDefinition extends SimpleResourceDefinition {
+public class PropertyResourceDefinition extends SimpleResourceDefinition implements Registration {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.PROPERTY, name);
+        return PathElement.pathElement(ModelDescriptionConstants.PROPERTY, name);
     }
 
-    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelKeys.VALUE, ModelType.STRING, false)
+    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
@@ -76,7 +77,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.setCustomResourceTransformer(new SimpleResourceTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(LEGACY_ADDRESS_TRANSFORMER, VALUE)).inheritResourceAttributeDefinitions();
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(LEGACY_ADDRESS_TRANSFORMER).addAttributes(new SimpleAttribute(VALUE))).inheritResourceAttributeDefinitions();
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleRemoveOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleReadAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleWriteAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
@@ -107,7 +108,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) {
                 PathAddress address = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
-                ModelNode getOperation = Operations.createMapGetOperation(address, new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), key);
+                ModelNode getOperation = Operations.createMapGetOperation(address, ProtocolResourceDefinition.Attribute.PROPERTIES, key);
                 context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
             }
         };
@@ -118,7 +119,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
                 PathAddress address = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
                 String value = Operations.getAttributeValue(operation).asString();
-                ModelNode putOperation = Operations.createMapPutOperation(address, new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), key, value);
+                ModelNode putOperation = Operations.createMapPutOperation(address, ProtocolResourceDefinition.Attribute.PROPERTIES, key, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
@@ -135,7 +136,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
                 String name = context.getCurrentAddressValue();
                 String value = operation.get(VALUE.getName()).asString();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), name, value);
+                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, ProtocolResourceDefinition.Attribute.PROPERTIES, name, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
@@ -148,10 +149,15 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
                 context.removeResource(PathAddress.EMPTY_ADDRESS);
                 String name = context.getCurrentAddressValue();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, new SimpleAttribute(ProtocolResourceDefinition.PROPERTIES), name);
+                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, ProtocolResourceDefinition.Attribute.PROPERTIES, name);
                 context.addStep(putOperation, MapOperations.MAP_REMOVE_HANDLER, context.getCurrentStage());
             }
         };
         this.registerRemoveOperation(registration, removeHandler);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerSubModel(this);
     }
 }

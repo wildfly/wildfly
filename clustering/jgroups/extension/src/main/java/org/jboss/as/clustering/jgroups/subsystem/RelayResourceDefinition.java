@@ -21,38 +21,60 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 
 /**
  * Resource definition for /subsystem=jgroups/stack=X/relay=RELAY
  *
  * @author Paul Ferraro
  */
-public class RelayResourceDefinition extends SimpleResourceDefinition {
+public class RelayResourceDefinition extends ProtocolResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
+    static final PathElement PATH = pathElement(RelayConfiguration.PROTOCOL_NAME);
+    static final PathElement LEGACY_PATH = pathElement("RELAY");
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static final SimpleAttributeDefinition SITE = new SimpleAttributeDefinitionBuilder(ModelKeys.SITE, ModelType.STRING, false)
-            .setXmlName(Attribute.SITE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .build();
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement("relay", name);
+    }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SITE, ProtocolResourceDefinition.PROPERTIES };
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        SITE("site", ModelType.STRING),
+        ;
+        private final AttributeDefinition definition;
 
+        Attribute(String name, ModelType type) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
@@ -60,21 +82,34 @@ public class RelayResourceDefinition extends SimpleResourceDefinition {
         PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
-    RelayResourceDefinition() {
-        super(PATH, new JGroupsResourceDescriptionResolver(PathElement.pathElement(PATH.getKey())), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+    private final ResourceServiceBuilderFactory<RelayConfiguration> builderFactory = new RelayConfigurationBuilderFactory();
+
+    RelayResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(new Parameters(PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), parentBuilderFactory);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ProtocolResourceDefinition.Attribute.PROPERTIES);
+        ResourceServiceHandler handler = new ParentResourceServiceHandler<>(this.builderFactory);
+        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attribute: ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, null, writeHandler);
-        }
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, ProtocolResourceDefinition.Attribute.PROPERTIES).register(registration);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(new RemoteSiteResourceDefinition());
-        registration.registerSubModel(new PropertyResourceDefinition());
+        super.registerChildren(registration);
+        new RemoteSiteResourceDefinition(this.builderFactory).register(registration);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
     }
 }
