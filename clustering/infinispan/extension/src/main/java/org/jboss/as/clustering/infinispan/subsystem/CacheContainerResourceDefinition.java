@@ -21,14 +21,16 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.stream.Stream;
+
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -207,6 +209,16 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
                 }
             };
             builder.addRawOperationTransformationOverride(ListOperations.LIST_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removeAliasTransformer));
+
+            // Reject if using embedded thread pool configuration
+            builder.rejectChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH);
+        } else {
+            for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
+                pool.buildTransformation(version, parent);
+            }
+            for (ScheduledThreadPoolResourceDefinition pool : ScheduledThreadPoolResourceDefinition.values()) {
+                pool.buildTransformation(version, parent);
+            }
         }
 
         if (InfinispanModel.VERSION_1_5_0.requiresTransformation(version)) {
@@ -280,6 +292,9 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
     public void registerChildren(ManagementResourceRegistration registration) {
         new JGroupsTransportResourceDefinition().register(registration);
         new NoTransportResourceDefinition().register(registration);
+
+        Stream.of(ThreadPoolResourceDefinition.values()).forEach(p -> p.register(registration));
+        Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(p -> p.register(registration));
 
         new LocalCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
         new InvalidationCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
