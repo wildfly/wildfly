@@ -109,23 +109,26 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case LISTENER_EXECUTOR: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
+                    readAttribute(reader, i, operation, CacheContainerResourceDefinition.ExecutorAttribute.LISTENER);
                     ROOT_LOGGER.executorIgnored(CacheContainerResourceDefinition.ExecutorAttribute.LISTENER.getDefinition().getName());
                     break;
                 }
                 case EVICTION_EXECUTOR: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
+                    readAttribute(reader, i, operation, CacheContainerResourceDefinition.ExecutorAttribute.EVICTION);
                     ROOT_LOGGER.executorIgnored(CacheContainerResourceDefinition.ExecutorAttribute.EVICTION.getDefinition().getName());
                     break;
                 }
                 case REPLICATION_QUEUE_EXECUTOR: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
+                    readAttribute(reader, i, operation, CacheContainerResourceDefinition.ExecutorAttribute.REPLICATION_QUEUE);
                     ROOT_LOGGER.executorIgnored(CacheContainerResourceDefinition.ExecutorAttribute.REPLICATION_QUEUE.getDefinition().getName());
                     break;
                 }
@@ -174,8 +177,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(
                 pool -> operations.put(address.append(pool.getPathElement()), Util.createAddOperation(address.append(pool.getPathElement())))
         );
-
-        operations.put(address.append(TransportResourceDefinition.WILDCARD_PATH), Util.createAddOperation(address.append(NoTransportResourceDefinition.PATH)));
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
@@ -271,9 +272,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case EXECUTOR: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
+                    readAttribute(reader, i, operation, JGroupsTransportResourceDefinition.ExecutorAttribute.TRANSPORT);
                     ROOT_LOGGER.executorIgnored(JGroupsTransportResourceDefinition.ExecutorAttribute.TRANSPORT.getDefinition().getName());
                     break;
                 }

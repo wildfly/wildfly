@@ -121,6 +121,6 @@ public interface InfinispanLogger extends BasicLogger {
     @Message(id = 27, value = "Could not determine 'stack' attribute from JGroups subsystem")
     String indeterminiteStack();
 
-    @Message(id = 28, value = "Executor configuration '%s' was deprecated and the value is ignored.")
+    @Message(id = 28, value = "Executor configuration '%s' was deprecated and will only be used to support legacy slaves in the domain.")
     String executorIgnored(String executorName);
 }

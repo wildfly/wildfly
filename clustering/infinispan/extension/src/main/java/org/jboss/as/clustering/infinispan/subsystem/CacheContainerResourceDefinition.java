@@ -173,8 +173,14 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(NoTransportResourceDefinition.PATH);
+
+            Stream.of(ThreadPoolResourceDefinition.values()).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
+            Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
         } else {
             NoTransportResourceDefinition.buildTransformation(version, builder);
+
+            Stream.of(ThreadPoolResourceDefinition.values()).forEach(pool -> pool.buildTransformation(version, parent));
+            Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(pool -> pool.buildTransformation(version, parent));
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
@@ -209,16 +215,6 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
                 }
             };
             builder.addRawOperationTransformationOverride(ListOperations.LIST_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removeAliasTransformer));
-
-            // Reject if using embedded thread pool configuration
-            builder.rejectChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH);
-        } else {
-            for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
-                pool.buildTransformation(version, parent);
-            }
-            for (ScheduledThreadPoolResourceDefinition pool : ScheduledThreadPoolResourceDefinition.values()) {
-                pool.buildTransformation(version, parent);
-            }
         }
 
         if (InfinispanModel.VERSION_1_5_0.requiresTransformation(version)) {

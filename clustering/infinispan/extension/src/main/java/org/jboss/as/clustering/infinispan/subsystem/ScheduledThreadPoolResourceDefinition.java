@@ -35,6 +35,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.UndefinedAttributesDiscardPolicy;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
@@ -50,6 +51,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DynamicDiscardPolicy;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -174,4 +176,9 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition,
     void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         // Nothing to transform yet
     }
+
+    public DynamicDiscardPolicy getDiscardPolicy() {
+        return new UndefinedAttributesDiscardPolicy(this.getAttributes());
+    }
+
 }

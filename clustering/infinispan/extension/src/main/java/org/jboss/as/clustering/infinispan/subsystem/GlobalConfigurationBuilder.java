@@ -124,8 +124,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
 
         builder.transport().transportThreadPool().read(this.transportThreadPool.getValue());
 
-        // Make this compilable fore Infinispan 8 upgrade gets merged
-        //builder.asyncThreadPool().read(this.asyncOperationsThreadPool.getValue());
+        builder.asyncThreadPool().read(this.asyncOperationsThreadPool.getValue());
         builder.expirationThreadPool().read(this.expirationThreadPool.getValue());
         builder.listenerThreadPool().read(this.listenerThreadPool.getValue());
         builder.stateTransferThreadPool().read(this.stateTransferThreadPool.getValue());
