@@ -144,7 +144,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
 
     ModClusterNodeDefinition() {
-        super(UndertowExtension.NODE, UndertowExtension.getResolver("handler","mod-cluster", "balancer", "node"), null, null, true);
+        super(UndertowExtension.NODE, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "node"), null, null, true);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(ENABLE, new AbstractNodeOperation() {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for(ModClusterStatus.Context n : ctx.getContexts()) {
+                for (ModClusterStatus.Context n : ctx.getContexts()) {
                     n.enable();
                 }
             }
@@ -166,7 +166,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(DISABLE, new AbstractNodeOperation() {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for(ModClusterStatus.Context n : ctx.getContexts()) {
+                for (ModClusterStatus.Context n : ctx.getContexts()) {
                     n.disable();
                 }
             }
@@ -174,7 +174,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(STOP, new AbstractNodeOperation() {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for(ModClusterStatus.Context n : ctx.getContexts()) {
+                for (ModClusterStatus.Context n : ctx.getContexts()) {
                     n.stop();
                 }
             }
@@ -203,7 +203,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
                 final String domain = ctx.getDomain();
-                if(domain == null) {
+                if (domain == null) {
                     context.getResult().set(new ModelNode());
                 } else {
                     context.getResult().set(new ModelNode(domain));
@@ -345,7 +345,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             handleNode(context, node, operation);
         }
 
-        protected abstract void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException ;
+        protected abstract void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException;
     }
 
 }
