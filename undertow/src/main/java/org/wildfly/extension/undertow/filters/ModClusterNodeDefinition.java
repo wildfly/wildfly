@@ -39,6 +39,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * Runtime representation of a mod_cluster node
@@ -297,11 +298,12 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                ModelNode list = new ModelNode(ModelType.LIST);
-                for(String alias : ctx.getAliases()) {
-                    list.add(alias);
+                final ModelNode result = new ModelNode();
+                for (String alias : ctx.getAliases()) {
+                    UndertowLogger.ROOT_LOGGER.tracef("Adding alias %s", alias);
+                    result.add(alias);
                 }
-                context.getResult().set(list);
+                context.getResult().set(result);
             }
         });
         resourceRegistration.registerReadOnlyAttribute(ELECTED, new AbstractNodeOperation() {
