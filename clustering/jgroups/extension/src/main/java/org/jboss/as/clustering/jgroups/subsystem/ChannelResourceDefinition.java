@@ -110,6 +110,14 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
             @SuppressWarnings("deprecation")
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+                // Handle recipe for version < 4.0 where stack was not required and the stack attribute would use default-stack for a default value
+                if (!operation.hasDefined(Attribute.STACK.getDefinition().getName())) {
+                    ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent()).getModel();
+                    // If default-stack is not defined either, then recipe must be for version >= 4.0 and so this really is an invalid operation
+                    if (parentModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName())) {
+                        operation.get(Attribute.STACK.getDefinition().getName()).set(parentModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()));
+                    }
+                }
                 super.populateModel(context, operation, resource);
                 // Register runtime resource children for channel protocols
                 if (ChannelResourceDefinition.this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
