@@ -75,12 +75,12 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SERVLET_API, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSP_API, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, WEBSOCKET_API, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
 
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
         }
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_CORE, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_SERVLET, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_JSP, false, false, true, false));

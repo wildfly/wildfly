@@ -51,7 +51,6 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     public static final String IS_CDI_PARAM = "org.jboss.jbossfaces.IS_CDI";
 
     private static final ModuleIdentifier JSF_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.jsf");
-    private static final ModuleIdentifier JSTL = ModuleIdentifier.create("javax.servlet.jstl.api");
 
     private JSFModuleIdFactory moduleIdFactory = JSFModuleIdFactory.getInstance();
 
@@ -87,7 +86,6 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
         addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_SUBSYSTEM, false, false, true, false));
 
         addJSFInjection(jsfVersion, moduleSpecification, moduleLoader);
