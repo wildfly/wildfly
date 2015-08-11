@@ -65,15 +65,15 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-            { InfinispanSchema.VERSION_1_0, 49 },
-            { InfinispanSchema.VERSION_1_1, 49 },
-            { InfinispanSchema.VERSION_1_2, 49 },
-            { InfinispanSchema.VERSION_1_3, 49 },
-            { InfinispanSchema.VERSION_1_4, 49 },
-            { InfinispanSchema.VERSION_1_5, 49 },
-            { InfinispanSchema.VERSION_2_0, 52 },
-            { InfinispanSchema.VERSION_3_0, 52 },
-            { InfinispanSchema.VERSION_4_0, 52 },
+            { InfinispanSchema.VERSION_1_0, 61 },
+            { InfinispanSchema.VERSION_1_1, 61 },
+            { InfinispanSchema.VERSION_1_2, 61 },
+            { InfinispanSchema.VERSION_1_3, 61 },
+            { InfinispanSchema.VERSION_1_4, 61 },
+            { InfinispanSchema.VERSION_1_5, 61 },
+            { InfinispanSchema.VERSION_2_0, 64 },
+            { InfinispanSchema.VERSION_3_0, 64 },
+            { InfinispanSchema.VERSION_4_0, 64 },
         };
         return Arrays.asList(data);
     }
@@ -160,7 +160,6 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Test
     public void testParseAndMarshalModel() throws Exception {
         // Parse the subsystem xml and install into the first controller
-
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
 
         // Get the model and the persisted xml from the first controller

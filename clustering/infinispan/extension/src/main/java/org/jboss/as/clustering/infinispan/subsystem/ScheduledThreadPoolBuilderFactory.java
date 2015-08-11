@@ -22,28 +22,29 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
+import org.infinispan.configuration.global.ThreadPoolConfiguration;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.controller.PathAddress;
 
 /**
- * Provides the service name for the configuration of a cache component
- * @author Paul Ferraro
+ * @author Radoslav Husar
+ * @version August 2015
  */
-public class CacheComponentServiceNameProvider implements ServiceNameProvider {
+public class ScheduledThreadPoolBuilderFactory implements ResourceServiceBuilderFactory<ThreadPoolConfiguration> {
 
-    private final SubGroupServiceNameFactory factory;
-    private final String containerName;
-    private final String cacheName;
+    private final ScheduledThreadPoolDefinition definition;
 
-    public CacheComponentServiceNameProvider(SubGroupServiceNameFactory factory, String containerName, String cacheName) {
-        this.factory = factory;
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    ScheduledThreadPoolBuilderFactory(ScheduledThreadPoolDefinition definition) {
+        this.definition = definition;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.factory.getServiceName(this.containerName, this.cacheName);
+    public ResourceServiceBuilder<ThreadPoolConfiguration> createBuilder(PathAddress address) {
+        PathAddress containerAddress = address.getParent();
+        String containerName = containerAddress.getLastElement().getValue();
+
+        return new ScheduledThreadPoolBuilder(this.definition, containerName);
     }
+
 }

@@ -22,20 +22,29 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResourceDefinition.Attribute.CHANNEL;
+
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.SiteConfigurationBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class SiteBuilder extends CacheContainerComponentBuilder<SiteConfiguration> {
+public class SiteBuilder extends CacheContainerComponentBuilder<SiteConfiguration> implements ResourceServiceBuilder<SiteConfiguration> {
 
     private final InjectedValue<ChannelFactory> factory = new InjectedValue<>();
 
@@ -55,6 +64,12 @@ public class SiteBuilder extends CacheContainerComponentBuilder<SiteConfiguratio
     }
 
     @Override
+    public Builder<SiteConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.channelName = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
+        return this;
+    }
+
+    @Override
     public SiteConfiguration getValue() {
         SiteConfigurationBuilder builder = new GlobalConfigurationBuilder().site();
         ChannelFactory factory = this.factory.getOptionalValue();
@@ -65,10 +80,5 @@ public class SiteBuilder extends CacheContainerComponentBuilder<SiteConfiguratio
             }
         }
         return builder.create();
-    }
-
-    SiteBuilder setChannelName(String channelName) {
-        this.channelName = channelName;
-        return this;
     }
 }
