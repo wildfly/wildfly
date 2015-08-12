@@ -49,6 +49,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         this.schema = schema;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> result) throws XMLStreamException {
 
@@ -86,6 +87,22 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+
+        // Version prior to 4_0 schema did not require stack being defined,
+        // thus iterate over channel add operations and set the stack explicitly.
+        if (!this.schema.since(JGroupsSchema.VERSION_4_0)) {
+            ModelNode defaultStack = operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName());
+
+            for (Map.Entry<PathAddress, ModelNode> entry : operations.entrySet()) {
+                PathAddress opAddr = entry.getKey();
+                if (opAddr.getLastElement().getKey().equals(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
+                    ModelNode op = entry.getValue();
+                    if (!op.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
+                        op.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).set(defaultStack);
+                    }
                 }
             }
         }
@@ -201,6 +218,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void parseStacks(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         ModelNode operation = operations.get(address);

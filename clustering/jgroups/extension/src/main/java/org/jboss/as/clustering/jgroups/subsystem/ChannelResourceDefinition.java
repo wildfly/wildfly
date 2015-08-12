@@ -62,7 +62,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
     }
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STACK("stack", ModelType.STRING, null),
+        STACK("stack", ModelType.STRING, null), // 'stack' is required since model 4.0.0
         MODULE("module", ModelType.STRING, new ModelNode("org.wildfly.clustering.server"), new ModuleIdentifierValidatorBuilder()),
         ;
         private final AttributeDefinition definition;
@@ -79,7 +79,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
         private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
             return new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setAllowNull(defaultValue != null)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             ;
@@ -110,6 +110,14 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
             @SuppressWarnings("deprecation")
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+                // Handle recipe for version < 4.0 where stack was not required and the stack attribute would use default-stack for a default value
+                if (!operation.hasDefined(Attribute.STACK.getDefinition().getName())) {
+                    ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent()).getModel();
+                    // If default-stack is not defined either, then recipe must be for version >= 4.0 and so this really is an invalid operation
+                    if (parentModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName())) {
+                        operation.get(Attribute.STACK.getDefinition().getName()).set(parentModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()));
+                    }
+                }
                 super.populateModel(context, operation, resource);
                 // Register runtime resource children for channel protocols
                 if (ChannelResourceDefinition.this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
@@ -119,7 +127,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
                     PathAddress address = context.getCurrentAddress();
                     PathAddress subsystemAddress = address.subAddress(0, address.size() - 1);
                     // Lookup the name of the default stack if necessary
-                    PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement((stack != null) ? stack : JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().resolveModelAttribute(context, context.readResourceFromRoot(subsystemAddress, false).getModel()).asString()));
+                    PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement(stack));
 
                     context.addStep(new ProtocolResourceRegistrationHandler(name, stackAddress), OperationContext.Stage.MODEL);
                 }

@@ -73,6 +73,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                 { JGroupsSchema.VERSION_1_1, 20 },
                 { JGroupsSchema.VERSION_2_0, 22 },
                 { JGroupsSchema.VERSION_3_0, 29 },
+                { JGroupsSchema.VERSION_4_0, 29 },
         };
         return Arrays.asList(data);
     }

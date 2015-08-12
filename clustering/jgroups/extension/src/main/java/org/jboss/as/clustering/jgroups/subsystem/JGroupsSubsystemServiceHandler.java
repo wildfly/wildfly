@@ -40,7 +40,6 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
@@ -77,26 +76,12 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
                 }
             }
         }
-
-        @SuppressWarnings("deprecation")
-        String defaultStack = ModelNodes.asString(DEFAULT_STACK.getDefinition().resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
-
-        if (!defaultStack.equals(ProtocolStackServiceNameFactory.DEFAULT_STACK)) {
-            new AliasServiceBuilder<>(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultStack), ChannelFactory.class).build(target).install();
-        }
     }
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         // remove the ProtocolDefaultsService
         context.removeService(new ProtocolDefaultsBuilder().getServiceName());
-
-        @SuppressWarnings("deprecation")
-        String defaultStack = ModelNodes.asString(DEFAULT_STACK.getDefinition().resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
-
-        if ((defaultStack != null) && !defaultStack.equals(ProtocolStackServiceNameFactory.DEFAULT_STACK)) {
-            context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName());
-        }
 
         String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
 
