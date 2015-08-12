@@ -24,7 +24,7 @@ package org.wildfly.clustering.server.provider;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.wildfly.clustering.marshalling.ClassTableContributor;
+import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
  * ClassTable contributor for the marshaller of a {@link ServiceProviderRegistration}.

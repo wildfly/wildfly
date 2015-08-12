@@ -28,10 +28,10 @@ import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
-import org.wildfly.clustering.marshalling.InvalidSerializedFormException;
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.Marshaller;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
+import org.wildfly.clustering.marshalling.jboss.Marshaller;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSO;
@@ -43,10 +43,10 @@ public class CoarseSSOFactory<A, D, L> implements SSOFactory<CoarseSSOEntry<A, D
 
     private final Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache;
     private final Cache<CoarseSessionsKey, Map<D, String>> sessionsCache;
-    private final Marshaller<A, MarshalledValue<A, MarshallingContext>> marshaller;
+    private final Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
-    public CoarseSSOFactory(Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache, Cache<CoarseSessionsKey, Map<D, String>> sessionsCache, Marshaller<A, MarshalledValue<A, MarshallingContext>> marshaller, LocalContextFactory<L> localContextFactory) {
+    public CoarseSSOFactory(Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache, Cache<CoarseSessionsKey, Map<D, String>> sessionsCache, Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory) {
         this.authenticationCache = authenticationCache;
         this.sessionsCache = sessionsCache;
         this.marshaller = marshaller;

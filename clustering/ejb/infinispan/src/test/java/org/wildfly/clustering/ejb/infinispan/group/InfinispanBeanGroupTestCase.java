@@ -34,8 +34,8 @@ import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
 public class InfinispanBeanGroupTestCase {
     private Integer id;

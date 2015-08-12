@@ -27,32 +27,33 @@ import java.io.ObjectOutput;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
  * Externalizer for session meta data.
  * @author Paul Ferraro
  */
-public class SimpleSessionMetaDataExternalizer extends AbstractSimpleExternalizer<SimpleSessionMetaData> {
-    private static final long serialVersionUID = 1371677643229192026L;
+public class SimpleSessionMetaDataExternalizer implements Externalizer<SessionMetaData> {
     private static final TimeUnit SERIALIZED_UNIT = TimeUnit.SECONDS;
 
-    public SimpleSessionMetaDataExternalizer() {
-        super(SimpleSessionMetaData.class);
-    }
-
     @Override
-    public void writeObject(ObjectOutput output, SimpleSessionMetaData metaData) throws IOException {
+    public void writeObject(ObjectOutput output, SessionMetaData metaData) throws IOException {
         output.writeLong(metaData.getCreationTime().getTime());
         output.writeLong(metaData.getLastAccessedTime().getTime());
         output.writeInt((int) metaData.getMaxInactiveInterval(SERIALIZED_UNIT));
     }
 
     @Override
-    public SimpleSessionMetaData readObject(ObjectInput input) throws IOException {
+    public SessionMetaData readObject(ObjectInput input) throws IOException {
         Date creationTime = new Date(input.readLong());
         Date lastAccessedTime = new Date(input.readLong());
         Time maxInactiveInterval = new Time(input.readInt(), SERIALIZED_UNIT);
         return new SimpleSessionMetaData(creationTime, lastAccessedTime, maxInactiveInterval);
+    }
+
+    @Override
+    public Class<? extends SessionMetaData> getTargetClass() {
+        return SimpleSessionMetaData.class;
     }
 }

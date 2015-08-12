@@ -23,8 +23,9 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +53,8 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 
 /**
@@ -100,8 +102,8 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 
     @Override
     public Object handle(Message message) throws Exception {
-        try (InputStream input = new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength())) {
-            int version = input.read();
+        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
+            int version = IndexExternalizer.VARIABLE.readData(input);
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
@@ -125,15 +127,16 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         CommandMarshaller<C> marshaller = new CommandMarshaller<C>() {
             @Override
             public <R> byte[] marshal(Command<R, C> command) throws IOException {
-                try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                    output.write(version);
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                try (DataOutputStream output = new DataOutputStream(bytes)) {
+                    IndexExternalizer.VARIABLE.writeData(output, version);
                     try (Marshaller marshaller = ChannelCommandDispatcherFactory.this.marshallingContext.createMarshaller(version)) {
                         marshaller.start(Marshalling.createByteOutput(output));
                         marshaller.writeObject(id);
                         marshaller.writeObject(command);
                         marshaller.flush();
                     }
-                    return output.toByteArray();
+                    return bytes.toByteArray();
                 }
             }
         };

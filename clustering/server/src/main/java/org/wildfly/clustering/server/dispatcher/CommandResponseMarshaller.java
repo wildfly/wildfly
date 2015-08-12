@@ -32,7 +32,7 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Buffer;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
 /**
  * Marshalling strategy for the command response.

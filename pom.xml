@@ -967,7 +967,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-marshalling</artifactId>
+                <artifactId>wildfly-clustering-marshalling-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

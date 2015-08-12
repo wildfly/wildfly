@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
-import org.wildfly.clustering.infinispan.spi.io.SimpleMarshalledValueExternalizer;
-import org.wildfly.clustering.marshalling.SimpleMarshalledValue;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer;
 
 /**
  * Externalizer for {@link CoarseAuthenticationEntry}.
@@ -35,27 +35,25 @@ import org.wildfly.clustering.marshalling.SimpleMarshalledValue;
  * @param <A>
  * @param <D>
  */
-public class CoarseAuthenticationEntryExternalizer<A, D> extends AbstractSimpleExternalizer<CoarseAuthenticationEntry<A, D, ?>> {
-    private static final long serialVersionUID = 4667240286133879206L;
+public class CoarseAuthenticationEntryExternalizer<A, D, L> implements Externalizer<CoarseAuthenticationEntry<A, D, L>> {
 
-    private static final SimpleMarshalledValueExternalizer EXTERNALIZER = new SimpleMarshalledValueExternalizer();
+    private final Externalizer<SimpleMarshalledValue<A>> externalizer = new SimpleMarshalledValueExternalizer<>();
 
-    public CoarseAuthenticationEntryExternalizer() {
-        this(CoarseAuthenticationEntry.class);
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private CoarseAuthenticationEntryExternalizer(Class targetClass) {
-        super(targetClass);
+    @Override
+    public void writeObject(ObjectOutput output, CoarseAuthenticationEntry<A, D, L> entry) throws IOException {
+        SimpleMarshalledValue<A> value = (SimpleMarshalledValue<A>) entry.getAuthentication();
+        this.externalizer.writeObject(output, value);
     }
 
     @Override
-    public void writeObject(ObjectOutput output, CoarseAuthenticationEntry<A, D, ?> entry) throws IOException {
-        EXTERNALIZER.writeObject(output, (SimpleMarshalledValue<?>) entry.getAuthentication());
+    public CoarseAuthenticationEntry<A, D, L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new CoarseAuthenticationEntry<>(this.externalizer.readObject(input));
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public CoarseAuthenticationEntry<A, D, ?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new CoarseAuthenticationEntry<>(EXTERNALIZER.readObject(input));
+    public Class<CoarseAuthenticationEntry<A, D, L>> getTargetClass() {
+        Class targetClass = CoarseAuthenticationEntry.class;
+        return targetClass;
     }
 }

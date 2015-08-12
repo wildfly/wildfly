@@ -1,0 +1,2 @@
+org.wildfly.clustering.server.group.AddressableNodeExternalizer
+org.wildfly.clustering.server.singleton.ServiceNameExternalizer

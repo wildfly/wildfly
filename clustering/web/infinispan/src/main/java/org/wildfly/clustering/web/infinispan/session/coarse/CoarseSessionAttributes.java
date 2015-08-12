@@ -23,7 +23,9 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.util.Map;
 
+import org.infinispan.commons.marshall.NotSerializableException;
 import org.wildfly.clustering.ee.infinispan.Mutator;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.session.MutableDetector;
 import org.wildfly.clustering.web.session.SessionAttributes;
 
@@ -34,11 +36,13 @@ import org.wildfly.clustering.web.session.SessionAttributes;
 public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes implements SessionAttributes {
     private final Map<String, Object> attributes;
     private final Mutator mutator;
+    private final MarshallingContext context;
 
-    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator) {
+    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, MarshallingContext context) {
         super(attributes);
         this.attributes = attributes;
         this.mutator = mutator;
+        this.context = context;
     }
 
     @Override
@@ -50,7 +54,13 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
 
     @Override
     public Object setAttribute(String name, Object value) {
-        Object old = (value != null) ? this.attributes.put(name, value) : this.attributes.remove(name);
+        if (value == null) {
+            return this.removeAttribute(name);
+        }
+        if (!this.context.isMarshallable(value)) {
+            throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
+        }
+        Object old = this.attributes.put(name, value);
         this.mutator.mutate();
         return old;
     }

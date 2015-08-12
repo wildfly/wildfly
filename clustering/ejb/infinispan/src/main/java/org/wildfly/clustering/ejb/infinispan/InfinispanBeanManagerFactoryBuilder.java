@@ -44,7 +44,7 @@ import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.marshalling.VersionedMarshallingConfiguration;
+import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
@@ -62,7 +62,7 @@ public class InfinispanBeanManagerFactoryBuilder<G, I, T> implements Builder<Bea
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
-    private final InjectedValue<VersionedMarshallingConfiguration> marshallingConfiguration = new InjectedValue<>();
+    private final InjectedValue<MarshallingConfigurationRepository> repository = new InjectedValue<>();
     private final InjectedValue<ScheduledExecutorService> scheduler = new InjectedValue<>();
     private final InjectedValue<Executor> executor = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
@@ -89,7 +89,7 @@ public class InfinispanBeanManagerFactoryBuilder<G, I, T> implements Builder<Bea
         return target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(CacheServiceName.CACHE.getServiceName(containerName, InfinispanBeanManagerFactoryBuilderFactory.getCacheName(deploymentUnitServiceName)), Cache.class, this.cache)
                 .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
-                .addDependency(deploymentUnitServiceName.append("marshalling"), VersionedMarshallingConfiguration.class, this.marshallingConfiguration)
+                .addDependency(deploymentUnitServiceName.append("marshalling"), MarshallingConfigurationRepository.class, this.repository)
                 .addDependency(deploymentUnitServiceName.append(this.name, "expiration"), ScheduledExecutorService.class, this.scheduler)
                 .addDependency(deploymentUnitServiceName.append(this.name, "eviction"), Executor.class, this.executor)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
@@ -120,8 +120,8 @@ public class InfinispanBeanManagerFactoryBuilder<G, I, T> implements Builder<Bea
     }
 
     @Override
-    public VersionedMarshallingConfiguration getMarshallingConfiguration() {
-        return this.marshallingConfiguration.getValue();
+    public MarshallingConfigurationRepository getMarshallingConfigurationRepository() {
+        return this.repository.getValue();
     }
 
     @Override

@@ -24,28 +24,19 @@ package org.wildfly.clustering.ejb.infinispan;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.jboss.ejb.client.BasicSessionID;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.UnknownSessionID;
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionIDExternalizer extends AbstractSimpleExternalizer<SessionID> {
-    private static final long serialVersionUID = -760242454303210714L;
+public class SessionIDExternalizer implements Externalizer<SessionID> {
 
-    public SessionIDExternalizer() {
-        super(SessionID.class);
-    }
+    private final Class<? extends SessionID> targetClass;
 
-    @Override
-    public Set<Class<? extends SessionID>> getTypeClasses() {
-        return new HashSet<>(Arrays.asList(BasicSessionID.class, UnknownSessionID.class));
+    SessionIDExternalizer(Class<? extends SessionID> targetClass) {
+        this.targetClass = targetClass;
     }
 
     @Override
@@ -60,5 +51,10 @@ public class SessionIDExternalizer extends AbstractSimpleExternalizer<SessionID>
         byte[] encoded = new byte[input.readInt()];
         input.readFully(encoded);
         return SessionID.createSessionID(encoded);
+    }
+
+    @Override
+    public Class<? extends SessionID> getTargetClass() {
+        return this.targetClass;
     }
 }

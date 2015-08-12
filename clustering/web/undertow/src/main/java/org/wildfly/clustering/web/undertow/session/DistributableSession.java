@@ -27,8 +27,6 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -142,9 +140,6 @@ public class DistributableSession implements io.undertow.server.session.Session 
             if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) value;
                 return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, new ImmutableAuthenticatedSession(auth));
-            }
-            if (!(value instanceof Serializable)) {
-                throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
             }
             Object old = session.getAttributes().setAttribute(name, value);
             if (old == null) {
