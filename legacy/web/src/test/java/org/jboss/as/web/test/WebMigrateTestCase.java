@@ -109,7 +109,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertTrue(ioSubsystem.get("buffer-pool", "default").isDefined());
 
         ModelNode newSubsystem = model.get(SUBSYSTEM, UNDERTOW_SUBSYSTEM_NAME);
-        ModelNode newServer = newSubsystem.get("server", "default");
+        ModelNode newServer = newSubsystem.get("server", "default-server");
         assertNotNull(newServer);
         assertTrue(newServer.isDefined());
         assertEquals("default-host", newServer.get(Constants.DEFAULT_HOST).asString());
