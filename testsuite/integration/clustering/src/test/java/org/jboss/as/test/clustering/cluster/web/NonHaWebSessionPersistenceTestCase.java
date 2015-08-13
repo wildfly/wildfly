@@ -22,17 +22,13 @@
 package org.jboss.as.test.clustering.cluster.web;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -86,10 +82,10 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws IOException, URISyntaxException {
-        HttpClient client = HttpClients.createDefault();
+    public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws IOException {
+        DefaultHttpClient client = new DefaultHttpClient();
 
-        URI url = SimpleServlet.createURI(baseURL);
+        String url = baseURL.toString() + "simple";
 
         try {
             HttpResponse response = client.execute(new HttpGet(url));
@@ -113,7 +109,7 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
             Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
         } finally {
-            HttpClientUtils.closeQuietly(client);
+            client.getConnectionManager().shutdown();
         }
     }
 }

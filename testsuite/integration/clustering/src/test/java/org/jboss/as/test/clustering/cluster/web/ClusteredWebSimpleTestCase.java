@@ -24,8 +24,6 @@ package org.jboss.as.test.clustering.cluster.web;
 import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -36,11 +34,9 @@ import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -50,6 +46,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -91,33 +88,28 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IOException, URISyntaxException {
-        HttpClient client = HttpClients.createDefault();
+    public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IOException {
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
-        URI uri = SimpleServlet.createURI(baseURL);
+        String url = baseURL.toString();
+        log.info("URL = " + url);
 
         try {
-            HttpResponse response = client.execute(new HttpGet(uri));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            HttpResponse response = client.execute(new HttpGet(url + "simple"));
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+            response.getEntity().getContent().close();
 
-            response = client.execute(new HttpGet(uri));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                // This won't be true unless we have somewhere to which to replicate
-                Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            response = client.execute(new HttpGet(url + "simple"));
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            // This won't be true unless we have somewhere to which to replicate
+            Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+            response.getEntity().getContent().close();
         } finally {
-            HttpClientUtils.closeQuietly(client);
+            client.getConnectionManager().shutdown();
         }
     }
 
@@ -126,29 +118,23 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     public void testSessionReplication(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
-        HttpClient client = HttpClients.createDefault();
+            throws IOException {
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
-        URI url1 = SimpleServlet.createURI(baseURL1);
-        URI url2 = SimpleServlet.createURI(baseURL2);
+        String url1 = baseURL1.toString() + "simple";
+        String url2 = baseURL2.toString() + "simple";
 
         try {
             HttpResponse response = client.execute(new HttpGet(url1));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
 
             // Lets do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(url1));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
 
             // Lets wait for the session to replicate
             waitForReplication(GRACE_TIME_TO_REPLICATE);
@@ -158,23 +144,17 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
             // Note that this DOES rely on the fact that both servers are running on the "same" domain,
             // which is '127.0.0.0'. Otherwise you will have to spoof cookies. @Rado
             response = client.execute(new HttpGet(url2));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
 
             // Lets do one more check.
             response = client.execute(new HttpGet(url2));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
         } finally {
-            HttpClientUtils.closeQuietly(client);
+            client.getConnectionManager().shutdown();
         }
     }
 
@@ -198,64 +178,51 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
         this.abstractGracefulServe(baseURL1, false);
     }
 
-    private void abstractGracefulServe(URL baseURL, boolean undeployOnly) throws URISyntaxException, ClientProtocolException, IOException, InterruptedException {
+    private void abstractGracefulServe(URL baseURL1, boolean undeployOnly)
+            throws Exception {
 
-//        HttpClient client = HttpClients.custom().setConnectionManager(new PoolingHttpClientConnectionManager()).build();
-        HttpClient client = HttpClients.createDefault();
+        final DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
+        String url1 = baseURL1.toString() + "simple";
+
+        // Make sure a normal request will succeed
+        HttpResponse response = client.execute(new HttpGet(url1));
+        Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+        response.getEntity().getContent().close();
+
+        // Send a long request - in parallel
+        String longRunningUrl = url1 + "?" + SimpleServlet.REQUEST_DURATION_PARAM + "=" + REQUEST_DURATION;
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<HttpResponse> future = executor.submit(new RequestTask(client, longRunningUrl));
+
+        // Make sure long request has started
+        Thread.sleep(1000);
+
+        if (undeployOnly) {
+            // Undeploy the app only.
+            undeploy(DEPLOYMENT_1);
+        } else {
+            // Shutdown server.
+            stop(CONTAINER_1);
+        }
+
+        // Get result of long request
+        // This request should succeed since it initiated before server shutdown
         try {
-            URI uri = SimpleServlet.createURI(baseURL);
+            response = future.get();
+            Assert.assertEquals("Request should succeed since it initiated before undeply or shutdown.",
+                    HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            response.getEntity().getContent().close();
+        } catch (ExecutionException e) {
+            e.printStackTrace(System.err);
+            Assert.fail(e.getCause().getMessage());
+        }
 
-            // Make sure a normal request will succeed
-            HttpResponse response = client.execute(new HttpGet(uri));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            // Send a long request - in parallel
-            URI longRunningURI = SimpleServlet.createURI(baseURL, REQUEST_DURATION);
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            Future<HttpResponse> future = executor.submit(new RequestTask(client, longRunningURI));
-
-            // Make sure long request has started
-            Thread.sleep(1000);
-
-            if (undeployOnly) {
-                // Undeploy the app only.
-                undeploy(DEPLOYMENT_1);
-            } else {
-                // Shutdown server.
-                stop(CONTAINER_1);
-            }
-
-            // Get result of long request
-            // This request should succeed since it initiated before server shutdown
-            try {
-                response = future.get();
-                try {
-                    Assert.assertEquals("Request should succeed since it initiated before undeply or shutdown.",
-                            HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                } finally {
-                    HttpClientUtils.closeQuietly(response);
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace(System.err);
-                Assert.fail(e.getCause().getMessage());
-            }
-
-            if (undeployOnly) {
-                // If we are only undeploying, then subsequent requests should return 404.
-                response = client.execute(new HttpGet(uri));
-                try {
-                    Assert.assertEquals("If we are only undeploying, then subsequent requests should return 404.",
-                            HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
-                } finally {
-                    HttpClientUtils.closeQuietly(response);
-                }
-            }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
+        if (undeployOnly) {
+            // If we are only undeploying, then subsequent requests should return 404.
+            response = client.execute(new HttpGet(url1));
+            Assert.assertEquals("If we are only undeploying, then subsequent requests should return 404.",
+                    HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+            response.getEntity().getContent().close();
         }
     }
 
@@ -264,17 +231,21 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
      */
     private class RequestTask implements Callable<HttpResponse> {
 
-        private final HttpClient client;
-        private final URI uri;
+        private HttpClient client;
+        private String url;
 
-        RequestTask(HttpClient client, URI uri) {
+        RequestTask(HttpClient client, String url) {
             this.client = client;
-            this.uri = uri;
+            this.url = url;
         }
 
         @Override
         public HttpResponse call() throws Exception {
-            return this.client.execute(new HttpGet(this.uri));
+            try {
+                return client.execute(new HttpGet(url));
+            } finally {
+                client.getConnectionManager().closeExpiredConnections();
+            }
         }
     }
 }

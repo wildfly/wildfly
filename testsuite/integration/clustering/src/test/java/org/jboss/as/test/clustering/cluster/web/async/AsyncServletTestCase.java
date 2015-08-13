@@ -32,7 +32,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -90,7 +89,7 @@ public class AsyncServletTestCase extends ClusterAbstractTestCase {
         URI uri1 = AsyncServlet.createURI(baseURL1);
         URI uri2 = AsyncServlet.createURI(baseURL2);
 
-        HttpClient client = HttpClients.createDefault();
+        HttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
         try {
             assertValue(client, uri1, 1);

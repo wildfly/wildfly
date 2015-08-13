@@ -32,10 +32,8 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -43,6 +41,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ExtendedClusterAbstractTestCase;
+import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -138,7 +137,7 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
             throws IllegalStateException, IOException, URISyntaxException {
 
-        HttpClient client = HttpClients.createDefault();
+        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         URI url1 = CacheAccessServlet.createPutURI(baseURL1, "a", "100");
         URI url2 = CacheAccessServlet.createGetURI(baseURL2, "a");
@@ -149,11 +148,8 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             // put a value to LON-0
             System.out.println("Executing HTTP request: " + url1);
             HttpResponse response = client.execute(new HttpGet(url1));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
 
             // Lets wait for the session to replicate
@@ -162,37 +158,28 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             // do a get on LON-1
             System.out.println("Executing HTTP request: " + url2);
             response = client.execute(new HttpGet(url2));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
 
             // do a get on NYC-0
             System.out.println("Executing HTTP request: " + url3);
             response = client.execute(new HttpGet(url3));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
 
             // do a get on SFO-0
             System.out.println("Executing HTTP request: " + url4);
             response = client.execute(new HttpGet(url4));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
         } finally {
-            HttpClientUtils.closeQuietly(client);
+            client.getConnectionManager().shutdown();
         }
     }
 

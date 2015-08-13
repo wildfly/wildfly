@@ -1,3 +1,7 @@
+package org.jboss.as.test.clustering.cluster.web.passivation;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 /*
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
@@ -19,19 +23,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.web.passivation;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Formatter;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -59,8 +58,8 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
     @InSequence(1)
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
                              throws IOException, URISyntaxException {
-        HttpClient client1 = HttpClients.createDefault();
-        HttpClient client2 = HttpClients.createDefault();
+        DefaultHttpClient client1 = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        DefaultHttpClient client2 = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
         String session1 = null;
         String session2 = null;
         try {
