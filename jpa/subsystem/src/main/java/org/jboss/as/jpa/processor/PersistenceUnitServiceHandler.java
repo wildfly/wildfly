@@ -943,15 +943,35 @@ public class PersistenceUnitServiceHandler {
          * locate persistence provider in specified static module
          */
         if (configuredPersistenceProviderModule != null) {
-            try {
-                List<PersistenceProvider> providers = PersistenceProviderLoader.loadProviderModuleByName(configuredPersistenceProviderModule);
-                PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providers, null);
-                PersistenceProvider provider = getProviderByName(pu, providers);
-                if (provider != null) {
+            List<PersistenceProvider> providers;
+            if (Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED.equals(configuredPersistenceProviderModule)) {
+                try {
+                    // load the persistence provider from the application deployment
+                    final ModuleClassLoader classLoader = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
+                    PersistenceProvider provider = PersistenceProviderLoader.loadProviderFromDeployment(classLoader, persistenceProviderClassName);
+                    providers = new ArrayList<>();
+                    providers.add(provider);
+                    PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providers, null);
                     return provider;
+
+                } catch (ClassNotFoundException e) {
+                    throw JpaLogger.ROOT_LOGGER.cannotDeployApp(e, persistenceProviderClassName);
+                } catch (InstantiationException e) {
+                    throw JpaLogger.ROOT_LOGGER.cannotDeployApp(e, persistenceProviderClassName);
+                } catch (IllegalAccessException e) {
+                    throw JpaLogger.ROOT_LOGGER.cannotDeployApp(e, persistenceProviderClassName);
                 }
-            } catch (ModuleLoadException e) {
-                throw JpaLogger.ROOT_LOGGER.cannotLoadPersistenceProviderModule(e, configuredPersistenceProviderModule, persistenceProviderClassName);
+            } else {
+                try {
+                    providers = PersistenceProviderLoader.loadProviderModuleByName(configuredPersistenceProviderModule);
+                    PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providers, null);
+                    PersistenceProvider provider = getProviderByName(pu, providers);
+                    if (provider != null) {
+                        return provider;
+                    }
+                } catch (ModuleLoadException e) {
+                    throw JpaLogger.ROOT_LOGGER.cannotLoadPersistenceProviderModule(e, configuredPersistenceProviderModule, persistenceProviderClassName);
+                }
             }
         }
 
