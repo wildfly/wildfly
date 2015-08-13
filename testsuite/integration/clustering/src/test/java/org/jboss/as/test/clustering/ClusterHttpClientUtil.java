@@ -38,7 +38,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * Helper class to start and stop container including a deployment.
@@ -49,7 +49,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public final class ClusterHttpClientUtil {
 
     public static void establishTopology(URL baseURL, String container, String cache, String... nodes) throws URISyntaxException, IOException {
-        HttpClient client = new DefaultHttpClient();
+        HttpClient client = HttpClients.createDefault();
         try {
             establishTopology(client, baseURL, container, cache, nodes);
         } finally {

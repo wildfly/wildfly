@@ -118,7 +118,7 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
             // Make sure SFSB times out on other node too
             assertEquals(0, queryCount(client, uri2));
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
     }
 

@@ -22,6 +22,8 @@
 package org.jboss.as.test.clustering.single.web;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -65,26 +68,32 @@ public class SimpleWebTestCase {
 
     @Test
     @OperateOnDeployment("deployment-single")
-    public void test(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException, IOException {
-        DefaultHttpClient client = new DefaultHttpClient();
+    public void test(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IOException, URISyntaxException {
+        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
-        String url = baseURL.toString() + "simple";
+        URI uri = SimpleServlet.createURI(baseURL);
 
         try {
-            HttpResponse response = client.execute(new HttpGet(url));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
-            response.getEntity().getContent().close();
+            HttpResponse response = client.execute(new HttpGet(uri));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
 
-            response = client.execute(new HttpGet(url));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            // This won't be true unless we have somewhere to which to replicate or session persistence is configured (current default)
-            Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
-            response.getEntity().getContent().close();
+            response = client.execute(new HttpGet(uri));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                // This won't be true unless we have somewhere to which to replicate or session persistence is configured (current default)
+                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
     }
 }

@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -40,7 +41,6 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ExtendedClusterAbstractTestCase;
-import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -123,7 +123,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
 
             throws IllegalStateException, IOException, URISyntaxException {
 
-        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
+        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
         String value = "100";
         URI url1 = CacheAccessServlet.createPutURI(baseURL1, "a", value);
@@ -166,7 +166,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -186,7 +186,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
 
             throws IllegalStateException, IOException, URISyntaxException {
 
-        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
+        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
         URI url1 = CacheAccessServlet.createGetURI(baseURL1, "b");
         URI url3 = CacheAccessServlet.createPutURI(baseURL3, "b", "200");
@@ -210,7 +210,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             System.out.println("Executed HTTP request");
 
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
     }
 }

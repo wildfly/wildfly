@@ -151,7 +151,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
     private static HttpUriRequest buildPostRequest(String url, String sessionId, String viewState, String guess) throws UnsupportedEncodingException {
         HttpPost post = new HttpPost(url);
 
-        List<NameValuePair> list = new LinkedList<NameValuePair>();
+        List<NameValuePair> list = new LinkedList<>();
 
         list.add(new BasicNameValuePair("javax.faces.ViewState", viewState));
         list.add(new BasicNameValuePair("numberGuess", "numberGuess"));
@@ -332,7 +332,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
 
-        DefaultHttpClient client = new DefaultHttpClient();
+        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
         String url1 = baseURL1.toString() + "home.jsf";
         String url2 = baseURL2.toString() + "home.jsf";

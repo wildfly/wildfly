@@ -163,7 +163,7 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(15, queryCount(client, uri2));
             assertEquals(16, queryCount(client, uri2));
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
 
     }
