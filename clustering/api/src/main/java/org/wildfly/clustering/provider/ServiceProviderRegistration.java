@@ -60,7 +60,7 @@ public interface ServiceProviderRegistration<T> extends AutoCloseable {
     Set<Node> getProviders();
 
     /**
-     * Indicates that this local can no longer provide this service.
+     * Indicates that this node can no longer provide this service.
      * Once closed, this object is no longer functional.
      */
     @Override

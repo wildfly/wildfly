@@ -105,26 +105,25 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         return new AbstractServiceProviderRegistration<T>(service, this) {
             @Override
             public void close() {
-                if (CacheServiceProviderRegistry.this.listeners.remove(service) != null) {
-                    final Node node = CacheServiceProviderRegistry.this.getGroup().getLocalNode();
-                    try (Batch batch = CacheServiceProviderRegistry.this.batcher.createBatch()) {
-                        Set<Node> nodes = CacheServiceProviderRegistry.this.cache.get(service);
-                        if ((nodes != null) && nodes.remove(node)) {
-                            Cache<T, Set<Node>> cache = CacheServiceProviderRegistry.this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
-                            if (nodes.isEmpty()) {
-                                cache.remove(service);
-                            } else {
-                                cache.replace(service, nodes);
-                            }
+                Node node = CacheServiceProviderRegistry.this.getGroup().getLocalNode();
+                try (Batch batch = CacheServiceProviderRegistry.this.batcher.createBatch()) {
+                    Set<Node> nodes = CacheServiceProviderRegistry.this.cache.get(service);
+                    if ((nodes != null) && nodes.remove(node)) {
+                        Cache<T, Set<Node>> cache = CacheServiceProviderRegistry.this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
+                        if (nodes.isEmpty()) {
+                            cache.remove(service);
+                        } else {
+                            cache.replace(service, nodes);
                         }
                     }
                 }
+                CacheServiceProviderRegistry.this.listeners.remove(service);
             }
         };
     }
 
     @Override
-    public Set<Node> getProviders(final Object service) {
+    public Set<Node> getProviders(final T service) {
         Set<Node> nodes = this.cache.get(service);
         return (nodes != null) ? Collections.unmodifiableSet(nodes) : Collections.<Node>emptySet();
     }

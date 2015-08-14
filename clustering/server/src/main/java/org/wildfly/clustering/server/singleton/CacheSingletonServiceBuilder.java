@@ -70,24 +70,23 @@ import org.wildfly.clustering.spi.GroupServiceName;
 @SuppressWarnings("deprecation")
 public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, Service<T>, ServiceProviderRegistration.Listener, SingletonContext<T>, Singleton {
 
-    private final InjectedValue<Group> group = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<ServiceProviderRegistry> registry = new InjectedValue<>();
     private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
     private final Service<T> service;
     final ServiceName targetServiceName;
-    final ServiceName singletonServiceName;
+    private final ServiceName singletonServiceName;
     private final AtomicBoolean master = new AtomicBoolean(false);
-    private final SingletonContext<T> singletonDispatcher = new SingletonDispatcher();
     private final String containerName;
     private final String cacheName;
 
-    volatile ServiceProviderRegistration<ServiceName> registration;
-    volatile CommandDispatcher<SingletonContext<T>> dispatcher;
-    volatile boolean started = false;
+    private volatile Group group;
+    private volatile ServiceProviderRegistration<ServiceName> registration;
+    private volatile CommandDispatcher<SingletonContext<T>> dispatcher;
+    private volatile boolean started = false;
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
     private volatile ServiceRegistry serviceRegistry;
-    volatile int quorum = 1;
+    private volatile int quorum = 1;
 
     public CacheSingletonServiceBuilder(ServiceName serviceName, Service<T> service, String containerName, String cacheName) {
         this.singletonServiceName = serviceName;
@@ -118,7 +117,6 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
         };
         final ServiceBuilder<T> singletonBuilder = new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
                 .addAliases(this.singletonServiceName.append("singleton"))
-                .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
                 .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(this.containerName, this.cacheName), ServiceProviderRegistry.class, this.registry)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(this.containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addListener(listener)
@@ -192,6 +190,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
         this.serviceRegistry = context.getController().getServiceContainer();
         this.dispatcher = this.dispatcherFactory.getValue().<SingletonContext<T>>createCommandDispatcher(this.singletonServiceName, this);
         ServiceProviderRegistry<ServiceName> registry = this.registry.getValue();
+        this.group = registry.getGroup();
         this.registration = registry.register(this.singletonServiceName, this);
         this.started = true;
     }
@@ -210,57 +209,74 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     @Override
     public void providersChanged(Set<Node> nodes) {
-        if (this.elected(nodes)) {
-            if (!this.master.get()) {
-                ClusteringServerLogger.ROOT_LOGGER.electedMaster(this.singletonServiceName.getCanonicalName());
-                this.singletonDispatcher.stopOldMaster();
-                this.startNewMaster();
+        List<Node> candidates = this.group.getNodes();
+        candidates.retainAll(nodes);
+
+        // Only run election on a single node
+        if (candidates.isEmpty() || candidates.get(0).equals(this.group.getLocalNode())) {
+            Node elected = null;
+
+            // First validate that quorum was met
+            int size = candidates.size();
+            if (size >= this.quorum) {
+                if ((this.quorum > 1) && (size == this.quorum)) {
+                    ClusteringServerLogger.ROOT_LOGGER.quorumJustReached(this.singletonServiceName.getCanonicalName(), this.quorum);
+                }
+
+                if (!candidates.isEmpty()) {
+                    elected = this.electionPolicy.elect(candidates);
+
+                    ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.singletonServiceName.getCanonicalName());
+                }
+            } else if (this.quorum > 1) {
+                ClusteringServerLogger.ROOT_LOGGER.quorumNotReached(this.singletonServiceName.getCanonicalName(), this.quorum);
             }
-        } else if (this.master.get()) {
-            ClusteringServerLogger.ROOT_LOGGER.electedSlave(this.singletonServiceName.getCanonicalName());
-            this.stopOldMaster();
+
+            try {
+                if (elected != null) {
+                    // Stop service on every node except elected node
+                    CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new StopCommand<>(), elected);
+                    // Start service on elected node
+                    CacheSingletonServiceBuilder.this.dispatcher.executeOnNode(new StartCommand<>(), elected);
+                } else {
+                    // Stop service on every node
+                    CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new StopCommand<>());
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
         }
     }
 
-    private boolean elected(Set<Node> candidates) {
-        int size = candidates.size();
-        if (size < this.quorum) {
-            ClusteringServerLogger.ROOT_LOGGER.quorumNotReached(this.singletonServiceName.getCanonicalName(), this.quorum);
-            return false;
-        } else if (size == this.quorum) {
-            ClusteringServerLogger.ROOT_LOGGER.quorumJustReached(this.singletonServiceName.getCanonicalName(), this.quorum);
+    @Override
+    public void start() {
+        // If we were not already master
+        if (this.master.compareAndSet(false, true)) {
+            ServiceController<?> service = this.serviceRegistry.getRequiredService(this.targetServiceName);
+            try {
+                ServiceContainerHelper.start(service);
+            } catch (StartException e) {
+                ClusteringServerLogger.ROOT_LOGGER.serviceStartFailed(e, this.targetServiceName.getCanonicalName());
+                ServiceContainerHelper.stop(service);
+            }
         }
-        Node elected = this.election(candidates);
-        if (elected != null) {
-            ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.singletonServiceName.getCanonicalName());
-        }
-        return (elected != null) ? elected.equals(this.group.getValue().getLocalNode()) : false;
     }
 
-    private Node election(Set<Node> candidates) {
-        SingletonElectionPolicy policy = this.electionPolicy;
-        List<Node> nodes = this.group.getValue().getNodes();
-        nodes.retainAll(candidates);
-        return !nodes.isEmpty() ? policy.elect(nodes) : null;
-    }
-
-    private void startNewMaster() {
-        this.master.set(true);
-        ServiceController<?> service = this.serviceRegistry.getRequiredService(this.targetServiceName);
-        try {
-            ServiceContainerHelper.start(service);
-        } catch (StartException e) {
-            ClusteringServerLogger.ROOT_LOGGER.serviceStartFailed(e, this.targetServiceName.getCanonicalName());
-            ServiceContainerHelper.stop(service);
+    @Override
+    public void stop() {
+        // If we were the previous master
+        if (this.master.compareAndSet(true, false)) {
+            ServiceContainerHelper.stop(this.serviceRegistry.getRequiredService(this.targetServiceName));
         }
     }
 
     @Override
     public T getValue() {
         if (!this.started) throw new IllegalStateException();
+        // Save ourselves a remote call if we can
         AtomicReference<T> ref = this.getValueRef();
         if (ref == null) {
-            ref = this.singletonDispatcher.getValueRef();
+            ref = this.getRemoteValueRef();
         }
         return ref.get();
     }
@@ -270,60 +286,43 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
         return this.master.get() ? new AtomicReference<>(this.service.getValue()) : null;
     }
 
-    @Override
-    public void stopOldMaster() {
-        if (this.master.compareAndSet(true, false)) {
-            ServiceContainerHelper.stop(this.serviceRegistry.getRequiredService(this.targetServiceName));
-        }
-    }
-
-    class SingletonDispatcher implements SingletonContext<T> {
-
-        @Override
-        public void stopOldMaster() {
-            try {
-                CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new StopSingletonCommand<T>());
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        }
-
-        @Override
-        public AtomicReference<T> getValueRef() {
-            try {
-                Map<Node, CommandResponse<AtomicReference<T>>> results = Collections.emptyMap();
-                while (results.isEmpty()) {
-                    if (!CacheSingletonServiceBuilder.this.started) {
-                        throw new IllegalStateException(ClusteringServerLogger.ROOT_LOGGER.notStarted(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName()));
-                    }
-                    results = CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new SingletonValueCommand<T>());
-                    Iterator<CommandResponse<AtomicReference<T>>> responses = results.values().iterator();
-                    while (responses.hasNext()) {
-                        if (responses.next().get() == null) {
-                            // Prune non-master results
-                            responses.remove();
-                        }
-                    }
-                    // We expect only 1 result
-                    int count = results.size();
-                    if (count > 1) {
-                        // This would mean there are multiple masters!
-                        throw ClusteringServerLogger.ROOT_LOGGER.unexpectedResponseCount(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName(), count);
-                    }
-                    if (count == 0) {
-                        ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName());
-                        // Verify whether there is no master because a quorum was not reached during the last election
-                        if (CacheSingletonServiceBuilder.this.registration.getProviders().size() < CacheSingletonServiceBuilder.this.quorum) {
-                            return new AtomicReference<>();
-                        }
-                        // Otherwise, we're in the midst of a new master election, so just try again
-                        Thread.yield();
+    private AtomicReference<T> getRemoteValueRef() {
+        try {
+            Map<Node, CommandResponse<AtomicReference<T>>> results = Collections.emptyMap();
+            while (results.isEmpty()) {
+                if (!CacheSingletonServiceBuilder.this.started) {
+                    throw new IllegalStateException(ClusteringServerLogger.ROOT_LOGGER.notStarted(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName()));
+                }
+                results = CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new SingletonValueCommand<T>());
+                Iterator<CommandResponse<AtomicReference<T>>> responses = results.values().iterator();
+                while (responses.hasNext()) {
+                    if (responses.next().get() == null) {
+                        // Prune non-master results
+                        responses.remove();
                     }
                 }
-                return results.values().iterator().next().get();
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
+                // We expect only 1 result
+                int count = results.size();
+                if (count > 1) {
+                    // This would mean there are multiple masters!
+                    throw ClusteringServerLogger.ROOT_LOGGER.unexpectedResponseCount(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName(), count);
+                }
+                if (count == 0) {
+                    ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName());
+                    // Verify whether there is no master because a quorum was not reached during the last election
+                    if (CacheSingletonServiceBuilder.this.registration.getProviders().size() < CacheSingletonServiceBuilder.this.quorum) {
+                        return new AtomicReference<>();
+                    }
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new InterruptedException();
+                    }
+                    // Otherwise, we're in the midst of a new master election, so just try again
+                    Thread.yield();
+                }
             }
+            return results.values().iterator().next().get();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
     }
 }
