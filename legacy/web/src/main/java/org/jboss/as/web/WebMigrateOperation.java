@@ -32,6 +32,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.MultistepUtil;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -47,6 +48,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -192,7 +194,14 @@ public class WebMigrateOperation implements OperationStepHandler {
                 } else {
                     // :migrate operation
                     // invoke an OSH on a composite operation with all the migration operations
-                    migrateSubsystems(context, migrationOperations);
+                    final Map<PathAddress, ModelNode> migrateOpResponses = migrateSubsystems(context, migrationOperations);
+
+                    context.completeStep(new OperationContext.ResultHandler() {
+                        @Override
+                        public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                            //TODO do something with migrateOpResponses; maybe just if any have outcome=failed
+                        }
+                    });
                 }
             }
         }, MODEL);
@@ -470,10 +479,10 @@ public class WebMigrateOperation implements OperationStepHandler {
         migrationOperations.put(subsystemAddress, removeOperation);
     }
 
-    private void migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) {
-        ModelNode compositeOp = createOperation(COMPOSITE, EMPTY_ADDRESS);
-        compositeOp.get(STEPS).set(migrationOperations.values());
-        context.addStep(compositeOp, CompositeOperationHandler.INSTANCE, MODEL);
+    private Map<PathAddress, ModelNode> migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) throws OperationFailedException {
+        final Map<PathAddress, ModelNode> result = new LinkedHashMap<>();
+        MultistepUtil.recordOperationSteps(context, migrationOperations, result);
+        return result;
     }
 
     private void transformResources(final OperationContext context, final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations) throws OperationFailedException {
