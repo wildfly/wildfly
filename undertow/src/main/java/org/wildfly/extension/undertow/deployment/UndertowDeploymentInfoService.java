@@ -59,7 +59,6 @@ import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.handlers.ServletPathMatches;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-import io.undertow.websockets.jsr.ServerWebSocketContainer;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
@@ -76,9 +75,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.server.suspend.ServerActivity;
-import org.jboss.as.server.suspend.ServerActivityCallback;
-import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.version.Version;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
@@ -156,8 +152,6 @@ import org.xnio.IoUtils;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -174,8 +168,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.jboss.security.AuthenticationManager;
 
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
@@ -231,7 +223,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
-    private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
     private final String topLevelDeploymentName;
     private final WebSocketDeploymentInfo webSocketDeploymentInfo;
@@ -962,49 +953,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 webSocketDeploymentInfo.setBuffers(servletContainer.getWebsocketsBufferPool().getValue());
                 webSocketDeploymentInfo.setWorker(servletContainer.getWebsocketsWorker().getValue());
                 webSocketDeploymentInfo.setDispatchToWorkerThread(servletContainer.isDispatchWebsocketInvocationToWorker());
-                final AtomicReference<ServerActivity> serverActivity = new AtomicReference<>();
-                webSocketDeploymentInfo.addListener(wsc -> {
-                    serverActivity.set(new ServerActivity() {
-                        @Override
-                        public void preSuspend(ServerActivityCallback listener) {
-                            listener.done();
-                        }
-
-                        @Override
-                        public void suspended(final ServerActivityCallback listener) {
-                            wsc.pause(new ServerWebSocketContainer.PauseListener() {
-                                @Override
-                                public void paused() {
-                                    listener.done();
-                                }
-
-                                @Override
-                                public void resumed() {
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void resume() {
-                            wsc.resume();
-                        }
-                    });
-                    suspendControllerInjectedValue.getValue().registerActivity(serverActivity.get());
-                });
-                ServletContextListener sl = new ServletContextListener() {
-                    @Override
-                    public void contextInitialized(ServletContextEvent sce) {}
-
-                    @Override
-                    public void contextDestroyed(ServletContextEvent sce) {
-                        final ServerActivity activity = serverActivity.get();
-                        if(activity != null) {
-                            suspendControllerInjectedValue.getValue().unRegisterActivity(activity);
-                        }
-                    }
-                };
-                d.addListener(new ListenerInfo(sl.getClass(), new ImmediateInstanceFactory<EventListener>(sl)));
-
                 d.addServletContextAttribute(WebSocketDeploymentInfo.ATTRIBUTE_NAME, webSocketDeploymentInfo);
 
             }
@@ -1385,10 +1333,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<ComponentRegistry> getComponentRegistryInjectedValue() {
         return componentRegistryInjectedValue;
-    }
-
-    public InjectedValue<SuspendController> getSuspendControllerInjectedValue() {
-        return suspendControllerInjectedValue;
     }
 
     public InjectedValue<Host> getHost() {
