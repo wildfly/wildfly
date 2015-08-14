@@ -50,13 +50,6 @@
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
-
-        <!-- EclipseLink -->
-        <eclipselink.version.2.3.stable>2.3.2</eclipselink.version.2.3.stable>
-        <eclipselink.version.2.3.milestone>2.3.3-M3</eclipselink.version.2.3.milestone>
-        <eclipselink.version.2.4.milestone>2.4.2</eclipselink.version.2.4.milestone>
-        <eclipselink.version>${eclipselink.version.2.4.milestone}</eclipselink.version>
-
     </properties>
 
     <!--
@@ -72,7 +65,7 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
-            <version>${eclipselink.version}</version>
+            <version>${version.org.eclipselink.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -85,7 +78,7 @@
         <dependency>
             <groupId>org.apache.openjpa</groupId>
             <artifactId>openjpa-all</artifactId>
-            <version>2.2.2</version>
+            <version>${version.org.apache.openjpa}</version>
             <scope>test</scope>
         </dependency>
 
@@ -110,7 +103,7 @@
             <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
-            <version>${eclipselink.version}</version>
+            <version>${version.org.eclipselink.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
