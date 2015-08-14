@@ -3068,4 +3068,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 473, value = "JNDI bindings for session bean named '%s' in deployment unit '%s' are as follows:%s")
     void jndiBindings(final String ejbName, final DeploymentUnit deploymentUnit, final StringBuilder bindings);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 474, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'. This attribute should be removed.")
+    void logInconsistentAttributeNotSupported(String attributeName, String mustMatch);
+
 }

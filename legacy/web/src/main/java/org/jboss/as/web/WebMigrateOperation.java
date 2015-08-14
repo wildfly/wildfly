@@ -43,7 +43,6 @@ import org.jboss.dmr.ValueExpression;
 import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -115,7 +114,7 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     private static final OperationStepHandler DESCRIBE_MIGRATION_INSTANCE = new WebMigrateOperation(true);
     private static final OperationStepHandler MIGRATE_INSTANCE = new WebMigrateOperation(false);
-    public static final PathElement DEFAULT_SERVER_PATH = pathElement(Constants.SERVER, "default");
+    public static final PathElement DEFAULT_SERVER_PATH = pathElement(Constants.SERVER, "default-server");
 
     private final boolean describe;
 
@@ -141,7 +140,7 @@ public class WebMigrateOperation implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (!describe && context.getRunningMode() != RunningMode.ADMIN_ONLY) {
-            throw UndertowLogger.ROOT_LOGGER.migrateOperationAllowedOnlyInAdminOnly();
+            throw WebLogger.ROOT_LOGGER.migrateOperationAllowedOnlyInAdminOnly();
         }
 
         // node containing the description (list of add operations) of the legacy subsystem
@@ -272,14 +271,14 @@ public class WebMigrateOperation implements OperationStepHandler {
         //addOp.get(KeystoreAttributes.KEY_PASSWORD.getName()).set(password); //TODO: is this correct? both key and keystore have same password?
 
         if(verifyDepth.isDefined()) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.VERIFY_DEPTH.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.VERIFY_DEPTH.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
         }
         if(certificateFile.isDefined()) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CERTIFICATE_FILE.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CERTIFICATE_FILE.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
         }
 
         if(csRevocationURL.isDefined()) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CA_REVOCATION_URL.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CA_REVOCATION_URL.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
         }
 
         migrationOperations.put(addres, addOp);
@@ -392,43 +391,48 @@ public class WebMigrateOperation implements OperationStepHandler {
                 }
                 node = legacyAddOp.get(WebStaticResources.SENDFILE.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.SENDFILE.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.SENDFILE.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
                     sendfile = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.FILE_ENCODING.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.FILE_ENCODING.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.FILE_ENCODING.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
                     fileEncoding = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.READ_ONLY.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.READ_ONLY.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.READ_ONLY.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
                     readOnly = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.WEBDAV.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.WEBDAV.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.WEBDAV.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
                     webdav = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.SECRET.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.SECRET.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.SECRET.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
                     secret = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.MAX_DEPTH.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.MAX_DEPTH.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.MAX_DEPTH.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
                     maxDepth = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.DISABLED.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.DISABLED.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.DISABLED.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
                     disabled = node;
                 }
             }
         }
 
         migrationOperations.put(address, add);
+
+        address = pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), pathElement(Constants.BUFFER_CACHE, "default"));
+        add = createAddOperation(address);
+        migrationOperations.put(address, add);
+
         address = pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), pathElement(Constants.SERVLET_CONTAINER, "default"));
         add = createAddOperation(address);
         if (defaultSessionTimeout != null) {
@@ -437,7 +441,6 @@ public class WebMigrateOperation implements OperationStepHandler {
         if (directoryListing != null) {
             add.get(Constants.DIRECTORY_LISTING).set(directoryListing);
         }
-
         migrationOperations.put(address, add);
     }
 
@@ -498,7 +501,7 @@ public class WebMigrateOperation implements OperationStepHandler {
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.SSO_PATH))) {
                 migrateSso(newAddOperations, newAddOp, address);
             } else {
-                UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(legacyAddOp);
+                WebLogger.ROOT_LOGGER.couldNotMigrateResource(legacyAddOp);
             }
 
         }
@@ -512,13 +515,13 @@ public class WebMigrateOperation implements OperationStepHandler {
         add.get(Constants.HTTP_ONLY).set(newAddOp.get(WebSSODefinition.HTTP_ONLY.getName()).clone());
 
         if (newAddOp.hasDefined(WebSSODefinition.CACHE_CONTAINER.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.CACHE_CONTAINER.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.CACHE_CONTAINER.getName(), pathAddress(newAddOp.get(ADDRESS)));
         }
         if (newAddOp.hasDefined(WebSSODefinition.REAUTHENTICATE.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.REAUTHENTICATE.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.REAUTHENTICATE.getName(), pathAddress(newAddOp.get(ADDRESS)));
         }
         if (newAddOp.hasDefined(WebSSODefinition.CACHE_NAME.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.CACHE_NAME.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.CACHE_NAME.getName(), pathAddress(newAddOp.get(ADDRESS)));
         }
 
         newAddOperations.put(newAddress, add);
@@ -533,11 +536,11 @@ public class WebMigrateOperation implements OperationStepHandler {
         add.get(Constants.PREFIX).set(newAddOp.get(WebAccessLogDefinition.PREFIX.getName()).clone());
         add.get(Constants.ROTATE).set(newAddOp.get(WebAccessLogDefinition.ROTATE.getName()).clone());
         if (newAddOp.hasDefined(WebAccessLogDefinition.RESOLVE_HOSTS.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.RESOLVE_HOSTS.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.RESOLVE_HOSTS.getName(), pathAddress(newAddOp.get(ADDRESS)));
         }
         //TODO: extended access log
         if (newAddOp.hasDefined(WebAccessLogDefinition.EXTENDED.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.EXTENDED.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.EXTENDED.getName(), pathAddress(newAddOp.get(ADDRESS)));
         }
 
         ModelNode directory = findResource(pathAddress(pathAddress(newAddOp.get(ADDRESS)), WebExtension.DIRECTORY_PATH), legacyAddOps);
@@ -603,7 +606,7 @@ public class WebMigrateOperation implements OperationStepHandler {
 
                     SSLInformation sslInfo = createSecurityRealm(context, newAddOperations, legacyModelAddOps, newAddress.getLastElement().getValue());
                     if (sslInfo == null) {
-                        throw UndertowLogger.ROOT_LOGGER.noSslConfig();
+                        throw WebLogger.ROOT_LOGGER.noSslConfig();
                     } else {
                         addConnector.get(Constants.SECURITY_REALM).set(sslInfo.realmName);
                         addConnector.get(Constants.VERIFY_CLIENT).set(sslInfo.verifyClient);
@@ -626,7 +629,7 @@ public class WebMigrateOperation implements OperationStepHandler {
                 addConnector = null;
         }
         if (newAddress == null) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(newAddOp);
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(newAddOp);
             return;
         }
         addConnector.get(Constants.SOCKET_BINDING).set(newAddOp.get(SOCKET_BINDING));
@@ -642,7 +645,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         //TODO: proxy binding
         if (newAddOp.hasDefined(WebConnectorDefinition.EXECUTOR.getName())) {
             //TODO: migrate executor to worker
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.EXECUTOR.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.EXECUTOR.getName(), pathAddress(newAddOp.get(ADDRESS)));
         }
 
         newAddOperations.put(pathAddress(newAddOp.get(OP_ADDR)), addConnector);
