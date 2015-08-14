@@ -40,6 +40,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,7 +85,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
     /**
      * Test simple undeploy failover:
-     * <p/>
      * 1/ Start 2 containers and deploy <distributable/> webapp.
      * 2/ Query first container creating a web session.
      * 3/ Undeploy application from the first container.
@@ -93,7 +93,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
      * 6/ Query first container verifying that updated sessions replicated back.
      *
      * @throws IOException
-     * @throws InterruptedException
      * @throws URISyntaxException
      */
     @Test
@@ -105,7 +104,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
     }
 
     private void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
-        HttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = TestHttpClientUtils.relaxedCookieHttpClient();
 
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);

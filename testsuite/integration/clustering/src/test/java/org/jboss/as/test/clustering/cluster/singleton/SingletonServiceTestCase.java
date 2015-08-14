@@ -25,12 +25,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -41,6 +42,7 @@ import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceServlet;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -82,8 +84,6 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
         // Needed to be able to inject ArquillianResource
         stop(CONTAINER_2);
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
-
         // URLs look like "http://IP:PORT/singleton/service"
         URI defaultURI1 = MyServiceServlet.createURI(baseURL1, MyService.DEFAULT_SERVICE_NAME);
         URI defaultURI2 = MyServiceServlet.createURI(baseURL2, MyService.DEFAULT_SERVICE_NAME);
@@ -93,7 +93,7 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
         URI quorumURI1 = MyServiceServlet.createURI(baseURL1, MyService.QUORUM_SERVICE_NAME);
         URI quorumURI2 = MyServiceServlet.createURI(baseURL2, MyService.QUORUM_SERVICE_NAME);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(defaultURI1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -247,8 +247,6 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 }

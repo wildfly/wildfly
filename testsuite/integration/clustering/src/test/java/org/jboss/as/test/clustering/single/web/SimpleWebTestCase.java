@@ -29,15 +29,15 @@ import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -69,11 +69,10 @@ public class SimpleWebTestCase {
     @Test
     @OperateOnDeployment("deployment-single")
     public void test(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IOException, URISyntaxException {
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
         URI uri = SimpleServlet.createURI(baseURL);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -92,8 +91,6 @@ public class SimpleWebTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 }

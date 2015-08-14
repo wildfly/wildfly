@@ -26,8 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.ws.rs.HEAD;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -45,14 +43,13 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
-import org.jboss.as.test.http.util.HttpClientUtils;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.management.Listener;
 import org.jboss.as.test.integration.management.ServerManager;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -167,7 +164,7 @@ public class TransportGuaranteeTestCase {
 
         HttpClient httpClient;
         if (url.startsWith("https")) {
-            httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
+            httpClient = TestHttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
         } else {
             httpClient = new DefaultHttpClient();
         }

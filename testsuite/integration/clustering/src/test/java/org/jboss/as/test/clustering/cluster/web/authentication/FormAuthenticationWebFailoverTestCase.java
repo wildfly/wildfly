@@ -36,7 +36,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -46,6 +46,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -93,12 +94,10 @@ public class FormAuthenticationWebFailoverTestCase extends ClusterAbstractTestCa
             @ArquillianResource(SecureServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
-
         URI uri1 = SecureServlet.createURI(baseURL1);
         URI uri2 = SecureServlet.createURI(baseURL2);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             System.out.println(uri1);
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
@@ -151,8 +150,6 @@ public class FormAuthenticationWebFailoverTestCase extends ClusterAbstractTestCa
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 }

@@ -42,6 +42,7 @@ import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
 import org.jboss.as.test.clustering.cluster.web.async.servlet.AsyncServlet;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -89,7 +90,7 @@ public class AsyncServletTestCase extends ClusterAbstractTestCase {
         URI uri1 = AsyncServlet.createURI(baseURL1);
         URI uri2 = AsyncServlet.createURI(baseURL2);
 
-        HttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = TestHttpClientUtils.relaxedCookieHttpClient();
 
         try {
             assertValue(client, uri1, 1);

@@ -57,7 +57,6 @@ import org.junit.BeforeClass;
 public abstract class ClusterPassivationTestBase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestBase.class);
     public static final String ARCHIVE_NAME = "cluster-passivation-test";
-    public static final String ARCHIVE_NAME_HELPER = "cluster-passivation-test-helper";
 
     protected static EJBDirectory directory;
 
@@ -113,7 +112,7 @@ public abstract class ClusterPassivationTestBase {
     protected void waitForClusterContext() throws InterruptedException {
         int counter = 0;
         EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
-        ClusterContext clusterContext = null;
+        ClusterContext clusterContext;
         do {
             clusterContext = ejbClientContext.getClusterContext(CLUSTER_NAME);
             counter--;

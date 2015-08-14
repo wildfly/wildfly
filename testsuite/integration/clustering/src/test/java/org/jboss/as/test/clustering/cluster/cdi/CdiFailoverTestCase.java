@@ -25,7 +25,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -33,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -125,12 +126,10 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
 
     private static void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
-
         URI uri1 = CdiServlet.createURI(baseURL1);
         URI uri2 = CdiServlet.createURI(baseURL2);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()){
             assertEquals(1, queryCount(client, uri1));
             assertEquals(2, queryCount(client, uri1));
 
@@ -162,10 +161,7 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
 
             assertEquals(15, queryCount(client, uri2));
             assertEquals(16, queryCount(client, uri2));
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
-
     }
 
     private static int queryCount(HttpClient client, URI uri) throws IOException {

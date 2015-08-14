@@ -48,7 +48,7 @@ public class ConversationServlet extends HttpServlet {
     }
 
     public static URI createURI(URL baseURL, String conversation) throws URISyntaxException {
-        return baseURL.toURI().resolve(new StringBuilder(SERVLET_NAME).append('?').append(CONVERSATION_ID).append('=').append(conversation).toString());
+        return baseURL.toURI().resolve(SERVLET_NAME + '?' + CONVERSATION_ID + '=' + conversation);
     }
 
     @Inject
