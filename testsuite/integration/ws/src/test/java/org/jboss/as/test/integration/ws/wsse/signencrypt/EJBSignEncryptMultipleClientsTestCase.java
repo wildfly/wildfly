@@ -42,8 +42,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.wsf.stack.cxf.client.UseNewBusFeature;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,7 +59,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-4901")
 public class EJBSignEncryptMultipleClientsTestCase {
 
     private static Logger log = Logger.getLogger(EJBSignEncryptMultipleClientsTestCase.class.getName());
@@ -69,8 +68,8 @@ public class EJBSignEncryptMultipleClientsTestCase {
     @Deployment
     public static Archive<?> deployment() {
 
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-wsse-sign-encrypt.jar").
-                addAsManifestResource(new StringAsset("Dependencies: org.apache.ws.security\n"), "MANIFEST.MF").
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-wsse-sign-encrypt-mc.jar").
+                addAsManifestResource(new StringAsset("Dependencies: org.jboss.ws.cxf.jbossws-cxf-client\n"), "MANIFEST.MF").
                 addClasses(ServiceIface.class, EJBEncryptServiceImpl.class, KeystorePasswordCallback.class).
                 addAsResource(ServiceIface.class.getPackage(), "bob.jks", "bob.jks").
                 addAsResource(ServiceIface.class.getPackage(), "bob.properties", "bob.properties").
@@ -86,22 +85,21 @@ public class EJBSignEncryptMultipleClientsTestCase {
     @Test
     public void encryptedAndSignedRequestFromAlice() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBEncryptSecurityService");
-        URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-encrypt/EJBEncryptSecurityService?wsdl");
+        URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-encrypt-mc/EJBEncryptSecurityService?wsdl");
 
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature()); //use a new bus to avoid any possible clash with other tests
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy, "alice");
 
         Assert.assertEquals("Secure Hello World!", proxy.sayHello());
     }
 
-    @Ignore("WFLY-3872")
     @Test
     public void encryptedAndSignedRequestFromJohn() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBEncryptSecurityService");
-        URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-encrypt/EJBEncryptSecurityService?wsdl");
+        URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-encrypt-mc/EJBEncryptSecurityService?wsdl");
 
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature()); //use a new bus to avoid any possible clash with other tests
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy, "john");
 
@@ -115,9 +113,9 @@ public class EJBSignEncryptMultipleClientsTestCase {
     @Test
     public void encryptedAndSignedRequestFromUntrustedMax() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBEncryptSecurityService");
-        URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-encrypt/EJBEncryptSecurityService?wsdl");
+        URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-encrypt-mc/EJBEncryptSecurityService?wsdl");
 
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature()); //use a new bus to avoid any possible clash with other tests
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy, "max");
 
@@ -135,5 +133,7 @@ public class EJBSignEncryptMultipleClientsTestCase {
         ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_PROPERTIES, "org/jboss/as/test/integration/ws/wsse/" + clientId + ".properties");
         ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_USERNAME, clientId);
         ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_USERNAME, "bob");
+        //note, a high timeout can be needed if the target host has low entropy, effectively slowing down initialization of the encryption engine
+        //((BindingProvider) proxy).getRequestContext().put("javax.xml.ws.client.receiveTimeout", 240000); //default is 60000 ms
     }
 }

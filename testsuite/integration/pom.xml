@@ -50,6 +50,7 @@
             <id>ts.integ.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
+                <module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
@@ -69,6 +70,7 @@
             <id>ts.integ.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
+                <module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
@@ -99,6 +101,7 @@
             <id>ts.integ.group.basic</id>
             <activation><property><name>ts.basic</name></property></activation>
             <modules>
+                <module>ws</module>
                 <module>basic</module>
             </modules>
         </profile>

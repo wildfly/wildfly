@@ -29,18 +29,18 @@ import org.jboss.ws.api.annotation.WebContext;
 @Stateless
 @WebService
 (
-   portName = "EJBEncryptSecurityServicePort",
-   serviceName = "EJBEncryptSecurityService",
+   portName = "EJBSecurityServicePort",
+   serviceName = "EJBSecurityService",
    wsdlLocation = "META-INF/wsdl/SecurityService.wsdl",
    targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy",
    endpointInterface = "org.jboss.as.test.integration.ws.wsse.ServiceIface"
 )
 @WebContext(
-        urlPattern = "/EJBEncryptSecurityService",
-        contextRoot = "/jaxws-wsse-sign-encrypt"
+        urlPattern = "/EJBSecurityService",
+        contextRoot = "/jaxws-wsse-sign-ejb"
 )
 @EndpointConfig(configFile = "META-INF/jaxws-endpoint-config.xml", configName = "Custom WS-Security Endpoint")
-public class EJBEncryptServiceImpl implements ServiceIface {
+public class EJBServiceImpl implements ServiceIface {
 
     public String sayHello() {
         return "Secure Hello World!";
