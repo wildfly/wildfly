@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,14 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
-public class StopSingletonCommand<T> implements SingletonCommand<Void, T> {
-    private static final long serialVersionUID = 3116447976723987749L;
+import org.wildfly.clustering.dispatcher.Command;
+
+/**
+ * Command to start a singleton service.
+ * @author Paul Ferraro
+ */
+public class StartCommand<T> implements Command<Void, SingletonContext<T>> {
+    private static final long serialVersionUID = 3194143912789013071L;
 
     @Override
-    public Void execute(SingletonContext<T> context) {
-        context.stopOldMaster();
+    public Void execute(SingletonContext<T> context) throws Exception {
+        context.start();
         return null;
     }
 }
