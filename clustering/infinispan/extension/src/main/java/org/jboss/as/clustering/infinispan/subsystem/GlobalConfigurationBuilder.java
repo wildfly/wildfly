@@ -30,6 +30,7 @@ import javax.management.MBeanServer;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
+import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.marshall.core.Ids;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -65,6 +66,12 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final InjectedValue<MBeanServer> server = new InjectedValue<>();
     private final InjectedValue<TransportConfiguration> transport = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> asyncOperationsThreadPool = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> expirationThreadPool = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> listenerThreadPool = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> persistenceThreadPool = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> stateTransferThreadPool = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> transportThreadPool = new InjectedValue<>();
     private final String name;
 
     private volatile boolean statisticsEnabled;
@@ -115,6 +122,14 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
             throw new IllegalStateException(e);
         }
 
+        builder.transport().transportThreadPool().read(this.transportThreadPool.getValue());
+
+        builder.asyncThreadPool().read(this.asyncOperationsThreadPool.getValue());
+        builder.expirationThreadPool().read(this.expirationThreadPool.getValue());
+        builder.listenerThreadPool().read(this.listenerThreadPool.getValue());
+        builder.stateTransferThreadPool().read(this.stateTransferThreadPool.getValue());
+        builder.persistenceThreadPool().read(this.persistenceThreadPool.getValue());
+
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
         builder.globalJmxStatistics()
                 .enabled(this.statisticsEnabled)
@@ -132,6 +147,12 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, this.server)
                 .addDependency(CacheContainerComponent.TRANSPORT.getServiceName(this.name), TransportConfiguration.class, this.transport)
+                .addDependency(ThreadPoolResourceDefinition.ASYNC_OPERATIONS.getServiceName(this.name), ThreadPoolConfiguration.class, this.asyncOperationsThreadPool)
+                .addDependency(ScheduledThreadPoolResourceDefinition.EXPIRATION.getServiceName(this.name), ThreadPoolConfiguration.class, this.expirationThreadPool)
+                .addDependency(ThreadPoolResourceDefinition.LISTENER.getServiceName(this.name), ThreadPoolConfiguration.class, this.listenerThreadPool)
+                .addDependency(ThreadPoolResourceDefinition.STATE_TRANSFER.getServiceName(this.name), ThreadPoolConfiguration.class, this.stateTransferThreadPool)
+                .addDependency(ThreadPoolResourceDefinition.PERSISTENCE.getServiceName(this.name), ThreadPoolConfiguration.class, this.persistenceThreadPool)
+                .addDependency(ThreadPoolResourceDefinition.TRANSPORT.getServiceName(this.name), ThreadPoolConfiguration.class, this.transportThreadPool)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
     }

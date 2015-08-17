@@ -59,7 +59,7 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
 
         new JGroupsTransportBuilder(name).configure(context, model).build(target).install();
 
-        new SiteBuilder(name).setChannelName(channel).build(target).install();
+        new SiteBuilder(name).configure(context, model).build(target).install();
 
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
         new ChannelBuilder(name).build(target).install();

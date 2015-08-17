@@ -74,21 +74,23 @@
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
-        <attribute name="defaultStack" default="udp"/>
+        <attribute name="channel" default="ee"/>
+        <attribute name="stack" default="tcp"/>
 
         <sequential>
             <echo message="Changing JGroups stack for config @{name}"/>
 
             <execute-xslt-transform transform="changeTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
-                    <param name="defaultStack" expression="@{defaultStack}"/>
+                    <param name="channel" expression="@{channel}"/>
+                    <param name="stack" expression="@{stack}"/>
                 </transform-params>
             </execute-xslt-transform>
 
             <!-- Change stack in messaging subsystem too -->
             <execute-xslt-transform transform="changeMessagingJGroupsStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
-                    <param name="stack" expression="@{defaultStack}"/>
+                    <param name="stack" expression="@{stack}"/>
                 </transform-params>
             </execute-xslt-transform>
 

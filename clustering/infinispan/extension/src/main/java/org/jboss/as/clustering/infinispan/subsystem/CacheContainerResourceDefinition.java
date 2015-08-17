@@ -21,14 +21,16 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.stream.Stream;
+
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -171,8 +173,14 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(NoTransportResourceDefinition.PATH);
+
+            Stream.of(ThreadPoolResourceDefinition.values()).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
+            Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
         } else {
             NoTransportResourceDefinition.buildTransformation(version, builder);
+
+            Stream.of(ThreadPoolResourceDefinition.values()).forEach(pool -> pool.buildTransformation(version, parent));
+            Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(pool -> pool.buildTransformation(version, parent));
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
@@ -280,6 +288,9 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
     public void registerChildren(ManagementResourceRegistration registration) {
         new JGroupsTransportResourceDefinition().register(registration);
         new NoTransportResourceDefinition().register(registration);
+
+        Stream.of(ThreadPoolResourceDefinition.values()).forEach(p -> p.register(registration));
+        Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(p -> p.register(registration));
 
         new LocalCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
         new InvalidationCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);

@@ -38,10 +38,10 @@ public enum CacheContainerComponent implements GroupServiceNameFactory {
     private final String component;
 
     CacheContainerComponent(PathElement path) {
-        this(path.getKey());
+        this.component = path.getKey();
     }
 
-    private CacheContainerComponent(String component) {
+    CacheContainerComponent(String component) {
         this.component = component;
     }
 

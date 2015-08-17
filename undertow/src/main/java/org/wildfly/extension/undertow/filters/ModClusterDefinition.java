@@ -162,7 +162,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     public static final SimpleAttributeDefinition USE_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.USE_ALIAS, ModelType.BOOLEAN)
             .setAllowNull(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 

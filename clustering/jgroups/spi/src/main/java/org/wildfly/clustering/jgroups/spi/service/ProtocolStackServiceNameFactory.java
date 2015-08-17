@@ -30,20 +30,9 @@ import org.jboss.msc.service.ServiceName;
 public interface ProtocolStackServiceNameFactory {
 
     /**
-     * The alias for the default stack.
-     */
-    String DEFAULT_STACK = "default-stack";
-
-    /**
-     * Returns an appropriate service name for the default stack
-     * @return
-     */
-    ServiceName getServiceName();
-
-    /**
      * Returns an appropriate service name for the specified stack
      * @param name the stack name
-     * @return
+     * @return {@link ServiceName} of the stack
      */
     ServiceName getServiceName(String name);
 }

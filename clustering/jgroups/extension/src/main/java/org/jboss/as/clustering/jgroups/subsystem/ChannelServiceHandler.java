@@ -42,7 +42,6 @@ import org.wildfly.clustering.jgroups.spi.service.ChannelConnectorBuilder;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceNameFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
@@ -56,7 +55,7 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
-        String stack = ModelNodes.asString(STACK.getDefinition().resolveModelAttribute(context, model), ProtocolStackServiceNameFactory.DEFAULT_STACK);
+        String stack = ModelNodes.asString(STACK.getDefinition().resolveModelAttribute(context, model));
 
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
 

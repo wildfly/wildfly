@@ -35,7 +35,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
+import org.jboss.wsf.stack.cxf.client.UseNewBusFeature;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,7 +45,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("CXF-4360")
 public class ReliableServiceTestCase {
 
     private static final Logger log = Logger.getLogger(ReliableServiceTestCase.class);
@@ -68,7 +67,7 @@ public class ReliableServiceTestCase {
     public void consumeOneWayService() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsrm", "ReliableService");
         URL wsdlURL = new URL(baseUrl, "ReliableService?wsdl");
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature());
         ReliableService proxy = (ReliableService) service.getPort(ReliableService.class);
 
         BindingProvider bp = (BindingProvider) proxy;
@@ -81,7 +80,7 @@ public class ReliableServiceTestCase {
     public void consumeHelloService() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsrm", "ReliableService");
         URL wsdlURL = new URL(baseUrl, "ReliableService?wsdl");
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature());
         ReliableService proxy = (ReliableService) service.getPort(ReliableService.class);
 
         BindingProvider bp = (BindingProvider) proxy;

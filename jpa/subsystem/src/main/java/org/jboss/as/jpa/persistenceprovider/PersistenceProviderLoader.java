@@ -77,5 +77,8 @@ public class PersistenceProviderLoader {
         return result;
     }
 
+    public static PersistenceProvider loadProviderFromDeployment(ClassLoader classLoader, String persistenceProviderClassName) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        return (PersistenceProvider) classLoader.loadClass(persistenceProviderClassName).newInstance();
+    }
 }
 

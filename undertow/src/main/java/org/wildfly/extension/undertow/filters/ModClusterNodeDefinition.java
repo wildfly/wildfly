@@ -39,6 +39,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * Runtime representation of a mod_cluster node
@@ -143,7 +144,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
 
     ModClusterNodeDefinition() {
-        super(UndertowExtension.NODE, UndertowExtension.getResolver("handler","mod-cluster", "balancer", "node"), null, null, true);
+        super(UndertowExtension.NODE, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "node"), null, null, true);
     }
 
     @Override
@@ -157,7 +158,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(ENABLE, new AbstractNodeOperation() {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for(ModClusterStatus.Context n : ctx.getContexts()) {
+                for (ModClusterStatus.Context n : ctx.getContexts()) {
                     n.enable();
                 }
             }
@@ -165,7 +166,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(DISABLE, new AbstractNodeOperation() {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for(ModClusterStatus.Context n : ctx.getContexts()) {
+                for (ModClusterStatus.Context n : ctx.getContexts()) {
                     n.disable();
                 }
             }
@@ -173,7 +174,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(STOP, new AbstractNodeOperation() {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for(ModClusterStatus.Context n : ctx.getContexts()) {
+                for (ModClusterStatus.Context n : ctx.getContexts()) {
                     n.stop();
                 }
             }
@@ -202,7 +203,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
                 final String domain = ctx.getDomain();
-                if(domain == null) {
+                if (domain == null) {
                     context.getResult().set(new ModelNode());
                 } else {
                     context.getResult().set(new ModelNode(domain));
@@ -297,11 +298,12 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
             @Override
             protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                ModelNode list = new ModelNode(ModelType.LIST);
-                for(String alias : ctx.getAliases()) {
-                    list.add(alias);
+                final ModelNode result = new ModelNode();
+                for (String alias : ctx.getAliases()) {
+                    UndertowLogger.ROOT_LOGGER.tracef("Adding alias %s", alias);
+                    result.add(alias);
                 }
-                context.getResult().set(list);
+                context.getResult().set(result);
             }
         });
         resourceRegistration.registerReadOnlyAttribute(ELECTED, new AbstractNodeOperation() {
@@ -343,7 +345,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
             handleNode(context, node, operation);
         }
 
-        protected abstract void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException ;
+        protected abstract void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException;
     }
 
 }

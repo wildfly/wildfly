@@ -16,10 +16,6 @@
     
     <name>jipijapa OpenJPA integration</name>
     
-    <properties>
-        <version.org.apache.openjpa>2.1.1</version.org.apache.openjpa>
-    </properties>    
-
     <dependencies>
 
         <!-- Internal -->

@@ -21,11 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
-import org.jboss.as.clustering.jgroups.subsystem.StackResourceDefinition;
-import org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
