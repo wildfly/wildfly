@@ -11,10 +11,6 @@
         <version>10.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <eclipselink.version>2.4.2</eclipselink.version>
-    </properties>    
-
     <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-eclipselink</artifactId>
     <name>jipijapa EclipseLink integration</name>
@@ -57,7 +53,7 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
-            <version>${eclipselink.version}</version>
+            <version>${version.org.eclipselink.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
