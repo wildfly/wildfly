@@ -651,7 +651,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setExecutor(executorsByName.get(mergedMetaData.getExecutorName()).getValue());
             }
 
-            d.setAuthenticationMode(mergedMetaData.isProactiveAuthentication() ? AuthenticationMode.PRO_ACTIVE : AuthenticationMode.CONSTRAINT_DRIVEN);
+            Boolean proactiveAuthentication = mergedMetaData.getProactiveAuthentication();
+            if(proactiveAuthentication == null) {
+                proactiveAuthentication = container.getValue().isProactiveAuth();
+            }
+            d.setAuthenticationMode(proactiveAuthentication ? AuthenticationMode.PRO_ACTIVE : AuthenticationMode.CONSTRAINT_DRIVEN);
 
             if (servletExtensions != null) {
                 for (ServletExtension extension : servletExtensions) {
