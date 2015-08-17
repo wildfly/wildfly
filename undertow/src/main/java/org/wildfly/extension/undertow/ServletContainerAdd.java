@@ -66,6 +66,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
+        final boolean proactiveAuth = ServletContainerDefinition.PROACTIVE_AUTH.resolveModelAttribute(context, model).asBoolean();
         final String bufferCache = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model).asString();
 
         JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()));
@@ -112,7 +113,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 sessionTimeout,
                 disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker(),
                 mimeMappings,
-                welcomeFiles, directoryListingEnabled);
+                welcomeFiles, directoryListingEnabled, proactiveAuth);
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
         if(bufferCache != null) {

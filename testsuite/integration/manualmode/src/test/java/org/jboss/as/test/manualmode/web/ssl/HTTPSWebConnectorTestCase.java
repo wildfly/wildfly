@@ -146,7 +146,7 @@ public class HTTPSWebConnectorTestCase {
         war.addClasses(AddRoleLoginModule.class, SimpleServlet.class, SimpleSecuredServlet.class,
                 PrincipalPrintingServlet.class);
         war.addAsWebInfResource(HTTPSWebConnectorTestCase.class.getPackage(), "web.xml", "web.xml");
-        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(SECURITY_DOMAIN_CERT), "jboss-web.xml");
+        war.addAsWebInfResource(HTTPSWebConnectorTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         return war;
     }
 
