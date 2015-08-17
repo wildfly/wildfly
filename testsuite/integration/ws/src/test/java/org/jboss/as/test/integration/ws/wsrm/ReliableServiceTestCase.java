@@ -64,7 +64,12 @@ public class ReliableServiceTestCase {
     }
 
     @Test
-    public void consumeOneWayService() throws Exception {
+    public void runTests() throws Exception {
+        consumeHelloService();
+        consumeOneWayService();
+    }
+
+    private void consumeOneWayService() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsrm", "ReliableService");
         URL wsdlURL = new URL(baseUrl, "ReliableService?wsdl");
         Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature());
@@ -76,8 +81,7 @@ public class ReliableServiceTestCase {
         proxy.writeLogMessage();
     }
 
-    @Test
-    public void consumeHelloService() throws Exception {
+    private void consumeHelloService() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsrm", "ReliableService");
         URL wsdlURL = new URL(baseUrl, "ReliableService?wsdl");
         Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature());

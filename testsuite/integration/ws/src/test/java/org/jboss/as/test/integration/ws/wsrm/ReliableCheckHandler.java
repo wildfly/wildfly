@@ -42,7 +42,13 @@ import org.jboss.logging.Logger.Level;
  */
 public class ReliableCheckHandler implements SOAPHandler<SOAPMessageContext> {
 
-    int invoked = 0;
+    /*
+     * 1 -- Body - CreateSequence
+     * 2 -- Body - CreateSequenceResponse
+     * 3 -- Header - wsrm:Sequence
+     * 4 -- Header - wsrm:SequenceAcknowledgement
+     */
+    int status = 0;
     private static Logger log = Logger.getLogger(ReliableCheckHandler.class);
 
     public Set<QName> getHeaders() {
@@ -63,50 +69,52 @@ public class ReliableCheckHandler implements SOAPHandler<SOAPMessageContext> {
         Boolean outboundProperty = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
         SOAPMessage message = smc.getMessage();
 
-        invoked++;
-
         if (outboundProperty.booleanValue()) {
-            log.debug("Outgoing message:");
+            log.info("Outgoing message:");
         } else {
-            log.debug("Incoming message:");
+            log.info("Incoming message:");
         }
 
         log.debug("-----------");
         try {
-            JBossLoggingOutputStream os = new JBossLoggingOutputStream(log, Level.DEBUG);
+            JBossLoggingOutputStream os = new JBossLoggingOutputStream(log, Level.INFO);
             message.writeTo(os);
             os.flush();
-            log.debug("");
+            log.info("");
         } catch (Exception e) {
-            log.debug("Exception in handler: " + e);
+            log.info("Exception in handler: " + e);
         }
-        log.debug("-----------");
+        log.info("-----------");
 
-        /*
-         * 1 -- Body - CreateSequence
-         * 2 -- Body - CreateSequenceResponse
-         * 3 -- Header - wsrm:Sequence
-         * 4 -- Header - wsrm:SequenceAcknowledgement
-         */
+        SOAPElement firstBodyElement;
         try {
-            switch (invoked % 4) {
-                case 1:
-                    SOAPElement firstBodyElement = (SOAPElement) message.getSOAPBody().getChildElements().next();
-                    final QName createSequenceQName = new QName("http://schemas.xmlsoap.org/ws/2005/02/rm", "CreateSequence");
-                    if (!createSequenceQName.equals(firstBodyElement.getElementQName())) {
-                        throw new WebServiceException("CreateSequence in soap body was expected, but it contains '"
-                                + firstBodyElement.getElementQName() + "'");
+            switch (status % 4) {
+                case 0:
+                    @SuppressWarnings("unchecked")
+                    Iterator<SOAPElement> it = (Iterator<SOAPElement>) message.getSOAPBody().getChildElements();
+                    if (it.hasNext()) {
+                        firstBodyElement = it.next();
+                        final QName createSequenceQName = new QName("http://schemas.xmlsoap.org/ws/2005/02/rm", "CreateSequence");
+                        if (!createSequenceQName.equals(firstBodyElement.getElementQName())) {
+                            throw new WebServiceException("CreateSequence in soap body was expected, but it contains '"
+                                    + firstBodyElement.getElementQName() + "'");
+                        }
+                        status++;
+                    } else {
+                        //we could get multiple acknowledments
+                        verifySequenceAcknowledgement(message);
                     }
                     break;
-                case 2:
+                case 1:
                     firstBodyElement = (SOAPElement) message.getSOAPBody().getChildElements().next();
                     final QName createSequenceResponseQName = new QName("http://schemas.xmlsoap.org/ws/2005/02/rm", "CreateSequenceResponse");
                     if (!createSequenceResponseQName.equals(firstBodyElement.getElementQName())) {
                         throw new WebServiceException("CreateSequenceResponse in soap body was expected, but it contains '"
                                 + firstBodyElement.getElementQName() + "'");
                     }
+                    status++;
                     break;
-                case 3:
+                case 2:
                     Iterator headerElements = message.getSOAPHeader().getChildElements();
                     boolean found = false;
                     final QName sequenceQName = new QName("http://schemas.xmlsoap.org/ws/2005/02/rm", "Sequence");
@@ -119,25 +127,37 @@ public class ReliableCheckHandler implements SOAPHandler<SOAPMessageContext> {
                     if (!found) {
                         throw new WebServiceException("wsrm:Sequence is not present in soap header");
                     }
+                    status++;
                     break;
-                case 0:
-                    headerElements = message.getSOAPHeader().getChildElements();
-                    found = false;
-                    final QName sequenceAckQName = new QName("http://schemas.xmlsoap.org/ws/2005/02/rm", "SequenceAcknowledgement");
-                    while (headerElements.hasNext()) {
-                        SOAPElement soapElement = (SOAPElement) headerElements.next();
-                        if (sequenceAckQName.equals(soapElement.getElementQName())) {
-                            found = true;
-                        }
-                    }
-                    if (!found) {
-                        throw new WebServiceException("wsrm:SequenceAcknowledgement is not present in soap header");
+                case 3:
+                    if (verifySequenceAcknowledgement(message)) {
+                        status++;
                     }
                     break;
             }
         } catch (SOAPException ex) {
             throw new WebServiceException(ex.getMessage(), ex);
         }
+    }
+    
+    private boolean verifySequenceAcknowledgement(SOAPMessage message) throws SOAPException {
+        Iterator headerElements = message.getSOAPHeader().getChildElements();
+        boolean found = false;
+        boolean otherRMHeadersFound = false;
+        final QName sequenceAckQName = new QName("http://schemas.xmlsoap.org/ws/2005/02/rm", "SequenceAcknowledgement");
+        while (headerElements.hasNext()) {
+            SOAPElement soapElement = (SOAPElement) headerElements.next();
+            if (sequenceAckQName.equals(soapElement.getElementQName())) {
+                found = true;
+            } else if ("http://schemas.xmlsoap.org/ws/2005/02/rm".equals(soapElement.getNamespaceURI())) {
+                otherRMHeadersFound = true;
+            }
+        }
+        //fail if we did not find the sequence ack and the message has other WS-RM headers (hence out of order) or has body contents (hence a non-reliable message is being processed)
+        if (!found && (otherRMHeadersFound || message.getSOAPBody().getChildElements().hasNext())) {
+            throw new WebServiceException("wsrm:SequenceAcknowledgement is not present in soap header");
+        }
+        return found;
     }
 
     public void close(MessageContext context) {
