@@ -38,7 +38,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
+import org.jboss.wsf.stack.cxf.client.UseNewBusFeature;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
@@ -57,7 +57,6 @@ import org.jboss.as.test.integration.ws.wsse.ServiceIface;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-4901")
 public class SignEncryptMultipleClientsTestCase {
 
     private static Logger log = Logger.getLogger(SignEncryptMultipleClientsTestCase.class.getName());
@@ -67,8 +66,8 @@ public class SignEncryptMultipleClientsTestCase {
     @Deployment
     public static Archive<?> deployment() {
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxws-wsse-sign-encrypt.war").
-                addAsManifestResource(new StringAsset("Dependencies: org.apache.ws.security\n"), "MANIFEST.MF").
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxws-wsse-sign-encrypt-mc.war").
+                addAsManifestResource(new StringAsset("Dependencies: org.jboss.ws.cxf.jbossws-cxf-client\n"), "MANIFEST.MF").
                 addClasses(ServiceIface.class, POJOEncryptServiceImpl.class, KeystorePasswordCallback.class).
                 addAsResource(ServiceIface.class.getPackage(), "bob.jks", "bob.jks").
                 addAsResource(ServiceIface.class.getPackage(), "bob.properties", "bob.properties").
@@ -86,7 +85,7 @@ public class SignEncryptMultipleClientsTestCase {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EncryptSecurityService");
         URL wsdlURL = new URL(baseUrl.toString() + "EncryptSecurityService?wsdl");
 
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature()); //use a new bus to avoid any possible clash with other tests
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy, "alice");
 
@@ -98,7 +97,7 @@ public class SignEncryptMultipleClientsTestCase {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EncryptSecurityService");
         URL wsdlURL = new URL(baseUrl.toString() + "EncryptSecurityService?wsdl");
 
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature()); //use a new bus to avoid any possible clash with other tests
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy, "john");
 
@@ -114,7 +113,7 @@ public class SignEncryptMultipleClientsTestCase {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EncryptSecurityService");
         URL wsdlURL = new URL(baseUrl.toString() + "EncryptSecurityService?wsdl");
 
-        Service service = Service.create(wsdlURL, serviceName);
+        Service service = Service.create(wsdlURL, serviceName, new UseNewBusFeature()); //use a new bus to avoid any possible clash with other tests
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy, "max");
 

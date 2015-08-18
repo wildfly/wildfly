@@ -115,6 +115,10 @@ public class ServiceRefSevletTestCase {
 
     private String receiveFirstLineFromUrl(URL url) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-        return br.readLine();
+        try {
+            return br.readLine();
+        } finally {
+            br.close();
+        }
     }
 }

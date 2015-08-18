@@ -66,6 +66,10 @@ public class XMLSignatureFactoryTestCase {
         Assert.assertNotNull(fac);
 
         BufferedReader br = new BufferedReader(new InputStreamReader(baseUrl.openStream()));
-        Assert.assertEquals("OK", br.readLine());
+        try {
+            Assert.assertEquals("OK", br.readLine());
+        } finally {
+            br.close();
+        }
     }
 }
