@@ -34,7 +34,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -46,6 +46,7 @@ import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.TimeoutIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.StatefulServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -93,12 +94,10 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
-        HttpClient client = HttpClients.createDefault();
-
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, TimeoutIncrementorBean.class.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, TimeoutIncrementorBean.class.getSimpleName());
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             assertEquals(1, queryCount(client, uri1));
             assertEquals(2, queryCount(client, uri1));
 
@@ -117,8 +116,6 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
 
             // Make sure SFSB times out on other node too
             assertEquals(0, queryCount(client, uri2));
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 

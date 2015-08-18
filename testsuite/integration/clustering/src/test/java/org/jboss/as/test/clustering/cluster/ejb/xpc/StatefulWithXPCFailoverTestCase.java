@@ -37,7 +37,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -48,6 +48,7 @@ import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.bean.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.servlet.StatefulServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -124,8 +125,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
 
-        HttpClient client = HttpClients.createDefault();
-
         URI xpc1_create_url = StatefulServlet.createEmployeeURI(baseURL1);
         URI xpc2_create_url = StatefulServlet.createEmployeeURI(baseURL2);
         URI xpc1_flush_url = StatefulServlet.flushURI(baseURL1);
@@ -140,7 +139,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         URI xpc1_secondLevelCacheEntries_url = StatefulServlet.getEmployeesIn2LCURI(baseURL1);
         URI xpc2_secondLevelCacheEntries_url = StatefulServlet.getEmployeesIn2LCURI(baseURL2);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             assertExecuteUrl(client, StatefulServlet.echoURI(baseURL1, "StartingTestSecondLevelCache"));  // echo message to server.log
             assertExecuteUrl(client, StatefulServlet.echoURI(baseURL2, "StartingTestSecondLevelCache")); // echo message to server.log
 
@@ -187,8 +186,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             String destroyed = executeUrlWithAnswer(client, xpc1_getdestroy_url, "destroy the bean on node1");
             assertEquals(destroyed, "DESTROY");
 
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -198,8 +195,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
 
-        HttpClient client = HttpClients.createDefault();
-
         URI xpc1_create_url = StatefulServlet.createEmployeeURI(baseURL1);
         URI xpc1_get_url = StatefulServlet.getEmployeeURI(baseURL1);
         URI xpc2_get_url = StatefulServlet.getEmployeeURI(baseURL2);
@@ -207,7 +202,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         URI xpc2_getempsecond_url = StatefulServlet.get2ndBeanEmployeeURI(baseURL2);
         URI xpc2_getdestroy_url = StatefulServlet.destroyURI(baseURL2);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             stop(CONTAINER_2);
 
             // extended persistence context is available on node1
@@ -246,8 +241,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(destroyed, "DESTROY");
             log.info(new Date() + "4. test is done");
 
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 

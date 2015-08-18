@@ -30,10 +30,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -43,6 +42,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -84,8 +84,7 @@ public class NonDistributableTestCase extends ClusterAbstractTestCase {
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);
 
-        HttpClient client = HttpClients.createDefault();
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -132,8 +131,6 @@ public class NonDistributableTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 }

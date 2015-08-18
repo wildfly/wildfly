@@ -21,15 +21,20 @@
  */
 package org.jboss.as.test.integration.web.sharedsession;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,12 +43,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-
-/**
- */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class SharedSessionTestCase {
@@ -82,7 +81,9 @@ public class SharedSessionTestCase {
     @Test
     @OperateOnDeployment(EAR_DEPLOYMENT_SHARED_SESSIONS)
     public void testSharedSessionsOneEar() throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
+        // Note that this test should not need to use a relaxed domain handling, however the http client does not treat ipv6 domains (e.g. ::1) properly
+        HttpClient client = TestHttpClientUtils.relaxedCookieHttpClient();
+
         HttpGet get1 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/war1/SharedSessionServlet");
         HttpGet get2 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/war2/SharedSessionServlet");
 
@@ -96,6 +97,8 @@ public class SharedSessionTestCase {
         assertEquals("3", result);
         result = runGet(get1, client);
         assertEquals("4", result);
+
+        HttpClientUtils.closeQuietly(client);
     }
 
     private String runGet(HttpGet get, HttpClient client) throws IOException {
@@ -108,8 +111,10 @@ public class SharedSessionTestCase {
      */
     @Test
     @OperateOnDeployment(EAR_DEPLOYMENT_NOT_SHARED_SESSIONS)
-    public void testUnsharedSessions() throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
+    public void testNotSharedSessions() throws IOException {
+        // Note that this test should not need to use a relaxed domain handling, however the http client does not treat ipv6 domains (e.g. ::1) properly
+        HttpClient client = TestHttpClientUtils.relaxedCookieHttpClient();
+
         HttpGet getX = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/warX/SharedSessionServlet");
         HttpGet getY = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/warY/SharedSessionServlet");
 
@@ -123,6 +128,8 @@ public class SharedSessionTestCase {
         assertEquals("1", result);
         result = runGet(getX, client);
         assertEquals("2", result);
+
+        HttpClientUtils.closeQuietly(client);
     }
 
     /**
@@ -130,8 +137,10 @@ public class SharedSessionTestCase {
      * This test checks that the sessions sharing in one EAR doesn't intervene with sessions in second EAR
      */
     @Test
-    public void testSharedSessionsDoesntInterleave() throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
+    public void testSharedSessionsDoNotInterleave() throws IOException {
+        // Note that this test should not need to use a relaxed domain handling, however the http client does not treat ipv6 domains (e.g. ::1) properly
+        HttpClient client = TestHttpClientUtils.relaxedCookieHttpClient();
+
         HttpGet get1 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/war1/SharedSessionServlet");
         HttpGet get2 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/war2/SharedSessionServlet");
         HttpGet getX = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/warX/SharedSessionServlet");
@@ -147,5 +156,7 @@ public class SharedSessionTestCase {
         assertEquals("0", result);
         result = runGet(get1, client);
         assertEquals("2", result);
+
+        HttpClientUtils.closeQuietly(client);
     }
 }

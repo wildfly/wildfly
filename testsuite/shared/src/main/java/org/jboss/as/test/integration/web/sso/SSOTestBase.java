@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.web.sso;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -41,23 +45,15 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.cookie.ClientCookie;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.cookie.CookieOrigin;
-import org.apache.http.cookie.CookieSpec;
-import org.apache.http.cookie.CookieSpecFactory;
-import org.apache.http.cookie.CookieSpecRegistry;
-import org.apache.http.cookie.MalformedCookieException;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.impl.cookie.BasicDomainHandler;
-import org.apache.http.impl.cookie.BrowserCompatSpec;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.web.sso.interfaces.StatelessSession;
 import org.jboss.as.test.shared.RetryTaskExecutor;
 import org.jboss.dmr.ModelNode;
@@ -66,11 +62,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 /**
  * Base class for tests of web app single sign-on
@@ -88,15 +79,17 @@ public abstract class SSOTestBase {
      * @throws Exception
      */
     public static void executeFormAuthSingleSignOnTest(URL serverA, URL serverB, Logger log) throws Exception {
-        URL warA1 = new URL (serverA, "/war1/");
-        URL warB2 = new URL (serverB, "/war2/");
+        URL warA1 = new URL(serverA, "/war1/");
+        URL warB2 = new URL(serverB, "/war2/");
 
         // Start by accessing the secured index.html of war1
-        DefaultHttpClient httpclient = relaxedCookieHttpClient();
+        CookieStore store = new BasicCookieStore();
+        HttpClient httpclient = TestHttpClientUtils.relaxedCookieHttpClientBuilder()
+                .setDefaultCookieStore(store)
+                .disableRedirectHandling()
+                .build();
         try {
             checkAccessDenied(httpclient, warA1 + "index.html");
-
-            CookieStore store = httpclient.getCookieStore();
 
             log.debug("Saw JSESSIONID=" + getSessionIdValueFromState(store));
 
@@ -120,10 +113,9 @@ public abstract class SSOTestBase {
             HttpClientUtils.closeQuietly(httpclient);
         }
 
-        httpclient = relaxedCookieHttpClient();
         try {
             // Reset Http client
-            httpclient = new DefaultHttpClient();
+            httpclient = HttpClients.createDefault();
 
             // Try accessing war1 again
             checkAccessDenied(httpclient, warA1 + "index.html");
@@ -141,11 +133,10 @@ public abstract class SSOTestBase {
         URL warB6 = new URL(serverB + "/war6/");
 
         // Start by accessing the secured index.html of war1
-        DefaultHttpClient httpclient = relaxedCookieHttpClient();
+        CookieStore store = new BasicCookieStore();
+        HttpClient httpclient = TestHttpClientUtils.relaxedCookieHttpClientBuilder().setDefaultCookieStore(store).build();
         try {
             checkAccessDenied(httpclient, warA1 + "index.html");
-
-            CookieStore store = httpclient.getCookieStore();
 
             log.debug("Saw JSESSIONID=" + getSessionIdValueFromState(store));
 
@@ -175,14 +166,13 @@ public abstract class SSOTestBase {
 
     public static void executeLogout(HttpClient httpConn, URL warURL) throws IOException {
         HttpGet logout = new HttpGet(warURL + "Logout");
-        logout.setParams(new BasicHttpParams().setParameter("http.protocol.handle-redirects", false));
         HttpResponse response = httpConn.execute(logout);
         try {
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Logout: Didn't saw HTTP_MOVED_TEMP(" + statusCode + ")", statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
+            assertTrue("Logout: Didn't see code 302 (HTTP_MOVED_TEMP), but saw instead " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
 
             Header location = response.getFirstHeader("Location");
-            assertTrue("Get of " + warURL + "Logout not redirected to login page", location.getValue().indexOf("index.html") >= 0);
+            assertTrue("Get of " + warURL + "Logout not redirected to login page", location.getValue().contains("index.html"));
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -196,7 +186,7 @@ public abstract class SSOTestBase {
             assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
 
             String body = EntityUtils.toString(response.getEntity());
-            assertTrue("Get of " + url + " redirected to login page", body.indexOf("j_security_check") < 0);
+            assertTrue("Get of " + url + " redirected to login page", !body.contains("j_security_check"));
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -207,7 +197,7 @@ public abstract class SSOTestBase {
         HttpPost formPost = new HttpPost(warURL + "j_security_check");
         formPost.addHeader("Referer", warURL + "login.html");
 
-        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair("j_username", "user1"));
         formparams.add(new BasicNameValuePair("j_password", "password1"));
         formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
@@ -222,7 +212,7 @@ public abstract class SSOTestBase {
 
             // Follow the redirect to the index.html page
             String indexURL = postResponse.getFirstHeader("Location").getValue();
-            HttpGet rediretGet = new HttpGet(indexURL.toString());
+            HttpGet rediretGet = new HttpGet(indexURL);
             HttpResponse redirectResponse = httpConn.execute(rediretGet);
 
             statusCode = redirectResponse.getStatusLine().getStatusCode();
@@ -231,7 +221,7 @@ public abstract class SSOTestBase {
             assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
 
             String body = EntityUtils.toString(redirectResponse.getEntity());
-            assertTrue("Get of " + indexURL + " redirected to login page", body.indexOf("j_security_check") < 0);
+            assertTrue("Get of " + indexURL + " redirected to login page", !body.contains("j_security_check"));
         } finally {
             HttpClientUtils.closeQuietly(postResponse);
         }
@@ -256,7 +246,7 @@ public abstract class SSOTestBase {
         for (Cookie cookie : cookieStore.getCookies()) {
             if ("JSESSIONIDSSO".equalsIgnoreCase(cookie.getName())) {
                 ssoID = cookie.getValue();
-                if (serverA.equals(serverB) == false) {
+                if (!serverA.equals(serverB)) {
                     // Make an sso cookie to send to serverB
                     Cookie copy = copyCookie(cookie, serverB);
                     cookieStore.addCookie(copy);
@@ -276,7 +266,7 @@ public abstract class SSOTestBase {
         }
         // JBAS-8540
         // need to be able to parse IPv6 URLs which have enclosing brackets
-        // HttpClient 3.1 creates cookies which oinclude the square brackets
+        // HttpClient 3.1 creates cookies which include the square brackets
         // index = targetServer.indexOf(":");
         index = targetServer.lastIndexOf(":");
         if (index > -1) {
@@ -351,7 +341,7 @@ public abstract class SSOTestBase {
     }
 
     public static void addSso(ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         // SSO element name must be 'configuration'
         updates.add(createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", ADD));
@@ -360,7 +350,7 @@ public abstract class SSOTestBase {
     }
 
     public static void removeSso(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        final List<ModelNode> updates = new ArrayList<>();
 
         updates.add(createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", REMOVE));
 
@@ -391,7 +381,7 @@ public abstract class SSOTestBase {
             throw new RuntimeException("Restart operation not successful. " + e.getMessage());
         }
         try {
-            RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<Boolean>();
+            RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<>();
             rte.retryTask(new Callable<Boolean>() {
                 public Boolean call() throws Exception {
                     ModelNode readOp = createOpNode(null, READ_ATTRIBUTE_OPERATION);
@@ -409,36 +399,5 @@ public abstract class SSOTestBase {
             throw new RuntimeException("Timeout on restart operation. " + e.getMessage());
         }
         log.info("Server is up.");
-    }
-
-    public static DefaultHttpClient relaxedCookieHttpClient() {
-        DefaultHttpClient client = new DefaultHttpClient();
-        final CookieSpecRegistry registry = new CookieSpecRegistry();
-        registry.register("best-match", new CookieSpecFactory() {
-            @Override
-            public CookieSpec newInstance(final HttpParams params) {
-                return new RelaxedBrowserCompatSpec();
-            }
-        });
-        client.setCookieSpecs(registry);
-        return client;
-    }
-
-    public static class RelaxedBrowserCompatSpec extends BrowserCompatSpec {
-
-        public RelaxedBrowserCompatSpec() {
-            super();
-            registerAttribHandler(ClientCookie.DOMAIN_ATTR, new BasicDomainHandler() {
-                @Override
-                public boolean match(final Cookie cookie, final CookieOrigin origin) {
-                    return true;
-                }
-
-                @Override
-                public void validate(Cookie cookie, CookieOrigin origin) throws MalformedCookieException {
-                    // Accept any domain
-                }
-            });
-        }
     }
 }

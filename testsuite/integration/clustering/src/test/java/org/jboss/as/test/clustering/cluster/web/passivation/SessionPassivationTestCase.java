@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.clustering.cluster.web.passivation;
 
 import java.io.IOException;
@@ -28,15 +29,15 @@ import java.util.Formatter;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -59,11 +60,12 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
     @InSequence(1)
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
                              throws IOException, URISyntaxException {
-        HttpClient client1 = HttpClients.createDefault();
-        HttpClient client2 = HttpClients.createDefault();
+
         String session1 = null;
         String session2 = null;
-        try {
+
+        try (CloseableHttpClient client1 = TestHttpClientUtils.relaxedCookieHttpClient();
+             CloseableHttpClient client2 = TestHttpClientUtils.relaxedCookieHttpClient()) {
             // This should not trigger any passivation/activation events
             HttpResponse response = client1.execute(new HttpGet(SessionOperationServlet.createSetURI(baseURL1, "a", "1")));
             try {
@@ -163,9 +165,6 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
             
             Assert.assertTrue(passivated);
             Assert.assertEquals(session1, response.getFirstHeader(SessionOperationServlet.PASSIVATED_SESSIONS).getValue());
-        } finally {
-            HttpClientUtils.closeQuietly(client1);
-            HttpClientUtils.closeQuietly(client2);
         }
     }
 

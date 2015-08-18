@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -44,7 +43,7 @@ import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -54,6 +53,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -203,14 +203,12 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
 
-        HttpClient client = HttpClients.createDefault();
-
         String url1 = baseURL1.toString() + "home.jsf";
         String url2 = baseURL2.toString() + "home.jsf";
 
         log.info("URLs are: " + url1 + ", " + url2);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             HttpResponse response;
             NumberGuessState state;
 
@@ -306,8 +304,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
             Assert.assertEquals("49", state.biggest);
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
 
         // Assert.fail("Show me the logs please!");
@@ -333,12 +329,10 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
 
-        HttpClient client = HttpClients.createDefault();
-
         String url1 = baseURL1.toString() + "home.jsf";
         String url2 = baseURL2.toString() + "home.jsf";
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             HttpResponse response;
             NumberGuessState state;
 
@@ -435,8 +429,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("5", state.remainingGuesses);
             Assert.assertEquals("3", state.smallest);
             Assert.assertEquals("49", state.biggest);
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
 
         // Assert.fail("Show me the logs please!");

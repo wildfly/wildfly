@@ -93,7 +93,7 @@
         <version.com.sun.xsom>20140925</version.com.sun.xsom>
         <version.commons-beanutils>1.9.2</version.commons-beanutils>
         <version.commons-cli>1.2</version.commons-cli>
-        <version.commons-codec>1.9</version.commons-codec>
+        <version.commons-codec>1.10</version.commons-codec>
         <version.commons-collections>3.2.1</version.commons-collections>
         <version.commons-digester>1.8</version.commons-digester>
         <version.commons-pool>1.6</version.commons-pool>
@@ -120,9 +120,9 @@
         <version.org.apache.cxf>3.1.2</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.3</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
-        <version.org.apache.httpcomponents.httpclient>4.3.6</version.org.apache.httpcomponents.httpclient>
-        <version.org.apache.httpcomponents.httpasyncclient>4.0.1</version.org.apache.httpcomponents.httpasyncclient>
-        <version.org.apache.httpcomponents.httpcore>4.3.3</version.org.apache.httpcomponents.httpcore>
+        <version.org.apache.httpcomponents.httpclient>4.5</version.org.apache.httpcomponents.httpclient>
+        <version.org.apache.httpcomponents.httpasyncclient>4.1</version.org.apache.httpcomponents.httpasyncclient>
+        <version.org.apache.httpcomponents.httpcore>4.4.1</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.lucene>4.10.4</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.1.17</version.org.apache.myfaces.core>

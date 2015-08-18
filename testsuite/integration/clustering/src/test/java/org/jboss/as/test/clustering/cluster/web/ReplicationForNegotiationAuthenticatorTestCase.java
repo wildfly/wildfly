@@ -29,10 +29,9 @@ import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -40,6 +39,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -83,13 +83,11 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
 
-        HttpClient client = HttpClients.createDefault();
-
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);
 
-        try {
-            
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
                 log.info("Requested " + uri1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -120,9 +118,6 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
                 HttpClientUtils.closeQuietly(response);
             }
             
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
-
     }
 }

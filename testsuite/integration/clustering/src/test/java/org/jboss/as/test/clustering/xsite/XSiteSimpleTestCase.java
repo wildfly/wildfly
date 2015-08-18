@@ -31,10 +31,8 @@ import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -42,6 +40,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ExtendedClusterAbstractTestCase;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -107,7 +106,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         return war;
     }
 
-    /*
+    /**
      * Tests that puts get relayed to their backup sites
      *
      * Put the key-value (a,100) on LON-0 on site LON and check that the key-value pair:
@@ -124,15 +123,13 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
 
             throws IllegalStateException, IOException, URISyntaxException {
 
-        HttpClient client = HttpClients.createDefault();
-
         String value = "100";
         URI url1 = CacheAccessServlet.createPutURI(baseURL1, "a", value);
         URI url2 = CacheAccessServlet.createGetURI(baseURL2, "a");
         URI url3 = CacheAccessServlet.createGetURI(baseURL3, "a");
         URI url4 = CacheAccessServlet.createGetURI(baseURL4, "a");
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             // put a value to LON-0
             System.out.println("Executing HTTP request: " + url1);
             HttpResponse response = client.execute(new HttpGet(url1));
@@ -166,13 +163,11 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             Assert.assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 
 
-    /*
+    /**
      * Tests that puts at the backup caches do not get relayed back to the origin cache.
      *
      * Put the key-value (b,200) on NYC-0 on site NYC and check that the key-value pair:
@@ -184,15 +179,12 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
-
             throws IllegalStateException, IOException, URISyntaxException {
-
-        HttpClient client = HttpClients.createDefault();
 
         URI url1 = CacheAccessServlet.createGetURI(baseURL1, "b");
         URI url3 = CacheAccessServlet.createPutURI(baseURL3, "b", "200");
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             // put a value to NYC-0
             System.out.println("Executing HTTP request: " + url3);
             HttpResponse response = client.execute(new HttpGet(url3));
@@ -209,9 +201,6 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
-
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 }

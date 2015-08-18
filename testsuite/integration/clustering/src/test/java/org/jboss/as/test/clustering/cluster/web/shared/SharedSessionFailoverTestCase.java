@@ -22,7 +22,6 @@
 package org.jboss.as.test.clustering.cluster.web.shared;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -30,10 +29,9 @@ import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -43,6 +41,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -94,16 +93,15 @@ public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
     @Test
     public void test(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2
-            ) throws MalformedURLException, URISyntaxException, IOException {
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws URISyntaxException, IOException {
 
         URI uri11 = SimpleServlet.createURI(baseURL1.toURI().resolve(MODULE_1).toURL());
         URI uri12 = SimpleServlet.createURI(baseURL1.toURI().resolve(MODULE_2).toURL());
         URI uri21 = SimpleServlet.createURI(baseURL2.toURI().resolve(MODULE_1).toURL());
         URI uri22 = SimpleServlet.createURI(baseURL2.toURI().resolve(MODULE_2).toURL());
 
-        HttpClient client = HttpClients.createDefault();
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri11));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -135,8 +133,6 @@ public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 }
