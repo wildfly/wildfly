@@ -19,7 +19,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.infinispan.util.concurrent.locks.LockManagerImpl;
+import org.infinispan.util.concurrent.locks.impl.DefaultLockManager;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
@@ -34,15 +34,15 @@ import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
  *
  * @author Paul Ferraro
  */
-public class LockingMetricExecutor implements MetricExecutor<LockManagerImpl> {
+public class LockingMetricExecutor implements MetricExecutor<DefaultLockManager> {
 
     @Override
-    public ModelNode execute(OperationContext context, Metric<LockManagerImpl> metric) throws OperationFailedException {
+    public ModelNode execute(OperationContext context, Metric<DefaultLockManager> metric) throws OperationFailedException {
         PathAddress cacheAddress = context.getCurrentAddress().getParent();
         String containerName = cacheAddress.getParent().getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
         Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
-        return (cache != null) ? metric.execute((LockManagerImpl) cache.getAdvancedCache().getLockManager()) : null;
+        return (cache != null) ? metric.execute((DefaultLockManager) cache.getAdvancedCache().getLockManager()) : null;
     }
 }

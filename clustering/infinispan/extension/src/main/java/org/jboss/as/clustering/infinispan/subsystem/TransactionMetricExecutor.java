@@ -34,17 +34,17 @@ import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
  *
  * @author Paul Ferraro
  */
-public class TransactionMetricExecutor implements MetricExecutor<TxInterceptor> {
+public class TransactionMetricExecutor implements MetricExecutor<TxInterceptor<?, ?>> {
 
     @Override
-    public ModelNode execute(OperationContext context, Metric<TxInterceptor> metric) throws OperationFailedException {
+    public ModelNode execute(OperationContext context, Metric<TxInterceptor<?, ?>> metric) throws OperationFailedException {
         PathAddress cacheAddress = context.getCurrentAddress().getParent();
         String containerName = cacheAddress.getParent().getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
         Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
         if (cache != null) {
-            TxInterceptor interceptor = CacheMetric.findInterceptor(cache, TxInterceptor.class);
+            TxInterceptor<?, ?> interceptor = CacheMetric.findInterceptor(cache, TxInterceptor.class);
             if (interceptor != null) {
                 return metric.execute(interceptor);
             }
