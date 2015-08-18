@@ -27,11 +27,13 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
 /**
  * Metadata for delivery active property of message-driven beans
  *
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc
+ * @author Flavia Rainone.
  */
-public class EJBBoundDeliveryActiveMetaData extends AbstractEJBBoundMetaData {
+public class EJBBoundMdbDeliveryMetaData extends AbstractEJBBoundMetaData {
 
     private boolean deliveryActive;
+    private String deliveryGroup;
 
     public boolean isDeliveryActive() {
         return deliveryActive;
@@ -39,5 +41,13 @@ public class EJBBoundDeliveryActiveMetaData extends AbstractEJBBoundMetaData {
 
     public void setDeliveryActive(boolean deliveryActive) {
         this.deliveryActive = deliveryActive;
+    }
+
+    public String getDeliveryGroup() {
+        return deliveryGroup;
+    }
+
+    public void setDeliveryGroup(String deliveryGroup) {
+        this.deliveryGroup = deliveryGroup;
     }
 }

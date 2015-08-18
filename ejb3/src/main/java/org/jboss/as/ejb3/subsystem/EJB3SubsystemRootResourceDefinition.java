@@ -262,6 +262,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         subsystemRegistration.registerSubModel(EJB3IIOPResourceDefinition.INSTANCE);
 
         subsystemRegistration.registerSubModel(RemotingProfileResourceDefinition.INSTANCE);
+
+        // subsystem=ejb3/mdb-delivery-group=*
+        subsystemRegistration.registerSubModel(MdbDeliveryGroupResourceDefinition.INSTANCE);
     }
 
     static void registerTransformers(SubsystemRegistration subsystemRegistration) {

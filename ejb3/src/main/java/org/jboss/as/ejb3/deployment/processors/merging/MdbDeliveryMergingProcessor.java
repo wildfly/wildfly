@@ -27,7 +27,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
-import org.jboss.as.ejb3.deliveryactive.metadata.EJBBoundDeliveryActiveMetaData;
+import org.jboss.as.ejb3.deliveryactive.metadata.EJBBoundMdbDeliveryMetaData;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -40,10 +40,11 @@ import org.jboss.metadata.ejb.spec.EjbJarMetaData;
  * Handles the {@link org.jboss.ejb3.annotation.DeliveryActive} annotation merging
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
+ * @author Flavia Rainone
  */
-public class DeliveryActiveMergingProcessor extends AbstractMergingProcessor<MessageDrivenComponentDescription> {
+public class MdbDeliveryMergingProcessor extends AbstractMergingProcessor<MessageDrivenComponentDescription> {
 
-    public DeliveryActiveMergingProcessor() {
+    public MdbDeliveryMergingProcessor() {
         super(MessageDrivenComponentDescription.class);
     }
 
@@ -80,18 +81,24 @@ public class DeliveryActiveMergingProcessor extends AbstractMergingProcessor<Mes
             return;
         }
         Boolean deliveryActive = null;
-        final List<EJBBoundDeliveryActiveMetaData> deliveryActiveDataList = assemblyDescriptor.getAny(EJBBoundDeliveryActiveMetaData.class);
-        if (deliveryActiveDataList != null) {
-            for (EJBBoundDeliveryActiveMetaData deliveryActiveData : deliveryActiveDataList) {
-                if ("*".equals(deliveryActiveData.getEjbName()) && deliveryActive == null) {
-                    deliveryActive = deliveryActiveData.isDeliveryActive();
-                } else if (ejbName.equals(deliveryActiveData.getEjbName())) {
-                    deliveryActive = deliveryActiveData.isDeliveryActive();
+        String deliveryGroup = null;
+        final List<EJBBoundMdbDeliveryMetaData> deliveryMetaDataList = assemblyDescriptor.getAny(EJBBoundMdbDeliveryMetaData.class);
+        if (deliveryMetaDataList != null) {
+            for (EJBBoundMdbDeliveryMetaData deliveryMetaData : deliveryMetaDataList) {
+                if ("*".equals(deliveryMetaData.getEjbName()) && deliveryActive == null && deliveryGroup == null) {
+                    deliveryActive = deliveryMetaData.isDeliveryActive();
+                    deliveryGroup = deliveryMetaData.getDeliveryGroup();
+                } else if (ejbName.equals(deliveryMetaData.getEjbName())) {
+                    deliveryActive = deliveryMetaData.isDeliveryActive();
+                    deliveryGroup = deliveryMetaData.getDeliveryGroup();
                 }
             }
         }
-
-        if (deliveryActive != null) {
+        // delivery group configuration has precedence over deliveryActive
+        if (deliveryGroup != null) {
+            componentConfiguration.setDeliveryGroup(deliveryGroup);
+        }
+        else if (deliveryActive != null) {
             componentConfiguration.setDeliveryActive(deliveryActive);
         }
     }

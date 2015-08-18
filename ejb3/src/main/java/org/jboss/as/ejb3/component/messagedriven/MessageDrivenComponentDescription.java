@@ -76,6 +76,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     private final Properties activationProps;
     private String resourceAdapterName;
     private boolean deliveryActive;
+    private String deliveryGroup;
 
     private String mdbPoolConfigName;
     private final String messageListenerInterfaceName;
@@ -182,6 +183,14 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
     public void setDeliveryActive(boolean deliveryActive) {
         this.deliveryActive = deliveryActive;
+    }
+
+    public void setDeliveryGroup(String groupName) {
+        this.deliveryGroup = groupName;
+    }
+
+    public String getDeliveryGroup() {
+        return deliveryGroup;
     }
 
     public String getResourceAdapterName() {

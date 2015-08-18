@@ -69,7 +69,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
         this.resourceAdapterName = componentDescription.getResourceAdapterName();
-        this.deliveryActive = componentDescription.isDeliveryActive();
+        this.deliveryActive = componentDescription.getDeliveryGroup()== null && componentDescription.isDeliveryActive();
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = messageListenerInterface;
 
