@@ -26,12 +26,12 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 import java.util.Collection;
 import java.util.Collections;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class JSR77ManagementRootResource extends PersistentResourceDefinition {
@@ -44,15 +44,26 @@ public class JSR77ManagementRootResource extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> JSR77_APPCLIENT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.jsr77")
             .build();
+    private final boolean appclient;
 
     JSR77ManagementRootResource(boolean appclient) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JSR77ManagementExtension.SUBSYSTEM_NAME),
                 JSR77ManagementExtension.getResourceDescriptionResolver(JSR77ManagementExtension.SUBSYSTEM_NAME),
                 new JSR77ManagementSubsystemAdd(appclient), JSR77ManagementSubsystemRemove.INSTANCE);
+        this.appclient = appclient;
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        if (appclient) {
+            resourceRegistration.registerCapability(JSR77_APPCLIENT_CAPABILITY);
+        } else {
+            resourceRegistration.registerCapability(JSR77_CAPABILITY);
+        }
     }
 }

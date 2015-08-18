@@ -49,7 +49,6 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -78,9 +77,12 @@ public class SarExtension implements Extension {
             .addRequirements(JMX_CAPABILITY)
             .build();
 
-    private static final ResourceDefinition RESOURCE_DEFINITION = new SimpleResourceDefinition(PATH, RESOLVER,
-                            SarSubsystemAdd.INSTANCE, new ReloadRequiredRemoveStepHandler(SAR_CAPABILITY),
-                            OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+    private static final ResourceDefinition RESOURCE_DEFINITION = new SimpleResourceDefinition(
+                new SimpleResourceDefinition.Parameters(PATH, RESOLVER)
+            .setAddHandler(SarSubsystemAdd.INSTANCE)
+            .setRemoveHandler(new ReloadRequiredRemoveStepHandler(SAR_CAPABILITY))
+            .setCapabilities(SAR_CAPABILITY)
+    );
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
 
