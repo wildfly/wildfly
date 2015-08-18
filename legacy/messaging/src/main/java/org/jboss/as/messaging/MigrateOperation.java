@@ -47,6 +47,7 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_SERVICE;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
+import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.HTTP_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.HTTP_CONNECTOR;
@@ -110,6 +111,10 @@ public class MigrateOperation implements OperationStepHandler {
     private static final String MESSAGING_ACTIVEMQ_MODULE = "org.wildfly.extension.messaging-activemq";
 
     private static final String NEW_ENTRY_SUFFIX = "-new";
+    private static final String HORNETQ_NETTY_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
+    private static final String HORNETQ_NETTY_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
+    private static final String ARTEMIS_NETTY_CONNECTOR_FACTORY = "org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory";
+    private static final String ARTEMIS_NETTY_ACCEPTOR_FACTORY = "org.apache.activemq.artemis.core.remoting.impl.netty.NettyAcceptorFactory";
 
     private static final OperationStepHandler DESCRIBE_MIGRATION_INSTANCE = new MigrateOperation(true);
     private static final OperationStepHandler MIGRATE_INSTANCE = new MigrateOperation(false);
@@ -299,9 +304,11 @@ public class MigrateOperation implements OperationStepHandler {
                             }
                             break;
                         case ACCEPTOR:
+                        case CONNECTOR:
+                            migrateGenericTransport(newAddOp);
+                            // no break on purpose, the acceptor and connector must also migrate their params.
                         case HTTP_ACCEPTOR:
                         case REMOTE_ACCEPTOR:
-                        case CONNECTOR:
                         case HTTP_CONNECTOR:
                         case REMOTE_CONNECTOR:
                         case CONNECTOR_SERVICE:
@@ -386,4 +393,25 @@ public class MigrateOperation implements OperationStepHandler {
     private void migrateBridge(ModelNode addOperation) {
         migrateDiscoveryGroupNameAttribute(addOperation);
     }
+
+    /**
+     * For generic acceptor and connectors, migrate their factory-class attribute
+     * if they are using the default Netty ones.
+     */
+    private void migrateGenericTransport(ModelNode addOperation) {
+        String factoryClass = addOperation.get(FACTORY_CLASS.getName()).asString();
+        final String newFactoryClass;
+        switch (factoryClass) {
+            case HORNETQ_NETTY_ACCEPTOR_FACTORY:
+                newFactoryClass = ARTEMIS_NETTY_ACCEPTOR_FACTORY;
+                break;
+            case HORNETQ_NETTY_CONNECTOR_FACTORY:
+                newFactoryClass = ARTEMIS_NETTY_CONNECTOR_FACTORY;
+                break;
+            default:
+                newFactoryClass = factoryClass;
+        }
+        addOperation.get(FACTORY_CLASS.getName()).set(newFactoryClass);
+    }
+
 }
