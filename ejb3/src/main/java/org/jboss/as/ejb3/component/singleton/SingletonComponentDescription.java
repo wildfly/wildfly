@@ -93,7 +93,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.addTimeoutViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
-                if (getConcurrencyManagementType() == ConcurrencyManagementType.CONTAINER) {
+                ConcurrencyManagementType concurrencyManagementType = getConcurrencyManagementType();
+                if (concurrencyManagementType == null || concurrencyManagementType == ConcurrencyManagementType.CONTAINER) {
                     configuration.addTimeoutViewInterceptor(new ContainerManagedConcurrencyInterceptorFactory(Collections.emptyMap()), InterceptorOrder.View.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
                 }
 
