@@ -137,14 +137,14 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
                 parseJts(reader, subsystemOperation);
                 break;
             }
-            case USEHORNETQSTORE: {
+            case USE_HORNETQ_STORE: {
                 if (choiceObjectStoreEncountered) {
                     throw unexpectedElement(reader);
                 }
                 choiceObjectStoreEncountered = true;
 
-                parseUsehornetqstore(reader, logStoreOperation, subsystemOperation);
-                subsystemOperation.get(CommonAttributes.USEHORNETQSTORE).set(true);
+                parseUseJournalstore(reader, logStoreOperation, subsystemOperation);
+                subsystemOperation.get(CommonAttributes.USE_JOURNAL_STORE).set(true);
                 break;
             }
             case JDBC_STORE: {
@@ -172,8 +172,8 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
         requireNoContent(reader);
     }
 
-    protected void parseUsehornetqstore(final XMLExtendedStreamReader reader, final ModelNode logStoreOperation, final ModelNode operation) throws XMLStreamException {
-        logStoreOperation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("hornetq");
+    protected void parseUseJournalstore(final XMLExtendedStreamReader reader, final ModelNode logStoreOperation, final ModelNode operation) throws XMLStreamException {
+        logStoreOperation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("journal");
 
         // Handle attributes
         final int count = reader.getAttributeCount();
@@ -183,7 +183,7 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ENABLE_ASYNC_IO:
-                    TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.parseAndSetParameter(value, operation, reader);
+                    TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
