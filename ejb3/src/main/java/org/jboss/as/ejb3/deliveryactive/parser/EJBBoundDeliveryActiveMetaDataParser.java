@@ -38,6 +38,7 @@ public class EJBBoundDeliveryActiveMetaDataParser extends AbstractEJBBoundMetaDa
 
     public static final String NAMESPACE_URI = "urn:delivery-active:1.0";
 
+    private static final String ROOT_ELEMENT_DELIVERY = "delivery";
     private static final String ACTIVE = "active";
 
     public static final EJBBoundDeliveryActiveMetaDataParser INSTANCE = new EJBBoundDeliveryActiveMetaDataParser();
@@ -48,6 +49,10 @@ public class EJBBoundDeliveryActiveMetaDataParser extends AbstractEJBBoundMetaDa
 
     @Override
     public EJBBoundDeliveryActiveMetaData parse(XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
+        // we only parse <delivery> (root) element
+        if (!ROOT_ELEMENT_DELIVERY.equals(reader.getLocalName())) {
+            throw unexpectedElement(reader);
+        }
         EJBBoundDeliveryActiveMetaData metaData = new EJBBoundDeliveryActiveMetaData();
         processElements(metaData, reader, propertyReplacer);
         return metaData;
