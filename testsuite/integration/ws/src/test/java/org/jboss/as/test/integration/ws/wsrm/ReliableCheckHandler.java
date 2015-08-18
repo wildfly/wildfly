@@ -70,21 +70,21 @@ public class ReliableCheckHandler implements SOAPHandler<SOAPMessageContext> {
         SOAPMessage message = smc.getMessage();
 
         if (outboundProperty.booleanValue()) {
-            log.info("Outgoing message:");
+            log.debug("Outgoing message:");
         } else {
-            log.info("Incoming message:");
+            log.debug("Incoming message:");
         }
 
         log.debug("-----------");
         try {
-            JBossLoggingOutputStream os = new JBossLoggingOutputStream(log, Level.INFO);
+            JBossLoggingOutputStream os = new JBossLoggingOutputStream(log, Level.DEBUG);
             message.writeTo(os);
             os.flush();
-            log.info("");
+            log.debug("");
         } catch (Exception e) {
-            log.info("Exception in handler: " + e);
+            log.debug("Exception in handler: " + e);
         }
-        log.info("-----------");
+        log.debug("-----------");
 
         SOAPElement firstBodyElement;
         try {
