@@ -368,6 +368,7 @@ public class MigrateOperation implements OperationStepHandler {
         // connector-ref attribute has been renamed to connector-name
         addOperation.get("connector-name").set(addOperation.get(CONNECTOR_REF_STRING));
         addOperation.remove(CONNECTOR_REF_STRING);
+        migrateDiscoveryGroupNameAttribute(addOperation);
     }
 
     private void migrateConnectorAttribute(ModelNode addOperation) {
