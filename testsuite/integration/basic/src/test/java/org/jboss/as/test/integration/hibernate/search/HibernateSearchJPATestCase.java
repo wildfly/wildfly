@@ -29,7 +29,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,8 +59,6 @@ public class HibernateSearchJPATestCase {
    public static Archive<?> deploy() throws Exception {
 
       JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-      // add required dependencies
-      jar.addAsManifestResource(new StringAsset("Dependencies: org.hibernate.search.orm services\n"), "MANIFEST.MF");
       // add JPA configuration
       jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
       jar.addAsResource(HibernateSearchJPATestCase.class.getPackage(), "hsearch-infinispan-local.xml", "hsearch-infinispan-local.xml");
