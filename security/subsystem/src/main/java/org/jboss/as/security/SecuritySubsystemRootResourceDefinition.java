@@ -22,6 +22,7 @@
 package org.jboss.as.security;
 
 import javax.security.auth.login.Configuration;
+import javax.transaction.TransactionManager;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -35,6 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -56,7 +58,9 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.SecurityContextAssociation;
@@ -75,6 +79,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
+    static final RuntimeCapability<?> SECURITY_SUBSYSTEM = RuntimeCapability.Builder.of("org.wildfly.security").build();
+
     static final SensitiveTargetAccessConstraintDefinition MISC_SECURITY_SENSITIVITY = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SecurityExtension.SUBSYSTEM_NAME, "misc-security", false, true, true));
 
@@ -87,9 +93,11 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
     private SecuritySubsystemRootResourceDefinition() {
         super(SecurityExtension.PATH_SUBSYSTEM,
-                SecurityExtension.getResourceDescriptionResolver(SecurityExtension.SUBSYSTEM_NAME), NewSecuritySubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+                SecurityExtension.getResourceDescriptionResolver(SecurityExtension.SUBSYSTEM_NAME), NewSecuritySubsystemAdd.INSTANCE, new ReloadRequiredRemoveStepHandler(SECURITY_SUBSYSTEM));
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
+
+
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
          resourceRegistration.registerReadWriteAttribute(DEEP_COPY_SUBJECT_MODE, null, new ReloadRequiredWriteAttributeHandler(DEEP_COPY_SUBJECT_MODE));
@@ -119,6 +127,9 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
         public static final OperationStepHandler INSTANCE = new NewSecuritySubsystemAdd();
 
+        NewSecuritySubsystemAdd() {
+            super(SECURITY_SUBSYSTEM);
+        }
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -170,6 +181,17 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
             target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            //setup the transaction manager locator
+
+            if(context.hasOptionalCapability("org.wildfly.transactions", SECURITY_SUBSYSTEM.getName(), null)) {
+                TransactionManagerLocatorService service = new TransactionManagerLocatorService();
+                target.addService(TransactionManagerLocatorService.SERVICE_NAME, service)
+                        .addDependency( ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, service.getTransactionManagerInjectedValue())
+                .install();
+            } else {
+                target.addService(TransactionManagerLocatorService.SERVICE_NAME, Service.NULL).install();
+            }
 
             //add Simple Security Manager Service
             final SimpleSecurityManagerService simpleSecurityManagerService = new SimpleSecurityManagerService();

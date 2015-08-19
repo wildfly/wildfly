@@ -105,9 +105,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
 
     private TransactionSubsystemAdd() {
-        //
+        super(TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY);
     }
-
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
