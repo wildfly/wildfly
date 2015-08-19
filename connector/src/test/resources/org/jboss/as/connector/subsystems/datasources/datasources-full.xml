@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:3.0">
+<subsystem xmlns="urn:jboss:domain:datasources:4.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool" jta="false"
                     use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
@@ -36,6 +36,11 @@
                 <use-strict-min>true</use-strict-min>
                 <flush-strategy>EntirePool</flush-strategy>
                 <allow-multiple-users>true</allow-multiple-users>
+                <connection-listener class-name="LClass" module="moduleL" module-slot="slotL"></connection-listener>
+                <capacity>
+                    <incrementer class-name="iClass" module="moduleI" module-slot="slotI"></incrementer>
+                    <decrementer class-name="dClass" module="moduleD" module-slot="slotD"></decrementer>
+                </capacity>
             </pool>
             <security>
                 <user-name>
@@ -44,12 +49,12 @@
                 <password>
                     sa
                 </password>
-                <reauth-plugin class-name="someClass1">
+                <reauth-plugin class-name="someClass1" module="someModule1">
                     <config-property name="name">Property1</config-property>
                 </reauth-plugin>
             </security>
             <validation>
-                <valid-connection-checker class-name="someClass2">
+                <valid-connection-checker class-name="someClass2" module="someModule2">
                     <config-property name="name">Property2</config-property>
                 </valid-connection-checker>
                 <check-valid-connection-sql>
@@ -67,10 +72,10 @@
                 <use-fast-fail>
                     true
                 </use-fast-fail>
-                <stale-connection-checker class-name="someClass3">
+                <stale-connection-checker class-name="someClass3" module="someModule3">
                     <config-property name="name">Property3</config-property>
                 </stale-connection-checker>
-                <exception-sorter class-name="someClass4">
+                <exception-sorter class-name="someClass4" module="someModule4">
                     <config-property name="name">Property4</config-property>
                 </exception-sorter>
             </validation>
@@ -138,6 +143,11 @@
                     EntirePool
                 </flush-strategy>
                 <allow-multiple-users>true</allow-multiple-users>
+                <connection-listener class-name="LClass" module="moduleL" module-slot="slotL"></connection-listener>
+                <capacity>
+                    <incrementer class-name="iClass" module="moduleI" module-slot="slotI"></incrementer>
+                    <decrementer class-name="dClass" module="moduleD" module-slot="slotD"></decrementer>
+                </capacity>
                 <is-same-rm-override>
                     true
                 </is-same-rm-override>
@@ -149,7 +159,6 @@
                 <wrap-xa-resource>
                     true
                 </wrap-xa-resource>
-
             </xa-pool>
             <security>
                 <user-name>
@@ -158,7 +167,7 @@
                 <password>
                     sa
                 </password>
-                <reauth-plugin class-name="someClass1">
+                <reauth-plugin class-name="someClass1" module="someModule1">
                     <config-property name="name">Property1</config-property>
                 </reauth-plugin>
             </security>
@@ -171,13 +180,13 @@
                         sa
                     </password>
                 </recover-credential>
-                <recover-plugin class-name="someClass5">
+                <recover-plugin class-name="someClass5" module="someModule5">
                     <config-property name="name">Property5</config-property>
                     <config-property name="name1">Property6</config-property>
                 </recover-plugin>
             </recovery>
             <validation>
-                <valid-connection-checker class-name="someClass2">
+                <valid-connection-checker class-name="someClass2" module="someModule2">
                     <config-property name="name">Property2</config-property>
                 </valid-connection-checker>
                 <check-valid-connection-sql>
@@ -195,10 +204,10 @@
                 <use-fast-fail>
                     true
                 </use-fast-fail>
-                <stale-connection-checker class-name="someClass3">
+                <stale-connection-checker class-name="someClass3" module="someModule3">
                     <config-property name="name">Property3</config-property>
                 </stale-connection-checker>
-                <exception-sorter class-name="someClass4">
+                <exception-sorter class-name="someClass4" module="someModule4">
                     <config-property name="name">Property4</config-property>
                 </exception-sorter>
             </validation>

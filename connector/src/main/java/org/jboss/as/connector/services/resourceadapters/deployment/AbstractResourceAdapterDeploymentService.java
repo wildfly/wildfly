@@ -123,7 +123,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return ConnectorServices.notNull(value);
     }
 
-
     public void unregisterAll(String deploymentName) {
         if (value != null) {
             DEPLOYMENT_CONNECTOR_LOGGER.debugf("Unregistering: %s", deploymentName);

@@ -26,8 +26,12 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUND
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
@@ -56,6 +60,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXS
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
@@ -125,6 +131,8 @@ public class CommonAttributes {
             USE_FAST_FAIL, VALIDATE_ON_MATCH, USE_CCM,
             SHARABLE, ENLISTMENT,
             RECOVERLUGIN_CLASSNAME,
+            RECOVERLUGIN_MODULE,
+            RECOVERLUGIN_MODULE_SLOT,
             RECOVERLUGIN_PROPERTIES,
             RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN,
@@ -137,8 +145,12 @@ public class CommonAttributes {
             INTERLEAVING,
             NOTXSEPARATEPOOL,
             CAPACITY_INCREMENTER_CLASS,
+            CAPACITY_INCREMENTER_MODULE,
+            CAPACITY_INCREMENTER_MODULE_SLOT,
             CAPACITY_INCREMENTER_PROPERTIES,
             CAPACITY_DECREMENTER_CLASS,
+            CAPACITY_DECREMENTER_MODULE,
+            CAPACITY_DECREMENTER_MODULE_SLOT,
             CAPACITY_DECREMENTER_PROPERTIES
     };
 

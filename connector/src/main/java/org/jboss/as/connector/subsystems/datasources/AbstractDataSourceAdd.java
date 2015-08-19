@@ -23,26 +23,47 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE_SLOT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE_SLOT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.ConnectionDefinitionAdd.loadModule;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.sql.DataSource;
+
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.subsystems.resourceadapters.ExtensionClassLoadersService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -71,6 +92,9 @@ import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -340,6 +364,24 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
         binderBuilder.install();
 
+        installExtensionClassLoadersService(context, model, jndiName, serviceTarget);
+    }
+
+    private static void installExtensionClassLoadersService(final OperationContext context, final ModelNode model,
+            final String jndiName, final ServiceTarget serviceTarget) throws OperationFailedException {
+        Set<ModuleClassLoader> moduleClassLoaders = new HashSet<>();
+        ModuleLoader moduleLoader = Module.getCallerModuleLoader();
+        loadModule(moduleLoader, context, model, CAPACITY_INCREMENTER_MODULE, CAPACITY_INCREMENTER_MODULE_SLOT, moduleClassLoaders);
+        loadModule(moduleLoader, context, model, CAPACITY_DECREMENTER_MODULE, CAPACITY_DECREMENTER_MODULE_SLOT, moduleClassLoaders);
+        loadModule(moduleLoader, context, model, CONNECTION_LISTENER_MODULE, CONNECTION_LISTENER_MODULE_SLOT, moduleClassLoaders);
+        loadModule(moduleLoader, context, model, EXCEPTION_SORTER_MODULE, EXCEPTION_SORTER_MODULE_SLOT, moduleClassLoaders);
+        loadModule(moduleLoader, context, model, REAUTH_PLUGIN_MODULE, REAUTH_PLUGIN_MODULE_SLOT, moduleClassLoaders);
+        loadModule(moduleLoader, context, model, RECOVER_PLUGIN_MODULE, RECOVER_PLUGIN_MODULE_SLOT, moduleClassLoaders);
+        loadModule(moduleLoader, context, model, STALE_CONNECTION_CHECKER_MODULE, STALE_CONNECTION_CHECKER_MODULE_SLOT, moduleClassLoaders);
+        loadModule(moduleLoader, context, model, VALID_CONNECTION_CHECKER_MODULE, VALID_CONNECTION_CHECKER_MODULE_SLOT, moduleClassLoaders);
+
+        ServiceName extensionServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append("extension", jndiName);
+        serviceTarget.addService(extensionServiceName, new ExtensionClassLoadersService(moduleClassLoaders)).install();
     }
 
     protected abstract void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,

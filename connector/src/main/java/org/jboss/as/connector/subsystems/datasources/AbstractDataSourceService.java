@@ -29,20 +29,24 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
 import javax.naming.Reference;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.subsystems.resourceadapters.LinkedModuleClassLoader;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
@@ -77,6 +81,7 @@ import org.jboss.jca.deployers.common.AbstractDsDeployer;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -130,19 +135,36 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     /**
      * The class loader to use. If null the Driver class loader will be used instead.
      */
-    private final ClassLoader classLoader;
+    private final ModuleClassLoader classLoader;
 
-    protected AbstractDataSourceService(final String dsName, final ContextNames.BindInfo jndiName, final ClassLoader classLoader ) {
+    /**
+     * The final class loader to use, depends on the modules defined for Extensions.
+     */
+    private ClassLoader finalClassLoader;
+
+    protected AbstractDataSourceService(final String dsName, final ContextNames.BindInfo jndiName, final ModuleClassLoader classLoader ) {
         this.dsName = dsName;
         this.classLoader = classLoader;
         this.jndiName = jndiName;
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized void start(StartContext startContext) throws StartException {
         try {
             final ServiceContainer container = startContext.getController().getServiceContainer();
-
-            deploymentMD = getDeployer().deploy(container);
+            ServiceController<?> sc = container.getService(SERVICE_NAME_BASE.append("extension", jndiName.getAbsoluteJndiName()));
+            Set<ModuleClassLoader> extensionClassLoaders = null;
+            if (sc != null) {
+                extensionClassLoaders = (Set<ModuleClassLoader>)sc.getValue();
+            }
+            this.finalClassLoader = composeClassLoader(extensionClassLoaders);
+            ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(this.finalClassLoader);
+                deploymentMD = getDeployer().deploy(container);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
+            }
             if (deploymentMD.getCfs().length != 1) {
                 throw ConnectorLogger.ROOT_LOGGER.cannotStartDs();
             }
@@ -158,6 +180,22 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         } catch (Throwable t) {
             throw ConnectorLogger.ROOT_LOGGER.deploymentError(t, dsName);
         }
+    }
+
+    private ClassLoader composeClassLoader(Set<ModuleClassLoader> extensionClassLoaders) {
+        if (extensionClassLoaders == null) {
+            extensionClassLoaders = new HashSet<>();
+        }
+        if (this.classLoader != null) {
+            extensionClassLoaders.add(this.classLoader);
+        }
+        final Driver jdbcDriver = driverValue.getOptionalValue();
+        if (jdbcDriver != null) {
+            final Class<? extends Driver> clazz = jdbcDriver.getClass();
+            ClassLoader driverCL = ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+            extensionClassLoaders.add((ModuleClassLoader)driverCL);
+        }
+        return LinkedModuleClassLoader.createClassLoader((ModuleClassLoader)getClass().getClassLoader(), extensionClassLoaders);
     }
 
     protected abstract AS7DataSourceDeployer getDeployer() throws ValidateException ;
@@ -295,11 +333,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     }
 
     private ClassLoader driverClassLoader() {
-        if(classLoader != null) {
-            return classLoader;
-        }
-        final Class<? extends Driver> clazz = driverValue.getValue().getClass();
-        return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
+        return this.finalClassLoader;
     }
 
     protected class AS7DataSourceDeployer extends AbstractDsDeployer {
@@ -363,7 +397,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 }
 
                 CommonDeployment c = createObjectsAndInjectValue(new URL("file://DataSourceDeployment"), dsName,
-                        "uniqueJdbcLocalId", "uniqueJdbcXAId", dataSources, AbstractDataSourceService.class.getClassLoader());
+                        "uniqueJdbcLocalId", "uniqueJdbcXAId", dataSources, finalClassLoader);
                 return c;
             } catch (MalformedURLException e) {
                 throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);

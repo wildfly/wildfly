@@ -382,6 +382,24 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
         } else if (attributeName.equals(Constants.TRACKING.getName())) {
             //Just return w/o setting a result
             return;
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE_SLOT.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE_SLOT.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE_SLOT.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE_SLOT.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE_SLOT.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE.getName())
+                || attributeName.equals(org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE_SLOT.getName())) {
+            //Just return w/o setting a result
+            return;
         } else {
             throw ConnectorLogger.ROOT_LOGGER.unknownAttribute(attributeName);
         }

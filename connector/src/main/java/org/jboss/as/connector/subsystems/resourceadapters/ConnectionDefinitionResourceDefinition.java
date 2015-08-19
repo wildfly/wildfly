@@ -111,7 +111,13 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
         parentBuilder.addChildResource(PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH);
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT,
+                        org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE,
+                        org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE_SLOT);
 
     }
 
@@ -119,9 +125,16 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
         parentBuilder.addChildResource(PATH).getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.ALWAYS, Constants.ENLISTMENT, Constants.SHARABLE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES
+                )
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH);
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT,
+                        org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE,
+                        org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE_SLOT);
     }
 }

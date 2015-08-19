@@ -831,6 +831,14 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 93, value = "This operation is no longer supported. Only for use on legacy hosts in a domain ")
     OperationFailedException legacyOperation();
 
+    /**
+     * A message indicating a failure to load a general module.
+     *
+     * @param moduleName the module name.
+     * @return the message.
+     */
+    @Message(id = 94, value = "Failed to load module [%s]")
+    String failedToLoadModule(String moduleName);
 }
 
 

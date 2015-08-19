@@ -59,7 +59,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_3_0.xsd";
+        return "schema/wildfly-datasources_4_0.xsd";
     }
 
     @Override
@@ -132,8 +132,52 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
-                        .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE), new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING))
-                        .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING))
+                        .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING,
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE,
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE,
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE_SLOT) {
+                            @Override
+                            protected boolean isAttributeWritable(String attributeName) {
+                                return false;
+                            }
+                        })
+                        .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING,
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE,
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE,
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE_SLOT,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE,
+                                        org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE_SLOT) {
+                            @Override
+                            protected boolean isAttributeWritable(String attributeName) {
+                                return false;
+                            }
+                        })
         );
     }
 }

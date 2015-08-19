@@ -24,6 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
@@ -36,7 +37,7 @@ public class LocalDataSourceService extends AbstractDataSourceService {
 
     private final InjectedValue<ModifiableDataSource> dataSourceConfig = new InjectedValue<ModifiableDataSource>();
 
-    public LocalDataSourceService(final String dsName, final ContextNames.BindInfo jndiName, final ClassLoader classLoader) {
+    public LocalDataSourceService(final String dsName, final ContextNames.BindInfo jndiName, final ModuleClassLoader classLoader) {
         super(dsName, jndiName, classLoader);
     }
 

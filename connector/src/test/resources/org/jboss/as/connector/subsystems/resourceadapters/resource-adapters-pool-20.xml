@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:3.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:4.0">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -42,6 +42,10 @@
             <use-strict-min>true</use-strict-min>
             <!--Optional:-->
             <flush-strategy>FailingConnectionOnly</flush-strategy>
+            <capacity>
+                <incrementer class-name="IClass" module="IModule" module-slot="IModuleSlot"></incrementer>
+                <decrementer class-name="DClass" module="DModule" module-slot="DModuleSlot"></decrementer>
+            </capacity>
           </pool>
           <!--Optional:-->
           <security>
@@ -83,7 +87,7 @@
               <security-domain>token</security-domain>
             </recover-credential>
             <!--Optional:-->
-            <recover-plugin class-name="aClass">
+            <recover-plugin class-name="aClass" module="aModule">
               <config-property name="config3">value</config-property>
             </recover-plugin>
           </recovery>

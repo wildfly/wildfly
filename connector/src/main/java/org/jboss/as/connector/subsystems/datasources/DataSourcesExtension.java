@@ -26,13 +26,19 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUND
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MODULE_NAME;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MODULE_SLOT_NAME;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -43,6 +49,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULT
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECK_VALID_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
@@ -60,6 +68,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAM
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
@@ -75,10 +85,14 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.PREPARED_S
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERY_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
@@ -86,6 +100,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.SET_TX_QUE
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHARE_PREPARED_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
@@ -100,6 +116,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_C
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
@@ -151,7 +169,7 @@ public class DataSourcesExtension implements Extension {
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -190,6 +208,7 @@ public class DataSourcesExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_2.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_2_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_3_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_4_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -336,6 +355,12 @@ public class DataSourcesExtension implements Extension {
                         writer.writeStartElement(DsPool.Tag.CONNECTION_LISTENER.getLocalName());
                         writer.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                 dataSourceNode.get(CONNECTION_LISTENER_CLASS.getName()).asString());
+                        if (dataSourceNode.hasDefined(CONNECTION_LISTENER_MODULE.getName())) {
+                            writer.writeAttribute(MODULE_NAME, dataSourceNode.get(CONNECTION_LISTENER_MODULE.getName()).asString());
+                        }
+                        if (dataSourceNode.hasDefined(CONNECTION_LISTENER_MODULE_SLOT.getName())) {
+                            writer.writeAttribute(MODULE_SLOT_NAME, dataSourceNode.get(CONNECTION_LISTENER_MODULE_SLOT.getName()).asString());
+                        }
 
                         if (dataSourceNode.hasDefined(CONNECTION_LISTENER_PROPERTIES.getName())) {
 
@@ -356,14 +381,26 @@ public class DataSourcesExtension implements Extension {
                         if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_CLASS.getName())) {
                             writer.writeStartElement(Capacity.Tag.INCREMENTER.getLocalName());
                             CAPACITY_INCREMENTER_CLASS.marshallAsAttribute(dataSourceNode, writer);
-                            CAPACITY_INCREMENTER_PROPERTIES.marshallAsElement(dataSourceNode, writer);
+                            if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_MODULE.getName())) {
+                                CAPACITY_INCREMENTER_MODULE.marshallAsAttribute(dataSourceNode, writer);
+                            }
+                            if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_MODULE_SLOT.getName())) {
+                                CAPACITY_INCREMENTER_MODULE_SLOT.marshallAsAttribute(dataSourceNode, writer);
+                            }
+                            CAPACITY_INCREMENTER_PROPERTIES.marshallAsElement(dataSourceNode,writer);
 
                             writer.writeEndElement();
                         }
                         if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_CLASS.getName())) {
                             writer.writeStartElement(Capacity.Tag.DECREMENTER.getLocalName());
                             CAPACITY_DECREMENTER_CLASS.marshallAsAttribute(dataSourceNode, writer);
-                            CAPACITY_DECREMENTER_PROPERTIES.marshallAsElement(dataSourceNode, writer);
+                            if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_MODULE.getName())) {
+                                CAPACITY_DECREMENTER_MODULE.marshallAsAttribute(dataSourceNode, writer);
+                            }
+                            if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_MODULE_SLOT.getName())) {
+                                CAPACITY_DECREMENTER_MODULE_SLOT.marshallAsAttribute(dataSourceNode, writer);
+                            }
+                            CAPACITY_DECREMENTER_PROPERTIES.marshallAsElement(dataSourceNode,writer);
 
                             writer.writeEndElement();
                         }
@@ -394,6 +431,12 @@ public class DataSourcesExtension implements Extension {
                         writer.writeAttribute(
                                 org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                 dataSourceNode.get(REAUTH_PLUGIN_CLASSNAME.getName()).asString());
+                        if (dataSourceNode.hasDefined(REAUTH_PLUGIN_MODULE.getName())) {
+                            writer.writeAttribute(MODULE_NAME, dataSourceNode.get(REAUTH_PLUGIN_MODULE.getName()).asString());
+                        }
+                        if (dataSourceNode.hasDefined(REAUTH_PLUGIN_MODULE_SLOT.getName())) {
+                            writer.writeAttribute(MODULE_SLOT_NAME, dataSourceNode.get(REAUTH_PLUGIN_MODULE_SLOT.getName()).asString());
+                        }
 
                         if (dataSourceNode.hasDefined(REAUTHPLUGIN_PROPERTIES.getName())) {
                             for (Property connectionProperty : dataSourceNode.get(REAUTHPLUGIN_PROPERTIES.getName()).asPropertyList()) {
@@ -429,6 +472,12 @@ public class DataSourcesExtension implements Extension {
                         writer.writeAttribute(
                                 org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                 dataSourceNode.get(RECOVER_PLUGIN_CLASSNAME.getName()).asString());
+                        if (dataSourceNode.hasDefined(RECOVER_PLUGIN_MODULE.getName())) {
+                            writer.writeAttribute(MODULE_NAME, dataSourceNode.get(RECOVER_PLUGIN_MODULE.getName()).asString());
+                        }
+                        if (dataSourceNode.hasDefined(RECOVER_PLUGIN_MODULE_SLOT.getName())) {
+                            writer.writeAttribute(MODULE_SLOT_NAME, dataSourceNode.get(RECOVER_PLUGIN_MODULE_SLOT.getName()).asString());
+                        }
                         if (dataSourceNode.hasDefined(RECOVER_PLUGIN_PROPERTIES.getName())) {
                             for (Property connectionProperty : dataSourceNode.get(RECOVER_PLUGIN_PROPERTIES.getName()).asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
@@ -462,6 +511,12 @@ public class DataSourcesExtension implements Extension {
                         writer.writeAttribute(
                                 org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                 dataSourceNode.get(VALID_CONNECTION_CHECKER_CLASSNAME.getName()).asString());
+                        if (dataSourceNode.hasDefined(VALID_CONNECTION_CHECKER_MODULE.getName())) {
+                            writer.writeAttribute(MODULE_NAME, dataSourceNode.get(VALID_CONNECTION_CHECKER_MODULE.getName()).asString());
+                        }
+                        if (dataSourceNode.hasDefined(VALID_CONNECTION_CHECKER_MODULE_SLOT.getName())) {
+                            writer.writeAttribute(MODULE_SLOT_NAME, dataSourceNode.get(VALID_CONNECTION_CHECKER_MODULE_SLOT.getName()).asString());
+                        }
 
                         if (dataSourceNode.hasDefined(VALID_CONNECTION_CHECKER_PROPERTIES.getName())) {
                             for (Property connectionProperty : dataSourceNode.get(VALID_CONNECTION_CHECKER_PROPERTIES.getName())
@@ -483,7 +538,12 @@ public class DataSourcesExtension implements Extension {
                         writer.writeStartElement(Validation.Tag.STALE_CONNECTION_CHECKER.getLocalName());
                         writer.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                 dataSourceNode.get(STALE_CONNECTION_CHECKER_CLASSNAME.getName()).asString());
-
+                        if (dataSourceNode.hasDefined(STALE_CONNECTION_CHECKER_MODULE.getName())) {
+                            writer.writeAttribute(MODULE_NAME, dataSourceNode.get(STALE_CONNECTION_CHECKER_MODULE.getName()).asString());
+                        }
+                        if (dataSourceNode.hasDefined(STALE_CONNECTION_CHECKER_MODULE_SLOT.getName())) {
+                            writer.writeAttribute(MODULE_SLOT_NAME, dataSourceNode.get(STALE_CONNECTION_CHECKER_MODULE_SLOT.getName()).asString());
+                        }
                         if (dataSourceNode.hasDefined(STALE_CONNECTION_CHECKER_PROPERTIES.getName())) {
 
                             for (Property connectionProperty : dataSourceNode.get(STALE_CONNECTION_CHECKER_PROPERTIES.getName())
@@ -501,6 +561,12 @@ public class DataSourcesExtension implements Extension {
                         writer.writeAttribute(
                                 org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                 dataSourceNode.get(EXCEPTION_SORTER_CLASSNAME.getName()).asString());
+                        if (dataSourceNode.hasDefined(EXCEPTION_SORTER_MODULE.getName())) {
+                            writer.writeAttribute(MODULE_NAME, dataSourceNode.get(EXCEPTION_SORTER_MODULE.getName()).asString());
+                        }
+                        if (dataSourceNode.hasDefined(EXCEPTION_SORTER_MODULE_SLOT.getName())) {
+                            writer.writeAttribute(MODULE_SLOT_NAME, dataSourceNode.get(EXCEPTION_SORTER_MODULE_SLOT.getName()).asString());
+                        }
                         if (dataSourceNode.hasDefined(EXCEPTION_SORTER_PROPERTIES.getName())) {
                             for (Property connectionProperty : dataSourceNode.get(EXCEPTION_SORTER_PROPERTIES.getName())
                                     .asPropertyList()) {

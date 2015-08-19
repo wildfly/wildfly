@@ -27,8 +27,12 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUND
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
@@ -59,6 +63,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXS
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
@@ -331,6 +337,12 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 if (conDef.hasDefined(CAPACITY_INCREMENTER_CLASS.getName())) {
                     streamWriter.writeStartElement(Capacity.Tag.INCREMENTER.getLocalName());
                     CAPACITY_INCREMENTER_CLASS.marshallAsAttribute(conDef, streamWriter);
+                    if (conDef.hasDefined(CAPACITY_INCREMENTER_MODULE.getName())) {
+                        CAPACITY_INCREMENTER_MODULE.marshallAsAttribute(conDef, streamWriter);
+                    }
+                    if (conDef.hasDefined(CAPACITY_INCREMENTER_MODULE_SLOT.getName())) {
+                        CAPACITY_INCREMENTER_MODULE_SLOT.marshallAsAttribute(conDef, streamWriter);
+                    }
                     CAPACITY_INCREMENTER_PROPERTIES.marshallAsElement(conDef, streamWriter);
 
                     streamWriter.writeEndElement();
@@ -338,6 +350,12 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 if (conDef.hasDefined(CAPACITY_DECREMENTER_CLASS.getName())) {
                     streamWriter.writeStartElement(Capacity.Tag.DECREMENTER.getLocalName());
                     CAPACITY_DECREMENTER_CLASS.marshallAsAttribute(conDef, streamWriter);
+                    if (conDef.hasDefined(CAPACITY_DECREMENTER_MODULE.getName())) {
+                        CAPACITY_DECREMENTER_MODULE.marshallAsAttribute(conDef, streamWriter);
+                    }
+                    if (conDef.hasDefined(CAPACITY_DECREMENTER_MODULE_SLOT.getName())) {
+                        CAPACITY_DECREMENTER_MODULE_SLOT.marshallAsAttribute(conDef, streamWriter);
+                    }
                     CAPACITY_DECREMENTER_PROPERTIES.marshallAsElement(conDef, streamWriter);
 
                     streamWriter.writeEndElement();
@@ -400,6 +418,12 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             if (conDef.hasDefined(RECOVERLUGIN_CLASSNAME.getName()) || conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName())) {
                 streamWriter.writeStartElement(Recovery.Tag.RECOVER_PLUGIN.getLocalName());
                 RECOVERLUGIN_CLASSNAME.marshallAsAttribute(conDef, streamWriter);
+                if (conDef.hasDefined(RECOVERLUGIN_MODULE.getName())) {
+                    RECOVERLUGIN_MODULE.marshallAsAttribute(conDef, streamWriter);
+                }
+                if (conDef.hasDefined(RECOVERLUGIN_MODULE_SLOT.getName())) {
+                    RECOVERLUGIN_MODULE_SLOT.marshallAsAttribute(conDef, streamWriter);
+                }
                 if (conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName())) {
                     for (Property property : conDef.get(RECOVERLUGIN_PROPERTIES.getName()).asPropertyList()) {
                         writeProperty(streamWriter, conDef, property.getName(), property
@@ -435,7 +459,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 case RESOURCEADAPTERS_1_0:
                 case RESOURCEADAPTERS_1_1:
                 case RESOURCEADAPTERS_2_0:
-                case RESOURCEADAPTERS_3_0:{
+                case RESOURCEADAPTERS_3_0:
+                case RESOURCEADAPTERS_4_0:{
                     localName = reader.getLocalName();
                     final Element element = Element.forName(reader.getLocalName());
                     SUBSYSTEM_RA_LOGGER.tracef("%s -> %s", localName, element);
