@@ -215,11 +215,12 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                 for(final Property property : node.get(CONNECTOR).asPropertyList()) {
                     writer.writeStartElement(Element.CONNECTOR.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                    GenericTransportDefinition.SOCKET_BINDING.marshallAsAttribute(property.getValue(), writer);
 
                     writeTransportParam(writer, property.getValue().get(PARAM));
 
-                    GenericTransportDefinition.SOCKET_BINDING.marshallAsElement(property.getValue(), writer);
                     CommonAttributes.FACTORY_CLASS.marshallAsElement(property.getValue(), writer);
+
                     writer.writeEndElement();
                 }
             }
