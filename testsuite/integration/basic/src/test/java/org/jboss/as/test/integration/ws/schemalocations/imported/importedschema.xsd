@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xs:schema elementFormDefault="unqualified" targetNamespace="http://jbossws.org/SchemaLocationsRewrite/imported"
+           version="1.0" xmlns:tns="http://jbossws.org/SchemaLocationsRewrite/imported"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="sayHello" type="tns:sayHello"/>
+    <xs:element name="sayHelloResponse" type="tns:sayHelloResponse"/>
+    <xs:complexType name="sayHello">
+        <xs:sequence>
+            <xs:element minOccurs="0" name="arg0" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="sayHelloResponse">
+        <xs:sequence>
+            <xs:element minOccurs="0" name="return" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
