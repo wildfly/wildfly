@@ -80,7 +80,6 @@ public class WebSecurityRunAsTestCase {
     private URL url;
 
     @Test
-    @Ignore("Requires Undertow 1.1.CR2 or 1.2.x")
     public void testServletRunAsInInitMethod() throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
