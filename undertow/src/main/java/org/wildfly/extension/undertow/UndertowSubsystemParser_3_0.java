@@ -128,6 +128,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.DISABLE_CACHING_FOR_SECURED_PAGES)
                                 .addAttribute(ServletContainerDefinition.DIRECTORY_LISTING)
                                 .addAttribute(ServletContainerDefinition.PROACTIVE_AUTHENTICATION)
+                                .addAttribute(ServletContainerDefinition.SESSION_ID_LENGTH)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
