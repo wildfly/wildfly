@@ -25,14 +25,12 @@ package org.jboss.as.messaging.test;
 import java.io.IOException;
 
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.Test;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class Subsystem11ParsingUnitTestCase extends AbstractSubsystemBaseTest {
+public class Subsystem11ParsingUnitTestCase extends AbstractLegacySubsystemBaseTest {
 
     public Subsystem11ParsingUnitTestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
@@ -52,12 +50,6 @@ public class Subsystem11ParsingUnitTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml(String configId) throws IOException {
         return readResource(configId);
-    }
-
-
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
     }
 
     @Override

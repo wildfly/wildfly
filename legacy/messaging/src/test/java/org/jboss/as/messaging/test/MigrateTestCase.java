@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
@@ -135,6 +136,11 @@ public class MigrateTestCase extends AbstractSubsystemTest {
                             rootRegistration, ExtensionRegistryType.SERVER));
                 }
             }, null));
+        }
+
+        @Override
+        protected ProcessType getProcessType() {
+            return ProcessType.HOST_CONTROLLER;
         }
 
         @Override
