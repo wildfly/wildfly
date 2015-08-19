@@ -703,8 +703,28 @@
 
     <xs:complexType name="jms-bridgeType">
         <xs:sequence>
-            <xs:element name="source" type="jms-bridgeParticipantType" minOccurs="0" maxOccurs="1" />
-            <xs:element name="target" type="jms-bridgeParticipantType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="source" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="source-context" type="contextType" minOccurs="0" maxOccurs="1" />
+                    </xs:sequence>
+                    <xs:attribute name="connection-factory" type="xs:string" use="required" />
+                    <xs:attribute name="destination" type="xs:string" use="required" />
+                    <xs:attribute name="user" type="xs:string" use="optional" />
+                    <xs:attribute name="password" type="xs:string" use="optional" />
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="target" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="target-context" type="contextType" minOccurs="0" maxOccurs="1" />
+                    </xs:sequence>
+                    <xs:attribute name="connection-factory" type="xs:string" use="required" />
+                    <xs:attribute name="destination" type="xs:string" use="required" />
+                    <xs:attribute name="user" type="xs:string" use="optional" />
+                    <xs:attribute name="password" type="xs:string" use="optional" />
+                </xs:complexType>
+            </xs:element>
         </xs:sequence>
 
         <xs:attribute name="name" type="xs:string" use="required" />
@@ -729,26 +749,15 @@
         <xs:attribute name="add-messageID-in-header" type="xs:boolean" use="optional" />
     </xs:complexType>
 
-    <xs:complexType name="jms-bridgeParticipantType">
-        <xs:sequence >
-            <xs:element name="context" minOccurs="0" maxOccurs="1">
+    <xs:complexType name="contextType">
+        <xs:sequence>
+            <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
-                            <xs:complexType>
-                                <xs:attribute name="name" type="xs:string" use="required" />
-                                <xs:attribute name="value" type="xs:string" use="required" />
-                            </xs:complexType>
-                        </xs:element>
-                    </xs:sequence>
+                    <xs:attribute name="name" type="xs:string" use="required" />
+                    <xs:attribute name="value" type="xs:string" use="required" />
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
-        <xs:attribute name="connection-factory" type="xs:string" use="required" />
-        <xs:attribute name="destination" type="xs:string" use="required" />
-
-        <xs:attribute name="user" type="xs:string" use="optional" />
-        <xs:attribute name="password" type="xs:string" use="optional" />
     </xs:complexType>
 
 </xs:schema>
