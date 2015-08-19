@@ -89,8 +89,9 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             } else if (specMetaData instanceof Web30MetaData) {
                 isComplete |= ((Web30MetaData) specMetaData).isMetadataComplete();
             } else {
-                // Any web.xml 2.4 or earlier deployment is metadata complete
-                isComplete = true;
+                // As per Servlet 3.0 spec, metadata is not completed unless it's set to true in web.xml.
+                // Hence, any web.xml 2.4 or earlier deployment is not metadata completed.
+                isComplete = false;
             }
         }
 
