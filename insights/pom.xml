@@ -64,7 +64,7 @@
         </dependency>
         <dependency>
             <groupId>com.redhat.gss</groupId>
-            <artifactId>wildfly-redhat-support-lib</artifactId>
+            <artifactId>redhat-support-lib-java</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
