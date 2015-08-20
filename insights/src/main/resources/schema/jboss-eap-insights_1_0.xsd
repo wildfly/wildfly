@@ -6,5 +6,8 @@
             version="1.0">
 
     <xs:element name="subsystem" type="subsystemType"/>
-    <xs:complexType name="subsystemType"/>
+    <xs:complexType name="subsystemType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="io-threads" type="xs:int"/>
+    </xs:complexType>
 </xs:schema>

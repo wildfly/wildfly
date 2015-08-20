@@ -46,6 +46,11 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.jboss.spec.javax.ws.rs</groupId>
+            <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
         </dependency>
@@ -64,7 +69,7 @@
         </dependency>
         <dependency>
             <groupId>com.redhat.gss</groupId>
-            <artifactId>wildfly-redhat-support-lib</artifactId>
+            <artifactId>redhat-support-lib-java</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 /**
  * Handler responsible for adding the subsystem resource to the model
  *
- * @author <a href="jkinlaw@jboss.com">Josh Kinlaw</a>
+ * @author <a href="jkinlaw@redhat.com">Josh Kinlaw</a>
  */
 class SubsystemAdd extends AbstractBoottimeAddStepHandler {
 

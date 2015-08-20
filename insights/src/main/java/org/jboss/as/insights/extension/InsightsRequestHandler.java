@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,6 +28,9 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 
+/**
+ * @author <a href="mailto:jkinlaw@redhat.com">Josh Kinlaw</a>
+ */
 public class InsightsRequestHandler implements OperationStepHandler {
 
     private static final String OPERATION_NAME = "enable";
