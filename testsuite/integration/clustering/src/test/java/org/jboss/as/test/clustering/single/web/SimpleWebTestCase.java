@@ -62,7 +62,6 @@ public class SimpleWebTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(SimpleWebTestCase.class.getPackage(), "web.xml");
-        log.info(war.toString(true));
         return war;
     }
 

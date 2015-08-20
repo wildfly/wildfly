@@ -63,17 +63,17 @@ public class LazyTransactionEnlistmentUnitTestCase {
         ATM atm = (ATM) ctx.lookup("ejb:/tx-lazy-enlist/" + ATMBean.class.getSimpleName() + "!" + ATM.class.getName());
         // if only
         long id = atm.createAccount(1000000);
-        System.out.println("*** id " + id);
+        //System.out.println("*** id " + id);
         double balance = atm.getBalance(id);
-        System.out.println("*** balance " + balance);
+        //System.out.println("*** balance " + balance);
         Assert.assertEquals(1000000, balance, Double.NaN);
 
         balance = atm.depositTwiceWithRollback(id, 125000, 250000);
-        System.out.println("*** balance " + balance);
+        //System.out.println("*** balance " + balance);
         // the entity state itself won't be rolled back
         Assert.assertEquals(1375000, balance, Double.NaN);
         balance = atm.getBalance(id);
-        System.out.println("*** balance " + balance);
+        //System.out.println("*** balance " + balance);
         Assert.assertEquals(1125000, balance, Double.NaN);
     }
 
@@ -82,15 +82,15 @@ public class LazyTransactionEnlistmentUnitTestCase {
         ATM atm = (ATM) ctx.lookup("ejb:/tx-lazy-enlist/" + ATMBean.class.getSimpleName() + "!" + ATM.class.getName());
         // if only
         long id = atm.createAccount(1000000);
-        System.out.println("*** id " + id);
+        //System.out.println("*** id " + id);
         double balance = atm.getBalance(id);
-        System.out.println("*** balance " + balance);
+        //System.out.println("*** balance " + balance);
         Assert.assertEquals(1000000, balance, Double.NaN);
 
         balance = atm.withdrawTwiceWithRollback(id, 125000, 250000);
-        System.out.println("*** balance " + balance);
+        //System.out.println("*** balance " + balance);
         balance = atm.getBalance(id);
-        System.out.println("*** balance " + balance);
+        //System.out.println("*** balance " + balance);
         Assert.assertEquals(875000, balance, Double.NaN);
     }
 }

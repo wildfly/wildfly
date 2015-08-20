@@ -61,8 +61,6 @@ public class TestRequiredAddressingTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxws-wsa.war").
                 addClasses(ServiceIface.class, ServiceImplAddressingRequired.class, WSHandler.class).
                 addAsResource(WSHandler.class.getPackage(), "ws-handler.xml", "org/jboss/as/test/integration/ws/wsa/ws-handler.xml");
-        log.info(war.toString(true));
-
         return war;
     }
 

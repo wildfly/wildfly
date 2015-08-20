@@ -58,8 +58,6 @@ public class ReliableServiceTestCase {
                 addClasses(ReliableServiceImpl.class, ReliableCheckHandler.class).
                 addAsWebInfResource(ReliableServiceTestCase.class.getPackage(), "ReliableService.wsdl", "wsdl/ReliableService.wsdl").
                 addAsResource(ReliableCheckHandler.class.getPackage(), "ws-handler.xml", "org/jboss/as/test/integration/ws/wsrm/ws-handler.xml");
-
-        log.debug(war.toString(true));
         return war;
     }
 

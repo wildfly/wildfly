@@ -41,7 +41,6 @@ public class SessionClusterDbPersistenceTestCase extends ClusteredWebFailoverAbs
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setWebXML(SessionClusterDbPersistenceTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource("WEB-INF/jboss-web.xml","jboss-web.xml");
-        log.info(war.toString(true));
         return war;
     }
 }

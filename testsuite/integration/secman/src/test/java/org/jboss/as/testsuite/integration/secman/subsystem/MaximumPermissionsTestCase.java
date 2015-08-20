@@ -322,7 +322,6 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
             war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new PropertyPermission("*", "read")),
                     permissionsFilename);
         }
-        LOGGER.debug(war.toString(true));
         return war;
     }
 

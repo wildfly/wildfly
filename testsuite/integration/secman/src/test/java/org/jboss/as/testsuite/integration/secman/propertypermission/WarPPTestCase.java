@@ -93,7 +93,6 @@ public class WarPPTestCase extends AbstractPPTestsWithJSP {
         addPermissionsXml(war, permissionsXmlAsset, null);
         war.addClasses(PrintSystemPropertyServlet.class);
         war.addAsWebResource(PrintSystemPropertyServlet.class.getPackage(), "readproperty.jsp", "readproperty.jsp");
-        LOGGER.info(war.toString(true));
         return war;
     }
 

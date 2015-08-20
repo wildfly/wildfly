@@ -59,7 +59,6 @@ public class SimpleWebserviceEndpointTestCase {
         war.addPackage(SimpleWebserviceEndpointImpl.class.getPackage());
         war.addClass(SimpleWebserviceEndpointImpl.class);
         war.addAsWebInfResource(SimpleWebserviceEndpointTestCase.class.getPackage(),"web.xml","web.xml");
-        log.info(war.toString(true));
         return war;
     }
     

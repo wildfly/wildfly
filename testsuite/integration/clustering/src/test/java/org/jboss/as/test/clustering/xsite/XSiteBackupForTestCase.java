@@ -105,7 +105,6 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
         war.addClass(CacheAccessServlet.class);
         war.setWebXML(XSiteBackupForTestCase.class.getPackage(), "web.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
-        log.info(war.toString(true));
         return war;
     }
 
@@ -115,7 +114,6 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
         war.addClass(CacheAccessServlet.class);
         war.setWebXML(XSiteBackupForTestCase.class.getPackage(), "web-backupfor.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
-        log.info(war.toString(true));
         return war;
     }
 

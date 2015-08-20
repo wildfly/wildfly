@@ -95,7 +95,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
                 "<decorators><class>" + CounterDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
         war.addAsResource(PersistenceIncrementorBean.class.getPackage(), "persistence.xml", "/META-INF/persistence.xml");
-        log.info(war.toString(true));
         return war;
     }
 

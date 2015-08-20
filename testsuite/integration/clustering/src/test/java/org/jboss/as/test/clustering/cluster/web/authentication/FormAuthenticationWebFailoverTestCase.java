@@ -84,7 +84,6 @@ public class FormAuthenticationWebFailoverTestCase extends ClusterAbstractTestCa
         war.addAsResource(SecureServlet.class.getPackage(), "roles.properties", "roles.properties");
         war.addAsWebResource(SecureServlet.class.getPackage(), "login.html", "login.html");
         war.addAsWebResource(SecureServlet.class.getPackage(), "error.html", "error.html");
-        log.info(war.toString(true));
         return war;
     }
 

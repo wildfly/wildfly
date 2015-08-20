@@ -82,7 +82,6 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
         war.addPackage(StatefulServlet.class.getPackage());
         war.addPackage(EJBDirectory.class.getPackage());
         war.setWebXML(StatefulServlet.class.getPackage(), "web.xml");
-        log.info(war.toString(true));
         return war;
     }
 

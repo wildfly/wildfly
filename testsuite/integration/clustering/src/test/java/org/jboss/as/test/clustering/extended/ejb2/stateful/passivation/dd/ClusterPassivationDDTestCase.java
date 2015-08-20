@@ -82,7 +82,6 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
         war.addClasses(StatefulBeanBase.class, StatefulBeanDD.class, StatefulRemote.class, StatefulRemoteHome.class);
         war.addAsWebInfResource(ClusterPassivationDDTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         war.addClasses(NodeNameGetter.class, NodeInfoServlet.class);
-        log.info(war.toString(true));
         return war;
     }
 

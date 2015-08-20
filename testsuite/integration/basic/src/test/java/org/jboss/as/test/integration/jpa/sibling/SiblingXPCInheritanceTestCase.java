@@ -92,10 +92,10 @@ public class SiblingXPCInheritanceTestCase {
     }
 
     private void dumpJndi(String s) {
-        try {
+   /*     try {
             dumpTreeEntry(iniCtx.list(s), s);
         } catch (NamingException ignore) {
-        }
+        }*/
     }
 
     private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {

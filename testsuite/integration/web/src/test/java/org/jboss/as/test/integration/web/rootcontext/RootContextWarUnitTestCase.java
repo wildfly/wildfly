@@ -79,7 +79,6 @@ public class RootContextWarUnitTestCase {
         war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "index.html"), "index.html");
 
-        log.info(war.toString(true));
         return war;
     }
 

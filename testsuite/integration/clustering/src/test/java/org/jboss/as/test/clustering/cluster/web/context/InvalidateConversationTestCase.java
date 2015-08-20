@@ -79,7 +79,6 @@ public class InvalidateConversationTestCase extends ClusterAbstractTestCase {
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.addClasses(ConversationServlet.class, ConversationBean.class, LogoutServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        log.info(war.toString(true));
         return war;
     }
 

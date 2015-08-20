@@ -101,7 +101,7 @@ public class AuditJoinTableoverBidirectionalTest {
         PhoneMO p4 = slsbAudit.createPhone("WORK", "+420", "88899912");
         slsbAudit.updatePhone(p4);
         c1.getPhones().add(p4);
-        System.out.println("PhoneList size::" + c1.getPhones().size());
+        //System.out.println("PhoneList size::" + c1.getPhones().size());
         slsbAudit.updateCustomer(c1);
 
         int check = slsbAudit.retrieveOldPhoneListSizeFromCustomer(c1.getId());

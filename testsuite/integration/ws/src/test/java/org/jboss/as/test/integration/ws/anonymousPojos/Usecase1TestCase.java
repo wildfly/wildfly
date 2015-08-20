@@ -58,7 +58,6 @@ public class Usecase1TestCase {
         war.addPackage(AnonymousPOJO.class.getPackage());
         war.addClass(AnonymousPOJO.class);
         war.addAsWebInfResource(AnonymousPOJO.class.getPackage(),"web.xml","web.xml");
-        log.info(war.toString(true));
         return war;
     }
 

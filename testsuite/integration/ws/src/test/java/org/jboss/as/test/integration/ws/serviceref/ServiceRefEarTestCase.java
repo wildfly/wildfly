@@ -60,7 +60,6 @@ public class ServiceRefEarTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")
             .addClasses(EJB3Bean.class, EndpointInterface.class);
-        log.info(jar.toString(true));
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-serviceref-example-servlet-client.war")
             .addClasses(EndpointInterface.class, EndpointService.class, ServletClient.class)
@@ -75,12 +74,9 @@ public class ServiceRefEarTestCase {
         }
         war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl");
 
-        log.info(war.toString(true));
-
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "ws-serviceref-example.ear")
             .addAsModule(jar)
             .addAsModule(war);
-        log.info(ear.toString(true));
 
         return ear;
     }
