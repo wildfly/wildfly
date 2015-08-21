@@ -69,7 +69,7 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
         Assert.assertFalse(model.get(SUBSYSTEM).hasDefined(IIOPExtension.SUBSYSTEM_NAME));
 
         ModelNode migrateOp = new ModelNode();
-        migrateOp.get(OP).set(JacORBSubsystemConstants.MIGRATE);
+        migrateOp.get(OP).set("migrate");
         migrateOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME)).toModelNode());
 
