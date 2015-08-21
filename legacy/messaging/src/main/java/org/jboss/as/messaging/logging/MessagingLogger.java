@@ -802,4 +802,10 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 79, value = "The migrate operation can not be performed: the server must be in admin-only mode")
     OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
+
+    @Message(id = 80, value = "Could not migrate attribute %s from resource %s. Use instead the socket-attribute to configure this broadcast-group.")
+    String couldNotMigrateBroadcastGroupAttribute(String attribute, PathAddress address);
+
+    @Message(id = 81, value = "Migration failed, see results for more details.")
+    String migrationFailed();
 }
