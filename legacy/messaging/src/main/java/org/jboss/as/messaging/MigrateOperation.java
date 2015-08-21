@@ -38,8 +38,11 @@ import static org.jboss.as.controller.operations.common.Util.createOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
+import static org.jboss.as.messaging.CommonAttributes.BACKUP;
 import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
@@ -48,6 +51,8 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_SERVICE;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
+import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.GROUP_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.GROUP_PORT;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
@@ -57,11 +62,14 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_PORT;
+import static org.jboss.as.messaging.CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE;
 import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.EXPRESSION;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -148,6 +156,7 @@ public class MigrateOperation implements OperationStepHandler {
     private static final AttributeDefinition ADD_LEGACY_ENTRIES = SimpleAttributeDefinitionBuilder.create("add-legacy-entries", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .build();
+    public static final String HA_POLICY = "ha-policy";
 
     private final boolean describe;
 
@@ -345,7 +354,8 @@ public class MigrateOperation implements OperationStepHandler {
 
             // migrate server resource
             if (address.size() == 2 && "server".equals(address.getLastElement().getKey())) {
-                migrateServer(newAddOp, warnings);
+                migrateServer(newAddOp, newAddOperations, warnings);
+                continue;
             }
 
             if (newAddress.asList().size() > 2) {
@@ -508,9 +518,59 @@ public class MigrateOperation implements OperationStepHandler {
     }
 
 
-    private void migrateServer(ModelNode addOperation, List<String> warnings) {
+    private void migrateServer(ModelNode addOperation, Map<PathAddress, ModelNode> newAddOperations, List<String> warnings) {
         discardInterceptors(addOperation, CommonAttributes.REMOTING_INCOMING_INTERCEPTORS.getName(), warnings);
         discardInterceptors(addOperation, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS.getName(), warnings);
+
+        // add the server :add operation before eventually adding a ha-policy child :add operation in migrateHAPolicy.
+        newAddOperations.put(pathAddress(addOperation.get(OP_ADDR)), addOperation);
+
+        migrateHAPolicy(addOperation, newAddOperations, warnings);
+    }
+
+    private void migrateHAPolicy(ModelNode serverAddOperation, Map<PathAddress, ModelNode> newAddOperations, List<String> warnings) {
+        PathAddress serverAddress = PathAddress.pathAddress(serverAddOperation.get(OP_ADDR));
+
+        ModelNode sharedStoreAttr = serverAddOperation.get(SHARED_STORE.getName());
+        ModelNode backupAttr = serverAddOperation.get(BACKUP.getName());
+
+        if (sharedStoreAttr.getType() == EXPRESSION || backupAttr.getType() == EXPRESSION) {
+            warnings.add(ROOT_LOGGER.couldNotMigrateHA(serverAddress));
+            return;
+        }
+
+        boolean sharedStore = sharedStoreAttr.isDefined() ? sharedStoreAttr.asBoolean() : SHARED_STORE.getDefaultValue().asBoolean();
+        boolean backup = backupAttr.isDefined() ? backupAttr.asBoolean() : BACKUP.getDefaultValue().asBoolean();
+
+        ModelNode haPolicyAddOperation = createAddOperation();
+        final PathAddress haPolicyAddress;
+
+        if (sharedStore) {
+            if (backup) {
+                haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-slave");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
+            } else {
+                haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-master");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
+            }
+        } else {
+            if (backup) {
+                haPolicyAddress = serverAddress.append(HA_POLICY, "replication-slave");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, MAX_SAVED_REPLICATED_JOURNAL_SIZE, "max-saved-replicated-journal-size");
+
+            } else {
+                haPolicyAddress = serverAddress.append(HA_POLICY, "replication-master");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, CHECK_FOR_LIVE_SERVER, "check-for-live-server");
+            }
+        }
+        haPolicyAddOperation.get(OP_ADDR).set(haPolicyAddress.toModelNode());
+
+        newAddOperations.put(haPolicyAddress, haPolicyAddOperation);
     }
 
     private void discardInterceptors(ModelNode addOperation, String legacyInterceptorsAttributeName, List<String> warnings) {
@@ -519,5 +579,18 @@ public class MigrateOperation implements OperationStepHandler {
         }
         warnings.add(ROOT_LOGGER.couldNotMigrateInterceptors(legacyInterceptorsAttributeName));
         addOperation.remove(legacyInterceptorsAttributeName);
+    }
+
+    /**
+     * Discard from a node and set it to a new node if the attribute is defined. Use the {@code newAttributeName} as the messaging-activemq may
+     * named differently its corresponding attribute.
+     */
+    private void setAndDiscard(ModelNode setNode, ModelNode discardNode, AttributeDefinition legacyAttributeDefinition, String newAttributeName) {
+        ModelNode attribute = discardNode.get(legacyAttributeDefinition.getName());
+        if (attribute.isDefined()) {
+            setNode.get(newAttributeName).set(attribute);
+            discardNode.remove(legacyAttributeDefinition.getName());
+        }
+
     }
 }

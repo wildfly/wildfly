@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.messaging.MessagingExtension.SUBSYSTEM_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -49,6 +50,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -60,7 +62,66 @@ public class MigrateTestCase extends AbstractSubsystemTest {
     public static final String MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME = "messaging-activemq";
 
     public MigrateTestCase() {
-        super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
+        super(SUBSYSTEM_NAME, new MessagingExtension());
+    }
+
+    @Test
+    public void testMigrateHA() throws Exception {
+        String subsystemXml = readResource("subsystem_migration_ha.xml");
+        newSubsystemAdditionalInitialization additionalInitialization = new newSubsystemAdditionalInitialization();
+        KernelServices services = createKernelServicesBuilder(additionalInitialization).setSubsystemXml(subsystemXml).build();
+
+        ModelNode model = services.readWholeModel();
+        assertFalse(additionalInitialization.extensionAdded);
+        assertTrue(model.get(SUBSYSTEM, SUBSYSTEM_NAME).isDefined());
+        assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME).isDefined());
+
+        ModelNode migrateOp = new ModelNode();
+        migrateOp.get(OP).set("migrate");
+        migrateOp.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+
+        ModelNode response = services.executeOperation(migrateOp);
+
+        System.out.println("response = " + response);
+        checkOutcome(response);
+
+        ModelNode warnings = response.get(RESULT, "migration-warnings");
+        // 1 warning about unmigrated-backup
+        // 1 warning about shared-store
+        assertEquals(warnings.toString(), 2, warnings.asList().size());
+
+        model = services.readWholeModel();
+        System.out.println("model = " + model);
+
+        assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "unmigrated-backup", "ha-policy").isDefined());
+        assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "unmigrated-shared-store", "ha-policy").isDefined());
+
+        ModelNode haPolicyForDefaultServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "default", "ha-policy", "shared-store-master");
+        assertTrue(haPolicyForDefaultServer.isDefined());
+        // default values
+        assertEquals(5000, haPolicyForDefaultServer.get("failback-delay").asLong());
+        assertEquals(false, haPolicyForDefaultServer.get("failover-on-server-shutdown").asBoolean());
+
+        ModelNode haPolicyForSharedStoreMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "shared-store-master", "ha-policy", "shared-store-master");
+        assertTrue(haPolicyForSharedStoreMasterServer.isDefined());
+        assertEquals("${failback.delay:9876}", haPolicyForSharedStoreMasterServer.get("failback-delay").asString());
+        assertEquals("${failover.on.shutdown:true}", haPolicyForSharedStoreMasterServer.get("failover-on-server-shutdown").asString());
+
+        ModelNode haPolicyForSharedStoreSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "shared-store-slave", "ha-policy", "shared-store-slave");
+        assertTrue(haPolicyForSharedStoreSlaveServer.isDefined());
+        assertEquals("${allow.failback.1:false}", haPolicyForSharedStoreSlaveServer.get("allow-failback").asString());
+        assertEquals("${failback.delay.1:1234}", haPolicyForSharedStoreSlaveServer.get("failback-delay").asString());
+        assertEquals("${failover.on.shutdown.1:true}", haPolicyForSharedStoreSlaveServer.get("failover-on-server-shutdown").asString());
+
+        ModelNode haPolicyForReplicationMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-master", "ha-policy", "replication-master");
+        assertTrue(haPolicyForReplicationMasterServer.isDefined());
+        assertEquals("${check.for.live.server:true}", haPolicyForReplicationMasterServer.get("check-for-live-server").asString());
+
+        ModelNode haPolicyForReplicationSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-slave", "ha-policy", "replication-slave");
+        assertTrue(haPolicyForReplicationSlaveServer.isDefined());
+        assertEquals("${allow.failback.2:false}", haPolicyForReplicationSlaveServer.get("allow-failback").asString());
+        assertEquals("${failback.delay.2:1234}", haPolicyForReplicationSlaveServer.get("failback-delay").asString());
+        assertEquals("${max.saved.replicated.journal.size:2}", haPolicyForReplicationSlaveServer.get("max-saved-replicated-journal-size").asString());
     }
 
     @Test
@@ -80,13 +141,13 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode model = services.readWholeModel();
         assertFalse(additionalInitialization.extensionAdded);
-        assertTrue(model.get(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME).isDefined());
+        assertTrue(model.get(SUBSYSTEM, SUBSYSTEM_NAME).isDefined());
         assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME).isDefined());
 
         ModelNode migrateOp = new ModelNode();
         migrateOp.get(OP).set("migrate");
         migrateOp.get("add-legacy-entries").set(addLegacyEntries);
-        migrateOp.get(OP_ADDR).add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
+        migrateOp.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
 
         ModelNode response = services.executeOperation(migrateOp);
 
@@ -96,12 +157,13 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         ModelNode warnings = response.get(RESULT, "migration-warnings");
         // 6 warnings about broadcast-group attributes that can not be migrated.
         // 2 warnings about interceptors that can not be migrated.
-        assertEquals(8, warnings.asList().size());
+        // 1 warning about HA migration (attributes have expressions)
+        assertEquals(warnings.toString(), 6 + 2 + 1, warnings.asList().size());
 
         model = services.readWholeModel();
 
         assertTrue(additionalInitialization.extensionAdded);
-        assertFalse(model.get(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME).isDefined());
+        assertFalse(model.get(SUBSYSTEM, SUBSYSTEM_NAME).isDefined());
         assertTrue(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME).isDefined());
 
         ModelNode newSubsystem = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME);
