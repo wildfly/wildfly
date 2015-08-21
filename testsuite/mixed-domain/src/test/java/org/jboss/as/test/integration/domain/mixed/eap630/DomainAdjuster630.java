@@ -222,7 +222,6 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.add(createRemoveOperation(udp.append("protocol", "UFC")));
         list.add(createRemoveOperation(udp.append("protocol", "MFC")));
         list.add(createRemoveOperation(udp.append("protocol", "FRAG2")));
-        list.add(createRemoveOperation(udp.append("protocol", "RSVP")));
         list.add(createAddOperation(udp.append("protocol", "pbcast.NAKACK")));
         list.add(createAddOperation(udp.append("protocol", "UNICAST2")));
         list.add(createAddOperation(udp.append("protocol", "pbcast.STABLE")));
@@ -240,7 +239,6 @@ public class DomainAdjuster630 extends DomainAdjuster {
         list.add(createRemoveOperation(tcp.append("protocol", "pbcast.GMS")));
         list.add(createRemoveOperation(tcp.append("protocol", "MFC")));
         list.add(createRemoveOperation(tcp.append("protocol", "FRAG2")));
-        list.add(createRemoveOperation(tcp.append("protocol", "RSVP")));
         list.add(createAddOperation(tcp.append("protocol", "pbcast.NAKACK")));
         list.add(createAddOperation(tcp.append("protocol", "UNICAST2")));
         list.add(createAddOperation(tcp.append("protocol", "pbcast.STABLE")));
