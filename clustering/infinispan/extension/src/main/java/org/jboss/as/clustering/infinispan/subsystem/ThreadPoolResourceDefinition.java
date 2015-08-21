@@ -91,7 +91,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
 
     ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
         this.name = name;
-        this.descriptionResolver = new InfinispanResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE));
+        this.descriptionResolver = new InfinispanResourceDescriptionResolver(pathElement(name), pathElement(PathElement.WILDCARD_VALUE));
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
