@@ -89,6 +89,7 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         // clustering/cache annotations
         factories.add(new ClusteredAnnotationInformationFactory());
         factories.add(new CacheAnnotationInformationFactory());
+        factories.add(new ClusteredSingletonAnnotationInformationFactory());
 
         this.factories = Collections.unmodifiableList(factories);
     }
