@@ -33,11 +33,12 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.DeliveryActive;
+import org.jboss.ejb3.annotation.DeliveryGroup;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 /**
- * Handles the {@link org.jboss.ejb3.annotation.DeliveryActive} annotation merging
+ * Handles the {@link org.jboss.ejb3.annotation.DeliveryActive} and {@link org.jboss.ejb3.annotation.DeliveryGroup} annotation merging
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  * @author Flavia Rainone
@@ -60,12 +61,18 @@ public class MdbDeliveryMergingProcessor extends AbstractMergingProcessor<Messag
 
         final ClassAnnotationInformation<DeliveryActive, Boolean> deliveryActive = clazz.getAnnotationInformation(DeliveryActive.class);
 
-        if (deliveryActive == null) {
-            return;
+        if (deliveryActive != null) {
+            if (!deliveryActive.getClassLevelAnnotations().isEmpty()) {
+                componentConfiguration.setDeliveryActive(deliveryActive.getClassLevelAnnotations().get(0));
+            }
         }
 
-        if (!deliveryActive.getClassLevelAnnotations().isEmpty()) {
-            componentConfiguration.setDeliveryActive(deliveryActive.getClassLevelAnnotations().get(0));
+        final ClassAnnotationInformation<DeliveryGroup, String> deliveryGroup = clazz.getAnnotationInformation(DeliveryGroup.class);
+
+        if (deliveryGroup != null) {
+            if (!deliveryGroup.getClassLevelAnnotations().isEmpty()) {
+                componentConfiguration.setDeliveryGroup(deliveryGroup.getClassLevelAnnotations().get(0));
+            }
         }
     }
 
