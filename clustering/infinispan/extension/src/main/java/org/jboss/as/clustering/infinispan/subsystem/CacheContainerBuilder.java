@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
@@ -63,6 +65,7 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
 
     private volatile String defaultCache;
     private volatile CacheContainer container;
+    private volatile EmbeddedCacheManager manager;
 
     public CacheContainerBuilder(String name) {
         this.name = name;
@@ -104,19 +107,22 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
     @Override
     public void start(StartContext context) {
         GlobalConfiguration config = this.configuration.getValue();
-        this.container = new DefaultCacheContainer(config, this.defaultCache);
-        this.container.addListener(this);
-        this.container.start();
+        this.manager = new DefaultCacheManager(config, null, false);
+        this.manager.addListener(this);
+        this.manager.start();
+        this.container = new DefaultCacheContainer(this.name, this.manager, this.defaultCache);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
     }
 
     @Override
     public void stop(StopContext context) {
-        if ((this.container != null) && this.container.getStatus().allowInvocations()) {
-            this.container.stop();
-            this.container.removeListener(this);
+        if ((this.manager != null) && this.manager.getStatus().allowInvocations()) {
+            this.manager.stop();
+            this.manager.removeListener(this);
+            this.manager = null;
             InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
         }
+        this.container = null;
     }
 
     @CacheStarted

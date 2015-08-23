@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.util.concurrent.locks.LockManagerImpl;
+import org.infinispan.util.concurrent.locks.impl.DefaultLockManager;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -33,23 +33,23 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-public enum LockingMetric implements Metric<LockManagerImpl> {
+public enum LockingMetric implements Metric<DefaultLockManager> {
 
     CURRENT_CONCURRENCY_LEVEL(MetricKeys.CURRENT_CONCURRENCY_LEVEL, ModelType.INT) {
         @Override
-        public ModelNode execute(LockManagerImpl manager) {
+        public ModelNode execute(DefaultLockManager manager) {
             return new ModelNode(manager.getConcurrencyLevel());
         }
     },
     NUMBER_OF_LOCKS_AVAILABLE(MetricKeys.NUMBER_OF_LOCKS_AVAILABLE, ModelType.INT) {
         @Override
-        public ModelNode execute(LockManagerImpl manager) {
+        public ModelNode execute(DefaultLockManager manager) {
             return new ModelNode(manager.getNumberOfLocksAvailable());
         }
     },
     NUMBER_OF_LOCKS_HELD(MetricKeys.NUMBER_OF_LOCKS_HELD, ModelType.INT) {
         @Override
-        public ModelNode execute(LockManagerImpl manager) {
+        public ModelNode execute(DefaultLockManager manager) {
             return new ModelNode(manager.getNumberOfLocksHeld());
         }
     },

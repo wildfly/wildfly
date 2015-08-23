@@ -23,16 +23,15 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import java.io.Serializable;
+import java.util.function.Predicate;
 
 import org.infinispan.filter.KeyFilter;
-import org.infinispan.filter.KeyValueFilter;
-import org.infinispan.metadata.Metadata;
 
 /**
  * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  */
-public class BeanKeyFilter<I> implements KeyFilter<Object>, KeyValueFilter<Object, Object>, Serializable {
+public class BeanKeyFilter<I> implements KeyFilter<Object>, Predicate<Object>, Serializable {
     private static final long serialVersionUID = -1079989480899595045L;
 
     private final String beanName;
@@ -50,7 +49,7 @@ public class BeanKeyFilter<I> implements KeyFilter<Object>, KeyValueFilter<Objec
     }
 
     @Override
-    public boolean accept(Object key, Object value, Metadata metadata) {
+    public boolean test(Object key) {
         return this.accept(key);
     }
 }

@@ -23,16 +23,15 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.io.Serializable;
+import java.util.function.Predicate;
 
 import org.infinispan.filter.KeyFilter;
-import org.infinispan.filter.KeyValueFilter;
-import org.infinispan.metadata.Metadata;
 
 /**
  * Filters a cache for session identifier keyed entries.
  * @author Paul Ferraro
  */
-public class SessionIdentifierFilter implements KeyFilter<Object>, KeyValueFilter<Object, Object>, Serializable {
+public class SessionIdentifierFilter implements KeyFilter<Object>, Predicate<Object>, Serializable {
     private static final long serialVersionUID = -1079989480899595045L;
 
     @Override
@@ -41,7 +40,7 @@ public class SessionIdentifierFilter implements KeyFilter<Object>, KeyValueFilte
     }
 
     @Override
-    public boolean accept(Object key, Object value, Metadata metadata) {
+    public boolean test(Object key) {
         return this.accept(key);
     }
 }

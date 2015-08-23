@@ -30,9 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
@@ -43,6 +44,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.stream.CacheCollectors;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
@@ -104,14 +106,9 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
 
     @Override
     public Map<K, V> getEntries() {
-        Map<K, V> map = new HashMap<>();
-        try (CloseableIterator<Map.Entry<K, V>> entries = this.cache.values().iterator()) {
-            while (entries.hasNext()) {
-                Map.Entry<K, V> entry = entries.next();
-                map.put(entry.getKey(), entry.getValue());
-            }
+        try (Stream<Map.Entry<K, V>> entries = this.cache.values().stream()) {
+            return entries.collect(CacheCollectors.<Map.Entry<K, V>, Map<K, V>>serializableCollector(() -> Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue())));
         }
-        return Collections.unmodifiableMap(map);
     }
 
     @Override

@@ -22,11 +22,13 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
@@ -37,11 +39,8 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.filter.NullValueConverter;
-import org.infinispan.iteration.EntryIterable;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -52,6 +51,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEven
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.stream.CacheCollectors;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -281,13 +281,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     private Set<String> getSessions(Flag... flags) {
-        Set<String> result = new HashSet<>();
-        try (EntryIterable<String, ?> entries = this.cache.getAdvancedCache().withFlags(flags).filterEntries(this.filter)) {
-            for (CacheEntry<String, ?> entry : entries.converter(NullValueConverter.getInstance())) {
-                result.add(entry.getKey());
-            }
+        try (Stream<String> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
+            return keys.filter(this.filter).collect(CacheCollectors.serializableCollector(() -> Collectors.toSet()));
         }
-        return result;
     }
 
     @Override
@@ -371,25 +367,22 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     private void schedule(Cache<String, ?> cache, Locality oldLocality, Locality newLocality) {
-        // Iterate over sessions in memory
-        try (EntryIterable<String, ?> entries = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).filterEntries(this.filter)) {
-            for (CacheEntry<String, ?> entry : entries.converter(NullValueConverter.getInstance())) {
-                String sessionId = entry.getKey();
-                // If we are the new primary owner of this session
-                // then schedule expiration of this session locally
-                if (!oldLocality.isLocal(sessionId) && newLocality.isLocal(sessionId)) {
-                    Batch batch = this.batcher.createBatch();
-                    try {
-                        // We need to lookup the session to obtain its meta data
-                        V value = this.factory.findValue(sessionId);
-                        if (value != null) {
-                            this.scheduler.schedule(this.factory.createImmutableSession(sessionId, value));
-                        }
-                    } finally {
-                        batch.discard();
-                    }
+        Consumer<String> scheduler = key -> {
+            Batch batch = this.batcher.createBatch();
+            try {
+                // We need to lookup the session to obtain its meta data
+                V value = this.factory.findValue(key);
+                if (value != null) {
+                    this.scheduler.schedule(this.factory.createImmutableSession(key, value));
                 }
+            } finally {
+                batch.discard();
             }
+        };
+        // Iterate over sessions in memory
+        try (Stream<String> keys = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
+            // If we are the new primary owner of this session then schedule expiration of this session locally
+            keys.filter(this.filter).filter(key -> !oldLocality.isLocal(key) && newLocality.isLocal(key)).forEach(scheduler);
         }
     }
 
