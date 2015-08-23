@@ -62,6 +62,7 @@ import org.junit.runner.RunWith;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @RunWith(Arquillian.class)
+@Ignore("WFLY-5138")
 public class ParseAndMarshalModelsTestCase {
 
     @Deployment(name = "test", managed = false, testable = true)
