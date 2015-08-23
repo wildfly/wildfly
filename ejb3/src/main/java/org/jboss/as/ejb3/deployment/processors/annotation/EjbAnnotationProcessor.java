@@ -63,6 +63,7 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
 
         factories.add(new ResourceAdaptorAnnotationInformationFactory());
         factories.add(new DeliveryActiveAnnotationInformationFactory());
+        factories.add(new DeliveryGroupAnnotationInformationFactory());
         factories.add(new InitAnnotationInformationFactory());
 
         // pool
@@ -89,6 +90,7 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         // clustering/cache annotations
         factories.add(new ClusteredAnnotationInformationFactory());
         factories.add(new CacheAnnotationInformationFactory());
+        factories.add(new ClusteredSingletonAnnotationInformationFactory());
 
         this.factories = Collections.unmodifiableList(factories);
     }

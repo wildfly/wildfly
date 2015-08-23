@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,16 +30,20 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 /**
- * Parses the urn:clustering namespace elements for clustering related metadata on EJBs.
+ * Parses the urn:clustering:1.1 namespace elements for clustering related metadata on EJBs.
  *
- * @author Jaikiran Pai
  * @author Flavia Rainone
  */
-public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataParser<EJBBoundClusteringMetaData> {
+public class EJBBoundClusteringMetaDataParser11 extends AbstractEJBBoundMetaDataParser<EJBBoundClusteringMetaData> {
 
-    public static final String NAMESPACE_URI_1_0 = "urn:clustering:1.0";
+    public static final String NAMESPACE_URI_1_1 = "urn:clustering:1.1";
     private static final String ROOT_ELEMENT_CLUSTERING = "clustering";
     private static final String CLUSTERED_ELEMENT =  "clustered";
+    private static final String SINGLETON_ELEMENT =  "clustered-singleton";
+
+    public static final EJBBoundClusteringMetaDataParser11 INSTANCE = new EJBBoundClusteringMetaDataParser11();
+
+    private EJBBoundClusteringMetaDataParser11() {}
 
     @Override
     public EJBBoundClusteringMetaData parse(final XMLStreamReader xmlStreamReader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
@@ -55,14 +59,23 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
 
     @Override
     protected void processElement(final EJBBoundClusteringMetaData metaData, final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
-        if (NAMESPACE_URI_1_0.equals(reader.getNamespaceURI())) {
-            EjbLogger.ROOT_LOGGER.deprecatedNamespace(NAMESPACE_URI_1_0, ROOT_ELEMENT_CLUSTERING);
-            final String localName = reader.getLocalName();
-            if (localName.equals(CLUSTERED_ELEMENT)) {
-                requireNoAttributes(reader);
-                getElementText(reader, propertyReplacer);
-            } else {
-                throw unexpectedElement(reader);
+        if (NAMESPACE_URI_1_1.equals(reader.getNamespaceURI())) {
+            switch (reader.getLocalName()) {
+                case CLUSTERED_ELEMENT:
+                    requireNoAttributes(reader);
+                    getElementText(reader, propertyReplacer);
+                    EjbLogger.ROOT_LOGGER.deprecatedNamespace(NAMESPACE_URI_1_1, CLUSTERED_ELEMENT);
+                    break;
+                case SINGLETON_ELEMENT:
+                    requireNoAttributes(reader);
+                    final String text = getElementText(reader, propertyReplacer);
+                    if (text != null) {
+                        final boolean isClusteredSingleton = Boolean.parseBoolean(text.trim());
+                        metaData.setClusteredSingleton(isClusteredSingleton);
+                    }
+                    break;
+                default:
+                    throw unexpectedElement(reader);
             }
         } else {
             super.processElement(metaData, reader, propertyReplacer);
