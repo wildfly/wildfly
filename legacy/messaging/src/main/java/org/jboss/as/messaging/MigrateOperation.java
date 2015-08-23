@@ -23,15 +23,14 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
@@ -40,6 +39,7 @@ import static org.jboss.as.controller.operations.common.Util.createRemoveOperati
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
+import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
@@ -48,36 +48,45 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_SERVICE;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
+import static org.jboss.as.messaging.CommonAttributes.GROUP_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.GROUP_PORT;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.HTTP_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.HTTP_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
+import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_PORT;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.MultistepUtil;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -109,12 +118,29 @@ public class MigrateOperation implements OperationStepHandler {
 
     private static final String MESSAGING_ACTIVEMQ_EXTENSION = "org.wildfly.extension.messaging-activemq";
     private static final String MESSAGING_ACTIVEMQ_MODULE = "org.wildfly.extension.messaging-activemq";
+    private static final String MESSAGING_MODULE = "org.jboss.as.messaging";
 
     private static final String NEW_ENTRY_SUFFIX = "-new";
     private static final String HORNETQ_NETTY_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
     private static final String HORNETQ_NETTY_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
     private static final String ARTEMIS_NETTY_CONNECTOR_FACTORY = "org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory";
     private static final String ARTEMIS_NETTY_ACCEPTOR_FACTORY = "org.apache.activemq.artemis.core.remoting.impl.netty.NettyAcceptorFactory";
+
+    public static final String MIGRATE = "migrate";
+    public static final String MIGRATION_WARNINGS = "migration-warnings";
+    public static final String MIGRATION_ERROR = "migration-error";
+    public static final String MIGRATION_OPERATIONS = "migration-operations";
+    public static final String DESCRIBE_MIGRATION = "describe-migration";
+
+
+    public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
+            .setAllowNull(true)
+            .build();
+
+    public static final SimpleMapAttributeDefinition MIGRATION_ERROR_ATTR = new SimpleMapAttributeDefinition.Builder(MIGRATION_ERROR, ModelType.OBJECT, true)
+            .setValueType(ModelType.OBJECT)
+            .setAllowNull(true)
+            .build();
 
     private static final OperationStepHandler DESCRIBE_MIGRATION_INSTANCE = new MigrateOperation(true);
     private static final OperationStepHandler MIGRATE_INSTANCE = new MigrateOperation(false);
@@ -131,15 +157,16 @@ public class MigrateOperation implements OperationStepHandler {
     }
 
     static void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resourceDescriptionResolver) {
-        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder("migrate", resourceDescriptionResolver)
+        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
                         .setParameters(ADD_LEGACY_ENTRIES)
+                        .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
                         .build(),
                 MigrateOperation.MIGRATE_INSTANCE);
-        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder("describe-migration", resourceDescriptionResolver)
+        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
                         .addParameter(ADD_LEGACY_ENTRIES)
-                        .setReplyType(ModelType.LIST).setReplyValueType(ModelType.OBJECT)
+                        .setReplyParameters(MIGRATION_WARNINGS_ATTR)
                         .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
                         .build(),
@@ -149,10 +176,12 @@ public class MigrateOperation implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (!describe && context.getRunningMode() != RunningMode.ADMIN_ONLY) {
-            throw MessagingLogger.ROOT_LOGGER.migrateOperationAllowedOnlyInAdminOnly();
+            throw ROOT_LOGGER.migrateOperationAllowedOnlyInAdminOnly();
         }
 
         boolean addLegacyEntries = ADD_LEGACY_ENTRIES.resolveModelAttribute(context, operation).asBoolean();
+
+        final List<String> warnings = new ArrayList<>();
 
         // node containing the description (list of add operations) of the legacy subsystem
         final ModelNode legacyModelAddOps = new ModelNode();
@@ -168,7 +197,7 @@ public class MigrateOperation implements OperationStepHandler {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // transform the legacy add operations and put them in migrationOperations
-                transformResources(legacyModelAddOps, migrationOperations, addLegacyEntries);
+                transformResources(legacyModelAddOps, migrationOperations, addLegacyEntries, warnings);
 
                 // put the /subsystem=messaging:remove operation
                 removeMessagingSubsystem(migrationOperations);
@@ -181,14 +210,54 @@ public class MigrateOperation implements OperationStepHandler {
 
                     // for describe-migration operation, do nothing and return the list of operations that would
                     // be executed in the composite operation
-                    context.getResult().set(migrationOperations.values());
+                    final Collection<ModelNode> values = migrationOperations.values();
+                    ModelNode result = new ModelNode();
+                    fillWarnings(result, warnings);
+                    result.get(MIGRATION_OPERATIONS).set(values);
+
+                    context.getResult().set(result);
                 } else {
                     // :migrate operation
                     // invoke an OSH on a composite operation with all the migration operations
-                    migrateSubsystems(context, migrationOperations);
+                    final Map<PathAddress, ModelNode> migrateOpResponses = migrateSubsystems(context, migrationOperations);
+
+                    context.completeStep(new OperationContext.ResultHandler() {
+                        @Override
+                        public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                            final ModelNode result = new ModelNode();
+                            fillWarnings(result, warnings);
+                            if (resultAction == OperationContext.ResultAction.ROLLBACK) {
+                                for (Map.Entry<PathAddress, ModelNode> entry : migrateOpResponses.entrySet()) {
+                                    if (entry.getValue().hasDefined(FAILURE_DESCRIPTION)) {
+                                        //we check for failure description, as every node has 'failed', but one
+                                        //the real error has a failure description
+                                        //we break when we find the first one, as there will only ever be one failure
+                                        //as the op stops after the first failure
+                                        ModelNode desc = new ModelNode();
+                                        desc.get(OP).set(migrationOperations.get(entry.getKey()));
+                                        desc.get(RESULT).set(entry.getValue());
+                                        result.get(MIGRATION_ERROR).set(desc);
+                                        break;
+                                    }
+                                }
+                                context.getFailureDescription().set(ROOT_LOGGER.migrationFailed());
+                            }
+
+                            context.getResult().set(result);
+                        }
+                    });
+
                 }
             }
         }, MODEL);
+    }
+
+    protected void fillWarnings(ModelNode result, List<String> warnings) {
+        ModelNode rw = new ModelNode().setEmptyList();
+        for (String warning : warnings) {
+            rw.add(warning);
+        }
+        result.get(MIGRATION_WARNINGS).set(rw);
     }
 
     /**
@@ -240,10 +309,10 @@ public class MigrateOperation implements OperationStepHandler {
         migrationOperations.put(subsystemAddress, removeOperation);
     }
 
-    private void migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) {
-        ModelNode compositeOp = createOperation(COMPOSITE, EMPTY_ADDRESS);
-        compositeOp.get(STEPS).set(migrationOperations.values());
-        context.addStep(compositeOp, CompositeOperationHandler.INSTANCE, MODEL);
+    private Map<PathAddress, ModelNode> migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) throws OperationFailedException {
+        final Map<PathAddress, ModelNode> result = new LinkedHashMap<>();
+        MultistepUtil.recordOperationSteps(context, migrationOperations, result);
+        return result;
     }
 
     private ModelNode transformAddress(ModelNode legacyAddress) {
@@ -265,21 +334,31 @@ public class MigrateOperation implements OperationStepHandler {
         return newAddress;
     }
 
-    private void transformResources(final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations, boolean addLegacyEntries) throws OperationFailedException {
+    private void transformResources(final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations, boolean addLegacyEntries, List<String> warnings) throws OperationFailedException {
         for (ModelNode legacyAddOp : legacyModelDescription.get(RESULT).asList()) {
             final ModelNode newAddOp = legacyAddOp.clone();
 
             ModelNode newAddress = transformAddress(legacyAddOp.get(OP_ADDR).clone());
             newAddOp.get(OP_ADDR).set(newAddress);
 
+            PathAddress address = PathAddress.pathAddress(newAddress);
+
+            // migrate server resource
+            if (address.size() == 2 && "server".equals(address.getLastElement().getKey())) {
+                migrateServer(newAddOp, warnings);
+            }
+
             if (newAddress.asList().size() > 2) {
-                Property subsystemSubresource = newAddress.asPropertyList().get(1);
-                if (subsystemSubresource.getName().equals("server")) {
-                    Property serverSubresource = newAddress.asPropertyList().get(2);
-                    switch (serverSubresource.getName()) {
+                // element 0 is subsystem=messaging-activemq
+                String parentType = address.getElement(1).getKey();
+                String resourceType = address.getElement(2).getKey();
+                if ("server".equals(parentType)) {
+                    switch (resourceType) {
+                        case BROADCAST_GROUP:
+                            migrateBroadcastGroup(newAddOp, warnings);
+                            break;
                         case CONNECTION_FACTORY:
                             if (addLegacyEntries) {
-                                PathAddress address = PathAddress.pathAddress(newAddress);
                                 PathAddress legacyConnectionFactoryAddress = address.getParent().append("legacy-connection-factory", address.getLastElement().getValue());
                                 final ModelNode addLegacyConnectionFactoryOp = legacyAddOp.clone();
                                 addLegacyConnectionFactoryOp.get(OP_ADDR).set(legacyConnectionFactoryAddress.toModelNode());
@@ -312,13 +391,12 @@ public class MigrateOperation implements OperationStepHandler {
                         case HTTP_CONNECTOR:
                         case REMOTE_CONNECTOR:
                         case CONNECTOR_SERVICE:
-                            if (newAddress.asPropertyList().size() > 3) {
+                            if (address.size() == 4) {
                                 // if there are any param resource underneath connectors, acceptors, and connector-services
                                 // add them directly to their parent add operation in their params attribute
-                                String name = newAddress.asPropertyList().get(3).getValue().asString();
+                                String name = address.getLastElement().getValue();
                                 ModelNode value = newAddOp.get(VALUE);
-                                PathAddress currentAddress = pathAddress(newAddress);
-                                ModelNode parentAddOp = newAddOperations.get(currentAddress.getParent());
+                                ModelNode parentAddOp = newAddOperations.get(address.getParent());
                                 parentAddOp.get("params").add(new Property(name, value));
                                 continue;
                             }
@@ -327,7 +405,21 @@ public class MigrateOperation implements OperationStepHandler {
                 }
             }
 
-            newAddOperations.put(pathAddress(newAddOp.get(OP_ADDR)), newAddOp);
+            newAddOperations.put(address, newAddOp);
+        }
+    }
+
+    private void migrateBroadcastGroup(ModelNode newAddOp, List<String> warnings) {
+        // These attributes are not present in the messaging-activemq subsystem.
+        // Instead a socket-binding must be used to configure the broadcast-group.
+        final Collection<String> unmigratedProperties = Arrays.asList(LOCAL_BIND_ADDRESS.getName(),
+                LOCAL_BIND_PORT.getName(),
+                GROUP_ADDRESS.getName(),
+                GROUP_PORT.getName());
+        for (Property property : newAddOp.asPropertyList()) {
+            if (unmigratedProperties.contains(property.getName())) {
+                warnings.add(ROOT_LOGGER.couldNotMigrateBroadcastGroupAttribute(property.getName(), pathAddress(newAddOp.get(OP_ADDR))));
+            }
         }
     }
 
@@ -415,4 +507,17 @@ public class MigrateOperation implements OperationStepHandler {
         addOperation.get(FACTORY_CLASS.getName()).set(newFactoryClass);
     }
 
+
+    private void migrateServer(ModelNode addOperation, List<String> warnings) {
+        discardInterceptors(addOperation, CommonAttributes.REMOTING_INCOMING_INTERCEPTORS.getName(), warnings);
+        discardInterceptors(addOperation, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS.getName(), warnings);
+    }
+
+    private void discardInterceptors(ModelNode addOperation, String legacyInterceptorsAttributeName, List<String> warnings) {
+        if (!addOperation.get(legacyInterceptorsAttributeName).isDefined()) {
+            return;
+        }
+        warnings.add(ROOT_LOGGER.couldNotMigrateInterceptors(legacyInterceptorsAttributeName));
+        addOperation.remove(legacyInterceptorsAttributeName);
+    }
 }

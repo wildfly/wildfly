@@ -24,6 +24,7 @@ package org.jboss.as.messaging.test;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,6 +35,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
@@ -86,7 +88,15 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         migrateOp.get("add-legacy-entries").set(addLegacyEntries);
         migrateOp.get(OP_ADDR).add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
 
-        checkOutcome(services.executeOperation(migrateOp));
+        ModelNode response = services.executeOperation(migrateOp);
+
+        System.out.println("response = " + response);
+        checkOutcome(response);
+
+        ModelNode warnings = response.get(RESULT, "migration-warnings");
+        // 6 warnings about broadcast-group attributes that can not be migrated.
+        // 2 warnings about interceptors that can not be migrated.
+        assertEquals(8, warnings.asList().size());
 
         model = services.readWholeModel();
 
@@ -135,6 +145,11 @@ public class MigrateTestCase extends AbstractSubsystemTest {
                             rootRegistration, ExtensionRegistryType.SERVER));
                 }
             }, null));
+        }
+
+        @Override
+        protected ProcessType getProcessType() {
+            return ProcessType.HOST_CONTROLLER;
         }
 
         @Override

@@ -802,4 +802,13 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 79, value = "The migrate operation can not be performed: the server must be in admin-only mode")
     OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
+
+    @Message(id = 80, value = "Could not migrate attribute %s from resource %s. Use instead the socket-attribute to configure this broadcast-group.")
+    String couldNotMigrateBroadcastGroupAttribute(String attribute, PathAddress address);
+
+    @Message(id = 81, value = "Migration failed, see results for more details.")
+    String migrationFailed();
+
+    @Message(id = 82, value = "Classes providing the %s are discarded during the migration. To use them in the new messaging-activemq subsystem, you will have to extend the Artemis-based Interceptor.")
+    String couldNotMigrateInterceptors(String legacyInterceptorsAttributeName);
 }

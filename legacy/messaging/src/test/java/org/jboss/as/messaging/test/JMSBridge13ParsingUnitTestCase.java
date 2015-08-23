@@ -25,13 +25,11 @@ package org.jboss.as.messaging.test;
 import java.io.IOException;
 
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 
 /**
  * @author Jeff Mesnil (c) 2012 Red Hat inc
  */
-public class JMSBridge13ParsingUnitTestCase extends AbstractSubsystemBaseTest {
+public class JMSBridge13ParsingUnitTestCase extends AbstractLegacySubsystemBaseTest {
 
     public JMSBridge13ParsingUnitTestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
@@ -40,11 +38,6 @@ public class JMSBridge13ParsingUnitTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("jms-bridge_1_3.xml");
-    }
-
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
     }
 
     @Override

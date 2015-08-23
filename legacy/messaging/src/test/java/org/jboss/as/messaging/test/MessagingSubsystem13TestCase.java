@@ -25,13 +25,12 @@ package org.jboss.as.messaging.test;
 import java.io.IOException;
 
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.junit.Test;
 
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
+public class MessagingSubsystem13TestCase extends AbstractLegacySubsystemBaseTest {
 
     public MessagingSubsystem13TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());

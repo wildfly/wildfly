@@ -33,7 +33,9 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_1_5;
 import static org.jboss.as.messaging.Namespace.MESSAGING_2_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_3_0;
 
-import org.jboss.as.controller.Extension;
+import java.util.Collections;
+import java.util.Set;
+
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -41,7 +43,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
@@ -117,7 +119,7 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class MessagingExtension implements Extension {
+public class MessagingExtension extends AbstractLegacyExtension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
 
@@ -150,15 +152,17 @@ public class MessagingExtension implements Extension {
         return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, prefix.toString(), RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
-    public void initialize(ExtensionContext context) {
+    public MessagingExtension() {
+        super("org.jboss.as.messaging", SUBSYSTEM_NAME);
+    }
+
+    @Override
+    protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerXMLElementWriter(MessagingXMLWriter.INSTANCE);
 
-        boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-
         // Root resource
         final ManagementResourceRegistration rootRegistration = subsystem.registerSubsystemModel(MessagingSubsystemRootResourceDefinition.INSTANCE);
-        rootRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // HQ servers
         final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(HornetQServerResourceDefinition.INSTANCE);
@@ -235,9 +239,12 @@ public class MessagingExtension implements Extension {
         if (context.isRegisterTransformers()) {
             MessagingTransformers.registerTransformers(subsystem);
         }
+
+        return Collections.singleton(rootRegistration);
     }
 
-    public void initializeParsers(ExtensionParsingContext context) {
+    @Override
+    protected void initializeLegacyParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_1.getUriString(), MessagingSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_2.getUriString(), Messaging12SubsystemParser.getInstance());
