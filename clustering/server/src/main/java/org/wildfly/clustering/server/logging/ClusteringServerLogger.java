@@ -26,12 +26,18 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.util.Collection;
+import java.util.Map;
+
+import org.infinispan.commons.CacheException;
+import org.infinispan.notifications.cachelistener.event.Event;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
+import org.wildfly.clustering.group.Node;
 
 /**
  * @author <a href="mailto:pferraro@redhat.com">Paul Ferraro</a>
@@ -79,4 +85,12 @@ public interface ClusteringServerLogger {
 
     @Message(id = 9, value = "Singleton service %s is not started.")
     IllegalStateException notStarted(String serviceName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10, value = "Failed to purge %s/%s registry of old registry entries for: %s")
+    void registryPurgeFailed(@Cause CacheException e, String containerName, String cacheName, Collection<Node> nodes);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "Failed to notify %s/%s registry listener of %s(%s) event")
+    void registryListenerFailed(@Cause Throwable e, String containerName, String cacheName, Event.Type type, Map<?, ?> entries);
 }

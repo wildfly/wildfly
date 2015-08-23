@@ -22,7 +22,6 @@
 package org.wildfly.clustering.server.registry;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +33,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
+import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
@@ -52,6 +53,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
+import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 
 /**
  * Clustered {@link Registry} backed by an Infinispan cache.
@@ -59,9 +61,10 @@ import org.wildfly.clustering.registry.RegistryEntryProvider;
  * @param <K> key type
  * @param <V> value type
  */
-@org.infinispan.notifications.Listener
+@org.infinispan.notifications.Listener(sync = false)
 public class CacheRegistry<K, V> implements Registry<K, V> {
 
+    private final String containerName;
     private final List<Registry.Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final RegistryEntryProvider<K, V> provider;
     private final Cache<Node, Map.Entry<K, V>> cache;
@@ -70,6 +73,7 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
     private final NodeFactory<Address> factory;
 
     public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
+        this.containerName = config.getContainerName();
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
@@ -129,32 +133,36 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
     }
 
     @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<Address, Node> event) {
+    public void topologyChanged(TopologyChangedEvent<Node, Map.Entry<K, V>> event) {
         if (event.isPre()) return;
-        List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
-        // Only run on the coordinator
-        if (!newAddresses.get(0).equals(event.getCache().getCacheManager().getAddress())) return;
+        ConsistentHash hash = event.getConsistentHashAtEnd();
+        List<Address> members = hash.getMembers();
 
-        Set<Address> addresses = new HashSet<>(event.getConsistentHashAtStart().getMembers());
         // Determine which nodes have left the cache view
-        addresses.removeAll(newAddresses);
-        final List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.factory.createNode(address));
-        }
-        Cache<Node, Map.Entry<K, V>> cache = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
-        Map<K, V> removed = new HashMap<>();
-        try (Batch batch = this.batcher.createBatch()) {
-            for (Node node: nodes) {
-                Map.Entry<K, V> old = cache.remove(node);
-                if (old != null) {
-                    removed.put(old.getKey(), old.getValue());
+        Set<Address> addresses = new HashSet<>(event.getConsistentHashAtStart().getMembers());
+        addresses.removeAll(members);
+
+        if (!addresses.isEmpty()) {
+            Address localAddress = event.getCache().getCacheManager().getAddress();
+            // We're only interested in the entries for which we are the primary owner
+            List<Node> nodes = addresses.stream().filter(address -> hash.locatePrimaryOwner(address).equals(localAddress)).map(address -> this.factory.createNode(address)).collect(Collectors.toList());
+
+            if (!nodes.isEmpty()) {
+                Cache<Node, Map.Entry<K, V>> cache = event.getCache().getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
+                Map<K, V> removed = new HashMap<>();
+                try (Batch batch = this.batcher.createBatch()) {
+                    for (Node node: nodes) {
+                        Map.Entry<K, V> old = cache.remove(node);
+                        if (old != null) {
+                            removed.put(old.getKey(), old.getValue());
+                        }
+                    }
+                    if (!removed.isEmpty()) {
+                        this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
+                    }
+                } catch (CacheException e) {
+                    ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, this.containerName, event.getCache().getName(), nodes);
                 }
-            }
-        }
-        if (!removed.isEmpty()) {
-            for (Listener<K, V> listener: this.listeners) {
-                listener.removedEntries(removed);
             }
         }
     }
@@ -176,25 +184,32 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
         }
     }
 
-    public void notifyListeners(Event.Type type, Map.Entry<K, V> entry) {
-        Map<K, V> entries = Collections.singletonMap(entry.getKey(), entry.getValue());
+    private void notifyListeners(Event.Type type, Map.Entry<K, V> entry) {
+        this.notifyListeners(type, Collections.singletonMap(entry.getKey(), entry.getValue()));
+    }
+
+    private void notifyListeners(Event.Type type, Map<K, V> entries) {
         for (Listener<K, V> listener: this.listeners) {
-            switch (type) {
-                case CACHE_ENTRY_CREATED: {
-                    listener.addedEntries(entries);
-                    break;
+            try {
+                switch (type) {
+                    case CACHE_ENTRY_CREATED: {
+                        listener.addedEntries(entries);
+                        break;
+                    }
+                    case CACHE_ENTRY_MODIFIED: {
+                        listener.updatedEntries(entries);
+                        break;
+                    }
+                    case CACHE_ENTRY_REMOVED: {
+                        listener.removedEntries(entries);
+                        break;
+                    }
+                    default: {
+                        throw new IllegalStateException(type.name());
+                    }
                 }
-                case CACHE_ENTRY_MODIFIED: {
-                    listener.updatedEntries(entries);
-                    break;
-                }
-                case CACHE_ENTRY_REMOVED: {
-                    listener.removedEntries(entries);
-                    break;
-                }
-                default: {
-                    throw new IllegalStateException(type.name());
-                }
+            } catch (Throwable e) {
+                ClusteringServerLogger.ROOT_LOGGER.registryListenerFailed(e, this.containerName, this.cache.getName(), type, entries);
             }
         }
     }
