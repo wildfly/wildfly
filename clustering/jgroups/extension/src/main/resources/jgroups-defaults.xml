@@ -24,42 +24,42 @@
 <!-- This file supplies the internal defaults per protocol -->
 <config xmlns="urn:org:jgroups">
     <UDP
-        ucast_recv_buf_size="20m"
-        ucast_send_buf_size="640k"
-        mcast_recv_buf_size="25m"
-        mcast_send_buf_size="640k"
-        max_bundle_size="31k"
         ip_ttl="2"
-
-        thread_pool.rejection_policy="discard"
-        oob_thread_pool.rejection_policy="discard"
-        internal_thread_pool.rejection_policy="discard"/>
+        mcast_recv_buf_size="25m"
+        mcast_send_buf_size="1m"
+        ucast_recv_buf_size="20m"
+        ucast_send_buf_size="1m"
+    />
     <TCP
-        recv_buf_size="20m"
         send_buf_size="640k"
-        max_bundle_size="31k"
-
-        thread_pool.rejection_policy="discard"
-        oob_thread_pool.rejection_policy="discard"
-        internal_thread_pool.rejection_policy="discard"/>
+        sock_conn_timeout="300"
+    />
     <MPING ip_ttl="2"/>
-    <FD timeout="3000" max_tries="5" msg_counts_as_heartbeat="false"/>
-    <FD_ALL timeout="15000" interval="3000"/>
-    <VERIFY_SUSPECT timeout="1500"/>
-    <pbcast.NAKACK2 xmit_table_num_rows="100"/>
-    <UNICAST3 conn_expiry_timeout="0"
-        max_msg_batch_size="100"
-        xmit_table_num_rows="20"
-        xmit_table_msgs_per_row="10000"
-        xmit_table_max_compaction_time="10000"/>
-    <pbcast.STABLE stability_delay="500"
+    <MERGE3
+        min_interval="10000"
+        max_interval="30000"
+    />
+    <FD max_tries="5"
+        msg_counts_as_heartbeat="false"
+        timeout="3000"
+    />
+    <FD_ALL
+        interval="15000"
+        timeout="60000"
+        timeout_check_interval="5000"/>
+    <VERIFY_SUSPECT timeout="5000"/>
+    <pbcast.NAKACK2 xmit_table_num_rows="50"/>
+    <UNICAST3
+        conn_expiry_timeout="0"
+        xmit_table_num_rows="50"
+    />
+    <pbcast.STABLE
+        stability_delay="500"
         desired_avg_gossip="5000"
-        max_bytes="1m"/>
-    <pbcast.GMS print_local_addr="true"/>
+        max_bytes="1m"
+    />
+    <pbcast.GMS print_local_addr="false"/>
     <UFC max_credits="2m"/>
     <MFC max_credits="2m"/>
     <FRAG2 frag_size="30k"/>
-    <RSVP timeout="60000"
-        resend_interval="500"
-        ack_on_delivery="false"/>
 </config>

@@ -25,7 +25,6 @@
                 <protocol type="UFC"/>
                 <?UDP-MULTICAST-FLOW-CONTROL?>
                 <protocol type="FRAG2"/>
-                <protocol type="RSVP"/>
             </stack>
             <stack name="tcp">
                 <transport type="TCP" socket-binding="jgroups-tcp"/>
@@ -40,7 +39,6 @@
                 <protocol type="pbcast.GMS"/>
                 <?TCP-MULTICAST-FLOW-CONTROL?>
                 <protocol type="FRAG2"/>
-                <protocol type="RSVP"/>
             </stack>
         </stacks>
     </subsystem>
