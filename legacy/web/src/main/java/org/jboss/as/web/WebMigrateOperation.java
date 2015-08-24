@@ -32,13 +32,13 @@ import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.MultistepUtil;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
@@ -317,19 +317,19 @@ public class WebMigrateOperation implements OperationStepHandler {
         //now lets add the trust store
         addres = pathAddress(pathElement(CORE_SERVICE, MANAGEMENT), pathElement(SECURITY_REALM, realmName), pathElement(AUTHENTICATION, TRUSTSTORE));
         ModelNode addOp = createAddOperation(addres);
-        addOp.get(KeystoreAttributes.KEYSTORE_PATH.getName()).set(caCertificateFile);
-        addOp.get(KeystoreAttributes.KEYSTORE_PASSWORD.getName()).set(caCertificatePassword);
-        addOp.get(KeystoreAttributes.KEYSTORE_PROVIDER.getName()).set(trustStoreType);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PATH).set(caCertificateFile);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PASSWORD).set(caCertificatePassword);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PROVIDER).set(trustStoreType);
         migrationOperations.put(addres, addOp);
 
 
         //now lets add the key store
         addres = pathAddress(pathElement(CORE_SERVICE, MANAGEMENT), pathElement(SECURITY_REALM, realmName), pathElement(SERVER_IDENTITY, SSL));
         addOp = createAddOperation(addres);
-        addOp.get(KeystoreAttributes.KEYSTORE_PATH.getName()).set(certificateKeyFile);
-        addOp.get(KeystoreAttributes.KEYSTORE_PASSWORD.getName()).set(password);
-        addOp.get(KeystoreAttributes.KEYSTORE_PROVIDER.getName()).set(keystoreType);
-        addOp.get(KeystoreAttributes.ALIAS.getName()).set(keyAlias);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PATH).set(certificateKeyFile);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PASSWORD).set(password);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PROVIDER).set(keystoreType);
+        addOp.get(ModelDescriptionConstants.ALIAS).set(keyAlias);
         addOp.get(PROTOCOL).set(protocol);
         //addOp.get(KeystoreAttributes.KEY_PASSWORD.getName()).set(password); //TODO: is this correct? both key and keystore have same password?
 
