@@ -70,6 +70,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
     private final InjectedValue<ThreadPoolConfiguration> expirationThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> listenerThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> persistenceThreadPool = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> remoteCommandThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> stateTransferThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> transportThreadPool = new InjectedValue<>();
     private final String name;
@@ -123,6 +124,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
         }
 
         builder.transport().transportThreadPool().read(this.transportThreadPool.getValue());
+        builder.transport().remoteCommandThreadPool().read(this.remoteCommandThreadPool.getValue());
 
         builder.asyncThreadPool().read(this.asyncOperationsThreadPool.getValue());
         builder.expirationThreadPool().read(this.expirationThreadPool.getValue());
@@ -152,6 +154,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
                 .addDependency(ThreadPoolResourceDefinition.LISTENER.getServiceName(this.name), ThreadPoolConfiguration.class, this.listenerThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.STATE_TRANSFER.getServiceName(this.name), ThreadPoolConfiguration.class, this.stateTransferThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.PERSISTENCE.getServiceName(this.name), ThreadPoolConfiguration.class, this.persistenceThreadPool)
+                .addDependency(ThreadPoolResourceDefinition.REMOTE_COMMAND.getServiceName(this.name), ThreadPoolConfiguration.class, this.remoteCommandThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.TRANSPORT.getServiceName(this.name), ThreadPoolConfiguration.class, this.transportThreadPool)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
