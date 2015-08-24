@@ -128,9 +128,9 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
                     return new CoarseSessionEntry<>(sessionEntry, new MutableCacheEntry<>(attributes, new CacheEntryMutator<>(this.attributesCache, key, value)));
                 } catch (InvalidSerializedFormException e) {
                     InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
+                    this.remove(id);
                 }
             }
-            this.remove(id);
         }
         return null;
     }
