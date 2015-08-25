@@ -400,7 +400,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 if (timer.getNextExpiration() == null) {
                     statement.setTimestamp(6, null);
                 } else {
-                    statement.setTimestamp(6, new Timestamp(timer.getNextExpiration().getTime()));
+                    statement.setTimestamp(6, timestamp(timer.getNextExpiration()));
                 }
             } catch (SQLException e) {
                 // something wrong with the preparation
@@ -677,7 +677,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         if (date == null) {
             return null;
         }
-        return new Timestamp(date.getTime());
+        long time = date.getTime();
+        if(database != null && database.equals("mysql")) {
+            // truncate the milliseconds because MySQL 5.6.4+ and MariaDB 5.3+ do the same
+            // and querying with a Timestamp containing milliseconds doesn't match the rows
+            // with such truncated DATETIMEs
+            time -= time % 1000;
+        }
+        return new Timestamp(time);
     }
 
     /**
