@@ -39,6 +39,10 @@ public class TransformUtils {
             String name = property.getName();
             final ModelNode legacyValue = property.getValue();
             if (legacyValue.isDefined()) {
+                if(name.equals(JacORBSubsystemConstants.IOR_SETTINGS)){
+                    transformIorSettings(model, legacyValue);
+                    continue;
+                }
                 final ModelNode value;
                 switch (name) {
                     case JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION:
@@ -79,5 +83,14 @@ public class TransformUtils {
             }
         }
         return model;
+    }
+
+    private static void transformIorSettings(final ModelNode model, final ModelNode legacyValue) {
+        for (final Property category : legacyValue.get(JacORBSubsystemConstants.DEFAULT).get(JacORBSubsystemConstants.SETTING)
+                .asPropertyList()) {
+            for (final Property property : category.getValue().asPropertyList()) {
+                model.get(property.getName()).set(property.getValue());
+            }
+        }
     }
 }

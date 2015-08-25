@@ -54,7 +54,6 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode legacyModel)
             throws OperationFailedException {
         printJacORBEmulationWarningMessage();
-        TransformUtils.transformModel(legacyModel);
         super.performRuntime(context, operation, legacyModel);
     }
 
