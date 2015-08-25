@@ -298,7 +298,9 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private static void putIfAbsent(Map<String, Attribute> attributes, Attribute attribute) {
-        String name = attribute.getName();
+        // Some of JGroups @Property-s use '.' in their names (e.g. "timer.queue_max_size") which is disallowed in the domain model,
+        // thus we replace all with '-' since JGroups never uses them and this mapping is bijective.
+        String name = attribute.getName().replace('.', '-');
         if (!attributes.containsKey(name)) {
             attributes.put(name, attribute);
         }

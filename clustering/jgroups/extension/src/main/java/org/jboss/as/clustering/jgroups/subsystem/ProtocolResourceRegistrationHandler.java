@@ -88,6 +88,10 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
                 ChannelFactory factory = (ChannelFactory) controller.getValue();
                 if (factory != null) {
                     ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
+                    if (configuration.getTransport().getName().equals(protocolName)) {
+                        Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(configuration.getTransport().getModule()).getClassLoader().loadClass(configuration.getTransport().getProtocolClassName()).asSubclass(Protocol.class);
+                        return channel.getProtocolStack().findProtocol(protocolClass);
+                    }
                     for (ProtocolConfiguration protocol : configuration.getProtocols()) {
                         if (protocol.getName().equals(protocolName)) {
                             Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(protocol.getModule()).getClassLoader().loadClass(protocol.getProtocolClassName()).asSubclass(Protocol.class);
