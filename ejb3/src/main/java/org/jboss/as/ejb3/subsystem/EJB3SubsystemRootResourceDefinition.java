@@ -309,6 +309,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         if (version.equals(VERSION_1_2_1)) {
             TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
             EJB3RemoteResourceDefinition.registerTransformers_1_2_0(builder);
+            MdbDeliveryGroupResourceDefinition.registerTransformers_1_2_0(builder);
         } else if (version.equals(VERSION_1_3_0)) {
             TimerServiceResourceDefinition.registerTransformers_1_3_0(builder);
         }
@@ -319,6 +320,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder().setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME)
         .end();
+        MdbDeliveryGroupResourceDefinition.registerTransformers_3_0(builder);
         EJB3RemoteResourceDefinition.registerTransformers_3_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_3_0_0);
     }
