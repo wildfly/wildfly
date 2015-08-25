@@ -44,6 +44,10 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DefaultDiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -62,25 +66,25 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
     }
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STACK("stack", ModelType.STRING, null), // 'stack' is required since model 4.0.0
+        STACK("stack", ModelType.STRING, false), // 'stack' is required since model 4.0.0
         MODULE("module", ModelType.STRING, new ModelNode("org.wildfly.clustering.server"), new ModuleIdentifierValidatorBuilder()),
+        CLUSTER("cluster", ModelType.STRING, true)
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
+        Attribute(String name, ModelType type, boolean allowNull) {
+            this.definition = createBuilder(name, type, allowNull).build();
         }
 
         Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, true).setDefaultValue(defaultValue);
             this.definition = builder.setValidator(validator.configure(builder).build()).build();
         }
 
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, boolean allowNull) {
             return new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(defaultValue != null)
-                    .setDefaultValue(defaultValue)
+                    .setAllowNull(allowNull)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             ;
         }
@@ -92,7 +96,20 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // Nothing to transform yet
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (JGroupsModel.VERSION_4_0_0.requiresTransformation(version)) {
+            DiscardAttributeChecker discarder = new DefaultDiscardAttributeChecker(false, true) {
+                @Override
+                protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                    return !attributeValue.isDefined() || attributeValue.equals(new ModelNode(address.getLastElement().getValue()));
+                }
+            };
+            builder.getAttributeBuilder()
+                    .setDiscard(discarder, Attribute.CLUSTER.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CLUSTER.getDefinition())
+                    ;
+        }
     }
 
     final boolean allowRuntimeOnlyRegistration;

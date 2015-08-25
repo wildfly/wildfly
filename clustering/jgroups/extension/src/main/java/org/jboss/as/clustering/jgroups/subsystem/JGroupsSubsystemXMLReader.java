@@ -49,7 +49,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         this.schema = schema;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> result) throws XMLStreamException {
 
@@ -164,6 +163,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.MODULE);
                     break;
                 }
+                case CLUSTER: {
+                    if (this.schema.since(JGroupsSchema.VERSION_4_0)) {
+                        readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.CLUSTER);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -218,7 +223,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
-    @SuppressWarnings("deprecation")
     private void parseStacks(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         ModelNode operation = operations.get(address);

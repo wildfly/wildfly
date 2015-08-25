@@ -1,6 +1,6 @@
 <subsystem xmlns="urn:jboss:domain:jgroups:4.0">
     <channels default="${test.channel:ee}">
-        <channel name="ee" stack="${test.expr:maximal}">
+        <channel name="ee" stack="${test.expr:maximal}" cluster="${test.expr:mycluster}">
             <fork name="web">
                 <protocol type="CENTRAL_LOCK">
                     <property name="num_backups">1</property>
