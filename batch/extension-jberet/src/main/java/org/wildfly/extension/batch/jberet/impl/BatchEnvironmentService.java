@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.jberet.services;
+package org.wildfly.extension.batch.jberet.impl;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -36,13 +36,12 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.batch.jberet._private.BatchLogger;
+import org.wildfly.extension.batch.jberet.impl.ContextHandle.ChainedContextHandle;
+import org.wildfly.extension.batch.jberet.impl.ContextHandle.Handle;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.jberet.BatchEnvironmentFactory;
-import org.wildfly.jberet.WildFlyArtifactFactory;
-import org.wildfly.jberet._private.WildFlyBatchLogger;
-import org.wildfly.jberet.services.ContextHandle.ChainedContextHandle;
-import org.wildfly.jberet.services.ContextHandle.Handle;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -73,7 +72,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        WildFlyBatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
+        BatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
         final RequestController requestController = requestControllerInjector.getOptionalValue();
         if (requestController != null) {
             // Create the entry point
@@ -91,7 +90,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     @Override
     public synchronized void stop(final StopContext context) {
-        WildFlyBatchLogger.LOGGER.debugf("Removing batch environment; %s", classLoader);
+        BatchLogger.LOGGER.debugf("Removing batch environment; %s", classLoader);
         BatchEnvironmentFactory.getInstance().remove(classLoader);
         batchEnvironment = null;
         if (controlPoint != null) {
@@ -198,8 +197,9 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         /**
          * {@inheritDoc}
          *
-         * @deprecated this is no longer used in jBeret and will be removed
          * @return
+         *
+         * @deprecated this is no longer used in jBeret and will be removed
          */
         @Override
         @Deprecated
