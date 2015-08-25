@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.MultistepUtil;
@@ -49,6 +51,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -64,14 +67,20 @@ public class MigrateOperation implements OperationStepHandler {
     public static final String MIGRATION_OPERATIONS = "migration-operations";
     public static final String MIGRATION_ERROR = "migration-error";
 
+    public static final SimpleMapAttributeDefinition MIGRATION_ERROR_ATTR = new SimpleMapAttributeDefinition.Builder(MIGRATION_ERROR, ModelType.OBJECT, true)
+            .setValueType(ModelType.OBJECT)
+            .setAllowNull(true)
+            .build();
 
     static void registerOperation(final ManagementResourceRegistration registry, final ResourceDescriptionResolver resourceDescriptionResolver) {
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
                         .setRuntimeOnly()
+                        .setReplyParameters(MIGRATION_ERROR_ATTR)
                         .build(),
                 new MigrateOperation(false));
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
                         .setRuntimeOnly()
+                        .setReplyParameters(MIGRATION_ERROR_ATTR)
                         .build(),
                 new MigrateOperation(true));
 
@@ -109,10 +118,20 @@ public class MigrateOperation implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext operationContext, ModelNode modelNode) throws OperationFailedException {
+
                 final Resource jacorbResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
                 final ModelNode jacorbModel = Resource.Tools.readModel(jacorbResource).clone();
 
-                TransformUtils.checkLegacyModel(jacorbModel, true);
+                List<String> unsupportedProperties = TransformUtils.checkLegacyModel(jacorbModel);
+                if (!unsupportedProperties.isEmpty()) {
+                    context.setRollbackOnly();
+
+                    ModelNode result = new ModelNode();
+                    final String error =JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(unsupportedProperties);
+                    result.get(MIGRATION_ERROR).set(error);
+                    context.getResult().set(result);
+                    return;
+                }
 
                 final ModelNode openjdkModel = TransformUtils.transformModel(jacorbModel);
 

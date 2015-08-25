@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.wildfly.iiop.openjdk.Constants;
@@ -18,7 +17,7 @@ public class TransformUtils {
     private TransformUtils() {
     }
 
-    static List<String> checkLegacyModel(final ModelNode model, final boolean failOnErrors) throws OperationFailedException {
+    static List<String> checkLegacyModel(final ModelNode model) throws OperationFailedException {
         final List<String> propertiesToReject = new LinkedList<>();
         for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ON_OFF_ATTRIBUTES_TO_REJECT) {
             if (model.hasDefined(attribute.getName())
@@ -29,13 +28,6 @@ public class TransformUtils {
         for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ATTRIBUTES_TO_REJECT) {
             if (model.hasDefined(attribute.getName())) {
                 propertiesToReject.add(attribute.getName());
-            }
-        }
-        if (!propertiesToReject.isEmpty()) {
-            if(failOnErrors) {
-                throw JacORBLogger.ROOT_LOGGER.cannotEmulateProperties(propertiesToReject);
-            } else {
-                JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(propertiesToReject);
             }
         }
         return propertiesToReject;
