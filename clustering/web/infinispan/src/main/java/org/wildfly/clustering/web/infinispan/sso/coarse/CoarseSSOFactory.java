@@ -78,16 +78,19 @@ public class CoarseSSOFactory<A, D, L> implements SSOFactory<CoarseSSOEntry<A, D
     @Override
     public CoarseSSOEntry<A, D, L> findValue(String id) {
         CoarseAuthenticationEntry<A, D, L> entry = this.authenticationCache.get(id);
-        if (entry == null) return null;
-        Map<D, String> map = this.sessionsCache.get(new CoarseSessionsKey(id));
-        if (map == null) return null;
-        try {
-            A authentication = this.marshaller.read(entry.getAuthentication());
-            return new CoarseSSOEntry<>(authentication, entry.getLocalContext(), map);
-        } catch (InvalidSerializedFormException e) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToActivateAuthentication(e, id);
-            return null;
+        if (entry != null) {
+            Map<D, String> map = this.sessionsCache.get(new CoarseSessionsKey(id));
+            if (map != null) {
+                try {
+                    A authentication = this.marshaller.read(entry.getAuthentication());
+                    return new CoarseSSOEntry<>(authentication, entry.getLocalContext(), map);
+                } catch (InvalidSerializedFormException e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToActivateAuthentication(e, id);
+                    this.remove(id);
+                }
+            }
         }
+        return null;
     }
 
     @Override
