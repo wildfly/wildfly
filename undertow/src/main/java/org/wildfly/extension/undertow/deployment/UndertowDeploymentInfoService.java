@@ -554,6 +554,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (!mergedMetaData.isMetadataComplete()) {
                 mergedMetaData.resolveAnnotations();
             }
+            mergedMetaData.resolveRunAs();
             final DeploymentInfo d = new DeploymentInfo();
             d.setContextPath(resolveContextPath());
             if (mergedMetaData.getDescriptionGroup() != null) {
