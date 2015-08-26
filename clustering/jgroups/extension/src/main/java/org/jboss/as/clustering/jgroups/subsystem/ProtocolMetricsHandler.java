@@ -263,8 +263,6 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 } else {
                     context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
                 }
-            } else {
-                context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.protocolNotFoundInStack(protocolName));
             }
         } catch (ClassNotFoundException | ModuleLoadException e) {
             context.getFailureDescription().set(e.getLocalizedMessage());
