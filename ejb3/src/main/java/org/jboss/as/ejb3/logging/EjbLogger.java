@@ -3091,4 +3091,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 479, value = "This node is no longer the active cluster singleton, or the cluster singleton is no longer in use")
     void logNoLongerClusterSigletonNode();
 
+    @LogMessage(level = ERROR)
+    @Message(id = 480, value = "Loaded timer (%s) for EJB (%s) and this node that is marked as being in a timeout. The original timeout may not have been processed. Please use graceful shutdown to ensure timeout tasks are finished before shutting down.")
+    void loadedPersistentTimerInTimeout(String timer, String timedObject);
 }

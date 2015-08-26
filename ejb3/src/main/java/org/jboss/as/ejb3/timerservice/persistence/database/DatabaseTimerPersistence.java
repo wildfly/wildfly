@@ -452,10 +452,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement.setString(1, timedObjectId);
             statement.setString(2, partition);
             resultSet = statement.executeQuery();
-            final List<TimerImpl> timers = new ArrayList<TimerImpl>();
+            final List<Holder> timers = new ArrayList<>();
             while (resultSet.next()) {
                 try {
-                    final TimerImpl timerImpl = timerFromResult(resultSet, timerService);
+                    final Holder timerImpl = timerFromResult(resultSet, timerService);
                     if (timerImpl != null) {
                         timers.add(timerImpl);
                     }
@@ -465,13 +465,30 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             }
             synchronized (this) {
                 Set<String> ids = new HashSet<>();
-                for (TimerImpl timer : timers) {
-                    ids.add(timer.getId());
+                for (Holder timer : timers) {
+                    ids.add(timer.timer.getId());
                 }
                 knownTimerIds.put(timedObjectId, ids);
+                for(Holder timer : timers) {
+                    if(timer.requiresReset) {
+                        TimerImpl ret = timer.timer;
+                        EjbLogger.DEPLOYMENT_LOGGER.loadedPersistentTimerInTimeout(ret.getId(), ret.getTimedObjectId());
+                        if(ret.getNextExpiration() == null) {
+                            ret.setTimerState(TimerState.CANCELED);
+                            persistTimer(ret);
+                            return null;
+                        } else {
+                            ret.setTimerState(TimerState.ACTIVE);
+                            persistTimer(ret);
+                        }
+                    }
+                }
             }
-
-            return timers;
+            List<TimerImpl> ret = new ArrayList<>();
+            for(Holder timer : timers) {
+                ret.add(timer.timer);
+            }
+            return ret;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -497,8 +514,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         return this;
     }
 
-    private TimerImpl timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService) throws SQLException {
+    private Holder timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService) throws SQLException {
         boolean calendarTimer = resultSet.getBoolean(24);
+        final String nodeName = resultSet.getString(25);
+        boolean requiresReset = false;
 
         TimerImpl.Builder builder = null;
         if (calendarTimer) {
@@ -544,7 +563,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         builder.setInfo((Serializable) deSerialize(resultSet.getString(8)));
         builder.setTimerState(TimerState.valueOf(resultSet.getString(9)));
         builder.setPersistent(true);
-        return builder.build(timerService);
+
+        TimerImpl ret =  builder.build(timerService);
+        if(nodeName != null && (nodeName.equals(this.nodeName))) {
+            if(ret.getState() == TimerState.IN_TIMEOUT || ret.getState() == TimerState.RETRY_TIMEOUT) {
+                requiresReset = true;
+            }
+        }
+        return new Holder(ret, requiresReset);
     }
 
     private void statementParameters(final TimerImpl timerEntity, final PreparedStatement statement) throws SQLException {
@@ -756,8 +782,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                         synchronized (DatabaseTimerPersistence.this) {
                                             knownTimerIds.get(timedObjectId).add(id);
                                         }
-                                        final TimerImpl timerImpl = timerFromResult(resultSet, listener.getTimerService());
-                                        listener.timerAdded(timerImpl);
+                                        final Holder holder = timerFromResult(resultSet, listener.getTimerService());
+                                        if(holder != null) {
+                                            listener.timerAdded(holder.timer);
+                                        }
                                     }
                                 } catch (Exception e) {
                                     EjbLogger.ROOT_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
@@ -784,6 +812,25 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 }
             }
 
+        }
+    }
+
+
+    static final class Holder {
+        final TimerImpl timer;
+        final boolean requiresReset;
+
+        Holder(TimerImpl timer, boolean requiresReset) {
+            this.timer = timer;
+            this.requiresReset = requiresReset;
+        }
+
+        public TimerImpl getTimer() {
+            return timer;
+        }
+
+        public boolean isRequiresReset() {
+            return requiresReset;
         }
     }
 }
