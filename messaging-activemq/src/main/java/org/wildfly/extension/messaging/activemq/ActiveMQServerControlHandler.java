@@ -25,6 +25,9 @@ package org.wildfly.extension.messaging.activemq;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.LIST;
+import static org.jboss.dmr.ModelType.STRING;
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.rollbackOperationIfServerNotActive;
 import static org.wildfly.extension.messaging.activemq.ManagementUtil.reportListOfStrings;
 import static org.wildfly.extension.messaging.activemq.ManagementUtil.reportRoles;
@@ -32,9 +35,6 @@ import static org.wildfly.extension.messaging.activemq.ManagementUtil.reportRole
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.createNonEmptyStringAttribute;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeOnlyOperation;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeReadOnlyOperation;
-import static org.jboss.dmr.ModelType.BOOLEAN;
-import static org.jboss.dmr.ModelType.LIST;
-import static org.jboss.dmr.ModelType.STRING;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -43,6 +43,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -50,11 +51,11 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Handles operations and attribute reads supported by a ActiveMQ {@link org.apache.activemq.api.core.management.ActiveMQServerControl}.
@@ -65,15 +66,15 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
     static final ActiveMQServerControlHandler INSTANCE = new ActiveMQServerControlHandler();
 
-    public static final AttributeDefinition ACTIVE = create("active", BOOLEAN)
+    public static final AttributeDefinition ACTIVE = create("active", BOOLEAN, true)
             .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition STARTED = new SimpleAttributeDefinition(CommonAttributes.STARTED, ModelType.BOOLEAN,
-            false, AttributeAccess.Flag.STORAGE_RUNTIME);
+            true, AttributeAccess.Flag.STORAGE_RUNTIME);
 
     public static final AttributeDefinition VERSION = new SimpleAttributeDefinition(CommonAttributes.VERSION, ModelType.STRING,
-            false, AttributeAccess.Flag.STORAGE_RUNTIME);
+            true, AttributeAccess.Flag.STORAGE_RUNTIME);
 
     private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION, ACTIVE };
     public static final String GET_CONNECTORS_AS_JSON = "get-connectors-as-json";
@@ -121,14 +122,17 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final String operationName = operation.require(OP).asString();
 
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        if (service == null || service.getState() != ServiceController.State.UP) {
-            throw MessagingLogger.ROOT_LOGGER.activeMQServerNotInstalled(serviceName.getSimpleName());
-        }
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
 
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
-            handleReadAttribute(context, operation, server);
+            if (context.getRunningMode() == RunningMode.NORMAL) {
+                ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
+                if (service == null || service.getState() != ServiceController.State.UP) {
+                    throw MessagingLogger.ROOT_LOGGER.activeMQServerNotInstalled(serviceName.getSimpleName());
+                }
+                ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+                //TODO 'active' should possibly be set to false if we are admin only?
+                handleReadAttribute(context, operation, server);
+            }
             return;
         }
 
