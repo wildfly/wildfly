@@ -120,14 +120,16 @@ public class ModClusterService extends FilterService {
         if(multicastAddress == null) {
             throw UndertowLogger.ROOT_LOGGER.advertiseSocketBindingRequiresMulticastAddress();
         }
-        builder.enableAdvertise()
-                .setAdvertiseAddress(advertiseSocketBinding.getValue().getSocketAddress().getAddress().getHostAddress())
-                .setAdvertiseGroup(multicastAddress.getHostAddress())
-                .setAdvertisePort(advertiseSocketBinding.getValue().getPort())
-                .setAdvertiseFrequency(advertiseFrequency)
-                .setPath(advertisePath)
-                .setProtocol(advertiseProtocol)
-                .setSecurityKey(securityKey);
+        if(advertiseFrequency > 0) {
+            builder.enableAdvertise()
+                    .setAdvertiseAddress(advertiseSocketBinding.getValue().getSocketAddress().getAddress().getHostAddress())
+                    .setAdvertiseGroup(multicastAddress.getHostAddress())
+                    .setAdvertisePort(advertiseSocketBinding.getValue().getPort())
+                    .setAdvertiseFrequency(advertiseFrequency)
+                    .setPath(advertisePath)
+                    .setProtocol(advertiseProtocol)
+                    .setSecurityKey(securityKey);
+        }
         builder.setManagementHost(managementSocketBinding.getValue().getSocketAddress().getHostName());
         builder.setManagementPort(managementSocketBinding.getValue().getSocketAddress().getPort());
 
