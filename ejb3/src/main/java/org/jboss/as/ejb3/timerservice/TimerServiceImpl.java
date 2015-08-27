@@ -128,7 +128,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Key that is used to store timers that are waiting on transaction completion in the transaction local
      */
-    private static final Object waitingOnTxCompletionKey = new Object();
+    private final Object waitingOnTxCompletionKey = new Object();
 
     private TransactionManager transactionManager;
     private TransactionSynchronizationRegistry tsr;
