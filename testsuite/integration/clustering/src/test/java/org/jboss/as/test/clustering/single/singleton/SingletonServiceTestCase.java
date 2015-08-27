@@ -75,7 +75,7 @@ public class SingletonServiceTestCase {
         URI defaultURI = MyServiceServlet.createURI(baseURL, MyService.DEFAULT_SERVICE_NAME);
         URI quorumURI = MyServiceServlet.createURI(baseURL, MyService.QUORUM_SERVICE_NAME);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(defaultURI));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());

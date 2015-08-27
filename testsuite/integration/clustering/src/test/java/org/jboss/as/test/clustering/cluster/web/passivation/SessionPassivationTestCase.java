@@ -64,8 +64,8 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
         String session1 = null;
         String session2 = null;
 
-        try (CloseableHttpClient client1 = TestHttpClientUtils.relaxedCookieHttpClient();
-             CloseableHttpClient client2 = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client1 = TestHttpClientUtils.promiscuousCookieHttpClient();
+             CloseableHttpClient client2 = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // This should not trigger any passivation/activation events
             HttpResponse response = client1.execute(new HttpGet(SessionOperationServlet.createSetURI(baseURL1, "a", "1")));
             try {

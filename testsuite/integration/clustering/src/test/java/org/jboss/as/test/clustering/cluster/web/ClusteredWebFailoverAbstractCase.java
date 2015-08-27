@@ -104,7 +104,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
     }
 
     private void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
-        HttpClient client = TestHttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
 
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);

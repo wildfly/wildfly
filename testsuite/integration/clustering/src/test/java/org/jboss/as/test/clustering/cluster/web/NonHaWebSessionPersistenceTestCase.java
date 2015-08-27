@@ -89,7 +89,7 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
 
         URI url = SimpleServlet.createURI(baseURL);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));

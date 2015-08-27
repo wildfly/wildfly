@@ -101,7 +101,7 @@ public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
         URI uri21 = SimpleServlet.createURI(baseURL2.toURI().resolve(MODULE_1).toURL());
         URI uri22 = SimpleServlet.createURI(baseURL2.toURI().resolve(MODULE_2).toURL());
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri11));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());

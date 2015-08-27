@@ -84,7 +84,7 @@ public abstract class SSOTestBase {
 
         // Start by accessing the secured index.html of war1
         CookieStore store = new BasicCookieStore();
-        HttpClient httpclient = TestHttpClientUtils.relaxedCookieHttpClientBuilder()
+        HttpClient httpclient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
                 .disableRedirectHandling()
                 .build();
@@ -134,7 +134,7 @@ public abstract class SSOTestBase {
 
         // Start by accessing the secured index.html of war1
         CookieStore store = new BasicCookieStore();
-        HttpClient httpclient = TestHttpClientUtils.relaxedCookieHttpClientBuilder().setDefaultCookieStore(store).build();
+        HttpClient httpclient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder().setDefaultCookieStore(store).build();
         try {
             checkAccessDenied(httpclient, warA1 + "index.html");
 

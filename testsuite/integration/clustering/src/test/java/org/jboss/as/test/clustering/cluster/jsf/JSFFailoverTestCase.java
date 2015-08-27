@@ -208,7 +208,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
 
         log.info("URLs are: " + url1 + ", " + url2);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response;
             NumberGuessState state;
 
@@ -332,7 +332,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         String url1 = baseURL1.toString() + "home.jsf";
         String url2 = baseURL2.toString() + "home.jsf";
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response;
             NumberGuessState state;
 

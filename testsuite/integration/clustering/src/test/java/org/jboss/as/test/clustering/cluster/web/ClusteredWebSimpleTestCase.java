@@ -95,7 +95,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
         URI uri = SimpleServlet.createURI(baseURL);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -127,7 +127,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
         URI url1 = SimpleServlet.createURI(baseURL1);
         URI url2 = SimpleServlet.createURI(baseURL2);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -193,7 +193,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
 
     private void abstractGracefulServe(URL baseURL, boolean undeployOnly) throws URISyntaxException, IOException, InterruptedException {
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             URI uri = SimpleServlet.createURI(baseURL);
 
             // Make sure a normal request will succeed

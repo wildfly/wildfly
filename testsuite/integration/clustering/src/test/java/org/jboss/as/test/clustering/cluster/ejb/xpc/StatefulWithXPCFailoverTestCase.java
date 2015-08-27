@@ -138,7 +138,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         URI xpc1_secondLevelCacheEntries_url = StatefulServlet.getEmployeesIn2LCURI(baseURL1);
         URI xpc2_secondLevelCacheEntries_url = StatefulServlet.getEmployeesIn2LCURI(baseURL2);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             assertExecuteUrl(client, StatefulServlet.echoURI(baseURL1, "StartingTestSecondLevelCache"));  // echo message to server.log
             assertExecuteUrl(client, StatefulServlet.echoURI(baseURL2, "StartingTestSecondLevelCache")); // echo message to server.log
 
@@ -201,7 +201,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         URI xpc2_getempsecond_url = StatefulServlet.get2ndBeanEmployeeURI(baseURL2);
         URI xpc2_getdestroy_url = StatefulServlet.destroyURI(baseURL2);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             stop(CONTAINER_2);
 
             // extended persistence context is available on node1
