@@ -120,9 +120,7 @@
         <version.org.apache.cxf>3.1.2</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.3</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
-        <version.org.apache.httpcomponents.httpclient>4.5</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpasyncclient>4.1</version.org.apache.httpcomponents.httpasyncclient>
-        <version.org.apache.httpcomponents.httpcore>4.4.1</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.lucene>5.2.1</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.1.17</version.org.apache.myfaces.core>
