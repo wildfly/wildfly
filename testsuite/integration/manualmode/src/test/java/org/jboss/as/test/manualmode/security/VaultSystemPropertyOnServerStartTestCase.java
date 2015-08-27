@@ -55,9 +55,9 @@ import org.junit.runner.RunWith;
 
 /**
  * Test whether server starts when system property contain vault value.
- * 
+ *
  * @author olukas
- * 
+ *
  */
 @RunWith(Arquillian.class)
 public class VaultSystemPropertyOnServerStartTestCase {
@@ -149,6 +149,8 @@ public class VaultSystemPropertyOnServerStartTestCase {
     public static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war");
         war.addClass(PrintSystemPropertyServlet.class);
+        war.addAsManifestResource(VaultSystemPropertyOnServerStartTestCase.class.getPackage(),
+                VaultSystemPropertyOnServerStartTestCase.class.getSimpleName() + "-permissions.xml", "permissions.xml");
         return war;
     }
 
