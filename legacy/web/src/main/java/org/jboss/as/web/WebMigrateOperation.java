@@ -686,6 +686,7 @@ public class WebMigrateOperation implements OperationStepHandler {
             case "AJP/1.3":
                 newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.AJP_LISTENER, address.getLastElement().getValue()));
                 addConnector = createAddOperation(newAddress);
+                addConnector.get(Constants.SCHEME).set(newAddOp.get(Constants.SCHEME));
                 break;
             default:
                 newAddress = null;
