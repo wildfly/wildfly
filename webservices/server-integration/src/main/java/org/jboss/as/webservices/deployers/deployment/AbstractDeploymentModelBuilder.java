@@ -105,7 +105,11 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
         dep.addAttachment(WebservicesMetaData.class, webservicesMD);
 
-        final JBossWebservicesMetaData jbossWebservicesMD = getOptionalAttachment(unit, JBOSS_WEBSERVICES_METADATA_KEY);
+        JBossWebservicesMetaData jbossWebservicesMD = getOptionalAttachment(unit, JBOSS_WEBSERVICES_METADATA_KEY);
+        if (unit.getParent() != null) {
+            jbossWebservicesMD = JBossWebservicesMetaData.merge(
+                    getOptionalAttachment(unit.getParent(), JBOSS_WEBSERVICES_METADATA_KEY), jbossWebservicesMD);
+        }
         dep.addAttachment(JBossWebservicesMetaData.class, jbossWebservicesMD);
 
         final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, JAXWS_ENDPOINTS_KEY);
