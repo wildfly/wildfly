@@ -811,4 +811,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 82, value = "Classes providing the %s are discarded during the migration. To use them in the new messaging-activemq subsystem, you will have to extend the Artemis-based Interceptor.")
     String couldNotMigrateInterceptors(String legacyInterceptorsAttributeName);
+
+    @Message(id = 83, value = "Could not migrate the HA configuration of %s. Its shared-store and backup attributes holds expressions and it is not possible to determine unambiguously how to create the corresponding ha-policy for the messaging-activemq's server.")
+    String couldNotMigrateHA(PathAddress address);
 }
