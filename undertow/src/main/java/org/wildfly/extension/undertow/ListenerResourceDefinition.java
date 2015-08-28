@@ -147,12 +147,18 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setAllowNull(true).setAllowExpression(true).build();
 
     public enum ConnectorStat {
-        REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG, true).setStorageRuntime().build()),
-        BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG, true).setStorageRuntime().build()),
-        BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG, true).setStorageRuntime().build()),
-        ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG, true).setStorageRuntime().build()),
-        PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG, true).setStorageRuntime().build()),
-        MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG, true).setStorageRuntime().build());
+        REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
 
         private static final Map<String, ConnectorStat> MAP = new HashMap<>();
 
