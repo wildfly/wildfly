@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition.Attribute.MODULE;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -162,7 +162,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
             Attribute attribute = entry.getValue();
             FieldType type = FieldType.valueOf(attribute.getType());
             resolver.addDescription(name, attribute.getDescription());
-            builder.addMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType()).setStorageRuntime().build(), handler);
+            builder.addMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType(), true).setStorageRuntime().build(), handler);
         }
 
         return builder.build();

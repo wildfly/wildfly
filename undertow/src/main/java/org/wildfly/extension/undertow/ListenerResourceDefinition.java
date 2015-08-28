@@ -32,8 +32,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import io.undertow.UndertowOptions;
-import io.undertow.server.ConnectorStatistics;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -56,6 +54,9 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.xnio.Options;
+
+import io.undertow.UndertowOptions;
+import io.undertow.server.ConnectorStatistics;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -146,12 +147,12 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setAllowNull(true).setAllowExpression(true).build();
 
     public enum ConnectorStat {
-        REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG, false).setStorageRuntime().build()),
-        BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG, false).setStorageRuntime().build()),
-        BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG, false).setStorageRuntime().build()),
-        ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG, false).setStorageRuntime().build()),
-        PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG, false).setStorageRuntime().build()),
-        MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG, false).setStorageRuntime().build());
+        REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG, true).setStorageRuntime().build()),
+        BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG, true).setStorageRuntime().build()),
+        BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG, true).setStorageRuntime().build()),
+        ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG, true).setStorageRuntime().build()),
+        PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG, true).setStorageRuntime().build()),
+        MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG, true).setStorageRuntime().build());
 
         private static final Map<String, ConnectorStat> MAP = new HashMap<>();
 

@@ -126,9 +126,6 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 18, value = "Instantiation exception on converter for attribute/method %s")
     String instantiationExceptionOnConverterForAttribute(String attrName);
 
-    @Message(id = 19, value = "Protocol %s not found in current stack")
-    String protocolNotFoundInStack(String protocolName);
-
     @Message(id = 20, value = "Unable to load protocol class %s")
     String unableToLoadProtocol(String protocolName);
 
