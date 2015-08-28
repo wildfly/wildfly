@@ -84,7 +84,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         private final AttributeDefinition definition;
 
         ExecutorAttribute(String name) {
-            this.definition = createBuilder(name, ModelType.STRING, null).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
+            this.definition = createBuilder(name, ModelType.STRING, null).setAllowExpression(false).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
         }
 
         @Override
