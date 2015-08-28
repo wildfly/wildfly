@@ -66,7 +66,6 @@ public class CustomErrorsUnitTestCase {
         war.addAsManifestResource(CustomErrorsUnitTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
         war.addClass(ErrorGeneratorServlet.class);
 
-        System.out.println(war.toString(true));
         return war;
     }
 
@@ -81,7 +80,6 @@ public class CustomErrorsUnitTestCase {
         war.addClass(ErrorGeneratorServlet.class);
         war.addClass(ContextForwardServlet.class);
 
-        System.out.println(war.toString(true));
         return war;
     }
 

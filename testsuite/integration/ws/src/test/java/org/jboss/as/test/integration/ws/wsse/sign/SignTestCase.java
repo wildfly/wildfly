@@ -72,8 +72,6 @@ public class SignTestCase {
                 addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-sign.wsdl", "wsdl/SecurityService.wsdl").
                 addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
                 addAsWebInfResource(SignTestCase.class.getPackage(), "jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
-        log.info(war.toString(true));
-
         return war;
     }
 

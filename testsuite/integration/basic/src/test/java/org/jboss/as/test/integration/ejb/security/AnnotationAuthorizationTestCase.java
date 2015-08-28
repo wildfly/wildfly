@@ -75,7 +75,6 @@ public class AnnotationAuthorizationTestCase {
                 .addAsWebInfResource(AnnotationAuthorizationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         war.addPackage(CommonCriteria.class.getPackage());
-        log.info(war.toString(true));
         return war;
     }
 

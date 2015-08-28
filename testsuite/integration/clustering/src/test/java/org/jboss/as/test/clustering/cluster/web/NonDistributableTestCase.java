@@ -74,7 +74,6 @@ public class NonDistributableTestCase extends ClusterAbstractTestCase {
     private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "non-distributable.war");
         war.addClasses(SimpleServlet.class, Mutable.class);
-        log.info(war.toString(true));
         return war;
     }
 

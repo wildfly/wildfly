@@ -102,7 +102,6 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         war.addClass(CacheAccessServlet.class);
         war.setWebXML(XSiteSimpleTestCase.class.getPackage(), "web.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
-        log.info(war.toString(true));
         return war;
     }
 

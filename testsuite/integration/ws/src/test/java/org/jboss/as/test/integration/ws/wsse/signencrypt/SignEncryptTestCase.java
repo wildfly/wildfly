@@ -74,8 +74,6 @@ public class SignEncryptTestCase {
                 addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
                 addAsWebInfResource(SignEncryptTestCase.class.getPackage(), "jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
 
-        log.info(war.toString(true));
-
         return war;
     }
 

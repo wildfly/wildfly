@@ -56,7 +56,6 @@ public class XMLSignatureFactoryTestCase {
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "crypto.war").addClasses(TestServlet.class);
-        log.info(war.toString(true));
         return war;
     }
 

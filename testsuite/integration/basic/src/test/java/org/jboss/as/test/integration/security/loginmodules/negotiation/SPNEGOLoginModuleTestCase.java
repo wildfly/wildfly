@@ -268,7 +268,6 @@ public class SPNEGOLoginModuleTestCase {
         war.addAsManifestResource(
                 Utils.getJBossDeploymentStructure("org.jboss.security.negotiation", "org.apache.commons.lang"),
                 "jboss-deployment-structure.xml");
-        LOGGER.info(war.toString(true));
         return war;
     }
 

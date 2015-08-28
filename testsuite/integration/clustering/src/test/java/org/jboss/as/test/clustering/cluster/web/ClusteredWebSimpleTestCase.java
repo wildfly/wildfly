@@ -85,7 +85,6 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        log.info(war.toString(true));
         return war;
     }
 

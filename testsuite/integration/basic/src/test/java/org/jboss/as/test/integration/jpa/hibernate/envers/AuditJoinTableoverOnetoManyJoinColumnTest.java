@@ -153,7 +153,7 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
         for (Object phoneIdEntity : phHistory) {
 
             Assert.assertNotNull(phoneIdEntity);
-            System.out.println("revendPhoneID::--" + phoneIdEntity.toString());
+            //System.out.println("revendPhoneID::--" + phoneIdEntity.toString());
 
         }
 

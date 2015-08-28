@@ -98,7 +98,7 @@ public class RequestDumpingHandlerTestCase {
             // Retrieve original path to server log files
             ModelNode op = Util.getReadAttributeOperation(aLogAddr, "file");
             originalValue = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-            log.info("Original value: " + originalValue.toString());
+            log.debug("Original value: " + originalValue.toString());
             // Retrieve relative path to log files
             relativeTo = originalValue.get("relative-to").asString();
 

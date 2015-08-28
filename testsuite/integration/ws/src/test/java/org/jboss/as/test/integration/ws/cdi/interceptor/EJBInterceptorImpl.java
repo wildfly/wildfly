@@ -28,9 +28,6 @@ import javax.interceptor.InvocationContext;
 @EJBInterceptor
 @Interceptor
 public class EJBInterceptorImpl {
-    public EJBInterceptorImpl() {
-        System.out.println("EJB interceptor initialized");
-    }
 
     @AroundInvoke
     public Object intercept(final InvocationContext ic) throws Exception {

@@ -75,8 +75,6 @@ public class SignEncryptMultipleClientsTestCase {
                 addAsWebInfResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
                 addAsWebInfResource(SignEncryptMultipleClientsTestCase.class.getPackage(), "multiple-clients-jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
 
-        log.info(war.toString(true));
-
         return war;
     }
 

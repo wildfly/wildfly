@@ -86,7 +86,6 @@ public class RootContextEarUnitTestCase {
         ear.addAsModule(war);
 
         log.info(ear.toString(true));
-        log.info(war.toString(true));
         return ear;
     }
 

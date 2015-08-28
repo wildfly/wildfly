@@ -101,7 +101,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         war.addPackage(EJBDirectory.class.getPackage());
         war.setWebXML(StatefulServlet.class.getPackage(), "web.xml");
         war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
-        log.info(war.toString(true));
         return war;
     }
 

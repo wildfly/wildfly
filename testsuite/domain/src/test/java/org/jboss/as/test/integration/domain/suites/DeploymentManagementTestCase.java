@@ -899,7 +899,7 @@ public class DeploymentManagementTestCase {
         operation.get(NAME).set(CONTENT);
 
         final ModelNode result = executeOnMaster(operation);
-        System.out.println(result);
+        //System.out.println(result);
 
         return executeOnMaster(operation).get(0).get("hash").asBytes();
     }
@@ -914,7 +914,7 @@ public class DeploymentManagementTestCase {
         StringWriter writer = new StringWriter();
         try {
             URL url = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(host) + ":" + port + "/" + context + "/index.html");
-            System.out.println("Reading response from " + url + ":");
+            //System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
             in = new BufferedInputStream(conn.getInputStream());
@@ -924,7 +924,7 @@ public class DeploymentManagementTestCase {
                 i = in.read();
             }
             assertTrue(writer.toString().indexOf("Hello World") > -1);
-            System.out.println("OK");
+            //System.out.println("OK");
         } finally {
             safeClose(in);
             safeClose(writer);

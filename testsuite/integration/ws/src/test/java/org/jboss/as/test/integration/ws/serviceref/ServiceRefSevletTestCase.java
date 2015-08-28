@@ -75,7 +75,6 @@ public class ServiceRefSevletTestCase {
             properties.put("node0", NetworkUtils.formatPossibleIpv6Address((String) properties.get("node0")));
         }
         war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl");
-        log.info(war.toString(true));
         return war;
     }
 

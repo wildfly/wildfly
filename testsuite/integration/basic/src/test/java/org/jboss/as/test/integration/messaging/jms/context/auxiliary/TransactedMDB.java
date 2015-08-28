@@ -69,7 +69,7 @@ public class TransactedMDB implements MessageListener {
 
     public void onMessage(final Message m)
     {
-       System.out.println("TransactedMDB.onMessage");
+       //System.out.println("TransactedMDB.onMessage");
         try {
             // ignore redelivered message
             if (m.getJMSRedelivered()) {
@@ -79,15 +79,15 @@ public class TransactedMDB implements MessageListener {
             TextMessage message = (TextMessage)m;
             Destination replyTo = m.getJMSReplyTo();
 
-            System.out.println("got message " + message.getText());
-            System.out.println("replying to " + replyTo);
+            //System.out.println("got message " + message.getText());
+            //System.out.println("replying to " + replyTo);
             context.createProducer()
                    .setJMSCorrelationID(message.getJMSMessageID())
                    .send(replyTo, message.getText());
-            System.out.println("sent reply");
+            //System.out.println("sent reply");
             if (m.getBooleanProperty("rollback")) {
                 mdbContext.setRollbackOnly();
-                System.out.println("set mdb as rollback only");
+                //System.out.println("set mdb as rollback only");
             }
         } catch (Exception e) {
             e.printStackTrace();

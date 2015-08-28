@@ -63,7 +63,6 @@ public class OnlyEjbInWarTestCase {
                 "<jboss-web>\n" + 
                 "<context-root>/as1605-customized</context-root>\n" + 
                 "</jboss-web>\n"), "jboss-web.xml");
-        System.out.println(war.toString(true));
         return war;
     }
 

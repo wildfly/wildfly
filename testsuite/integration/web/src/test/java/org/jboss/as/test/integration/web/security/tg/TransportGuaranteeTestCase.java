@@ -101,7 +101,6 @@ public class TransportGuaranteeTestCase {
         war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "annotated-web.xml");
         war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
-        log.info(war.toString());
         return war;
     }
 
@@ -116,7 +115,6 @@ public class TransportGuaranteeTestCase {
         war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "dd-web.xml");
         war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
-        log.info(war.toString());
         return war;
     }
 
@@ -132,7 +130,6 @@ public class TransportGuaranteeTestCase {
         war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "mixed-web.xml");
         war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
-        log.info(war.toString());
         return war;
     }
 

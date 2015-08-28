@@ -76,9 +76,9 @@ public class JMSResourceDefinitionsTestCase {
             vaultHandler = new VaultHandler(VAULT_LOCATION);
             // store the destination lookup into the vault
             String vaultedUserName = vaultHandler.addSecuredAttribute("messaging", "userName", "guest".toCharArray());
-            System.out.println("vaultedUserName = " + vaultedUserName);
+            //System.out.println("vaultedUserName = " + vaultedUserName);
             String vaultedPassword = vaultHandler.addSecuredAttribute("messaging", "password", "guest".toCharArray());
-            System.out.println("vaultedPassword = " + vaultedPassword);
+            //System.out.println("vaultedPassword = " + vaultedPassword);
 
             addVaultConfiguration(managementClient);
 
