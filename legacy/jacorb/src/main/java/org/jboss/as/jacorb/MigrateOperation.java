@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.MultistepUtil;
 import org.jboss.as.controller.operations.common.Util;
@@ -65,7 +67,12 @@ public class MigrateOperation implements OperationStepHandler {
     public static final String MIGRATE = "migrate";
     public static final String DESCRIBE_MIGRATION = "describe-migration";
     public static final String MIGRATION_OPERATIONS = "migration-operations";
+    public static final String MIGRATION_WARNINGS = "migration-warnings";
     public static final String MIGRATION_ERROR = "migration-error";
+
+    public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
+            .setAllowNull(true)
+            .build();
 
     public static final SimpleMapAttributeDefinition MIGRATION_ERROR_ATTR = new SimpleMapAttributeDefinition.Builder(MIGRATION_ERROR, ModelType.OBJECT, true)
             .setValueType(ModelType.OBJECT)
@@ -75,12 +82,12 @@ public class MigrateOperation implements OperationStepHandler {
     static void registerOperation(final ManagementResourceRegistration registry, final ResourceDescriptionResolver resourceDescriptionResolver) {
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
                         .setRuntimeOnly()
-                        .setReplyParameters(MIGRATION_ERROR_ATTR)
+                        .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .build(),
                 new MigrateOperation(false));
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
                         .setRuntimeOnly()
-                        .setReplyParameters(MIGRATION_ERROR_ATTR)
+                        .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .build(),
                 new MigrateOperation(true));
 
@@ -122,15 +129,14 @@ public class MigrateOperation implements OperationStepHandler {
                 final Resource jacorbResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
                 final ModelNode jacorbModel = Resource.Tools.readModel(jacorbResource).clone();
 
+                final List<String> warnings = new LinkedList<>();
+
                 List<String> unsupportedProperties = TransformUtils.checkLegacyModel(jacorbModel);
                 if (!unsupportedProperties.isEmpty()) {
-                    context.setRollbackOnly();
-
-                    ModelNode result = new ModelNode();
-                    final String error =JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(unsupportedProperties);
-                    result.get(MIGRATION_ERROR).set(error);
-                    context.getResult().set(result);
-                    return;
+                    warnings.add(JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(unsupportedProperties));
+                    for(String unsupportedProperty : unsupportedProperties){
+                        jacorbModel.get(unsupportedProperty).clear();
+                    }
                 }
 
                 final ModelNode openjdkModel = TransformUtils.transformModel(jacorbModel);
@@ -151,6 +157,14 @@ public class MigrateOperation implements OperationStepHandler {
 
                     result.get(MIGRATION_OPERATIONS).set(values);
 
+                    if(!warnings.isEmpty()) {
+                        ModelNode rw = new ModelNode().setEmptyList();
+                        for (String warning : warnings) {
+                            rw.add(warning);
+                        }
+                        result.get(MIGRATION_WARNINGS).set(rw);
+                    }
+
                     context.getResult().set(result);
                 } else {
                     // :migrate operation
@@ -161,6 +175,15 @@ public class MigrateOperation implements OperationStepHandler {
                         @Override
                         public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                             final ModelNode result = new ModelNode();
+
+                            if(!warnings.isEmpty()) {
+                                ModelNode rw = new ModelNode().setEmptyList();
+                                for (String warning : warnings) {
+                                    rw.add(warning);
+                                }
+                                result.get(MIGRATION_WARNINGS).set(rw);
+                            }
+
                             if (resultAction == OperationContext.ResultAction.ROLLBACK) {
                                 for (Map.Entry<PathAddress, ModelNode> entry : migrateOpResponses.entrySet()) {
                                     if (entry.getValue().hasDefined(FAILURE_DESCRIPTION)) {
