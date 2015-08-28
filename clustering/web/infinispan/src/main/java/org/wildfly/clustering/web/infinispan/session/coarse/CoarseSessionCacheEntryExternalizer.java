@@ -25,35 +25,32 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
-import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaData;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaDataExternalizer;
+import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
  * Externalizer for {@link CoarseSessionCacheEntry}.
  * @author Paul Ferraro
  */
-public class CoarseSessionCacheEntryExternalizer extends AbstractSimpleExternalizer<CoarseSessionCacheEntry<Object>> {
-    private static final long serialVersionUID = -2139534042196807460L;
+public class CoarseSessionCacheEntryExternalizer<L> implements Externalizer<CoarseSessionCacheEntry<L>> {
 
-    private final SimpleSessionMetaDataExternalizer externalizer = new SimpleSessionMetaDataExternalizer();
+    private final Externalizer<SessionMetaData> externalizer = new SimpleSessionMetaDataExternalizer();
 
-    public CoarseSessionCacheEntryExternalizer() {
-        this(CoarseSessionCacheEntry.class);
+    @Override
+    public void writeObject(ObjectOutput output, CoarseSessionCacheEntry<L> entry) throws IOException {
+        this.externalizer.writeObject(output, entry.getMetaData());
+    }
+
+    @Override
+    public CoarseSessionCacheEntry<L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new CoarseSessionCacheEntry<>(this.externalizer.readObject(input));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private CoarseSessionCacheEntryExternalizer(Class targetClass) {
-        super(targetClass);
-    }
-
     @Override
-    public void writeObject(ObjectOutput output, CoarseSessionCacheEntry<Object> entry) throws IOException {
-        this.externalizer.writeObject(output, (SimpleSessionMetaData) entry.getMetaData());
-    }
-
-    @Override
-    public CoarseSessionCacheEntry<Object> readObject(ObjectInput input) throws IOException {
-        return new CoarseSessionCacheEntry<>(this.externalizer.readObject(input));
+    public Class<CoarseSessionCacheEntry<L>> getTargetClass() {
+        Class targetClass = CoarseSessionCacheEntry.class;
+        return targetClass;
     }
 }

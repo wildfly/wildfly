@@ -48,7 +48,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-spi</artifactId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -57,6 +57,10 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-infinispan-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

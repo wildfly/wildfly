@@ -5,22 +5,21 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderRegistry;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderRegistryService;
-import org.jboss.as.ejb3.component.stateful.VersionedMarshallingConfigurationService;
+import org.jboss.as.ejb3.component.stateful.MarshallingConfigurationRepositoryValue;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 import java.util.Collection;
 
@@ -60,8 +59,7 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
         // Install versioned marshalling configuration
         InjectedValue<ModuleDeployment> deployment = new InjectedValue<>();
         Module module = unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        Value<ModuleLoader> moduleLoader = new ImmediateValue<>(module.getModuleLoader());
-        target.addService(VersionedMarshallingConfigurationService.getServiceName(name), new VersionedMarshallingConfigurationService(deployment, moduleLoader))
+        target.addService(MarshallingConfigurationRepositoryValue.getServiceName(name), new ValueService<>(new MarshallingConfigurationRepositoryValue(deployment, new ImmediateValue<>(module))))
                 .addDependency(name.append(ModuleDeployment.SERVICE_NAME), ModuleDeployment.class, deployment)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()

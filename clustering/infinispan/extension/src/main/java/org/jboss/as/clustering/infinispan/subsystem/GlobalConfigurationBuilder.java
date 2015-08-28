@@ -53,9 +53,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.infinispan.spi.io.SimpleExternalizer;
+import org.wildfly.clustering.infinispan.spi.marshalling.AdvancedExternalizerAdapter;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -115,9 +116,9 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
             ClassLoader loader = moduleLoader.loadModule(this.module).getClassLoader();
             builder.classLoader(loader);
             int id = Ids.MAX_ID;
-            for (SimpleExternalizer<?> externalizer: ServiceLoader.load(SimpleExternalizer.class, loader)) {
+            for (Externalizer<?> externalizer: ServiceLoader.load(Externalizer.class, loader)) {
                 InfinispanLogger.ROOT_LOGGER.debugf("Cache container %s will use an externalizer for %s", this.name, externalizer.getTargetClass().getName());
-                builder.serialization().addAdvancedExternalizer(id++, externalizer);
+                builder.serialization().addAdvancedExternalizer(id++, new AdvancedExternalizerAdapter<>(externalizer));
             }
         } catch (ModuleLoadException e) {
             throw new IllegalStateException(e);

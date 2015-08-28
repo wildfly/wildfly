@@ -26,34 +26,32 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Map;
 
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanGroupEntryExternalizer<I, T> extends AbstractSimpleExternalizer<InfinispanBeanGroupEntry<I, T>> {
-    private static final long serialVersionUID = 783357750795915336L;
+public class InfinispanBeanGroupEntryExternalizer<I, T> implements Externalizer<InfinispanBeanGroupEntry<I, T>> {
 
-    public InfinispanBeanGroupEntryExternalizer() {
-        this(InfinispanBeanGroupEntry.class);
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private InfinispanBeanGroupEntryExternalizer(Class targetClass) {
-        super(targetClass);
-    }
+    private final Externalizer<SimpleMarshalledValue<Map<I, T>>> externalizer = new SimpleMarshalledValueExternalizer<>();
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanGroupEntry<I, T> entry) throws IOException {
-        output.writeObject(entry.getBeans());
+        SimpleMarshalledValue<Map<I, T>> value = (SimpleMarshalledValue<Map<I, T>>) entry.getBeans();
+        this.externalizer.writeObject(output, value);
     }
 
     @Override
     public InfinispanBeanGroupEntry<I, T> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        @SuppressWarnings("unchecked")
-        MarshalledValue<Map<I, T>, MarshallingContext> value = (MarshalledValue<Map<I, T>, MarshallingContext>) input.readObject();
-        return new InfinispanBeanGroupEntry<>(value);
+        return new InfinispanBeanGroupEntry<>(this.externalizer.readObject(input));
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Class<InfinispanBeanGroupEntry<I, T>> getTargetClass() {
+        Class targetClass = InfinispanBeanGroupEntry.class;
+        return targetClass;
     }
 }

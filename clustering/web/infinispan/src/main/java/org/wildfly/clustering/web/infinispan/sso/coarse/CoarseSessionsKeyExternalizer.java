@@ -26,18 +26,13 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Externalizer for {@link CoarseSessionsKey}.
  * @author Paul Ferraro
  */
-public class CoarseSessionsKeyExternalizer extends AbstractSimpleExternalizer<CoarseSessionsKey> {
-    private static final long serialVersionUID = 6459527251742494111L;
-
-    public CoarseSessionsKeyExternalizer() {
-        super(CoarseSessionsKey.class);
-    }
+public class CoarseSessionsKeyExternalizer implements Externalizer<CoarseSessionsKey> {
 
     @Override
     public void writeObject(ObjectOutput output, CoarseSessionsKey key) throws IOException {
@@ -47,5 +42,10 @@ public class CoarseSessionsKeyExternalizer extends AbstractSimpleExternalizer<Co
     @Override
     public CoarseSessionsKey readObject(ObjectInput input) throws IOException {
         return new CoarseSessionsKey(input.readUTF());
+    }
+
+    @Override
+    public Class<CoarseSessionsKey> getTargetClass() {
+        return CoarseSessionsKey.class;
     }
 }
