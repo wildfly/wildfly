@@ -21,10 +21,7 @@
  */
 package org.jboss.as.security;
 
-import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -36,19 +33,11 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
 
     static final AuditResourceDefinition INSTANCE = new AuditResourceDefinition();
 
-    static final ListAttributeDefinition PROVIDER_MODULES = new LegacySupport.ProviderModulesAttributeDefinition(Constants.PROVIDER_MODULES, Constants.PROVIDER_MODULE);
-    private static final OperationStepHandler LEGACY_ADD_HANDLER = new LegacySupport.LegacyModulesConverter(Constants.PROVIDER_MODULE, PROVIDER_MODULES);
-
-
     private AuditResourceDefinition() {
         super(SecurityExtension.PATH_AUDIT_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUDIT),
                 AuditResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
-    }
-
-    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(PROVIDER_MODULES, new LegacySupport.LegacyModulesAttributeReader(Constants.PROVIDER_MODULE), new LegacySupport.LegacyModulesAttributeWriter(Constants.PROVIDER_MODULE));
     }
 
     @Override
@@ -64,14 +53,6 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
         }
-
-        @Override
-               protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-                   super.updateModel(context, operation);
-                   if (operation.hasDefined(PROVIDER_MODULES.getName())) {
-                       context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
-                   }
-               }
     }
 
 
