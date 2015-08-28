@@ -21,16 +21,20 @@
 */
 package org.jboss.as.jsr77.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class JSR77ManagementRootResource extends SimpleResourceDefinition {
+public class JSR77ManagementRootResource extends PersistentResourceDefinition {
 
     static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
 
@@ -47,4 +51,8 @@ public class JSR77ManagementRootResource extends SimpleResourceDefinition {
                 new JSR77ManagementSubsystemAdd(appclient), JSR77ManagementSubsystemRemove.INSTANCE);
     }
 
+    @Override
+    public Collection<AttributeDefinition> getAttributes() {
+        return Collections.emptyList();
+    }
 }
