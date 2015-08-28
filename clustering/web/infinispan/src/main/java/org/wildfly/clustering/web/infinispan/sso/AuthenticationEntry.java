@@ -19,17 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.web.infinispan.sso;
 
-package org.wildfly.clustering.web.infinispan.sso.coarse;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
 /**
+ * Cache entry that store authentication data plus any local context.
  * @author Paul Ferraro
+ * @param <A> the identity type
+ * @param <D> the deployment identifier type
+ * @param <L> the local context type
  */
-public class CoarseSessionsKey extends Key<String> {
+public class AuthenticationEntry<A, D, L> {
 
-    public CoarseSessionsKey(String id) {
-        super(id);
+    private final MarshalledValue<A, MarshallingContext> authentication;
+    private final AtomicReference<L> localContext = new AtomicReference<>();
+
+    public AuthenticationEntry(MarshalledValue<A, MarshallingContext> authentication) {
+        this.authentication = authentication;
+    }
+
+    public MarshalledValue<A, MarshallingContext> getAuthentication() {
+        return this.authentication;
+    }
+
+    public AtomicReference<L> getLocalContext() {
+        return this.localContext;
     }
 }

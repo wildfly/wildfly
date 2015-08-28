@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import java.util.concurrent.atomic.AtomicReference;
+package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.web.session.SessionMetaData;
+import java.time.Duration;
+import java.time.Instant;
+
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
- * Object to be stored in distributed cache for coarse granularity sessions.
+ * Implements just the function methods of {@link ImmutableSessionMetaData}.
  * @author Paul Ferraro
  */
-public class CoarseSessionCacheEntry<L> {
+public abstract class AbstractImmutableSessionMetaData implements ImmutableSessionMetaData {
 
-    private final SessionMetaData metaData;
-    private final AtomicReference<L> localContext = new AtomicReference<>();
-
-    public CoarseSessionCacheEntry(SessionMetaData metaData) {
-        this.metaData = metaData;
+    @Override
+    public boolean isNew() {
+        return this.getCreationTime().equals(this.getLastAccessedTime());
     }
 
-    public SessionMetaData getMetaData() {
-        return this.metaData;
-    }
-
-    public AtomicReference<L> getLocalContext() {
-        return this.localContext;
+    @Override
+    public boolean isExpired() {
+        Duration maxInactiveInterval = this.getMaxInactiveInterval();
+        return !maxInactiveInterval.isZero() ? this.getLastAccessedTime().plus(maxInactiveInterval).isBefore(Instant.now()) : false;
     }
 }

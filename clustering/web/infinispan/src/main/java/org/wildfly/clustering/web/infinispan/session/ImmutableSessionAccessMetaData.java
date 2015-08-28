@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.marshalling.Externalizer;
+import java.time.Duration;
 
 /**
- * {@link CacheKeyFactory} for {@link SessionAttributesCacheKey}s.
+ * Immutable view of the volatile aspects of a session's meta-data.
  * @author Paul Ferraro
  */
-public class SessionAttributesCacheKeyExternalizer implements Externalizer<SessionAttributesCacheKey> {
-
-    @Override
-    public void writeObject(ObjectOutput output, SessionAttributesCacheKey key) throws IOException {
-        output.writeUTF(key.toString());
-    }
-
-    @Override
-    public SessionAttributesCacheKey readObject(ObjectInput input) throws IOException {
-        return new SessionAttributesCacheKey(input.readUTF());
-    }
-
-    @Override
-    public Class<SessionAttributesCacheKey> getTargetClass() {
-        return SessionAttributesCacheKey.class;
-    }
+public interface ImmutableSessionAccessMetaData {
+    /**
+     * Returns the duration time that this session was last accessed since the time the session was created.
+     * @return a duration
+     */
+    Duration getLastAccessedDuration();
 }

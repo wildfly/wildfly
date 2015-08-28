@@ -71,16 +71,16 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.getDefinition().resolveModelAttribute(context, model), ConsistentHashStrategy.class);
-        long l1Lifespan = L1_LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong();
 
         ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering();
 
-        this.hash = new ConfigurationBuilder().clustering().hash()
+        this.hash = builder.hash()
                 .capacityFactor(CAPACITY_FACTOR.getDefinition().resolveModelAttribute(context, model).asInt())
                 .numOwners(OWNERS.getDefinition().resolveModelAttribute(context, model).asInt())
                 .numSegments(SEGMENTS.getDefinition().resolveModelAttribute(context, model).asInt())
                 .create();
 
+        long l1Lifespan = L1_LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong();
         this.l1 = builder.l1().enabled(l1Lifespan > 0).lifespan(l1Lifespan).create();
 
         return super.configure(context, model);

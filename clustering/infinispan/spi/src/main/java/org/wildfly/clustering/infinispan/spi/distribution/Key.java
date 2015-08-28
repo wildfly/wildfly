@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,56 +19,50 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.concurrent.TimeUnit;
+package org.wildfly.clustering.infinispan.spi.distribution;
+
+import org.infinispan.distribution.group.Group;
 
 /**
- * Struct for specifying a time duration.
+ * A cache key supporting group co-location.
  * @author Paul Ferraro
  */
-public class Time implements Comparable<Time> {
-    private final long value;
-    private final TimeUnit unit;
+public class Key<K> {
+    private final K value;
 
-    public Time(long value, TimeUnit unit) {
+    public Key(K value) {
         this.value = value;
-        this.unit = unit;
     }
 
-    public long getValue() {
+    /**
+     * Returns the value of this key.
+     * @return the key value
+     */
+    public K getValue() {
         return this.value;
     }
 
-    public TimeUnit getUnit() {
-        return this.unit;
-    }
-
-    public long convert(TimeUnit unit) {
-        return unit.convert(this.value, this.unit);
-    }
-
-    @Override
-    public int compareTo(Time time) {
-        TimeUnit compareUnit = TimeUnit.values()[Math.min(this.unit.ordinal(), time.unit.ordinal())];
-        return Long.compare(this.convert(compareUnit), time.convert(compareUnit));
+    @Group
+    public String getGroup() {
+        return this.value.toString();
     }
 
     @Override
     public boolean equals(Object object) {
-        if ((object == null) || !(object instanceof Time)) return false;
-        Time time = (Time) object;
-        TimeUnit compareUnit = TimeUnit.MILLISECONDS;
-        return compareUnit.convert(this.value, this.unit) == compareUnit.convert(time.value, time.unit);
+        if ((object == null) || (object.getClass() != this.getClass())) return false;
+        @SuppressWarnings("unchecked")
+        Key<K> key = (Key<K>) object;
+        return this.value.equals(key.value);
     }
 
     @Override
     public int hashCode() {
-        return Long.valueOf(TimeUnit.MILLISECONDS.convert(this.value, this.unit)).hashCode();
+        return (31 * this.getClass().getName().hashCode()) + this.value.hashCode();
     }
 
     @Override
     public String toString() {
-        return String.format("%d %s", this.value, this.unit);
+        return this.value.toString();
     }
 }

@@ -26,6 +26,7 @@ import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
@@ -33,13 +34,13 @@ import org.wildfly.clustering.web.IdentifierFactory;
  * @author Paul Ferraro
  * @param <K> the key type
  */
-public class AffinityIdentifierFactory<K> implements IdentifierFactory<K>, KeyGenerator<K> {
+public class AffinityIdentifierFactory<K> implements IdentifierFactory<K>, KeyGenerator<Key<K>> {
 
     private final IdentifierFactory<K> factory;
-    private final KeyAffinityService<K> affinity;
+    private final KeyAffinityService<? extends Key<K>> affinity;
     private final EmbeddedCacheManager manager;
 
-    public AffinityIdentifierFactory(IdentifierFactory<K> factory, Cache<K, ?> cache, KeyAffinityServiceFactory affinityFactory) {
+    public AffinityIdentifierFactory(IdentifierFactory<K> factory, Cache<Key<K>, ?> cache, KeyAffinityServiceFactory affinityFactory) {
         this.factory = factory;
         this.affinity = affinityFactory.createService(cache, this);
         this.manager = cache.getCacheManager();
@@ -47,12 +48,12 @@ public class AffinityIdentifierFactory<K> implements IdentifierFactory<K>, KeyGe
 
     @Override
     public K createIdentifier() {
-        return this.affinity.getKeyForAddress(this.manager.getAddress());
+        return this.affinity.getKeyForAddress(this.manager.getAddress()).getValue();
     }
 
     @Override
-    public K getKey() {
-        return this.factory.createIdentifier();
+    public Key<K> getKey() {
+        return new Key<>(this.factory.createIdentifier());
     }
 
     @Override

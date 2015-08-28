@@ -19,25 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.web.infinispan.session;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Abstraction for meta information about a web session.
+ * Cache entry containing the session creation meta data and local context.
  * @author Paul Ferraro
  */
-public interface SessionMetaData extends ImmutableSessionMetaData {
-    /**
-     * Sets the instant in time that this session was last accessed.
-     * @param the instant this session was last accessed
-     */
-    void setLastAccessedTime(Instant instant);
+public class SessionCreationMetaDataEntry<L> {
 
-    /**
-     * Set the time interval as a duration, after which this session will expire.
-     * @param duration a time duration
-     */
-    void setMaxInactiveInterval(Duration duration);
+    private final SessionCreationMetaData metaData;
+    private final AtomicReference<L> localContext = new AtomicReference<>();
+
+    public SessionCreationMetaDataEntry(SessionCreationMetaData metaData) {
+        this.metaData = metaData;
+    }
+
+    public SessionCreationMetaData getMetaData() {
+        return this.metaData;
+    }
+
+    public AtomicReference<L> getLocalContext() {
+        return this.localContext;
+    }
 }

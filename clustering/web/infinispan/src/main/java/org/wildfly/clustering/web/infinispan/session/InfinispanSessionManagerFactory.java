@@ -28,7 +28,6 @@ import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.context.Flag;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -41,6 +40,7 @@ import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
@@ -55,12 +55,8 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
-import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionCacheEntry;
 import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionFactory;
-import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesCacheKey;
-import org.wildfly.clustering.web.infinispan.session.fine.FineSessionCacheEntry;
 import org.wildfly.clustering.web.infinispan.session.fine.FineSessionFactory;
-import org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeCacheKey;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -106,7 +102,7 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
     @Override
     public <L> SessionManager<L, TransactionBatch> createSessionManager(final SessionContext context, IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory, final Recordable<ImmutableSession> inactiveSessionRecorder) {
         final Batcher<TransactionBatch> batcher = new InfinispanBatcher(this.config.getCache());
-        final Cache<String, ?> cache = this.config.getCache();
+        final Cache<Key<String>, ?> cache = this.config.getCache();
         final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(identifierFactory, cache, this.config.getKeyAffinityServiceFactory());
         final CommandDispatcherFactory dispatcherFactory = this.config.getCommandDispatcherFactory();
         final NodeFactory<Address> nodeFactory = this.config.getNodeFactory();
@@ -118,7 +114,7 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
             }
 
             @Override
-            public Cache<String, ?> getCache() {
+            public Cache<Key<String>, ?> getCache() {
                 return cache;
             }
 
@@ -160,31 +156,23 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
         Module module = config.getModule();
         MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
+        Cache<Key<String>, ?> cache = this.config.getCache();
+        Configuration cacheConfig = cache.getCacheConfiguration();
+        boolean lockOnRead = cacheConfig.transaction().transactionMode().isTransactional() && (cacheConfig.transaction().lockingMode() == LockingMode.PESSIMISTIC) && cacheConfig.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
 
         switch (config.getAttributePersistenceStrategy()) {
             case FINE: {
-                Cache<String, FineSessionCacheEntry<L>> sessionCache = this.getSessionCache();
-                Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache = this.config.getCache();
                 Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new FineSessionFactory<>(sessionCache, attributeCache, context, marshaller, localContextFactory);
+                return new FineSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead);
             }
             case COARSE: {
-                Cache<String, CoarseSessionCacheEntry<L>> sessionCache = this.getSessionCache();
-                Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache = this.config.getCache();
                 Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new CoarseSessionFactory<>(sessionCache, attributesCache, context, marshaller, localContextFactory);
+                return new CoarseSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead);
             }
             default: {
                 // Impossible
                 throw new IllegalStateException();
             }
         }
-    }
-
-    private <V> Cache<String, V> getSessionCache() {
-        Cache<String, V> cache = this.config.getCache();
-        Configuration cacheConfig = cache.getCacheConfiguration();
-        boolean lockOnRead = cacheConfig.transaction().transactionMode().isTransactional() && (cacheConfig.transaction().lockingMode() == LockingMode.PESSIMISTIC) && cacheConfig.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
-        return lockOnRead ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
     }
 }

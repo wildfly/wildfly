@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,38 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.coarse;
+
+package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.time.Instant;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaDataExternalizer;
-import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
- * Externalizer for {@link CoarseSessionCacheEntry}.
  * @author Paul Ferraro
  */
-public class CoarseSessionCacheEntryExternalizer<L> implements Externalizer<CoarseSessionCacheEntry<L>> {
-
-    private final Externalizer<SessionMetaData> externalizer = new SimpleSessionMetaDataExternalizer();
+public class InstantExternalizer implements Externalizer<Instant> {
 
     @Override
-    public void writeObject(ObjectOutput output, CoarseSessionCacheEntry<L> entry) throws IOException {
-        this.externalizer.writeObject(output, entry.getMetaData());
+    public Class<? extends Instant> getTargetClass() {
+        return Instant.class;
     }
 
     @Override
-    public CoarseSessionCacheEntry<L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new CoarseSessionCacheEntry<>(this.externalizer.readObject(input));
+    public void writeObject(ObjectOutput output, Instant instant) throws IOException {
+        output.writeLong(instant.toEpochMilli());
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Class<CoarseSessionCacheEntry<L>> getTargetClass() {
-        Class targetClass = CoarseSessionCacheEntry.class;
-        return targetClass;
+    public Instant readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return Instant.ofEpochMilli(input.readLong());
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,25 +22,37 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.io.Serializable;
-import java.util.function.Predicate;
+import java.time.Duration;
+import java.time.Instant;
 
-import org.infinispan.filter.KeyFilter;
+import org.wildfly.clustering.ee.infinispan.Mutator;
 
 /**
- * Filters a cache for session identifier keyed entries.
  * @author Paul Ferraro
  */
-public class SessionIdentifierFilter implements KeyFilter<Object>, Predicate<Object>, Serializable {
-    private static final long serialVersionUID = -1079989480899595045L;
+public class MutableSessionCreationMetaData implements SessionCreationMetaData {
 
-    @Override
-    public boolean accept(Object key) {
-        return key instanceof String;
+    private final SessionCreationMetaData metaData;
+    private final Mutator mutator;
+
+    public MutableSessionCreationMetaData(SessionCreationMetaData metaData, Mutator mutator) {
+        this.metaData = metaData;
+        this.mutator = mutator;
     }
 
     @Override
-    public boolean test(Object key) {
-        return this.accept(key);
+    public Instant getCreationTime() {
+        return this.metaData.getCreationTime();
+    }
+
+    @Override
+    public Duration getMaxInactiveInterval() {
+        return this.metaData.getMaxInactiveInterval();
+    }
+
+    @Override
+    public void setMaxInactiveInterval(Duration duration) {
+        this.metaData.setMaxInactiveInterval(duration);
+        this.mutator.mutate();
     }
 }

@@ -23,23 +23,31 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.web.session.SessionMetaData;
+import org.wildfly.clustering.ee.infinispan.MutableCacheEntry;
+import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaData;
+import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaData;
 
 /**
- * Session cache entry for fine granularity sessions.
+ * Wrapper for session cache entry and session attributes cache entry.
  * @author Paul Ferraro
  */
-public class FineSessionCacheEntry<L> {
+public class FineSessionEntry<L> {
+    private final MutableCacheEntry<SessionCreationMetaData> creationMetaDataEntry;
+    private final MutableCacheEntry<SessionAccessMetaData> accessMetaDataEntry;
+    private final AtomicReference<L> localContext;
 
-    private final SessionMetaData metaData;
-    private final AtomicReference<L> localContext = new AtomicReference<>();
-
-    public FineSessionCacheEntry(SessionMetaData metaData) {
-        this.metaData = metaData;
+    public FineSessionEntry(MutableCacheEntry<SessionCreationMetaData> creationMetaDataEntry, MutableCacheEntry<SessionAccessMetaData> accessMetaDataEntry, AtomicReference<L> localContext) {
+        this.creationMetaDataEntry = creationMetaDataEntry;
+        this.accessMetaDataEntry = accessMetaDataEntry;
+        this.localContext = localContext;
     }
 
-    public SessionMetaData getMetaData() {
-        return this.metaData;
+    public MutableCacheEntry<SessionCreationMetaData> getMutableSessionCreationMetaDataEntry() {
+        return this.creationMetaDataEntry;
+    }
+
+    public MutableCacheEntry<SessionAccessMetaData> getMutableSessionAccessMetaDataEntry() {
+        return this.accessMetaDataEntry;
     }
 
     public AtomicReference<L> getLocalContext() {
