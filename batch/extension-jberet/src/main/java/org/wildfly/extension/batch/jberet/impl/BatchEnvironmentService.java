@@ -194,17 +194,15 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
             return jobXmlResolver;
         }
 
-        /**
-         * {@inheritDoc}
-         *
-         * @return
-         *
-         * @deprecated this is no longer used in jBeret and will be removed
-         */
         @Override
-        @Deprecated
         public Properties getBatchConfigurationProperties() {
             return PROPS;
+        }
+
+        // Note this method will likely go away when a better solution for JBERET-180 is done
+        @Override
+        public void jobExecutionFinished() {
+            BatchLogger.LOGGER.trace("The jobExecutionFinishedMethod() is not implemented in WildFly");
         }
 
         private ContextHandle createContextHandle() {
