@@ -37,6 +37,8 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.net.SocketPermission;
+import java.util.PropertyPermission;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -150,7 +152,12 @@ public class VaultedInjectedJMSContextTestCase {
                 .addClass(TimeoutUtil.class)
                 .addPackage(VaultedMessageProducer.class.getPackage())
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain")), "META-INF/jboss-permissions.xml");
+                .addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain"),
+                        new PropertyPermission("ts.timeout.factor", "read"),
+                        // required because the VaultedMessageProducer uses the RemoteConnectionFactory
+                        // (that requires auth with vaulted credentials)
+                        new SocketPermission("*", "connect"),
+                        new RuntimePermission("setContextClassLoader")), "META-INF/jboss-permissions.xml");
     }
 
     @Test
