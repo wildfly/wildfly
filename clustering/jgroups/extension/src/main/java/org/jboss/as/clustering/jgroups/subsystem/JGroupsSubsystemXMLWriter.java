@@ -22,11 +22,13 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.Collection;
 import java.util.EnumSet;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -132,11 +134,14 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     }
 
     private static void writeThreadPoolElements(XMLElement element, ThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode transport) throws XMLStreamException {
-        if (transport.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
-            ModelNode threadPool = transport.get(pool.getPathElement().getKeyValuePair());
-            writer.writeStartElement(element.getLocalName());
-            writeAttributes(writer, threadPool, pool.getAttributes());
-            writer.writeEndElement();
+        PathElement path = pool.getPathElement();
+        if (transport.get(path.getKey()).hasDefined(path.getValue())) {
+            ModelNode threadPool = transport.get(path.getKeyValuePair());
+            if (hasDefined(threadPool, pool.getAttributes())) {
+                writer.writeStartElement(element.getLocalName());
+                writeAttributes(writer, threadPool, pool.getAttributes());
+                writer.writeEndElement();
+            }
         }
     }
 
@@ -154,11 +159,15 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writer.writeEndElement();
     }
 
+    private static boolean hasDefined(ModelNode model, Collection<? extends Attribute> attributes) {
+        return attributes.stream().anyMatch(attribute -> model.hasDefined(attribute.getDefinition().getName()));
+    }
+
     private static <A extends Enum<A> & Attribute> void writeAttributes(XMLExtendedStreamWriter writer, ModelNode model, Class<A> attributeClass) throws XMLStreamException {
         writeAttributes(writer, model, EnumSet.allOf(attributeClass));
     }
 
-    private static void writeAttributes(XMLExtendedStreamWriter writer, ModelNode model, Iterable<? extends Attribute> attributes) throws XMLStreamException {
+    private static void writeAttributes(XMLExtendedStreamWriter writer, ModelNode model, Collection<? extends Attribute> attributes) throws XMLStreamException {
         for (Attribute attribute : attributes) {
             writeAttribute(writer, model, attribute);
         }

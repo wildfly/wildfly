@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -148,7 +149,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
         registration.registerSubModel(this);
     }
 
-    Iterable<Attribute> getAttributes() {
+    Collection<Attribute> getAttributes() {
         return Arrays.asList(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime);
     }
 

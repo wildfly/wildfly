@@ -343,8 +343,42 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
+        for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
+            PathAddress poolAddress = address.append(pool.getPathElement());
+            operations.put(poolAddress, Util.createAddOperation(poolAddress));
+        }
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            this.parseProtocolElement(reader, address, operations);
+            XMLElement element = XMLElement.forName(reader.getLocalName());
+            switch (element) {
+                case DEFAULT_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.DEFAULT, reader, address, operations);
+                        break;
+                    }
+                }
+                case INTERNAL_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.INTERNAL, reader, address, operations);
+                        break;
+                    }
+                }
+                case OOB_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.OOB, reader, address, operations);
+                        break;
+                    }
+                }
+                case TIMER_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.TIMER, reader, address, operations);
+                        break;
+                    }
+                }
+                default: {
+                    this.parseProtocolElement(reader, address, operations);
+                }
+            }
         }
     }
 
@@ -394,18 +428,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 this.parseProperty(reader, address, operations);
                 break;
             }
-            case DEFAULT_THREAD_POOL:
-                parseThreadPool(ThreadPoolResourceDefinition.DEFAULT, reader, address, operations);
-                break;
-            case INTERNAL_THREAD_POOL:
-                parseThreadPool(ThreadPoolResourceDefinition.INTERNAL, reader, address, operations);
-                break;
-            case OOB_THREAD_POOL:
-                parseThreadPool(ThreadPoolResourceDefinition.OOB, reader, address, operations);
-                break;
-            case TIMER_THREAD_POOL:
-                parseThreadPool(ThreadPoolResourceDefinition.TIMER, reader, address, operations);
-                break;
             default: {
                 throw ParseUtils.unexpectedElement(reader);
             }
@@ -420,8 +442,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
     private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
