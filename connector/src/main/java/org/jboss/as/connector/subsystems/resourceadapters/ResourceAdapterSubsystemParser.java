@@ -132,9 +132,9 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
         if (hasChildren) {
             writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
-            for (Property property : node.get(RESOURCEADAPTER_NAME).asPropertyList()) {
-                final ModelNode ra = property.getValue();
-                final String  name = property.getName();
+            ModelNode ras = node.get(RESOURCEADAPTER_NAME);
+            for (String name : ras.keys()) {
+                final ModelNode ra = ras.get(name);
                 writeRaElement(writer, ra, name);
             }
             writer.writeEndElement();
