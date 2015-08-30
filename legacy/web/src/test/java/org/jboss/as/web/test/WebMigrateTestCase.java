@@ -171,6 +171,8 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("prefix", accessLog.get(Constants.PREFIX).asString());
         assertEquals("true", accessLog.get(Constants.ROTATE).asString());
         assertEquals("extended", accessLog.get(Constants.PATTERN).asString());
+        assertEquals("toto", accessLog.get(Constants.DIRECTORY).asString());
+        assertEquals("jboss.server.base.dir", accessLog.get(Constants.RELATIVE_TO).asString());
 
         //sso
         ModelNode sso = virtualHost.get(Constants.SETTING, Constants.SINGLE_SIGN_ON);

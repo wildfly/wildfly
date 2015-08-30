@@ -608,8 +608,8 @@ public class WebMigrateOperation implements OperationStepHandler {
 
         ModelNode directory = findResource(pathAddress(pathAddress(newAddOp.get(ADDRESS)), WebExtension.DIRECTORY_PATH), legacyAddOps);
         if(directory != null){
-            newAddOp.get(Constants.DIRECTORY).set(directory.get(PATH));
-            newAddOp.get(Constants.RELATIVE_TO).set(directory.get(RELATIVE_TO));
+            add.get(Constants.DIRECTORY).set(directory.get(PATH));
+            add.get(Constants.RELATIVE_TO).set(directory.get(RELATIVE_TO));
         }
 
         newAddOperations.put(newAddress, add);
