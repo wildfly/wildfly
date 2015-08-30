@@ -34,4 +34,10 @@ public interface WebLogger extends BasicLogger {
 
     @Message(id = 5, value = "Migration failed, see results for more details.")
     String migrationFailed();
+
+    @Message(id = 6, value = "Could not migrate verify-client attribute %s to the Undertow equivalent")
+    String couldNotTranslateVerifyClient(String s);
+
+    @Message(id = 7, value = "Could not migrate verify-client expression %s")
+    String couldNotTranslateVerifyClientExpression(String s);
 }

@@ -48,6 +48,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistryType;
@@ -150,6 +151,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         String realmName = httpsConnector.get(Constants.SECURITY_REALM).asString();
         assertTrue(realmName, realmName.startsWith("jbossweb-migration-security-realm"));
         assertEquals("${prop.session-cache-size:512}", httpsConnector.get(Constants.SSL_SESSION_CACHE_SIZE).asString());
+        assertEquals("REQUESTED", httpsConnector.get(Constants.VERIFY_CLIENT).asString());
 
         //realm name is dynamic
         ModelNode realm = model.get(CORE_SERVICE, MANAGEMENT).get(SECURITY_REALM, realmName);
@@ -178,6 +180,8 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         ModelNode sso = virtualHost.get(Constants.SETTING, Constants.SINGLE_SIGN_ON);
         assertEquals("${prop.domain:myDomain}", sso.get(Constants.DOMAIN).asString());
         assertEquals("${prop.http-only:true}", sso.get(Constants.HTTP_ONLY).asString());
+
+
 
 
     }
