@@ -136,10 +136,12 @@ public class ModClusterService extends FilterService {
         config = builder.build();
 
 
-        try {
-            modCluster.advertise(config);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(advertiseFrequency > 0) {
+            try {
+                modCluster.advertise(config);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         modCluster.start();
     }
