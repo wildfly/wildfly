@@ -139,7 +139,7 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
         URI url3 = CacheAccessServlet.createGetURI(baseURL3, "a");
         URI url4 = CacheAccessServlet.createGetURI(baseURL4, "a");
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // put a value to LON-0
             System.out.println("Executing HTTP request: " + url1);
             HttpResponse response = client.execute(new HttpGet(url1));

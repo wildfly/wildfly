@@ -86,7 +86,7 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {

@@ -107,46 +107,46 @@ public class TestHttpClientUtils {
      * As we don't actually have a load balancer for the clustering tests, we use this instead.
      *
      * @return {@link CloseableHttpClient} that gives free cookies to everybody
-     * @see TestHttpClientUtils#relaxedCookieHttpClientBuilder()
+     * @see TestHttpClientUtils#promiscuousCookieHttpClientBuilder()
      * @see <a href="http://tools.ietf.org/html/rfc6265">RFC6265 -  HTTP State Management Mechanism</a>
      */
-    public static CloseableHttpClient relaxedCookieHttpClient() {
+    public static CloseableHttpClient promiscuousCookieHttpClient() {
 
-        return relaxedCookieHttpClientBuilder().build();
+        return promiscuousCookieHttpClientBuilder().build();
     }
 
     /**
-     * Same as {@link TestHttpClientUtils#relaxedCookieHttpClient()} but instead returns a builder that can be further configured.
+     * Same as {@link TestHttpClientUtils#promiscuousCookieHttpClient()} but instead returns a builder that can be further configured.
      *
      * @return {@link HttpClientBuilder} of the http client that gives free cookies to everybody
-     * @see TestHttpClientUtils#relaxedCookieHttpClient()
+     * @see TestHttpClientUtils#promiscuousCookieHttpClient()
      */
-    public static HttpClientBuilder relaxedCookieHttpClientBuilder() {
+    public static HttpClientBuilder promiscuousCookieHttpClientBuilder() {
 
         HttpClientBuilder builder = HttpClients.custom();
 
         RegistryBuilder<CookieSpecProvider> registryBuilder = CookieSpecRegistries.createDefaultBuilder();
-        Registry<CookieSpecProvider> relaxedCookieSpecRegistry = registryBuilder.register("relaxed", new RelaxedCookieSpecProvider()).build();
-        builder.setDefaultCookieSpecRegistry(relaxedCookieSpecRegistry);
+        Registry<CookieSpecProvider> promiscuousCookieSpecRegistry = registryBuilder.register("promiscuous", new PromiscuousCookieSpecProvider()).build();
+        builder.setDefaultCookieSpecRegistry(promiscuousCookieSpecRegistry);
 
-        RequestConfig requestConfig = RequestConfig.custom().setCookieSpec("relaxed").build();
+        RequestConfig requestConfig = RequestConfig.custom().setCookieSpec("promiscuous").build();
         builder.setDefaultRequestConfig(requestConfig);
 
         return builder;
     }
 
 
-    private static class RelaxedCookieSpecProvider implements CookieSpecProvider {
+    private static class PromiscuousCookieSpecProvider implements CookieSpecProvider {
 
         @Override
         public CookieSpec create(HttpContext context) {
-            return new RelaxedCookieSpec();
+            return new PromiscuousCookieSpec();
         }
     }
 
-    private static class RelaxedCookieSpec extends RFC6265CookieSpec {
+    private static class PromiscuousCookieSpec extends RFC6265CookieSpec {
 
-        RelaxedCookieSpec(CommonCookieAttributeHandler... handlers) {
+        PromiscuousCookieSpec(CommonCookieAttributeHandler... handlers) {
             super(
                     new BasicPathHandler(),
                     new BasicDomainHandler() {

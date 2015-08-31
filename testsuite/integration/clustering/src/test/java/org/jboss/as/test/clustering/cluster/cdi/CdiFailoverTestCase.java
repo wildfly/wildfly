@@ -128,7 +128,7 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
         URI uri1 = CdiServlet.createURI(baseURL1);
         URI uri2 = CdiServlet.createURI(baseURL2);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()){
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()){
             assertEquals(1, queryCount(client, uri1));
             assertEquals(2, queryCount(client, uri1));
 

@@ -60,7 +60,7 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
                      @ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
                              throws IOException, URISyntaxException, InterruptedException {
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // This should trigger session creation event, but not added attribute event
             HttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createSetURI(baseURL1, "a")));
             try {

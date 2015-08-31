@@ -89,7 +89,7 @@ public class AsyncServletTestCase extends ClusterAbstractTestCase {
         URI uri1 = AsyncServlet.createURI(baseURL1);
         URI uri2 = AsyncServlet.createURI(baseURL2);
 
-        HttpClient client = TestHttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
 
         try {
             assertValue(client, uri1, 1);

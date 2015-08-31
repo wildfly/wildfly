@@ -90,7 +90,7 @@ public class ExternalizerTestCase extends ClusterAbstractTestCase {
         URI uri1 = CounterServlet.createURI(baseURL1);
         URI uri2 = CounterServlet.createURI(baseURL2);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             assertValue(client, uri1, 1);
             assertValue(client, uri1, 2);
 

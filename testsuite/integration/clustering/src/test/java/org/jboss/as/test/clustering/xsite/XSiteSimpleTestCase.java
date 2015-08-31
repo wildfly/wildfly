@@ -128,7 +128,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         URI url3 = CacheAccessServlet.createGetURI(baseURL3, "a");
         URI url4 = CacheAccessServlet.createGetURI(baseURL4, "a");
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // put a value to LON-0
             System.out.println("Executing HTTP request: " + url1);
             HttpResponse response = client.execute(new HttpGet(url1));
@@ -183,7 +183,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         URI url1 = CacheAccessServlet.createGetURI(baseURL1, "b");
         URI url3 = CacheAccessServlet.createPutURI(baseURL3, "b", "200");
 
-        try (CloseableHttpClient client = TestHttpClientUtils.relaxedCookieHttpClient()) {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // put a value to NYC-0
             System.out.println("Executing HTTP request: " + url3);
             HttpResponse response = client.execute(new HttpGet(url3));
