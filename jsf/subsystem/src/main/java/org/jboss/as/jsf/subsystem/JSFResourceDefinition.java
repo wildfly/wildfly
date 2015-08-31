@@ -18,26 +18,31 @@
  */
 package org.jboss.as.jsf.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Defines attributes and operations for the JSF Subsystem
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
-public class JSFResourceDefinition extends SimpleResourceDefinition {
+public class JSFResourceDefinition extends PersistentResourceDefinition {
 
     public static final String DEFAULT_SLOT_ATTR_NAME = "default-jsf-impl-slot";
     public static final String DEFAULT_SLOT = "main";
+
+    public static JSFResourceDefinition INSTANCE = new JSFResourceDefinition();
 
     protected static final SimpleAttributeDefinition DEFAULT_JSF_IMPL_SLOT =
             new SimpleAttributeDefinitionBuilder(DEFAULT_SLOT_ATTR_NAME, ModelType.STRING, true)
@@ -48,7 +53,7 @@ public class JSFResourceDefinition extends SimpleResourceDefinition {
             .build();
 
 
-    public JSFResourceDefinition() {
+    private JSFResourceDefinition() {
         super(JSFExtension.PATH_SUBSYSTEM,
                 JSFExtension.getResourceDescriptionResolver(),
                 JSFSubsystemAdd.INSTANCE,
@@ -63,9 +68,7 @@ public class JSFResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_JSF_IMPL_SLOT, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_JSF_IMPL_SLOT));
-//        resourceRegistration.registerReadOnlyAttribute(ACTIVE_JSF_IMPLS, activeJSFImplsHandler);
+    public Collection<AttributeDefinition> getAttributes() {
+        return Collections.singleton(DEFAULT_JSF_IMPL_SLOT);
     }
 }
