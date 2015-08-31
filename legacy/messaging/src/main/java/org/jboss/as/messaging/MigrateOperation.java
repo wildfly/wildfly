@@ -48,6 +48,7 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_SERVICE;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
@@ -367,6 +368,9 @@ public class MigrateOperation implements OperationStepHandler {
                         case BROADCAST_GROUP:
                             migrateBroadcastGroup(newAddOp, warnings);
                             break;
+                        case DISCOVERY_GROUP:
+                            migrateDiscoveryGroup(newAddOp, warnings);
+                            break;
                         case CONNECTION_FACTORY:
                             if (addLegacyEntries) {
                                 PathAddress legacyConnectionFactoryAddress = address.getParent().append("legacy-connection-factory", address.getLastElement().getValue());
@@ -416,6 +420,19 @@ public class MigrateOperation implements OperationStepHandler {
             }
 
             newAddOperations.put(address, newAddOp);
+        }
+    }
+
+    private void migrateDiscoveryGroup(ModelNode newAddOp, List<String> warnings) {
+        // These attributes are not present in the messaging-activemq subsystem.
+        // Instead a socket-binding must be used to configure the broadcast-group.
+        final Collection<String> unmigratedProperties = Arrays.asList(LOCAL_BIND_ADDRESS.getName(),
+                GROUP_ADDRESS.getName(),
+                GROUP_PORT.getName());
+        for (Property property : newAddOp.asPropertyList()) {
+            if (unmigratedProperties.contains(property.getName())) {
+                warnings.add(ROOT_LOGGER.couldNotMigrateDiscoveryGroupAttribute(property.getName(), pathAddress(newAddOp.get(OP_ADDR))));
+            }
         }
     }
 
