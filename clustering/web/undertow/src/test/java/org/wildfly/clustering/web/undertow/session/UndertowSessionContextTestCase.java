@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -67,12 +68,13 @@ public class UndertowSessionContextTestCase {
     }
 
     @Test
-    public void getSessionListeners() {
+    public void getSessionListeners() throws ServletException {
         ServletContext context = mock(ServletContext.class);
         HttpSessionListener listener1 = mock(HttpSessionListener.class);
         HttpSessionListener listener2 = mock(HttpSessionListener.class);
         List<ManagedListener> list = Arrays.asList(new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener1)), false), new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener2)), false));
         ApplicationListeners listeners = new ApplicationListeners(list, context);
+        listeners.start();
 
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
 
@@ -108,12 +110,13 @@ public class UndertowSessionContextTestCase {
     }
 
     @Test
-    public void getSessionAttributeListeners() {
+    public void getSessionAttributeListeners() throws ServletException {
         ServletContext context = mock(ServletContext.class);
         HttpSessionAttributeListener listener1 = mock(HttpSessionAttributeListener.class);
         HttpSessionAttributeListener listener2 = mock(HttpSessionAttributeListener.class);
         List<ManagedListener> list = Arrays.asList(new ManagedListener(new ListenerInfo(HttpSessionAttributeListener.class, new ImmediateInstanceFactory<>(listener1)), false), new ManagedListener(new ListenerInfo(HttpSessionAttributeListener.class, new ImmediateInstanceFactory<>(listener2)), false));
         ApplicationListeners listeners = new ApplicationListeners(list, context);
+        listeners.start();
 
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
 
