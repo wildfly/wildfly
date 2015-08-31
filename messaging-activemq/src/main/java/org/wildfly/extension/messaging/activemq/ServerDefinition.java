@@ -27,9 +27,6 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.DAYS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
@@ -37,7 +34,6 @@ import static org.jboss.dmr.ModelType.LONG;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
@@ -47,12 +43,9 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -547,28 +540,6 @@ public class ServerDefinition extends PersistentResourceDefinition {
         runtimeQueue.setRuntimeOnly(true);
         ManagementResourceRegistration coreAddress = resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);
         coreAddress.setRuntimeOnly(true);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * The resource description has a small tweak from the standard
-     */
-    @Override
-    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-        if (registerRuntimeOnly) {
-            return super.getDescriptionProvider(resourceRegistration);
-        } else {
-            return new DefaultResourceDescriptionProvider(resourceRegistration, getResourceDescriptionResolver()) {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode result = super.getModelDescription(locale);
-                    result.get(ModelDescriptionConstants.CHILDREN, PATH, MIN_OCCURS).set(4);
-                    result.get(ModelDescriptionConstants.CHILDREN, PATH, MAX_OCCURS).set(4);
-                    return result;
-                }
-            };
-        }
     }
 
 
