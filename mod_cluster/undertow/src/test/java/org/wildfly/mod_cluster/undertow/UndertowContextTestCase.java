@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
 import java.util.Collections;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
@@ -68,7 +69,7 @@ public class UndertowContextTestCase {
     }
     
     @Test
-    public void isStarted() {
+    public void isStarted() throws ServletException {
         ServletContext context = mock(ServletContext.class);
         ApplicationListeners listeners = new ApplicationListeners(Collections.<ManagedListener>emptyList(), context);
         
