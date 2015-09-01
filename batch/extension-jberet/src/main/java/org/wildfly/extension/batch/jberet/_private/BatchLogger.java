@@ -124,18 +124,6 @@ public interface BatchLogger extends BasicLogger {
     IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
 
     /**
-     * Logs a warning message indicating the {@code type} defined in the {@code jboss-all.xml} deployment descriptor
-     * was not found.
-     *
-     * @param type           the type that is missing
-     * @param name           the name of the type that was not found
-     * @param deploymentName the name of the deployment
-     */
-    @LogMessage(level = Level.WARN)
-    @Message(id = 10, value = "Missing %1$s %2$s defined in the jboss-all.xml deployment descriptor was not found. Using the default %1$s for deployment %3$s")
-    void missingNamedService(String type, String name, String deploymentName);
-
-    /**
      * Creates an exception indicating the failure to create a job repository.
      *
      * @param cause the cause of the error
@@ -145,16 +133,6 @@ public interface BatchLogger extends BasicLogger {
      */
     @Message(id = 11, value = "Failed to create %s job repository.")
     StartException failedToCreateJobRepository(@Cause Throwable cause, String type);
-
-    /**
-     * Creates an exception indicating a failure to resolve job XML entries.
-     *
-     * @param cause the cause of the error
-     *
-     * @return a {@link StartException} for the error
-     */
-    @Message(id = 12, value = "Failed resolve job XMl entries.")
-    StartException failedToResolveJobXmlEntries(@Cause Throwable cause);
 
     /**
      * Logs an error message indicating only one job repository can be defined in the {@code jboss-all.xml} deployment

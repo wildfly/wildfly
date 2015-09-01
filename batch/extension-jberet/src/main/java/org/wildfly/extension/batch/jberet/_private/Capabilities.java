@@ -22,9 +22,8 @@
 
 package org.wildfly.extension.batch.jberet._private;
 
-import java.util.concurrent.ExecutorService;
-
 import org.jberet.repository.JobRepository;
+import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.capability.RuntimeCapability;
 
 /**
@@ -40,9 +39,15 @@ public class Capabilities {
     public static final String DATA_SOURCE_CAPABILITY = "org.wildfly.data-source";
 
     /**
+     * A capability for thread-pools.
+     */
+    public static final RuntimeCapability<Void> THREAD_POOL_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.thread.pool", true, JobExecutor.class)
+            .build();
+
+    /**
      * A capability representing the default thread-pool to use in batch deployment environments.
      */
-    public static final RuntimeCapability<Void> DEFAULT_THREAD_POOL_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.default.thread.pool", false, ExecutorService.class)
+    public static final RuntimeCapability<Void> DEFAULT_THREAD_POOL_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.default.thread.pool", false, JobExecutor.class)
             .build();
 
     /**

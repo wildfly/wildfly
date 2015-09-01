@@ -20,35 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.deployment;
+package org.wildfly.extension.batch.jberet.impl;
 
-import org.jberet.repository.JobRepository;
+import org.jberet.spi.JobExecutor;
+import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
 
 /**
- * Represents environment objects created via a deployment descriptor.
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class BatchEnvironmentMetaData {
-    private final JobRepository jobRepository;
-    private final String jobRepositoryName;
-    private final String executorName;
+class WildFlyJobExecutor extends JobExecutor {
+    private final ManagedJBossThreadPoolExecutorService delegate;
 
-    protected BatchEnvironmentMetaData(final JobRepository jobRepository, final String jobRepositoryName, final String executorName) {
-        this.jobRepository = jobRepository;
-        this.jobRepositoryName = jobRepositoryName;
-        this.executorName = executorName;
+    public WildFlyJobExecutor(final ManagedJBossThreadPoolExecutorService delegate) {
+        super(delegate);
+        this.delegate = delegate;
     }
 
-    public JobRepository getJobRepository() {
-        return jobRepository;
-    }
-
-    public String getJobRepositoryName() {
-        return jobRepositoryName;
-    }
-
-    public String getExecutorName() {
-        return executorName;
+    @Override
+    protected int getMaximumPoolSize() {
+        return delegate.getMaxThreads();
     }
 }

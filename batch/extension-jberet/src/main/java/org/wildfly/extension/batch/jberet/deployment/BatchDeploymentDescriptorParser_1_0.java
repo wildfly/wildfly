@@ -22,29 +22,22 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
+import java.util.Properties;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 
 import org.jberet.repository.InMemoryRepository;
 import org.jberet.repository.JdbcRepository;
 import org.jberet.repository.JobRepository;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.extension.batch.jberet.Attribute;
-import org.wildfly.extension.batch.jberet.BatchServiceNames;
 import org.wildfly.extension.batch.jberet.Element;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
-import org.wildfly.extension.batch.jberet._private.Capabilities;
 
 /**
  * A parser for batch deployment descriptors in {@code jboss-all.xml}.
@@ -65,7 +58,8 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
     @Override
     public BatchEnvironmentMetaData parse(final XMLExtendedStreamReader reader, final DeploymentUnit deploymentUnit) throws XMLStreamException {
         JobRepository jobRepository = null;
-        ExecutorService executorService = null;
+        String jobRepositoryName = null;
+        String jobExecutorName = null;
         boolean empty = true;
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -75,22 +69,38 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
             // Process the job repository
             if (element == Element.JOB_REPOSITORY) {
                 // Only one repository can be defined
-                if (jobRepository != null) {
+                if (jobRepository != null || jobRepositoryName != null) {
                     BatchLogger.LOGGER.multipleJobRepositoriesFound();
                 } else {
-                    jobRepository = parseJobRepository(reader, deploymentUnit);
+                    if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                        final String name = reader.getLocalName();
+                        final Element jobRepositoryElement = Element.forName(name);
+                        if (jobRepositoryElement == Element.IN_MEMORY) {
+                            ParseUtils.requireNoContent(reader);
+                            jobRepository = new InMemoryRepository();
+                        } else if (jobRepositoryElement == Element.JDBC) {
+                            final String value = readRequiredAttribute(reader, Attribute.JNDI_NAME);
+                            final Properties configProperties = new Properties();
+                            configProperties.setProperty(JNDI_NAME, value);
+                            ParseUtils.requireNoContent(reader);
+                            jobRepository = JdbcRepository.create(configProperties);
+                        } else if (jobRepositoryElement == Element.NAMED) {
+                            jobRepositoryName = readRequiredAttribute(reader, Attribute.NAME);
+                            ParseUtils.requireNoContent(reader);
+                        } else {
+                            throw ParseUtils.unexpectedElement(reader);
+                        }
+                    }
+                    // Log an error indicating the job-repository is empty, but continue as normal
+                    if (jobRepository == null && jobRepositoryName == null) {
+                        BatchLogger.LOGGER.emptyJobRepositoryElement(deploymentUnit.getName());
+                    }
                 }
                 ParseUtils.requireNoContent(reader);
+
             } else if (element == Element.THREAD_POOL) {
                 // Only thread-pool's defined on the subsystem are allowed to be referenced
-                final String name = readRequiredAttribute(reader, Attribute.NAME);
-                final ServiceName serviceName = BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME.append(name);
-                final ServiceController<?> controller = deploymentUnit.getServiceRegistry().getRequiredService(serviceName);
-                if (controller == null) {
-                    BatchLogger.LOGGER.missingNamedService("thread-pool", name, deploymentUnit.getName());
-                    return null;
-                }
-                executorService = (ExecutorService) controller.getValue();
+                jobExecutorName = readRequiredAttribute(reader, Attribute.NAME);
                 ParseUtils.requireNoContent(reader);
             } else {
                 throw ParseUtils.unexpectedElement(reader);
@@ -102,40 +112,7 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
             BatchLogger.LOGGER.debugf("An empty batch element in the deployment descriptor was found for %s.", deploymentUnit.getName());
             return null;
         }
-        return new BatchEnvironmentMetaData(jobRepository, executorService);
-    }
-
-    private JobRepository parseJobRepository(final XMLExtendedStreamReader reader, final DeploymentUnit deploymentUnit) throws XMLStreamException {
-        if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final String localName = reader.getLocalName();
-            final Element element = Element.forName(localName);
-            if (element == Element.IN_MEMORY) {
-                ParseUtils.requireNoContent(reader);
-                return new InMemoryRepository();
-            } else if (element == Element.JDBC) {
-                final String value = readRequiredAttribute(reader, Attribute.JNDI_NAME);
-                final Properties configProperties = new Properties();
-                configProperties.setProperty(JNDI_NAME, value);
-                ParseUtils.requireNoContent(reader);
-                return JdbcRepository.create(configProperties);
-            } else if (element == Element.NAMED) {
-                final String jobRepositoryName = readRequiredAttribute(reader, Attribute.NAME);
-                final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-                final ServiceName serviceName = support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), jobRepositoryName);
-                final ServiceController<?> controller = deploymentUnit.getServiceRegistry().getRequiredService(serviceName);
-                if (controller == null) {
-                    BatchLogger.LOGGER.missingNamedService("job-repository", jobRepositoryName, deploymentUnit.getName());
-                    return null;
-                }
-                ParseUtils.requireNoContent(reader);
-                return (JobRepository) controller.getValue();
-            } else {
-                throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-        // Log an error indicating the job-repository is empty, but return null to continue as normal
-        BatchLogger.LOGGER.emptyJobRepositoryElement(deploymentUnit.getName());
-        return null;
+        return new BatchEnvironmentMetaData(jobRepository, jobRepositoryName, jobExecutorName);
     }
 
     private static String readRequiredAttribute(final XMLExtendedStreamReader reader, final Attribute attribute) throws XMLStreamException {

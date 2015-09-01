@@ -23,13 +23,14 @@
 package org.wildfly.extension.batch.jberet.impl;
 
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.JobExecutor;
+import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -53,7 +54,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private static final Properties PROPS = new Properties();
 
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
-    private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<>();
+    private final InjectedValue<JobExecutor> jobExecutorInjector = new InjectedValue<>();
     private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
     private final InjectedValue<RequestController> requestControllerInjector = new InjectedValue<>();
     private final InjectedValue<JobRepository> jobRepositoryInjector = new InjectedValue<>();
@@ -81,7 +82,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
             controlPoint = null;
         }
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
-                executorServiceInjector.getValue(), transactionManagerInjector.getValue(),
+                jobExecutorInjector.getValue(), transactionManagerInjector.getValue(),
                 jobRepositoryInjector.getValue(), jobXmlResolver, controlPoint);
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
@@ -107,8 +108,8 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         return beanManagerInjector;
     }
 
-    public InjectedValue<ExecutorService> getExecutorServiceInjector() {
-        return executorServiceInjector;
+    public InjectedValue<JobExecutor> getJobExecutorInjector() {
+        return jobExecutorInjector;
     }
 
     public InjectedValue<TransactionManager> getTransactionManagerInjector() {
@@ -126,21 +127,21 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private class WildFlyBatchEnvironment implements BatchEnvironment {
 
         private final ArtifactFactory artifactFactory;
-        private final ExecutorService executorService;
+        private final JobExecutor jobExecutor;
         private final TransactionManager transactionManager;
         private final JobRepository jobRepository;
         private final JobXmlResolver jobXmlResolver;
         private final ControlPoint controlPoint;
 
         WildFlyBatchEnvironment(final BeanManager beanManager,
-                                final ExecutorService executorService,
+                                final JobExecutor jobExecutor,
                                 final TransactionManager transactionManager,
                                 final JobRepository jobRepository,
                                 final JobXmlResolver jobXmlResolver,
                                 final ControlPoint controlPoint) {
             this.jobXmlResolver = jobXmlResolver;
             artifactFactory = new WildFlyArtifactFactory(beanManager);
-            this.executorService = executorService;
+            this.jobExecutor = jobExecutor;
             this.transactionManager = transactionManager;
             this.controlPoint = controlPoint;
             this.jobRepository = jobRepository;
@@ -157,25 +158,29 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         }
 
         @Override
-        public void submitTask(final Runnable task) {
+        public void submitTask(final JobTask jobTask) {
             final ContextHandle contextHandle = createContextHandle();
-            // Wrap the runnable to setup the context for the thread
-            final Runnable r = new Runnable() {
+            final JobTask task = new JobTask() {
+                @Override
+                public int getRequiredRemainingPermits() {
+                    return jobTask.getRequiredRemainingPermits();
+                }
+
                 @Override
                 public void run() {
                     final Handle handle = contextHandle.setup();
                     try {
-                        task.run();
+                        jobTask.run();
                     } finally {
                         handle.tearDown();
                     }
                 }
             };
             if (controlPoint == null) {
-                executorService.submit(r);
+                jobExecutor.execute(task);
             } else {
                 // Queue the task to run in the control point, if resume is executed the queued tasks will run
-                controlPoint.queueTask(r, executorService, -1, null, false);
+                controlPoint.queueTask(task, jobExecutor, -1, null, false);
             }
         }
 
@@ -197,12 +202,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         @Override
         public Properties getBatchConfigurationProperties() {
             return PROPS;
-        }
-
-        // Note this method will likely go away when a better solution for JBERET-180 is done
-        @Override
-        public void jobExecutionFinished() {
-            BatchLogger.LOGGER.trace("The jobExecutionFinishedMethod() is not implemented in WildFly");
         }
 
         private ContextHandle createContextHandle() {

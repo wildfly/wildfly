@@ -22,12 +22,12 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import java.util.concurrent.ExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -70,7 +70,8 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             JobRepository jobRepository = null;
-            ExecutorService executorService = null;
+            String jobRepositoryName = null;
+            String jobExecutorName = null;
 
             // Check for a deployment descriptor
             BatchEnvironmentMetaData metaData = deploymentUnit.getAttachment(BatchDeploymentDescriptorParser_1_0.ATTACHMENT_KEY);
@@ -83,7 +84,8 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             }
             if (metaData != null) {
                 jobRepository = metaData.getJobRepository();
-                executorService = metaData.getExecutorService();
+                jobRepositoryName = metaData.getJobRepositoryName();
+                jobExecutorName = metaData.getExecutorName();
             }
 
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
@@ -93,12 +95,12 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
 
             // Add a dependency to the thread-pool
-            if (executorService == null) {
+            if (jobExecutorName == null) {
                 // Use the default
-                serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY.getName()), ExecutorService.class, service.getExecutorServiceInjector());
+                serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY.getName()), JobExecutor.class, service.getJobExecutorInjector());
             } else {
-                // Use the thread pool from the deployment descriptor
-                service.getExecutorServiceInjector().setValue(new ImmediateValue<>(executorService));
+                // Register the named thread-pool capability
+                serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.THREAD_POOL_CAPABILITY.getName(), jobExecutorName), JobExecutor.class, service.getJobExecutorInjector());
             }
 
             // Register the required services
@@ -111,10 +113,14 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             }
 
             // No deployment defined repository, use the default
-            if (jobRepository == null) {
+            if (jobRepository == null && jobRepositoryName == null) {
                 final ServiceName defaultJobRepository = support.getCapabilityServiceName(Capabilities.DEFAULT_JOB_REPOSITORY_CAPABILITY.getName());
                 serviceBuilder.addDependency(defaultJobRepository, JobRepository.class, service.getJobRepositoryInjector());
+            } else if (jobRepositoryName != null) {
+                // Register a named job repository
+                serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), jobRepositoryName), JobRepository.class, service.getJobRepositoryInjector());
             } else {
+                // Use the job repository as defined in the deployment descriptor
                 service.getJobRepositoryInjector().setValue(new ImmediateValue<>(jobRepository));
             }
 

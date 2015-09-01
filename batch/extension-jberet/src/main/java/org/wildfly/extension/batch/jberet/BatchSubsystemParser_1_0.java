@@ -42,6 +42,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -78,7 +79,7 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
             } else if (element == Element.THREAD_POOL) {
                 threadsParser.parseUnboundedQueueThreadPool(reader, namespace.getUriString(),
                         THREADS_1_1, subsystemAddress.toModelNode(), ops,
-                        BatchSubsystemDefinition.THREAD_POOL, null);
+                        BatchThreadPoolResourceDefinition.NAME, null);
                 requiredElements.remove(Element.THREAD_POOL);
             } else if (element == Element.THREAD_FACTORY) {
                 threadsParser.parseThreadFactory(reader, namespace.getUriString(),

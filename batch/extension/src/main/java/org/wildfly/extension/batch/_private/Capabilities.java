@@ -20,35 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.deployment;
+package org.wildfly.extension.batch._private;
 
-import org.jberet.repository.JobRepository;
+import org.jberet.spi.JobExecutor;
+import org.jboss.as.controller.capability.RuntimeCapability;
 
 /**
- * Represents environment objects created via a deployment descriptor.
+ * Capabilities for the batch extension. This is not to be used outside of this extension.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class BatchEnvironmentMetaData {
-    private final JobRepository jobRepository;
-    private final String jobRepositoryName;
-    private final String executorName;
+public class Capabilities {
 
-    protected BatchEnvironmentMetaData(final JobRepository jobRepository, final String jobRepositoryName, final String executorName) {
-        this.jobRepository = jobRepository;
-        this.jobRepositoryName = jobRepositoryName;
-        this.executorName = executorName;
-    }
-
-    public JobRepository getJobRepository() {
-        return jobRepository;
-    }
-
-    public String getJobRepositoryName() {
-        return jobRepositoryName;
-    }
-
-    public String getExecutorName() {
-        return executorName;
-    }
+    /**
+     * A capability representing the default thread-pool to use in batch deployment environments.
+     */
+    public static final RuntimeCapability<Void> DEFAULT_THREAD_POOL_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.default.thread.pool", false, JobExecutor.class)
+            .build();
 }

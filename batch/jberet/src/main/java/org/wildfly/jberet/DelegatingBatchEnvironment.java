@@ -28,6 +28,7 @@ import javax.transaction.TransactionManager;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
 
 /**
@@ -52,8 +53,8 @@ public class DelegatingBatchEnvironment implements BatchEnvironment {
     }
 
     @Override
-    public void submitTask(final Runnable task) {
-        delegate.submitTask(task);
+    public void submitTask(final JobTask jobTask) {
+        delegate.submitTask(jobTask);
     }
 
     @Override
@@ -74,10 +75,5 @@ public class DelegatingBatchEnvironment implements BatchEnvironment {
     @Override
     public Properties getBatchConfigurationProperties() {
         return delegate.getBatchConfigurationProperties();
-    }
-
-    @Override
-    public void jobExecutionFinished() {
-        delegate.jobExecutionFinished();
     }
 }
