@@ -46,9 +46,6 @@ import org.wildfly.extension.clustering.singleton.deployment.SingletonDeployment
  */
 public class SingletonServiceHandler implements ResourceServiceHandler {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
 
@@ -71,9 +68,6 @@ public class SingletonServiceHandler implements ResourceServiceHandler {
         new AliasServiceBuilder<>(serviceName, targetServiceName, SingletonPolicy.class).build(context.getServiceTarget()).install();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void removeServices(OperationContext context, ModelNode model) {
         context.removeService(Capability.POLICY.getDefinition().getCapabilityServiceName());

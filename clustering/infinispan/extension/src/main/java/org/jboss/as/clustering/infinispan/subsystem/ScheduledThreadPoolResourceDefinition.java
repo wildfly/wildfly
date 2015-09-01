@@ -23,13 +23,13 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -67,7 +67,7 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
  * @author Radoslav Husar
  * @version Mar 2015
  */
-public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition, Registration, ScheduledThreadPoolDefinition {
+public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition, Registration<ManagementResourceRegistration>, ScheduledThreadPoolDefinition {
 
     EXPIRATION("expiration", 1, 60000), // called eviction prior to Infinispan 8
     ;
@@ -121,7 +121,7 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition,
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(this.getAttributes()).register(registration);
+        // No-op.
     }
 
     @Override
@@ -169,7 +169,7 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition,
         return this.keepAliveTime;
     }
 
-    Iterable<Attribute> getAttributes() {
+    Collection<Attribute> getAttributes() {
         return Arrays.asList(this.maxThreads, this.keepAliveTime);
     }
 
@@ -177,7 +177,7 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition,
         // Nothing to transform yet
     }
 
-    public DynamicDiscardPolicy getDiscardPolicy() {
+    DynamicDiscardPolicy getDiscardPolicy() {
         return new UndefinedAttributesDiscardPolicy(this.getAttributes());
     }
 

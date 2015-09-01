@@ -26,7 +26,9 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -38,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  * Generic boot-time add step handler that delegates service installation/rollback to a {@link ResourceServiceHandler}.
  * @author Paul Ferraro
  */
-public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler implements Registration {
+public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler implements Registration<ManagementResourceRegistration> {
 
     private final AddStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
@@ -91,6 +93,9 @@ public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler imple
             builder.addParameter(parameter);
         }
         registration.registerOperationHandler(builder.build(), this);
+
+        OperationStepHandler writeAttributeHandler = new ReloadRequiredWriteAttributeHandler(this.descriptor.getAttributes());
+        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, writeAttributeHandler));
 
         new CapabilityRegistration(this.descriptor.getCapabilities()).register(registration);
     }

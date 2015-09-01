@@ -21,14 +21,13 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class ComponentResourceDefinition extends SimpleResourceDefinition implements Registration {
+public abstract class ComponentResourceDefinition extends ChildResourceDefinition {
 
     static PathElement pathElement(String name) {
         return PathElement.pathElement("component", name);

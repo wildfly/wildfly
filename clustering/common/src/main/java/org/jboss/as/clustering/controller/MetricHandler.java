@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  * Generic {@link org.jboss.as.controller.OperationStepHandler} for runtime metrics.
  * @author Paul Ferraro
  */
-public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements Registration {
+public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements Registration<ManagementResourceRegistration> {
 
     private final Map<String, Metric<C>> metrics = new HashMap<>();
     private final MetricExecutor<C> executor;
@@ -50,18 +51,14 @@ public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements Regi
         this(executor, Arrays.asList(metrics));
     }
 
-    public MetricHandler(MetricExecutor<C> executor, Iterable<? extends Metric<C>> metrics) {
+    public MetricHandler(MetricExecutor<C> executor, Collection<? extends Metric<C>> metrics) {
         this.executor = executor;
-        for (Metric<C> metric : metrics) {
-            this.metrics.put(metric.getDefinition().getName(), metric);
-        }
+        metrics.forEach(metric -> this.metrics.put(metric.getDefinition().getName(), metric));
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        for (Metric<C> metric : this.metrics.values()) {
-            registration.registerReadOnlyAttribute(metric.getDefinition(), this);
-        }
+        this.metrics.values().forEach(metric -> registration.registerReadOnlyAttribute(metric.getDefinition(), this));
     }
 
     @Override

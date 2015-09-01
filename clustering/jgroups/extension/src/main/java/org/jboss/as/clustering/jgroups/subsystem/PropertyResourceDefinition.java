@@ -21,8 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
@@ -41,7 +41,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -59,7 +58,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 @Deprecated
-public class PropertyResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class PropertyResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -101,33 +100,9 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition impleme
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        // Delegate read of property value to "properties" attribute of parent protocol
-        OperationStepHandler readHandler = new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) {
-                PathAddress address = context.getCurrentAddress().getParent();
-                String key = context.getCurrentAddressValue();
-                ModelNode getOperation = Operations.createMapGetOperation(address, ProtocolResourceDefinition.Attribute.PROPERTIES, key);
-                context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
-            }
-        };
-        // Delegate write of property value to "properties" attribute of parent protocol
-        OperationStepHandler writeHandler = new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) {
-                PathAddress address = context.getCurrentAddress().getParent();
-                String key = context.getCurrentAddressValue();
-                String value = Operations.getAttributeValue(operation).asString();
-                ModelNode putOperation = Operations.createMapPutOperation(address, ProtocolResourceDefinition.Attribute.PROPERTIES, key, value);
-                context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
-            }
-        };
-        registration.registerReadWriteAttribute(VALUE, readHandler, writeHandler);
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
         // Delegate add of property to "properties" attribute of parent protocol
         AbstractAddStepHandler addHandler = new AbstractAddStepHandler() {
             @Override
@@ -154,10 +129,28 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition impleme
             }
         };
         this.registerRemoveOperation(registration, removeHandler);
-    }
 
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
+        // Delegate read of property value to "properties" attribute of parent protocol
+        OperationStepHandler readHandler = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                PathAddress address = context.getCurrentAddress().getParent();
+                String key = context.getCurrentAddressValue();
+                ModelNode getOperation = Operations.createMapGetOperation(address, ProtocolResourceDefinition.Attribute.PROPERTIES, key);
+                context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
+            }
+        };
+        // Delegate write of property value to "properties" attribute of parent protocol
+        OperationStepHandler writeHandler = new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) {
+                PathAddress address = context.getCurrentAddress().getParent();
+                String key = context.getCurrentAddressValue();
+                String value = Operations.getAttributeValue(operation).asString();
+                ModelNode putOperation = Operations.createMapPutOperation(address, ProtocolResourceDefinition.Attribute.PROPERTIES, key, value);
+                context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
+            }
+        };
+        registration.registerReadWriteAttribute(VALUE, readHandler, writeHandler);
     }
 }

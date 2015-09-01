@@ -64,20 +64,14 @@ public class BackupsResourceDefinition extends ComponentResourceDefinition {
     }
 
     @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        new BackupResourceDefinition(this.builderFactory, this.runtimeRegistration).register(registration);
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
         ResourceServiceHandler handler = new ParentResourceServiceHandler<>(this.builderFactory);
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
 
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
+        new BackupResourceDefinition(this.builderFactory, this.runtimeRegistration).register(registration);
     }
 }

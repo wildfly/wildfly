@@ -24,7 +24,6 @@ package org.jboss.as.clustering.controller;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceHandlerBase;
 import org.jboss.dmr.ModelNode;
@@ -38,7 +37,7 @@ public class RestartParentResourceStepHandler<T> extends RestartParentResourceHa
 
     private final ResourceServiceBuilderFactory<T> parentFactory;
 
-    public <H extends OperationStepHandler & Registration> RestartParentResourceStepHandler(ResourceServiceBuilderFactory<T> parentFactory) {
+    public RestartParentResourceStepHandler(ResourceServiceBuilderFactory<T> parentFactory) {
         super(null);
         this.parentFactory = parentFactory;
     }

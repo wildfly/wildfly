@@ -23,9 +23,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
@@ -83,7 +82,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-            ;
+                    ;
         }
 
         @Override
@@ -111,25 +110,22 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
         super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-    }
-
     @SuppressWarnings("deprecation")
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(ClusteredCacheResourceDefinition.Attribute.class)
                 .addAttributes(ClusteredCacheResourceDefinition.DeprecatedAttribute.class)
                 .addAttributes(CacheResourceDefinition.Attribute.class)
                 .addAttributes(CacheResourceDefinition.DeprecatedAttribute.class)
-        ;
+                ;
         ResourceServiceHandler handler = new DistributedCacheServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
+
+        super.register(registration);
     }
 }

@@ -20,40 +20,45 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
+ * Resource definition for a protocol of a jgroups protocol stack.
  * @author Paul Ferraro
  */
-public class StoreWriteThroughResourceDefinition extends StoreWriteResourceDefinition {
+public class StackProtocolResourceDefinition extends ProtocolResourceDefinition {
 
-    static final PathElement PATH = pathElement("through");
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        // Do nothing
+    StackProtocolResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> stackBuilderFactory) {
+        super(stackBuilderFactory);
     }
 
-    StoreWriteThroughResourceDefinition() {
-        super(PATH);
-    }
-
+    @SuppressWarnings("deprecation")
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StoreWriteThroughBuilderFactory());
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addExtraParameters(DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
+        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+
+        for (DeprecatedAttribute attribute : DeprecatedAttribute.values()) {
+            registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
+        }
+
+        super.register(registration);
     }
 }

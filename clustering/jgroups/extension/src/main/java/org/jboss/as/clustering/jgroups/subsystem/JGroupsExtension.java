@@ -67,7 +67,7 @@ public class JGroupsExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
 
-        registration.registerSubsystemModel(new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
+        new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()).register(registration);
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
         if (context.isRegisterTransformers()) {

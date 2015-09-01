@@ -22,9 +22,8 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.MetricHandler;
-import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -39,7 +38,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -57,7 +55,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-public class ChannelResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class ChannelResourceDefinition extends ChildResourceDefinition {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -120,7 +118,9 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new ChannelServiceHandler();
         new AddStepHandler(descriptor, handler) {
@@ -164,24 +164,11 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition implemen
                 super.performRemove(context, operation, model);
             }
         }.register(registration);
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        new ForkResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new ChannelMetricExecutor(), ChannelMetric.class).register(registration);
         }
-    }
 
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
+        new ForkResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
     }
 }
