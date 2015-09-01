@@ -61,18 +61,18 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
-            jmsAdminOperations.createJmsQueue("ejb2x/queue", "java:jboss/ejb2x/queue");
-            jmsAdminOperations.createJmsQueue("ejb2x/replyQueueA", "java:jboss/ejb2x/replyQueueA");
-            jmsAdminOperations.createJmsQueue("ejb2x/replyQueueB", "java:jboss/ejb2x/replyQueueB");
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsAdminOperations.createJmsQueue("ejb2x-queue", "java:jboss/ejb2x/queue");
+            jmsAdminOperations.createJmsQueue("ejb2x-replyQueueA", "java:jboss/ejb2x/replyQueueA");
+            jmsAdminOperations.createJmsQueue("ejb2x-replyQueueB", "java:jboss/ejb2x/replyQueueB");
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             if (jmsAdminOperations != null) {
-                jmsAdminOperations.removeJmsQueue("ejb2x/queue");
-                jmsAdminOperations.removeJmsQueue("ejb2x/replyQueueA");
-                jmsAdminOperations.removeJmsQueue("ejb2x/replyQueueB");
+                jmsAdminOperations.removeJmsQueue("ejb2x-queue");
+                jmsAdminOperations.removeJmsQueue("ejb2x-replyQueueA");
+                jmsAdminOperations.removeJmsQueue("ejb2x-replyQueueB");
                 jmsAdminOperations.close();
             }
         }
