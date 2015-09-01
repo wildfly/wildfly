@@ -97,7 +97,7 @@ public abstract class AbstractMDB2xTestCase {
     }
 
     protected void sendTextMessage(final String msg, final Destination destination, final Destination replyDestination, final String messageFormat) {
-        logger.debug("sending text message (" + msg + ") to " + destination);
+        logger.info("sending text message (" + msg + ") to " + destination);
         MessageProducer messageProducer = null;
         try {
             final TextMessage message = session.createTextMessage(msg);
@@ -109,7 +109,7 @@ public abstract class AbstractMDB2xTestCase {
             }
             messageProducer = session.createProducer(destination);
             messageProducer.send(message);
-            logger.debug("message sent");
+            logger.info("message sent");
         } catch (JMSException e) {
             e.printStackTrace();
             fail("Failed to send message to " + destination);

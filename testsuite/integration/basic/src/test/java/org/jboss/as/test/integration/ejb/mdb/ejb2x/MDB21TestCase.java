@@ -60,16 +60,16 @@ public class MDB21TestCase extends AbstractMDB2xTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
-            jmsAdminOperations.createJmsQueue("ejb2x/queue", "java:jboss/ejb2x/queue");
-            jmsAdminOperations.createJmsQueue("ejb2x/replyQueue", "java:jboss/ejb2x/replyQueue");
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsAdminOperations.createJmsQueue("ejb2x-queue", "java:jboss/ejb2x/queue");
+            jmsAdminOperations.createJmsQueue("ejb2x-replyQueue", "java:jboss/ejb2x/replyQueue");
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             if (jmsAdminOperations != null) {
-                jmsAdminOperations.removeJmsQueue("ejb2x/queue");
-                jmsAdminOperations.removeJmsQueue("ejb2x/replyQueue");
+                jmsAdminOperations.removeJmsQueue("ejb2x-queue");
+                jmsAdminOperations.removeJmsQueue("ejb2x-replyQueue");
                 jmsAdminOperations.close();
             }
         }
