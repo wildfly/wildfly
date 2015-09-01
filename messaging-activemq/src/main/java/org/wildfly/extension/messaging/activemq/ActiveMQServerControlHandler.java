@@ -66,12 +66,12 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
     static final ActiveMQServerControlHandler INSTANCE = new ActiveMQServerControlHandler();
 
-    public static final AttributeDefinition ACTIVE = create("active", BOOLEAN, true)
+    public static final AttributeDefinition ACTIVE = create("active", BOOLEAN)
             .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition STARTED = new SimpleAttributeDefinition(CommonAttributes.STARTED, ModelType.BOOLEAN,
-            true, AttributeAccess.Flag.STORAGE_RUNTIME);
+            false, AttributeAccess.Flag.STORAGE_RUNTIME);
 
     public static final AttributeDefinition VERSION = new SimpleAttributeDefinition(CommonAttributes.VERSION, ModelType.STRING,
             true, AttributeAccess.Flag.STORAGE_RUNTIME);
@@ -124,15 +124,15 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
+            ActiveMQServer server = null;
             if (context.getRunningMode() == RunningMode.NORMAL) {
                 ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
                 if (service == null || service.getState() != ServiceController.State.UP) {
                     throw MessagingLogger.ROOT_LOGGER.activeMQServerNotInstalled(serviceName.getSimpleName());
                 }
-                ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-                //TODO 'active' should possibly be set to false if we are admin only?
-                handleReadAttribute(context, operation, server);
+                server = ActiveMQServer.class.cast(service.getValue());
             }
+            handleReadAttribute(context, operation, server);
             return;
         }
 
@@ -348,13 +348,15 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         if (STARTED.getName().equals(name)) {
-            boolean started = server.isStarted();
+            boolean started = server != null ? server.isStarted() : false;
             context.getResult().set(started);
         } else if (VERSION.getName().equals(name)) {
-            String version = server.getVersion().getFullVersion();
-            context.getResult().set(version);
+            if (server != null) {
+                String version = server.getVersion().getFullVersion();
+                context.getResult().set(version);
+            }
         } else if (ACTIVE.getName().equals(name)) {
-            boolean active = server.isActive();
+            boolean active = server != null ? server.isActive() : false;
             context.getResult().set(active);
         } else {
             // Bug

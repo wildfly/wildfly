@@ -111,7 +111,7 @@ public interface CommonAttributes {
 
     AttributeDefinition DELIVERING_COUNT = create("delivering-count", INT)
             .setStorageRuntime()
-            .setAllowNull(true)
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     StringListAttributeDefinition DESTINATION_ENTRIES = new StringListAttributeDefinition.Builder(ENTRIES)
@@ -197,12 +197,12 @@ public interface CommonAttributes {
 
     AttributeDefinition MESSAGE_COUNT = create("message-count", LONG)
             .setStorageRuntime()
-            .setAllowNull(true)
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     AttributeDefinition MESSAGES_ADDED = create("messages-added", LONG)
             .setStorageRuntime()
-            .setAllowNull(true)
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     AttributeDefinition MIN_LARGE_MESSAGE_SIZE = create("min-large-message-size", INT)
@@ -259,7 +259,7 @@ public interface CommonAttributes {
 
     AttributeDefinition SCHEDULED_COUNT = create("scheduled-count", LONG)
             .setStorageRuntime()
-            .setAllowNull(true)
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)

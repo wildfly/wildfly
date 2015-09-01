@@ -169,14 +169,21 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
     }
 
     public enum SessionStat {
-        ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("active-sessions", ModelType.INT, true).setStorageRuntime().build()),
-        EXPIRED_SESSIONS(new SimpleAttributeDefinitionBuilder("expired-sessions", ModelType.INT, true).setStorageRuntime().build()),
-        SESSIONS_CREATED(new SimpleAttributeDefinitionBuilder("sessions-created", ModelType.INT, true).setStorageRuntime().build()),
+        ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("active-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        EXPIRED_SESSIONS(new SimpleAttributeDefinitionBuilder("expired-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        SESSIONS_CREATED(new SimpleAttributeDefinitionBuilder("sessions-created", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         //DUPLICATED_SESSION_IDS(new SimpleAttributeDefinition("duplicated-session-ids", ModelType.INT, false)),
-        SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-avg-alive-time", ModelType.INT, true).setStorageRuntime().build()),
-        SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-max-alive-time", ModelType.INT, true).setStorageRuntime().build()),
-        REJECTED_SESSIONS(new SimpleAttributeDefinitionBuilder("rejected-sessions", ModelType.INT, true).setStorageRuntime().build()),
-        MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("max-active-sessions", ModelType.INT, true).setStorageRuntime().build());
+        SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-avg-alive-time", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-max-alive-time", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        REJECTED_SESSIONS(new SimpleAttributeDefinitionBuilder("rejected-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("max-active-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
 
         private static final Map<String, SessionStat> MAP = new HashMap<>();
 
