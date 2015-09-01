@@ -338,6 +338,8 @@
         <xs:attribute name="suffix" use="optional" type="xs:string" default=".log"/>
         <xs:attribute name="rotate" use="optional" type="xs:string" default="true"/>
         <xs:attribute name="use-server-log" use="optional" type="xs:string" default="false"/>
+        <xs:attribute name="extended" use="optional" type="xs:string" default="false" />
+        <xs:attribute name="predicate" use="optional" type="xs:string" />
     </xs:complexType>
     <xs:complexType name="errorPageType">
         <xs:attribute name="name" use="required" type="xs:string"/>
