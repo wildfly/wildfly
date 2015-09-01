@@ -22,10 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
@@ -71,7 +67,6 @@ import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 
-import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -83,8 +78,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -155,23 +148,6 @@ public class HornetQServerResourceDefinition extends ModelOnlyResourceDefinition
 
         // handle deprecate attributes
         resourceRegistration.registerReadWriteAttribute(CommonAttributes.LIVE_CONNECTOR_REF, null, DeprecatedAttributeWriteHandler.INSTANCE);
-    }
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * The resource description has a small tweak from the standard
-     */
-    @Override
-    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-        return new DefaultResourceDescriptionProvider(resourceRegistration, getResourceDescriptionResolver()) {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode result = super.getModelDescription(locale);
-                result.get(CHILDREN, PATH, MIN_OCCURS).set(4);
-                result.get(CHILDREN, PATH, MAX_OCCURS).set(4);
-                return result;
-            }
-        };
     }
 
     private static class MessageCounterEnabledHandler implements OperationStepHandler {

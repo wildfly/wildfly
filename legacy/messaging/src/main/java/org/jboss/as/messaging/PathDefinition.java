@@ -80,8 +80,6 @@ public class PathDefinition extends ModelOnlyResourceDefinition {
         PATHS.put(PAGING_DIRECTORY, create(PATH_BASE).setDefaultValue(new ModelNode(DEFAULT_PAGING_DIR)).build());
     }
 
-    private final PathElement path;
-
     static final AttributeDefinition[] getAttributes(final String path) {
         return new AttributeDefinition[] { PATHS.get(path), RELATIVE_TO };
     }
@@ -90,6 +88,10 @@ public class PathDefinition extends ModelOnlyResourceDefinition {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(ModelDescriptionConstants.PATH),
                 getAttributes(path.getValue()));
-        this.path = path;
+    }
+
+    // TODO add @Override once the WFCORE version with this method is integrated
+    public int getMinOccurs() {
+        return 1;
     }
 }
