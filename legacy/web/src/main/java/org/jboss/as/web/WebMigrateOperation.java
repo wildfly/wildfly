@@ -608,8 +608,8 @@ public class WebMigrateOperation implements OperationStepHandler {
 
         ModelNode directory = findResource(pathAddress(pathAddress(newAddOp.get(ADDRESS)), WebExtension.DIRECTORY_PATH), legacyAddOps);
         if(directory != null){
-            newAddOp.get(Constants.DIRECTORY).set(directory.get(PATH));
-            newAddOp.get(Constants.RELATIVE_TO).set(directory.get(RELATIVE_TO));
+            add.get(Constants.DIRECTORY).set(directory.get(PATH));
+            add.get(Constants.RELATIVE_TO).set(directory.get(RELATIVE_TO));
         }
 
         newAddOperations.put(newAddress, add);
@@ -672,7 +672,19 @@ public class WebMigrateOperation implements OperationStepHandler {
                         throw WebLogger.ROOT_LOGGER.noSslConfig();
                     } else {
                         addConnector.get(Constants.SECURITY_REALM).set(sslInfo.realmName);
-                        addConnector.get(Constants.VERIFY_CLIENT).set(sslInfo.verifyClient);
+                        ModelNode verify = sslInfo.verifyClient;
+                        if(verify.isDefined()) {
+                            if(verify.getType() == ModelType.EXPRESSION) {
+                                warnings.add(WebLogger.ROOT_LOGGER.couldNotTranslateVerifyClientExpression(verify.toString()));
+                                addConnector.get(Constants.VERIFY_CLIENT).set(verify);
+                            } else {
+                                String translated = translateVerifyClient(verify.asString(), warnings);
+                                if(translated != null) {
+                                    addConnector.get(Constants.VERIFY_CLIENT).set(translated);
+                                }
+                            }
+                        }
+
                         addConnector.get(Constants.SSL_SESSION_CACHE_SIZE).set(sslInfo.sessionCacheSize);
                         addConnector.get(Constants.SSL_SESSION_TIMEOUT).set(sslInfo.sessionTimeout);
                         addConnector.get(Constants.ENABLED_PROTOCOLS).set(sslInfo.sslProtocol);
@@ -713,6 +725,25 @@ public class WebMigrateOperation implements OperationStepHandler {
         }
 
         newAddOperations.put(pathAddress(newAddOp.get(OP_ADDR)), addConnector);
+    }
+
+    private String translateVerifyClient(String s, List<String> warnings) {
+        switch(s) {
+            case "optionalNoCA":
+            case "optional": {
+                return "REQUESTED";
+            }
+            case "require" : {
+                return "REQUIRED";
+            }
+            case "none": {
+                return "NOT_REQUESTED";
+            }
+            default: {
+                warnings.add(WebLogger.ROOT_LOGGER.couldNotTranslateVerifyClient(s));
+                return null;
+            }
+        }
     }
 
     private void migrateMimeMapping(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp) {

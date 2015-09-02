@@ -58,7 +58,7 @@
                         password="${prop.password:changeit}"
                         cipher-suite="${prop.cipher-suite:SSL_RSA_WITH_3DES_EDE_CBC_SHA}"
                         protocol="${prop.native:TLSv1.2}"
-                        verify-client="${prop.verify-client:true}"
+                        verify-client="optional"
                         verify-depth="${prop.verify-depth:3}"
                         certificate-file="${prop.certificate-file:certificate-file.ext}"
                         ca-revocation-url="${prop.ca-revocation-url:https://example.org/some/url}"
