@@ -72,14 +72,13 @@ public class BatchEnvironmentFactory {
             throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
-        /**
-         * {@inheritDoc}
-         * @deprecated this is no longer used in jBeret and will be removed
-         * @return
-         */
         @Override
-        @Deprecated
         public Properties getBatchConfigurationProperties() {
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
+        }
+
+        @Override
+        public void jobExecutionFinished() {
             throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
     };
