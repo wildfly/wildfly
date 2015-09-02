@@ -52,8 +52,8 @@ import org.junit.runner.RunWith;
 
 /**
  * Migration test from EJB Testsuite (asynchronous) to AS7 [JIRA JBQA-5483].
- * 
- * Test if asynchronous calls and security check works. 
+ *
+ * Test if asynchronous calls and security check works.
  */
 @RunWith(Arquillian.class)
 @ServerSetup({AsynchronousSecurityTestCase.AsynchronousSecurityTestCaseSetup.class})
@@ -68,43 +68,45 @@ public class AsynchronousSecurityTestCase {
             return "async-security-test";
         }
     }
-    
+
     @ArquillianResource
     private InitialContext iniCtx;
 
     @Deployment
-    public static Archive<?> deploy() {       
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addPackage(AsynchronousSecurityTestCase.class.getPackage());
-        jar.addClass(AnnotationAuthorizationTestCase.class);
-        jar.addClasses(EjbSecurityDomainSetup.class, AbstractSecurityDomainSetup.class, ServerSetupTask.class, Util.class);
-        jar.addAsResource(AsynchronousSecurityTestCase.class.getPackage(), "roles.properties", "roles.properties");
-        jar.addAsResource(AsynchronousSecurityTestCase.class.getPackage(), "users.properties", "users.properties");
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
-        jar.addPackage(CommonCriteria.class.getPackage());
+    public static Archive<?> deploy() {
+        final Package currentPackage = AsynchronousSecurityTestCase.class.getPackage();
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar")
+                .addPackage(currentPackage)
+                .addClass(AnnotationAuthorizationTestCase.class)
+                .addClasses(EjbSecurityDomainSetup.class, AbstractSecurityDomainSetup.class, ServerSetupTask.class, Util.class)
+                .addAsResource(currentPackage, "roles.properties", "roles.properties")
+                .addAsResource(currentPackage, "users.properties", "users.properties")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF")
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml")
+                .addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }
-    
+
     protected <Q, T> Q lookupInterface(Class<T> bean, Class<Q> intf) throws NamingException {
         log.info("initctx: " + iniCtx);
         return intf.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + bean.getSimpleName() + "!"
                 + intf.getName()));
     }
-    
+
     @Test
-    public void testAsynchSecurityMethod() throws Exception {        
+    public void testAsynchSecurityMethod() throws Exception {
         SecuredStatelessRemote securedBean = lookupInterface(SecuredStatelessBean.class, SecuredStatelessRemote.class);
 
         boolean result = false;
         Future<Boolean> future;
-        
+
         // Test 1
         SecuredStatelessBean.reset();
-        
+
         LoginContext lc = Util.getCLMLoginContext("somebody", "password");
         lc.login();
-        
+
         try {
             future = securedBean.method();
             SecuredStatelessBean.startLatch.countDown();
@@ -113,14 +115,14 @@ public class AsynchronousSecurityTestCase {
             lc.logout();
         }
         Assert.assertTrue(result);
-        
+
         // Test 2
         SecuredStatelessBean.reset();
         future = null;
         result = false;
         lc = Util.getCLMLoginContext("rolefail", "password");
         lc.login();
-        
+
         try {
             future = securedBean.method();
             SecuredStatelessBean.startLatch.countDown();
@@ -142,7 +144,7 @@ public class AsynchronousSecurityTestCase {
         result = false;
         lc = Util.getCLMLoginContext("nosuchuser", "password");
         lc.login();
-        
+
         try {
             future = securedBean.method();
             SecuredStatelessBean.startLatch.countDown();
@@ -159,7 +161,7 @@ public class AsynchronousSecurityTestCase {
         Assert.assertFalse(result);
     }
 
-    
+
     @Test
     public void testAsyncSecurityPermition() throws Exception {
         SecuredStatelessBean.reset();
@@ -167,14 +169,14 @@ public class AsynchronousSecurityTestCase {
 
         LoginContext lc = Util.getCLMLoginContext("rolefail", "password");
         lc.login();
-        
+
         // Test 1
         try {
             Future<Boolean> future = securedBean.uncheckedMethod();
             SecuredStatelessBean.startLatch.countDown();
             boolean result = future.get();
             Assert.assertTrue(result);
-    
+
             // Test 2
             future = null;
             result = false;

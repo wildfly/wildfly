@@ -26,7 +26,9 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -38,19 +40,25 @@ import org.jboss.dmr.ModelNode;
  * Generic add operation step handler that delegates service installation/rollback to a {@link ResourceServiceHandler}.
  * @author Paul Ferraro
  */
-public class AddStepHandler extends AbstractAddStepHandler implements Registration {
+public class AddStepHandler extends AbstractAddStepHandler implements Registration<ManagementResourceRegistration> {
 
     private final AddStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
+    private final OperationStepHandler writeAttributeHandler;
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor) {
         this(descriptor, null);
     }
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+        this(descriptor, handler, new ReloadRequiredWriteAttributeHandler(descriptor.getAttributes()));
+    }
+
+    AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, OperationStepHandler writeAttributeHandler) {
         super(descriptor.getAttributes());
         this.descriptor = descriptor;
         this.handler = handler;
+        this.writeAttributeHandler = writeAttributeHandler;
     }
 
     @Override
@@ -92,13 +100,11 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     @Override
     public void register(ManagementResourceRegistration registration) {
         SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.descriptor.getDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_NONE);
-        for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
-            builder.addParameter(attribute);
-        }
-        for (AttributeDefinition parameter : this.descriptor.getExtraParameters()) {
-            builder.addParameter(parameter);
-        }
+        this.descriptor.getAttributes().forEach(attribute -> builder.addParameter(attribute));
+        this.descriptor.getExtraParameters().forEach(attribute -> builder.addParameter(attribute));
         registration.registerOperationHandler(builder.build(), this);
+
+        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this.writeAttributeHandler));
 
         new CapabilityRegistration(this.descriptor.getCapabilities()).register(registration);
     }

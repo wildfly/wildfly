@@ -28,9 +28,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.undertow.server.session.SessionManager;
-import io.undertow.server.session.SessionManagerStatistics;
-import io.undertow.servlet.api.Deployment;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -47,6 +44,10 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+
+import io.undertow.server.session.SessionManager;
+import io.undertow.server.session.SessionManagerStatistics;
+import io.undertow.servlet.api.Deployment;
 
 /**
  * @author Tomaz Cerar
@@ -168,14 +169,21 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
     }
 
     public enum SessionStat {
-        ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("active-sessions", ModelType.INT, false).setStorageRuntime().build()),
-        EXPIRED_SESSIONS(new SimpleAttributeDefinitionBuilder("expired-sessions", ModelType.INT, false).setStorageRuntime().build()),
-        SESSIONS_CREATED(new SimpleAttributeDefinitionBuilder("sessions-created", ModelType.INT, false).setStorageRuntime().build()),
+        ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("active-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        EXPIRED_SESSIONS(new SimpleAttributeDefinitionBuilder("expired-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        SESSIONS_CREATED(new SimpleAttributeDefinitionBuilder("sessions-created", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         //DUPLICATED_SESSION_IDS(new SimpleAttributeDefinition("duplicated-session-ids", ModelType.INT, false)),
-        SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-avg-alive-time", ModelType.INT, false).setStorageRuntime().build()),
-        SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-max-alive-time", ModelType.INT, false).setStorageRuntime().build()),
-        REJECTED_SESSIONS(new SimpleAttributeDefinitionBuilder("rejected-sessions", ModelType.INT, false).setStorageRuntime().build()),
-        MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("max-active-sessions", ModelType.INT, false).setStorageRuntime().build());
+        SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-avg-alive-time", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-max-alive-time", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        REJECTED_SESSIONS(new SimpleAttributeDefinitionBuilder("rejected-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("max-active-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
 
         private static final Map<String, SessionStat> MAP = new HashMap<>();
 

@@ -77,7 +77,6 @@ public class JspMappingTestCase {
         war.addAsWebResource(new StringAsset(JSP_CONTENT), "index.jsp");
         war.addAsWebResource(new StringAsset(JSP_CONTENT), "test.css");
         war.addAsWebInfResource(JspMappingTestCase.class.getPackage(), "web.xml", "web.xml");
-        System.out.println(war.toString(true));
         return war;
     }
 

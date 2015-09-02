@@ -27,6 +27,10 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.RequestController;
+import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
@@ -34,23 +38,41 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class HandlerService implements Service<HttpHandler> {
     private final HttpHandler httpHandler;
+    private final InjectedValue<RequestController> requestControllerInjectedValue = new InjectedValue<>();
+    private volatile ControlPoint controlPoint;
+    private volatile HttpHandler realHandler;
+    private final String name;
 
-    public HandlerService(HttpHandler httpHandler) {
+    public HandlerService(HttpHandler httpHandler, final String name) {
         this.httpHandler = httpHandler;
+        this.name = name;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         UndertowLogger.ROOT_LOGGER.tracef("starting handler: %s", httpHandler);
+        if(requestControllerInjectedValue.getOptionalValue() != null) {
+            controlPoint = requestControllerInjectedValue.getValue().getControlPoint("org.wildfly.extension.undertow.handlers", name);
+            realHandler = new GlobalRequestControllerHandler(httpHandler, controlPoint);
+        } else {
+            realHandler = httpHandler;
+        }
     }
 
     @Override
     public void stop(StopContext context) {
-
+        if(controlPoint != null) {
+            requestControllerInjectedValue.getValue().removeControlPoint(controlPoint);
+            controlPoint = null;
+        }
     }
 
     @Override
     public HttpHandler getValue() throws IllegalStateException, IllegalArgumentException {
-        return httpHandler;
+        return realHandler;
+    }
+
+    public InjectedValue<RequestController> getRequestControllerInjectedValue() {
+        return requestControllerInjectedValue;
     }
 }

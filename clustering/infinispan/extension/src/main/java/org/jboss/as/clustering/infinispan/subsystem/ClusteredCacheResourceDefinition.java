@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.MetricHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -91,7 +90,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
                 .setDefaultValue(defaultValue)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-        ;
+                ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
@@ -104,13 +103,12 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-        new ReloadRequiredWriteAttributeHandler(DeprecatedAttribute.class).register(registration);
+    public void register(ManagementResourceRegistration registration) {
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
         }
+
+        super.register(registration);
     }
 }

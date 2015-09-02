@@ -58,4 +58,8 @@ public class GlobalRequestControllerHandler implements HttpHandler {
             }
         };
     }
+
+    public HttpHandler getNext() {
+        return next;
+    }
 }

@@ -831,6 +831,11 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 93, value = "This operation is no longer supported. Only for use on legacy hosts in a domain ")
     OperationFailedException legacyOperation();
 
+    @Message(id = 94, value = "Driver %s should be defined in a profile named 'default' activated on server where deploying *-ds.xml")
+    IllegalStateException driverNotDefinedInDefaultProfile(String driverName);
+
+    @Message(id = 95, value = "At least one driver should be defined in a profile named 'default' activated on server where deploying *-ds.xml")
+    IllegalStateException noDriverDefinedInDefaultProfile();
 }
 
 

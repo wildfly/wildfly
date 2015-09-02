@@ -32,7 +32,7 @@ public enum XMLAttribute {
     UNKNOWN(""),
 
     CHANNEL(RemoteSiteResourceDefinition.Attribute.CHANNEL),
-    CLUSTER(RemoteSiteResourceDefinition.DeprecatedAttribute.CLUSTER),
+    CLUSTER(ChannelResourceDefinition.Attribute.CLUSTER),
     @Deprecated DEFAULT_EXECUTOR(TransportResourceDefinition.ThreadingAttribute.DEFAULT_EXECUTOR),
     DEFAULT("default"),
     @Deprecated DEFAULT_STACK("default-stack"),

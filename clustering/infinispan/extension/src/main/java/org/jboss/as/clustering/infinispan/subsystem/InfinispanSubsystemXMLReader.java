@@ -232,6 +232,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                         break;
                     }
                 }
+                case REMOTE_COMMAND_THREAD_POOL: {
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.REMOTE_COMMAND, reader, address, operations);
+                        break;
+                    }
+                }
                 case STATE_TRANSFER_THREAD_POOL: {
                     if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.STATE_TRANSFER, reader, address, operations);

@@ -40,7 +40,7 @@ public class RestartParentResourceAddStepHandler<T> extends AddStepHandler {
     }
 
     public RestartParentResourceAddStepHandler(ResourceServiceBuilderFactory<T> parentFactory, AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        super(descriptor, handler);
+        super(descriptor, handler, new RestartParentResourceWriteAttributeHandler<>(parentFactory, descriptor));
         this.handler = new RestartParentResourceStepHandler<>(parentFactory);
     }
 

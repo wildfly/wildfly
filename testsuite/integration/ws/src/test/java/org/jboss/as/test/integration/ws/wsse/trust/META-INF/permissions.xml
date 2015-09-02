@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<permissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd"
+             version="7">
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>accessDeclaredMembers</name>
+    </permission>
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>getClassLoader</name>
+    </permission>
+    <permission>
+        <class-name>java.util.PropertyPermission</class-name>
+        <name>user.dir</name>
+        <actions>read</actions>
+    </permission>
+    <permission>
+        <class-name>java.util.PropertyPermission</class-name>
+        <name>node0</name>
+        <actions>read</actions>
+    </permission>
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>createClassLoader</name>
+    </permission>
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>org.apache.cxf.permission</name>
+        <actions>resolveUri</actions>
+    </permission>
+
+    <permission>
+        <class-name>java.net.SocketPermission</class-name>
+        <name>*</name>
+        <actions>connect,resolve</actions>
+    </permission>
+    <permission>
+        <class-name>java.io.FilePermission</class-name>
+        <name>&lt;&lt;ALL FILES&gt;&gt;</name>
+        <actions>read</actions>
+    </permission>
+</permissions>

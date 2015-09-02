@@ -96,20 +96,21 @@ public class AuthenticationTestCase {
 
     @Deployment
     public static Archive<?> deployment() {
+        final Package currentPackage = AuthenticationTestCase.class.getPackage();
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
                 .addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
                 .addClasses(WhoAmIServlet.class, AuthenticationTestCase.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-                .addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "roles.properties", "roles.properties")
-                .addAsWebInfResource(AnnotationAuthorizationTestCase.class.getPackage(), "web.xml", "web.xml")
-                .addAsWebInfResource(AnnotationAuthorizationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
-                .addAsWebInfResource(AuthenticationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
+                .addAsResource(currentPackage, "users.properties", "users.properties")
+                .addAsResource(currentPackage, "roles.properties", "roles.properties")
+                .addAsWebInfResource(currentPackage, "web.xml", "web.xml")
+                .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml")
+                .addAsWebInfResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
+                .addAsManifestResource(currentPackage, AuthenticationTestCase.class.getSimpleName() + "-permissions.xml", "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
-        log.info(war.toString(true));
         return war;
     }
 

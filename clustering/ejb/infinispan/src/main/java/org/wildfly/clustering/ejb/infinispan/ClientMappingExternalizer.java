@@ -27,17 +27,12 @@ import java.io.ObjectOutput;
 import java.net.InetAddress;
 
 import org.jboss.as.network.ClientMapping;
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class ClientMappingExternalizer extends AbstractSimpleExternalizer<ClientMapping> {
-    private static final long serialVersionUID = -826335918075494339L;
-
-    public ClientMappingExternalizer() {
-        super(ClientMapping.class);
-    }
+public class ClientMappingExternalizer implements Externalizer<ClientMapping> {
 
     @Override
     public void writeObject(ObjectOutput output, ClientMapping mapping) throws IOException {
@@ -57,5 +52,10 @@ public class ClientMappingExternalizer extends AbstractSimpleExternalizer<Client
         String destAddress = input.readUTF();
         int destPort = input.readInt();
         return new ClientMapping(InetAddress.getByAddress(sourceAddress), sourcePort, destAddress, destPort);
+    }
+
+    @Override
+    public Class<ClientMapping> getTargetClass() {
+        return ClientMapping.class;
     }
 }

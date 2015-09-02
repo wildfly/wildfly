@@ -79,7 +79,7 @@ public class SFSB1 {
         UserTransaction tx1 = sessionContext.getUserTransaction();
         try {
             tx1.begin();
-            System.out.println("Inside JTA updateEmployeeTx after transaction begins:--");
+            //System.out.println("Inside JTA updateEmployeeTx after transaction begins:--");
             em.joinTransaction();
             em.merge(emp);
             tx1.commit();

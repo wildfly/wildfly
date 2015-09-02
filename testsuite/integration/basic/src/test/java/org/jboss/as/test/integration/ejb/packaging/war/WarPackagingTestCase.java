@@ -74,7 +74,6 @@ public class WarPackagingTestCase {
         war.addAsLibraries(jarInterface);
         war.addAsLibraries(jar);
 
-        log.info(war.toString(true));
         return war;
     }
 

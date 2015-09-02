@@ -54,7 +54,6 @@ public class WarJBossDeploymentStructureTestCase {
 
         war.addAsWebResource(new StringAsset("Root file"), "root-file.txt");
 
-        logger.info(war.toString(true));
         return war;
     }
 

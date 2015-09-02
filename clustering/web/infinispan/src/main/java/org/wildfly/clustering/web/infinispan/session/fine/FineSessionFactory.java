@@ -28,10 +28,10 @@ import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.MutableCacheEntry;
 import org.wildfly.clustering.ee.infinispan.Mutator;
-import org.wildfly.clustering.marshalling.InvalidSerializedFormException;
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.Marshaller;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
+import org.wildfly.clustering.marshalling.jboss.Marshaller;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
@@ -57,10 +57,10 @@ public class FineSessionFactory<L> implements SessionFactory<MutableCacheEntry<F
     private final Cache<String, FineSessionCacheEntry<L>> sessionCache;
     private final Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache;
     private final SessionContext context;
-    private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller;
+    private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
-    public FineSessionFactory(Cache<String, FineSessionCacheEntry<L>> sessionCache, Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache, SessionContext context, Marshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller, LocalContextFactory<L> localContextFactory) {
+    public FineSessionFactory(Cache<String, FineSessionCacheEntry<L>> sessionCache, Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache, SessionContext context, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory) {
         this.sessionCache = sessionCache;
         this.attributeCache = attributeCache;
         this.context = context;

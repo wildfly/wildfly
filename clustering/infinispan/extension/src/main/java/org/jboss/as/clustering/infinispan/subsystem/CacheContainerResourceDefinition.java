@@ -21,14 +21,13 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.stream.Stream;
+import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.AttributeParsers;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -47,7 +46,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -67,7 +65,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class CacheContainerResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class CacheContainerResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -133,7 +131,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
         private final AttributeDefinition definition;
 
         ExecutorAttribute(String name) {
-            this.definition = createBuilder(name, ModelType.STRING, null).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
+            this.definition = createBuilder(name, ModelType.STRING, null).setAllowExpression(false).setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion()).build();
         }
 
         @Override
@@ -165,7 +163,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
                 .setAllowNull(true)
                 .setDefaultValue(defaultValue)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-        ;
+                ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -174,13 +172,13 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(NoTransportResourceDefinition.PATH);
 
-            Stream.of(ThreadPoolResourceDefinition.values()).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
-            Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
+            EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
+            EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
         } else {
             NoTransportResourceDefinition.buildTransformation(version, builder);
 
-            Stream.of(ThreadPoolResourceDefinition.values()).forEach(pool -> pool.buildTransformation(version, parent));
-            Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(pool -> pool.buildTransformation(version, parent));
+            EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.buildTransformation(version, parent));
+            EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(pool -> pool.buildTransformation(version, parent));
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
@@ -244,19 +242,14 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-        new ReloadRequiredWriteAttributeHandler(ExecutorAttribute.class).register(registration);
-        new ReloadRequiredWriteAttributeHandler(DeprecatedAttribute.class).register(registration);
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-        if (this.allowRuntimeOnlyRegistration) {
-            new MetricHandler<>(new CacheContainerMetricExecutor(), CacheContainerMetric.class).register(registration);
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ExecutorAttribute.class).addAttributes(DeprecatedAttribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(ExecutorAttribute.class)
+                .addAttributes(DeprecatedAttribute.class)
+                ;
         ResourceServiceHandler handler = new CacheContainerServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
@@ -282,24 +275,20 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition i
             }
         };
         registration.registerOperationHandler(ALIAS_REMOVE, removeAliasHandler);
-    }
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
+        if (this.allowRuntimeOnlyRegistration) {
+            new MetricHandler<>(new CacheContainerMetricExecutor(), CacheContainerMetric.class).register(registration);
+        }
+
         new JGroupsTransportResourceDefinition().register(registration);
         new NoTransportResourceDefinition().register(registration);
 
-        Stream.of(ThreadPoolResourceDefinition.values()).forEach(p -> p.register(registration));
-        Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(p -> p.register(registration));
+        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.register(registration));
+        EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(p -> p.register(registration));
 
         new LocalCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
         new InvalidationCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
         new ReplicatedCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
         new DistributedCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

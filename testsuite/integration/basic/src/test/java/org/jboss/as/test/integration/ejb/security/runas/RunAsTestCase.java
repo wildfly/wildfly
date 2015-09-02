@@ -85,19 +85,20 @@ public class RunAsTestCase {
      */
     @Deployment
     public static Archive<?> runAsDeployment() {
+        final Package currentPackage = RunAsTestCase.class.getPackage();
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
                 .addPackage(HttpRequest.class.getPackage()).addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-                .addAsResource(RunAsTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(RunAsTestCase.class.getPackage(), "roles.properties", "roles.properties")
-                .addAsWebInfResource(RunAsTestCase.class.getPackage(), "web.xml", "web.xml")
-                .addAsWebInfResource(RunAsTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
-                .addAsWebInfResource(RunAsTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
+                .addAsResource(currentPackage, "users.properties", "users.properties")
+                .addAsResource(currentPackage, "roles.properties", "roles.properties")
+                .addAsWebInfResource(currentPackage, "web.xml", "web.xml")
+                .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml")
+                .addAsWebInfResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
-        log.info(war.toString(true));
         return war;
     }
 

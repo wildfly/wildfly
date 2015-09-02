@@ -61,8 +61,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -99,8 +97,6 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -109,7 +105,7 @@ import org.junit.Test;
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
+public class MessagingSubsystem30TestCase extends AbstractLegacySubsystemBaseTest {
 
     public MessagingSubsystem30TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
@@ -404,13 +400,13 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
-                                createChainedConfig(new AttributeDefinition[] { GroupingHandlerDefinition.TYPE, GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, GroupingHandlerDefinition.TIMEOUT },
-                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
+                                createChainedConfig(new AttributeDefinition[]{GroupingHandlerDefinition.TYPE, GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, GroupingHandlerDefinition.TIMEOUT},
+                                        new AttributeDefinition[]{GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, AddressSettingDefinition.PATH),
                                 createChainedConfig(AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
                                         new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
-                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
+                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, ConnectorServiceDefinition.PATH, ConnectorServiceParamDefinition.PATH),
                                 new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
@@ -422,7 +418,7 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, PooledConnectionFactoryDefinition.PATH),
                                 createChainedConfig(PooledConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
                                         concat(PooledConnectionFactoryDefinition.ATTRIBUTES_ADDED_IN_1_2_0, CALL_FAILOVER_TIMEOUT))
-                                .setReadOnly(ConnectionFactoryAttributes.Pooled.TRANSACTION))
+                                        .setReadOnly(ConnectionFactoryAttributes.Pooled.TRANSACTION))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, JMSQueueDefinition.PATH),
                                 new RejectExpressionsConfig(CommonAttributes.DESTINATION_ENTRIES, CommonAttributes.SELECTOR, CommonAttributes.DURABLE))
@@ -483,13 +479,13 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
-                                createChainedConfig(new AttributeDefinition[] {},
-                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
+                                createChainedConfig(new AttributeDefinition[]{},
+                                        new AttributeDefinition[]{GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
-                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
+                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD}))
         );
     }
 
@@ -540,13 +536,13 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
-                                createChainedConfig(new AttributeDefinition[] {},
-                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
+                                createChainedConfig(new AttributeDefinition[]{},
+                                        new AttributeDefinition[]{GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
-                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
+                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD}))
         );
     }
 
@@ -586,18 +582,18 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
-                                        new AttributeDefinition[]{ AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
-                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
+                                        new AttributeDefinition[]{AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
+                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD}))
         );
     }
 
     private KernelServicesBuilder createKernelServicesBuilder(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer, String xmlFileName) throws IOException, XMLStreamException, ClassNotFoundException {
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource(xmlFileName);
         // create builder for legacy subsystem version
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                 .addMavenResourceURL(getMessagingGAV(controllerVersion))
-                .configureReverseControllerCheck(null, fixer)
+                .configureReverseControllerCheck(createAdditionalInitialization(), fixer)
                 .addMavenResourceURL(getHornetQDependencies(controllerVersion))
                 .dontPersistXml();
         return builder;
@@ -609,12 +605,12 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
 
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer, ModelFixer legacyModelFixer) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem_3_0.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                 .addMavenResourceURL(getMessagingGAV(controllerVersion))
                 .addMavenResourceURL(getHornetQDependencies(controllerVersion))
-                .configureReverseControllerCheck(null, fixer)
+                .configureReverseControllerCheck(createAdditionalInitialization(), fixer)
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();

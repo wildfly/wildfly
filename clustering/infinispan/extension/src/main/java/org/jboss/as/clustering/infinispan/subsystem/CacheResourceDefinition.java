@@ -27,9 +27,8 @@ import java.util.NoSuchElementException;
 import org.infinispan.configuration.cache.Index;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.MetricHandler;
-import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
@@ -41,7 +40,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -59,7 +57,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class CacheResourceDefinition extends ChildResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODULE("module", ModelType.STRING, null, new ModuleIdentifierValidatorBuilder()),
@@ -128,7 +126,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition implements
                 .setAllowNull(true)
                 .setDefaultValue(defaultValue)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-        ;
+                ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
@@ -193,17 +191,12 @@ public class CacheResourceDefinition extends SimpleResourceDefinition implements
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-        new ReloadRequiredWriteAttributeHandler(DeprecatedAttribute.class).register(registration);
+    public void register(ManagementResourceRegistration registration) {
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
         }
-    }
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
         new EvictionResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new ExpirationResourceDefinition().register(registration);
         new LockingResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
@@ -216,10 +209,5 @@ public class CacheResourceDefinition extends SimpleResourceDefinition implements
         new MixedKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new StringKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new RemoteStoreResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

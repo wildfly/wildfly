@@ -753,4 +753,6 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 70, value = "A container-managed extended persistence context can only be initiated within the scope of a stateful session bean (persistence unit '%s').")
     IllegalStateException xpcOnlyFromSFSB(String scopedPuName);
 
+    @Message(id = 71, value = "Deployment '%s' specified more than one Hibernate Search module name ('%s','%s')")
+    DeploymentUnitProcessingException differentSearchModuleDependencies(String deployment, String searchModuleName1, String searchModuleName2);
 }

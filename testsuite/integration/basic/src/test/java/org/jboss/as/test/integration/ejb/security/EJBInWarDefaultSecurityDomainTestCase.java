@@ -65,13 +65,16 @@ public class EJBInWarDefaultSecurityDomainTestCase {
 
     @Deployment
     public static WebArchive createDeployment() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb-security-test.war");
-        war.addClasses(BeanWithoutExplicitSecurityDomain.class, Restriction.class, FullAccess.class, EjbSecurityDomainSetup.class, Util.class);
-        war.addAsWebInfResource(EJBInWarDefaultSecurityDomainTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
-        war.addPackage(CommonCriteria.class.getPackage());
-        war.addPackage(AbstractSecurityDomainSetup.class.getPackage());
-        war.addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "roles.properties", "roles.properties");
+        final Package currentPackage = EJBInWarDefaultSecurityDomainTestCase.class.getPackage();
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb-security-test.war")
+                .addClasses(BeanWithoutExplicitSecurityDomain.class, Restriction.class)
+                .addClasses(FullAccess.class, EjbSecurityDomainSetup.class, Util.class)
+                .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml")
+                .addPackage(CommonCriteria.class.getPackage())
+                .addPackage(AbstractSecurityDomainSetup.class.getPackage())
+                .addAsResource(currentPackage, "users.properties", "users.properties")
+                .addAsResource(currentPackage, "roles.properties", "roles.properties")
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml");
         return war;
     }
 

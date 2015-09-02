@@ -86,7 +86,6 @@ public class JACCAuthzPropagationTestCase {
         war.addAsWebInfResource(UsersRolesLoginModuleTestCase.class.getPackage(), "web-basic-authn.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(TEST_NAME), "jboss-web.xml");
         war.addAsWebInfResource(Utils.getJBossEjb3XmlAsset(TEST_NAME), "jboss-ejb3.xml");
-        LOGGER.info(war.toString(true));
         return war;
 
     }

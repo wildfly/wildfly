@@ -32,7 +32,7 @@ import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.VersionedMarshallingConfiguration;
+import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 import org.wildfly.clustering.registry.Registry;
 
 /**
@@ -42,7 +42,7 @@ public interface InfinispanBeanManagerFactoryConfiguration {
     BeanContext getBeanContext();
     <K, V> Cache<K, V> getCache();
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();
-    VersionedMarshallingConfiguration getMarshallingConfiguration();
+    MarshallingConfigurationRepository getMarshallingConfigurationRepository();
     ScheduledExecutorService getScheduler();
     Executor getExecutor();
     BeanPassivationConfiguration getPassivationConfiguration();

@@ -53,9 +53,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.infinispan.spi.io.SimpleExternalizer;
+import org.wildfly.clustering.infinispan.spi.marshalling.AdvancedExternalizerAdapter;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -70,6 +71,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
     private final InjectedValue<ThreadPoolConfiguration> expirationThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> listenerThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> persistenceThreadPool = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> remoteCommandThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> stateTransferThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> transportThreadPool = new InjectedValue<>();
     private final String name;
@@ -114,15 +116,16 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
             ClassLoader loader = moduleLoader.loadModule(this.module).getClassLoader();
             builder.classLoader(loader);
             int id = Ids.MAX_ID;
-            for (SimpleExternalizer<?> externalizer: ServiceLoader.load(SimpleExternalizer.class, loader)) {
+            for (Externalizer<?> externalizer: ServiceLoader.load(Externalizer.class, loader)) {
                 InfinispanLogger.ROOT_LOGGER.debugf("Cache container %s will use an externalizer for %s", this.name, externalizer.getTargetClass().getName());
-                builder.serialization().addAdvancedExternalizer(id++, externalizer);
+                builder.serialization().addAdvancedExternalizer(id++, new AdvancedExternalizerAdapter<>(externalizer));
             }
         } catch (ModuleLoadException e) {
             throw new IllegalStateException(e);
         }
 
         builder.transport().transportThreadPool().read(this.transportThreadPool.getValue());
+        builder.transport().remoteCommandThreadPool().read(this.remoteCommandThreadPool.getValue());
 
         builder.asyncThreadPool().read(this.asyncOperationsThreadPool.getValue());
         builder.expirationThreadPool().read(this.expirationThreadPool.getValue());
@@ -152,6 +155,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
                 .addDependency(ThreadPoolResourceDefinition.LISTENER.getServiceName(this.name), ThreadPoolConfiguration.class, this.listenerThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.STATE_TRANSFER.getServiceName(this.name), ThreadPoolConfiguration.class, this.stateTransferThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.PERSISTENCE.getServiceName(this.name), ThreadPoolConfiguration.class, this.persistenceThreadPool)
+                .addDependency(ThreadPoolResourceDefinition.REMOTE_COMMAND.getServiceName(this.name), ThreadPoolConfiguration.class, this.remoteCommandThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.TRANSPORT.getServiceName(this.name), ThreadPoolConfiguration.class, this.transportThreadPool)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;

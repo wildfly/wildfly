@@ -35,6 +35,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +51,7 @@ import javax.naming.InitialContext;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({MDB20TopicTestCase.JmsQueueSetup.class})
+@Ignore
 public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
 
     private Topic topic;

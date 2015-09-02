@@ -38,7 +38,8 @@ import org.jboss.modules.ModuleLoader;
 public class ClusteringDependencyProcessor  implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier API = ModuleIdentifier.create("org.wildfly.clustering.api");
-    private static final ModuleIdentifier SINGLETON = ModuleIdentifier.create("org.wildfly.clustering.singleton");
+    private static final ModuleIdentifier MARSHALLING_API = ModuleIdentifier.create("org.wildfly.clustering.marshalling.api");
+    private static final ModuleIdentifier SINGLETON_API = ModuleIdentifier.create("org.wildfly.clustering.singleton");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
@@ -48,7 +49,8 @@ public class ClusteringDependencyProcessor  implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, API, true, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SINGLETON, true, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MARSHALLING_API, true, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SINGLETON_API, true, false, false, false));
     }
 
     @Override

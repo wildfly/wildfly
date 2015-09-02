@@ -44,8 +44,8 @@ import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
+import org.wildfly.extension.batch.jberet.impl.BatchEnvironmentService;
 import org.wildfly.extension.requestcontroller.RequestController;
-import org.wildfly.jberet.services.BatchEnvironmentService;
 
 /**
  * Deployment unit processor for javax.batch integration.

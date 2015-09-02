@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition.Attribute.MODULE;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -88,6 +88,10 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
                 ChannelFactory factory = (ChannelFactory) controller.getValue();
                 if (factory != null) {
                     ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
+                    if (configuration.getTransport().getName().equals(protocolName)) {
+                        Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(configuration.getTransport().getModule()).getClassLoader().loadClass(configuration.getTransport().getProtocolClassName()).asSubclass(Protocol.class);
+                        return channel.getProtocolStack().findProtocol(protocolClass);
+                    }
                     for (ProtocolConfiguration protocol : configuration.getProtocols()) {
                         if (protocol.getName().equals(protocolName)) {
                             Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(protocol.getModule()).getClassLoader().loadClass(protocol.getProtocolClassName()).asSubclass(Protocol.class);
@@ -158,7 +162,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
             Attribute attribute = entry.getValue();
             FieldType type = FieldType.valueOf(attribute.getType());
             resolver.addDescription(name, attribute.getDescription());
-            builder.addMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType()).setStorageRuntime().build(), handler);
+            builder.addMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType(), true).setStorageRuntime().build(), handler);
         }
 
         return builder.build();

@@ -76,13 +76,6 @@ public class ResponseCodeTestCase {
     }
 
     @Test
-    public void test204() throws Exception {
-        final HttpGet get = new HttpGet(url.toExternalForm() + "jaxrs/test/returnCode/204");
-        final HttpResponse response = HTTP_CLIENT.execute(get);
-        doContentTypeChecks(response, 204,false);
-    }
-
-    @Test
     public void test300() throws Exception {
         final HttpGet get = new HttpGet(url.toExternalForm() + "jaxrs/test/returnCode/300");
         final HttpResponse response = HTTP_CLIENT.execute(get);

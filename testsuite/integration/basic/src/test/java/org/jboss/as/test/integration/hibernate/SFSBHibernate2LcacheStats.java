@@ -78,7 +78,7 @@ public class SFSBHibernate2LcacheStats {
         // static {
         try {
 
-            System.out.println("setupConfig:  Current dir = " + (new File(".")).getCanonicalPath());
+            //System.out.println("setupConfig:  Current dir = " + (new File(".")).getCanonicalPath());
 
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
@@ -104,7 +104,7 @@ public class SFSBHibernate2LcacheStats {
             throw new ExceptionInInitializerError(ex);
         }
 
-        System.out.println("setupConfig: done");
+        //System.out.println("setupConfig: done");
 
     }
 

@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.OperationHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -80,16 +79,9 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-        if (this.allowRuntimeOnlyRegistration) {
-            new MetricHandler<>(new PartitionHandlingMetricExecutor(), PartitionHandlingMetric.class).register(registration);
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new PartitionHandlingBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
@@ -98,10 +90,9 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
         if (this.allowRuntimeOnlyRegistration) {
             new OperationHandler<>(new PartitionHandlingOperationExecutor(), PartitionHandlingOperation.class).register(registration);
         }
-    }
 
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
+        if (this.allowRuntimeOnlyRegistration) {
+            new MetricHandler<>(new PartitionHandlingMetricExecutor(), PartitionHandlingMetric.class).register(registration);
+        }
     }
 }

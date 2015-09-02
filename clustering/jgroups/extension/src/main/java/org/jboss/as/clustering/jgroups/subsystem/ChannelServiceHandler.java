@@ -67,8 +67,10 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         // Install channel
         new ChannelBuilder(name).build(target).install();
 
+        String cluster = ModelNodes.asString(CLUSTER.getDefinition().resolveModelAttribute(context, model), name);
+
         // Install channel connector
-        new ChannelConnectorBuilder(name).build(target).install();
+        new ChannelConnectorBuilder(name, cluster).build(target).install();
 
         // Install channel jndi binding
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();

@@ -22,14 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class StoreWriteResourceDefinition extends SimpleResourceDefinition implements Registration {
+public abstract class StoreWriteResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 

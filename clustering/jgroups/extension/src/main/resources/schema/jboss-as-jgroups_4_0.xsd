@@ -74,7 +74,7 @@
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    Defines the cluster name of this channel.
+                    Defines the name of this channel.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -82,6 +82,13 @@
             <xs:annotation>
                 <xs:documentation>
                     Defines the stack used by this channel.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cluster" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Defines the cluster name of this channel.  If undefined, the channel name will be used.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

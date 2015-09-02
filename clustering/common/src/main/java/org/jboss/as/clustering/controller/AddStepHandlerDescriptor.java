@@ -30,12 +30,7 @@ import org.jboss.as.controller.AttributeDefinition;
  * Describes the common properties of a remove operation handler.
  * @author Paul Ferraro
  */
-public interface AddStepHandlerDescriptor extends RemoveStepHandlerDescriptor {
-    /**
-     * Attributes of the add operation.
-     * @return a collection of attributes
-     */
-    Collection<AttributeDefinition> getAttributes();
+public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescriptor, RemoveStepHandlerDescriptor {
 
     /**
      * Extra parameters (not specified by {@link #getAttributes()}) for the add operation.

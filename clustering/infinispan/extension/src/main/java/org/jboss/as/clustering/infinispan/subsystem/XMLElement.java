@@ -67,6 +67,7 @@ public enum XMLElement {
     LOCKING(LockingResourceDefinition.PATH),
     PARTITION_HANDLING(PartitionHandlingResourceDefinition.PATH),
     PERSISTENCE_THREAD_POOL("persistence-thread-pool"),
+    REMOTE_COMMAND_THREAD_POOL("remote-command-thread-pool"),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
     @Deprecated REHASHING("rehashing"),
     REMOTE_SERVER("remote-server"),

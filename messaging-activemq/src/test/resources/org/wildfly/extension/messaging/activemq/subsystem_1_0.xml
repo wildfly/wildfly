@@ -411,8 +411,6 @@
 
     <server name="empty"/>
 
-    <!--
-
     <jms-bridge name="default"
                 module="com.foo.bar"
                 quality-of-service="${quality.of.service:AT_MOST_ONCE}"
@@ -423,7 +421,8 @@
         <source connection-factory="/cf/sourceCF"
                 destination="/topic/anotherSourceTopic"
                 user="myUser"
-                password="myPassword" />
+                password="myPassword"/>
+
         <target connection-factory="/cf/targetCF"
                 destination="anotherMQ/jms/queue/anotherTargetQueue"
                 user="myUser"
@@ -445,28 +444,27 @@
                 destination="/topic/sourceTopic"
                 user="myUser"
                 password="myPassword">
-            <context>
+            <source-context>
                 <property name="java.naming.factory.initial"
                           value="${java.naming.factory.initial:org.jnp.interfaces.NamingContextFactory}" />
                 <property name="java.naming.provider.url"
                           value="${java.naming.provider.url:jnp://localhost:1099}" />
                 <property name="java.naming.factory.url.pkgs"
                           value="${java.naming.factory.url.pkgs:org.jboss.naming:org.jnp.interfaces}"/>
-            </context>
+            </source-context>
         </source>
         <target connection-factory="anotherAS7/jms/cf/targetCF"
                 destination="anotherAS7/jms/queue/targetQueue"
                 user="${userInExpression:user}"
                 password="${passwordInExpression:password}">
-            <context>
+            <target-context>
                 <property name="java.naming.factory.initial"
                           value="${java.naming.factory.initial:org.jnp.interfaces.NamingContextFactory}" />
                 <property name="java.naming.provider.url"
                           value="${java.naming.provider.url:jnp://localhost:1099}" />
                 <property name="java.naming.factory.url.pkgs"
                           value="${java.naming.factory.url.pkgs:org.jboss.naming:org.jnp.interfaces}"/>
-            </context>
+            </target-context>
         </target>
     </jms-bridge>
-    -->
 </subsystem>

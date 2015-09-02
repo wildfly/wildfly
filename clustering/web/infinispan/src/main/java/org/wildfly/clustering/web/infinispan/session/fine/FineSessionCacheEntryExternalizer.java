@@ -25,35 +25,32 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
-import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaData;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaDataExternalizer;
+import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
  * Factory for creating and externalizing fine granularity session cache entries.
  * @author Paul Ferraro
  */
-public class FineSessionCacheEntryExternalizer extends AbstractSimpleExternalizer<FineSessionCacheEntry<Object>> {
-    private static final long serialVersionUID = -7199387053366359377L;
+public class FineSessionCacheEntryExternalizer<L> implements Externalizer<FineSessionCacheEntry<L>> {
 
-    private final SimpleSessionMetaDataExternalizer externalizer = new SimpleSessionMetaDataExternalizer();
+    private final Externalizer<SessionMetaData> externalizer = new SimpleSessionMetaDataExternalizer();
 
-    public FineSessionCacheEntryExternalizer() {
-        this(FineSessionCacheEntry.class);
+    @Override
+    public void writeObject(ObjectOutput output, FineSessionCacheEntry<L> entry) throws IOException {
+        this.externalizer.writeObject(output, entry.getMetaData());
+    }
+
+    @Override
+    public FineSessionCacheEntry<L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new FineSessionCacheEntry<>(this.externalizer.readObject(input));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private FineSessionCacheEntryExternalizer(Class targetClass) {
-        super(targetClass);
-    }
-
     @Override
-    public void writeObject(ObjectOutput output, FineSessionCacheEntry<Object> entry) throws IOException {
-        this.externalizer.writeObject(output, (SimpleSessionMetaData) entry.getMetaData());
-    }
-
-    @Override
-    public FineSessionCacheEntry<Object> readObject(ObjectInput input) throws IOException {
-        return new FineSessionCacheEntry<>(this.externalizer.readObject(input));
+    public Class<FineSessionCacheEntry<L>> getTargetClass() {
+        Class targetClass = FineSessionCacheEntry.class;
+        return targetClass;
     }
 }

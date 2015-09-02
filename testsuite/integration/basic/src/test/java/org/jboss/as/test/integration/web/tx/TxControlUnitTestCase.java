@@ -63,7 +63,6 @@ public class TxControlUnitTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "tx-control.war");
         war.addClass(TxControlServlet.class);
 
-        System.out.println(war.toString(true));
         return war;
     }
 
@@ -73,7 +72,6 @@ public class TxControlUnitTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "tx-status.war");
         war.addClass(TxStatusServlet.class);
 
-        System.out.println(war.toString(true));
         return war;
     }
 

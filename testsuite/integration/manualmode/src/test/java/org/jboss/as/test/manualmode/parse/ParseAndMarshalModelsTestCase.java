@@ -62,6 +62,7 @@ import org.junit.runner.RunWith;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @RunWith(Arquillian.class)
+@Ignore("WFLY-5138")
 public class ParseAndMarshalModelsTestCase {
 
     @Deployment(name = "test", managed = false, testable = true)
@@ -72,6 +73,7 @@ public class ParseAndMarshalModelsTestCase {
         archive.addClass(FileUtils.class);
         archive.addClass(ModelParserUtils.class);
         archive.add(new Asset() {
+            @Override
             public InputStream openStream() {
                 return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
             }
@@ -307,39 +309,33 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    @Ignore("WFCORE-798")
     public void testEAP630StandaloneFullHaXml() throws Exception {
         ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-full-ha.xml"));
         validateJsfSubsystem(model);
     }
 
     @Test
-    @Ignore("WFCORE-798")
     public void testEAP630StandaloneFullXml() throws Exception {
         ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-full.xml"));
         validateJsfSubsystem(model);
     }
 
     @Test
-    @Ignore("WFCORE-798")
     public void testEAP630StandaloneHornetQCollocatedXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-hornetq-colocated.xml"));
     }
 
     @Test
-    @Ignore("WFCORE-798")
     public void testEAP630StandaloneJtsXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-jts.xml"));
     }
 
     @Test
-    @Ignore("WFCORE-798")
     public void testEAP630StandaloneMinimalisticXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-minimalistic.xml"));
     }
 
     @Test
-    @Ignore("WFCORE-798")
     public void testEAP630StandaloneXtsXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-xts.xml"));
     }
@@ -415,7 +411,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    @Ignore("WFCORE-798")
     public void testEAP630HostXml() throws Exception {
         hostXmlTest(getLegacyConfigFile("host", "eap-6-3-0.xml"));
     }

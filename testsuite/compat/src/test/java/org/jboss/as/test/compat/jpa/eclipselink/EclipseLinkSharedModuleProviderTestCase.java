@@ -103,10 +103,10 @@ public class EclipseLinkSharedModuleProviderTestCase {
 
     // TODO: move this logic to a common base class (might be helpful for writing new tests)
     private static void dumpJndi(String s) {
-        try {
+        /*try {
             dumpTreeEntry(iniCtx.list(s), s);
         } catch (NamingException ignore) {
-        }
+        }*/
     }
 
     private static void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {

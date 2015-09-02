@@ -23,8 +23,8 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.OperationHandler;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -40,7 +40,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -57,7 +56,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class StackResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class StackResourceDefinition extends ChildResourceDefinition {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -122,7 +121,9 @@ public class StackResourceDefinition extends SimpleResourceDefinition implements
 
     @SuppressWarnings("deprecation")
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addExtraParameters(TRANSPORT, PROTOCOLS);
         ResourceServiceHandler handler = new StackServiceHandler(this.builderFactory);
         new AddStepHandler(descriptor, handler) {
@@ -211,17 +212,9 @@ public class StackResourceDefinition extends SimpleResourceDefinition implements
         if (this.allowRuntimeOnlyRegistration) {
             new OperationHandler<>(new StackOperationExecutor(), StackOperation.class).register(registration);
         }
-    }
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
         new TransportResourceDefinition(this.builderFactory).register(registration);
-        new ProtocolResourceDefinition(this.builderFactory).register(registration);
+        new StackProtocolResourceDefinition(this.builderFactory).register(registration);
         new RelayResourceDefinition(this.builderFactory).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

@@ -57,9 +57,12 @@ import org.wildfly.clustering.service.SubGroupServiceNameFactory;
  * @author Paul Ferraro
  */
 public class DefaultCacheContainerTest {
+    private static final String NAME = "name";
+    private static final String DEFAULT_CACHE = "default";
+
     private final BatcherFactory batcherFactory = mock(BatcherFactory.class);
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final CacheContainer subject = new DefaultCacheContainer(this.manager, "default", this.batcherFactory);
+    private final CacheContainer subject = new DefaultCacheContainer("name", this.manager, "default", this.batcherFactory);
 
     @After
     public void cleanup() {
@@ -67,8 +70,13 @@ public class DefaultCacheContainerTest {
     }
 
     @Test
+    public void getName() {
+        assertSame(NAME, this.subject.getName());
+    }
+
+    @Test
     public void getDefaultCacheName() {
-        assertEquals("default", this.subject.getDefaultCacheName());
+        assertSame(DEFAULT_CACHE, this.subject.getDefaultCacheName());
     }
 
     @Test
@@ -181,14 +189,14 @@ public class DefaultCacheContainerTest {
     public void start() {
         this.subject.start();
 
-        verify(this.manager).start();
+        verify(this.manager, never()).start();
     }
 
     @Test
     public void stop() {
         this.subject.stop();
 
-        verify(this.manager).stop();
+        verify(this.manager, never()).stop();
     }
 
     @Test

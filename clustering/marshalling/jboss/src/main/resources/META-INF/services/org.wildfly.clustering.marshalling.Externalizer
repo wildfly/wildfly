@@ -1,0 +1,3 @@
+org.wildfly.clustering.marshalling.jboss.HashableMarshalledValueExternalizer
+org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer
+org.wildfly.clustering.marshalling.jboss.UUIDExternalizer

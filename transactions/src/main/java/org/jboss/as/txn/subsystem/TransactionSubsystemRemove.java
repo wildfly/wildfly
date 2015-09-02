@@ -34,6 +34,10 @@ class TransactionSubsystemRemove extends ReloadRequiredRemoveStepHandler {
 
     static final TransactionSubsystemRemove INSTANCE = new TransactionSubsystemRemove();
 
+    public TransactionSubsystemRemove() {
+        super(TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY);
+    }
+
     /**
      * Suppresses removal of the log-store=log-store child, as that remove op handler is a no-op.
      */

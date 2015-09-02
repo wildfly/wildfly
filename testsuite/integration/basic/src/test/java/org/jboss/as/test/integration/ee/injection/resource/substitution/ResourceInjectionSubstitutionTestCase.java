@@ -200,7 +200,6 @@ public class ResourceInjectionSubstitutionTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "resource-injection-substitution-test.war");
         war.addPackage(SimpleSLSB.class.getPackage()).addPackage(JMSOperations.class.getPackage());
         war.addAsWebInfResource(ResourceInjectionSubstitutionTestCase.class.getPackage(), "web.xml", "web.xml");
-        logger.info("War created: " + war.toString(true));
         return war;
     }
 

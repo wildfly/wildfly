@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>10.0.0.Beta2-SNAPSHOT</version>
+        <version>10.0.0.CR1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -169,6 +169,7 @@
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
@@ -304,6 +305,7 @@
                                     </additionalClasspathElements>
                                 </configuration>
                             </execution>
+
                         </executions>
 
                     </plugin>

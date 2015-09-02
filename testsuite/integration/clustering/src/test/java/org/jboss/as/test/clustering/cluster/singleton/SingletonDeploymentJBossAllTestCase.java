@@ -56,7 +56,6 @@ public class SingletonDeploymentJBossAllTestCase extends SingletonDeploymentTest
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addPackage(TraceServlet.class.getPackage());
         war.addAsManifestResource(SingletonDeploymentJBossAllTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
-        System.out.println(war.toString(true));
         return war;
     }
 }

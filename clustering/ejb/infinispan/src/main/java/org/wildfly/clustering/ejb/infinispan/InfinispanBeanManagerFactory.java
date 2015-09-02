@@ -42,10 +42,10 @@ import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanFactory;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupFactory;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.MarshalledValueFactory;
-import org.wildfly.clustering.marshalling.MarshallingContext;
-import org.wildfly.clustering.marshalling.SimpleMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.SimpleMarshallingContextFactory;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.registry.Registry;
 
 /**
@@ -67,7 +67,7 @@ public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory
 
     @Override
     public BeanManager<G, I, T, TransactionBatch> createBeanManager(final IdentifierFactory<G> groupIdentifierFactory, final IdentifierFactory<I> beanIdentifierFactory, final PassivationListener<T> passivationListener, final RemoveListener<T> removeListener) {
-        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.configuration.getMarshallingConfiguration(), this.configuration.getBeanContext().getClassLoader());
+        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
         Cache<G, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
         org.infinispan.configuration.cache.Configuration config = groupCache.getCacheConfiguration();

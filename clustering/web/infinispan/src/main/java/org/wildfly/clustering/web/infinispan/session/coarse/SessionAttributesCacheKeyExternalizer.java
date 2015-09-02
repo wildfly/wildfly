@@ -25,18 +25,13 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * {@link CacheKeyFactory} for {@link SessionAttributesCacheKey}s.
  * @author Paul Ferraro
  */
-public class SessionAttributesCacheKeyExternalizer extends AbstractSimpleExternalizer<SessionAttributesCacheKey> {
-    private static final long serialVersionUID = 5829170820686196822L;
-
-    public SessionAttributesCacheKeyExternalizer() {
-        super(SessionAttributesCacheKey.class);
-    }
+public class SessionAttributesCacheKeyExternalizer implements Externalizer<SessionAttributesCacheKey> {
 
     @Override
     public void writeObject(ObjectOutput output, SessionAttributesCacheKey key) throws IOException {
@@ -46,5 +41,10 @@ public class SessionAttributesCacheKeyExternalizer extends AbstractSimpleExterna
     @Override
     public SessionAttributesCacheKey readObject(ObjectInput input) throws IOException {
         return new SessionAttributesCacheKey(input.readUTF());
+    }
+
+    @Override
+    public Class<SessionAttributesCacheKey> getTargetClass() {
+        return SessionAttributesCacheKey.class;
     }
 }

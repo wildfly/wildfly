@@ -65,7 +65,6 @@ public class MinimumPermissionsTestCase extends ReloadableCliTestBase {
         LOGGER.debug("Start WAR deployment");
         final WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war");
         war.addClasses(PrintSystemPropertyServlet.class);
-        LOGGER.debug(war.toString(true));
         return war;
     }
 

@@ -51,14 +51,14 @@ public class ThreadLauncher {
 
     public void start(int numThreads, int numMessages) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(numThreads);
-        System.out.println("starting threads");
+        //System.out.println("starting threads");
         for (int i = 0; i < numThreads; i++) {
             threadFactory.newThread(new SendRunnable(latch, numMessages)).start();
         }
-        System.out.println("start finished");
+        //System.out.println("start finished");
 
         latch.await(30, TimeUnit.SECONDS);
-        System.out.println("DONE");
+        //System.out.println("DONE");
     }
 
     private class SendRunnable implements Runnable {
@@ -73,11 +73,11 @@ public class ThreadLauncher {
         }
 
         public void run() {
-            System.out.println("starting to send");
+            //System.out.println("starting to send");
             for (int i = 0; i < numMessages; i++) {
                 bean.sendMessage();
             }
-            System.out.println("done sending");
+            //System.out.println("done sending");
 
             latch.countDown();
         }

@@ -211,4 +211,5 @@ public interface Constants {
     String ALIASES = "aliases";
     String ELECTED = "elected";
     String PROACTIVE_AUTHENTICATION = "proactive-authentication";
+    String SESSION_ID_LENGTH = "session-id-length";
 }

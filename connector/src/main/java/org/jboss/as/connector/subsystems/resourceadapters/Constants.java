@@ -533,34 +533,47 @@ public class Constants {
 
     static SimpleAttributeDefinition WORK_ACTIVE = new SimpleAttributeDefinitionBuilder(WORK_ACTIVE_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static SimpleAttributeDefinition WORK_SUCCESSFUL = new SimpleAttributeDefinitionBuilder(WORK_SUCEESSFUL_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
+
     static SimpleAttributeDefinition WORK_FAILED = new SimpleAttributeDefinitionBuilder(WORK_FAILED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static SimpleAttributeDefinition DO_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(DO_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
+
     static SimpleAttributeDefinition DO_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(DO_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static SimpleAttributeDefinition SCHEDULED_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(SCHEDULED_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
+
     static SimpleAttributeDefinition SCHEDULED_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(SCHEDULED_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static SimpleAttributeDefinition START_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(START_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
+
     static SimpleAttributeDefinition START_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(START_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
 

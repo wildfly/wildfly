@@ -55,7 +55,6 @@ import org.jboss.as.messaging.HornetQServerResourceDefinition;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -65,7 +64,7 @@ import org.junit.Test;
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
+public class MessagingSubsystem20TestCase extends AbstractLegacySubsystemBaseTest {
 
     public MessagingSubsystem20TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());

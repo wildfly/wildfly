@@ -71,14 +71,13 @@ public class DelegatingBatchEnvironment implements BatchEnvironment {
         return delegate.getJobXmlResolver();
     }
 
-    /**
-     * {@inheritDoc}
-     * @deprecated this is no longer used in jBeret and will be removed
-     * @return
-     */
     @Override
-    @Deprecated
     public Properties getBatchConfigurationProperties() {
         return delegate.getBatchConfigurationProperties();
+    }
+
+    @Override
+    public void jobExecutionFinished() {
+        delegate.jobExecutionFinished();
     }
 }

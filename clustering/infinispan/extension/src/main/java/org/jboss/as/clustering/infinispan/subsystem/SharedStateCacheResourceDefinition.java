@@ -62,12 +62,13 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
     }
 
     @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        super.registerChildren(registration);
+    public void register(ManagementResourceRegistration registration) {
 
         new PartitionHandlingResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new StateTransferResourceDefinition().register(registration);
         new BackupsResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new BackupForResourceDefinition().register(registration);
+
+        super.register(registration);
     }
 }

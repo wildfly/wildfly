@@ -73,7 +73,7 @@ public class TestStatelessEjbAO implements ITestStatelessEjbAO {
 
 
     private void debug(String str) {
-        System.out.println(str);
+        //System.out.println(str);
     }
 
 }

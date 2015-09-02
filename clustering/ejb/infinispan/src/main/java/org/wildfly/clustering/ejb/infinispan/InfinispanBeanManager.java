@@ -25,15 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.filter.NullValueConverter;
-import org.infinispan.iteration.EntryIterable;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -290,13 +288,9 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
 
     @Override
     public int getActiveCount() {
-        int size = 0;
-        try (EntryIterable<BeanKey<I>, ?> entries = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).filterEntries(this.filter)) {
-            for (@SuppressWarnings("unused") CacheEntry<BeanKey<I>, ?> entry : entries.converter(NullValueConverter.getInstance())) {
-                size += 1;
-            }
+        try (Stream<BeanKey<I>> keys = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
+            return (int) keys.filter(this.filter).count();
         }
-        return size;
     }
 
     @Override
@@ -351,15 +345,9 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
 
     private void schedule(Cache<BeanKey<I>, BeanEntry<G>> cache, Locality oldLocality, Locality newLocality) {
         // Iterate over sessions in memory
-        try (EntryIterable<BeanKey<I>, ?> entries = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).filterEntries(this.filter)) {
-            for (CacheEntry<BeanKey<I>, ?> entry : entries.converter(NullValueConverter.getInstance())) {
-                I id = entry.getKey().getId();
-                // If we are the new primary owner of this session
-                // then schedule expiration of this session locally
-                if (!oldLocality.isLocal(id) && newLocality.isLocal(id)) {
-                    this.scheduler.schedule(id);
-                }
-            }
+        try (Stream<BeanKey<I>> stream = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
+            // If we are the new primary owner of this session then schedule expiration of this session locally
+            stream.filter(this.filter).map(key -> key.getId()).filter(id -> !oldLocality.isLocal(id) && newLocality.isLocal(id)).forEach(id -> this.scheduler.schedule(id));
         }
     }
 

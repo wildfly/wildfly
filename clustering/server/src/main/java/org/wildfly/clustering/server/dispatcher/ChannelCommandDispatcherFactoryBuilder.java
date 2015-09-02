@@ -21,9 +21,8 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import org.jboss.as.server.Services;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -44,10 +43,12 @@ import org.jgroups.Channel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
-import org.wildfly.clustering.marshalling.DynamicClassTable;
-import org.wildfly.clustering.marshalling.MarshallingContext;
-import org.wildfly.clustering.marshalling.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.marshalling.VersionedMarshallingConfiguration;
+import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
+import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
@@ -57,24 +58,46 @@ import org.wildfly.clustering.spi.GroupServiceName;
  * Builds a channel-based {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFactoryServiceNameProvider implements Builder<CommandDispatcherFactory>, Service<CommandDispatcherFactory>, ChannelCommandDispatcherFactoryConfiguration, VersionedMarshallingConfiguration {
+public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFactoryServiceNameProvider implements Builder<CommandDispatcherFactory>, Service<CommandDispatcherFactory>, ChannelCommandDispatcherFactoryConfiguration, MarshallingConfigurationContext {
 
-    private static final int CURRENT_VERSION = 1;
+    enum MarshallingVersion implements Function<MarshallingConfigurationContext, MarshallingConfiguration> {
+        VERSION_1() {
+            @Override
+            public MarshallingConfiguration apply(MarshallingConfigurationContext context) {
+                MarshallingConfiguration config = new MarshallingConfiguration();
+                config.setClassResolver(ModularClassResolver.getInstance(context.getModuleLoader()));
+                config.setClassTable(new DynamicClassTable(IndexExternalizer.UNSIGNED_BYTE, context.getModule().getClassLoader()));
+                return config;
+            }
+        },
+        VERSION_2() {
+            @Override
+            public MarshallingConfiguration apply(MarshallingConfigurationContext context) {
+                MarshallingConfiguration config = new MarshallingConfiguration();
+                config.setClassResolver(ModularClassResolver.getInstance(context.getModuleLoader()));
+                config.setClassTable(new DynamicClassTable(context.getModule().getClassLoader()));
+                config.setObjectTable(new ExternalizerObjectTable(context.getModule().getClassLoader()));
+                return config;
+            }
+        },
+        ;
+        static final MarshallingVersion CURRENT = VERSION_2;
+    }
 
     private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
     private final InjectedValue<Channel> channel = new InjectedValue<>();
     private final InjectedValue<JGroupsNodeFactory> nodeFactory = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
-    private final ModuleIdentifier module;
-    private final Map<Integer, MarshallingConfiguration> configurations = new HashMap<>();
+    private final ModuleIdentifier moduleId;
 
+    private volatile Module module = null;
     private volatile MarshallingContext marshallingContext = null;
     private volatile ChannelCommandDispatcherFactory factory = null;
     private volatile long timeout = TimeUnit.MINUTES.toMillis(1);
 
-    public ChannelCommandDispatcherFactoryBuilder(String group, ModuleIdentifier module) {
+    public ChannelCommandDispatcherFactoryBuilder(String group, ModuleIdentifier moduleId) {
         super(group);
-        this.module = module;
+        this.moduleId = moduleId;
     }
 
     @Override
@@ -95,30 +118,21 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
 
     @Override
     public void start(StartContext context) throws StartException {
-        ModuleLoader loader = this.loader.getValue();
-        MarshallingConfiguration configuration = new MarshallingConfiguration();
-        configuration.setClassResolver(ModularClassResolver.getInstance(loader));
         try {
-            Module module = loader.loadModule(this.module);
-            configuration.setClassTable(new DynamicClassTable(module.getClassLoader()));
-            this.configurations.put(CURRENT_VERSION, configuration);
-            this.marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(this, module.getClassLoader());
+            this.module = this.getModuleLoader().loadModule(this.moduleId);
         } catch (ModuleLoadException e) {
             throw new StartException(e);
         }
 
+        this.marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this), this.module.getClassLoader());
         this.factory = new ChannelCommandDispatcherFactory(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        try {
-            this.factory.close();
-            this.factory = null;
-            this.marshallingContext = null;
-        } finally {
-            this.configurations.clear();
-        }
+        this.factory.close();
+        this.factory = null;
+        this.marshallingContext = null;
     }
 
     @Override
@@ -127,17 +141,13 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
     }
 
     @Override
-    public int getCurrentMarshallingVersion() {
-        return CURRENT_VERSION;
+    public Module getModule() {
+        return this.module;
     }
 
     @Override
-    public MarshallingConfiguration getMarshallingConfiguration(int version) {
-        MarshallingConfiguration configuration = this.configurations.get(version);
-        if (configuration == null) {
-            throw new IllegalArgumentException(Integer.toString(version));
-        }
-        return configuration;
+    public ModuleLoader getModuleLoader() {
+        return this.loader.getValue();
     }
 
     @Override

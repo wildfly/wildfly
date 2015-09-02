@@ -77,7 +77,6 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addClasses(StatefulBeanBase.class, StatefulBean.class, StatefulRemote.class, StatefulRemoteHome.class);
         war.addClasses(NodeNameGetter.class, NodeInfoServlet.class);
-        log.info(war.toString(true));
         return war;
     }
 

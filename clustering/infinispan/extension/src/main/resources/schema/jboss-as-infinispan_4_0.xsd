@@ -66,6 +66,11 @@
                     <xs:documentation>Defines a thread pool used for interacting with the persistent store.</xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="remote-command-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Defines a thread pool used to execute remote commands.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="state-transfer-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>Defines a thread pool used for for state transfer.</xs:documentation>

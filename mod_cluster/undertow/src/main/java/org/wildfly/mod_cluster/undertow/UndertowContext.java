@@ -28,6 +28,7 @@ import io.undertow.servlet.core.InMemorySessionManagerFactory;
 import io.undertow.servlet.core.ManagedListener;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 
+import javax.servlet.ServletException;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpSessionListener;
 
@@ -68,7 +69,13 @@ public class UndertowContext implements Context {
 
     @Override
     public void addRequestListener(ServletRequestListener listener) {
-        this.deployment.getApplicationListeners().addListener(new ManagedListener(new ListenerInfo(ServletRequestListener.class, new ImmediateInstanceFactory<>(listener)), true));
+        ManagedListener ml = new ManagedListener(new ListenerInfo(ServletRequestListener.class, new ImmediateInstanceFactory<>(listener)), true);
+        try {
+            ml.start();
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        }
+        this.deployment.getApplicationListeners().addListener(ml);
     }
 
     @Override
@@ -78,7 +85,13 @@ public class UndertowContext implements Context {
 
     @Override
     public void addSessionListener(HttpSessionListener listener) {
-        this.deployment.getApplicationListeners().addListener(new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener)), true));
+        ManagedListener ml = new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener)), true);
+        try {
+            ml.start();
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        }
+        this.deployment.getApplicationListeners().addListener(ml);
     }
 
     @Override

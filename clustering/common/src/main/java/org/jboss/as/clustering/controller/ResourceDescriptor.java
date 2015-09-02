@@ -76,19 +76,26 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this.addAttributes(Arrays.asList(attributes));
     }
 
-    public ResourceDescriptor addAttributes(Iterable<? extends Attribute> attributes) {
-        for (Attribute attribute : attributes) {
-            this.attributes.add(attribute.getDefinition());
-        }
+    public ResourceDescriptor addAttributes(Collection<? extends Attribute> attributes) {
+        attributes.forEach(attribute -> this.attributes.add(attribute.getDefinition()));
+        return this;
+    }
+
+    public <E extends Enum<E> & Attribute> ResourceDescriptor addExtraParameters(Class<E> enumClass) {
+        return this.addExtraParameters(EnumSet.allOf(enumClass));
+    }
+
+    public ResourceDescriptor addExtraParameters(Attribute... parameters) {
+        return this.addExtraParameters(Arrays.asList(parameters));
+    }
+
+    public ResourceDescriptor addExtraParameters(Collection<? extends Attribute> parameters) {
+        parameters.forEach(attribute -> this.parameters.add(attribute.getDefinition()));
         return this;
     }
 
     public ResourceDescriptor addExtraParameters(AttributeDefinition... parameters) {
-        return this.addExtraParameters(Arrays.asList(parameters));
-    }
-
-    public ResourceDescriptor addExtraParameters(Collection<? extends AttributeDefinition> parameters) {
-        this.parameters.addAll(parameters);
+        this.parameters.addAll(Arrays.asList(parameters));
         return this;
     }
 

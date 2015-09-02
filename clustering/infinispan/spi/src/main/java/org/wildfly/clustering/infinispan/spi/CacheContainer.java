@@ -28,6 +28,13 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * @author Paul Ferraro
  */
 public interface CacheContainer extends EmbeddedCacheManager {
+
+    /**
+     * Returns the name of this cache container.
+     * @return the cache container name
+     */
+    String getName();
+
     /**
      * Returns the name of the default cache.
      * @return a cache name

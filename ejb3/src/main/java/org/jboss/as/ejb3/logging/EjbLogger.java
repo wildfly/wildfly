@@ -3072,4 +3072,26 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 474, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'. This attribute should be removed.")
     void logInconsistentAttributeNotSupported(String attributeName, String mustMatch);
 
+    @LogMessage(level = INFO)
+    @Message(id = 475, value = "MDB delivery started: %s,%s")
+    void mdbDeliveryStarted(String appName, String componentName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 476, value = "MDB delivery stopped: %s,%s")
+    void mdbDeliveryStopped(String appName, String componentName);
+
+    @Message(id = 477, value = "MDB delivery group is missing: %s")
+    DeploymentUnitProcessingException missingMdbDeliveryGroup(String deliveryGroupName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 478, value = "This node is now the active cluster singleton")
+    void logClusterSigletonNode();
+
+    @LogMessage(level = INFO)
+    @Message(id = 479, value = "This node is no longer the active cluster singleton, or the cluster singleton is no longer in use")
+    void logNoLongerClusterSigletonNode();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 480, value = "Loaded timer (%s) for EJB (%s) and this node that is marked as being in a timeout. The original timeout may not have been processed. Please use graceful shutdown to ensure timeout tasks are finished before shutting down.")
+    void loadedPersistentTimerInTimeout(String timer, String timedObject);
 }

@@ -260,6 +260,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         if (!this.deliveryActive) {
             this.deliveryActive = true;
             activate();
+            ROOT_LOGGER.mdbDeliveryStarted(getApplicationName(), getComponentName());
         }
     }
 
@@ -267,6 +268,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         if (this.deliveryActive) {
             this.deactivate();
             this.deliveryActive = false;
+            ROOT_LOGGER.mdbDeliveryStopped(getApplicationName(), getComponentName());
         }
     }
 

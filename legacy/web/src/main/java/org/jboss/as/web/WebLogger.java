@@ -5,11 +5,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Logger for new messages in the legacy extension, used only for the migrate operation,
@@ -26,14 +23,21 @@ public interface WebLogger extends BasicLogger {
     @Message(id = 1, value = "Migrate operation only allowed in admin only mode")
     OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
 
-    @LogMessage(level = WARN)
     @Message(id = 2, value = "Could not migrate resource %s")
-    void couldNotMigrateResource(ModelNode node);
+    String couldNotMigrateResource(ModelNode node);
 
-    @LogMessage(level = WARN)
     @Message(id = 3, value = "Could not migrate attribute %s from resource %s")
-    void couldNotMigrateResource(String attribute, PathAddress node);
+    String couldNotMigrateResource(String attribute, PathAddress node);
 
     @Message(id = 4, value = "Could not migrate SSL connector as no SSL config is defined")
     OperationFailedException noSslConfig();
+
+    @Message(id = 5, value = "Migration failed, see results for more details.")
+    String migrationFailed();
+
+    @Message(id = 6, value = "Could not migrate verify-client attribute %s to the Undertow equivalent")
+    String couldNotTranslateVerifyClient(String s);
+
+    @Message(id = 7, value = "Could not migrate verify-client expression %s")
+    String couldNotTranslateVerifyClientExpression(String s);
 }

@@ -23,25 +23,22 @@
 package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.RequiredCapability;
-import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.network.OutboundSocketBinding;
 
 /**
  * Definition of an election policy resource.
  * @author Paul Ferraro
  */
-public class ElectionPolicyResourceDefinition extends SimpleResourceDefinition implements Registration {
+public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -95,21 +92,11 @@ public class ElectionPolicyResourceDefinition extends SimpleResourceDefinition i
                     .setAllowExpression(true)
                     .setAllowNull(true)
                     .setAlternatives(alternative)
-            ;
+                    ;
         }
     }
 
     ElectionPolicyResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
         super(path, resolver);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }
