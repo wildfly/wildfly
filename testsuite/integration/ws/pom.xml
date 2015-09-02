@@ -105,6 +105,15 @@
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+
+                                        <!-- SSL settings -->
+                                        <cxf.tls-client.disableCNCheck>true</cxf.tls-client.disableCNCheck>
+                                        <javax.net.ssl.trustStore>${project.build.testOutputDirectory}/org/jboss/as/test/integration/ws/wsse/trust/test.truststore</javax.net.ssl.trustStore>
+                                        <javax.net.ssl.trustStorePassword>changeit</javax.net.ssl.trustStorePassword>
+                                        <javax.net.ssl.trustStoreType>jks</javax.net.ssl.trustStoreType>
+                                        <javax.net.ssl.keyStore>${project.build.testOutputDirectory}/org/jboss/as/test/integration/ws/wsse/trust/client.keystore</javax.net.ssl.keyStore>
+                                        <javax.net.ssl.keyStorePassword>changeit</javax.net.ssl.keyStorePassword>
+                                        <javax.net.ssl.keyStoreType>jks</javax.net.ssl.keyStoreType>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
