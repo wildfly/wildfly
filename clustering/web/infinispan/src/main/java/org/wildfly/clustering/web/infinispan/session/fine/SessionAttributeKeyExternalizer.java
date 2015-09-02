@@ -21,45 +21,25 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
-import org.infinispan.distribution.group.Group;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 
 /**
- * Cache key for session attributes.
+ * Externalizer for a {@link SessionAttributeKey}.
  * @author Paul Ferraro
  */
-public class SessionAttributeCacheKey {
+public class SessionAttributeKeyExternalizer extends SessionKeyExternalizer<SessionAttributeKey> {
 
-    private final String id;
-    private final String attribute;
-
-    public SessionAttributeCacheKey(String id, String attribute) {
-        this.id = id;
-        this.attribute = attribute;
-    }
-
-    @Group
-    public String getId() {
-        return this.id;
-    }
-
-    public String getAttribute() {
-        return this.attribute;
+    public SessionAttributeKeyExternalizer() {
+        super(SessionAttributeKey.class, (String id, ObjectInput input) -> new SessionAttributeKey(id, input.readUTF()));
     }
 
     @Override
-    public int hashCode() {
-        return this.id.hashCode() ^ this.attribute.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if ((object == null) || !(object instanceof SessionAttributeCacheKey)) return false;
-        SessionAttributeCacheKey key = (SessionAttributeCacheKey) object;
-        return this.id.equals(key.id) && this.attribute.equals(key.attribute);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s->%s", this.id, this.attribute);
+    public void writeObject(ObjectOutput output, SessionAttributeKey key) throws IOException {
+        super.writeObject(output, key);
+        output.writeUTF(key.getAttribute());
     }
 }

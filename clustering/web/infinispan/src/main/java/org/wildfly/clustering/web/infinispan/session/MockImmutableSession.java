@@ -85,5 +85,4 @@ public class MockImmutableSession implements ImmutableSession {
     public SessionContext getContext() {
         return null;
     }
-
 }

@@ -21,11 +21,11 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -64,6 +64,7 @@ import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.web.IdentifierFactory;
@@ -85,19 +86,19 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 public class InfinispanSessionManager<V, L> implements SessionManager<L, TransactionBatch> {
     private final SessionContext context;
     private final Batcher<TransactionBatch> batcher;
-    private final Cache<String, ?> cache;
+    private final Cache<? extends Key<String>, ?> cache;
     private final SessionFactory<V, L> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final CommandDispatcherFactory dispatcherFactory;
     private final NodeFactory<Address> nodeFactory;
     private final int maxActiveSessions;
-    private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
+    private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private final boolean persistent;
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
-    private final SessionIdentifierFilter filter = new SessionIdentifierFilter();
+    private final SessionCreationMetaDataKeyFilter filter = new SessionCreationMetaDataKeyFilter();
     private final Recordable<ImmutableSession> recorder;
 
-    volatile CommandDispatcher<Scheduler> dispatcher;
+    private volatile CommandDispatcher<Scheduler> dispatcher;
     private volatile Scheduler scheduler;
 
     public InfinispanSessionManager(SessionFactory<V, L> factory, InfinispanSessionManagerConfiguration configuration) {
@@ -191,20 +192,17 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     private void executeOnPrimaryOwner(final ImmutableSession session, final Command<Void, Scheduler> command) throws Exception {
-        Callable<Void> task = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                // This should only go remote following a failover
-                Node node = InfinispanSessionManager.this.locatePrimaryOwner(session);
-                return InfinispanSessionManager.this.dispatcher.executeOnNode(command, node).get();
-            }
+        Callable<Void> task = () -> {
+            // This should only go remote following a failover
+            Node node = this.locatePrimaryOwner(session);
+            return this.dispatcher.executeOnNode(command, node).get();
         };
         this.invoker.invoke(task);
     }
 
     Node locatePrimaryOwner(ImmutableSession session) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        Address address = (dist != null) ? dist.getPrimaryLocation(session.getId()) : null;
+        Address address = (dist != null) ? dist.getPrimaryLocation(new Key<>(session.getId())) : null;
         return (address != null) ? this.nodeFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalNode();
     }
 
@@ -214,13 +212,13 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     @Override
-    public long getDefaultMaxInactiveInterval(TimeUnit unit) {
-        return this.defaultMaxInactiveInterval.convert(unit);
+    public Duration getDefaultMaxInactiveInterval() {
+        return this.defaultMaxInactiveInterval;
     }
 
     @Override
-    public void setDefaultMaxInactiveInterval(long value, TimeUnit unit) {
-        this.defaultMaxInactiveInterval = new Time(value, unit);
+    public void setDefaultMaxInactiveInterval(Duration duration) {
+        this.defaultMaxInactiveInterval = duration;
     }
 
     @Override
@@ -230,7 +228,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
     @Override
     public boolean containsSession(String id) {
-        return this.cache.containsKey(id);
+        return this.cache.containsKey(new SessionCreationMetaDataKey(id));
     }
 
     @Override
@@ -257,8 +255,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     @Override
     public Session<L> createSession(String id) {
         Session<L> session = this.factory.createSession(id, this.factory.createValue(id, null));
-        final Time time = this.defaultMaxInactiveInterval;
-        session.getMetaData().setMaxInactiveInterval(time.getValue(), time.getUnit());
+        session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
         return new SchedulableSession(session, session);
     }
 
@@ -281,8 +278,8 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     private Set<String> getSessions(Flag... flags) {
-        try (Stream<String> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
-            return keys.filter(this.filter).collect(CacheCollectors.serializableCollector(() -> Collectors.toSet()));
+        try (Stream<? extends Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
+            return keys.filter(this.filter).map(key -> key.getValue()).collect(CacheCollectors.serializableCollector(() -> Collectors.toSet()));
         }
     }
 
@@ -297,9 +294,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     @CacheEntryActivated
-    public void activated(CacheEntryActivatedEvent<String, ?> event) {
+    public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (!event.isPre() && !this.persistent) {
-            String id = event.getKey();
+            String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
             V value = this.factory.findValue(id);
             if (value != null) {
@@ -310,9 +307,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     @CacheEntryPassivated
-    public void passivated(CacheEntryPassivatedEvent<String, ?> event) {
+    public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre() && !this.persistent) {
-            String id = event.getKey();
+            String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
             V value = this.factory.findValue(id);
             if (value != null) {
@@ -323,9 +320,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     @CacheEntryRemoved
-    public void removed(CacheEntryRemovedEvent<String, ?> event) {
+    public void removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre()) {
-            String id = event.getKey();
+            String id = event.getKey().getValue();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
             V value = this.factory.findValue(id);
             if (value != null) {
@@ -354,8 +351,8 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     @DataRehashed
-    public void dataRehashed(DataRehashedEvent<String, ?> event) {
-        Cache<String, ?> cache = event.getCache();
+    public void dataRehashed(DataRehashedEvent<SessionCreationMetaDataKey, ?> event) {
+        Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
         Address localAddress = cache.getCacheManager().getAddress();
         Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
         Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
@@ -366,23 +363,23 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         }
     }
 
-    private void schedule(Cache<String, ?> cache, Locality oldLocality, Locality newLocality) {
-        Consumer<String> scheduler = key -> {
+    private void schedule(Cache<? extends Key<String>, ?> cache, Locality oldLocality, Locality newLocality) {
+        Consumer<String> scheduler = id -> {
             Batch batch = this.batcher.createBatch();
             try {
                 // We need to lookup the session to obtain its meta data
-                V value = this.factory.findValue(key);
+                V value = this.factory.findValue(id);
                 if (value != null) {
-                    this.scheduler.schedule(this.factory.createImmutableSession(key, value));
+                    this.scheduler.schedule(this.factory.createImmutableSession(id, value));
                 }
             } finally {
                 batch.discard();
             }
         };
         // Iterate over sessions in memory
-        try (Stream<String> keys = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
+        try (Stream<? extends Key<String>> keys = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
             // If we are the new primary owner of this session then schedule expiration of this session locally
-            keys.filter(this.filter).filter(key -> !oldLocality.isLocal(key) && newLocality.isLocal(key)).forEach(scheduler);
+            keys.filter(this.filter).filter(key -> !oldLocality.isLocal(key) && newLocality.isLocal(key)).map(key -> key.getValue()).forEach(scheduler);
         }
     }
 

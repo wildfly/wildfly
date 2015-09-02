@@ -20,28 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.web.infinispan;
 
-import java.time.Duration;
+import java.util.ServiceLoader;
+
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
+import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 
 /**
- * Statistics for inactive sessions.
+ * Validates loading of services.
  * @author Paul Ferraro
  */
-public interface InactiveSessionStatistics {
+public class ServiceLoaderTestCase {
 
-    /**
-     * @return The number of expired sessions
-     */
-    long getExpiredSessionCount();
+    @Test
+    public void load() {
+        load(Externalizer.class);
+        load(RouteLocatorBuilderProvider.class);
+        load(SessionManagerFactoryBuilderProvider.class);
+        load(SSOManagerFactoryBuilderProvider.class);
+    }
 
-    /**
-     * @return The longest a session has been alive, as a time duration
-     */
-    Duration getMaxSessionLifetime();
-
-    /**
-     * @return The average session lifetime, as a time duration
-     */
-    Duration getMeanSessionLifetime();
+    private static <T> void load(Class<T> targetClass) {
+        System.out.println(targetClass.getName() + ":");
+        ServiceLoader.load(targetClass, ServiceLoaderTestCase.class.getClassLoader()).forEach(object -> System.out.println("\t" + object.getClass().getName()));
+    }
 }

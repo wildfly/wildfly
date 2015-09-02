@@ -33,11 +33,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
-import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.Session;
@@ -50,13 +49,12 @@ public class InfinispanSessionTestCase {
     private final SessionMetaData metaData = mock(SessionMetaData.class);
     private final SessionAttributes attributes = mock(SessionAttributes.class);
     private final SessionContext context = mock(SessionContext.class);
-    private final Mutator mutator = mock(Mutator.class);
     private final Remover<String> remover = mock(Remover.class);
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
     private final AtomicReference<Object> localContextRef = new AtomicReference<>();
 
-    private final Session<Object> session = new InfinispanSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.context, this.mutator, this.remover);
-    
+    private final Session<Object> session = new InfinispanSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.context, this.remover);
+
     @Test
     public void getId() {
         assertSame(this.id, this.session.getId());
@@ -110,16 +108,14 @@ public class InfinispanSessionTestCase {
     public void close() {
         this.session.close();
         
-        verify(this.metaData).setLastAccessedTime(any(Date.class));
-        verify(this.mutator).mutate();
+        verify(this.metaData).setLastAccessedTime(any(Instant.class));
         
-        reset(this.metaData, this.mutator);
+        reset(this.metaData);
         
         // Verify that session is not mutated if invalid
         this.session.invalidate();
         
-        verify(this.metaData, never()).setLastAccessedTime(any(Date.class));
-        verify(this.mutator, never()).mutate();
+        verify(this.metaData, never()).setLastAccessedTime(any(Instant.class));
     }
 
     @SuppressWarnings("unchecked")

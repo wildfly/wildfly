@@ -23,6 +23,8 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -89,15 +91,15 @@ public class SessionExpirationScheduler implements Scheduler {
 
     @Override
     public void schedule(ImmutableSession session) {
-        long timeout = session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS);
-        if (timeout > 0) {
-            long lastAccessed = session.getMetaData().getLastAccessedTime().getTime();
-            long delay = Math.max(lastAccessed + timeout - System.currentTimeMillis(), 0);
+        Duration maxInactiveInterval = session.getMetaData().getMaxInactiveInterval();
+        if (!maxInactiveInterval.isZero()) {
+            Instant lastAccessed = session.getMetaData().getLastAccessedTime();
+            Duration delay = Duration.between(Instant.now(), lastAccessed.plus(maxInactiveInterval));
             String id = session.getId();
             Runnable task = new ExpirationTask(id);
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d ms", id, timeout);
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d sec", id, maxInactiveInterval.getSeconds());
             synchronized (task) {
-                this.expirationFutures.put(id, this.executor.schedule(task, delay, TimeUnit.MILLISECONDS));
+                this.expirationFutures.put(id, this.executor.schedule(task, !delay.isNegative() ? delay.getSeconds() : 0, TimeUnit.SECONDS));
             }
         }
     }

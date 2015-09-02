@@ -26,7 +26,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -62,11 +63,11 @@ public class SessionExpirationSchedulerTestCase {
         when(expiringSession.getMetaData()).thenReturn(shortTimeoutMetaData);
         when(canceledSession.getMetaData()).thenReturn(longTimeoutMetaData);
         
-        when(immortalMetaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS)).thenReturn(0L);
-        when(shortTimeoutMetaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS)).thenReturn(1L);
-        when(longTimeoutMetaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS)).thenReturn(10000L);
+        when(immortalMetaData.getMaxInactiveInterval()).thenReturn(Duration.ZERO);
+        when(shortTimeoutMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMillis(1L));
+        when(longTimeoutMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofSeconds(100L));
 
-        Date now = new Date();
+        Instant now = Instant.now();
         when(shortTimeoutMetaData.getLastAccessedTime()).thenReturn(now);
         when(longTimeoutMetaData.getLastAccessedTime()).thenReturn(now);
         
@@ -79,7 +80,7 @@ public class SessionExpirationSchedulerTestCase {
             scheduler.schedule(canceledSession);
             scheduler.schedule(expiringSession);
 
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1L);
 
             scheduler.cancel(canceledSessionId);
             scheduler.schedule(canceledSession);

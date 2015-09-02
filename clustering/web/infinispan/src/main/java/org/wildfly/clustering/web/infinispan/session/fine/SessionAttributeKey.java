@@ -21,36 +21,37 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaDataExternalizer;
-import org.wildfly.clustering.web.session.SessionMetaData;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 
 /**
- * Factory for creating and externalizing fine granularity session cache entries.
+ * Cache key for session attributes.
  * @author Paul Ferraro
  */
-public class FineSessionCacheEntryExternalizer<L> implements Externalizer<FineSessionCacheEntry<L>> {
+public class SessionAttributeKey extends Key<String> {
 
-    private final Externalizer<SessionMetaData> externalizer = new SimpleSessionMetaDataExternalizer();
+    private final String attribute;
 
-    @Override
-    public void writeObject(ObjectOutput output, FineSessionCacheEntry<L> entry) throws IOException {
-        this.externalizer.writeObject(output, entry.getMetaData());
+    public SessionAttributeKey(String id, String attribute) {
+        super(id);
+        this.attribute = attribute;
+    }
+
+    public String getAttribute() {
+        return this.attribute;
     }
 
     @Override
-    public FineSessionCacheEntry<L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new FineSessionCacheEntry<>(this.externalizer.readObject(input));
+    public int hashCode() {
+        return (31 * super.hashCode()) + this.attribute.hashCode();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Class<FineSessionCacheEntry<L>> getTargetClass() {
-        Class targetClass = FineSessionCacheEntry.class;
-        return targetClass;
+    public boolean equals(Object object) {
+        return super.equals(object) && (object instanceof SessionAttributeKey) && this.attribute.equals(((SessionAttributeKey) object).attribute);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s->%s", this.getValue(), this.attribute);
     }
 }

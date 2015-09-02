@@ -19,34 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import java.util.concurrent.atomic.AtomicReference;
+package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import java.io.Serializable;
+import java.util.function.Predicate;
+
+import org.infinispan.filter.KeyFilter;
 
 /**
- * Cache entry that store authentication data plus any local context
+ * Filters a cache for session creation meta data entries.
  * @author Paul Ferraro
- * @param <I> the identity type
- * @param <D> the deployment identifier type
- * @param <L> the local context type
  */
-public class CoarseAuthenticationEntry<A, D, L> {
+public class SessionCreationMetaDataKeyFilter implements KeyFilter<Object>, Predicate<Object>, Serializable {
+    private static final long serialVersionUID = -1079989480899595045L;
 
-    private final MarshalledValue<A, MarshallingContext> authentication;
-    private final AtomicReference<L> localContext = new AtomicReference<>();
-
-    public CoarseAuthenticationEntry(MarshalledValue<A, MarshallingContext> authentication) {
-        this.authentication = authentication;
+    @Override
+    public boolean accept(Object key) {
+        return key instanceof SessionCreationMetaDataKey;
     }
 
-    public MarshalledValue<A, MarshallingContext> getAuthentication() {
-        return this.authentication;
-    }
-
-    public AtomicReference<L> getLocalContext() {
-        return this.localContext;
+    @Override
+    public boolean test(Object key) {
+        return this.accept(key);
     }
 }

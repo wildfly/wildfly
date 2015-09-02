@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,44 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+
+package org.wildfly.clustering.web.infinispan.session;
 
 import java.time.Duration;
 import java.time.Instant;
 
 /**
- * Abstraction for immutable meta information about a web session.
+ * Immutable view of the more static aspects of a session's meta-data.
  * @author Paul Ferraro
  */
-public interface ImmutableSessionMetaData {
-    /**
-     * Indicates whether or not this session was created by the current thread.
-     * @return true if this session is new, false otherwise
-     */
-    boolean isNew();
-
-    /**
-     * Indicates whether or not this session was previously idle for longer than the maximum inactive interval.
-     * @return true if this session is expired, false otherwise
-     */
-    boolean isExpired();
-
-    /**
-     * Returns the time this session was created.
-     * @return the time this session was created
-     */
+public interface ImmutableSessionCreationMetaData {
     Instant getCreationTime();
 
-    /**
-     * Returns the time this session was last accessed.
-     * @return the time this session was last accessed
-     */
-    Instant getLastAccessedTime();
-
-    /**
-     * Returns the time interval, using the specified unit, after which this session will expire.
-     * @param unit a time unit
-     * @return a time interval
-     */
     Duration getMaxInactiveInterval();
 }

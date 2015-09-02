@@ -19,41 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.web.infinispan.sso;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.session.SessionMetaData;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer;
 
 /**
- * Externalizer for session meta data.
+ * Externalizer for {@link AuthenticationEntry}.
  * @author Paul Ferraro
+ * @param <A>
+ * @param <D>
  */
-public class SimpleSessionMetaDataExternalizer implements Externalizer<SessionMetaData> {
-    private static final TimeUnit SERIALIZED_UNIT = TimeUnit.SECONDS;
+public class AuthenticationEntryExternalizer<A, D, L> implements Externalizer<AuthenticationEntry<A, D, L>> {
+
+    private final Externalizer<SimpleMarshalledValue<A>> externalizer = new SimpleMarshalledValueExternalizer<>();
 
     @Override
-    public void writeObject(ObjectOutput output, SessionMetaData metaData) throws IOException {
-        output.writeLong(metaData.getCreationTime().getTime());
-        output.writeLong(metaData.getLastAccessedTime().getTime());
-        output.writeInt((int) metaData.getMaxInactiveInterval(SERIALIZED_UNIT));
+    public void writeObject(ObjectOutput output, AuthenticationEntry<A, D, L> entry) throws IOException {
+        SimpleMarshalledValue<A> value = (SimpleMarshalledValue<A>) entry.getAuthentication();
+        this.externalizer.writeObject(output, value);
     }
 
     @Override
-    public SessionMetaData readObject(ObjectInput input) throws IOException {
-        Date creationTime = new Date(input.readLong());
-        Date lastAccessedTime = new Date(input.readLong());
-        Time maxInactiveInterval = new Time(input.readInt(), SERIALIZED_UNIT);
-        return new SimpleSessionMetaData(creationTime, lastAccessedTime, maxInactiveInterval);
+    public AuthenticationEntry<A, D, L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new AuthenticationEntry<>(this.externalizer.readObject(input));
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Class<? extends SessionMetaData> getTargetClass() {
-        return SimpleSessionMetaData.class;
+    public Class<AuthenticationEntry<A, D, L>> getTargetClass() {
+        Class targetClass = AuthenticationEntry.class;
+        return targetClass;
     }
 }

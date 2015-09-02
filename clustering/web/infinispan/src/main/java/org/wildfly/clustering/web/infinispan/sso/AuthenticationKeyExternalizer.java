@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
 
-import java.time.Duration;
-import java.time.Instant;
+package org.wildfly.clustering.web.infinispan.sso;
+
+import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 
 /**
- * Abstraction for meta information about a web session.
+ * Externalizer for {@link AuthenticationKey}
  * @author Paul Ferraro
  */
-public interface SessionMetaData extends ImmutableSessionMetaData {
-    /**
-     * Sets the instant in time that this session was last accessed.
-     * @param the instant this session was last accessed
-     */
-    void setLastAccessedTime(Instant instant);
+public class AuthenticationKeyExternalizer extends SessionKeyExternalizer<AuthenticationKey> {
 
-    /**
-     * Set the time interval as a duration, after which this session will expire.
-     * @param duration a time duration
-     */
-    void setMaxInactiveInterval(Duration duration);
+    public AuthenticationKeyExternalizer() {
+        super(AuthenticationKey.class, AuthenticationKey::new);
+    }
 }
