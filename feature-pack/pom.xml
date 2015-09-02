@@ -475,7 +475,7 @@
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-resources</artifactId>
-            <classifier>wildfly900</classifier>
+            <classifier>wildfly1000</classifier>
         </dependency>
 
         <dependency>

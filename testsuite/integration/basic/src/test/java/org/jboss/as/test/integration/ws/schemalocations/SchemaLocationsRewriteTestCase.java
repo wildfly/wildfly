@@ -71,26 +71,29 @@ public class SchemaLocationsRewriteTestCase {
 
     @Test
     public void testSchemaLocationRewrittenWsdl() throws Exception {
-        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl"), "?xsd=imported/SimpleService.xsd");
-        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl"), "?wsdl=imported/AnotherService.wsdl");
+        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl"), baseUrl.getPath() + "SimpleService?xsd=");
+        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl"), baseUrl.getPath() + "SimpleService?wsdl=");
     }
 
     @Test
     public void testSchemaLocationRewrittenNestedWsdl() throws Exception {
-        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl=imported/AnotherService.wsdl"), "?xsd=SimpleService.xsd");
+        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl=imported/AnotherService.wsdl"), baseUrl.getPath() + "SimpleService?xsd=");
     }
 
     /**
-     * CXF-6469
+     * CXF-6469: this test is actually CXF implementation specific, it does not really make sense to assume the imported schema
+     * is at a given URL in this case; what really matters is that the published wsdl has consistent links to imported wsdl/xsd,
+     * so that you can actually build up a client with it and invoke the endpoint. I'm leaving the test here, though, with a
+     * workaround for old cxf impl versions.
      */
     @Test
     public void testSchemaLocationRewrittenNestedXsd() throws Exception {
-        verifySchemaContains(new URL(baseUrl, "SimpleService?xsd=imported/SimpleService.xsd"), "?xsd=imported/importedschema.xsd");
-    }
-
-    @Test
-    public void testSchemaLocationRewrittenNestedXsdAltName() throws Exception {
-        verifySchemaContains(new URL(baseUrl, "SimpleService?xsd=SimpleService.xsd"), "?xsd=importedschema.xsd");
+        try {
+            verifySchemaContains(new URL(baseUrl, "SimpleService?xsd=imported/SimpleService.xsd"), baseUrl.getPath() + "SimpleService?xsd=");
+        } catch (IOException e) {
+            //fallback to old 
+            verifySchemaContains(new URL(baseUrl, "SimpleService?xsd=SimpleService.xsd"), baseUrl.getPath() + "SimpleService?xsd=");
+        }
     }
 
     private void verifySchemaContains(URL url, String s) throws IOException {
