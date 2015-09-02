@@ -14,7 +14,8 @@
             <native-interface security-realm="ManagementRealm">
                 <socket-binding native="management-native"/>
             </native-interface>
-            <http-interface console-enabled="false" security-realm="ManagementRealm" http-upgrade-enabled="true">
+            <http-interface console-enabled="false" security-realm="ManagementRealm">
+                <http-upgrade enabled="true" />
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
