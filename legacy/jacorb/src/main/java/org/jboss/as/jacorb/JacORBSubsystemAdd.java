@@ -22,6 +22,7 @@
 
 package org.jboss.as.jacorb;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -53,7 +54,6 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode legacyModel)
             throws OperationFailedException {
         printJacORBEmulationWarningMessage();
-        TransformUtils.transformModel(legacyModel);
         super.performRuntime(context, operation, legacyModel);
     }
 
@@ -74,7 +74,15 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
         // domain controller in normal mode works normally - it may send old parameters to legacy hosts - such configuration is
         // valid
         if (adminOnly || !hostController) {
-            TransformUtils.checkLegacyModel(model, !adminOnly);
+            final List<String> unsupportedProperites = TransformUtils.checkLegacyModel(model);
+            if(!unsupportedProperites.isEmpty()) {
+                if (adminOnly) {
+                    final String warning = JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(unsupportedProperites);
+                    JacORBLogger.ROOT_LOGGER.warn(warning);
+                } else {
+                    throw JacORBLogger.ROOT_LOGGER.cannotEmulateProperties(unsupportedProperites);
+                }
+            }
         }
     }
 
