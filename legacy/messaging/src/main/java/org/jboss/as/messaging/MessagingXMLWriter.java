@@ -92,8 +92,8 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         if (node.hasDefined(HORNETQ_SERVER)) {
             final ModelNode servers = node.get(HORNETQ_SERVER);
             boolean first = true;
-            for (Property prop : servers.asPropertyList()) {
-                writeHornetQServer(writer, prop.getName(), prop.getValue());
+            for (String name : servers.keys()) {
+                writeHornetQServer(writer, name, servers.get(name));
                 if (!first) {
                     writeNewLine(writer);
                 } else {
@@ -105,8 +105,8 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         if (node.hasDefined(JMS_BRIDGE)) {
             final ModelNode jmsBridges = node.get(JMS_BRIDGE);
             boolean first = true;
-            for (Property prop : jmsBridges.asPropertyList()) {
-                writeJmsBridge(writer, prop.getName(), prop.getValue());
+            for (String name : jmsBridges.keys()) {
+                writeJmsBridge(writer, name, jmsBridges.get(name));
                 if (!first) {
                     writeNewLine(writer);
                 } else {
@@ -357,13 +357,12 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         if (!node.isDefined()) {
             return;
         }
-        List<Property> properties = node.asPropertyList();
-        if (!properties.isEmpty()) {
+        if (node.asInt() > 0) {
             writer.writeStartElement(Element.CORE_QUEUES.getLocalName());
-            for (Property queueProp : properties) {
+            for (String queueName : node.keys()) {
                 writer.writeStartElement(Element.QUEUE.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), queueProp.getName());
-                final ModelNode queue = queueProp.getValue();
+                writer.writeAttribute(Attribute.NAME.getLocalName(), queueName);
+                final ModelNode queue = node.get(queueName);
                 QueueDefinition.ADDRESS.marshallAsElement(queue, writer);
                 writeFilter(writer, queue);
                 DURABLE.marshallAsElement(queue, writer);
@@ -614,14 +613,12 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeConnectionFactories(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (!node.isDefined() || node.keys().size() == 0) {
+        if (!node.isDefined()) {
             return;
         }
-        List<Property> properties = node.asPropertyList();
-        if (!properties.isEmpty()) {
-            for (Property prop : properties) {
-                final String name = prop.getName();
-                final ModelNode factory = prop.getValue();
+        if (node.asInt() > 0) {
+            for (String name : node.keys()) {
+                final ModelNode factory = node.get(name);
                 if (factory.isDefined()) {
                     writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
@@ -637,14 +634,12 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writePooledConnectionFactories(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (!node.isDefined() || node.keys().size() == 0) {
+        if (!node.isDefined()) {
             return;
         }
-        List<Property> properties = node.asPropertyList();
-        if (!properties.isEmpty()) {
-            for (Property prop : properties) {
-                final String name = prop.getName();
-                final ModelNode factory = prop.getValue();
+        if (node.asInt() > 0) {
+            for (String name : node.keys()) {
+                final ModelNode factory = node.get(name);
                 if (factory.isDefined()) {
                     writer.writeStartElement(Element.POOLED_CONNECTION_FACTORY.getLocalName());
 
@@ -684,14 +679,12 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeJmsQueues(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (!node.isDefined() || node.keys().size() == 0) {
+        if (!node.isDefined()) {
             return;
         }
-        List<Property> properties = node.asPropertyList();
-        if (!properties.isEmpty()) {
-            for (Property prop : properties) {
-                final String name = prop.getName();
-                final ModelNode queue = prop.getValue();
+        if (node.asInt() > 0) {
+            for (String name : node.keys()) {
+                final ModelNode queue = node.get(name);
                 if (queue.isDefined()) {
                     writer.writeStartElement(Element.JMS_QUEUE.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
@@ -707,14 +700,12 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeTopics(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (!node.isDefined() || node.keys().size() == 0) {
+        if (!node.isDefined()) {
             return;
         }
-        List<Property> properties = node.asPropertyList();
-        if (!properties.isEmpty()) {
-            for (Property prop : properties) {
-                final String name = prop.getName();
-                final ModelNode topic = prop.getValue();
+        if (node.asInt() > 0) {
+            for (String name : node.keys()) {
+                final ModelNode topic = node.get(name);
                 if (topic.isDefined()) {
                     writer.writeStartElement(Element.JMS_TOPIC.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);

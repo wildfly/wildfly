@@ -194,12 +194,13 @@ public class JcaExtension implements Extension {
 
         private void writeDistributedWorkManagers(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
             if (parentNode.hasDefined(DISTRIBUTED_WORKMANAGER) && parentNode.get(DISTRIBUTED_WORKMANAGER).asList().size() != 0) {
-                for (Property property : parentNode.get(DISTRIBUTED_WORKMANAGER).asPropertyList()) {
-
+                ModelNode workManagers = parentNode.get(DISTRIBUTED_WORKMANAGER);
+                for (String name : workManagers.keys()) {
+                    ModelNode workManager = workManagers.get(name);
                     writer.writeStartElement(Element.DISTRIBUTED_WORKMANAGER.getLocalName());
-                    ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute()).marshallAsAttribute(property.getValue(), writer);
+                    ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute()).marshallAsAttribute(workManager, writer);
 
-                    for (Property prop : property.getValue().asPropertyList()) {
+                    for (Property prop : workManager.asPropertyList()) {
                         if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
                             ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
                         }
@@ -210,8 +211,8 @@ public class JcaExtension implements Extension {
                         if (JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().getName().equals(prop.getName()) && prop.getValue().isDefined()) {
                             writer.writeStartElement(Element.POLICY.getLocalName());
                             writer.writeAttribute(JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName(), prop.getValue().asString());
-                            if (property.getValue().hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName())) {
-                                for (Property option : property.getValue().get(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName()).asPropertyList()) {
+                            if (workManager.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName())) {
+                                for (Property option : workManager.get(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName()).asPropertyList()) {
                                     writeProperty(writer, option.getName(), option
                                             .getValue().asString(), Element.OPTION.getLocalName());
                                 }
@@ -223,8 +224,8 @@ public class JcaExtension implements Extension {
                             writer.writeStartElement(Element.SELECTOR.getLocalName());
                             writer.writeAttribute(JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName(), prop.getValue().asString());
 
-                            if (property.getValue().hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute().getName())) {
-                                for (Property option : property.getValue().get(JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute().getName()).asPropertyList()) {
+                            if (workManager.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute().getName())) {
+                                for (Property option : workManager.get(JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute().getName()).asPropertyList()) {
                                     writeProperty(writer, option.getName(), option
                                             .getValue().asString(), Element.OPTION.getLocalName());
                                 }
@@ -241,20 +242,23 @@ public class JcaExtension implements Extension {
 
         private void writeWorkManagers(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
             if (parentNode.hasDefined(WORKMANAGER) && parentNode.get(WORKMANAGER).asList().size() != 0) {
-                for (Property property : parentNode.get(WORKMANAGER).asPropertyList()) {
-                    if ("default".equals(property.getValue().get(NAME).asString())) {
+                ModelNode workManagers = parentNode.get(WORKMANAGER);
+                for (String name : workManagers.keys()) {
+                    ModelNode workManager = workManagers.get(name);
+                    if ("default".equals(workManager.get(NAME).asString())) {
                         writer.writeStartElement(Element.DEFAULT_WORKMANAGER.getLocalName());
                     } else {
                         writer.writeStartElement(Element.WORKMANAGER.getLocalName());
-                        JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
+                        JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().marshallAsAttribute(workManager, writer);
 
                     }
-                    for (Property prop : property.getValue().asPropertyList()) {
-                        if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
+                    for (String propName : workManager.keys()) {
+                        ModelNode propVal = workManager.get(propName);
+                        if (WORKMANAGER_LONG_RUNNING.equals(propName) && propVal.isDefined() && propVal.asPropertyList().size() != 0) {
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, propVal.asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
                         }
-                        if (WORKMANAGER_SHORT_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                        if (WORKMANAGER_SHORT_RUNNING.equals(propName) && propVal.isDefined() && propVal.asPropertyList().size() != 0) {
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, propVal.asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
                         }
                     }
                     writer.writeEndElement();
@@ -268,17 +272,19 @@ public class JcaExtension implements Extension {
 
                 boolean started = false;
 
-                for (Property property : parentNode.get(BOOTSTRAP_CONTEXT).asPropertyList()) {
-                    if (!property.getValue().get(JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().getName()).asString().equals(DEFAULT_NAME) &&
-                            (JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().isMarshallable(property.getValue()) ||
-                                    JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().isMarshallable(property.getValue()))) {
+                ModelNode contexts = parentNode.get(BOOTSTRAP_CONTEXT);
+                for (String name : contexts.keys()) {
+                    ModelNode context = contexts.get(name);
+                    if (!context.get(JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().getName()).asString().equals(DEFAULT_NAME) &&
+                            (JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().isMarshallable(context) ||
+                                    JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().isMarshallable(context))) {
                         if (!started) {
                             writer.writeStartElement(Element.BOOTSTRAP_CONTEXTS.getLocalName());
                             started = true;
                         }
                         writer.writeStartElement(Element.BOOTSTRAP_CONTEXT.getLocalName());
-                        JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
-                        JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().marshallAsAttribute(property.getValue(), writer);
+                        JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().marshallAsAttribute(context, writer);
+                        JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().marshallAsAttribute(context, writer);
                         writer.writeEndElement();
                     }
                 }
