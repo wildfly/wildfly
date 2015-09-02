@@ -103,6 +103,11 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
          resourceRegistration.registerReadWriteAttribute(DEEP_COPY_SUBJECT_MODE, null, new ReloadRequiredWriteAttributeHandler(DEEP_COPY_SUBJECT_MODE));
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(SECURITY_SUBSYSTEM);
+    }
+
     static class NewSecuritySubsystemAdd extends AbstractBoottimeAddStepHandler {
         private static final String AUTHENTICATION_MANAGER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot()
                 + ":" + JBossCachedAuthenticationManager.class.getName();

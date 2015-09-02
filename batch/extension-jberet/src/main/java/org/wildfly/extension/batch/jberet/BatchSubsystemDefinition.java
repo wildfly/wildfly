@@ -125,6 +125,12 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(DEFAULT_THREAD_POOL, null, writeHandler);
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(Capabilities.DEFAULT_JOB_REPOSITORY_CAPABILITY);
+        resourceRegistration.registerCapability(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY);
+    }
+
     /**
      * Handler responsible for adding the subsystem resource to the model.
      */

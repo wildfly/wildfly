@@ -292,6 +292,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         }
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(TRANSACTION_CAPABILITY);
+    }
+
     private static class EnableStatisticsHandler implements OperationStepHandler {
 
         @Override
