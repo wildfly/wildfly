@@ -71,14 +71,14 @@ class TransactionSubsystem30Parser extends TransactionSubsystem20Parser {
                 parseJts(reader, subsystemOperation);
                 break;
             }
-            case USEHORNETQSTORE: {
+            case USE_JOURNAL_STORE: {
                 if (choiceObjectStoreEncountered) {
                     throw unexpectedElement(reader);
                 }
                 choiceObjectStoreEncountered = true;
 
-                parseUsehornetqstore(reader, logStoreOperation, subsystemOperation);
-                subsystemOperation.get(CommonAttributes.USEHORNETQSTORE).set(true);
+                parseUseJournalstore(reader, logStoreOperation, subsystemOperation);
+                subsystemOperation.get(CommonAttributes.USE_JOURNAL_STORE).set(true);
                 break;
             }
             case JDBC_STORE: {

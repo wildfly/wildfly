@@ -8,5 +8,5 @@
     <coordinator-environment default-timeout="300"/>
     <object-store path="tx-object-store"/>
     <jts/>
-    <use-hornetq-store/>
+    <use-journal-store/>
 </subsystem>

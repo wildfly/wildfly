@@ -11,7 +11,7 @@
     <object-store path="${test.store.path:tx-object-store}" relative-to="${test.store.relative-to:jboss.server.data.dir}"/>
     <jts/>
     <!-- Can't use expressions here since the transformer checks -->
-    <use-hornetq-store enable-async-io="true"/>
+    <use-journal-store enable-async-io="true"/>
     <!-- Rejected in the older model
     <commit-markable-resources>
         <commit-markable-resource jndi-name="${test.jndi.name:java:/foo}">

@@ -166,6 +166,9 @@ public class TransactionExtension implements Extension {
 
         final ModelVersion version200 = ModelVersion.create(2, 0, 0);
         final TransformationDescription description200 = subsystemRoot200.build();
+        subsystemRoot200.getAttributeBuilder()
+                .addRename(TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE, CommonAttributes.USE_HORNETQ_STORE)
+                .addRename(TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO, CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO);
         TransformationDescription.Tools.register(description200, subsystem, version200);
 
 
@@ -177,9 +180,12 @@ public class TransactionExtension implements Extension {
         subsystemRoot.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
+                .addRejectCheck(RejectJournalStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 // Legacy name for enabling/disabling statistics
                 .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS)
+                // Legacy name for hornetq store
+                .addRename(TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE, CommonAttributes.USE_HORNETQ_STORE)
+                .addRename(TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO, CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 //Before 2.0.0 this value was not nillable in practise. Set it to 'false' if undefined.
                 .setValueConverter(ProcessIdUuidConverter.INSTANCE, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
 
@@ -263,12 +269,12 @@ public class TransactionExtension implements Extension {
         }
     }
 
-    private static class RejectHornetQStoreAsyncIOChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker {
-        static final RejectHornetQStoreAsyncIOChecker INSTANCE = new RejectHornetQStoreAsyncIOChecker();
+    private static class RejectJournalStoreAsyncIOChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker {
+        static final RejectJournalStoreAsyncIOChecker INSTANCE = new RejectJournalStoreAsyncIOChecker();
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return TransactionLogger.ROOT_LOGGER.transformHornetQStoreEnableAsyncIoMustBeTrue();
+            return TransactionLogger.ROOT_LOGGER.transformJournalStoreEnableAsyncIoMustBeTrue();
         }
 
         @Override
@@ -291,8 +297,8 @@ public class TransactionExtension implements Extension {
             //Will not get called if it was discarded
             if (!attributeValue.isDefined() || !attributeValue.asString().equals("true")) {
                 //If use-hornetq-store is undefined or false, don't reject
-                if (model.hasDefined(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName())) {
-                    return !model.get(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName()).asString().equals("false");
+                if (model.hasDefined(TransactionSubsystemRootResourceDefinition.USE_HORNETQ_STORE.getName())) {
+                    return !model.get(TransactionSubsystemRootResourceDefinition.USE_HORNETQ_STORE.getName()).asString().equals("false");
                 }
             }
             return false;
