@@ -42,6 +42,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -56,10 +57,13 @@ public class RemoteNamingTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar");
-        jar.addClasses(BindingEjb.class);
-                // grant necessary permissions
-        jar.addAsResource(createPermissionsXmlAsset(new JndiPermission("java:jboss/exported/-", "all"), new JndiPermission("java:jboss/exported", "all")), "META-INF/jboss-permissions.xml");
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar")
+                .addClasses(BindingEjb.class)
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.naming\n"), "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new JndiPermission("java:jboss/exported/test", "bind"),
+                        new JndiPermission("java:jboss/exported/context/test", "bind")),
+                        "permissions.xml");
 
         return jar;
     }

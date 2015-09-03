@@ -1,6 +1,9 @@
 package org.jboss.as.test.integration.naming.remote.multiple;
 
+import java.lang.reflect.ReflectPermission;
+import java.net.SocketPermission;
 import java.net.URL;
+import java.util.PropertyPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -13,7 +16,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import org.jboss.as.test.integration.security.common.Utils;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import org.jboss.remoting3.security.RemotingPermission;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -23,43 +29,66 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class MultipleClientRemoteJndiTestCase {
-	@ArquillianResource(RunRmiServlet.class)
-	@OperateOnDeployment("one")
-	private URL urlOne;
 
-	@ArquillianResource(RunRmiServlet.class)
-	@OperateOnDeployment("two")
-	private URL urlTwo;
+    @ArquillianResource(RunRmiServlet.class)
+    @OperateOnDeployment("one")
+    private URL urlOne;
 
-	private static final Package thisPackage = MultipleClientRemoteJndiTestCase.class.getPackage();
+    @ArquillianResource(RunRmiServlet.class)
+    @OperateOnDeployment("two")
+    private URL urlTwo;
 
-	@Deployment(name="one")
-	public static WebArchive deploymentOne() {
-		return ShrinkWrap.create(WebArchive.class, "one.war")
-				.addClasses(RunRmiServlet.class, MyObject.class)
-				.setWebXML(thisPackage, "web.xml")
-				.addAsManifestResource(thisPackage, "war-jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
-	}
-	@Deployment(name="two")
-	public static WebArchive deploymentTwo() {
-		return ShrinkWrap.create(WebArchive.class, "two.war")
-				.addClasses(RunRmiServlet.class, MyObject.class)
-				.setWebXML(thisPackage, "web.xml")
-				.addAsManifestResource(thisPackage, "war-jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
-	}
-	@Deployment(name="binder")
-	public static WebArchive deploymentThree() {
-		return ShrinkWrap.create(WebArchive.class, "binder.war")
-				.addClasses(BindRmiServlet.class, MyObject.class)
+    private static final Package thisPackage = MultipleClientRemoteJndiTestCase.class.getPackage();
+
+
+    @Deployment(name="one")
+    public static WebArchive deploymentOne() {
+        return ShrinkWrap.create(WebArchive.class, "one.war")
+                .addClasses(RunRmiServlet.class, MyObject.class)
+                .setWebXML(thisPackage, "web.xml")
+                .addAsManifestResource(thisPackage, "war-jboss-deployment-structure.xml", "jboss-deployment-structure.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new PropertyPermission("node0", "read"),
+                        new RemotingPermission("createEndpoint"),
+                        new RuntimePermission("createXnioWorker"),
+                        new RemotingPermission("addConnectionProvider"),
+                        new RemotingPermission("connect"),
+                        new SocketPermission(Utils.getDefaultHost(true), "accept,connect,listen,resolve"),
+                        new RuntimePermission("getClassLoader"),
+                        new RuntimePermission("accessDeclaredMembers"),
+                        new ReflectPermission("suppressAccessChecks")),
+                        "permissions.xml");
+    }
+
+    @Deployment(name="two")
+    public static WebArchive deploymentTwo() {
+        return ShrinkWrap.create(WebArchive.class, "two.war")
+                .addClasses(RunRmiServlet.class, MyObject.class)
+                .setWebXML(thisPackage, "web.xml")
+                .addAsManifestResource(thisPackage, "war-jboss-deployment-structure.xml", "jboss-deployment-structure.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new PropertyPermission("node0", "read"),
+                        new RemotingPermission("connect"),
+                        new SocketPermission(Utils.getDefaultHost(true), "accept,connect,listen,resolve"),
+                        new RuntimePermission("getClassLoader")),
+                        "permissions.xml");
+    }
+
+    @Deployment(name="binder")
+    public static WebArchive deploymentThree() {
+        return ShrinkWrap.create(WebArchive.class, "binder.war")
+                .addClasses(BindRmiServlet.class, MyObject.class)
                 .setWebXML(MultipleClientRemoteJndiTestCase.class.getPackage(), "web.xml")
-                .addAsResource(createPermissionsXmlAsset(new JndiPermission("java:jboss/exported/-", "all")), "META-INF/jboss-permissions.xml");
-	}
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.naming\n"), "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("java:jboss/exported/loc/stub", "bind")),
+                        "permissions.xml");
+    }
 
-	@Test
-	public void testLifeCycle() throws Exception {
-		String result1 = HttpRequest.get(urlOne.toExternalForm() + "RunRmiServlet", 1000, SECONDS);
-		assertEquals("Test", result1);
-		String result2 = HttpRequest.get(urlTwo.toExternalForm() + "RunRmiServlet", 1000, SECONDS);
-		assertEquals("Test", result2);
-	}
+    @Test
+    public void testLifeCycle() throws Exception {
+        String result1 = HttpRequest.get(urlOne.toExternalForm() + "RunRmiServlet", 1000, SECONDS);
+        assertEquals("Test", result1);
+        String result2 = HttpRequest.get(urlTwo.toExternalForm() + "RunRmiServlet", 1000, SECONDS);
+        assertEquals("Test", result2);
+    }
 }

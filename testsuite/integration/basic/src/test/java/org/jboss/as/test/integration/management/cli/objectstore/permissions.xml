@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<permissions version="7">
+    <permission>
+        <class-name>javax.management.MBeanPermission</class-name>
+        <name>com.arjuna.ats.arjuna.tools.osb.api.mbeans.RecoveryStoreBean#-[jboss.jta:name=store1,type=com.arjuna.ats.arjuna.tools.osb.api.mbeans.RecoveryStoreBean]</name>
+        <actions>registerMBean</actions>
+    </permission>
+</permissions>

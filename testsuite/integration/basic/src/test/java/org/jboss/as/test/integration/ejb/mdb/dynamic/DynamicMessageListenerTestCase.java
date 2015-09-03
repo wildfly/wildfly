@@ -43,10 +43,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.net.SocketPermission;
 import java.util.PropertyPermission;
 
 import static org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TtyCodes.TTY_Bright;
 import static org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TtyCodes.TTY_Reset;
+import org.jboss.as.test.integration.security.common.Utils;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertEquals;
@@ -77,8 +79,15 @@ public class DynamicMessageListenerTestCase {
                         .addPackages(true, TelnetResourceAdapter.class.getPackage(), TelnetListener.class.getPackage(), TelnetServer.class.getPackage()))
                 .addAsModule(create(JavaArchive.class, "mdb.jar")
                         .addClasses(MyMdb.class));
-        // the deployment uses PropertyEditorManager which needs this
-        ear.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/permissions.xml");
+
+        ear.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission("*", "read,write"),
+                new RuntimePermission("accessDeclaredMembers"),
+                new RuntimePermission("defineClassInPackage." + MyMdb.class.getPackage().getName()),
+                new RuntimePermission("getClassLoader"),
+                new SocketPermission(Utils.getDefaultHost(true), "accept,listen,resolve"),
+                new PropertyPermission("ts.timeout.factor", "read")),
+                "permissions.xml");
         return ear;
     }
 

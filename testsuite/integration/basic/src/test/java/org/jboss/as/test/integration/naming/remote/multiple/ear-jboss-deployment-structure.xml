@@ -1,15 +1,20 @@
 <?xml version="1.0"?>
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
-	<sub-deployment name="web.war">
-		<dependencies>
-			<module name="org.jboss.remote-naming" />
-			<module name="org.jboss.as.network" />
-		</dependencies>
-	</sub-deployment>
-	<sub-deployment name="ejb.jar">
-		<dependencies>
-			<module name="org.jboss.remote-naming" />
-			<module name="org.jboss.as.network" />
-		</dependencies>
-	</sub-deployment>
+    <deployment>
+        <dependencies>
+            <module name="org.jboss.remoting" />
+        </dependencies>
+    </deployment>
+    <sub-deployment name="web.war">
+        <dependencies>
+            <module name="org.jboss.remote-naming" />
+            <module name="org.jboss.as.network" />
+        </dependencies>
+    </sub-deployment>
+    <sub-deployment name="ejb.jar">
+        <dependencies>
+            <module name="org.jboss.remote-naming" />
+            <module name="org.jboss.as.network" />
+        </dependencies>
+    </sub-deployment>
 </jboss-deployment-structure>
