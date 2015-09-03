@@ -144,7 +144,7 @@ class ServerAdd extends AbstractAddStepHandler {
     public static final ServerAdd INSTANCE = new ServerAdd();
 
     private ServerAdd() {
-        super(ServerDefinition.ATTRIBUTES);
+        super(ACTIVEMQ_SERVER_CAPABILITY, ServerDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -152,13 +152,6 @@ class ServerAdd extends AbstractAddStepHandler {
         ActiveMQServerResource resource = new ActiveMQServerResource();
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
         return resource;
-    }
-
-    @Override
-    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
-
-        context.registerCapability(ACTIVEMQ_SERVER_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue()), null);
     }
 
     @Override

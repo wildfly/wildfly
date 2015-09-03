@@ -86,7 +86,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             }
         }
     }
-
+    //todo remove this whole method once we have WildFly Core CR1 in.
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
@@ -94,7 +94,15 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         for (Capability capability : this.descriptor.getCapabilities()) {
             context.registerCapability(capability.getRuntimeCapability(address), null);
         }
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition ad : attributes) {
+            if (model.hasDefined(ad.getName()) || ad.hasCapabilityRequirements()) {
+                ad.addCapabilityRequirements(context, model.get(ad.getName()));
+            }
+        }
+        //don't call super as we already register everything here
+        //super.recordCapabilitiesAndRequirements(context, operation, resource);
     }
 
     @Override
