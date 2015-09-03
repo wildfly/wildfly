@@ -43,27 +43,8 @@ import org.jboss.tm.TxUtils;
  */
 public class TransactionUtil {
 
-    private static volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-    private static volatile TransactionManager transactionManager;
-
-    public static void setTransactionManager(TransactionManager tm) {
-        if (transactionManager == null) {
-            transactionManager = tm;
-        }
-    }
-
-    public static TransactionManager getTransactionManager() {
-        return transactionManager;
-    }
-
-    public static void setTransactionSynchronizationRegistry(TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
-        if (TransactionUtil.transactionSynchronizationRegistry == null) {
-            TransactionUtil.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
-        }
-    }
-
-    public static boolean isInTx() {
-        Transaction tx = getTransaction();
+    public static boolean isInTx(TransactionManager transactionManager) {
+        Transaction tx = getTransaction(transactionManager);
         if (tx == null || !TxUtils.isActive(tx))
             return false;
         return true;
@@ -75,26 +56,21 @@ public class TransactionUtil {
      * @param puScopedName
      * @return
      */
-    public static EntityManager getTransactionScopedEntityManager(String puScopedName) {
-        return getEntityManagerInTransactionRegistry(puScopedName);
+    public static EntityManager getTransactionScopedEntityManager(String puScopedName, TransactionSynchronizationRegistry tsr) {
+        return getEntityManagerInTransactionRegistry(puScopedName, tsr);
     }
 
-    public static void registerSynchronization(EntityManager entityManager, String puScopedName) {
-        getTransactionSynchronizationRegistry().registerInterposedSynchronization(new SessionSynchronization(entityManager, puScopedName));
+    public static void registerSynchronization(EntityManager entityManager, String puScopedName, TransactionSynchronizationRegistry tsr) {
+        tsr.registerInterposedSynchronization(new SessionSynchronization(entityManager, puScopedName));
     }
 
-    public static Transaction getTransaction() {
+    public static Transaction getTransaction(TransactionManager transactionManager) {
         try {
             return transactionManager.getTransaction();
         } catch (SystemException e) {
             throw JpaLogger.ROOT_LOGGER.errorGettingTransaction(e);
         }
     }
-
-    public static TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
-        return transactionSynchronizationRegistry;
-    }
-
 
     private static String currentThread() {
         return Thread.currentThread().getName();
@@ -112,8 +88,8 @@ public class TransactionUtil {
     }
 
 
-    private static EntityManager getEntityManagerInTransactionRegistry(String scopedPuName) {
-        return (EntityManager)getTransactionSynchronizationRegistry().getResource(scopedPuName);
+    private static EntityManager getEntityManagerInTransactionRegistry(String scopedPuName, TransactionSynchronizationRegistry tsr) {
+        return (EntityManager)tsr.getResource(scopedPuName);
     }
 
     /**
@@ -123,8 +99,8 @@ public class TransactionUtil {
      * @param scopedPuName
      * @param entityManager
      */
-    public static void putEntityManagerInTransactionRegistry(String scopedPuName, EntityManager entityManager) {
-        getTransactionSynchronizationRegistry().putResource(scopedPuName, entityManager);
+    public static void putEntityManagerInTransactionRegistry(String scopedPuName, EntityManager entityManager, TransactionSynchronizationRegistry tsr) {
+        tsr.putResource(scopedPuName, entityManager);
     }
 
     private static class SessionSynchronization implements Synchronization {
