@@ -58,7 +58,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -68,7 +67,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-3532")
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(RemoteFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-failover-test";
@@ -78,6 +76,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static final long INVOCATION_WAIT = TimeoutUtil.adjust(10);
+    public static final int SHUTDOWN_TIMEOUT = TimeoutUtil.adjust(15);
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -158,7 +157,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                 Assert.assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
             }
 
-            stop(CONTAINER_2);
+            stop(SHUTDOWN_TIMEOUT, CONTAINER_2);
 
             for (int i = 0; i < COUNT; ++i) {
                 Result<Integer> result = bean.increment();
@@ -243,7 +242,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                 Assert.assertEquals(String.valueOf(i), target, result.getNode());
             }
 
-            stop(this.findContainer(target));
+            stop(SHUTDOWN_TIMEOUT, this.findContainer(target));
 
             result = bean.increment();
             // Bean should failover to other node
@@ -315,7 +314,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                 future = executor.scheduleWithFixedDelay(new IncrementTask(bean, count, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
                 latch.await();
 
-                stop(this.findContainer(target));
+                stop(SHUTDOWN_TIMEOUT, this.findContainer(target));
 
                 future.cancel(false);
                 try {
@@ -345,7 +344,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                 future = executor.scheduleWithFixedDelay(new LookupTask(directory, SlowToDestroyStatefulIncrementorBean.class, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
                 latch.await();
 
-                stop(this.findContainer(target));
+                stop(SHUTDOWN_TIMEOUT, this.findContainer(target));
 
                 future.cancel(false);
                 try {
