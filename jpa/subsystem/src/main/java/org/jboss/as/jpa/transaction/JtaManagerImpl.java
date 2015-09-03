@@ -34,19 +34,21 @@ import org.jboss.as.jpa.spi.JtaManager;
  */
 public class JtaManagerImpl implements JtaManager {
 
-    private static final JtaManagerImpl impl = new JtaManagerImpl();
+    private final TransactionManager transactionManager;
+    private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
 
-    public static JtaManager getInstance() {
-        return impl;
+    public JtaManagerImpl(TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        this.transactionManager = transactionManager;
+        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
     }
 
     @Override
     public TransactionSynchronizationRegistry getSynchronizationRegistry() {
-        return TransactionUtil.getTransactionSynchronizationRegistry();
+        return transactionSynchronizationRegistry;
     }
 
     @Override
     public TransactionManager locateTransactionManager() {
-        return TransactionUtil.getTransactionManager();
+        return transactionManager;
     }
 }
