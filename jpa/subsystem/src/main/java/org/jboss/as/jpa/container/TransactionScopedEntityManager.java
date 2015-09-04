@@ -159,7 +159,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
                 ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
                         TransactionUtil.getTransaction(transactionManager).toString());
             }
-            TransactionUtil.registerSynchronization(entityManager, scopedPuName, transactionSynchronizationRegistry);
+            TransactionUtil.registerSynchronization(entityManager, scopedPuName, transactionSynchronizationRegistry, transactionManager);
             TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager, transactionSynchronizationRegistry);
         }
         else {

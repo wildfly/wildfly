@@ -97,8 +97,6 @@ public class JPAService implements Service<Void> {
         JPAService jpaService = new JPAService();
         setDefaultDataSourceName(defaultDataSourceName);
         setDefaultExtendedPersistenceInheritance(defaultExtendedPersistenceInheritance);
-
-
         target.addService(SERVICE_NAME, jpaService)
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .addDependency(JPAUserTransactionListenerService.SERVICE_NAME)
