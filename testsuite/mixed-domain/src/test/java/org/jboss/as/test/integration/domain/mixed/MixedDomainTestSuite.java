@@ -52,11 +52,24 @@ public class MixedDomainTestSuite {
      * @param testClass the test/suite class
      */
     protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
-        final Version.AsVersion version = getVersion(testClass);
         if (support == null) {
+            final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
+            return getSupport(testClass, copiedDomainXml, true);
+        } else {
+            return support;
+        }
+    }
+
+    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, boolean adjustDomain) {
+        if (support == null) {
+            final Version.AsVersion version = getVersion(testClass);
             final MixedDomainTestSupport testSupport;
             try {
-                testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);
+                if (domainConfig != null) {
+                    testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, adjustDomain);
+                } else {
+                    testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
