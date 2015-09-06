@@ -601,10 +601,8 @@ public class WebMigrateOperation implements OperationStepHandler {
         if (newAddOp.hasDefined(WebAccessLogDefinition.RESOLVE_HOSTS.getName())) {
             warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.RESOLVE_HOSTS.getName(), pathAddress(newAddOp.get(ADDRESS))));
         }
-        //TODO: extended access log
-        if (newAddOp.hasDefined(WebAccessLogDefinition.EXTENDED.getName())) {
-            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.EXTENDED.getName(), pathAddress(newAddOp.get(ADDRESS))));
-        }
+
+        add.get(Constants.EXTENDED).set(newAddOp.get(WebAccessLogDefinition.EXTENDED.getName()).clone());
 
         ModelNode directory = findResource(pathAddress(pathAddress(newAddOp.get(ADDRESS)), WebExtension.DIRECTORY_PATH), legacyAddOps);
         if(directory != null){

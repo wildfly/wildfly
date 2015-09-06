@@ -27,7 +27,9 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -279,7 +281,7 @@ public interface UndertowLogger extends BasicLogger {
     StartException failedToCreatePersistentSessionDir(File baseDir);
 
     @Message(id = 62, value = "Could not create log directory: %s")
-    StartException couldNotCreateLogDirectory(File directory);
+    StartException couldNotCreateLogDirectory(Path directory, @Cause IOException e);
 
     @Message(id = 63, value = "Could not find the port number listening for protocol %s")
     IllegalStateException noPortListeningForProtocol(final String protocol);

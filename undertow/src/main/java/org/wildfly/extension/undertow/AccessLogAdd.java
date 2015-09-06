@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.predicate.Predicate;
+import io.undertow.predicate.Predicates;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -57,13 +59,21 @@ class AccessLogAdd extends AbstractAddStepHandler {
         final String fileSuffix = AccessLogDefinition.SUFFIX.resolveModelAttribute(context, model).asString();
         final boolean useServerLog = AccessLogDefinition.USE_SERVER_LOG.resolveModelAttribute(context, model).asBoolean();
         final boolean rotate = AccessLogDefinition.ROTATE.resolveModelAttribute(context, model).asBoolean();
+        final boolean extended = AccessLogDefinition.EXTENDED.resolveModelAttribute(context, model).asBoolean();
         final ModelNode relativeToNode = AccessLogDefinition.RELATIVE_TO.resolveModelAttribute(context, model);
         final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
+
+        Predicate predicate = null;
+        ModelNode predicateNode = AccessLogDefinition.PREDICATE.resolveModelAttribute(context, model);
+        if(predicateNode.isDefined()) {
+            predicate = Predicates.parse(predicateNode.asString(), getClass().getClassLoader());
+        }
+
         final AccessLogService service;
         if (useServerLog) {
-            service = new AccessLogService(pattern);
+            service = new AccessLogService(pattern, extended, predicate);
         } else {
-            service = new AccessLogService(pattern, directory, relativeTo, filePrefix, fileSuffix, rotate);
+            service = new AccessLogService(pattern, directory, relativeTo, filePrefix, fileSuffix, rotate, extended, predicate);
         }
 
         final String serverName = serverAddress.getLastElement().getValue();
