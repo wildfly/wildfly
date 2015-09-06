@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
@@ -35,6 +37,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -51,7 +54,7 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CHUNK_SIZE("chunk-size", ModelType.INT, new ModelNode(10000)),
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(60000L)),
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(4))),
         ;
         private final AttributeDefinition definition;
 
@@ -92,8 +95,10 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
+
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            parent.addChildRedirection(PATH, LEGACY_PATH);
+            builder.getAttributeBuilder().setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.TIMEOUT.getDefinition()), Attribute.TIMEOUT.getDefinition());
         }
     }
 
