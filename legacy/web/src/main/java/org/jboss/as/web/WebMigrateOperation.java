@@ -659,6 +659,9 @@ public class WebMigrateOperation implements OperationStepHandler {
         final PathAddress newAddress;
         final ModelNode addConnector;
         switch (protocol) {
+            case "org.apache.coyote.http11.Http11Protocol":
+            case "org.apache.coyote.http11.Http11NioProtocol":
+            case "org.apache.coyote.http11.Http11AprProtocol":
             case "HTTP/1.1":
                 if (scheme == null || scheme.equals("http")) {
                     newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTP_LISTENER, address.getLastElement().getValue()));
@@ -695,6 +698,8 @@ public class WebMigrateOperation implements OperationStepHandler {
                     addConnector = null;
                 }
                 break;
+            case "org.apache.coyote.ajp.AjpAprProtocol":
+            case "org.apache.coyote.ajp.AjpProtocol":
             case "AJP/1.3":
                 newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.AJP_LISTENER, address.getLastElement().getValue()));
                 addConnector = createAddOperation(newAddress);
