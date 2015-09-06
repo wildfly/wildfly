@@ -213,4 +213,5 @@ public interface Constants {
     String PROACTIVE_AUTHENTICATION = "proactive-authentication";
     String SESSION_ID_LENGTH = "session-id-length";
     String EXTENDED = "extended";
+    String MAX_BUFFERED_REQUEST_SIZE = "max-buffered-request-size";
 }
