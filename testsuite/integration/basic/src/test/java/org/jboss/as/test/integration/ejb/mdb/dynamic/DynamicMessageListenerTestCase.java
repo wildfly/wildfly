@@ -81,12 +81,14 @@ public class DynamicMessageListenerTestCase {
                         .addClasses(MyMdb.class));
 
         ear.addAsManifestResource(createPermissionsXmlAsset(
+                // Cmd (TelnetServer package) uses PropertyEditorManager#registerEditor during static initialization
                 new PropertyPermission("*", "read,write"),
+                // TelnetResourceAdapter#endpointActivation instantiates new end point using reflection
                 new RuntimePermission("accessDeclaredMembers"),
                 new RuntimePermission("defineClassInPackage." + MyMdb.class.getPackage().getName()),
                 new RuntimePermission("getClassLoader"),
-                new SocketPermission(Utils.getDefaultHost(true), "accept,listen,resolve"),
-                new PropertyPermission("ts.timeout.factor", "read")),
+                // TelnetServer binds socket and accepts connections
+                new SocketPermission(Utils.getDefaultHost(true), "accept,listen,resolve")),
                 "permissions.xml");
         return ear;
     }

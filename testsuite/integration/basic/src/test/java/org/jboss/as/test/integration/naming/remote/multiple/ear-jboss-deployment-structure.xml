@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
     <deployment>
+        <!--used to grant RemotingPermission-->
         <dependencies>
             <module name="org.jboss.remoting" />
         </dependencies>

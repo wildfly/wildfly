@@ -1,6 +1,5 @@
 package org.jboss.as.test.integration.naming.remote.multiple;
 
-import java.lang.reflect.ReflectPermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.PropertyPermission;
@@ -48,15 +47,12 @@ public class MultipleClientRemoteJndiTestCase {
                 .setWebXML(thisPackage, "web.xml")
                 .addAsManifestResource(thisPackage, "war-jboss-deployment-structure.xml", "jboss-deployment-structure.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
+                        // RunRmiServlet reads node0 system property
                         new PropertyPermission("node0", "read"),
-                        new RemotingPermission("createEndpoint"),
-                        new RuntimePermission("createXnioWorker"),
-                        new RemotingPermission("addConnectionProvider"),
+                        // RunRmiServlet looks up for MyObject using connection through http-remoting Endpoint
                         new RemotingPermission("connect"),
                         new SocketPermission(Utils.getDefaultHost(true), "accept,connect,listen,resolve"),
-                        new RuntimePermission("getClassLoader"),
-                        new RuntimePermission("accessDeclaredMembers"),
-                        new ReflectPermission("suppressAccessChecks")),
+                        new RuntimePermission("getClassLoader")),
                         "permissions.xml");
     }
 
@@ -67,7 +63,9 @@ public class MultipleClientRemoteJndiTestCase {
                 .setWebXML(thisPackage, "web.xml")
                 .addAsManifestResource(thisPackage, "war-jboss-deployment-structure.xml", "jboss-deployment-structure.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
+                        // RunRmiServlet reads node0 system property
                         new PropertyPermission("node0", "read"),
+                        // RunRmiServlet looks up for MyObject using connection through http-remoting Endpoint
                         new RemotingPermission("connect"),
                         new SocketPermission(Utils.getDefaultHost(true), "accept,connect,listen,resolve"),
                         new RuntimePermission("getClassLoader")),
@@ -79,7 +77,9 @@ public class MultipleClientRemoteJndiTestCase {
         return ShrinkWrap.create(WebArchive.class, "binder.war")
                 .addClasses(BindRmiServlet.class, MyObject.class)
                 .setWebXML(MultipleClientRemoteJndiTestCase.class.getPackage(), "web.xml")
+                // dependency to org.jboss.as.naming module is used to grant JndiPermission
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.naming\n"), "MANIFEST.MF")
+                // BindRmiServlet binds java:jboss/exported/loc/stub
                 .addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("java:jboss/exported/loc/stub", "bind")),
                         "permissions.xml");
     }
