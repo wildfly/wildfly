@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -39,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
@@ -49,10 +51,15 @@ import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
+import org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition;
+import org.jboss.as.clustering.jgroups.subsystem.StackResourceDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.security.Constants;
 import org.jboss.as.security.SecurityExtension;
@@ -65,6 +72,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.xnio.IoUtils;
@@ -130,7 +138,7 @@ public abstract class SimpleMixedDomainTest  {
         final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
         final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
         try {
-            PathAddress  subsystem = PathAddress.pathAddress(PathElement.pathElement(PROFILE, ACTIVE_PROFILE), PathElement.pathElement(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME));
+            PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(PROFILE, ACTIVE_PROFILE), PathElement.pathElement(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME));
             PathAddress webPolicy = subsystem.append(Constants.SECURITY_DOMAIN, "jboss-web-policy").append(Constants.AUTHORIZATION, Constants.CLASSIC);
             ModelNode options = new ModelNode();
             options.add("a", "b");
@@ -178,6 +186,35 @@ public abstract class SimpleMixedDomainTest  {
                 IoUtils.safeClose(masterClient);
             }
         }
+    }
+
+    @Test
+    @Ignore
+    public void testJgroupsTransformers() throws Exception {
+        final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
+
+        // Check composite operation
+        final ModelNode compositeOp = new ModelNode();
+        compositeOp.get(OP).set(COMPOSITE);
+        compositeOp.get(OP_ADDR).setEmptyList();
+        compositeOp.get(STEPS).add(createProtocolPutPropertyOperation("tcp", "MPING", "send_on_all_interfaces", "true"));
+        compositeOp.get(STEPS).add(createProtocolPutPropertyOperation("tcp", "MPING", "receive_on_all_interfaces", "true"));
+
+        ModelNode masterResource = DomainTestUtils.executeForResult(compositeOp, masterClient);
+    }
+
+    private static ModelNode createProtocolPutPropertyOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
+        PathAddress address = PathAddress.pathAddress(PathElement.pathElement(PROFILE, ACTIVE_PROFILE))
+                .append(JGroupsSubsystemResourceDefinition.PATH)
+                .append(StackResourceDefinition.pathElement(stackName))
+                .append(ProtocolResourceDefinition.pathElement(protocolName));
+
+        ModelNode operation = Util.createOperation(MapOperations.MAP_PUT_DEFINITION, address);
+        operation.get(ModelDescriptionConstants.NAME).set("properties");
+        operation.get("key").set(propertyName);
+        operation.get(ModelDescriptionConstants.VALUE).set(propertyValue);
+
+        return operation;
     }
 
     private Set<ModelNode> getAllChildren(ModelNode modules) {

@@ -69,7 +69,7 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static PathElement pathElement(String name) {
+    public static PathElement pathElement(String name) {
         return PathElement.pathElement("protocol", name);
     }
 

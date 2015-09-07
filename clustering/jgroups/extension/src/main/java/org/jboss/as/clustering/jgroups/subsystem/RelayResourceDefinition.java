@@ -50,7 +50,7 @@ public class RelayResourceDefinition extends ProtocolResourceDefinition {
     static final PathElement LEGACY_PATH = pathElement("RELAY");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static PathElement pathElement(String name) {
+    public static PathElement pathElement(String name) {
         return PathElement.pathElement("relay", name);
     }
 
