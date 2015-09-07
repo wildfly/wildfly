@@ -41,7 +41,6 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class DomainAdjuster620 extends DomainAdjuster630 {
-    //Adjustments are the same as for 6.2.0
 
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {

@@ -204,12 +204,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                         return attributeValue.equals(new ModelNode(false));
                     }
                 }, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end()
-                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
-                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
-                .end()
-                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
-                .end();
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end();
     }
 
     static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
