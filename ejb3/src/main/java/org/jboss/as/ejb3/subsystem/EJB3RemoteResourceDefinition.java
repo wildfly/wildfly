@@ -109,7 +109,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         RemoteConnectorChannelCreationOptionResource.registerTransformers_1_1_0(builder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH));
     }
 
-    static void registerTransformers_1_2_0(ResourceTransformationDescriptionBuilder parent) {
+    static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder remoteService = parent.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH);
         remoteService.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME)),CLIENT_MAPPINGS_CLUSTER_NAME)

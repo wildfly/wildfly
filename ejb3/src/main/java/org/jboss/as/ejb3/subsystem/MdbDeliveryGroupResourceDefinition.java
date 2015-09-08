@@ -68,15 +68,17 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(ACTIVE, null,
                 new AbstractWriteAttributeHandler<Void>() {
-                    @Override protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation,
-                            String attributeName, ModelNode resolvedValue, ModelNode currentValue,
-                            HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+                    @Override
+                    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation,
+                                                           String attributeName, ModelNode resolvedValue, ModelNode currentValue,
+                                                           HandbackHolder<Void> handbackHolder) throws OperationFailedException {
                         updateDeliveryGroup(context, currentValue, resolvedValue);
                         return false;
                     }
 
-                    @Override protected void revertUpdateToRuntime(OperationContext context, ModelNode operation,
-                            String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback)
+                    @Override
+                    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation,
+                                                         String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback)
                             throws OperationFailedException {
                         updateDeliveryGroup(context, valueToRevert, valueToRestore);
                     }
@@ -92,7 +94,7 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
                 });
     }
 
-    static void registerTransformers_1_2_0(ResourceTransformationDescriptionBuilder parent) {
+    static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder mdbDeliveryGroup = parent.addChildResource(PathElement.pathElement(EJB3SubsystemModel.MDB_DELIVERY_GROUP));
         mdbDeliveryGroup.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ACTIVE)

@@ -305,11 +305,11 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         //builder.getAttributeBuilder().setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME);
 
         PassivationStoreResourceDefinition.registerTransformers_1_2_1_and_1_3_0(builder);
+        EJB3RemoteResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
+        MdbDeliveryGroupResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
         builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
         if (version.equals(VERSION_1_2_1)) {
             TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
-            EJB3RemoteResourceDefinition.registerTransformers_1_2_0(builder);
-            MdbDeliveryGroupResourceDefinition.registerTransformers_1_2_0(builder);
         } else if (version.equals(VERSION_1_3_0)) {
             TimerServiceResourceDefinition.registerTransformers_1_3_0(builder);
         }
