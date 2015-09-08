@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ClassFileTransformerTestCase {
 
-    private static final String ARCHIVE_NAME = "jpa_SecondLevelCacheTestCase";
+    private static final String ARCHIVE_NAME = "jpa_ClassFileTransformerTestCase";
 
     @Deployment
     public static Archive<?> deploy() {
