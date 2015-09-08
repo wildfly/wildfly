@@ -44,7 +44,6 @@ import org.junit.Assert;
 
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class MixedDomainTestSupport extends DomainTestSupport {
@@ -57,7 +56,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String masterConfig, String slaveConfig,
                                    String jbossHome, boolean adjustDomain)
             throws Exception {
-        super(testClass, domainConfig, masterConfig, slaveConfig,  new WildFlyManagedConfiguration(), new WildFlyManagedConfiguration(jbossHome));
+        super(testClass, domainConfig, masterConfig, slaveConfig, new WildFlyManagedConfiguration(), new WildFlyManagedConfiguration(jbossHome));
         this.version = version;
         this.adjustDomain = adjustDomain;
     }

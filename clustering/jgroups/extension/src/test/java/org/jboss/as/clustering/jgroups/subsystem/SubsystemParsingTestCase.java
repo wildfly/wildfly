@@ -95,11 +95,11 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
-    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
+    protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr");
     }
 
-    /*
+    /**
      *  Create a collection of resources in the test which are not removed by a "remove" command
      *   (i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*)
      *

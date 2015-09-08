@@ -84,7 +84,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
     }
 
-    /*
+    /**
      * Tests the ability of the /subsystem=jgroups/stack=X:add() operation
      * to correctly process the optional TRANSPORT and PROTOCOLS parameters.
      */

@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap630;
 
-import static org.jboss.as.controller.operations.common.Util.createAddOperation;
-import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
-import static org.jboss.as.controller.operations.common.Util.getUndefineAttributeOperation;
 import static org.jboss.as.controller.operations.common.Util.getWriteAttributeOperation;
 
 import java.util.ArrayList;
@@ -46,8 +43,6 @@ public class DomainAdjuster630 extends DomainAdjuster640 {
         List<ModelNode> list = super.adjustForVersion(client, profileAddress);
 
 //        list.addAll(adjustInfinispan(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
-//        list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
-
 
         return list;
     }
@@ -64,7 +59,7 @@ public class DomainAdjuster630 extends DomainAdjuster640 {
                 subsystem.append("cache-container", "server")));
         list.add(setStatisticsEnabledTrue(
                 subsystem.append("cache-container", "server").append("replicated-cache", "default")));
-        list.add(getWriteAttributeOperation(subsystem.append("cache-container", "server").append("transport", "TRANSPORT"), "stack", new ModelNode("udp ")));
+        list.add(getWriteAttributeOperation(subsystem.append("cache-container", "server").append("transport", "TRANSPORT"), "stack", new ModelNode("udp")));
         list.add(setStatisticsEnabledTrue(
                 subsystem.append("cache-container", "web")));
         list.add(setStatisticsEnabledTrue(
@@ -83,61 +78,6 @@ public class DomainAdjuster630 extends DomainAdjuster640 {
                 subsystem.append("cache-container", "hibernate").append("replicated-cache", "timestamps")));
         return list;
     }
-
-
-
-
-    private List<ModelNode> adjustJGroups(final PathAddress subsystem) throws Exception {
-        final List<ModelNode> list = new ArrayList<>();
-        //default-channel is not understood
-        list.add(
-                getUndefineAttributeOperation(
-                        subsystem, "default-channel"));
-        //In fact channels don't work
-        list.add(createRemoveOperation(subsystem.append("channel", "ee")));
-
-        // pbcast.NAKACK2 does not exist, use pbcast.NAKACK instead
-        // UNICAST3 does not exist, use UNICAST2 instead
-        //All this code is to remove and re-add the protocols including the rename to preserve the order
-        //TODO once we support indexed adds, use those instead
-        //udp
-        PathAddress udp = subsystem.append("stack", "udp");
-        list.add(createRemoveOperation(udp.append("protocol", "pbcast.NAKACK2")));
-        list.add(createRemoveOperation(udp.append("protocol", "UNICAST3")));
-        list.add(createRemoveOperation(udp.append("protocol", "pbcast.STABLE")));
-        list.add(createRemoveOperation(udp.append("protocol", "pbcast.GMS")));
-        list.add(createRemoveOperation(udp.append("protocol", "UFC")));
-        list.add(createRemoveOperation(udp.append("protocol", "MFC")));
-        list.add(createRemoveOperation(udp.append("protocol", "FRAG2")));
-        list.add(createAddOperation(udp.append("protocol", "pbcast.NAKACK")));
-        list.add(createAddOperation(udp.append("protocol", "UNICAST2")));
-        list.add(createAddOperation(udp.append("protocol", "pbcast.STABLE")));
-        list.add(createAddOperation(udp.append("protocol", "pbcast.GMS")));
-        list.add(createAddOperation(udp.append("protocol", "UFC")));
-        list.add(createAddOperation(udp.append("protocol", "MFC")));
-        list.add(createAddOperation(udp.append("protocol", "FRAG2")));
-        list.add(createAddOperation(udp.append("protocol", "RSVP")));
-
-        //udp
-        PathAddress tcp = subsystem.append("stack", "tcp");
-        list.add(createRemoveOperation(tcp.append("protocol", "pbcast.NAKACK2")));
-        list.add(createRemoveOperation(tcp.append("protocol", "UNICAST3")));
-        list.add(createRemoveOperation(tcp.append("protocol", "pbcast.STABLE")));
-        list.add(createRemoveOperation(tcp.append("protocol", "pbcast.GMS")));
-        list.add(createRemoveOperation(tcp.append("protocol", "MFC")));
-        list.add(createRemoveOperation(tcp.append("protocol", "FRAG2")));
-        list.add(createAddOperation(tcp.append("protocol", "pbcast.NAKACK")));
-        list.add(createAddOperation(tcp.append("protocol", "UNICAST2")));
-        list.add(createAddOperation(tcp.append("protocol", "pbcast.STABLE")));
-        list.add(createAddOperation(tcp.append("protocol", "pbcast.GMS")));
-        list.add(createAddOperation(tcp.append("protocol", "UFC")));
-        list.add(createAddOperation(tcp.append("protocol", "FRAG2")));
-        list.add(createAddOperation(tcp.append("protocol", "RSVP")));
-
-        return list;
-    }
-
-
 
     private ModelNode setStatisticsEnabledTrue(final PathAddress addr) {
         return getWriteAttributeOperation(addr, "statistics-enabled", true);
