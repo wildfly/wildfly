@@ -93,17 +93,23 @@ public class HTTPSchemeServerAuthModule implements ServerAuthModule {
                     break;
                 }
             }
+
             if (!success) {
-                for (AuthenticationMechanism mechanism : mechanisms) {
-                    AuthenticationMechanism.ChallengeResult challengeResult = mechanism.sendChallenge(exchange, securityContext);
-                    if (challengeResult.getDesiredResponseCode() != null) {
-                        exchange.setResponseCode(challengeResult.getDesiredResponseCode());
+                String mandatory = (String) messageInfo.getMap().get("javax.security.auth.message.MessagePolicy.isMandatory");
+                if(mandatory != null && mandatory.toLowerCase().equals("false")) {
+                    return SUCCESS;
+                } else {
+                    for (AuthenticationMechanism mechanism : mechanisms) {
+                        AuthenticationMechanism.ChallengeResult challengeResult = mechanism.sendChallenge(exchange, securityContext);
+                        if (challengeResult.getDesiredResponseCode() != null) {
+                            exchange.setResponseCode(challengeResult.getDesiredResponseCode());
+                        }
+                        if (exchange.isResponseComplete()) {
+                            break;
+                        }
                     }
-                    if(exchange.isResponseComplete()) {
-                        break;
-                    }
+                    return SEND_CONTINUE;
                 }
-                return SEND_CONTINUE;
             }
         } catch (Exception e) {
             UndertowLogger.ROOT_LOGGER.debug(e);
