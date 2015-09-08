@@ -21,7 +21,11 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
 
@@ -129,7 +133,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         List<ModelNode> results;
 
         // Check operations on /transport=*
-        executeOpInBothControllersWithAttachments(services, version, getTransportUndefinePropertiesOperation("maximal", "MPING"));
+        executeOpInBothControllersWithAttachments(services, version, getTransportUndefinePropertiesOperation("maximal", "TCP"));
 
         executeOpInBothControllersWithAttachments(services, version, getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "true"));
         results = executeOpInBothControllers(services, version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
@@ -155,6 +159,27 @@ public class TransformersTestCase extends OperationTestCaseBase {
         Assert.assertEquals(results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
 
         executeOpInBothControllersWithAttachments(services, version, getProtocolClearPropertiesOperation("maximal", "MPING"));
+
+// org.jboss.as.subsystem.test.MainKernelServicesImpl does not behave correctly:
+//
+//        In a real domain the operation and transformation will happen in one call to the controller,
+//        in the subsystem test, the attachment part was bolted on and we do two calls,
+//        which is why we need to test this currently in the mixed-domain part.
+//
+//        // Check composite operation
+//        final ModelNode composite = new ModelNode();
+//        composite.get(OP).set(COMPOSITE);
+//        composite.get(OP_ADDR).setEmptyList();
+//        composite.get(STEPS).add(getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "false"));
+//        composite.get(STEPS).add(getProtocolPutPropertyOperation("maximal", "MPING", "receive_on_all_interfaces", "false"));
+//        executeOpInBothControllersWithAttachments(services, version, composite);
+//
+//        // Reread values back
+//        results = executeOpInBothControllers(services, version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
+//        Assert.assertEquals(results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
+//
+//        results = executeOpInBothControllers(services, version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
+//        Assert.assertEquals(results.get(0).get(ModelDescriptionConstants.RESULT), results.get(1).get(ModelDescriptionConstants.RESULT));
 
     }
 

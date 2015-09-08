@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.clustering.controller.transform.PreviousAttributeValueOperationContextAttachment;
+import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -54,7 +54,12 @@ public class ReloadRequiredWriteAttributeHandler extends org.jboss.as.controller
 
         if (!context.isBooting()) {
             TransformerOperationAttachment attachment = TransformerOperationAttachment.getOrCreate(context);
-            attachment.attachIfAbsent(PreviousAttributeValueOperationContextAttachment.KEY, new PreviousAttributeValueOperationContextAttachment(oldValue.clone()));
+            InitialAttributeValueOperationContextAttachment valuesAttachment = attachment.getAttachment(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT);
+            if (valuesAttachment == null) {
+                valuesAttachment = new InitialAttributeValueOperationContextAttachment();
+                attachment.attach(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT, valuesAttachment);
+            }
+            valuesAttachment.putIfAbsentInitialValue(Operations.getPathAddress(operation), attributeName, oldValue);
         }
     }
 

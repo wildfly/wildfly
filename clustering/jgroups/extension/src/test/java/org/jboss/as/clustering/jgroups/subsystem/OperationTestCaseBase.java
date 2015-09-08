@@ -150,8 +150,8 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapClearOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES);
     }
 
-    protected static ModelNode getTransportUndefinePropertiesOperation(String stackName, String protocolName) {
-        return Operations.createUndefineAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    protected static ModelNode getTransportUndefinePropertiesOperation(String stackName, String type) {
+        return Operations.createUndefineAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES);
     }
 
     /**

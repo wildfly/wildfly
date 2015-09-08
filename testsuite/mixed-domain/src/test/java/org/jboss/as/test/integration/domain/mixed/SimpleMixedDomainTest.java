@@ -72,7 +72,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.xnio.IoUtils;
@@ -189,7 +188,6 @@ public abstract class SimpleMixedDomainTest  {
     }
 
     @Test
-    @Ignore
     public void testJgroupsTransformers() throws Exception {
         final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
 

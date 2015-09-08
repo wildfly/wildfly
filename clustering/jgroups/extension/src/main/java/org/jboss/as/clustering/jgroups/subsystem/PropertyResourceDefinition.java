@@ -34,7 +34,7 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
-import org.jboss.as.clustering.controller.transform.PreviousAttributeValueOperationContextAttachment;
+import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
 import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleReadAttributeOperationTransformer;
@@ -231,20 +231,20 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
         public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
             if (operation.get(ModelDescriptionConstants.NAME).asString().equals(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName())) {
 
-                PreviousAttributeValueOperationContextAttachment attachment = context.getAttachment(PreviousAttributeValueOperationContextAttachment.KEY);
+                InitialAttributeValueOperationContextAttachment attachment = context.getAttachment(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT);
                 assert attachment != null;
 
-                ModelNode oldValue = attachment.getPreviousValue();
-                ModelNode newValue = context.readResourceFromRoot(address).getModel().get(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+                ModelNode initialValue = attachment.getInitialValue(address, Operations.getAttributeName(operation));
+                ModelNode newValue = context.readResourceFromRoot(address).getModel().get(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName()).clone();
 
-                if (oldValue.equals(newValue) || (oldValue.isDefined() && oldValue.asPropertyList().isEmpty() && !newValue.isDefined())) {
+                if (initialValue.equals(newValue) || (initialValue.isDefined() && initialValue.asPropertyList().isEmpty() && !newValue.isDefined())) {
                     // There is nothing to do, discard this operation
                     return new TransformedOperation(null, DEFAULT_REJECTION_POLICY, SUCCESSFUL_RESULT);
                 }
 
                 final Map<String, ModelNode> oldMap = new HashMap<>();
-                if (oldValue.isDefined()) {
-                    for (Property property : oldValue.asPropertyList()) {
+                if (initialValue.isDefined()) {
+                    for (Property property : initialValue.asPropertyList()) {
                         oldMap.put(property.getName(), property.getValue());
                     }
                 }
@@ -288,6 +288,8 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
                     ModelNode removeOperation = Util.createRemoveOperation(legacyAddress.append(pathElement(prop.getKey())));
                     composite.get(STEPS).add(removeOperation);
                 }
+
+                initialValue.set(newValue.clone());
 
                 return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
             }

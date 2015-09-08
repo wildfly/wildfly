@@ -22,27 +22,36 @@
 
 package org.jboss.as.clustering.controller.transform;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
- * A generic and reusable attachment that exposes a old value of an attribute.
+ * A generic and reusable operation context attachment that exposes an initial value of an attribute before a write.
+ * Values have to be looked up by the {@link PathAddress} address of the attribute and attribute's name.
  *
  * @author Radoslav Husar
  * @version August 2015
  */
-public class PreviousAttributeValueOperationContextAttachment {
+public class InitialAttributeValueOperationContextAttachment {
 
-    public static final OperationContext.AttachmentKey<PreviousAttributeValueOperationContextAttachment> KEY = OperationContext.AttachmentKey.create(PreviousAttributeValueOperationContextAttachment.class);
+    public static final OperationContext.AttachmentKey<InitialAttributeValueOperationContextAttachment> INITIAL_VALUES_ATTACHMENT = OperationContext.AttachmentKey.create(InitialAttributeValueOperationContextAttachment.class);
 
-    public volatile ModelNode previousValue;
+    private volatile Map<String, ModelNode> initialValues = new HashMap<>();
 
-    public PreviousAttributeValueOperationContextAttachment(ModelNode previousValue) {
-        this.previousValue = previousValue.clone();
-        previousValue.protect();
+    public ModelNode putIfAbsentInitialValue(PathAddress address, String attributeName, ModelNode initialValue) {
+        return initialValues.putIfAbsent(this.keyFor(address, attributeName), initialValue.clone());
     }
 
-    public ModelNode getPreviousValue() {
-        return previousValue;
+    public ModelNode getInitialValue(PathAddress address, String attributeName) {
+        return initialValues.get(this.keyFor(address, attributeName));
+    }
+
+
+    private String keyFor(PathAddress address, String attributeName) {
+        return address.toString() + attributeName;
     }
 }
