@@ -35,6 +35,7 @@ import io.undertow.server.protocol.http.HttpOpenListener;
 import io.undertow.server.protocol.http2.Http2OpenListener;
 import io.undertow.server.protocol.spdy.SpdyOpenListener;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.ChannelListener;
@@ -113,7 +114,7 @@ public class HttpsListenerService extends HttpListenerService {
         sslServer = xnioSsl.createSslConnectionServer(worker, socketAddress, (ChannelListener) acceptListener, combined);
         sslServer.resumeAccepts();
 
-        UndertowLogger.ROOT_LOGGER.listenerStarted("HTTPS", getName(), socketAddress);
+        UndertowLogger.ROOT_LOGGER.listenerStarted("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(socketAddress.getAddress()), socketAddress.getPort());
     }
 
     @Override
@@ -127,7 +128,7 @@ public class HttpsListenerService extends HttpListenerService {
         UndertowLogger.ROOT_LOGGER.listenerSuspend("HTTPS", getName());
         IoUtils.safeClose(sslServer);
         sslServer = null;
-        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), getBinding().getValue().getSocketAddress());
+        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getPort());
         httpListenerRegistry.getValue().removeListener(getName());
     }
 

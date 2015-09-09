@@ -28,6 +28,8 @@ import java.net.InetSocketAddress;
 import io.undertow.UndertowOptions;
 import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.ajp.AjpOpenListener;
+
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.msc.service.StartContext;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.ChannelListener;
@@ -61,7 +63,7 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
     void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
         server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).addAll(socketOptions).getMap());
         server.resumeAccepts();
-        UndertowLogger.ROOT_LOGGER.listenerStarted("AJP", getName(), binding.getValue().getSocketAddress());
+        UndertowLogger.ROOT_LOGGER.listenerStarted("AJP", getName(), NetworkUtils.formatIPAddressForURI(binding.getValue().getSocketAddress().getAddress()), binding.getValue().getPort());
     }
 
     @Override
@@ -74,7 +76,7 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
         server.suspendAccepts();
         UndertowLogger.ROOT_LOGGER.listenerSuspend("AJP", getName());
         IoUtils.safeClose(server);
-        UndertowLogger.ROOT_LOGGER.listenerStopped("AJP", getName(), getBinding().getValue().getSocketAddress());
+        UndertowLogger.ROOT_LOGGER.listenerStopped("AJP", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getPort());
     }
 
     @Override

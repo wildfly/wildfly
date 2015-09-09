@@ -28,7 +28,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -91,12 +90,12 @@ public interface UndertowLogger extends BasicLogger {
      * @param address socket address
      */
     @LogMessage(level = INFO)
-    @Message(id = 6, value = "Undertow %s listener %s listening on %s")
-    void listenerStarted(String type, String name, InetSocketAddress address);
+    @Message(id = 6, value = "Undertow %s listener %s listening on %s:%d")
+    void listenerStarted(String type, String name, String address, int port);
 
     @LogMessage(level = INFO)
-    @Message(id = 7, value = "Undertow %s listener %s stopped, was bound to %s")
-    void listenerStopped(String type, String name, InetSocketAddress address);
+    @Message(id = 7, value = "Undertow %s listener %s stopped, was bound to %s:%d")
+    void listenerStopped(String type, String name, String address, int port);
 
     @LogMessage(level = INFO)
     @Message(id = 8, value = "Undertow %s listener %s suspending")
