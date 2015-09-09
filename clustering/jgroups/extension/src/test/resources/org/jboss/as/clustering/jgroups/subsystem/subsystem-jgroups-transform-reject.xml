@@ -75,7 +75,12 @@
             </relay>
         </stack>
         <stack name="minimal">
-            <transport type="UDP"/>
+            <transport type="UDP">
+                <default-thread-pool min-threads="11"/>
+                <internal-thread-pool queue-length="22"/>
+                <oob-thread-pool keepalive-time="34"/>
+                <timer-thread-pool max-threads="43"/>
+            </transport>
         </stack>
     </stacks>
 </subsystem>
