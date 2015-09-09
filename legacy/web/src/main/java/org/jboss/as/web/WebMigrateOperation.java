@@ -312,7 +312,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         ModelNode keystoreType = legacyAddOp.get(WebSSLDefinition.KEYSTORE_TYPE.getName());
         ModelNode sessionCacheSize = legacyAddOp.get(WebSSLDefinition.SESSION_CACHE_SIZE.getName());
         ModelNode sessionTimeout = legacyAddOp.get(WebSSLDefinition.SESSION_TIMEOUT.getName());
-        ModelNode sslProtocol = legacyAddOp.get(WebSSLDefinition.SSL_PROTOCOL.getName());
+        ModelNode sslProvider = legacyAddOp.get(WebSSLDefinition.SSL_PROTOCOL.getName());
 
         //now lets add the trust store
         addres = pathAddress(pathElement(CORE_SERVICE, MANAGEMENT), pathElement(SECURITY_REALM, realmName), pathElement(AUTHENTICATION, TRUSTSTORE));
@@ -339,6 +339,9 @@ public class WebMigrateOperation implements OperationStepHandler {
         if(certificateFile.isDefined()) {
             warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CERTIFICATE_FILE.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
         }
+        if(sslProvider.isDefined()) {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.SSL_PROTOCOL.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
+        }
 
         if(csRevocationURL.isDefined()) {
             warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CA_REVOCATION_URL.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
@@ -346,7 +349,7 @@ public class WebMigrateOperation implements OperationStepHandler {
 
         migrationOperations.put(addres, addOp);
 
-        return new SSLInformation(realmName, verifyClient, sessionCacheSize, sessionTimeout, sslProtocol, cipherSuite);
+        return new SSLInformation(realmName, verifyClient, sessionCacheSize, sessionTimeout, protocol, cipherSuite);
     }
 
     private void fixAddressesForDomainMode(PathAddress migrateAddress, Map<PathAddress, ModelNode> migrationOperations) {
