@@ -52,6 +52,9 @@
         <!-- optional Infinispan integrations -->
         <module name="org.infinispan.hibernate-search.directory-provider" services="import" optional="true"/>
 
+        <!-- optional Apache Tika integration -->
+        <module name="org.apache.tika" slot="1.4" optional="true" />
+
         <!-- For naming -->
         <module name="javax.api" />
         <module name="org.jboss.as.naming" />
