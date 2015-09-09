@@ -151,21 +151,24 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         serviceTarget.addService(dataSourceServiceName, dataSourceService),
                         dataSourceService.getExecutorServiceInjector(), false)
                         .addAliases(dataSourceServiceNameAlias)
-                        .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
-                                dataSourceService.getManagementRepositoryInjector())
-                        .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                                dataSourceService.getSubjectFactoryInjector())
-                        .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
-                                dataSourceService.getDriverRegistryInjector())
-                        .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
-                        .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
-                        .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
-                        .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
-                        .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))
-                        .addDependency(NamingService.SERVICE_NAME);
+                .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
+                        dataSourceService.getManagementRepositoryInjector())
+                .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                        dataSourceService.getSubjectFactoryInjector())
+                .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
+                        dataSourceService.getDriverRegistryInjector())
+                .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
+                .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
+                .addDependency(NamingService.SERVICE_NAME);
         if (jta) {
             dataSourceServiceBuilder.addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, dataSourceService.getTransactionIntegrationInjector())
-                    .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector());
+                    .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector())
+                    .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))
+                    .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector());
+
+        } else {
+            dataSourceServiceBuilder.addDependency(ConnectorServices.NON_JTA_DS_RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector());
 
         }
         //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
