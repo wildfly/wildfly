@@ -59,7 +59,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_3_0.xsd";
+        return "schema/wildfly-datasources_4_0.xsd";
     }
 
     @Override
@@ -97,6 +97,11 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformerWF8() throws Exception {
         testTransformer("datasources-full.xml", ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, ModelVersion.create(2, 0, 0));
+    }
+
+    @Test
+    public void testTransformerWF82() throws Exception {
+        testTransformer("datasources-full.xml", ModelTestControllerVersion.WILDFLY_8_2_0_FINAL, ModelVersion.create(3, 0, 0));
     }
 
 

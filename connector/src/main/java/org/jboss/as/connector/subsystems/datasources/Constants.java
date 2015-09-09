@@ -120,6 +120,10 @@ public class Constants {
 
     private static final String CONNECTABLE_NAME = "connectable";
 
+    private static final String MCP_NAME = "mcp";
+
+    private static final String ENLISTMENT_TRACE_NAME = "enlistment-trace";
+
     private static final String TRACKING_NAME = "tracking";
 
     static final String POOLNAME_NAME = "pool-name";
@@ -331,6 +335,20 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
             .setAllowNull(true)
+            .build();
+
+    static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
+            .setXmlName(DataSource.Attribute.ENLISTMENT_TRACE.getLocalName())
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowNull(true)
+            .build();
+
+    static SimpleAttributeDefinition MCP = new SimpleAttributeDefinitionBuilder(MCP_NAME, ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreConcurrentLinkedDequeManagedConnectionPool.class.getName()))
+            .setXmlName(DataSource.Attribute.MCP.getLocalName())
             .build();
 
     static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
@@ -600,7 +618,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, SPY,
-            USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING};
+            USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING, MCP, ENLISTMENT_TRACE};
 
     static final PropertiesAttributeDefinition[] DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,
@@ -676,7 +694,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, XA_RESOURCE_TIMEOUT,
-            SPY, USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING,
+            SPY, USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING, MCP, ENLISTMENT_TRACE,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME,
             NO_RECOVERY, URL_PROPERTY};
