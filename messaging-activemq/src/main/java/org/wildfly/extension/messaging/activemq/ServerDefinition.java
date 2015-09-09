@@ -536,6 +536,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
+        // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
         ManagementResourceRegistration runtimeQueue = resourceRegistration.registerSubModel(QueueDefinition.RUNTIME_INSTANCE);
         runtimeQueue.setRuntimeOnly(true);
         ManagementResourceRegistration coreAddress = resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);

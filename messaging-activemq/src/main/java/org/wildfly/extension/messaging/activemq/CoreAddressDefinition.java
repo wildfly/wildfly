@@ -66,8 +66,8 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
     static final CoreAddressDefinition INSTANCE = new CoreAddressDefinition();
 
     public CoreAddressDefinition() {
-        super(PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CORE_ADDRESS));
+        super(new Parameters(PATH,
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CORE_ADDRESS)).setRuntime());
     }
 
     @Override
@@ -83,6 +83,7 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration registry) {
         super.registerChildren(registry);
 
+        // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
         ManagementResourceRegistration securityRole = registry.registerSubModel(SecurityRoleDefinition.RUNTIME_INSTANCE);
         securityRole.setRuntimeOnly(true);
     }
