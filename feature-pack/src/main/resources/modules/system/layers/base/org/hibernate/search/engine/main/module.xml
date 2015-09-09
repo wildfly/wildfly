@@ -49,8 +49,8 @@
         <!-- optional Avro serialization -->
         <module name="org.hibernate.search.serialization-avro" services="import" optional="true"/>
 
-        <!-- optional Infinispan integrations -->
-        <module name="org.infinispan.hibernate-search.directory-provider" services="import" optional="true"/>
+        <!-- Infinispan extensions - provided as separate download by the Infinispan project -->
+        <module name="org.infinispan.hibernate-search.directory-provider" slot="for-hibernatesearch-5.5" services="import" optional="true"/>
 
         <!-- optional Apache Tika integration -->
         <module name="org.apache.tika" slot="1.4" optional="true" />
