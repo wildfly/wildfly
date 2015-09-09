@@ -31,7 +31,6 @@
         <artifact name="${org.apache.lucene:lucene-analyzers-common}"/>
         <artifact name="${org.apache.lucene:lucene-core}"/>
         <artifact name="${org.apache.lucene:lucene-facet}"/>
-        <artifact name="${org.apache.lucene:lucene-memory}"/>
         <artifact name="${org.apache.lucene:lucene-queries}"/>
         <artifact name="${org.apache.lucene:lucene-queryparser}"/>
     </resources>
