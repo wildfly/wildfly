@@ -73,6 +73,7 @@ public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler imple
         }
     }
 
+    //todo remove this whole method once we have WildFly Core CR1 in.
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
@@ -80,7 +81,14 @@ public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler imple
         for (Capability capability : this.descriptor.getCapabilities()) {
             context.registerCapability(capability.getRuntimeCapability(address), null);
         }
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition ad : attributes) {
+            if (model.hasDefined(ad.getName()) || ad.hasCapabilityRequirements()) {
+                ad.addCapabilityRequirements(context, model.get(ad.getName()));
+            }
+        }
+        //don't call super to prevent double registration
+        //super.recordCapabilitiesAndRequirements(context, operation, resource);
     }
 
     @Override
