@@ -174,7 +174,6 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
 
     static ResourceTransformer PROPERTIES_RESOURCE_TRANSFORMER = new ResourceTransformer() {
         @Override
-        @SuppressWarnings("deprecation")
         public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
             final ModelNode model = resource.getModel();
             final ModelNode properties = model.remove(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
@@ -197,7 +196,6 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
 
     static OperationTransformer PROPERTIES_ADD_OP_TRANSFORMER = new OperationTransformer()  {
         @Override
-        @SuppressWarnings("deprecation")
         public ModelNode transformOperation(ModelNode operation) {
             if (operation.hasDefined(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName())) {
                 final ModelNode addOp = operation.clone();
@@ -227,7 +225,6 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
     static org.jboss.as.controller.transform.OperationTransformer PROPERTIES_OP_TRANSFORMER = new org.jboss.as.controller.transform.OperationTransformer() {
 
         @Override
-        @SuppressWarnings("deprecation")
         public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
             if (operation.get(ModelDescriptionConstants.NAME).asString().equals(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName())) {
 

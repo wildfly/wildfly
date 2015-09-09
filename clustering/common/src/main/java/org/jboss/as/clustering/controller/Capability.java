@@ -35,5 +35,7 @@ public interface Capability extends Definable<RuntimeCapability<Void>> {
      * @param address a path address
      * @return a resolved runtime capability
      */
-    RuntimeCapability<Void> getRuntimeCapability(PathAddress address);
+    default RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+        return this.getDefinition().fromBaseCapability(address.getLastElement().getValue());
+    }
 }

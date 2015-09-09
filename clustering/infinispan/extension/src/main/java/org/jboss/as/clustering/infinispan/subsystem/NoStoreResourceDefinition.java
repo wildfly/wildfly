@@ -44,10 +44,6 @@ public class NoStoreResourceDefinition extends ChildResourceDefinition {
         // Nothing to do yet
     }
 
-    /**
-     * @param type
-     * @param allowRuntimeOnlyRegistration
-     */
     public NoStoreResourceDefinition() {
         super(PATH, new InfinispanResourceDescriptionResolver(PATH));
     }

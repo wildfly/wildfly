@@ -57,7 +57,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement("remote-store", "REMOTE_STORE");
     static final PathElement PATH = pathElement("remote");
 
-    private enum Capability implements org.jboss.as.clustering.controller.Capability {
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
         OUTBOUND_SOCKET_BINDING("org.wildfly.clustering.infinispan.cache-container.cache.store.remote.outbound-socket-binding", OutboundSocketBinding.class),
         ;
         private final RuntimeCapability<Void> definition;
