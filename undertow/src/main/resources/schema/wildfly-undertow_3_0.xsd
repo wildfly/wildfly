@@ -276,6 +276,7 @@
         <xs:attribute name="java-encoding" default="UTF8" type="xs:string"/>
         <xs:attribute name="x-powered-by" default="true" type="xs:boolean"/>
         <xs:attribute name="display-source-fragment" default="true" type="xs:boolean"/>
+        <xs:attribute name="optimize-scriptlets" default="false" type="xs:string" />
     </xs:complexType>
 
     <xs:complexType name="session-cookieType">

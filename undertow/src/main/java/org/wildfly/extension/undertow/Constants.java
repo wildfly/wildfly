@@ -82,6 +82,7 @@ public interface Constants {
     String FILE = "file";
     String FILE_ENCODING = "file-encoding";
     String GENERATE_STRINGS_AS_CHAR_ARRAYS = "generate-strings-as-char-arrays";
+    String OPTIMIZE_SCRIPTLETS = "optimize-scriptlets";
     String JAVA_ENCODING = "java-encoding";
     String JSP_CONFIGURATION = "jsp-configuration";
     String KEEP_GENERATED = "keep-generated";

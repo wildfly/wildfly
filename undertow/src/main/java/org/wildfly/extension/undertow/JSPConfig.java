@@ -41,7 +41,7 @@ public class JSPConfig {
                      final boolean recompileOnFail, boolean smap, boolean dumpSmap,
                      boolean genStringAsCharArray, boolean errorOnUseBeanInvalidClassAttribute,
                      String scratchDir, String sourceVm, String targetVm, String javaEncoding,
-                     boolean xPoweredBy, boolean displaySourceFragment) {
+                     boolean xPoweredBy, boolean displaySourceFragment, boolean optimizeScriptlets) {
         if (disabled) {
             servletInfo = null;
         } else {
@@ -63,7 +63,7 @@ public class JSPConfig {
             jspServlet.addInitParam("dumpSmap", Boolean.toString(dumpSmap));
             jspServlet.addInitParam("genStringAsCharArray", Boolean.toString(genStringAsCharArray));
             jspServlet.addInitParam("errorOnUseBeanInvalidClassAttribute", Boolean.toString(errorOnUseBeanInvalidClassAttribute));
-
+            jspServlet.addInitParam("optimizeScriptlets", Boolean.toString(optimizeScriptlets));
             if (scratchDir != null) {
                 jspServlet.addInitParam("scratchdir", scratchDir);
             }
