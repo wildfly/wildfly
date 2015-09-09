@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.Operations;
@@ -39,6 +40,7 @@ import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
+import org.jboss.as.clustering.controller.transform.ImplicitlyAddedResourceDynamicDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -221,12 +223,10 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                     .addRawOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, chainedTransformer)
                     .addRawOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, chainedTransformer);
 
-            // Reject thread pool configuration, support EAP 6.x slaves using deprecated attributes
-            builder.rejectChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH);
+            // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
+            builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, new ImplicitlyAddedResourceDynamicDiscardPolicy());
         } else {
-            for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
-                pool.buildTransformation(version, parent);
-            }
+            Stream.of(ThreadPoolResourceDefinition.values()).forEach(p -> p.buildTransformation(version, parent));
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);

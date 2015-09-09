@@ -21,11 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
 
@@ -97,6 +93,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
     public void testTransformerEAP630() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
         testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+    }
+
+    @Test
+    public void testTransformerEAP640() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
+        testTransformation(JGroupsModel.VERSION_1_3_0, version, formatLegacySubsystemArtifact(version));
     }
 
     /**
@@ -241,6 +243,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
+    @Test
+    public void testRejectionsEAP640() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
+        this.testRejections(JGroupsModel.VERSION_1_3_0, version, formatLegacySubsystemArtifact(version));
+    }
+
     private void testRejections(JGroupsModel model, ModelTestControllerVersion controller, String... dependencies) throws Exception {
         ModelVersion version = model.getVersion();
 
@@ -269,7 +277,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            // This in real life would be not rejected, but since we don't have infinispan subsystem setup (this would also create a cyclic dependency) it has to be rejected in the test
+            // Channel resource in a typical configuration would be not rejected, but since we don't have infinispan subsystem setup (because
+            // that would create a cyclical dependency) it has to be rejected in this subsystem test
             config.addFailedAttribute(subsystemAddress.append(ChannelResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.WILDCARD_PATH).append(ThreadPoolResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
