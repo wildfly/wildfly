@@ -1731,6 +1731,14 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-misc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.neethi</groupId>

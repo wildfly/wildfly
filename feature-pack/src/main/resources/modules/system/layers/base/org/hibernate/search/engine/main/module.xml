@@ -37,6 +37,7 @@
         <module name="javax.transaction.api"/>
         <module name="org.hibernate.commons-annotations"/>
         <module name="org.apache.lucene" export="true"/>
+        <module name="org.apache.lucene.internal"/>
         <module name="org.jboss.logging"/>
 
         <!-- optional JMS backend support -->

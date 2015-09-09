@@ -3421,6 +3421,16 @@
                 <artifactId>lucene-queries</artifactId>
                 <version>${version.org.apache.lucene}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-misc</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-backward-codecs</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.myfaces.core</groupId>
