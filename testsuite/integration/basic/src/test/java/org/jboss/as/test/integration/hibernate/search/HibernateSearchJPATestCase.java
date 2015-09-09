@@ -61,7 +61,6 @@ public class HibernateSearchJPATestCase {
       JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
       // add JPA configuration
       jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
-      jar.addAsResource(HibernateSearchJPATestCase.class.getPackage(), "hsearch-infinispan-local.xml", "hsearch-infinispan-local.xml");
       // add testing Bean and entities
       jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class);
 
