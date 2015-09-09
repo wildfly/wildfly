@@ -99,6 +99,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
+    @Test
+    public void testTransformerEAP640() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
+        testTransformation(JGroupsModel.VERSION_1_3_0, version, formatLegacySubsystemArtifact(version));
+    }
+
     /**
      * Tests transformation of model from current version into specified version.
      *
@@ -239,6 +245,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
     public void testRejectionsEAP630() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
         this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+    }
+
+    @Test
+    public void testRejectionsEAP640() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
+        this.testRejections(JGroupsModel.VERSION_1_3_0, version, formatLegacySubsystemArtifact(version));
     }
 
     private void testRejections(JGroupsModel model, ModelTestControllerVersion controller, String... dependencies) throws Exception {
