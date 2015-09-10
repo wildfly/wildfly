@@ -88,7 +88,6 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -107,5 +106,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         }
 
         super.register(registration);
+
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }

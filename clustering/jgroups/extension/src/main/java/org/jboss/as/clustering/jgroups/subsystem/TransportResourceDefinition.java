@@ -248,7 +248,6 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -298,5 +297,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.register(registration));
 
         super.register(registration);
+
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }

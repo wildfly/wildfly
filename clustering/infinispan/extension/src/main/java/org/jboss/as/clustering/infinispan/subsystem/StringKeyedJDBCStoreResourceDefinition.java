@@ -130,7 +130,6 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(JDBCStoreResourceDefinition.Attribute.class)
@@ -160,5 +159,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         new StringTableResourceDefinition().register(registration);
 
         super.register(registration);
+
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }
