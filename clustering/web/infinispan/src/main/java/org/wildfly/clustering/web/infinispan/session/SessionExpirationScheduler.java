@@ -106,30 +106,22 @@ public class SessionExpirationScheduler implements Scheduler {
 
     @Override
     public void cancel(Locality locality) {
-        for (String sessionId: this.expirationFutures.keySet()) {
-            if (!locality.isLocal(sessionId)) {
-                this.cancel(sessionId);
-            }
-        }
+        this.expirationFutures.keySet().stream().filter(sessionId -> !locality.isLocal(sessionId)).forEach(sessionId -> this.cancel(sessionId));
     }
 
     @Override
     public void close() {
         this.executor.shutdown();
-        for (Future<?> future: this.expirationFutures.values()) {
-            future.cancel(false);
-        }
-        for (Future<?> future: this.expirationFutures.values()) {
-            if (!future.isDone()) {
-                try {
-                    future.get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException e) {
-                    // Ignore
-                }
+        this.expirationFutures.values().forEach(future -> future.cancel(false));
+        this.expirationFutures.values().stream().filter(future -> !future.isDone()).forEach(future -> {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+                // Ignore
             }
-        }
+        });
         this.expirationFutures.clear();
     }
 
