@@ -125,7 +125,6 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -137,5 +136,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         new RemoveStepHandler(descriptor, handler).register(registration);
 
         super.register(registration);
+
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }

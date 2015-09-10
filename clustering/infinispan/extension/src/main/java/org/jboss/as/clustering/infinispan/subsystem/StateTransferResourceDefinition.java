@@ -109,7 +109,6 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -118,5 +117,7 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StateTransferBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
+
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }

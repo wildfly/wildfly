@@ -105,7 +105,6 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new LockingBuilderFactory());
@@ -115,5 +114,7 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new LockingMetricExecutor(), LockingMetric.class).register(registration);
         }
+
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }

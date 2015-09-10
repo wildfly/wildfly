@@ -228,7 +228,6 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -238,5 +237,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         ResourceServiceHandler handler = new JGroupsTransportServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
+
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }

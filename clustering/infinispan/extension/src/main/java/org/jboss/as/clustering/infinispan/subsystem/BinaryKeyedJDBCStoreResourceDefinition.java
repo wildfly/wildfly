@@ -129,7 +129,6 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(JDBCStoreResourceDefinition.Attribute.class)
@@ -159,5 +158,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         new BinaryTableResourceDefinition().register(registration);
 
         super.register(registration);
+
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }
