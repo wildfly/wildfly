@@ -3094,4 +3094,15 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 480, value = "Loaded timer (%s) for EJB (%s) and this node that is marked as being in a timeout. The original timeout may not have been processed. Please use graceful shutdown to ensure timeout tasks are finished before shutting down.")
     void loadedPersistentTimerInTimeout(String timer, String timedObject);
+
+    @LogMessage(level = INFO)
+    @Message(id = 481, value = "Strict pool %s is using a max instance size of %d (per class), which is derived from thread worker pool sizing.")
+    void strictPoolDerivedFromWorkers(String name, int max);
+
+    @LogMessage(level = INFO)
+    @Message(id = 482, value = "Strict pool %s is using a max instance size of %d (per class), which is derived from the number of CPUs on this host.")
+    void strictPoolDerivedFromCPUs(String name, int max);
+
+    @Message(id = 483, value = "Attributes are mutually exclusive: %s, %s")
+    XMLStreamException mutuallyExclusiveAttributes(@Param Location location, String attribute1, String attribute2);
 }

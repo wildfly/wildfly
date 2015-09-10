@@ -29,8 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.component.pool.PoolConfigService;
-import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -63,15 +62,18 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
     private void applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
 
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        final ServiceName serviceName = PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
+        final ServiceName serviceName = StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> sc = registry.getService(serviceName);
         if (sc != null) {
-            StrictMaxPoolConfig smpc = StrictMaxPoolConfig.class.cast(sc.getValue());
+            StrictMaxPoolConfigService smpc = (StrictMaxPoolConfigService) sc.getService();
             if (smpc != null) {
                 if (StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.getName().equals(attributeName)) {
-                    int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, model).asInt();
+                    int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, model).asInt(-1);
                     smpc.setMaxPoolSize(maxPoolSize);
+                } else if (StrictMaxPoolResourceDefinition.DERIVE_SIZE.getName().equals(attributeName)) {
+                    StrictMaxPoolConfigService.Derive derive = StrictMaxPoolResourceDefinition.parseDeriveSize(context, model);
+                    smpc.setDerive(derive);
                 } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.getName().equals(attributeName)) {
                     long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.resolveModelAttribute(context, model).asLong();
                     smpc.setTimeout(timeout);
