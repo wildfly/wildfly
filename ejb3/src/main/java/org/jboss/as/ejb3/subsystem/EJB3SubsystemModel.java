@@ -83,6 +83,7 @@ public interface EJB3SubsystemModel {
     String REMOTING_EJB_RECEIVER = "remoting-ejb-receiver";
     String OUTBOUND_CONNECTION_REF= "outbound-connection-ref";
     String CONNECT_TIMEOUT= "connect-timeout";
+    String CLIENT_MAPPINGS_CLUSTER_NAME = "cluster";
 
     String TIMER = "timer";
     String TIMER_SERVICE = "timer-service";

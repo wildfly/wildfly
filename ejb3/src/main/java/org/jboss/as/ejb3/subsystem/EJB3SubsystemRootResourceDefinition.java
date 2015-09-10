@@ -305,22 +305,23 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         //builder.getAttributeBuilder().setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME);
 
         PassivationStoreResourceDefinition.registerTransformers_1_2_1_and_1_3_0(builder);
+        EJB3RemoteResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
+        MdbDeliveryGroupResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
         builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
         if (version.equals(VERSION_1_2_1)) {
             TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
         } else if (version.equals(VERSION_1_3_0)) {
             TimerServiceResourceDefinition.registerTransformers_1_3_0(builder);
-
         }
-
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, version);
     }
 
     private static void registerTransformers_3_0_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder()
-                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME)
-                .end();
+        builder.getAttributeBuilder().setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("hornetq-ra"), true), EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME)
+        .end();
+        MdbDeliveryGroupResourceDefinition.registerTransformers_3_0(builder);
+        EJB3RemoteResourceDefinition.registerTransformers_3_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_3_0_0);
     }
 
