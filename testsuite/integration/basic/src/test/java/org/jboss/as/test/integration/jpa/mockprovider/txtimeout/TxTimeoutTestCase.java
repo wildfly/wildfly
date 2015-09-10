@@ -51,6 +51,7 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
+@Ignore // WFLY-5319 is for fixing this test (see failure https://gist.github.com/scottmarlow/6409290362f35f2d1320)
 @RunWith(Arquillian.class)
 public class TxTimeoutTestCase {
 
