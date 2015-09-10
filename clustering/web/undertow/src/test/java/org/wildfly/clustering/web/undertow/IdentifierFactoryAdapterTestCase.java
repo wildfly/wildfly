@@ -27,7 +27,6 @@ import io.undertow.server.session.SessionIdGenerator;
 
 import org.junit.Test;
 import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
 
 /**
  * Unit test for {@link IdentifierFactoryAdapter}
