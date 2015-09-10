@@ -110,7 +110,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     @Override
     public CoarseSessionEntry<L> createValue(String id, Void context) {
-        InfinispanWebLogger.ROOT_LOGGER.infof("CoarseSessionFactory.createValue(%s)", id);
+        InfinispanWebLogger.ROOT_LOGGER.tracef("CoarseSessionFactory.createValue(%s)", id);
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
         SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData());
         SessionCreationMetaDataEntry<L> existingCreationMetaDataEntry = this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(creationMetaDataKey, creationMetaDataEntry);
