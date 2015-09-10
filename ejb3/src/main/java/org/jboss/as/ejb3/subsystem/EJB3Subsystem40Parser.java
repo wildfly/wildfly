@@ -47,6 +47,8 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 
 /**
+ * Parser for ejb3:4.0 namespace.
+ *
  * @author <a href="mailto:rachmato@redhat.com">Richard Achmatowicz</a>
  */
 public class EJB3Subsystem40Parser extends EJB3Subsystem30Parser {
