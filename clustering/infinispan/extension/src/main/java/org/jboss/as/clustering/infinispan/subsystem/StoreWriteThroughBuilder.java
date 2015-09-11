@@ -25,9 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
@@ -41,10 +38,5 @@ public class StoreWriteThroughBuilder extends CacheComponentBuilder<AsyncStoreCo
     @Override
     public AsyncStoreConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
         return new ConfigurationBuilder().persistence().addSingleFileStore().async().disable().create();
-    }
-
-    @Override
-    public Builder<AsyncStoreConfiguration> configure(OperationContext context, ModelNode model) {
-        return this;
     }
 }

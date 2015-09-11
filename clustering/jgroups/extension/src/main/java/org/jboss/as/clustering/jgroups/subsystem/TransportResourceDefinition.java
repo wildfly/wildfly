@@ -96,7 +96,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         return PathElement.pathElement("transport", name);
     }
 
-    private enum Capability implements org.jboss.as.clustering.controller.Capability {
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
         DIAGNOSTICS_SOCKET_BINDING("org.wildfly.clustering.transport.diagnostics-socket-binding", SocketBinding.class),
         ;
         private final RuntimeCapability<Void> definition;
