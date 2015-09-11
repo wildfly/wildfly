@@ -22,6 +22,12 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -115,7 +121,7 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
                     .setAllowExpression(true)
                     .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
                     .setAttributeParser(AttributeParsers.COLLECTION)
-                    .setDefaultValue(new ModelNode().setEmptyList())
+                    .setDefaultValue(new ModelNode().setEmptyObject())
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }
@@ -231,11 +237,15 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
             };
             builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(getPropertyTransformer));
 
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER)
-                    .addRawOperationTransformationOverride(MapOperations.MAP_REMOVE_DEFINITION.getName(), PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER)
-                    .addRawOperationTransformationOverride(MapOperations.MAP_CLEAR_DEFINITION.getName(), PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER)
-                    .addRawOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER)
-                    .addRawOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER);
+            Set<String> writeAttributeOperations = new HashSet(MapOperations.MAP_OPERATION_NAMES);
+            writeAttributeOperations.remove(MapOperations.MAP_GET_DEFINITION.getName());
+            writeAttributeOperations.add(WRITE_ATTRIBUTE_OPERATION);
+            writeAttributeOperations.add(UNDEFINE_ATTRIBUTE_OPERATION);
+            for (String opName : writeAttributeOperations) {
+                builder.addOperationTransformationOverride(opName)
+                        .inheritResourceAttributeDefinitions()
+                        .setCustomOperationTransformer(PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER);
+            }
         }
     }
 

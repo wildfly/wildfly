@@ -22,9 +22,14 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -217,11 +222,15 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
             transformerChain.add(PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER);
             ChainedOperationTransformer chainedTransformer = new ChainedOperationTransformer(transformerChain, false);
 
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), chainedTransformer)
-                    .addRawOperationTransformationOverride(MapOperations.MAP_REMOVE_DEFINITION.getName(), chainedTransformer)
-                    .addRawOperationTransformationOverride(MapOperations.MAP_CLEAR_DEFINITION.getName(), chainedTransformer)
-                    .addRawOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, chainedTransformer)
-                    .addRawOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, chainedTransformer);
+            Set<String> writeAttributeOperations = new HashSet(MapOperations.MAP_OPERATION_NAMES);
+            writeAttributeOperations.remove(MapOperations.MAP_GET_DEFINITION.getName());
+            writeAttributeOperations.add(WRITE_ATTRIBUTE_OPERATION);
+            writeAttributeOperations.add(UNDEFINE_ATTRIBUTE_OPERATION);
+            for (String opName : writeAttributeOperations) {
+                builder.addOperationTransformationOverride(opName)
+                        .inheritResourceAttributeDefinitions()
+                        .setCustomOperationTransformer(chainedTransformer);
+            }
 
             // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
             builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, new ImplicitlyAddedResourceDynamicDiscardPolicy());
