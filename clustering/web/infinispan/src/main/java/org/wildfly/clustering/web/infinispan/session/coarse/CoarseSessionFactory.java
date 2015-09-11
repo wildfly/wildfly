@@ -67,6 +67,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     private final SessionContext context;
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
+    private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> findCreationMetaDataCache;
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
     private final Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache;
     private final Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller;
@@ -74,7 +75,8 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     @SuppressWarnings("unchecked")
     public CoarseSessionFactory(Cache<? extends Key<String>, ?> cache, SessionContext context, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead) {
-        this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) (lockOnRead ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache);
+        this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
+        this.findCreationMetaDataCache = lockOnRead ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
         this.accessMetaDataCache = (Cache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
         this.attributesCache = (Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>>) cache;
         this.context = context;
@@ -159,18 +161,18 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
     @Override
     public CoarseSessionEntry<L> findValue(String id) {
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        SessionCreationMetaDataEntry<L> creationMetaDataEntry = this.creationMetaDataCache.get(creationMetaDataKey);
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = this.findCreationMetaDataCache.get(creationMetaDataKey);
         if (creationMetaDataEntry != null) {
-            Mutator creationMetaDataMutator = new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, creationMetaDataEntry);
             SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
             SessionAccessMetaData accessMetaData = this.accessMetaDataCache.get(accessMetaDataKey);
             if (accessMetaData != null) {
-                Mutator accessMetaDataMutator = new CacheEntryMutator<>(this.accessMetaDataCache, accessMetaDataKey, accessMetaData);
                 SessionAttributesKey attributesKey = new SessionAttributesKey(id);
                 MarshalledValue<Map<String, Object>, MarshallingContext> attributesValue = this.attributesCache.get(attributesKey);
                 if (attributesValue != null) {
                     try {
                         Map<String, Object> attributes = this.marshaller.read(attributesValue);
+                        Mutator creationMetaDataMutator = new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, creationMetaDataEntry);
+                        Mutator accessMetaDataMutator = new CacheEntryMutator<>(this.accessMetaDataCache, accessMetaDataKey, accessMetaData);
                         Mutator attributesMutator = new CacheEntryMutator<>(this.attributesCache, attributesKey, attributesValue);
                         return new CoarseSessionEntry<>(new MutableCacheEntry<>(creationMetaDataEntry.getMetaData(), creationMetaDataMutator), new MutableCacheEntry<>(accessMetaData, accessMetaDataMutator), new MutableCacheEntry<>(attributes, attributesMutator), creationMetaDataEntry.getLocalContext());
                     } catch (InvalidSerializedFormException e) {

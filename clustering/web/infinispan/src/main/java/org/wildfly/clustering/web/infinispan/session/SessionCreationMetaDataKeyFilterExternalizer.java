@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,35 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
 
-import java.util.Collection;
+package org.wildfly.clustering.web.infinispan.session;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionListener;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Context exposed to the session.
  * @author Paul Ferraro
  */
-public interface SessionContext {
+public class SessionCreationMetaDataKeyFilterExternalizer implements Externalizer<SessionCreationMetaDataKeyFilter> {
 
-    /**
-     * Returns the registered session listeners.
-     * @return a non-null collection of session listeners.
-     */
-    Collection<HttpSessionListener> getSessionListeners();
+    @Override
+    public void writeObject(ObjectOutput output, SessionCreationMetaDataKeyFilter filter) throws IOException {
+    }
 
-    /**
-     * Returns the registered session attribute listeners.
-     * @return a non-null collection of session listeners.
-     */
-    Collection<HttpSessionAttributeListener> getSessionAttributeListeners();
+    @Override
+    public SessionCreationMetaDataKeyFilter readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new SessionCreationMetaDataKeyFilter();
+    }
 
-    /**
-     * Returns the servlet context of this application.
-     * @return the non-null servlet context
-     */
-    ServletContext getServletContext();
+    @Override
+    public Class<? extends SessionCreationMetaDataKeyFilter> getTargetClass() {
+        return SessionCreationMetaDataKeyFilter.class;
+    }
 }

@@ -21,9 +21,7 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import io.undertow.servlet.api.Deployment;
-import io.undertow.servlet.core.ApplicationListeners;
-
+import java.util.Collection;
 import java.util.Collections;
 
 import javax.servlet.ServletContext;
@@ -34,11 +32,13 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.wildfly.clustering.web.session.SessionContext;
 
+import io.undertow.servlet.api.Deployment;
+
 /**
  * {@link SessionContext} that delegate to a {@link Deployment}.
  * @author Paul Ferraro
  */
-public class UndertowSessionContext implements SessionContext {
+public class UndertowSessionContext implements SessionContext, HttpSessionListener, HttpSessionAttributeListener {
 
     private final Deployment deployment;
 
@@ -47,46 +47,42 @@ public class UndertowSessionContext implements SessionContext {
     }
 
     @Override
-    public Iterable<HttpSessionListener> getSessionListeners() {
-        final ApplicationListeners listeners = this.deployment.getApplicationListeners();
-        HttpSessionListener listener = new HttpSessionListener() {
-            @Override
-            public void sessionCreated(HttpSessionEvent event) {
-                listeners.sessionCreated(event.getSession());
-            }
-
-            @Override
-            public void sessionDestroyed(HttpSessionEvent event) {
-                listeners.sessionDestroyed(event.getSession());
-            }
-        };
-        return Collections.singleton(listener);
+    public Collection<HttpSessionListener> getSessionListeners() {
+        return Collections.singleton(this);
     }
 
     @Override
-    public Iterable<HttpSessionAttributeListener> getSessionAttributeListeners() {
-        final ApplicationListeners listeners = this.deployment.getApplicationListeners();
-        HttpSessionAttributeListener listener = new HttpSessionAttributeListener() {
-            @Override
-            public void attributeAdded(HttpSessionBindingEvent event) {
-                listeners.httpSessionAttributeAdded(event.getSession(), event.getName(), event.getValue());
-            }
-
-            @Override
-            public void attributeRemoved(HttpSessionBindingEvent event) {
-                listeners.httpSessionAttributeRemoved(event.getSession(), event.getName(), event.getValue());
-            }
-
-            @Override
-            public void attributeReplaced(HttpSessionBindingEvent event) {
-                listeners.httpSessionAttributeReplaced(event.getSession(), event.getName(), event.getValue());
-            }
-        };
-        return Collections.singleton(listener);
+    public Collection<HttpSessionAttributeListener> getSessionAttributeListeners() {
+        return Collections.singleton(this);
     }
 
     @Override
     public ServletContext getServletContext() {
         return this.deployment.getServletContext();
+    }
+
+    @Override
+    public void attributeAdded(HttpSessionBindingEvent event) {
+        this.deployment.getApplicationListeners().httpSessionAttributeAdded(event.getSession(), event.getName(), event.getValue());
+    }
+
+    @Override
+    public void attributeRemoved(HttpSessionBindingEvent event) {
+        this.deployment.getApplicationListeners().httpSessionAttributeRemoved(event.getSession(), event.getName(), event.getValue());
+    }
+
+    @Override
+    public void attributeReplaced(HttpSessionBindingEvent event) {
+        this.deployment.getApplicationListeners().httpSessionAttributeReplaced(event.getSession(), event.getName(), event.getValue());
+    }
+
+    @Override
+    public void sessionCreated(HttpSessionEvent event) {
+        this.deployment.getApplicationListeners().sessionCreated(event.getSession());
+    }
+
+    @Override
+    public void sessionDestroyed(HttpSessionEvent event) {
+        this.deployment.getApplicationListeners().sessionDestroyed(event.getSession());
     }
 }
