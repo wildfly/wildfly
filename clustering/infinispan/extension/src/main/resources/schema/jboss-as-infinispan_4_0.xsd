@@ -236,13 +236,6 @@
                 <xs:documentation>Uniquely identifies this cache within its cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="indexing" type="tns:indexing" default="NONE">
-            <xs:annotation>
-                <xs:documentation>
-                    The indexing mode of the cache. Defaults to NONE.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="jndi-name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
@@ -909,32 +902,6 @@
             <xs:enumeration value="FULL_XA">
                 <xs:annotation>
                     <xs:documentation>Cache will enlist within transactions as a javax.transaction.xa.XAResource, with recovery.</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
-
-    <xs:simpleType name="indexing">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="NONE">
-                <xs:annotation>
-                    <xs:documentation>
-                        Do not index data. This is the default.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="LOCAL">
-                <xs:annotation>
-                    <xs:documentation>
-                        Only index changes made locally, ignoring remote changes. This is useful if indexes are shared across a cluster to prevent redundant indexing of updates.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="ALL">
-                <xs:annotation>
-                    <xs:documentation>
-                        Index all data.
-                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>

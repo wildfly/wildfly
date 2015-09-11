@@ -258,13 +258,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="indexing" type="tns:indexing" default="NONE">
-            <xs:annotation>
-                <xs:documentation>
-                    The indexing mode of the cache. Defaults to NONE.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="jndi-name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
