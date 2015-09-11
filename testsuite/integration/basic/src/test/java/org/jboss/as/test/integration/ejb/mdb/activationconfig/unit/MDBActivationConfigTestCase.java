@@ -94,7 +94,7 @@ public class MDBActivationConfigTestCase {
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(JavaArchive.class, "MDBActivationConfigTestCase")
+        return ShrinkWrap.create(JavaArchive.class, "MDBActivationConfigTestCase.jar")
                 .addPackage(MDBWithUnknownActivationConfigProperties.class.getPackage())
                 .addClasses(JMSOperations.class, JMSMessagingUtil.class, JmsQueueSetup.class)
                 .addClasses(TimeoutUtil.class)
