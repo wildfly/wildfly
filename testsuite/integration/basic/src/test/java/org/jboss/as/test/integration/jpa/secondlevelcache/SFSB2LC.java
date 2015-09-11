@@ -230,15 +230,20 @@ public class SFSB2LC {
 	 * @param id Employee's id in the query
 	 */
 	public String queryCacheCheck(String id){
-		
+
+		// the nextTimestamp from infinispan is "return System.currentTimeMillis()"
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		}
+
 		EntityManager em = emf.createEntityManager();
 		Statistics stats = em.unwrap(Session.class).getSessionFactory().getStatistics();
 		stats.clear();
 
 		try{
-	        // the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
-	        Thread.sleep(1000);
-	        
 			String queryString = "from Employee e where e.id > "+id;
 			QueryStatistics queryStats = stats.getQueryStatistics(queryString);
 			Query query = em.createQuery(queryString);
@@ -256,8 +261,6 @@ public class SFSB2LC {
 			
 
 		}catch (AssertionError e) {
-			return e.getMessage();
-		} catch (InterruptedException e) {
 			return e.getMessage();
 		}	finally{
 			em.close();
