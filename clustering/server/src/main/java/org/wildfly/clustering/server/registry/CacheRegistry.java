@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.filter.KeyFilter;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
@@ -45,7 +45,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.stream.CacheCollectors;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
@@ -62,7 +61,7 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
  * @param <V> value type
  */
 @org.infinispan.notifications.Listener(sync = false)
-public class CacheRegistry<K, V> implements Registry<K, V> {
+public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     private final String containerName;
     private final List<Registry.Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
@@ -71,6 +70,7 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
     private final Batcher<? extends Batch> batcher;
     private final Group group;
     private final NodeFactory<Address> factory;
+    private final CacheRegistryFilter filter = new CacheRegistryFilter();
 
     public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
         this.containerName = config.getContainerName();
@@ -80,7 +80,12 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
         this.factory = config.getNodeFactory();
         this.provider = provider;
         this.getLocalEntry();
-        this.cache.addListener(this);
+        this.cache.addListener(this, this.filter);
+    }
+
+    @Override
+    public boolean accept(Object key) {
+        return key instanceof Node;
     }
 
     @Override
@@ -110,9 +115,8 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
 
     @Override
     public Map<K, V> getEntries() {
-        try (Stream<Map.Entry<K, V>> entries = this.cache.values().stream()) {
-            return entries.collect(CacheCollectors.<Map.Entry<K, V>, Map<K, V>>serializableCollector(() -> Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue())));
-        }
+        Set<Node> nodes = this.group.getNodes().stream().collect(Collectors.toSet());
+        return this.cache.getAdvancedCache().getAll(nodes).values().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
     }
 
     @Override
