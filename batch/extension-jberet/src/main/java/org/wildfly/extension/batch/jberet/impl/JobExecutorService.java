@@ -20,35 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.deployment;
+package org.wildfly.extension.batch.jberet.impl;
 
-import org.jberet.repository.JobRepository;
+import org.jberet.spi.JobExecutor;
+import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * Represents environment objects created via a deployment descriptor.
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class BatchEnvironmentMetaData {
-    private final JobRepository jobRepository;
-    private final String jobRepositoryName;
-    private final String executorName;
+public class JobExecutorService implements Service<JobExecutor> {
 
-    protected BatchEnvironmentMetaData(final JobRepository jobRepository, final String jobRepositoryName, final String executorName) {
-        this.jobRepository = jobRepository;
-        this.jobRepositoryName = jobRepositoryName;
-        this.executorName = executorName;
+    private final InjectedValue<ManagedJBossThreadPoolExecutorService> threadPoolInjector = new InjectedValue<>();
+    private WildFlyJobExecutor jobExecutor;
+
+    @Override
+    public synchronized void start(final StartContext context) throws StartException {
+        jobExecutor = new WildFlyJobExecutor(threadPoolInjector.getValue());
     }
 
-    public JobRepository getJobRepository() {
-        return jobRepository;
+    @Override
+    public synchronized void stop(final StopContext context) {
+        jobExecutor = null;
     }
 
-    public String getJobRepositoryName() {
-        return jobRepositoryName;
+    @Override
+    public JobExecutor getValue() throws IllegalStateException, IllegalArgumentException {
+        return jobExecutor;
     }
 
-    public String getExecutorName() {
-        return executorName;
+    public InjectedValue<ManagedJBossThreadPoolExecutorService> getThreadPoolInjector() {
+        return threadPoolInjector;
     }
 }
