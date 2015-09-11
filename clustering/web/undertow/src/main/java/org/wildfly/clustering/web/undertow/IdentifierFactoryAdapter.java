@@ -26,7 +26,7 @@ import io.undertow.server.session.SessionIdGenerator;
 import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
- * Adapts a {@link SessionIdGenerator} to a {@link SessionIdentifierFactory}.
+ * Adapts a {@link SessionIdGenerator} to a {@link IdentifierFactory}.
  * @author Paul Ferraro
  */
 public class IdentifierFactoryAdapter implements IdentifierFactory<String> {
