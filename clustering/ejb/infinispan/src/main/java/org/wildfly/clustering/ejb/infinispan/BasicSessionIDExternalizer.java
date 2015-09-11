@@ -23,6 +23,7 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.jboss.ejb.client.BasicSessionID;
+import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
@@ -30,6 +31,6 @@ import org.jboss.ejb.client.BasicSessionID;
 public class BasicSessionIDExternalizer extends SessionIDExternalizer {
 
     public BasicSessionIDExternalizer() {
-        super(BasicSessionID.class);
+        super(BasicSessionID.class, IndexExternalizer.UNSIGNED_BYTE);
     }
 }

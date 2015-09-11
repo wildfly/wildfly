@@ -34,21 +34,23 @@ import org.wildfly.clustering.marshalling.Externalizer;
 public class SessionIDExternalizer implements Externalizer<SessionID> {
 
     private final Class<? extends SessionID> targetClass;
+    private final Externalizer<Integer> externalizer;
 
-    SessionIDExternalizer(Class<? extends SessionID> targetClass) {
+    SessionIDExternalizer(Class<? extends SessionID> targetClass, Externalizer<Integer> externalizer) {
         this.targetClass = targetClass;
+        this.externalizer = externalizer;
     }
 
     @Override
     public void writeObject(ObjectOutput output, SessionID id) throws IOException {
         byte[] encoded = id.getEncodedForm();
-        output.writeInt(encoded.length);
+        this.externalizer.writeObject(output, encoded.length);
         output.write(encoded);
     }
 
     @Override
-    public SessionID readObject(ObjectInput input) throws IOException {
-        byte[] encoded = new byte[input.readInt()];
+    public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        byte[] encoded = new byte[this.externalizer.readObject(input)];
         input.readFully(encoded);
         return SessionID.createSessionID(encoded);
     }
