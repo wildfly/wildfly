@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -43,8 +44,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DERIVE_SIZE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
 
 /**
  * Parser for ejb3:4.0 namespace.
@@ -187,6 +191,58 @@ public class EJB3Subsystem40Parser extends EJB3Subsystem30Parser {
                 }
             }
         }
+    }
+
+    void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String poolName = null;
+        final ModelNode operation = Util.createAddOperation();
+        boolean sizeAttribute = false;
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME:
+                    poolName = value;
+                    break;
+                case MAX_POOL_SIZE:
+                    if (sizeAttribute) {
+                        throw mutuallyExclusiveAttributes(reader);
+                    }
+                    sizeAttribute = true;
+                    StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parseAndSetParameter(value, operation, reader);
+                    break;
+                case DERIVE_SIZE:
+                    if (sizeAttribute) {
+                        throw mutuallyExclusiveAttributes(reader);
+                    }
+                    sizeAttribute = true;
+                    StrictMaxPoolResourceDefinition.DERIVE_SIZE.parseAndSetParameter(value, operation, reader);
+                    break;
+                case INSTANCE_ACQUISITION_TIMEOUT:
+                    StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parseAndSetParameter(value, operation, reader);
+                    break;
+                case INSTANCE_ACQUISITION_TIMEOUT_UNIT:
+                    StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (poolName == null) {
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+        }
+        // create and add the operation
+        // create /subsystem=ejb3/strict-max-bean-instance-pool=name:add(...)
+        final PathAddress address = this.getEJB3SubsystemAddress().append(STRICT_MAX_BEAN_INSTANCE_POOL, poolName);
+        operation.get(OP_ADDR).set(address.toModelNode());
+        operations.add(operation);
+    }
+
+    private XMLStreamException mutuallyExclusiveAttributes(XMLExtendedStreamReader reader) {
+        return EjbLogger.ROOT_LOGGER.mutuallyExclusiveAttributes(reader.getLocation(), MAX_POOL_SIZE, DERIVE_SIZE);
     }
 
 }

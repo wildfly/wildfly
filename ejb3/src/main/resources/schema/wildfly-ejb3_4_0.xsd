@@ -208,6 +208,7 @@
     <xs:complexType name="strict-max-poolType">
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="max-pool-size" type="xs:positiveInteger" default="20" use="optional"/>
+        <xs:attribute name="derive-size" type="xs:string" use="optional"/>
         <xs:attribute name="instance-acquisition-timeout" type="xs:positiveInteger" default="5" use="optional"/>
         <xs:attribute name="instance-acquisition-timeout-unit" type="timeout-unitType"
                       default="MINUTES" use="optional"/>

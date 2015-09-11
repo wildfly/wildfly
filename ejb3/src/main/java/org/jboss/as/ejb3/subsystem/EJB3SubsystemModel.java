@@ -62,6 +62,8 @@ public interface EJB3SubsystemModel {
     String FILE_DATA_STORE = "file-data-store";
 
     String MAX_POOL_SIZE = "max-pool-size";
+    String DERIVE_SIZE = "derive-size";
+
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
 
     String MAX_THREADS = "max-threads";

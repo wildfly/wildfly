@@ -427,7 +427,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         }
     }
 
-    private void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String poolName = null;
         final ModelNode operation = Util.createAddOperation();
@@ -755,7 +755,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         return EJB3SubsystemNamespace.EJB3_1_2;
     }
 
-    private PathAddress getEJB3SubsystemAddress() {
+    PathAddress getEJB3SubsystemAddress() {
         return SUBSYSTEM_PATH;
     }
 
