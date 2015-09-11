@@ -364,7 +364,15 @@
                     <xs:attribute name="max-retry-interval" type="xs:long" use="optional" />
                     <xs:attribute name="reconnect-attempts" type="xs:int" use="optional" />
                     <xs:attribute name="use-duplicate-detection" type="xs:boolean" use="optional" />
-                    <xs:attribute name="forward-when-no-consumers" type="xs:boolean" use="optional" />
+                    <xs:attribute name="message-load-balancing-type" use="optional">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="OFF"/>
+                                <xs:enumeration value="STRICT"/>
+                                <xs:enumeration value="ON_DEMAND"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
                     <xs:attribute name="max-hops" type="xs:int" use="optional" />
                     <xs:attribute name="confirmation-window-size" type="xs:int" use="optional" />
                     <xs:attribute name="notification-attempts" type="xs:int" use="optional" />

@@ -51,7 +51,6 @@ import javax.naming.InitialContext;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({MDB20TopicTestCase.JmsQueueSetup.class})
-@Ignore
 public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
 
     private Topic topic;
@@ -83,7 +82,7 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
 
     @Deployment
     public static Archive getDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDB20TopicTestCase.jar");
         ejbJar.addClasses(EJB2xMDB.class, AbstractMDB2xTestCase.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
