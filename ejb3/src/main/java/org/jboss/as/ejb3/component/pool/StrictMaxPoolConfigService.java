@@ -74,7 +74,7 @@ public class StrictMaxPoolConfigService implements Service<PoolConfig> {
     }
 
     private int calcMaxFromCPUCount() {
-        return Runtime.getRuntime().availableProcessors() * 2;
+        return Runtime.getRuntime().availableProcessors() * 4;
     }
 
     public synchronized void setMaxPoolSize(int newMax) {

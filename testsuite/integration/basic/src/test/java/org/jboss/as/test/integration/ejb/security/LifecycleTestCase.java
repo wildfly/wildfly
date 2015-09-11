@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -166,6 +167,7 @@ public class LifecycleTestCase  {
     }
 
     @Test
+    @Ignore("Not compatible with pooling")
     public void testStatelessBeanLifecyleCallback() throws Exception {
         StringBuilder failureMessages = new StringBuilder();
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
