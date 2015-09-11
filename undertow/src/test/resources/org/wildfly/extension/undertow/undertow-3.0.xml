@@ -78,7 +78,8 @@
                 target-vm="${prop.target-vm:1.7}"
                 java-encoding="${prop.java-encoding:utf-8}"
                 x-powered-by="${prop.x-powered-by:true}"
-                display-source-fragment="${prop.display-source-fragment:true}"/>
+                display-source-fragment="${prop.display-source-fragment:true}"
+                optimize-scriptlets="${prop.optimise-scriptlets:true}"/>
         <session-cookie name="MYSESSIONCOOKIE"
                         domain="example.com"
                         comment="session cookie"

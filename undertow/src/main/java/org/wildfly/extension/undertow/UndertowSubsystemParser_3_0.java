@@ -151,7 +151,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         JspDefinition.TARGET_VM,
                                                         JspDefinition.JAVA_ENCODING,
                                                         JspDefinition.X_POWERED_BY,
-                                                        JspDefinition.DISPLAY_SOURCE_FRAGMENT)
+                                                        JspDefinition.DISPLAY_SOURCE_FRAGMENT,
+                                                        JspDefinition.OPTIMIZE_SCRIPTLETS)
                                 )
                                 .addChild(
                                         builder(SessionCookieDefinition.INSTANCE)
