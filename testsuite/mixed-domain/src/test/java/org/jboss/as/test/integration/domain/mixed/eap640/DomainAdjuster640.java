@@ -126,6 +126,13 @@ public class DomainAdjuster640 extends DomainAdjuster {
         list.add(
                 getUndefineAttributeOperation(
                         subsystem, "default-sfsb-passivation-disabled-cache"));
+        list.add(
+                getUndefineAttributeOperation(
+                        subsystem.append("strict-max-bean-instance-pool", "slsb-strict-max-pool"), "derive-size"));
+        list.add(
+                getUndefineAttributeOperation(
+                        subsystem.append("strict-max-bean-instance-pool", "mdb-strict-max-pool"), "derive-size"));
+
         return list;
     }
 
