@@ -1,7 +1,9 @@
 package org.jboss.as.ejb3.subsystem;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -16,11 +18,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Test cases for transformers used in the EJB3 subsystem.
@@ -28,7 +26,6 @@ import java.util.List;
  * @author <a href="tomasz.cerar@redhat.com"> Tomasz Cerar</a>
  * @author Richard Achmatowicz (c) 2015 Red Hat Inc.
  */
-
 public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
@@ -171,7 +168,8 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             // create a chained config to apply multiple transformation configs to each one of a collection of attributes
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
-                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
+                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
@@ -208,7 +206,8 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             // create a chained config to apply multiple transformation configs to each one of a collection of attributes
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
-                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
+                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
