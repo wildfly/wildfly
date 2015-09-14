@@ -1,12 +1,20 @@
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -156,10 +164,10 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
         List<ModelNode> operations = builder.parseXmlResource("subsystem-ejb3-transform-reject.xml");
 
-        ModelTestUtils.checkFailedTransformedBootOperations(services, model, operations, createFailedOperationTransformationConfig(model));
+        ModelTestUtils.checkFailedTransformedBootOperations(services, model, operations, createFailedOperationTransformationConfig(services, model));
     }
 
-    private static FailedOperationTransformationConfig createFailedOperationTransformationConfig(ModelVersion version) {
+    private static FailedOperationTransformationConfig createFailedOperationTransformationConfig(KernelServices services, ModelVersion version) {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
 
@@ -176,7 +184,13 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             // discard new attributes default-sfsb-passivation-disabled-cache, disable-default-ejb-permissions
             config.addFailedAttribute(subsystemAddress, chainedConfig);
 
-            // reject the resource /subsystem=ejb3/service=timer-service/file-data-store=file-data-store-rejected
+            // make sure that we have a file-data-store matching the custom-data-store attribute value
+            final PathAddress timerServiceAddr = subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH);
+            final PathAddress badFileStoreAddr = timerServiceAddr.append(PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rename-to-default"));
+            final PathAddress newFileStoreAddr = timerServiceAddr.append(PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store"));
+            config.addFailedAttribute(badFileStoreAddr, new ChangeAddressConfig(services, badFileStoreAddr, newFileStoreAddr));
+
+            // reject the resource /subsystem=ejb3/service=timer-service/file-data-store=file-data-store-rejected since we already have a file-data-store
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rejected")),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
@@ -211,12 +225,6 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // discard new attributes default-sfsb-passivation-disabled-cache, disable-default-ejb-permissions
             config.addFailedAttribute(subsystemAddress, chainedConfig);
-
-            // reject the resource /subsystem=ejb3/service=timer-service/file-data-store=file-data-store-rejected
-
-            // config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rejected")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            //config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rejected")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            //config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
             // reject the attributes allow execution, refresh interval from resource /subsystem=ejb3/service=timer-service/database-data-store=*
             PathAddress databaseDataStore = subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
@@ -315,5 +323,73 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             return new ModelNode();
         }
 
+    }
+
+    private static class ChangeAddressConfig implements FailedOperationTransformationConfig.PathAddressConfig {
+        KernelServices services;
+        private final PathAddress badAddress;
+        private final PathAddress newAddress;
+
+        private ChangeAddressConfig(KernelServices services, PathAddress badAddress, PathAddress newAddress) {
+            this.services = services;
+            this.badAddress = badAddress;
+            this.newAddress = newAddress;
+        }
+
+        @Override
+        public boolean expectFailed(ModelNode operation) {
+            return isBadAddress(operation);
+        }
+
+        @Override
+        public boolean canCorrectMore(ModelNode operation) {
+            return isBadAddress(operation);
+        }
+
+        @Override
+        public ModelNode correctOperation(ModelNode operation) {
+            //As part of this we also need to update the main model, since the transformer will look at the
+            //values already in the model in order to know what to reject. We basically move the
+            //resource found at badAddress to newAddress
+            try {
+                ModelNode ds = services.executeForResult(Util.createEmptyOperation(READ_RESOURCE_OPERATION, badAddress));
+                ModelTestUtils.checkOutcome(services.executeOperation(Util.createRemoveOperation(badAddress)));
+                ds.get(OP).set(ADD);
+                ds.get(OP_ADDR).set(newAddress.toModelNode());
+                ModelTestUtils.checkOutcome(services.executeOperation((ds)));
+            } catch (OperationFailedException e) {
+                throw new RuntimeException(e);
+            }
+
+            //Now fix up the operation as normal
+            ModelNode op = operation.clone();
+            op.get(OP_ADDR).set(newAddress.toModelNode());
+            return op;
+        }
+
+        @Override
+        public boolean expectDiscarded(ModelNode operation) {
+            //The reject simply forwards on the original operation to make it fail
+            return false;
+        }
+
+        @Override
+        public List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        private boolean isBadAddress(ModelNode operation) {
+            return PathAddress.pathAddress(operation.require(OP_ADDR)).equals(badAddress);
+        }
     }
 }

@@ -149,8 +149,11 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         @Override
         public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
             Resource original = context.readResourceFromRoot(address);
-            if (original.getChildren(EJB3SubsystemModel.FILE_DATA_STORE).size() > 1){
-                return new TransformedOperation(operation,new OperationRejectionPolicy() {
+            String defaultDataStore = original.getModel().get(DEFAULT_DATA_STORE.getName()).asString();
+            boolean hasFileDataStore = original.hasChild(PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE_PATH.getKey(), defaultDataStore));
+            if (original.getChildren(EJB3SubsystemModel.FILE_DATA_STORE).size() > 1 ||
+                    !hasFileDataStore){
+                return new TransformedOperation(operation, new OperationRejectionPolicy() {
                     @Override
                     public boolean rejectOperation(ModelNode preparedResult) {
                         return true;

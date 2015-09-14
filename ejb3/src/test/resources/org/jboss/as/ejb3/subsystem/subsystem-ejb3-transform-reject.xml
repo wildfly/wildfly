@@ -37,7 +37,9 @@
     <async thread-pool-name="default"/>
     <timer-service thread-pool-name="default" default-data-store="file-data-store">
         <data-stores>
-            <file-data-store name="file-data-store-name" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
+            <!-- This will be renamed to 'file-data-store' by the test (for 6.3 and 6.4)-->
+            <file-data-store name="file-data-store-rename-to-default" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
+            <!-- This will be rejected, since there can only be one file-data-store (for 6.3 and 6.4)-->
             <file-data-store name="file-data-store-rejected" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
             <!-- attributes here need to be rejected (refresh interval, allow execution) -->
             <database-data-store name="database-data-store-name" datasource-jndi-name="${prop.timer-service-database:java:global/DataSource}" database="hsql" partition="mypartition" allow-execution="true" refresh-interval="1"/>
