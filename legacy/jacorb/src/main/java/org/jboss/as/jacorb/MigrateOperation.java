@@ -157,13 +157,11 @@ public class MigrateOperation implements OperationStepHandler {
 
                     result.get(MIGRATION_OPERATIONS).set(values);
 
-                    if(!warnings.isEmpty()) {
-                        ModelNode rw = new ModelNode().setEmptyList();
-                        for (String warning : warnings) {
-                            rw.add(warning);
-                        }
-                        result.get(MIGRATION_WARNINGS).set(rw);
+                    ModelNode rw = new ModelNode().setEmptyList();
+                    for (String warning : warnings) {
+                        rw.add(warning);
                     }
+                    result.get(MIGRATION_WARNINGS).set(rw);
 
                     context.getResult().set(result);
                 } else {
@@ -176,13 +174,11 @@ public class MigrateOperation implements OperationStepHandler {
                         public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                             final ModelNode result = new ModelNode();
 
-                            if(!warnings.isEmpty()) {
-                                ModelNode rw = new ModelNode().setEmptyList();
-                                for (String warning : warnings) {
-                                    rw.add(warning);
-                                }
-                                result.get(MIGRATION_WARNINGS).set(rw);
+                            ModelNode rw = new ModelNode().setEmptyList();
+                            for (String warning : warnings) {
+                                rw.add(warning);
                             }
+                            result.get(MIGRATION_WARNINGS).set(rw);
 
                             if (resultAction == OperationContext.ResultAction.ROLLBACK) {
                                 for (Map.Entry<PathAddress, ModelNode> entry : migrateOpResponses.entrySet()) {
