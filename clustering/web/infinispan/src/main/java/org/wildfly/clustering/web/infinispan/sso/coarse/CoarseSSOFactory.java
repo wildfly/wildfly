@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -35,10 +35,10 @@ import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.sso.AuthenticationEntry;
+import org.wildfly.clustering.web.infinispan.sso.AuthenticationKey;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSO;
 import org.wildfly.clustering.web.infinispan.sso.SSOFactory;
-import org.wildfly.clustering.web.infinispan.sso.AuthenticationKey;
-import org.wildfly.clustering.web.infinispan.sso.AuthenticationEntry;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -75,7 +75,7 @@ public class CoarseSSOFactory<A, D, L> implements SSOFactory<CoarseSSOEntry<A, D
             Map<D, String> value = this.sessionsCache.get(new CoarseSessionsKey(id));
             return new CoarseSSOEntry<>(authentication, entry.getLocalContext(), value);
         }
-        Map<D, String> map = new HashMap<>();
+        Map<D, String> map = new ConcurrentHashMap<>();
         Map<D, String> existingMap = this.sessionsCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(new CoarseSessionsKey(id), map);
         return new CoarseSSOEntry<>(authentication, entry.getLocalContext(), (existingMap != null) ? existingMap : map);
     }
