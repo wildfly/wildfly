@@ -176,11 +176,9 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             // discard new attributes default-sfsb-passivation-disabled-cache, disable-default-ejb-permissions
             config.addFailedAttribute(subsystemAddress, chainedConfig);
 
-            // discard defined attribute log-system-exceptions
-            // config.addFailedAttribute(subsystemAddress, new DiscardAttribute(EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS));
-
             // reject the resource /subsystem=ejb3/service=timer-service/file-data-store=file-data-store-rejected
-            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE)), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rejected")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
             // reject the resource /subsystem=ejb3/service=timer-service/database-data-store=*
             PathAddress databaseDataStore = subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
@@ -213,9 +211,6 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // discard new attributes default-sfsb-passivation-disabled-cache, disable-default-ejb-permissions
             config.addFailedAttribute(subsystemAddress, chainedConfig);
-
-            // discard defined attribute log-system-exceptions
-            // config.addFailedAttribute(subsystemAddress, new DiscardAttribute(EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS));
 
             // reject the resource /subsystem=ejb3/service=timer-service/file-data-store=file-data-store-rejected
 

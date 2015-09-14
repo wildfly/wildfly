@@ -177,10 +177,6 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
             ModelNode fileStore = untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE, defaultDataStore);
             if (!fileStore.isDefined()) {//happens where default is not file-store
                 rejectIncompatibleDataStores(context, address);
-                // If we get here the slave must be 7.1 and we don't know if the slave has this profile ignored
-                // Just use an empty "file-store" which won't work on a slave server anyway because a null 'path'
-                // won't work in FileTimerPersistence
-                fileStore = new ModelNode();
             } else if ((untransformedModel.hasDefined(EJB3SubsystemModel.DATABASE_DATA_STORE)
                             && untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).keys().size() > 0)
                         || untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE).keys().size() > 1) {
@@ -197,13 +193,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
         private void rejectIncompatibleDataStores(ResourceTransformationContext context, PathAddress address) throws OperationFailedException {
             TransformationTarget tgt = context.getTarget();
-            if (tgt.isIgnoredResourceListAvailableAtRegistration()) {
-                // Slave is 7.2.x or higher and we know this resource is not ignored
-                throw new OperationFailedException(EjbLogger.ROOT_LOGGER.untransformableTimerService(address));
-            } else {
-                // 7.1.x slave; resource *may* be ignored so we can't fail; just log
-                context.getLogger().logWarning(EjbLogger.ROOT_LOGGER.untransformableTimerService(address));
-            }
+            throw new OperationFailedException(EjbLogger.ROOT_LOGGER.untransformableTimerService(address));
         }
 
     }
