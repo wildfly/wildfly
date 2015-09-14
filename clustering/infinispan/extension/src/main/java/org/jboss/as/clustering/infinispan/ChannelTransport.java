@@ -22,23 +22,12 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import static org.infinispan.factories.KnownComponentNames.GLOBAL_MARSHALLER;
-
 import java.nio.ByteBuffer;
-import java.util.concurrent.ScheduledExecutorService;
 
-import org.infinispan.commons.marshall.StreamingMarshaller;
-import org.infinispan.factories.GlobalComponentRegistry;
-import org.infinispan.factories.KnownComponentNames;
-import org.infinispan.factories.annotations.ComponentName;
-import org.infinispan.factories.annotations.Inject;
-import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
-import org.infinispan.remoting.inboundhandler.InboundInvocationHandler;
 import org.infinispan.remoting.responses.CacheNotFoundResponse;
 import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.remoting.transport.jgroups.MarshallerAdapter;
-import org.infinispan.util.TimeService;
 import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
@@ -48,30 +37,21 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  */
 public class ChannelTransport extends JGroupsTransport {
 
-    final ChannelFactory factory;
-
-    private volatile ScheduledExecutorService timeoutExecutor;
+    private final Channel channel;
+    private final ChannelFactory factory;
 
     public ChannelTransport(Channel channel, ChannelFactory factory) {
-        super(channel);
+        this.channel = channel;
         this.factory = factory;
     }
 
     @Override
-    @Inject
-    public void initialize(@ComponentName(GLOBAL_MARSHALLER) StreamingMarshaller marshaller, CacheManagerNotifier notifier, GlobalComponentRegistry gcr, TimeService timeService,
-                           InboundInvocationHandler globalHandler, @ComponentName(KnownComponentNames.ASYNC_REPLICATION_QUEUE_EXECUTOR) ScheduledExecutorService timeoutExecutor) {
-        super.initialize(marshaller, notifier, gcr, timeService, globalHandler, timeoutExecutor);
-        this.timeoutExecutor = timeoutExecutor;
-    }
-
-    @Override
     protected void initRPCDispatcher() {
-        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.globalHandler, this.timeoutExecutor);
+        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.globalHandler, this.getTimeoutExecutor());
         MarshallerAdapter adapter = new MarshallerAdapter(this.marshaller) {
             @Override
             public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
-                return ChannelTransport.this.factory.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length)) ? CacheNotFoundResponse.INSTANCE : super.objectFromBuffer(buffer, offset, length);
+                return ChannelTransport.this.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length)) ? CacheNotFoundResponse.INSTANCE : super.objectFromBuffer(buffer, offset, length);
             }
         };
         this.dispatcher.setRequestMarshaller(adapter);
@@ -79,11 +59,17 @@ public class ChannelTransport extends JGroupsTransport {
         this.dispatcher.start();
     }
 
+    boolean isUnknownForkResponse(ByteBuffer response) {
+        return this.factory.isUnknownForkResponse(response);
+    }
+
     @Override
     protected synchronized void initChannel() {
         this.channel.setDiscardOwnMessages(false);
-        this.connectChannel = true;
-        this.disconnectChannel = true;
-        this.closeChannel = false;
+        // This is necessary because JGroupsTransport nulls its channel reference in stop()
+        super.channel = this.channel;
+        super.connectChannel = true;
+        super.disconnectChannel = true;
+        super.closeChannel = false;
     }
 }
