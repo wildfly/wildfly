@@ -191,6 +191,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setValidator(new IntRangeValidator(2, true, true))
             .build();
     public static final SimpleAttributeDefinition JOURNAL_SYNC_NON_TRANSACTIONAL = create("journal-sync-non-transactional", BOOLEAN)
             .setAttributeGroup("journal")
