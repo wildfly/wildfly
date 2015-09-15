@@ -107,6 +107,11 @@ final class MBeanServices {
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);
+
+        for(SetupAction action : setupActions) {
+            startStopServiceBuilder.addDependencies(action.dependencies());
+        }
+
         Services.addServerExecutorDependency(startStopServiceBuilder, ((StartStopService) startStopService).getExecutorInjector(), false);
 
         this.mBeanName = mBeanName;
@@ -157,7 +162,7 @@ final class MBeanServices {
         target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName), mbeanRegistrationService)
             .addDependency(mbeanServerServiceName, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
             .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector())
-            .install();
+                .install();
 
         installed = true;
     }
