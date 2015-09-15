@@ -22,22 +22,22 @@
 
 package org.jboss.as.security.service;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.remoting.RemotingContext;
-import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.remoting3.Connection;
-
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 
 /**
  * Privileged blocks for this package
@@ -59,6 +59,10 @@ class SecurityActions {
         return classLoaderActions().loadClass(name);
     }
 
+    static ClassLoader setThreadContextClassLoader(ClassLoader toSet) {
+        return classLoaderActions().setThreadContextClassLoader(toSet);
+    }
+
     private static ClassLoaderActions classLoaderActions() {
         return WildFlySecurityManager.isChecking() ? ClassLoaderActions.PRIVILEGED : ClassLoaderActions.NON_PRIVILEGED;
     }
@@ -67,7 +71,9 @@ class SecurityActions {
 
         Class<?> loadClass(final String name) throws ClassNotFoundException;
 
-        final ClassLoaderActions NON_PRIVILEGED = new ClassLoaderActions() {
+        ClassLoader setThreadContextClassLoader(ClassLoader toSet);
+
+        ClassLoaderActions NON_PRIVILEGED = new ClassLoaderActions() {
 
             @Override
             public Class<?> loadClass(String name) throws ClassNotFoundException {
@@ -88,9 +94,17 @@ class SecurityActions {
                 }
                 throw e != null ? e : SecurityLogger.ROOT_LOGGER.cnfe(name);
             }
+
+            @Override
+            public ClassLoader setThreadContextClassLoader(ClassLoader toSet) {
+                Thread currentThread = Thread.currentThread();
+                ClassLoader previous = currentThread.getContextClassLoader();
+                currentThread.setContextClassLoader(toSet);
+                return previous;
+            }
         };
 
-        final ClassLoaderActions PRIVILEGED = new ClassLoaderActions() {
+        ClassLoaderActions PRIVILEGED = new ClassLoaderActions() {
 
             @Override
             public Class<?> loadClass(final String name) throws ClassNotFoundException {
@@ -111,6 +125,17 @@ class SecurityActions {
                     }
                     throw new RuntimeException(cause);
                 }
+            }
+
+            @Override
+            public ClassLoader setThreadContextClassLoader(final ClassLoader toSet) {
+                return doPrivileged(new PrivilegedAction<ClassLoader>() {
+
+                    @Override
+                    public ClassLoader run() {
+                        return NON_PRIVILEGED.setThreadContextClassLoader(toSet);
+                    }
+                });
             }
         };
     }
