@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.manualmode.messaging.ha;
 
-import java.io.File;
-import java.io.FilenameFilter;
-
 import javax.naming.InitialContext;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -40,6 +37,19 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
     protected final String jmsQueueName = "FailoverTestCase-Queue";
     protected final String jmsQueueLookup = "jms/" + jmsQueueName;
 
+    @Override
+    protected void setUpServer1(ModelControllerClient client) throws Exception {
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
+        jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
+
+    }
+
+    @Override
+    protected void setUpServer2(ModelControllerClient client) throws Exception {
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
+        jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
+    }
+
     @Test
     public void testBackupActivation() throws Exception {
         ModelControllerClient client2 = createClient2();
@@ -49,41 +59,46 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         InitialContext context1 = createJNDIContextFromServer1();
         sendAndReceiveMessage(context1, jmsQueueLookup);
         // send a message to server1 before it is stopped
-        String text = "sent to server1, received from server2 (after failover)";
+        String text = "sent to server1, should be received on server 2 after failover";
         sendMessage(context1, jmsQueueLookup, text);
         context1.close();
 
-        System.out.println("===================");
-        System.out.println("STOP SERVER1...");
-        System.out.println("===================");
-        container.stop(SERVER1);
+        info("KILL SERVER #1...");
+        container.kill(SERVER1);
 
+        info("WAIT FOR SERVER #2 ACTIVATION...");
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(jmsOperations2, true);
+        info("SERVER #2 ACTIVATED");
+
         checkJMSQueue(jmsOperations2, jmsQueueName, true);
 
         InitialContext context2 = createJNDIContextFromServer2();
         // receive the message that was sent to server1 before failover occurs
         receiveMessage(context2, jmsQueueLookup, text);
         sendAndReceiveMessage(context2, jmsQueueLookup);
-        String text2 = "sent to server2, received from server 1 (after failback)";
+        String text2 = "sent to server2, should be received on server 1 after failback";
         sendMessage(context2, jmsQueueLookup, text2);
         context2.close();
 
-        System.out.println("====================");
-        System.out.println("START SERVER1...");
-        System.out.println("====================");
+        Thread.sleep(EXPIRATION_TIME);
+
+        info("RESTART SERVER #1...");
         // restart the live server
         container.start(SERVER1);
 
         // let some time for the backup to detect the live node and failback
         ModelControllerClient client1 = createClient1();
         JMSOperations jmsOperations1 = JMSOperationsProvider.getInstance(client1);
+        info("WAIT FOR SERVER #1 ACTIVATION...");
         waitForHornetQServerActivation(jmsOperations1, true);
+        info("SERVER #1 ACTIVATED...");
         checkHornetQServerStartedAndActiveAttributes(jmsOperations1, true, true);
 
+        info("WAIT FOR SERVER #2 *DE*ACTIVATION...");
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(jmsOperations2, false);
+        info("SERVER #2 *DE*ACTIVATED...");
         // backup server has been restarted in passive mode
         checkHornetQServerStartedAndActiveAttributes(jmsOperations2, true, false);
 
@@ -96,9 +111,10 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendAndReceiveMessage(context1, jmsQueueLookup);
         context1.close();
 
-        System.out.println("=============================");
-        System.out.println("RETURN TO NORMAL OPERATION...");
-        System.out.println("=============================");
+        info("RETURN TO NORMAL OPERATION...");
+
+        client2.close();
+        client1.close();
     }
 
     @Test
@@ -112,19 +128,13 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text);
         context1.close();
 
-        System.err.println("############## 1 #############");
-        listSharedStoreDir();
+        info("KILL SERVER #1...");
+        container.kill(SERVER1);
 
-        System.err.println("===================");
-        System.err.println("STOP SERVER1...");
-        System.err.println("===================");
-        container.stop(SERVER1);
-
-        System.out.println("############## 2 #############");
-        listSharedStoreDir();
-
+        info("WAIT FOR SERVER #2 ACTIVATION...");
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(backupJMSOperations, true);
+        info("SERVER #2 ACTIVATED");
         checkJMSQueue(backupJMSOperations, jmsQueueName, true);
 
         InitialContext context2 = createJNDIContextFromServer2();
@@ -135,22 +145,26 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context2, jmsQueueLookup, text2);
         context2.close();
 
-        System.out.println("====================");
-        System.out.println("START SERVER1...");
-        System.out.println("====================");
+        Thread.sleep(EXPIRATION_TIME);
+
+        info("RESTART SERVER #1...");
         // restart the live server
         container.start(SERVER1);
         // let some time for the backup to detect the live node and failback
         ModelControllerClient client1 = createClient1();
         JMSOperations liveJMSOperations = JMSOperationsProvider.getInstance(client1);
+        info("WAIT FOR SERVER #1 ACTIVATION...");
         waitForHornetQServerActivation(liveJMSOperations, true);
+        info("SERVER #1 ACTIVATED...");
         checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
 
+
+        info("WAIT FOR SERVER #2 *DE*ACTIVATION...");
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(backupJMSOperations, false);
+        info("SERVER #2 *DE*ACTIVATED...");
         // backup server has been restarted in passive mode
         checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
-
         checkJMSQueue(backupJMSOperations, jmsQueueName, false);
 
         context1 = createJNDIContextFromServer1();
@@ -161,14 +175,14 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text3);
         context1.close();
 
-        System.out.println("==============================");
-        System.out.println("STOP SERVER1 A 2ND TIME...");
-        System.out.println("==============================");
+        info("KILL SERVER #1 A 2ND TIME...");
         // shutdown server1 a 2nd time
-        container.stop(SERVER1);
+        container.kill(SERVER1);
 
+        info("WAIT FOR SERVER #2 ACTIVATION...");
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(backupJMSOperations, true);
+        info("SERVER #2 ACTIVATED...");
         checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, true);
         checkJMSQueue(backupJMSOperations, jmsQueueName, true);
 
@@ -177,29 +191,9 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         receiveMessage(context2, jmsQueueLookup, text3);
         context2.close();
 
-        //Assert.fail("wth");
+        info("RETURN TO NORMAL OPERATION...");
 
-    }
-
-    private void listSharedStoreDir() {
-        final File SHARED_STORE_DIR = new File(System.getProperty("java.io.tmpdir"), "activemq");
-        if (!SHARED_STORE_DIR.exists()) {
-            return;
-        }
-        System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@");
-        System.err.println("SHARED_STORE_DIR = " + SHARED_STORE_DIR);
-        for (File file : SHARED_STORE_DIR.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return true;
-            }})) {
-            System.err.format("+ %s [r=%s,w=%s,x=%s]\n", file, file.canRead(), file.canWrite(), file.canExecute());
-            if (file.isDirectory()) {
-                for (File f : file.listFiles()) {
-                    System.err.println("    + " + f);
-                }
-            }
-        }
-        System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@");
+        client1.close();
+        client2.close();
     }
 }

@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 
 import java.io.File;
 
@@ -37,21 +36,15 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
-import org.junit.BeforeClass;
 
 /**
- * IGNORE until https://issues.apache.org/jira/browse/ARTEMIS-138 is fixed.
+ * Failover and failback tests using 2 Artemis nodes (with shared store).
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
 public class SharedStoreFailoverTestCase extends FailoverTestCase {
 
     private static final File SHARED_STORE_DIR = new File(System.getProperty("java.io.tmpdir"), "activemq");
-
-    @BeforeClass
-    public static void beforeClass() {
-        thisTestIsFailingIntermittently("WFLY-5531");
-    }
 
     @Before
     @Override
@@ -61,22 +54,6 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
             SHARED_STORE_DIR.mkdirs();
         }
         super.setUp();
-
-        listSharedStoreDir();
-    }
-
-    private void listSharedStoreDir() {
-        System.out.println("<<<<@@@@@@@@@@@@@@@@@@@@@@@@@");
-        System.out.println("SHARED_STORE_DIR = " + SHARED_STORE_DIR);
-        for (File file : SHARED_STORE_DIR.listFiles()) {
-            System.out.println("+ " + file);
-            if (file.isDirectory()) {
-                for (File f : file.listFiles()) {
-                    System.out.println("    + " + f);
-                }
-            }
-        }
-        System.out.println("<<<<<@@@@@@@@@@@@@@@@@@@@@@@@@");
     }
 
     @Override
@@ -88,7 +65,7 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
         operation.get(OP_ADDR).add("ha-policy", "shared-store-master");
         operation.get(OP).set(ADD);
         operation.get("failover-on-server-shutdown").set(true);
-        execute(client, operation);
+        execute(client, operation, true);
 
         configureSharedStore(client);
 
@@ -105,7 +82,7 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
         operation.get(OP_ADDR).add("ha-policy", "shared-store-slave");
         operation.get(OP).set(ADD);
         operation.get("restart-backup").set(true);
-        execute(client, operation);
+        execute(client, operation, true);
 
         configureSharedStore(client);
 
@@ -128,7 +105,7 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
         operation.get(OP_ADDR).add("server", "default");
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(INCLUDE_RUNTIME).set(true);
-        execute(client, operation);
+        execute(client, operation, true);
 
         for (String path : new String[] {"journal-directory",
                 "large-messages-directory",
@@ -143,7 +120,7 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
             undefineRelativeToAttribute.get(OP).set(ADD);
             File f = new File(SHARED_STORE_DIR, path);
             undefineRelativeToAttribute.get(PATH).set(f.getAbsolutePath());
-            execute(client, undefineRelativeToAttribute);
+            execute(client, undefineRelativeToAttribute, true);
         }
     }
 

@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.manualmode.messaging.ha;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
@@ -32,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -54,6 +56,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -64,6 +67,7 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -80,7 +84,11 @@ public abstract class AbstractMessagingHATestCase {
     public static final String SERVER2 = "jbossas-messaging-ha-server2";
 
     // maximum time for HornetQ activation to detect node failover/failback
-    protected static int ACTIVATION_TIMEOUT = 30000;
+    protected static int ACTIVATION_TIMEOUT = 15000;
+    // leave some time before restarting a server to have other nodes expire its information
+    protected static long EXPIRATION_TIME = ActiveMQDefaultConfiguration.getDefaultBroadcastRefreshTimeout() + 2000;
+
+    protected static final Logger logger = Logger.getLogger(AbstractMessagingHATestCase.class);
 
     private String snapshotForServer1;
     private String snapshotForServer2;
@@ -114,11 +122,12 @@ public abstract class AbstractMessagingHATestCase {
             operation.get(OP_ADDR).set(operations.getServerAddress());
             operation.get(OP).set(READ_RESOURCE_OPERATION);
             operation.get(INCLUDE_RUNTIME).set(true);
-            operation.get(RECURSIVE).set(true);
+            operation.get(RECURSIVE).set(false);
             try {
                 ModelNode result = execute(operations.getControllerClient(), operation);
                 boolean started = result.get("started").asBoolean();
                 boolean active = result.get("active").asBoolean();
+                logger.info("active=" + active + ", started=" + started);
                 if (started && expectedActive == active) {
                     // leave some time to the hornetq children resources to be installed after the server is activated
                     Thread.sleep(TimeoutUtil.adjust(500));
@@ -128,13 +137,13 @@ public abstract class AbstractMessagingHATestCase {
             } catch (Exception e) {
             }
             try {
-                Thread.sleep(100);
+                Thread.sleep(ACTIVATION_TIMEOUT / 3);
             } catch (InterruptedException e) {
             }
             now = System.currentTimeMillis();
         } while (now - start < ACTIVATION_TIMEOUT);
 
-        fail("Server did not become active in the imparted time.");
+        fail(expectedActive ? "Server did not become active in the imparted time." : "Server remained active after the imparted time");
     }
 
     protected static void checkHornetQServerStartedAndActiveAttributes(JMSOperations operations, boolean expectedStarted, boolean expectedActive) throws Exception {
@@ -143,24 +152,29 @@ public abstract class AbstractMessagingHATestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(INCLUDE_RUNTIME).set(true);
+        operation.get(RECURSIVE).set(false);
         ModelNode result = execute(operations.getControllerClient(), operation);
         assertEquals(expectedStarted, result.get("started").asBoolean());
         assertEquals(expectedActive, result.get("active").asBoolean());
     }
 
     protected static InitialContext createJNDIContextFromServer1() throws NamingException {
+        String address = TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddress());
+
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "http-remoting://127.0.0.1:8080"));
+        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "http-remoting://" + address + ":8080"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);
     }
 
     protected static  InitialContext createJNDIContextFromServer2() throws NamingException {
+        String address = TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddress());
+
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "http-remoting://127.0.0.1:8180"));
+        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "http-remoting://" + address + ":8180"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);
@@ -192,7 +206,7 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     protected static  void sendAndReceiveMessage(Context ctx, String destinationLookup) throws NamingException {
-        String text = UUID.randomUUID().toString();
+        String text = "message sent and received from the same server " + UUID.randomUUID().toString();
         sendMessage(ctx, destinationLookup, text);
         receiveMessage(ctx, destinationLookup, text);
     }
@@ -221,18 +235,26 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     private void restoreSnapshot(String snapshot) {
-        System.out.println("snapshot = " + snapshot);
+        logger.info("snapshot = " + snapshot);
         File snapshotFile = new File(snapshot);
         File configurationDir = snapshotFile.getParentFile().getParentFile().getParentFile();
-        System.out.println("configurationDir = " + configurationDir);
+        logger.info("configurationDir = " + configurationDir);
         File standaloneConfiguration = new File(configurationDir, "standalone-full-ha.xml");
         snapshotFile.renameTo(standaloneConfiguration);
     }
 
     protected static ModelNode execute(ModelControllerClient client, ModelNode operation) throws Exception {
-        System.out.println("operation = " + operation);
+        return execute(client, operation, false);
+    }
+
+    protected static ModelNode execute(ModelControllerClient client, ModelNode operation, boolean log) throws Exception {
+        if (log) {
+            logger.info("operation = " + operation);
+        }
         ModelNode response = client.execute(operation);
-        System.out.println("response = " + response);
+        if (log) {
+            logger.info("response = " + response);
+        }
         boolean success = SUCCESS.equals(response.get(OUTCOME).asString());
         if (success) {
             return response.get(RESULT);
@@ -266,7 +288,9 @@ public abstract class AbstractMessagingHATestCase {
 
         // setup both servers
         try {
+            info("Setup Server #1");
             setUpServer1(client1);
+            info("Setup Server #2");
             setUpServer2(client2);
         } catch (Exception e) {
             tearDown();
@@ -274,11 +298,15 @@ public abstract class AbstractMessagingHATestCase {
         }
 
         // reload server1 in normal mode
+        info("Reload Server #1...");
         executeReloadAndWaitForCompletionOfServer1(client1, false);
+        info("Server #1 reloaded");
         client1 = createClient1();
 
         // reload server2  in normal mode
+        info("Reload Server #2...");
         executeReloadAndWaitForCompletionOfServer2(client2, false);
+        info("Server #2 reloaded");
         client2 = createClient2();
 
         // both servers are started and configured
@@ -293,18 +321,26 @@ public abstract class AbstractMessagingHATestCase {
 
     @After
     public void tearDown() throws Exception {
-        if (container.isStarted(SERVER1)) {
-            container.stop(SERVER1);
+        try {
+            if (container.isStarted(SERVER2)) {
+                container.stop(SERVER2);
+            }
+        } finally {
+            restoreSnapshot(snapshotForServer2);
         }
-        restoreSnapshot(snapshotForServer1);
-        if (container.isStarted(SERVER2)) {
-            container.stop(SERVER2);
+
+        try {
+            if (container.isStarted(SERVER1)) {
+                container.stop(SERVER1);
+            }
+        } finally {
+            restoreSnapshot(snapshotForServer1);
         }
-        restoreSnapshot(snapshotForServer2);
     }
 
     private void executeReloadAndWaitForCompletionOfServer1(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
         executeReloadAndWaitForCompletion(initialClient, adminOnly);
+        initialClient.close();
     }
 
     private void executeReloadAndWaitForCompletionOfServer2(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
@@ -312,5 +348,39 @@ public abstract class AbstractMessagingHATestCase {
                 adminOnly,
                 TestSuiteEnvironment.getServerAddress(),
                 TestSuiteEnvironment.getServerPort() + 100);
+        initialClient.close();
+    }
+
+    protected void addDebug(ModelControllerClient client, String server) throws Exception {
+        // /subsystem=logging/pattern-formatter=COLOR-PATTERN:write-attribute(name=pattern, value="<server> %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n")
+        // /subsystem=logging/console-handler=DEBUGGER:add(level=DEBUG, named-formatter=COLOR-PATTERN)
+
+        ModelNode configureFormatterOp = new ModelNode();
+        configureFormatterOp.get(OP_ADDR).add("subsystem", "logging");
+        configureFormatterOp.get(OP_ADDR).add("pattern-formatter", "COLOR-PATTERN");
+        configureFormatterOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        configureFormatterOp.get("name").set("pattern");
+        configureFormatterOp.get("value").set("[" + server + "] %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n");
+        execute(client, configureFormatterOp, true);
+
+        ModelNode addHandlerOp = new ModelNode();
+        addHandlerOp.get(OP_ADDR).add("subsystem", "logging");
+        addHandlerOp.get(OP_ADDR).add("console-handler", "DEBUGGER");
+        addHandlerOp.get(OP).set(ADD);
+        addHandlerOp.get("level").set("DEBUG");
+        addHandlerOp.get("named-formatter").set("COLOR-PATTERN");
+        execute(client, addHandlerOp, true);
+
+        ModelNode addLoggerOp = new ModelNode();
+        addLoggerOp.get(OP_ADDR).add("subsystem", "logging");
+        addLoggerOp.get(OP_ADDR).add("logger", "org.apache.activemq.artemis");
+        addLoggerOp.get(OP).set(ADD);
+        addLoggerOp.get("level").set("DEBUG");
+        addLoggerOp.get("handlers").add("DEBUGGER");
+        execute(client, addLoggerOp, true);
+    }
+
+    protected void info(String message) {
+        logger.info("\n\n===================\n" + message + "\n===================\n\n");
     }
 }
