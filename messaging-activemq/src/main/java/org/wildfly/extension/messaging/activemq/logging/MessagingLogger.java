@@ -808,4 +808,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 84, value = "The server does not define any in-vm connector. One is required to be able to import a journal")
     OperationFailedException noInVMConnector();
+
+    @Message(id = 85, value = "Unable to load class %s from module %s")
+    OperationFailedException unableToLoadClassFromModule(String className, String moduleName);
 }

@@ -11,6 +11,16 @@
             connection-ttl-override="${connection.ttl.override:5432}"
             async-connection-execution-enabled="${async.connection.execution.enabled:false}">
 
+        <incoming-interceptors>
+            <class name="org.foo.incoming.myInterceptor" module="org.foo" />
+            <class name="org.bar.incoming.myOtherInterceptor" module="org.bar" />
+        </incoming-interceptors>
+
+        <outgoing-interceptors>
+            <class name="org.foo.outgoing.myInterceptor" module="org.foo" />
+            <class name="org.bar.outgoing.myOtherInterceptor" module="org.bar" />
+        </outgoing-interceptors>
+
         <security
                 enabled="${security.enabled:false}"
                 domain="someDomain"
@@ -54,10 +64,6 @@
         <message-expiry
                 scan-period="${message.expiry.scan.period:7654}"
                 thread-priority="${message.expiry.thread.priority:7}"/>
-
-        <remoting-interceptors
-                incoming="foo.bar bar.foo"
-                outgoing="bar.foo foo.bar" />
 
         <debug
                 perf-blast-pages="${perf.blast.pages:70}"
