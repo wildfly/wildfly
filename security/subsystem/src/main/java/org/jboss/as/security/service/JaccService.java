@@ -22,6 +22,8 @@
 
 package org.jboss.as.security.service;
 
+import static org.jboss.as.security.service.SecurityBootstrapService.JACC_MODULE;
+
 import java.security.Policy;
 
 import javax.security.jacc.PolicyConfiguration;
@@ -30,6 +32,7 @@ import javax.security.jacc.PolicyContextException;
 
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.logging.SecurityLogger;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -37,6 +40,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A service for JACC policies
@@ -75,7 +79,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            PolicyConfigurationFactory pcf = PolicyConfigurationFactory.getPolicyConfigurationFactory();
+            PolicyConfigurationFactory pcf = getPolicyConfigurationFactory();
             synchronized (pcf) { // synchronize on the factory
                 policyConfiguration = pcf.getPolicyConfiguration(contextId, false);
                 if (metaData != null) {
@@ -101,6 +105,27 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
             }
         } catch (Exception e) {
             throw SecurityLogger.ROOT_LOGGER.unableToStartException("JaccService", e);
+        }
+    }
+
+    private PolicyConfigurationFactory getPolicyConfigurationFactory() throws ModuleLoadException, ClassNotFoundException, PolicyContextException {
+        String module = WildFlySecurityManager.getPropertyPrivileged(JACC_MODULE, null);
+        final ClassLoader originalClassLoader;
+        final ClassLoader jaccClassLoader;
+        if (module != null) {
+            jaccClassLoader = SecurityActions.getModuleClassLoader(JACC_MODULE);
+            originalClassLoader = SecurityActions.setThreadContextClassLoader(jaccClassLoader);
+        } else {
+            jaccClassLoader = null;
+            originalClassLoader = null;
+        }
+
+        try {
+            return PolicyConfigurationFactory.getPolicyConfigurationFactory();
+        } finally {
+            if (originalClassLoader != null) {
+                SecurityActions.setThreadContextClassLoader(originalClassLoader);
+            }
         }
     }
 
