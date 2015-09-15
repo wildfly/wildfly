@@ -40,18 +40,30 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistryType;
+import org.jboss.as.controller.extension.ExtensionResourceDefinition;
+import org.jboss.as.controller.extension.MutableRootResourceRegistrationProvider;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AbstractModelResource;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
@@ -190,11 +202,21 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
 
         UndertowExtension undertow = new UndertowExtension();
         IOExtension io = new IOExtension();
-
         boolean extensionAdded = false;
 
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+
+            final OperationDefinition removeExtension = new SimpleOperationDefinitionBuilder("remove", new StandardResourceDescriptionResolver("test", "test", getClass().getClassLoader()))
+                    .build();
+
+
+            PathElement webExtension = PathElement.pathElement(EXTENSION, "org.jboss.as.web");
+            rootRegistration.registerSubModel(new SimpleResourceDefinition(webExtension, ControllerResolver.getResolver(EXTENSION)))
+                .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+            rootResource.registerChild(webExtension, Resource.Factory.create());
+
+
             rootRegistration.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement(EXTENSION),
                     ControllerResolver.getResolver(EXTENSION), new OperationStepHandler() {
                 @Override
