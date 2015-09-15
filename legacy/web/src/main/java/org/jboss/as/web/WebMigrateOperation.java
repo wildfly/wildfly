@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -118,6 +119,7 @@ public class WebMigrateOperation implements OperationStepHandler {
     private static final OperationStepHandler DESCRIBE_MIGRATION_INSTANCE = new WebMigrateOperation(true);
     private static final OperationStepHandler MIGRATE_INSTANCE = new WebMigrateOperation(false);
     public static final PathElement DEFAULT_SERVER_PATH = pathElement(Constants.SERVER, "default-server");
+    public static final PathAddress EXTENSION_ADDRESS = pathAddress(pathElement(EXTENSION, "org.jboss.as.web"));
     public static final String MIGRATE = "migrate";
     public static final String MIGRATION_WARNINGS = "migration-warnings";
     public static final String MIGRATION_ERROR = "migration-error";
@@ -168,7 +170,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         final ModelNode legacyModelAddOps = new ModelNode();
         //we don't preserve order, instead we sort by address length
         //TODO: is this ok in every case?
-        final Map<PathAddress, ModelNode> migrationOperations = new TreeMap<>(new Comparator<PathAddress>() {
+        final Map<PathAddress, ModelNode> sortedMigrationOperations = new TreeMap<>(new Comparator<PathAddress>() {
             @Override
             public int compare(PathAddress o1, PathAddress o2) {
                 final int compare = Integer.compare(o1.size(), o2.size());
@@ -183,33 +185,36 @@ public class WebMigrateOperation implements OperationStepHandler {
         describeLegacyWebResources(context, legacyModelAddOps);
         // invoke an OSH to add the messaging-activemq extension
         // FIXME: this does not work it the extension :add is added to the migrationOperations directly (https://issues.jboss.org/browse/WFCORE-323)
-        addExtension(context, migrationOperations, describe, UNDERTOW_EXTENSION);
-        addExtension(context, migrationOperations, describe, IO_EXTENSION);
+        addExtension(context, sortedMigrationOperations, describe, UNDERTOW_EXTENSION);
+        addExtension(context, sortedMigrationOperations, describe, IO_EXTENSION);
 
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                addDefaultResources(migrationOperations, legacyModelAddOps, warnings);
+                addDefaultResources(sortedMigrationOperations, legacyModelAddOps, warnings);
 
                 //create the new IO subsystem
-                createIoSubsystem(context, migrationOperations);
+                createIoSubsystem(context, sortedMigrationOperations);
 
-                createWelcomeContentHandler(migrationOperations);
+                createWelcomeContentHandler(sortedMigrationOperations);
 
                 // transform the legacy add operations and put them in migrationOperations
-                transformResources(context, legacyModelAddOps, migrationOperations, warnings);
+                transformResources(context, legacyModelAddOps, sortedMigrationOperations, warnings);
 
-                // put the /subsystem=messaging:remove operation
-                removeWebSubsystem(migrationOperations);
+                // put the /subsystem=web:remove operation
+                //we need the removes to be last, so we create a new linked hash map and add our sorted ops to it
+                LinkedHashMap<PathAddress, ModelNode> orderedMigrationOperations = new LinkedHashMap<>(sortedMigrationOperations);
 
-                fixAddressesForDomainMode(pathAddress(operation.get(ADDRESS)), migrationOperations);
+                removeWebSubsystem(orderedMigrationOperations, context.getProcessType() == ProcessType.STANDALONE_SERVER);
+
+                fixAddressesForDomainMode(pathAddress(operation.get(ADDRESS)), orderedMigrationOperations);
 
                 if (describe) {
                     // :describe-migration operation
 
                     // for describe-migration operation, do nothing and return the list of operations that would
                     // be executed in the composite operation
-                    final Collection<ModelNode> values = migrationOperations.values();
+                    final Collection<ModelNode> values = orderedMigrationOperations.values();
                     ModelNode result = new ModelNode();
                     if(!warnings.isEmpty()) {
                         ModelNode rw = new ModelNode().setEmptyList();
@@ -225,7 +230,7 @@ public class WebMigrateOperation implements OperationStepHandler {
                 } else {
                     // :migrate operation
                     // invoke an OSH on a composite operation with all the migration operations
-                    final Map<PathAddress, ModelNode> migrateOpResponses = migrateSubsystems(context, migrationOperations);
+                    final Map<PathAddress, ModelNode> migrateOpResponses = migrateSubsystems(context, orderedMigrationOperations);
 
                     context.completeStep(new OperationContext.ResultHandler() {
                         @Override
@@ -244,7 +249,7 @@ public class WebMigrateOperation implements OperationStepHandler {
                                         //we break when we find the first one, as there will only ever be one failure
                                         //as the op stops after the first failure
                                         ModelNode desc = new ModelNode();
-                                        desc.get(OP).set(migrationOperations.get(entry.getKey()));
+                                        desc.get(OP).set(orderedMigrationOperations.get(entry.getKey()));
                                         desc.get(RESULT).set(entry.getValue());
                                         result.get(MIGRATION_ERROR).set(desc);
                                         break;
@@ -530,10 +535,17 @@ public class WebMigrateOperation implements OperationStepHandler {
         }
     }
 
-    private void removeWebSubsystem(Map<PathAddress, ModelNode> migrationOperations) {
+    private void removeWebSubsystem(Map<PathAddress, ModelNode> migrationOperations, boolean standalone) {
         PathAddress subsystemAddress = pathAddress(WebExtension.SUBSYSTEM_PATH);
         ModelNode removeOperation = createRemoveOperation(subsystemAddress);
         migrationOperations.put(subsystemAddress, removeOperation);
+
+        //only add this if we are describing
+        //to maintain the order we manually execute this last
+        if(standalone) {
+            removeOperation = createRemoveOperation(EXTENSION_ADDRESS);
+            migrationOperations.put(EXTENSION_ADDRESS, removeOperation);
+        }
     }
 
     private Map<PathAddress, ModelNode> migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) throws OperationFailedException {

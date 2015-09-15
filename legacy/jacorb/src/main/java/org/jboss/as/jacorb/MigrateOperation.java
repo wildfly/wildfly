@@ -23,12 +23,14 @@
 package org.jboss.as.jacorb;
 
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
+import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -41,6 +43,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -69,6 +72,8 @@ public class MigrateOperation implements OperationStepHandler {
     public static final String MIGRATION_OPERATIONS = "migration-operations";
     public static final String MIGRATION_WARNINGS = "migration-warnings";
     public static final String MIGRATION_ERROR = "migration-error";
+    private static final PathAddress JACORB_EXTENSION = pathAddress(PathElement.pathElement(EXTENSION, "org.jboss.as.jacorb"));
+
 
     public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
             .setAllowNull(true)
@@ -145,7 +150,7 @@ public class MigrateOperation implements OperationStepHandler {
                 addOpenjdkSubsystem(openjdkAddress, openjdkModel, migrateOperations);
 
                 final PathAddress jacorbAddress = subsystemsAddress.append(JACORB_SUBSYSTEM_ELEMENT);
-                removeJacorbSubsystem(jacorbAddress, migrateOperations);
+                removeJacorbSubsystem(jacorbAddress, migrateOperations, context.getProcessType() == ProcessType.STANDALONE_SERVER);
 
                 if (describe) {
                     // :describe-migration operation
@@ -234,9 +239,14 @@ public class MigrateOperation implements OperationStepHandler {
 
     }
 
-    private void removeJacorbSubsystem(final PathAddress address, final Map<PathAddress, ModelNode> migrateOperations) {
+    private void removeJacorbSubsystem(final PathAddress address, final Map<PathAddress, ModelNode> migrateOperations, boolean standalone) {
         ModelNode removeLegacySubsystemOperation = Util.createRemoveOperation(address);
         migrateOperations.put(address, removeLegacySubsystemOperation);
+
+        if(standalone) {
+            removeLegacySubsystemOperation = createRemoveOperation(JACORB_EXTENSION);
+            migrateOperations.put(JACORB_EXTENSION, removeLegacySubsystemOperation);
+        }
     }
 
     private Map<PathAddress, ModelNode> migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) throws OperationFailedException {

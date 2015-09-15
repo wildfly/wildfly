@@ -84,6 +84,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -127,7 +129,7 @@ public class MigrateOperation implements OperationStepHandler {
 
     private static final String MESSAGING_ACTIVEMQ_EXTENSION = "org.wildfly.extension.messaging-activemq";
     private static final String MESSAGING_ACTIVEMQ_MODULE = "org.wildfly.extension.messaging-activemq";
-    private static final String MESSAGING_MODULE = "org.jboss.as.messaging";
+    private static final PathAddress MESSAGING_EXTENSION = pathAddress(PathElement.pathElement(EXTENSION, "org.jboss.as.messaging"));
 
     private static final String NEW_ENTRY_SUFFIX = "-new";
     private static final String HORNETQ_NETTY_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
@@ -210,7 +212,7 @@ public class MigrateOperation implements OperationStepHandler {
                 transformResources(legacyModelAddOps, migrationOperations, addLegacyEntries, warnings);
 
                 // put the /subsystem=messaging:remove operation
-                removeMessagingSubsystem(migrationOperations);
+                removeMessagingSubsystem(migrationOperations, context.getProcessType() == ProcessType.STANDALONE_SERVER);
 
                 PathAddress parentAddress = context.getCurrentAddress().getParent();
                 fixAddressesForDomainMode(parentAddress, migrationOperations);
@@ -313,10 +315,14 @@ public class MigrateOperation implements OperationStepHandler {
         }
     }
 
-    private void removeMessagingSubsystem(Map<PathAddress, ModelNode> migrationOperations) {
+    private void removeMessagingSubsystem(Map<PathAddress, ModelNode> migrationOperations, boolean standalone) {
         PathAddress subsystemAddress =  pathAddress(MessagingExtension.SUBSYSTEM_PATH);
         ModelNode removeOperation = createRemoveOperation(subsystemAddress);
         migrationOperations.put(subsystemAddress, removeOperation);
+        if(standalone) {
+            removeOperation = createRemoveOperation(MESSAGING_EXTENSION);
+            migrationOperations.put(MESSAGING_EXTENSION, removeOperation);
+        }
     }
 
     private Map<PathAddress, ModelNode> migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) throws OperationFailedException {
