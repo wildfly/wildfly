@@ -278,6 +278,7 @@
         <module>jsf</module>
         <module>jsr77</module>
         <module>legacy/cmp</module>
+        <module>legacy/configadmin</module>
         <module>legacy/jacorb</module>
         <module>legacy/jaxr</module>
         <module>legacy/messaging</module>
@@ -1027,6 +1028,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-cmp</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-configadmin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
