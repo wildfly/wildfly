@@ -49,11 +49,13 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MCP;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_TX_SEPARATE_POOL;
@@ -151,6 +153,8 @@ class DataSourceModelNodeUtil {
         final boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED);
         final boolean connectable = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, CONNECTABLE);
         final Boolean tracking = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, TRACKING);
+        final Boolean enlistmentTrace = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENLISTMENT_TRACE);
+        final String mcp = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, MCP);
         final boolean jta = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, JTA);
         final Integer maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE);
         final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
@@ -221,7 +225,7 @@ class DataSourceModelNodeUtil {
 
         return new ModifiableDataSource(connectionUrl, driverClass, dataSourceClass, driver, transactionIsolation, connectionProperties, timeOut,
                 security, statement, validation, urlDelimiter, urlSelectorStrategyClassName, newConnectionSql, useJavaContext,
-                poolName, enabled, jndiName, spy, useCcm, jta, connectable, tracking, pool, profile);
+                poolName, enabled, jndiName, spy, useCcm, jta, connectable, tracking, mcp, enlistmentTrace,  pool, profile);
     }
 
     static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName) throws OperationFailedException, ValidateException {
@@ -243,6 +247,8 @@ class DataSourceModelNodeUtil {
         final Boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED);
         final boolean connectable = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, CONNECTABLE);
         final Boolean tracking = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, TRACKING);
+        final Boolean enlistmentTrace = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENLISTMENT_TRACE);
+        final String mcp = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, MCP);
         final Integer maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE);
         final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
         final Integer initialPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, INITIAL_POOL_SIZE);
@@ -336,7 +342,7 @@ class DataSourceModelNodeUtil {
         }
         return new ModifiableXaDataSource(transactionIsolation, timeOut, security, statement, validation, urlDelimiter, urlProperty,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm,
-                connectable, tracking, xaDataSourceProperty,
+                connectable, tracking, mcp, enlistmentTrace, xaDataSourceProperty,
                 xaDataSourceClass, module, newConnectionSql, xaPool, recovery, profile);
     }
 
