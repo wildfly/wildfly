@@ -50,6 +50,7 @@ import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
+import org.jboss.as.ee.subsystem.CommonAttributes;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
@@ -80,7 +81,7 @@ public class EEConcurrentManagementTestCase {
         // add
         final ModelNode addOperation = Util.createAddOperation(pathAddress);
         final String jndiName = "java:jboss/ee/concurrency/contextservice/"+RESOURCE_NAME;
-        addOperation.get(ContextServiceResourceDefinition.JNDI_NAME).set(jndiName);
+        addOperation.get(CommonAttributes.JNDI_NAME).set(jndiName);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
         Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
         try {
@@ -108,7 +109,7 @@ public class EEConcurrentManagementTestCase {
         // add
         final ModelNode addOperation = Util.createAddOperation(pathAddress);
         final String jndiName = "java:jboss/ee/concurrency/threadfactory/"+RESOURCE_NAME;
-        addOperation.get(ManagedThreadFactoryResourceDefinition.JNDI_NAME).set(jndiName);
+        addOperation.get(CommonAttributes.JNDI_NAME).set(jndiName);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
         Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
         try {
@@ -136,8 +137,8 @@ public class EEConcurrentManagementTestCase {
         // add
         final ModelNode addOperation = Util.createAddOperation(pathAddress);
         final String jndiName = "java:jboss/ee/concurrency/executor/"+RESOURCE_NAME;
-        addOperation.get(ManagedExecutorServiceResourceDefinition.JNDI_NAME).set(jndiName);
-        addOperation.get(ManagedExecutorServiceResourceDefinition.CORE_THREADS).set(2);
+        addOperation.get(CommonAttributes.JNDI_NAME).set(jndiName);
+        addOperation.get(CommonAttributes.CORE_THREADS).set(2);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
         Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
 
@@ -166,8 +167,8 @@ public class EEConcurrentManagementTestCase {
         // add
         final ModelNode addOperation = Util.createAddOperation(pathAddress);
         final String jndiName = "java:jboss/ee/concurrency/scheduledexecutor/"+RESOURCE_NAME;
-        addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.JNDI_NAME).set(jndiName);
-        addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.CORE_THREADS).set(2);
+        addOperation.get(CommonAttributes.JNDI_NAME).set(jndiName);
+        addOperation.get(CommonAttributes.CORE_THREADS).set(2);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
         Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
         try {

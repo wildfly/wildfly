@@ -66,7 +66,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-ee_3_0.xsd";
+        return "schema/wildfly-ee_3_0.xsd";
     }
 
     @Test
