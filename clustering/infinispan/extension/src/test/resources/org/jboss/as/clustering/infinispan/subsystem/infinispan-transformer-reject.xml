@@ -43,7 +43,7 @@
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="true">
                 <write-behind modification-queue-size="2048" thread-pool-size="1"/>
-                <property name="valueSizeEstimate">100</property>
+                <!--<property name="valueSizeEstimate">100</property>-->
             </remote-store>
         </invalidation-cache>
         <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="10" queue-size="1000" statistics-enabled="true">
@@ -54,7 +54,7 @@
             <state-transfer timeout="60000" chunk-size="10000"/>
             <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
                 <write-behind modification-queue-size="2048" thread-pool-size="1"/>
-                <property name="location">location</property>
+                <!--<property name="location">location</property>-->
             </store>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>

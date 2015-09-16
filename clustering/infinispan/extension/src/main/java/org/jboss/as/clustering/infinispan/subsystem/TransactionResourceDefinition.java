@@ -63,7 +63,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/transaction=TRANSACTION
+ * Resource description for the addressable resource and its alias
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/component=transaction
+ * /subsystem=infinispan/cache-container=X/cache=Y/transaction=TRANSACTION
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
@@ -75,7 +78,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         LOCKING("locking", ModelType.STRING, new ModelNode(LockingMode.PESSIMISTIC.name()), new EnumValidatorBuilder<>(LockingMode.class)),
         MODE("mode", ModelType.STRING, new ModelNode(TransactionMode.NONE.name()), new EnumValidatorBuilder<>(TransactionMode.class)),
-        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000)),
+        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000L)),
         ;
         private final SimpleAttributeDefinition definition;
 

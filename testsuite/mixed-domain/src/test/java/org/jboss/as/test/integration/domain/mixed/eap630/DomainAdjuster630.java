@@ -22,66 +22,14 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap630;
 
-import static org.jboss.as.controller.operations.common.Util.getWriteAttributeOperation;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.mixed.eap640.DomainAdjuster640;
-import org.jboss.dmr.ModelNode;
 
 /**
- * Does adjustments to the domain model for 6.3.0 legacy slaves
+ * Does adjustments to the domain model for 6.3.0 legacy slaves.
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class DomainAdjuster630 extends DomainAdjuster640 {
-    @Override
-    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
-        List<ModelNode> list = super.adjustForVersion(client, profileAddress);
-
-//        list.addAll(adjustInfinispan(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
-
-        return list;
-    }
-
-
-
-
-
-
-    private List<ModelNode> adjustInfinispan(final PathAddress subsystem) throws Exception {
-        final List<ModelNode> list = new ArrayList<>();
-        //Statistics need to be enabled for all cache containers and caches
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "server")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "server").append("replicated-cache", "default")));
-        list.add(getWriteAttributeOperation(subsystem.append("cache-container", "server").append("transport", "TRANSPORT"), "stack", new ModelNode("udp")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "web")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "web").append("distributed-cache", "dist")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "ejb")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "ejb").append("distributed-cache", "dist")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("invalidation-cache", "entity")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("local-cache", "local-query")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("replicated-cache", "timestamps")));
-        return list;
-    }
-
-    private ModelNode setStatisticsEnabledTrue(final PathAddress addr) {
-        return getWriteAttributeOperation(addr, "statistics-enabled", true);
-    }
 
     @Override
     protected String getJaspiTestAuthModuleName() {

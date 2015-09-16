@@ -59,11 +59,12 @@ import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.iiop.openjdk.IIOPExtension;
 
 /**
- * Does adjustments to the domain model for 6.3.0 legacy slaves
+ * Does adjustments to the domain model for 6.4.0 legacy slaves.
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class DomainAdjuster640 extends DomainAdjuster {
+
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
@@ -81,13 +82,10 @@ public class DomainAdjuster640 extends DomainAdjuster {
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustWeld(profileAddress.append(SUBSYSTEM, WeldExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
+        list.addAll(adjustInfinispan(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
 
         //io must be removed after undertow due to capabilities/requirements
         list.addAll(removeIo(profileAddress.append(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME)));
-
-        //Temporary workaround, something weird is going on in infinispan so let's get rid of those for now
-        //TODO WFLY-4515 Reenable these subsystems, it is important to see if we boot with them configured although the tests don't use clustering
-        list.add(createRemoveOperation(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
 
         return list;
     }
@@ -180,11 +178,46 @@ public class DomainAdjuster640 extends DomainAdjuster {
 
 
     private Collection<? extends ModelNode> removeSingletonDeployer(PathAddress subsystem) {
-        List<ModelNode> list = new ArrayList<>(2);
+        List<ModelNode> list = new ArrayList<>();
         //singleton subsystem and extension doesn't exist
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.singleton")));
         return list;
+    }
+
+
+    private List<ModelNode> adjustInfinispan(final PathAddress subsystem) throws Exception {
+        final List<ModelNode> list = new ArrayList<>();
+
+        list.add(getWriteAttributeOperation(subsystem.append("cache-container", "server").append("transport", "jgroups"), "stack", new ModelNode("udp")));
+
+        //Statistics need to be enabled for all cache containers and caches
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "server")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "server").append("replicated-cache", "default")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "web")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "web").append("distributed-cache", "dist")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "ejb")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "ejb").append("distributed-cache", "dist")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "hibernate")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "hibernate").append("invalidation-cache", "entity")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "hibernate").append("local-cache", "local-query")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "hibernate").append("replicated-cache", "timestamps")));
+
+        return list;
+    }
+
+    private ModelNode setStatisticsEnabledTrue(final PathAddress addr) {
+        return getWriteAttributeOperation(addr, "statistics-enabled", true);
     }
 
 

@@ -24,10 +24,10 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -40,14 +40,17 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Resource description for the addressable resource
+ * Resource description for the addressable resource and its alias
  *
- * /subsystem=infinispan/cache-container=X/cache=Y/store=mixed
+ * /subsystem=infinispan/cache-container=X/cache=Y/store=mixed-jdbc
+ * /subsystem=infinispan/cache-container=X/cache=Y/mixed-keyed-jdbc-store=MIXED_KEYED_JDBC_STORE
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
@@ -74,13 +77,36 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
         }
     }
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        JDBCStoreResourceDefinition.buildTransformation(version, builder);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    final ModelNode model = resource.getModel();
+
+                    final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
+                    if (binaryTableModel != null && binaryTableModel.isDefined()) {
+                        model.get(DeprecatedAttribute.BINARY_TABLE.getDefinition().getName()).set(binaryTableModel);
+                    }
+
+                    final ModelNode stringTableModel = Resource.Tools.readModel(resource.removeChild(StringTableResourceDefinition.PATH));
+                    if (stringTableModel != null && stringTableModel.isDefined()) {
+                        model.get(DeprecatedAttribute.STRING_TABLE.getDefinition().getName()).set(stringTableModel);
+                    }
+
+                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                    context.processChildren(resource);
+                }
+            });
+        }
 
         BinaryTableResourceDefinition.buildTransformation(version, builder);
         StringTableResourceDefinition.buildTransformation(version, builder);
+
+        JDBCStoreResourceDefinition.buildTransformation(version, builder);
     }
 
     MixedKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {

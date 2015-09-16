@@ -43,7 +43,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/state-transfer=STATE_TRANSFER
+ * Resource description for the addressable resource and its alias
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/component=state-transfer
+ * /subsystem=infinispan/cache-container=X/cache=Y/state-transfer=STATE_TRANSFER
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */

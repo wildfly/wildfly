@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 /**
  * @author Paul Ferraro
- * @param <B>
  */
 public class StringTableBuilder extends TableBuilder {
 
