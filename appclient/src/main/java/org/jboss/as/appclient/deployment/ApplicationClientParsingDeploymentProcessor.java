@@ -127,7 +127,6 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final VirtualFile appXml = deploymentRoot.getChild(JBOSS_CLIENT_XML);
         if (appXml.exists()) {
-            InputStream is = null;
             try (InputStream is = appXml.openStream()) {
                 JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
                 return data;
