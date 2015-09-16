@@ -168,7 +168,7 @@
         <version.org.jboss.openjdk-orb>8.0.4.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.remote-naming>2.0.4.Final</version.org.jboss.remote-naming>
-        <version.org.jboss.resteasy>3.0.12.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.13.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.3.8.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
@@ -4579,6 +4579,10 @@
                         <groupId>org.bouncycastle</groupId>
                         <artifactId>bcprov-jdk16</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4586,6 +4590,12 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4640,6 +4650,12 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>async-http-servlet-3.0</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4666,6 +4682,10 @@
                     <exclusion>
                         <groupId>org.jboss.resteasy</groupId>
                         <artifactId>jaxrs-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4695,6 +4715,10 @@
                         <groupId>org.jboss.resteasy</groupId>
                         <artifactId>resteasy-client</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4719,6 +4743,10 @@
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4730,6 +4758,10 @@
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4798,6 +4830,12 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jettison-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4808,6 +4846,10 @@
                     <exclusion>
                         <groupId>org.jboss.resteasy</groupId>
                         <artifactId>jaxrs-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4825,6 +4867,10 @@
                         <groupId>javax.mail</groupId>
                         <artifactId>mail</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4837,6 +4883,10 @@
                         <groupId>org.jboss.weld.se</groupId>
                         <artifactId>weld-se</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4844,7 +4894,6 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-yaml-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
-
                 <exclusions>
                     <exclusion>
                         <groupId>org.yaml</groupId>
@@ -4853,6 +4902,10 @@
                     <exclusion>
                         <groupId>org.jboss.resteasy</groupId>
                         <artifactId>resteasy-client</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
