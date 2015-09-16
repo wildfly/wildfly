@@ -492,6 +492,12 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
         } else if (attributeName.equals(Constants.TRACKING.getName())) {
             //Just return w/o setting a result
             return;
+        } else if (attributeName.equals(Constants.MCP.getName())) {
+            //Just return w/o setting a result
+            return;
+        } else if (attributeName.equals(Constants.ENLISTMENT_TRACE.getName())) {
+            //Just return w/o setting a result
+            return;
         } else {
             throw ConnectorLogger.ROOT_LOGGER.unknownAttribute(attributeName);
         }

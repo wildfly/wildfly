@@ -72,6 +72,8 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
      * @param jndiName                     jndiName
      * @param spy                          spy
      * @param useCcm                       useCcm
+     * @param mcp mcp
+     * @param enlistmentTrace enlistmentTrace
      * @param xaDataSourceProperty         xaDataSourceProperty
      * @param xaDataSourceClass            xaDataSourceClass
      * @param driver                       driver
@@ -83,13 +85,14 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
     public ModifiableXaDataSource(TransactionIsolation transactionIsolation, TimeOut timeOut, DsSecurity security,
                                   Statement statement, Validation validation, String urlDelimiter, String urlProperty, String urlSelectorStrategyClassName,
                                   Boolean useJavaContext, String poolName, Boolean enabled, String jndiName, Boolean spy, Boolean useCcm,
-                                  final Boolean connectable, final Boolean tracking,
+                                  final Boolean connectable, final Boolean tracking, String mcp, Boolean enlistmentTrace,
                                   Map<String, String> xaDataSourceProperty, String xaDataSourceClass, String driver, String newConnectionSql,
                                   DsXaPool xaPool, Recovery recovery, final String profile) throws ValidateException {
         super(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlProperty, urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm,
-                connectable, tracking,
-                xaDataSourceProperty, xaDataSourceClass, driver, newConnectionSql, xaPool, recovery);
+                connectable, tracking, mcp, enlistmentTrace,
+                xaDataSourceProperty, xaDataSourceClass, driver, newConnectionSql,
+                xaPool, recovery);
         this.profile = profile;
     }
 
@@ -116,7 +119,7 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
 
         return new XADataSourceImpl(transactionIsolation, timeOut, security,
                 statement, validation, urlDelimiter, urlProperty, urlSelectorStrategyClassName,
-                useJavaContext, poolName, enabled, jndiName, spy, useCcm, connectable, tracking,
+                useJavaContext, poolName, enabled, jndiName, spy, useCcm, connectable, tracking, mcp, enlistmentTrace,
                 xaDataSourceProperty, xaDataSourceClass, driver, newConnectionSql,
                 getXaPool(), recovery);
 
