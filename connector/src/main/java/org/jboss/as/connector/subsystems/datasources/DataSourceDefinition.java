@@ -71,6 +71,10 @@ import org.jboss.dmr.ModelNode;
  */
 public class DataSourceDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_DATASOURCE = PathElement.pathElement(DATA_SOURCE);
+
+    // The ManagedConnectionPool implementation used by default by versions < 4.0.0 (WildFly 10)
+    private static final String LEGACY_MCP = "org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool";
+
     private final boolean registerRuntimeOnly;
     private final boolean deployed;
 
@@ -168,15 +172,10 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
         builder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
-                    @Override
-                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                        return attributeValue.equals(new ModelNode("org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool"));
-                    }
-                }, MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.ALL, MCP)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
 
                     @Override
@@ -211,15 +210,10 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
         builder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
-                    @Override
-                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                        return attributeValue.equals(new ModelNode("org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool"));
-                    }
-                }, MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.ALL, MCP)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
 
                     @Override
@@ -252,15 +246,10 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
     static void registerTransformers300(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
-                    @Override
-                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                        return attributeValue.equals(new ModelNode("org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool"));
-                    }
-                }, MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.ALL, MCP)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .end();
     }
 
