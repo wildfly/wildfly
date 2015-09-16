@@ -194,6 +194,21 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .end();
     }
 
+    static void registerTransformers130(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
+                    @Override
+                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        return attributeValue.equals(new ModelNode(false));
+                    }
+                }, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end();
+
+    }
+
+
     static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
         builder.getAttributeBuilder()
