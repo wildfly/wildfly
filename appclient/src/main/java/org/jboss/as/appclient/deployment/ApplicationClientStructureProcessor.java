@@ -59,8 +59,8 @@ public class ApplicationClientStructureProcessor implements DeploymentUnitProces
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        String deploimentUnitName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
-        if (deploimentUnitName.endsWith(".ear")) {
+        String deploymentUnitName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
+        if (deploymentUnitName.endsWith(".ear")) {
             final Map<VirtualFile, ResourceRoot> existing = new HashMap<VirtualFile, ResourceRoot>();
             for (final ResourceRoot additional : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
                 existing.put(additional.getRoot(), additional);
@@ -85,7 +85,7 @@ public class ApplicationClientStructureProcessor implements DeploymentUnitProces
             } else {
                 throw AppClientLogger.ROOT_LOGGER.cannotFindAppClient(deployment);
             }
-        } else if (deploymentUnit.getParent() != null && deploimentUnitName.endsWith(".jar")) {
+        } else if (deploymentUnit.getParent() != null && deploymentUnitName.endsWith(".jar")) {
             final ResourceRoot parentRoot = deploymentUnit.getParent().getAttachment(Attachments.DEPLOYMENT_ROOT);
             final VirtualFile appClientRoot = parentRoot.getRoot().getChild(deployment);
             final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
