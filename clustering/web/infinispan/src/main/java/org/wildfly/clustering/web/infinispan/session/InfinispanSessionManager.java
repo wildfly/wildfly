@@ -64,6 +64,8 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
+import org.wildfly.clustering.service.concurrent.ServiceExecutor;
+import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableHttpSessionAdapter;
@@ -97,6 +99,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
     private volatile CommandDispatcher<Scheduler> dispatcher;
     private volatile Scheduler scheduler;
+    private volatile ServiceExecutor executor;
 
     public InfinispanSessionManager(SessionFactory<V, L> factory, InfinispanSessionManagerConfiguration configuration) {
         this.factory = factory;
@@ -117,6 +120,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
     @Override
     public void start() {
+        this.executor = new StampedLockServiceExecutor();
         if (this.recorder != null) {
             this.recorder.reset();
         }
@@ -154,10 +158,12 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
     @Override
     public void stop() {
-        this.cache.removeListener(this);
-        this.dispatcher.close();
-        this.scheduler.close();
-        this.identifierFactory.stop();
+        this.executor.close(() -> {
+            this.cache.removeListener(this);
+            this.dispatcher.close();
+            this.scheduler.close();
+            this.identifierFactory.stop();
+        });
     }
 
     boolean isPersistent() {
@@ -284,71 +290,79 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (!event.isPre() && !this.persistent) {
-            String id = event.getKey().getValue();
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
-            V value = this.factory.findValue(id);
-            if (value != null) {
-                ImmutableSession session = this.factory.createImmutableSession(id, value);
-                triggerPostActivationEvents(session);
-            }
+            this.executor.execute(() -> {
+                String id = event.getKey().getValue();
+                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
+                V value = this.factory.findValue(id);
+                if (value != null) {
+                    ImmutableSession session = this.factory.createImmutableSession(id, value);
+                    triggerPostActivationEvents(session);
+                }
+            });
         }
     }
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre() && !this.persistent) {
-            String id = event.getKey().getValue();
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-            V value = this.factory.findValue(id);
-            if (value != null) {
-                ImmutableSession session = this.factory.createImmutableSession(id, value);
-                triggerPrePassivationEvents(session);
-            }
+            this.executor.execute(() -> {
+                String id = event.getKey().getValue();
+                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
+                V value = this.factory.findValue(id);
+                if (value != null) {
+                    ImmutableSession session = this.factory.createImmutableSession(id, value);
+                    triggerPrePassivationEvents(session);
+                }
+            });
         }
     }
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre()) {
-            String id = event.getKey().getValue();
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-            V value = this.factory.findValue(id);
-            if (value != null) {
-                ImmutableSession session = this.factory.createImmutableSession(id, value);
-                ImmutableSessionAttributes attributes = session.getAttributes();
+            this.executor.execute(() -> {
+                String id = event.getKey().getValue();
+                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
+                V value = this.factory.findValue(id);
+                if (value != null) {
+                    ImmutableSession session = this.factory.createImmutableSession(id, value);
+                    ImmutableSessionAttributes attributes = session.getAttributes();
 
-                HttpSession httpSession = new ImmutableHttpSessionAdapter(session);
-                HttpSessionEvent sessionEvent = new HttpSessionEvent(httpSession);
-                for (HttpSessionListener listener: this.context.getSessionListeners()) {
-                    listener.sessionDestroyed(sessionEvent);
-                }
+                    HttpSession httpSession = new ImmutableHttpSessionAdapter(session);
+                    HttpSessionEvent sessionEvent = new HttpSessionEvent(httpSession);
+                    for (HttpSessionListener listener: this.context.getSessionListeners()) {
+                        listener.sessionDestroyed(sessionEvent);
+                    }
 
-                for (String name: attributes.getAttributeNames()) {
-                    Object attribute = attributes.getAttribute(name);
-                    if (attribute instanceof HttpSessionBindingListener) {
-                        HttpSessionBindingListener listener = (HttpSessionBindingListener) attribute;
-                        listener.valueUnbound(new HttpSessionBindingEvent(httpSession, name, attribute));
+                    for (String name: attributes.getAttributeNames()) {
+                        Object attribute = attributes.getAttribute(name);
+                        if (attribute instanceof HttpSessionBindingListener) {
+                            HttpSessionBindingListener listener = (HttpSessionBindingListener) attribute;
+                            listener.valueUnbound(new HttpSessionBindingEvent(httpSession, name, attribute));
+                        }
+                    }
+
+                    if (this.recorder != null) {
+                        this.recorder.record(session);
                     }
                 }
-
-                if (this.recorder != null) {
-                    this.recorder.record(session);
-                }
-            }
+            });
         }
     }
 
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<SessionCreationMetaDataKey, ?> event) {
-        Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
-        Address localAddress = cache.getCacheManager().getAddress();
-        Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
-        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
-        if (event.isPre()) {
-            this.scheduler.cancel(newLocality);
-        } else {
-            this.schedule(cache, oldLocality, newLocality);
-        }
+        this.executor.execute(() -> {
+            Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
+            Address localAddress = cache.getCacheManager().getAddress();
+            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+            Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+            if (event.isPre()) {
+                this.scheduler.cancel(newLocality);
+            } else {
+                this.schedule(cache, oldLocality, newLocality);
+            }
+        });
     }
 
     private void schedule(Cache<? extends Key<String>, ?> cache, Locality oldLocality, Locality newLocality) {

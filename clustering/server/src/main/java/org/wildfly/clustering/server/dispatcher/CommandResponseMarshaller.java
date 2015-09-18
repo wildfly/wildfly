@@ -23,7 +23,8 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
 import org.jboss.marshalling.Marshaller;
@@ -32,6 +33,7 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Buffer;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
 /**
@@ -52,22 +54,23 @@ public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
     @Override
     public Buffer objectToBuffer(Object object) throws Exception {
         int version = this.context.getCurrentVersion();
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            output.write(version);
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (DataOutputStream output = new DataOutputStream(bytes)) {
+            IndexExternalizer.VARIABLE.writeData(output, version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(Marshalling.createByteOutput(output));
                 marshaller.writeObject(object);
                 marshaller.flush();
             }
-            return new Buffer(output.toByteArray());
         }
+        return new Buffer(bytes.toByteArray());
     }
 
     @Override
     public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
         if (this.factory.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length))) return NoSuchService.INSTANCE;
-        try (InputStream input = new ByteArrayInputStream(buffer, offset, length)) {
-            int version = input.read();
+        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(buffer, offset, length))) {
+            int version = IndexExternalizer.VARIABLE.readData(input);
             try (Unmarshaller unmarshaller = this.context.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 return unmarshaller.readObject();
