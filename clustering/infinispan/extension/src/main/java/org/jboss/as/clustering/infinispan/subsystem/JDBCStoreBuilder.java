@@ -33,6 +33,7 @@ import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurat
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -54,7 +55,7 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
-        return super.build(target).addDependency(ServiceName.JBOSS.append("data-source", this.dataSource));
+        return super.build(target).addDependency(ServiceName.JBOSS.append("data-source", ContextNames.bindInfoFor(dataSource).getBinderServiceName().getCanonicalName()));
     }
 
     @Override
