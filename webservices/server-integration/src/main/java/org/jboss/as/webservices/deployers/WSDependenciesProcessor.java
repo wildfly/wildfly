@@ -28,6 +28,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -64,6 +66,13 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
         }
         for(ModuleIdentifier api : JAVAEE_APIS) {
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
+        }
+
+        final Boolean wsdep = unit.getAttachment(WSAttachmentKeys.WEB_SERVICES_DEPLOYMENT);
+        if(wsdep != null && wsdep) {
+            if(unit.getAttachment(WarMetaData.ATTACHMENT_KEY) == null) {
+                unit.putAttachment(WarMetaData.ATTACHMENT_KEY, new WarMetaData());
+            }
         }
     }
 

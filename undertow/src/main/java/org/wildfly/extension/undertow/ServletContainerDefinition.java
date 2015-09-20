@@ -132,6 +132,13 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(30))
                     .build();
 
+
+    protected static final AttributeDefinition MAX_SESSIONS =
+            new SimpleAttributeDefinitionBuilder(Constants.MAX_SESSIONS, ModelType.INT, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .build();
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
@@ -145,7 +152,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             DISABLE_CACHING_FOR_SECURED_PAGES,
             DIRECTORY_LISTING,
             PROACTIVE_AUTHENTICATION,
-            SESSION_ID_LENGTH
+            SESSION_ID_LENGTH,
+            MAX_SESSIONS
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
