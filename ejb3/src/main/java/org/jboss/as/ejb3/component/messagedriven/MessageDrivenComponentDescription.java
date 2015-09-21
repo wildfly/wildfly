@@ -202,6 +202,14 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.clusteredSingleton = clusteredSingleton;
     }
 
+    public boolean isDeliveryControlled() {
+        return deliveryGroup != null || clusteredSingleton;
+    }
+
+    public ServiceName getDeliveryControllerName() {
+        return getServiceName().append("DELIVERY");
+    }
+
     public String getResourceAdapterName() {
         return resourceAdapterName;
     }
