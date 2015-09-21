@@ -291,7 +291,6 @@
         <module>pojo</module>
         <module>sar</module>
         <module>security</module>
-        <module>security-manager</module>
         <module>system-jmx</module>
         <module>spec-api</module>
         <module>transactions</module>
@@ -1197,12 +1196,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-security</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-security-manager</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
