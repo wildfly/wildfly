@@ -88,7 +88,7 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .build();
 
     protected static final SimpleAttributeDefinition EXTENDED = new SimpleAttributeDefinitionBuilder(Constants.EXTENDED, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .build();
 
