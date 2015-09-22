@@ -115,7 +115,7 @@
         <version.jsoup>1.8.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
-        <version.org.apache.activemq.artemis>1.1.0-wildfly-6</version.org.apache.activemq.artemis>
+        <version.org.apache.activemq.artemis>1.1.0</version.org.apache.activemq.artemis>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>3.1.2-jbossorg-2</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.3</version.org.apache.cxf.xjcplugins>
@@ -5963,6 +5963,18 @@
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>artemis-test</id>
+            <name>Apache Artemis Test</name>
+            <url>https://repository.apache.org/content/repositories/orgapacheactivemq-1068</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
