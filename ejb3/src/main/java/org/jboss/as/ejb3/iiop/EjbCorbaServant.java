@@ -28,6 +28,7 @@ import java.rmi.RemoteException;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -289,8 +290,18 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                             }
 
                             if (securityDomain != null) {
-                                sc = SecurityContextFactory.createSecurityContext(securityDomain);
-                                sc.getUtil().createSubjectInfo(principal, credential, null);
+                                if(WildFlySecurityManager.isChecking()) {
+                                    final SimplePrincipal finalPrincipal = principal;
+                                    final Object finalCredential = credential;
+                                    sc = AccessController.doPrivileged((PrivilegedExceptionAction<SecurityContext>) () -> {
+                                        SecurityContext sc1 = SecurityContextFactory.createSecurityContext(securityDomain);
+                                        sc1.getUtil().createSubjectInfo(finalPrincipal, finalCredential, null);
+                                        return sc1;
+                                    });
+                                } else {
+                                    sc = SecurityContextFactory.createSecurityContext(securityDomain);
+                                    sc.getUtil().createSubjectInfo(principal, credential, null);
+                                }
                             }
                         }
                         final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
