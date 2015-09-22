@@ -22,32 +22,28 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.WeakHashMap;
+
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.EJBClientContextIdentifier;
-import org.jboss.ejb.client.IdentityEJBClientContextSelector;
-import org.jboss.ejb.client.Logs;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import org.wildfly.common.selector.Selector;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An EJB client context selector which returns an {@link EJBClientContext} based on the thread context classloader
- * that's present when the {@link #getCurrent()} is invoked. This {@link TCCLEJBClientContextSelectorService} is also
- * capable of managing {@link EJBClientContext}s identifiable by {@link EJBClientContextIdentifier}s
+ * that's present when the {@link #get()} is invoked.
+ *
+ * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  *
  * @author Jaikiran Pai
+ *
  */
-public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClientContextSelectorService>,
-        ContextSelector<EJBClientContext>, IdentityEJBClientContextSelector {
+public class TCCLEJBClientContextSelectorService extends Selector<EJBClientContext> implements Service<TCCLEJBClientContextSelectorService> {
 
     public static final ServiceName TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remote").append("tccl-based-ejb-client-context-selector");
 
@@ -56,10 +52,10 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
      */
     private final WeakHashMap<ClassLoader, EJBClientContext> ejbClientContexts = new WeakHashMap<ClassLoader, EJBClientContext>();
 
-    private final ConcurrentMap<EJBClientContextIdentifier, EJBClientContext> identifiableContexts = new ConcurrentHashMap<EJBClientContextIdentifier, org.jboss.ejb.client.EJBClientContext>();
+//    private final ConcurrentMap<EJBClientContextIdentifier, EJBClientContext> identifiableContexts = new ConcurrentHashMap<EJBClientContextIdentifier, org.jboss.ejb.client.EJBClientContext>();
 
     @Override
-    public EJBClientContext getCurrent() {
+    public EJBClientContext get() {
         final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         // TODO: Do we fall back on some other CL?
         if (tccl == null) {
@@ -72,6 +68,7 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
 
     @Override
     public void start(StartContext context) throws StartException {
+        Selector.setSelectorFor(EJBClientContext.class, this);
     }
 
     @Override
@@ -80,7 +77,7 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
         synchronized (this.ejbClientContexts) {
             this.ejbClientContexts.clear();
         }
-        this.identifiableContexts.clear();
+//        this.identifiableContexts.clear();
     }
 
     @Override
@@ -109,24 +106,6 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
         synchronized (this.ejbClientContexts) {
             return this.ejbClientContexts.remove(classLoader);
         }
-    }
-
-    @Override
-    public void registerContext(final EJBClientContextIdentifier identifier, final EJBClientContext context) {
-        final EJBClientContext previousRegisteredContext = this.identifiableContexts.putIfAbsent(identifier, context);
-        if (previousRegisteredContext != null) {
-            throw Logs.MAIN.ejbClientContextAlreadyRegisteredForIdentifier(identifier);
-        }
-    }
-
-    @Override
-    public EJBClientContext unRegisterContext(final EJBClientContextIdentifier identifier) {
-        return this.identifiableContexts.remove(identifier);
-    }
-
-    @Override
-    public EJBClientContext getContext(final EJBClientContextIdentifier identifier) {
-        return this.identifiableContexts.get(identifier);
     }
 
 }

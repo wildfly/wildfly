@@ -44,6 +44,7 @@
         <module name="org.hibernate"/>
         <module name="org.jboss.common-beans" services="import"/>
         <module name="org.jboss.as.clustering.common"/>
+        <module name="org.wildfly.client.config"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
@@ -52,7 +53,9 @@
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.clustering.singleton"/>
-        <module name="org.wildfly.extension.request-controller" />
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.extension.request-controller"/>
+        <module name="org.wildfly.client.discovery"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.weld"/>
         <!-- So we can access its integration API -->

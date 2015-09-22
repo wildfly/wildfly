@@ -23,8 +23,8 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.remote._private.PackedInteger;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.ejb.client.remoting.PackedInteger;
 import org.wildfly.clustering.registry.Registry;
 
 import java.io.DataOutput;

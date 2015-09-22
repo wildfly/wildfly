@@ -27,11 +27,10 @@ import java.io.ObjectInputStream;
 
 import javax.transaction.xa.XAResource;
 
-import org.jboss.ejb.client.EJBClientManagedTransactionContext;
-
 import com.arjuna.ats.jta.recovery.SerializableXAResourceDeserializer;
 
 /**
+ * TODO wildfly-transaction-client integration
  * A {@link SerializableXAResourceDeserializer} responsible for deserializing EJB XAResource(s)
  *
  * @author Jaikiran Pai
@@ -46,7 +45,7 @@ class EJBXAResourceDeserializer implements SerializableXAResourceDeserializer {
 
     @Override
     public boolean canDeserialze(final String className) {
-        return EJBClientManagedTransactionContext.isEJBXAResourceClass(className);
+        return false;
     }
 
     @Override

@@ -88,6 +88,9 @@ public enum EJB3SubsystemXMLElement {
     STATISTICS("statistics"),
     STRICT_MAX_POOL("strict-max-pool"),
 
+    GLOBAL_INTERCEPTORS("global-interceptors"),
+    CONNECTIONS("connections"),
+
     THREAD_POOL("thread-pool"),
     THREAD_POOLS("thread-pools"),
     TIMER_SERVICE("timer-service"),
@@ -98,7 +101,10 @@ public enum EJB3SubsystemXMLElement {
     // Elytron integration
     APPLICATION_SECURITY_DOMAIN("application-security-domain"),
     APPLICATION_SECURITY_DOMAINS("application-security-domains"),
-    IDENTITY("identity")
+    IDENTITY("identity"),
+
+    DISCOVERY("discovery"),
+    STATIC_EJB_DISCOVERY("static-ejb-discovery")
     ;
 
     private final String name;

@@ -38,12 +38,12 @@ public class EjbMetadataInterceptor implements Interceptor {
 
     private final InjectedValue<ComponentView> homeView = new InjectedValue<ComponentView>();
     private final Class<?> remoteClass;
-    private final Class<?> homeClass;
+    private final Class<? extends EJBHome> homeClass;
     private final Class<?> pkClass;
     private final boolean session;
     private final boolean stateless;
 
-    public EjbMetadataInterceptor(Class<?> remoteClass, Class<?> homeClass, Class<?> pkClass, boolean session, boolean stateless) {
+    public EjbMetadataInterceptor(Class<?> remoteClass, Class<? extends EJBHome> homeClass, Class<?> pkClass, boolean session, boolean stateless) {
         this.remoteClass = remoteClass;
         this.homeClass = homeClass;
         this.pkClass = pkClass;

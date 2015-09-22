@@ -69,6 +69,7 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
     @Override
     public void registerChildren(ManagementResourceRegistration subsystemRegistration) {
         subsystemRegistration.registerSubModel(RemotingEjbReceiverDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(DiscoveryResourceDefinition.INSTANCE);
     }
 
     @Override

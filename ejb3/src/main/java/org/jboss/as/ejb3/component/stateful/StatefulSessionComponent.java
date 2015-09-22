@@ -42,17 +42,17 @@ import javax.ejb.TimerService;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.cache.Cache;
+import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
@@ -62,14 +62,12 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.requestcontroller.ControlPoint;
-import org.wildfly.extension.requestcontroller.RunResult;
-import org.wildfly.security.manager.WildFlySecurityManager;
-
-import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
+import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.RunResult;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Stateful Session Bean
@@ -207,11 +205,11 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
             return AccessController.doPrivileged(new PrivilegedAction<EJBObject>() {
                 @Override
                 public EJBObject run() {
-                   return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), getCache().getStrictAffinity(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null)));
+                   return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), getCache().getStrictAffinity()));
                 }
             });
         } else {
-            return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null)));
+            return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity()));
         }
     }
 

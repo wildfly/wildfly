@@ -32,18 +32,15 @@ import java.util.concurrent.ExecutorService;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.remote._private.PackedInteger;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.as.ejb3.remote.protocol.versiontwo.VersionTwoProtocolChannelReceiver;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.server.suspend.SuspendController;
-import org.jboss.ejb.client.ConstantContextSelector;
-import org.jboss.ejb.client.EJBClientTransactionContext;
-import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.inject.Injector;
@@ -65,6 +62,7 @@ import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 /**
+ * TODO transactions
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorService> {
@@ -110,18 +108,11 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
-
-        // setup an EJBClientTransactionContext backed the transaction manager on this server.
-        // This will be used to propagate the transactions from this server to remote servers during EJB invocations
-        final EJBClientTransactionContext ejbClientTransactionContext = EJBClientTransactionContext.create(this.txManager.getValue(), this.txSyncRegistry.getValue());
-        EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(ejbClientTransactionContext));
     }
 
     @Override
     public void stop(StopContext context) {
         registration.close();
-        // reset the EJBClientTransactionContext on this server
-        EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(null));
     }
 
     public String getProtocol() {

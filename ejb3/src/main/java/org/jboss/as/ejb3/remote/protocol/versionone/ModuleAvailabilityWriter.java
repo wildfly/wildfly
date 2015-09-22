@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
-import org.jboss.ejb.client.remoting.PackedInteger;
+import org.jboss.as.ejb3.remote._private.PackedInteger;
 
 import java.io.DataOutput;
 import java.io.IOException;

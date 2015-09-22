@@ -22,22 +22,12 @@
 
 package org.jboss.as.ejb3.remote;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 import javax.transaction.xa.XAResource;
 
-import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.EJBClientContextListener;
-import org.jboss.ejb.client.EJBClientManagedTransactionContext;
-import org.jboss.ejb.client.EJBReceiverContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -47,18 +37,21 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecovery;
 
+import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+
 /**
+ *  TODO wildfly-transaction-client integration
  * Responsible for handing out the {@link #getXAResources() EJB XAResource(s)} during transaction recovery
  *
  * @author Jaikiran Pai
  */
-public class EJBTransactionRecoveryService implements Service<EJBTransactionRecoveryService>, XAResourceRecovery, EJBClientContextListener {
+public class EJBTransactionRecoveryService implements Service<EJBTransactionRecoveryService>, XAResourceRecovery {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("tx-recovery-service");
     public static final EJBTransactionRecoveryService INSTANCE = new EJBTransactionRecoveryService();
 
 
-    private final List<EJBReceiverContext> receiverContexts = Collections.synchronizedList(new ArrayList<EJBReceiverContext>());
     private final InjectedValue<RecoveryManagerService> recoveryManagerService = new InjectedValue<RecoveryManagerService>();
     private final InjectedValue<CoreEnvironmentBean> arjunaTxCoreEnvironmentBean = new InjectedValue<CoreEnvironmentBean>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
@@ -80,8 +73,6 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
             @Override
             public void run() {
                 try {
-                    // we no longer bother about the XAResource(s)
-                    EJBTransactionRecoveryService.this.receiverContexts.clear();
                     // un-register ourselves from the recovery manager service
                     recoveryManagerService.getValue().removeXAResourceRecovery(EJBTransactionRecoveryService.this);
                     EjbLogger.REMOTE_LOGGER.debugf("Un-registered %s from the transaction recovery manager", this);
@@ -106,27 +97,7 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
 
     @Override
     public XAResource[] getXAResources() {
-        synchronized (receiverContexts) {
-            final XAResource[] xaResources = new XAResource[receiverContexts.size()];
-            for (int i = 0; i < receiverContexts.size(); i++) {
-                xaResources[i] = EJBClientManagedTransactionContext.getEJBXAResourceForRecovery(receiverContexts.get(i), arjunaTxCoreEnvironmentBean.getValue().getNodeIdentifier());
-            }
-            return xaResources;
-        }
-    }
-
-    @Override
-    public void contextClosed(EJBClientContext ejbClientContext) {
-    }
-
-    @Override
-    public void receiverRegistered(final EJBReceiverContext receiverContext) {
-        this.receiverContexts.add(receiverContext);
-    }
-
-    @Override
-    public void receiverUnRegistered(final EJBReceiverContext receiverContext) {
-        this.receiverContexts.remove(receiverContext);
+        return new XAResource[0];
     }
 
     public Injector<RecoveryManagerService> getRecoveryManagerServiceInjector() {

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.appclient.service;
 
+import static org.jboss.as.appclient.logging.AppClientLogger.ROOT_LOGGER;
+
 import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -35,10 +35,6 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
-import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
@@ -47,8 +43,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.appclient.logging.AppClientLogger.ROOT_LOGGER;
 
 
 /**
@@ -69,7 +63,6 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private final Method mainMethod;
     private final String[] parameters;
     private final ClassLoader classLoader;
-    private final ContextSelector<EJBClientContext> contextSelector;
 
     private Thread thread;
     private ComponentInstance instance;
@@ -80,16 +73,14 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
         this.setupActions = setupActions;
-        this.contextSelector = new LazyConnectionContextSelector(hostUrl, callbackHandler, classLoader);
     }
 
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader,  final List<SetupAction> setupActions, final EJBClientConfiguration configuration) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader,  final List<SetupAction> setupActions) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
         this.setupActions = setupActions;
-        this.contextSelector = new ConfigBasedEJBClientContextSelector(configuration);
     }
     @Override
     public synchronized void start(final StartContext context) throws StartException {
@@ -101,10 +92,8 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
             public void run() {
                 final ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    try {
                         try {
                             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-                            AccessController.doPrivileged(new SetSelectorAction(contextSelector));
                             applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
                             NamespaceContextSelector.setDefault(namespaceContextSelectorInjectedValue);
 
@@ -138,11 +127,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                         } finally {
                             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                         }
-                    } finally {
-                        if(contextSelector instanceof LazyConnectionContextSelector) {
-                            ((LazyConnectionContextSelector)contextSelector).close();
-                        }
-                    }
+
                 } finally {
                     serviceContainer.shutdown();
                 }
@@ -182,18 +167,4 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         return applicationClientComponent;
     }
 
-
-    private static final class SetSelectorAction implements PrivilegedAction<ContextSelector<EJBClientContext>> {
-
-        private final ContextSelector<EJBClientContext> selector;
-
-        private SetSelectorAction(final ContextSelector<EJBClientContext> selector) {
-            this.selector = selector;
-        }
-
-        @Override
-        public ContextSelector<EJBClientContext> run() {
-            return EJBClientContext.setSelector(selector);
-        }
-    }
 }

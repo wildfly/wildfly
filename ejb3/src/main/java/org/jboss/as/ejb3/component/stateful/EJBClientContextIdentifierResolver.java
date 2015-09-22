@@ -43,6 +43,6 @@ public class EJBClientContextIdentifierResolver implements ObjectResolver {
      */
     @Override
     public Object writeReplace(Object object) {
-        return EJBClient.isEJBProxy(object) ? new SerializableEJBProxyWithEJBClientContextIdentifier(object) : object;
+        return EJBClient.isEJBProxy(object) ? new SerializableEJBProxy(object) : object;
     }
 }
