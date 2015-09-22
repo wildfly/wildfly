@@ -22,9 +22,11 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,6 +38,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.negotiation.NegotiationMechanismFactory;
 import org.wildfly.extension.io.IOServices;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
@@ -103,6 +106,11 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
             }
         }
 
+        // WFLY-2553 Adding default WildFly specific mechanisms here - subsequently we could enhance the servlet-container
+        // config to override / add mechanisms.
+        Map<String, AuthenticationMechanismFactory> authenticationMechanisms = new HashMap<>();
+        authenticationMechanisms.put("SPNEGO", new NegotiationMechanismFactory());
+
         final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
                 ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')),
                 config,
@@ -114,7 +122,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 sessionTimeout,
                 disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker(),
                 mimeMappings,
-                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength);
+                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms);
 
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);

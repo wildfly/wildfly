@@ -170,7 +170,7 @@
         <version.org.jboss.remote-naming>2.0.4.Final</version.org.jboss.remote-naming>
         <version.org.jboss.resteasy>3.0.12.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
-        <version.org.jboss.security.jboss-negotiation>2.3.8.Final</version.org.jboss.security.jboss-negotiation>
+        <version.org.jboss.security.jboss-negotiation>3.0.0.CR1</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.1.2</version.org.jboss.shrinkwrap.shrinkwrap>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
@@ -4932,12 +4932,6 @@
             <dependency>
                 <groupId>org.jboss.security</groupId>
                 <artifactId>jboss-negotiation-extras</artifactId>
-                <version>${version.org.jboss.security.jboss-negotiation}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.security</groupId>
-                <artifactId>jboss-negotiation-net</artifactId>
                 <version>${version.org.jboss.security.jboss-negotiation}</version>
             </dependency>
 
