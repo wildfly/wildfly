@@ -817,4 +817,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 84, value = "Could not migrate attribute %s from resource %s. Use instead the socket-attribute to configure this discovery-group.")
     String couldNotMigrateDiscoveryGroupAttribute(String attribute, PathAddress address);
+
+    @Message(id = 85, value = "Could not create a legacy-connection-factory based on connection-factory %s. It used a HornetQ in-vm connector that is not compatible with Artemis in-vm connector ")
+    String couldNotCreateLegacyConnectionFactoryUsingInVMConnector(PathAddress address);
 }
