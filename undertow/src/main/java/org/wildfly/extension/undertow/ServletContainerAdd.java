@@ -40,6 +40,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.negotiation.NegotiationMechanismFactory;
 import org.wildfly.extension.io.IOServices;
+import org.wildfly.extension.undertow.security.digest.DigestAuthenticationMechanismFactory;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
@@ -47,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -114,6 +117,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         // config to override / add mechanisms.
         Map<String, AuthenticationMechanismFactory> authenticationMechanisms = new HashMap<>();
         authenticationMechanisms.put("SPNEGO", new NegotiationMechanismFactory());
+        authenticationMechanisms.put(HttpServletRequest.DIGEST_AUTH, DigestAuthenticationMechanismFactory.FACTORY);
 
         final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
                 ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')),
