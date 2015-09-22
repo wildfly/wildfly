@@ -248,17 +248,6 @@
 
         <dependency>
             <groupId>org.jboss.security</groupId>
-            <artifactId>jboss-negotiation-net</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.security</groupId>
             <artifactId>jboss-negotiation-ntlm</artifactId>
             <exclusions>
                 <exclusion>

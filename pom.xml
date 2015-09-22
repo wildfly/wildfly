@@ -4937,12 +4937,6 @@
 
             <dependency>
                 <groupId>org.jboss.security</groupId>
-                <artifactId>jboss-negotiation-net</artifactId>
-                <version>${version.org.jboss.security.jboss-negotiation}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.security</groupId>
                 <artifactId>jboss-negotiation-ntlm</artifactId>
                 <version>${version.org.jboss.security.jboss-negotiation}</version>
             </dependency>
