@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -135,7 +135,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         }
 
         SessionAttributesKey attributesKey = new SessionAttributesKey(id);
-        Map<String, Object> attributes = new HashMap<>();
+        Map<String, Object> attributes = new ConcurrentHashMap<>();
         MarshalledValue<Map<String, Object>, MarshallingContext> attributesValue = this.marshaller.write(attributes);
         Mutator attributesMutator = Mutator.PASSIVE;
         if (existingCreationMetaDataEntry == null) {
