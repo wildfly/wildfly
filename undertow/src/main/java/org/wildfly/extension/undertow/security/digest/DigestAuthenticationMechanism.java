@@ -338,58 +338,6 @@ public class DigestAuthenticationMechanism implements AuthenticationMechanism {
         }
     }
 
-    private byte[] createHA2AuthInt() {
-        // TODO - Implement method.
-        throw new IllegalStateException("Method not implemented.");
-    }
-
-    private byte[] createRFC2069RequestDigest(final byte[] ha1, final byte[] ha2, final DigestContext context) {
-        final MessageDigest digest = context.getDigest();
-        final Map<DigestAuthorizationToken, String> parsedHeader = context.getParsedHeader();
-
-        byte[] nonce = parsedHeader.get(DigestAuthorizationToken.NONCE).getBytes(StandardCharsets.UTF_8);
-
-        try {
-            digest.update(ha1);
-            digest.update(COLON);
-            digest.update(nonce);
-            digest.update(COLON);
-            digest.update(ha2);
-
-            return HexConverter.convertToHexBytes(digest.digest());
-        } finally {
-            digest.reset();
-        }
-    }
-
-    private byte[] createRFC2617RequestDigest(final byte[] ha1, final byte[] ha2, final DigestContext context) {
-        final MessageDigest digest = context.getDigest();
-        final Map<DigestAuthorizationToken, String> parsedHeader = context.getParsedHeader();
-
-        byte[] nonce = parsedHeader.get(DigestAuthorizationToken.NONCE).getBytes(StandardCharsets.UTF_8);
-        byte[] nonceCount = parsedHeader.get(DigestAuthorizationToken.NONCE_COUNT).getBytes(StandardCharsets.UTF_8);
-        byte[] cnonce = parsedHeader.get(DigestAuthorizationToken.CNONCE).getBytes(StandardCharsets.UTF_8);
-        byte[] qop = parsedHeader.get(DigestAuthorizationToken.MESSAGE_QOP).getBytes(StandardCharsets.UTF_8);
-
-        try {
-            digest.update(ha1);
-            digest.update(COLON);
-            digest.update(nonce);
-            digest.update(COLON);
-            digest.update(nonceCount);
-            digest.update(COLON);
-            digest.update(cnonce);
-            digest.update(COLON);
-            digest.update(qop);
-            digest.update(COLON);
-            digest.update(ha2);
-
-            return HexConverter.convertToHexBytes(digest.digest());
-        } finally {
-            digest.reset();
-        }
-    }
-
     @Override
     public ChallengeResult sendChallenge(final HttpServerExchange exchange, final SecurityContext securityContext) {
         DigestContext context = exchange.getAttachment(DigestContext.ATTACHMENT_KEY);
@@ -425,52 +373,6 @@ public class DigestAuthenticationMechanism implements AuthenticationMechanism {
         }
 
         return new ChallengeResult(true, UNAUTHORIZED);
-    }
-
-//    public void sendAuthenticationInfoHeader(final HttpServerExchange exchange) {
-//        DigestContext context = exchange.getAttachment(DigestContext.ATTACHMENT_KEY);
-//        DigestQop qop = context.getQop();
-//        String currentNonce = context.getNonce();
-//        String nextNonce = nonceManager.nextNonce(currentNonce, exchange);
-//        if (qop != null || !nextNonce.equals(currentNonce)) {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(NEXT_NONCE).append("=\"").append(nextNonce).append("\"");
-//            if (qop != null) {
-//                Map<DigestAuthorizationToken, String> parsedHeader = context.getParsedHeader();
-//                sb.append(",").append(Headers.QOP.toString()).append("=\"").append(qop.getToken()).append("\"");
-//                byte[] ha1 = context.getHa1();
-//                byte[] ha2;
-//
-//                if (qop == DigestQop.AUTH) {
-//                    ha2 = createHA2Auth(context);
-//                } else {
-//                    ha2 = createHA2AuthInt();
-//                }
-//                String rspauth = new String(createRFC2617RequestDigest(ha1, ha2, context), StandardCharsets.UTF_8);
-//                sb.append(",").append(Headers.RESPONSE_AUTH.toString()).append("=\"").append(rspauth).append("\"");
-//                sb.append(",").append(Headers.CNONCE.toString()).append("=\"").append(parsedHeader.get(DigestAuthorizationToken.CNONCE)).append("\"");
-//                sb.append(",").append(Headers.NONCE_COUNT.toString()).append("=").append(parsedHeader.get(DigestAuthorizationToken.NONCE_COUNT));
-//            }
-//
-//            HeaderMap responseHeader = exchange.getResponseHeaders();
-//            responseHeader.add(AUTHENTICATION_INFO, sb.toString());
-//        }
-//
-//        exchange.removeAttachment(DigestContext.ATTACHMENT_KEY);
-//    }
-
-    private byte[] createHA2Auth(final DigestContext context) {
-        byte[] digestUri = context.getParsedHeader().get(DigestAuthorizationToken.DIGEST_URI).getBytes(StandardCharsets.UTF_8);
-
-        MessageDigest digest = context.getDigest();
-        try {
-            digest.update(COLON);
-            digest.update(digestUri);
-
-            return HexConverter.convertToHexBytes(digest.digest());
-        } finally {
-            digest.reset();
-        }
     }
 
     private static class DigestContext {
