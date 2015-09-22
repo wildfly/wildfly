@@ -117,7 +117,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
                     public boolean handleUpgrade(HttpServerExchange exchange) throws IOException {
 
                         if (super.handleUpgrade(exchange)) {
-                            final String endpoint = exchange.getRequestHeaders().getFirst(HTTP_UPGRADE_ENDPOINT_PROP_NAME);
+                            final String endpoint = exchange.getRequestHeaders().getFirst(getHttpUpgradeEndpointKey());
                             if (endpoint == null) {
                                 return true;
                             } else {
@@ -169,6 +169,11 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         return SEC_ACTIVEMQ_REMOTING_ACCEPT;
     }
 
+    protected String getHttpUpgradeEndpointKey() {
+        return HTTP_UPGRADE_ENDPOINT_PROP_NAME;
+    }
+
+
     /**
      * Service to handle HTTP upgrade for legacy (HornetQ) clients.
      *
@@ -195,6 +200,11 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         @Override
         protected String getProtocol() {
             return HORNETQ_REMOTING;
+        }
+
+        @Override
+        protected String getHttpUpgradeEndpointKey() {
+            return "http-upgrade-endpoint";
         }
 
         @Override

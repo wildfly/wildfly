@@ -122,7 +122,8 @@
                          slow-consumer-threshold="${slow.consumer.threshold:456}"/>
 
         <http-connector name="http"
-                        socket-binding="http">
+                        socket-binding="http"
+                        endpoint="http">
             <param name="batch-delay" value="${batch.delay:50}"/>
         </http-connector>
         <remote-connector name="netty"
@@ -157,7 +158,7 @@
                         server-id="${my.server-id:0}"/>
         <acceptor name="myacceptor"
                   factory-class="org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory">
-            <param name="batch-delay" value="${batch.delay:50}"/>
+            <param name="batchDelay" value="${batch.delay:50}"/>
         </acceptor>
 
         <broadcast-group name="groupT"

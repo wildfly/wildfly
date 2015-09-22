@@ -260,6 +260,7 @@
                     </xs:sequence>
                     <xs:attribute name="name" type="xs:string" use="required" />
                     <xs:attribute name="socket-binding" type="xs:string" use="required" />
+                    <xs:attribute name="endpoint" type="xs:string" use="required" />
                 </xs:complexType>
             </xs:element>
 
