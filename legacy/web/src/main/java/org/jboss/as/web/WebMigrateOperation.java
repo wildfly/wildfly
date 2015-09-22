@@ -761,6 +761,12 @@ public class WebMigrateOperation implements OperationStepHandler {
             case "none": {
                 return "NOT_REQUESTED";
             }
+            case "true": {
+                return "REQUIRED";
+            }
+            case "false": {
+                return "NOT_REQUESTED";
+            }
             default: {
                 warnings.add(WebLogger.ROOT_LOGGER.couldNotTranslateVerifyClient(s));
                 return null;
