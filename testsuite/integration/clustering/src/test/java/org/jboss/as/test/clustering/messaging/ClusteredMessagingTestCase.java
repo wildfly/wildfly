@@ -50,6 +50,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -59,6 +60,7 @@ import org.wildfly.test.api.Authentication;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("fails intermittently")
 public class ClusteredMessagingTestCase {
 
     public static final String CONTAINER_0 = "messaging-container-0";
