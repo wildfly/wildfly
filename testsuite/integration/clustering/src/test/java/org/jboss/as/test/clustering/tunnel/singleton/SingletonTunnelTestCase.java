@@ -32,6 +32,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -194,7 +195,7 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
     }
 
     private String getSingletonNode(URI serviceUri) throws IOException {
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        CloseableHttpClient client = org.jboss.as.test.http.util.TestHttpClientUtils.promiscuousCookieHttpClient();
         HttpResponse response = client.execute(new HttpGet(serviceUri));
         try {
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -225,7 +226,7 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
             }
             if (gossipRouter == null) {
                 log.info("Assigning address " + address + " to gossip router.");
-                gossipRouter = new GossipRouter(12001, address, false);
+                gossipRouter = new GossipRouter(address, 12001);
 
             }
             gossipRouter.start();
