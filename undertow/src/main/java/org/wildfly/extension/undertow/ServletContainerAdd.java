@@ -87,6 +87,10 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         if(model.hasDefined(Constants.DIRECTORY_LISTING)) {
             directoryListingEnabled = ServletContainerDefinition.DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
         }
+        Integer maxSessions = null;
+        if(model.hasDefined(Constants.MAX_SESSIONS)) {
+            maxSessions = ServletContainerDefinition.MAX_SESSIONS.resolveModelAttribute(context, model).asInt();
+        }
 
         final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, model).asInt();
 
@@ -122,7 +126,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 sessionTimeout,
                 disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker(),
                 mimeMappings,
-                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms);
+                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions);
 
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);

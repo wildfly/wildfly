@@ -129,6 +129,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.DIRECTORY_LISTING)
                                 .addAttribute(ServletContainerDefinition.PROACTIVE_AUTHENTICATION)
                                 .addAttribute(ServletContainerDefinition.SESSION_ID_LENGTH)
+                                .addAttribute(ServletContainerDefinition.MAX_SESSIONS)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
