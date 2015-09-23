@@ -53,6 +53,8 @@ import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.service.concurrent.ServiceExecutor;
+import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 
 /**
  * Clustered {@link Registry} backed by an Infinispan cache.
@@ -71,6 +73,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     private final Group group;
     private final NodeFactory<Address> factory;
     private final CacheRegistryFilter filter = new CacheRegistryFilter();
+    private final ServiceExecutor executor = new StampedLockServiceExecutor();
 
     public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
         this.containerName = config.getContainerName();
@@ -90,12 +93,14 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     @Override
     public void close() {
-        this.cache.removeListener(this);
-        this.listeners.clear();
-        final Node node = this.getGroup().getLocalNode();
-        try (Batch batch = this.batcher.createBatch()) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(node);
-        }
+        this.executor.close(() -> {
+            this.cache.removeListener(this);
+            this.listeners.clear();
+            final Node node = this.getGroup().getLocalNode();
+            try (Batch batch = this.batcher.createBatch()) {
+                this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(node);
+            }
+        });
     }
 
     @Override
@@ -139,36 +144,39 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     @TopologyChanged
     public void topologyChanged(TopologyChangedEvent<Node, Map.Entry<K, V>> event) {
         if (event.isPre()) return;
-        ConsistentHash hash = event.getConsistentHashAtEnd();
-        List<Address> members = hash.getMembers();
 
-        // Determine which nodes have left the cache view
-        Set<Address> addresses = new HashSet<>(event.getConsistentHashAtStart().getMembers());
-        addresses.removeAll(members);
+        this.executor.execute(() -> {
+            ConsistentHash hash = event.getConsistentHashAtEnd();
+            List<Address> members = hash.getMembers();
 
-        if (!addresses.isEmpty()) {
-            Address localAddress = event.getCache().getCacheManager().getAddress();
-            // We're only interested in the entries for which we are the primary owner
-            List<Node> nodes = addresses.stream().filter(address -> hash.locatePrimaryOwner(address).equals(localAddress)).map(address -> this.factory.createNode(address)).collect(Collectors.toList());
+            // Determine which nodes have left the cache view
+            Set<Address> addresses = new HashSet<>(event.getConsistentHashAtStart().getMembers());
+            addresses.removeAll(members);
 
-            if (!nodes.isEmpty()) {
-                Cache<Node, Map.Entry<K, V>> cache = event.getCache().getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
-                Map<K, V> removed = new HashMap<>();
-                try (Batch batch = this.batcher.createBatch()) {
-                    for (Node node: nodes) {
-                        Map.Entry<K, V> old = cache.remove(node);
-                        if (old != null) {
-                            removed.put(old.getKey(), old.getValue());
+            if (!addresses.isEmpty()) {
+                Address localAddress = event.getCache().getCacheManager().getAddress();
+                // We're only interested in the entries for which we are the primary owner
+                List<Node> nodes = addresses.stream().filter(address -> hash.locatePrimaryOwner(address).equals(localAddress)).map(address -> this.factory.createNode(address)).collect(Collectors.toList());
+
+                if (!nodes.isEmpty()) {
+                    Cache<Node, Map.Entry<K, V>> cache = event.getCache().getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
+                    Map<K, V> removed = new HashMap<>();
+                    try (Batch batch = this.batcher.createBatch()) {
+                        for (Node node: nodes) {
+                            Map.Entry<K, V> old = cache.remove(node);
+                            if (old != null) {
+                                removed.put(old.getKey(), old.getValue());
+                            }
                         }
+                        if (!removed.isEmpty()) {
+                            this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
+                        }
+                    } catch (CacheException e) {
+                        ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, this.containerName, event.getCache().getName(), nodes);
                     }
-                    if (!removed.isEmpty()) {
-                        this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
-                    }
-                } catch (CacheException e) {
-                    ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, this.containerName, event.getCache().getName(), nodes);
                 }
             }
-        }
+        });
     }
 
     @CacheEntryCreated
