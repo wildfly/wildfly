@@ -39,13 +39,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="opalka.richard@gmail.com">Richard Opalka</a>
@@ -57,8 +68,41 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testLegacyConfigurations() throws Exception {
+        // Get a list of all the logging_x_x.xml files
+        final Pattern pattern = Pattern.compile("(subsystem)_\\d+_\\d+\\.xml");
+        // Using the CP as that's the standardSubsystemTest will use to find the config file
+        final String cp = WildFlySecurityManager.getPropertyPrivileged("java.class.path", ".");
+        final String[] entries = cp.split(Pattern.quote(File.pathSeparator));
+        final List<String> configs = new ArrayList<>();
+        for (String entry : entries) {
+            final Path path = Paths.get(entry);
+            if (Files.isDirectory(path)) {
+                Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                        final String name = file.getFileName().toString();
+                        if (pattern.matcher(name).matches()) {
+                            configs.add(name);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        }
+
+        // The paths shouldn't be empty
+        Assert.assertFalse("No configs were found", configs.isEmpty());
+
+        for (String configId : configs) {
+            // Run the standard subsystem test, but don't compare the XML as it should never match
+            standardSubsystemTest(configId, false);
+        }
+    }
+
+    @Test
     public void testSubsystem() throws Exception {
-        KernelServices services = standardSubsystemTest("subsystem12.xml", false);
+        KernelServices services = standardSubsystemTest("subsystem_1_2.xml", false);
         ModelNode model = services.readWholeModel();
         ModelNode subsystem = model.require(SUBSYSTEM).require(EeExtension.SUBSYSTEM_NAME);
         ModelNode globalModules = subsystem.require(GLOBAL_MODULES);
@@ -79,7 +123,7 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem12.xml");
+        return readResource("subsystem_1_2.xml");
     }
 
     @Override
