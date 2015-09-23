@@ -28,7 +28,9 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.util.AttachmentKey;
 
+import io.undertow.util.StatusCodes;
 import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.identity.plugins.SimpleRole;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
@@ -43,6 +45,8 @@ import java.util.Set;
 import org.jboss.security.auth.callback.JASPICallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
+
+import javax.security.auth.message.AuthException;
 
 /**
  * <p>
@@ -106,6 +110,11 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         } else {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
             sc.authenticationFailed("JASPIC authentication failed.", authType);
+
+            final Object ex = SecurityContextAssociation.getSecurityContext().getData().get(AuthException.class.getName());
+            if (exchange.getResponseCode() == StatusCodes.OK && ex != null) {
+                exchange.setResponseCode(StatusCodes.INTERNAL_SERVER_ERROR);
+            }
         }
 
         return outcome;
