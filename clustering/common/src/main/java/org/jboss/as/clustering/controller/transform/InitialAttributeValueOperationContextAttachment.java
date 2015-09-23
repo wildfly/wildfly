@@ -40,18 +40,17 @@ public class InitialAttributeValueOperationContextAttachment {
 
     public static final OperationContext.AttachmentKey<InitialAttributeValueOperationContextAttachment> INITIAL_VALUES_ATTACHMENT = OperationContext.AttachmentKey.create(InitialAttributeValueOperationContextAttachment.class);
 
-    private volatile Map<String, ModelNode> initialValues = new HashMap<>();
+    private final Map<PathAddress, ModelNode> initialValues = new HashMap<>();
 
     public ModelNode putIfAbsentInitialValue(PathAddress address, String attributeName, ModelNode initialValue) {
-        return initialValues.putIfAbsent(this.keyFor(address, attributeName), initialValue.clone());
+        return this.initialValues.putIfAbsent(keyFor(address, attributeName), initialValue.clone());
     }
 
     public ModelNode getInitialValue(PathAddress address, String attributeName) {
-        return initialValues.get(this.keyFor(address, attributeName));
+        return this.initialValues.get(keyFor(address, attributeName));
     }
 
-
-    private String keyFor(PathAddress address, String attributeName) {
-        return address.toString() + attributeName;
+    private static PathAddress keyFor(PathAddress address, String attributeName) {
+        return address.append(attributeName);
     }
 }

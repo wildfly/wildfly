@@ -95,6 +95,9 @@ public interface InfinispanLogger extends BasicLogger {
                 "; use the same attribute specified on the 'transport' element of corresponding JGroups stack instead")
     void topologyAttributeDeprecated(String attribute);
 
+    @Message(id = 6, value = "Failed to locate a data source bound to %s")
+    OperationFailedException dataSourceJndiNameNotFound(String jndiName);
+
     /**
      * Creates an exception indicating a failure to resolve the outbound socket binding represented by the
      * {@code binding} parameter.

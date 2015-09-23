@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,9 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+package org.jboss.as.clustering.infinispan.subsystem;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
+import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -30,37 +35,29 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 
 /**
- * Initializer for the JGroups subsystem.
  * @author Paul Ferraro
  */
-public class JGroupsSubsystemInitialization extends AdditionalInitialization {
-    private static final long serialVersionUID = -4433079373360352449L;
+public class InfinispanSubsystemInitialization extends JGroupsSubsystemInitialization {
+    private static final long serialVersionUID = -8991959025968193007L;
 
-    public JGroupsSubsystemInitialization() {
+    public InfinispanSubsystemInitialization() {
         super();
     }
 
-    public JGroupsSubsystemInitialization(RunningMode mode) {
+    public InfinispanSubsystemInitialization(RunningMode mode) {
         super(mode);
     }
 
     @Override
     protected void initializeExtraSubystemsAndModel(ExtensionRegistry registry, Resource root, ManagementResourceRegistration registration, RuntimeCapabilityRegistry capabilityRegistry) {
-        new JGroupsExtension().initialize(registry.getExtensionContext("jgroups", registration, ExtensionRegistryType.MASTER));
+        new DataSourcesExtension().initialize(registry.getExtensionContext("datasources", registration, ExtensionRegistryType.MASTER));
 
         Resource subsystem = Resource.Factory.create();
-        subsystem.getModel().get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).set("tcp");
-        subsystem.getModel().get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName()).set("maximal-channel");
-        root.registerChild(JGroupsSubsystemResourceDefinition.PATH, subsystem);
+        root.registerChild(PathElement.pathElement(SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME), subsystem);
 
-        Resource channel = Resource.Factory.create();
-        subsystem.registerChild(ChannelResourceDefinition.pathElement("maximal-channel"), channel);
-
-        Resource stack = Resource.Factory.create();
-        subsystem.registerChild(StackResourceDefinition.pathElement("tcp"), stack);
-
-        Resource transport = Resource.Factory.create();
-        stack.registerChild(TransportResourceDefinition.pathElement("TCP"), transport);
+        Resource dataSource = Resource.Factory.create();
+        subsystem.registerChild(PathElement.pathElement("data-source", "ExampleDS"), dataSource);
+        dataSource.getModel().get("jndi-name").set("java:jboss/jdbc/store");
 
         super.initializeExtraSubystemsAndModel(registry, root, registration, capabilityRegistry);
     }

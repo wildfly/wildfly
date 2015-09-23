@@ -70,21 +70,21 @@ public class ChainedOperationTransformer implements OperationTransformer {
      */
     @Override
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode originalOperation) throws OperationFailedException {
-        String originalName = originalOperation.get(ModelDescriptionConstants.OP).asString();
-        ModelNode originalAddress = originalOperation.get(ModelDescriptionConstants.OP_ADDR);
+        String originalName = Operations.getName(originalOperation);
+        PathAddress originalAddress = Operations.getPathAddress(originalOperation);
         Deque<ModelNode> preSteps = new LinkedList<>();
         Deque<ModelNode> postSteps = new LinkedList<>();
         ModelNode operation = originalOperation;
         for (OperationTransformer transformer: this.transformers) {
             operation = transformer.transformOperation(context, address, operation).getTransformedOperation();
             // If the transformed operation is a composite operation, locate the modified operation and record any pre/post operations
-            if (collate && operation.get(ModelDescriptionConstants.OP).asString().equals(ModelDescriptionConstants.COMPOSITE)) {
+            if (this.collate && operation.get(ModelDescriptionConstants.OP).asString().equals(ModelDescriptionConstants.COMPOSITE)) {
                 List<ModelNode> stepList = operation.get(ModelDescriptionConstants.STEPS).asList();
                 ListIterator<ModelNode> steps = stepList.listIterator();
                 while (steps.hasNext()) {
                     ModelNode step = steps.next();
-                    String operationName = step.get(ModelDescriptionConstants.OP).asString();
-                    ModelNode operationAddress = step.get(ModelDescriptionConstants.OP_ADDR);
+                    String operationName = Operations.getName(step);
+                    PathAddress operationAddress = Operations.getPathAddress(step);
                     if (operationName.equals(originalName) && operationAddress.equals(originalAddress)) {
                         operation = step;
                         break;
@@ -94,8 +94,8 @@ public class ChainedOperationTransformer implements OperationTransformer {
                 steps = stepList.listIterator(stepList.size());
                 while (steps.hasPrevious()) {
                     ModelNode step = steps.previous();
-                    String operationName = step.get(ModelDescriptionConstants.OP).asString();
-                    ModelNode operationAddress = step.get(ModelDescriptionConstants.OP_ADDR);
+                    String operationName = Operations.getName(step);
+                    PathAddress operationAddress = Operations.getPathAddress(step);
                     if (operationName.equals(originalName) && operationAddress.equals(originalAddress)) {
                         break;
                     }
@@ -103,7 +103,7 @@ public class ChainedOperationTransformer implements OperationTransformer {
                 }
             }
         }
-        if (collate) {
+        if (this.collate) {
             int count = preSteps.size() + postSteps.size() + 1;
             // If there are any pre or post steps, we need a composite operation
             if (count > 1) {

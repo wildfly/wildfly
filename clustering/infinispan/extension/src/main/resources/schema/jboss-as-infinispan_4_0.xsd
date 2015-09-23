@@ -571,9 +571,9 @@
     <xs:complexType name="jdbc-store">
         <xs:complexContent>
             <xs:extension base="tns:store">
-                <xs:attribute name="datasource" type="xs:string" use="required">
+                <xs:attribute name="data-source" type="xs:string" use="required">
                     <xs:annotation>
-                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
+                        <xs:documentation>References the pool name of a data source.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="dialect" type="tns:dialect" use="optional">

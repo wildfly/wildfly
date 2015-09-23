@@ -51,7 +51,7 @@ public class SimplePathOperationTransformer implements OperationTransformer {
         if (attachment != null) {
             ModelNode value = attachment.getInitialValue(address, Operations.getAttributeName(operation));
             if (value != null) {
-                attachment.putIfAbsentInitialValue(addressTransformer.transform(address), Operations.getAttributeName(operation), value);
+                attachment.putIfAbsentInitialValue(this.addressTransformer.transform(address), Operations.getAttributeName(operation), value);
             }
         }
 

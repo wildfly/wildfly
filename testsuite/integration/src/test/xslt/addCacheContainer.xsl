@@ -8,7 +8,7 @@
     <xsl:variable name="ispn" select="'urn:jboss:domain:infinispan:'"/>
     
     <xsl:attribute-set name="cacheLoaderAttributes">
-        <xsl:attribute name="datasource">java:jboss/datasources/ExampleDS</xsl:attribute>
+        <xsl:attribute name="data-source">ExampleDS</xsl:attribute>
         <xsl:attribute name="preload">true</xsl:attribute>
         <xsl:attribute name="passivation">false</xsl:attribute>
         <xsl:attribute name="purge">false</xsl:attribute>

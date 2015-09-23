@@ -39,6 +39,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -95,9 +96,17 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
                 .addAttributes(JDBCStoreResourceDefinition.Attribute.class)
                 .addAttributes(StoreResourceDefinition.Attribute.class)
                 .addExtraParameters(DeprecatedAttribute.class)
+                .addExtraParameters(JDBCStoreResourceDefinition.DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new MixedKeyedJDBCStoreBuilderFactory());
         new AddStepHandler(descriptor, handler) {
+            @Override
+            protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+                translateAddOperation(context, operation);
+                super.populateModel(context, operation, resource);
+            }
+
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 super.execute(context, operation);

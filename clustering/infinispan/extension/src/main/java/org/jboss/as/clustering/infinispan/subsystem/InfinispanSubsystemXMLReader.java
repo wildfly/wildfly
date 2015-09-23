@@ -28,7 +28,6 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -171,10 +170,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
 
         operations.put(address.append(TransportResourceDefinition.WILDCARD_PATH), Util.createAddOperation(address.append(NoTransportResourceDefinition.PATH)));
-        Stream.of(ThreadPoolResourceDefinition.values()).forEach(
+        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(
                 pool -> operations.put(address.append(pool.getPathElement()), Util.createAddOperation(address.append(pool.getPathElement())))
         );
-        Stream.of(ScheduledThreadPoolResourceDefinition.values()).forEach(
+        EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(
                 pool -> operations.put(address.append(pool.getPathElement()), Util.createAddOperation(address.append(pool.getPathElement())))
         );
 
@@ -1316,12 +1315,21 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATASOURCE: {
-                    readAttribute(reader, i, operation, JDBCStoreResourceDefinition.Attribute.DATA_SOURCE);
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    readAttribute(reader, i, operation, JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE);
                     break;
                 }
                 case DIALECT: {
                     if (this.schema.since(InfinispanSchema.VERSION_2_0)) {
                         readAttribute(reader, i, operation, JDBCStoreResourceDefinition.Attribute.DIALECT);
+                        break;
+                    }
+                }
+                case DATA_SOURCE: {
+                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                        readAttribute(reader, i, operation, JDBCStoreResourceDefinition.Attribute.DATA_SOURCE);
                         break;
                     }
                 }
@@ -1331,8 +1339,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
 
-        if (!operation.hasDefined(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName())) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(XMLAttribute.DATASOURCE));
+        Attribute requiredAttribute = this.schema.since(InfinispanSchema.VERSION_4_0) ? JDBCStoreResourceDefinition.Attribute.DATA_SOURCE : JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE;
+        if (!operation.hasDefined(requiredAttribute.getDefinition().getName())) {
+            throw ParseUtils.missingRequired(reader, requiredAttribute.getDefinition().getName());
         }
     }
 
