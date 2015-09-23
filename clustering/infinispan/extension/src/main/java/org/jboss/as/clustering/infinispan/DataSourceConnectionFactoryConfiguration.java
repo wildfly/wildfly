@@ -20,25 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.jboss.as.clustering.infinispan;
+
+import javax.sql.DataSource;
+
+import org.infinispan.commons.configuration.BuiltBy;
+import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfiguration;
+import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactory;
 
 /**
- * Enumerates capability requirements for clustering resources
+ * Configuration for {@link DataSourceConnectionFactory}.
  * @author Paul Ferraro
  */
-public enum RequiredCapability implements Requirement {
-    DATA_SOURCE("org.wildfly.data-source"),
-    OUTBOUND_SOCKET_BINDING("org.wildfly.network.outbound-socket-binding"),
-    SOCKET_BINDING("org.wildfly.network.socket-binding"),
-    ;
-    private final String name;
+@BuiltBy(DataSourceConnectionFactoryConfigurationBuilder.class)
+public class DataSourceConnectionFactoryConfiguration implements ConnectionFactoryConfiguration {
 
-    RequiredCapability(String name) {
-        this.name = name;
+    private final DataSource dataSource;
+
+    public DataSourceConnectionFactoryConfiguration(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public DataSource getDataSource() {
+        return this.dataSource;
     }
 
     @Override
-    public String getName() {
-        return this.name;
+    public Class<? extends ConnectionFactory> connectionFactoryClass() {
+        return DataSourceConnectionFactory.class;
     }
 }

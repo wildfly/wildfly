@@ -114,6 +114,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     // address generation
+    @SuppressWarnings("deprecation")
     protected static PathAddress getCacheStorePropertyAddress(String containerName, String cacheType, String cacheName, String propertyName) {
         return getCustomCacheStoreAddress(containerName, cacheType, cacheName).append(StorePropertyResourceDefinition.pathElement(propertyName));
     }
