@@ -224,9 +224,11 @@ public class WeldDeployment implements CDI11Deployment {
     @Override
     public synchronized BeanDeploymentArchive getBeanDeploymentArchive(final Class<?> beanClass) {
         ClassLoader moduleClassLoader = WildFlySecurityManager.getClassLoaderPrivileged(beanClass);
-        for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
-            if (bda.getBeanClasses().contains(beanClass.getName()) && moduleClassLoader != null && moduleClassLoader.equals(beanClass.getClassLoader())) {
-                return bda;
+        if (moduleClassLoader != null) {
+            for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
+                if (bda.getBeanClasses().contains(beanClass.getName()) && moduleClassLoader.equals(bda.getClassLoader())) {
+                    return bda;
+                }
             }
         }
         /*
