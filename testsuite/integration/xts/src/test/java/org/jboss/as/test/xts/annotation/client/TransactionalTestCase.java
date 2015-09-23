@@ -24,13 +24,10 @@ package org.jboss.as.test.xts.annotation.client;
 import com.arjuna.mw.wst11.UserTransaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.xts.annotation.service.TransactionalService;
 import org.jboss.as.test.xts.annotation.service.TransactionalServiceImpl;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -45,24 +42,26 @@ public class TransactionalTestCase {
 
     private static final String DEPLOYMENT_NAME = "transactional-test";
 
-    @ArquillianResource
-    private ManagementClient managementClient;
+    private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":"
+            + TestSuiteEnvironment.getHttpPort();
+
+    private static final String DEPLOYMENT_URL = "http://" + SERVER_HOST_PORT + "/" + DEPLOYMENT_NAME;
 
     @Deployment
     public static WebArchive getDeployment() {
-        final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war")
+        final WebArchive webArchive = DeploymentHelper.getInstance().getWebArchiveWithPermissions(DEPLOYMENT_NAME)
                 .addClass(TransactionalClient.class)
                 .addClass(TransactionalService.class)
                 .addClass(TransactionalServiceImpl.class)
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
+                .addClass(TestSuiteEnvironment.class)
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
 
         return webArchive;
     }
 
     @Test
     public void testNoTransaction() throws Exception {
-        final String deploymentUrl = getDeploymentUrl();
+        final String deploymentUrl = DEPLOYMENT_URL;
         final TransactionalService transactionalService = TransactionalClient.newInstance(deploymentUrl);
 
         final boolean isTransactionActive = transactionalService.isTransactionActive();
@@ -72,7 +71,7 @@ public class TransactionalTestCase {
 
     @Test
     public void testActiveTransaction() throws Exception {
-        final String deploymentUrl = getDeploymentUrl();
+        final String deploymentUrl = DEPLOYMENT_URL;
         final TransactionalService transactionalService = TransactionalClient.newInstance(deploymentUrl);
         final UserTransaction userTransaction = UserTransaction.getUserTransaction();
 
@@ -81,12 +80,6 @@ public class TransactionalTestCase {
         userTransaction.commit();
 
         Assert.assertEquals(true, isTransactionActive);
-    }
-
-    private String getDeploymentUrl() {
-        final String baseUrl = managementClient.getWebUri().toString();
-
-        return baseUrl + "/" + DEPLOYMENT_NAME;
     }
 
 }
