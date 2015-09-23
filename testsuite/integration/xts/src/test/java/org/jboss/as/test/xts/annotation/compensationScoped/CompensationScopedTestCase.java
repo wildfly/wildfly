@@ -23,10 +23,9 @@ package org.jboss.as.test.xts.annotation.compensationScoped;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.narayana.compensations.impl.BAControler;
 import org.jboss.narayana.compensations.impl.BAControllerFactory;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
@@ -49,9 +48,8 @@ public class CompensationScopedTestCase {
 
     @Deployment
     public static JavaArchive getDeployment() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar")
-                .addPackage(CompensationScopedTestCase.class.getPackage())
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        final JavaArchive archive = DeploymentHelper.getInstance().getJavaArchive("test")
+                .addPackage(CompensationScopedTestCase.class.getPackage());
 
         return archive;
     }

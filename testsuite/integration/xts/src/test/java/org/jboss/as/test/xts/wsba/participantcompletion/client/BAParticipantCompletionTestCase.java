@@ -32,6 +32,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.xts.base.BaseFunctionalTest;
 import org.jboss.as.test.xts.base.TestApplicationException;
+import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.as.test.xts.util.EventLog;
 import org.jboss.as.test.xts.util.EventLogEvent;
 import org.jboss.as.test.xts.wsba.participantcompletion.service.BAParticipantCompletion;
@@ -41,11 +42,7 @@ import org.jboss.as.test.xts.wsba.participantcompletion.service.BAParticipantCom
 import org.jboss.jbossts.xts.bytemanSupport.BMScript;
 import org.jboss.jbossts.xts.bytemanSupport.participantCompletion.ParticipantCompletionCoordinatorRules;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -72,15 +69,13 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
 
     @Deployment
     public static Archive<?> createTestArchive() {
-        return ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war")
+        return DeploymentHelper.getInstance().getWebArchive(ARCHIVE_NAME)
                 .addPackage(BAParticipantCompletion.class.getPackage())
                 .addPackage(BAParticipantCompletionClient.class.getPackage())
                 .addPackage(EventLog.class.getPackage())
                 .addPackage(BaseFunctionalTest.class.getPackage())
                 .addClass(ParticipantCompletionCoordinatorRules.class)
-
                 .addAsResource("context-handlers.xml")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
     }
 
