@@ -24,21 +24,13 @@ package org.wildfly.extension.undertow.security;
 
 import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
-import io.undertow.security.idm.DigestCredential;
+
+import org.wildfly.extension.undertow.security.digest.DigestCredential;
+
 import io.undertow.security.idm.IdentityManager;
 import io.undertow.security.idm.PasswordCredential;
 import io.undertow.security.idm.X509CertificateCredential;
-import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.AuthorizationManager;
-import org.jboss.security.SecurityConstants;
-import org.jboss.security.SecurityContext;
-import org.jboss.security.callbacks.SecurityContextCallbackHandler;
-import org.jboss.security.identity.Role;
-import org.jboss.security.identity.RoleGroup;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 
-import javax.security.auth.Subject;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.security.cert.X509Certificate;
@@ -46,6 +38,20 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.security.auth.Subject;
+
+import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.AuthorizationManager;
+import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.auth.callback.CallbackHandlerPolicyContextHandler;
+import org.jboss.security.auth.callback.DigestCallbackHandler;
+import org.jboss.security.callbacks.SecurityContextCallbackHandler;
+import org.jboss.security.identity.Role;
+import org.jboss.security.identity.RoleGroup;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author Stuart Douglas
@@ -74,7 +80,13 @@ public class JAASIdentityManagerImpl implements IdentityManager {
     public Account verify(String id, Credential credential) {
         AccountImpl account = getAccount(id);
         if (credential instanceof DigestCredential) {
-            return verifyCredential(account, new DigestCredentialImpl((DigestCredential) credential));
+            DigestCredential digestCredential = (DigestCredential) credential;
+            DigestCallbackHandler handler = new DigestCallbackHandler(id, digestCredential.getNonce(), digestCredential.getNonceCount(),
+                    digestCredential.getClientNonce(), digestCredential.getQop(), digestCredential.getRealm(),
+                    digestCredential.getHA2());
+            CallbackHandlerPolicyContextHandler.setCallbackHandler(handler);
+
+            return verifyCredential(account, digestCredential.getClientDigest());
         } else if(credential instanceof PasswordCredential) {
             final char[] password = ((PasswordCredential) credential).getPassword();
             // The original array may be cleared, this integration relies on it being cached for use later.
