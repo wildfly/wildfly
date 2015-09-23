@@ -570,6 +570,8 @@ public class WebMigrateOperation implements OperationStepHandler {
                 migrateMimeMapping(newAddOperations, newAddOp);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.CONNECTOR_PATH))) {
                 migrateConnector(context, newAddOperations, newAddOp, address, legacyModelDescription, warnings);
+            } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.CONNECTOR_PATH, WebExtension.SSL_PATH))) {
+                // ignore, handled as part of connector migration
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH))) {
                 migrateVirtualHost(newAddOperations, newAddOp, address);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.ACCESS_LOG_PATH))) {
@@ -581,7 +583,6 @@ public class WebMigrateOperation implements OperationStepHandler {
             } else {
                 warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(legacyAddOp));
             }
-
         }
     }
 
