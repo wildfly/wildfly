@@ -65,25 +65,22 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
             ComponentDescription description = configuration.getComponentDescription();
             if (description instanceof MessageDrivenComponentDescription) {
                 final MessageDrivenComponentDescription mdbDescription = (MessageDrivenComponentDescription) description;
-                final String deliveryGroup = mdbDescription.getDeliveryGroup();
-                final boolean clusteredSingleton = mdbDescription.isClusteredSingleton();
-                if (deliveryGroup != null || clusteredSingleton) {
+                if (mdbDescription.isDeliveryControlled()) {
                     final MdbDeliveryControllerService mdbDeliveryControllerService = new MdbDeliveryControllerService();
-                    final ServiceName mdbDeliveryControllerServiceName = createMdbDeliveryControllerServiceName(mdbDescription);
                     final ServiceBuilder<MdbDeliveryControllerService> builder = serviceTarget
-                            .addService(mdbDeliveryControllerServiceName, mdbDeliveryControllerService)
+                            .addService(mdbDescription.getDeliveryControllerName(), mdbDeliveryControllerService)
                             .addDependency(description.getCreateServiceName(), MessageDrivenComponent.class,
                                     mdbDeliveryControllerService.getMdbComponent())
                             .setInitialMode(Mode.PASSIVE);
-                    if (clusteredSingleton) {
+                    if (mdbDescription.isClusteredSingleton()) {
                         clusteredSingletonFound = true;
                         builder.addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("service"));
                     }
-                    if (deliveryGroup != null) {
+                    if (mdbDescription.getDeliveryGroup() != null) {
                         final ServiceName deliveyGroupServiceName = MdbDeliveryGroupResourceDefinition.getDeliveryGroupServiceName(
-                                deliveryGroup);
+                                mdbDescription.getDeliveryGroup());
                         if (phaseContext.getServiceRegistry().getService(deliveyGroupServiceName) == null) {
-                            throw EjbLogger.DEPLOYMENT_LOGGER.missingMdbDeliveryGroup(deliveryGroup);
+                            throw EjbLogger.DEPLOYMENT_LOGGER.missingMdbDeliveryGroup(mdbDescription.getDeliveryGroup());
                         }
                         builder.addDependency(deliveyGroupServiceName);
                     }
@@ -113,8 +110,7 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                 MessageDrivenComponentDescription mdbDescription = (MessageDrivenComponentDescription) description;
                 clusteredSingletonFound = clusteredSingletonFound || mdbDescription.isClusteredSingleton();
                 if (mdbDescription.isClusteredSingleton() || mdbDescription.getDeliveryGroup() != null) {
-                    serviceRegistry.getRequiredService(createMdbDeliveryControllerServiceName(mdbDescription))
-                            .setMode(Mode.REMOVE);
+                    serviceRegistry.getRequiredService(mdbDescription.getDeliveryControllerName()).setMode(Mode.REMOVE);
                 }
             }
         }
@@ -122,10 +118,6 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
             serviceRegistry.getRequiredService(createClusteredSingletonDemanderServiceName(deploymentUnit))
                     .setMode(Mode.REMOVE);
         }
-    }
-
-    private ServiceName createMdbDeliveryControllerServiceName(MessageDrivenComponentDescription mdbDescription) {
-        return mdbDescription.getStartServiceName().append("MDB_DELIVERY");
     }
 
     private ServiceName createClusteredSingletonDemanderServiceName(DeploymentUnit deploymentUnit) {

@@ -39,6 +39,7 @@ import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
@@ -52,6 +53,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private final Properties activationProps;
     private final String resourceAdapterName;
     private final boolean deliveryActive;
+    private final ServiceName deliveryControllerName;
     private final InjectedValue<ResourceAdapter> resourceAdapterInjectedValue = new InjectedValue<ResourceAdapter>();
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
     private final InjectedValue<DefaultResourceAdapterService> defaultResourceAdapterServiceInjectedValue = new InjectedValue<DefaultResourceAdapterService>();
@@ -69,7 +71,8 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
         this.resourceAdapterName = componentDescription.getResourceAdapterName();
-        this.deliveryActive = componentDescription.getDeliveryGroup()== null && !componentDescription.isClusteredSingleton() && componentDescription.isDeliveryActive();
+        this.deliveryControllerName = componentDescription.isDeliveryControlled()? componentDescription.getDeliveryControllerName(): null;
+        this.deliveryActive = !componentDescription.isDeliveryControlled() && componentDescription.isDeliveryActive();
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = messageListenerInterface;
 
@@ -98,7 +101,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
 
         final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(activeResourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
-        final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec, deliveryActive);
+        final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec, deliveryActive, deliveryControllerName);
         // set the endpoint
         final EJBUtilities ejbUtilities = this.ejbUtilitiesInjectedValue.getValue();
         final Endpoint endpoint = ejbUtilities.getEndpoint(activeResourceAdapterName);

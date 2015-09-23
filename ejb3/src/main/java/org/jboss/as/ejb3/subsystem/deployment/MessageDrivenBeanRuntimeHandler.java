@@ -31,11 +31,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Handles operations that provide runtime management of a {@link MessageDrivenComponent}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Flavia Rainone
  */
 public class MessageDrivenBeanRuntimeHandler extends AbstractEJBComponentRuntimeHandler<MessageDrivenComponent> {
 
@@ -66,11 +68,18 @@ public class MessageDrivenBeanRuntimeHandler extends AbstractEJBComponentRuntime
     @Override
     protected void executeAgainstComponent(OperationContext context, ModelNode operation, MessageDrivenComponent component, String opName, PathAddress address) throws OperationFailedException {
         if (START_DELIVERY.equals(opName)) {
-            component.startDelivery();
-            context.stepCompleted();
+            if (component.isDeliveryControlled()) {
+                context.getServiceRegistry(true).getRequiredService(component.getDeliveryControllerName()).setMode(ServiceController.Mode.PASSIVE);
+            } else {
+                component.startDelivery();
+            }
         } else if (STOP_DELIVERY.equals(opName)) {
-            component.stopDelivery();
-            context.stepCompleted();
+            if (component.isDeliveryControlled()) {
+                context.getServiceRegistry(true).getRequiredService(component.getDeliveryControllerName()).setMode(
+                        ServiceController.Mode.NEVER);
+            } else {
+                component.stopDelivery();
+            }
         } else {
             super.executeAgainstComponent(context, operation, component, opName, address);
         }
