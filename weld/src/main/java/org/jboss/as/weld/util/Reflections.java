@@ -57,7 +57,7 @@ public class Reflections {
     public static <T> Class<T> loadClass(String className, ClassLoader classLoader) {
         try {
             return cast(classLoader.loadClass(className));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return null;
         }
     }
