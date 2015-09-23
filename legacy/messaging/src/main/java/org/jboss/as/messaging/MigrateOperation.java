@@ -422,7 +422,11 @@ public class MigrateOperation implements OperationStepHandler {
                                 String name = address.getLastElement().getValue();
                                 ModelNode value = newAddOp.get(VALUE);
                                 ModelNode parentAddOp = newAddOperations.get(address.getParent());
-                                parentAddOp.get("params").add(new Property(name, value));
+                                if (name.equals("http-upgrade-endpoint") && address.getParent().getLastElement().getKey().equals("http-connector")) {
+                                    parentAddOp.get("endpoint").set(value);
+                                } else {
+                                    parentAddOp.get("params").add(new Property(name, value));
+                                }
                                 continue;
                             }
                             break;

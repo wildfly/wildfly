@@ -17,14 +17,11 @@
             <?ADDRESS-SETTINGS?>
 
             <http-connector name="http-connector"
-                            socket-binding="http">
-                <param name="http-upgrade-endpoint"
-                       value="http-acceptor"/>
-            </http-connector>
+                            socket-binding="http"
+                            endpoint="http-acceptor" />
             <http-connector name="http-connector-throughput"
-                            socket-binding="http">
-                <param name="http-upgrade-endpoint"
-                       value="http-acceptor-throughput"/>
+                            socket-binding="http"
+                            endpoint="http-acceptor-throughput">
                 <param name="batch-delay"
                        value="50"/>
             </http-connector>

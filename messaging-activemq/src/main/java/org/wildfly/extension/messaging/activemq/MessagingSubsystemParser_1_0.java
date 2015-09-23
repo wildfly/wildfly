@@ -294,6 +294,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                         builder(HTTPConnectorDefinition.INSTANCE)
                                                 .addAttributes(
                                                         HTTPConnectorDefinition.SOCKET_BINDING,
+                                                        HTTPConnectorDefinition.ENDPOINT,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
                                         builder(RemoteTransportDefinition.CONNECTOR_INSTANCE)

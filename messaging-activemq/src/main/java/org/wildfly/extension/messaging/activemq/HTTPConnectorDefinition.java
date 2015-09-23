@@ -32,6 +32,7 @@ import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * HTTP connector resource definition
@@ -54,9 +55,15 @@ public class HTTPConnectorDefinition extends AbstractTransportDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
+    // for remote acceptor, the socket-binding is required
+    public static final SimpleAttributeDefinition ENDPOINT = create("endpoint", ModelType.STRING)
+            .setAllowNull(false)
+            .setAllowExpression(false) // references another resource
+            .build();
+
     static final HTTPConnectorDefinition INSTANCE = new HTTPConnectorDefinition();
 
     public HTTPConnectorDefinition() {
-        super(false, CommonAttributes.HTTP_CONNECTOR, SOCKET_BINDING, PARAMS);
+        super(false, CommonAttributes.HTTP_CONNECTOR, SOCKET_BINDING, ENDPOINT, PARAMS);
     }
 }
