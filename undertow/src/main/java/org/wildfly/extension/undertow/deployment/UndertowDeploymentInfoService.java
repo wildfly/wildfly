@@ -475,7 +475,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     return new JASPICInitialHandler(securityDomain, handler);
                 }
             });
-            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(authMethod));
+            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(authMethod, securityDomain));
             deploymentInfo.setSecurityContextFactory(new JASPICSecurityContextFactory(this.securityDomain));
         }
     }

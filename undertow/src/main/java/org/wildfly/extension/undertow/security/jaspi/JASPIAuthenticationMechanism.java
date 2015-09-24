@@ -29,6 +29,7 @@ import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.util.AttachmentKey;
 
 import org.jboss.security.SecurityConstants;
+import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.identity.plugins.SimpleRole;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
@@ -43,6 +44,8 @@ import java.util.Set;
 import org.jboss.security.auth.callback.JASPICallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
+
+import javax.security.auth.Subject;
 
 /**
  * <p>
@@ -63,9 +66,11 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
     public static final AttachmentKey<SecurityContext> SECURITY_CONTEXT_ATTACHMENT_KEY = AttachmentKey.create(SecurityContext.class);
 
     private final String configuredAuthMethod;
+    private final String securityDomain;
 
-    public JASPIAuthenticationMechanism(final String configuredAuthMethod) {
+    public JASPIAuthenticationMechanism(final String configuredAuthMethod, String securityDomain) {
         this.configuredAuthMethod = configuredAuthMethod;
+        this.securityDomain = securityDomain;
     }
 
     @Override
@@ -75,12 +80,17 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         AuthenticationMechanismOutcome outcome;
         Account authenticatedAccount = null;
 
-        boolean isValid = attachment.isValid();
+        Boolean isValid = attachment.getValid();
+        attachment.setValid(null);
+        GenericMessageInfo messageInfo = attachment.getMessageInfo();
+        if(isValid == null) {
+            isValid = createJASPIAuthenticationManager().isValid(messageInfo, new Subject(), JASPI_HTTP_SERVLET_LAYER, attachment.getApplicationIdentifier(), new JBossCallbackHandler());
+        }
+
         final ServletRequestContext requestContext = attachment.getRequestContext();
         final JASPIServerAuthenticationManager sam = attachment.getSam();
         final JASPICallbackHandler cbh = attachment.getCbh();
 
-        GenericMessageInfo messageInfo = attachment.getMessageInfo();
         if (isValid) {
             // The CBH filled in the JBOSS SecurityContext, we need to create an Undertow account based on that
             org.jboss.security.SecurityContext jbossSct = SecurityActions.getSecurityContext();
@@ -112,6 +122,9 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
     }
 
+    private JASPIServerAuthenticationManager createJASPIAuthenticationManager() {
+        return new JASPIServerAuthenticationManager(this.securityDomain, new JBossCallbackHandler());
+    }
     @Override
     public ChallengeResult sendChallenge(final HttpServerExchange exchange, final SecurityContext securityContext) {
         return new ChallengeResult(true);
