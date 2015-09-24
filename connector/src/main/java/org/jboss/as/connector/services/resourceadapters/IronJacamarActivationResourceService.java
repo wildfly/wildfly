@@ -111,6 +111,19 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
 
         }
 
+        Resource subsystemResource;
+
+        if (!deploymentResource.hasChild(SUBSYSTEM_PATH_ELEMENT)) {
+            subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
+            deploymentResource.registerChild(SUBSYSTEM_PATH_ELEMENT, subsystemResource);
+        } else {
+            subsystemResource = deploymentResource.getChild(SUBSYSTEM_PATH_ELEMENT);
+        }
+
+
+        IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr.getValue());
+
+
         try {
             if (deploymentResource != null) {
 
@@ -255,17 +268,6 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
         } catch (IllegalArgumentException e) {
             //ignore it, already restered
         }
-        Resource subsystemResource;
-
-        if (!deploymentResource.hasChild(SUBSYSTEM_PATH_ELEMENT)) {
-            subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
-            deploymentResource.registerChild(SUBSYSTEM_PATH_ELEMENT, subsystemResource);
-        } else {
-            subsystemResource = deploymentResource.getChild(SUBSYSTEM_PATH_ELEMENT);
-        }
-
-
-        IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr.getValue());
 
 
     }
