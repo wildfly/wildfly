@@ -40,6 +40,23 @@
 
     <xs:complexType name="serverType">
         <xs:sequence>
+
+            <xs:element name="incoming-interceptors" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="class" type="classType" minOccurs="1" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="outgoing-interceptors" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="class" type="classType" minOccurs="1" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
             <!-- server attribute groups -->
             <xs:element name="security" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
@@ -110,13 +127,6 @@
                 <xs:complexType>
                     <xs:attribute name="scan-period" type="xs:long" />
                     <xs:attribute name="thread-priority" type="xs:int" />
-                </xs:complexType>
-            </xs:element>
-
-            <xs:element name="remoting-interceptors" minOccurs="0" maxOccurs="1">
-                <xs:complexType>
-                    <xs:attribute name="incoming" type="stringList" />
-                    <xs:attribute name="outgoing" type="stringList" />
                 </xs:complexType>
             </xs:element>
 
@@ -250,6 +260,7 @@
                     </xs:sequence>
                     <xs:attribute name="name" type="xs:string" use="required" />
                     <xs:attribute name="socket-binding" type="xs:string" use="required" />
+                    <xs:attribute name="endpoint" type="xs:string" use="required" />
                 </xs:complexType>
             </xs:element>
 
@@ -364,7 +375,15 @@
                     <xs:attribute name="max-retry-interval" type="xs:long" use="optional" />
                     <xs:attribute name="reconnect-attempts" type="xs:int" use="optional" />
                     <xs:attribute name="use-duplicate-detection" type="xs:boolean" use="optional" />
-                    <xs:attribute name="forward-when-no-consumers" type="xs:boolean" use="optional" />
+                    <xs:attribute name="message-load-balancing-type" use="optional">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="OFF"/>
+                                <xs:enumeration value="STRICT"/>
+                                <xs:enumeration value="ON_DEMAND"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
                     <xs:attribute name="max-hops" type="xs:int" use="optional" />
                     <xs:attribute name="confirmation-window-size" type="xs:int" use="optional" />
                     <xs:attribute name="notification-attempts" type="xs:int" use="optional" />
@@ -576,8 +595,12 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:restriction>
-
     </xs:simpleType>
+
+    <xs:complexType name="classType">
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="module" type="xs:string" use="required" />
+    </xs:complexType>
 
     <xs:complexType name="scale-downType">
         <xs:attribute name="enabled" type="xs:boolean" use="required" />

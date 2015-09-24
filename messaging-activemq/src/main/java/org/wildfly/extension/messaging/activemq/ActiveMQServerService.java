@@ -37,9 +37,10 @@ import javax.management.MBeanServer;
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
+import org.apache.activemq.artemis.api.core.Interceptor;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.core.config.Configuration;
-import org.apache.activemq.artemis.core.journal.impl.AIOSequentialFileFactory;
+import org.apache.activemq.artemis.core.io.aio.AIOSequentialFileFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
@@ -101,6 +102,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     // broadcast-group and discovery-groups configured with JGroups must share the same channel
     private final Map<String, JChannel> channels = new HashMap<String, JChannel>();
 
+    private final List<Interceptor> incomingInterceptors = new ArrayList<>();
+    private final List<Interceptor> outgoingInterceptors = new ArrayList<>();
+
+
     public ActiveMQServerService(Configuration configuration, PathConfig pathConfig) {
         this.configuration = configuration;
         this.pathConfig = pathConfig;
@@ -132,6 +137,14 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
 
     Map<String, JChannel> getChannels() {
         return channels;
+    }
+
+    protected List<Interceptor> getIncomingInterceptors() {
+        return incomingInterceptors;
+    }
+
+    protected List<Interceptor> getOutgoingInterceptors() {
+        return outgoingInterceptors;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
@@ -280,6 +293,13 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             server = new ActiveMQServerImpl(configuration, mbeanServer.getOptionalValue(), wildFlySecurityManager);
             if (ActiveMQDefaultConfiguration.getDefaultClusterPassword().equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
+            }
+
+            for (Interceptor incomingInterceptor : incomingInterceptors) {
+                server.getServiceRegistry().addIncomingInterceptor(incomingInterceptor);
+            }
+            for (Interceptor outgoingInterceptor : outgoingInterceptors) {
+                server.getServiceRegistry().addOutgoingInterceptor(outgoingInterceptor);
             }
 
             // the server is actually started by the JMSService.

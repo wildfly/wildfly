@@ -22,23 +22,41 @@
 
 package org.jboss.as.jacorb;
 
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
+import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.MultistepUtil;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -49,19 +67,46 @@ import org.jboss.dmr.Property;
 
 public class MigrateOperation implements OperationStepHandler {
 
-    private static final OperationStepHandler INSTANCE = new MigrateOperation();
+    public static final String MIGRATE = "migrate";
+    public static final String DESCRIBE_MIGRATION = "describe-migration";
+    public static final String MIGRATION_OPERATIONS = "migration-operations";
+    public static final String MIGRATION_WARNINGS = "migration-warnings";
+    public static final String MIGRATION_ERROR = "migration-error";
+    private static final PathAddress JACORB_EXTENSION = pathAddress(PathElement.pathElement(EXTENSION, "org.jboss.as.jacorb"));
+
+
+    public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
+            .setAllowNull(true)
+            .build();
+
+    public static final SimpleMapAttributeDefinition MIGRATION_ERROR_ATTR = new SimpleMapAttributeDefinition.Builder(MIGRATION_ERROR, ModelType.OBJECT, true)
+            .setValueType(ModelType.OBJECT)
+            .setAllowNull(true)
+            .build();
 
     static void registerOperation(final ManagementResourceRegistration registry, final ResourceDescriptionResolver resourceDescriptionResolver) {
-        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(JacORBSubsystemConstants.MIGRATE, resourceDescriptionResolver)
+        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
                         .setRuntimeOnly()
+                        .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .build(),
-                MigrateOperation.INSTANCE);
+                new MigrateOperation(false));
+        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
+                        .setRuntimeOnly()
+                        .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
+                        .build(),
+                new MigrateOperation(true));
 
     }
 
     private static final PathElement OPENJDK_EXTENSION_ELEMENT = PathElement.pathElement(EXTENSION, "org.wildfly.iiop-openjdk");
     private static final PathElement OPENJDK_SUBSYSTEM_ELEMENT = PathElement.pathElement(SUBSYSTEM, "iiop-openjdk");
     private static final PathElement JACORB_SUBSYSTEM_ELEMENT = PathElement.pathElement(SUBSYSTEM, "jacorb");
+
+    private final boolean describe;
+
+    private MigrateOperation(final boolean describe) {
+        this.describe = describe;
+    }
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -70,62 +115,140 @@ public class MigrateOperation implements OperationStepHandler {
             throw new OperationFailedException("the iiop migration can be performed when the server is in admin-only mode");
         }
 
-        final PathAddress subsystemsAddress=context.getCurrentAddress().getParent();
+        final PathAddress subsystemsAddress = context.getCurrentAddress().getParent();
 
         if (context.readResourceFromRoot(subsystemsAddress).hasChild(OPENJDK_SUBSYSTEM_ELEMENT)) {
             throw new OperationFailedException("can not migrate: the new iiop-openjdk subsystem is already defined");
         }
 
-        if(!context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(OPENJDK_EXTENSION_ELEMENT)) {
-            addOpenjdkExtension(context);
+        final Map<PathAddress, ModelNode> migrateOperations = new LinkedHashMap<>();
+
+        if (!context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(OPENJDK_EXTENSION_ELEMENT)) {
+            addOpenjdkExtension(context, migrateOperations);
         }
 
-        final Resource jacorbResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-        final ModelNode jacorbModel = Resource.Tools.readModel(jacorbResource).clone();
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext operationContext, ModelNode modelNode) throws OperationFailedException {
 
-        TransformUtils.checkLegacyModel(jacorbModel, true);
+                final Resource jacorbResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+                final ModelNode jacorbModel = Resource.Tools.readModel(jacorbResource).clone();
 
-        final ModelNode openjdkModel = TransformUtils.transformModel(jacorbModel);
+                final List<String> warnings = new LinkedList<>();
 
-        final PathAddress openjdkAddress=subsystemsAddress.append(OPENJDK_SUBSYSTEM_ELEMENT);
-        addOpenjdkSubsystem(context, openjdkAddress, openjdkModel);
+                List<String> unsupportedProperties = TransformUtils.checkLegacyModel(jacorbModel);
+                if (!unsupportedProperties.isEmpty()) {
+                    warnings.add(JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(unsupportedProperties));
+                    for(String unsupportedProperty : unsupportedProperties){
+                        jacorbModel.get(unsupportedProperty).clear();
+                    }
+                }
 
-        final PathAddress jacorbAddress=subsystemsAddress.append(JACORB_SUBSYSTEM_ELEMENT);
-        removeJacorbSubsystem(context, jacorbAddress);
+                final ModelNode openjdkModel = TransformUtils.transformModel(jacorbModel);
+
+                final PathAddress openjdkAddress = subsystemsAddress.append(OPENJDK_SUBSYSTEM_ELEMENT);
+                addOpenjdkSubsystem(openjdkAddress, openjdkModel, migrateOperations);
+
+                final PathAddress jacorbAddress = subsystemsAddress.append(JACORB_SUBSYSTEM_ELEMENT);
+                removeJacorbSubsystem(jacorbAddress, migrateOperations, context.getProcessType() == ProcessType.STANDALONE_SERVER);
+
+                if (describe) {
+                    // :describe-migration operation
+
+                    // for describe-migration operation, do nothing and return the list of operations that would
+                    // be executed in the composite operation
+                    final Collection<ModelNode> values = migrateOperations.values();
+                    ModelNode result = new ModelNode();
+
+                    result.get(MIGRATION_OPERATIONS).set(values);
+
+                    ModelNode rw = new ModelNode().setEmptyList();
+                    for (String warning : warnings) {
+                        rw.add(warning);
+                    }
+                    result.get(MIGRATION_WARNINGS).set(rw);
+
+                    context.getResult().set(result);
+                } else {
+                    // :migrate operation
+                    // invoke an OSH on a composite operation with all the migration operations
+                    final Map<PathAddress, ModelNode> migrateOpResponses = migrateSubsystems(context, migrateOperations);
+
+                    context.completeStep(new OperationContext.ResultHandler() {
+                        @Override
+                        public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                            final ModelNode result = new ModelNode();
+
+                            ModelNode rw = new ModelNode().setEmptyList();
+                            for (String warning : warnings) {
+                                rw.add(warning);
+                            }
+                            result.get(MIGRATION_WARNINGS).set(rw);
+
+                            if (resultAction == OperationContext.ResultAction.ROLLBACK) {
+                                for (Map.Entry<PathAddress, ModelNode> entry : migrateOpResponses.entrySet()) {
+                                    if (entry.getValue().hasDefined(FAILURE_DESCRIPTION)) {
+                                        //we check for failure description, as every node has 'failed', but one
+                                        //the real error has a failure description
+                                        //we break when we find the first one, as there will only ever be one failure
+                                        //as the op stops after the first failure
+                                        ModelNode desc = new ModelNode();
+                                        desc.get(OP).set(migrateOperations.get(entry.getKey()));
+                                        desc.get(RESULT).set(entry.getValue());
+                                        result.get(MIGRATION_ERROR).set(desc);
+                                        break;
+                                    }
+                                }
+                                context.getFailureDescription().set(new ModelNode(JacORBLogger.ROOT_LOGGER.migrationFailed()));
+                            }
+
+                            context.getResult().set(result);
+                        }
+                    });
+                }
+            }
+        }, MODEL);
+
+
     }
 
-    private void addOpenjdkExtension(final OperationContext context){
-        final OperationStepHandler addExtensionHandler = context.getRootResourceRegistration().getOperationHandler(
-                PathAddress.pathAddress(PathElement.pathElement(EXTENSION)), ADD);
-        final PathAddress openjdkExtensionAddress = PathAddress.EMPTY_ADDRESS.append(OPENJDK_EXTENSION_ELEMENT);
-        final ModelNode openjdkExtensionAddOperation = Util.createAddOperation(openjdkExtensionAddress);
-        context.addStep(openjdkExtensionAddOperation, addExtensionHandler, OperationContext.Stage.MODEL);
+    private void addOpenjdkExtension(final OperationContext context, final Map<PathAddress, ModelNode> migrateOperations) {
+        final PathAddress extensionAddress = PathAddress.EMPTY_ADDRESS.append(OPENJDK_EXTENSION_ELEMENT);
+        OperationEntry addEntry = context.getRootResourceRegistration().getOperationEntry(extensionAddress, ADD);
+        final ModelNode addOperation = Util.createAddOperation(extensionAddress);
+        if (describe) {
+            migrateOperations.put(extensionAddress, addOperation);
+        } else {
+            context.addStep(context.getResult().get(extensionAddress.toString()), addOperation, addEntry.getOperationHandler(), MODEL);
+        }
     }
 
-    private void addOpenjdkSubsystem(final OperationContext context, final PathAddress address, final ModelNode model){
+    private void addOpenjdkSubsystem(final PathAddress address, final ModelNode model,
+            final Map<PathAddress, ModelNode> migrateOperations) {
         final ModelNode operation = Util.createAddOperation(address);
         for (final Property property : model.asPropertyList()) {
             if (property.getValue().isDefined()) {
                 operation.get(property.getName()).set(property.getValue());
             }
         }
+        migrateOperations.put(address, operation);
 
-        //operation has to be performed after extension is added so that the handler is available
-        context.addStep(operation, new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext operationContext, ModelNode modelNode) throws OperationFailedException {
-                OperationStepHandler addHandler = operationContext.getRootResourceRegistration().getOperationHandler(
-                        address, ADD);
-                operationContext.addStep(operation, addHandler, OperationContext.Stage.MODEL);
-            }
-        }, OperationContext.Stage.MODEL);
     }
 
-    private void removeJacorbSubsystem(final OperationContext context, final PathAddress address){
+    private void removeJacorbSubsystem(final PathAddress address, final Map<PathAddress, ModelNode> migrateOperations, boolean standalone) {
         ModelNode removeLegacySubsystemOperation = Util.createRemoveOperation(address);
-        context.addStep(removeLegacySubsystemOperation,
-                context.getRootResourceRegistration().getOperationHandler(address, REMOVE),
-                OperationContext.Stage.MODEL);
+        migrateOperations.put(address, removeLegacySubsystemOperation);
+
+        if(standalone) {
+            removeLegacySubsystemOperation = createRemoveOperation(JACORB_EXTENSION);
+            migrateOperations.put(JACORB_EXTENSION, removeLegacySubsystemOperation);
+        }
+    }
+
+    private Map<PathAddress, ModelNode> migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) throws OperationFailedException {
+        final Map<PathAddress, ModelNode> result = new LinkedHashMap<>();
+        MultistepUtil.recordOperationSteps(context, migrationOperations, result);
+        return result;
     }
 }
 

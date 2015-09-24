@@ -11,8 +11,7 @@
             <property name="wildfly.jpa.hibernate.search.module" value="none" />
 -->
             <property name="hibernate.hbm2ddl.auto" value="create-drop" />
-            <property name="hibernate.search.default.directory_provider" value="infinispan" />
-            <property name="hibernate.search.infinispan.configuration_resourcename" value="hsearch-infinispan-local.xml" />
+            <property name="hibernate.search.default.directory_provider" value="ram" />
         </properties>
     </persistence-unit>
 </persistence>

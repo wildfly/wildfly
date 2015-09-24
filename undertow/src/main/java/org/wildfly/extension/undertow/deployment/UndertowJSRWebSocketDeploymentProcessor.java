@@ -77,7 +77,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
 
             WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-            if (metaData == null) {
+            if (metaData == null || metaData.getMergedJBossWebMetaData() == null) {
                 return;
             }
             if(!metaData.getMergedJBossWebMetaData().isEnableWebSockets()) {

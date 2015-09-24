@@ -73,6 +73,7 @@
         <connectors>
             <http-connector name="http" socket-binding="http">
                 <param key="batch-delay" value="${batch.delay:50}"/>
+                <param key="http-upgrade-endpoint" value="http"/>
             </http-connector>
             <netty-connector name="netty" socket-binding="messaging" />
             <netty-connector name="netty-throughput" socket-binding="messaging-throughput">

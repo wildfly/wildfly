@@ -35,6 +35,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
+import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.ee.Batch;
@@ -43,6 +44,8 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
+import org.wildfly.clustering.service.concurrent.ServiceExecutor;
+import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 
 /**
@@ -51,7 +54,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
  * all of which share the same {@link Cache} instance.
  * @author Paul Ferraro
  */
-@org.infinispan.notifications.Listener
+@org.infinispan.notifications.Listener(sync = false)
 public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, Group.Listener, AutoCloseable {
 
     final ConcurrentMap<T, Listener> listeners = new ConcurrentHashMap<>();
@@ -60,6 +63,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     private final Group group;
     private final CommandDispatcher<Set<T>> dispatcher;
+    private final ServiceExecutor executor = new StampedLockServiceExecutor();
 
     public CacheServiceProviderRegistry(CacheServiceProviderRegistryConfiguration<T> config) {
         this.group = config.getGroup();
@@ -72,9 +76,11 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     @Override
     public void close() {
-        this.group.removeListener(this);
-        this.cache.removeListener(this);
-        this.dispatcher.close();
+        this.executor.close(() -> {
+            this.group.removeListener(this);
+            this.cache.removeListener(this);
+            this.dispatcher.close();
+        });
     }
 
     @Override
@@ -92,22 +98,15 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         if (this.listeners.putIfAbsent(service, listener) != null) {
             throw new IllegalArgumentException(service.toString());
         }
-        final Node node = this.group.getLocalNode();
-        Set<Node> nodes = new HashSet<>(Collections.singleton(node));
         try (Batch batch = this.batcher.createBatch()) {
-            Set<Node> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
-            if (existing != null) {
-                if (existing.add(node)) {
-                    this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
-                }
-            }
+            this.register(this.group.getLocalNode(), service);
         }
         return new AbstractServiceProviderRegistration<T>(service, this) {
             @Override
             public void close() {
                 Node node = CacheServiceProviderRegistry.this.getGroup().getLocalNode();
                 try (Batch batch = CacheServiceProviderRegistry.this.batcher.createBatch()) {
-                    Set<Node> nodes = CacheServiceProviderRegistry.this.cache.get(service);
+                    Set<Node> nodes = CacheServiceProviderRegistry.this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).get(service);
                     if ((nodes != null) && nodes.remove(node)) {
                         Cache<T, Set<Node>> cache = CacheServiceProviderRegistry.this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
                         if (nodes.isEmpty()) {
@@ -116,10 +115,22 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                             cache.replace(service, nodes);
                         }
                     }
+                } finally {
+                    CacheServiceProviderRegistry.this.listeners.remove(service);
                 }
-                CacheServiceProviderRegistry.this.listeners.remove(service);
             }
         };
+    }
+
+    void register(Node node, T service) {
+        Set<Node> nodes = new ConcurrentHashSet<>();
+        nodes.add(node);
+        Set<Node> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
+        if (existing != null) {
+            if (existing.add(node)) {
+                this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
+            }
+        }
     }
 
     @Override
@@ -136,38 +147,35 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     @Override
     public void membershipChanged(List<Node> previousMembers, List<Node> members, final boolean merged) {
         if (this.getGroup().isCoordinator()) {
-            final Set<Node> deadNodes = new HashSet<>(previousMembers);
-            deadNodes.removeAll(members);
-            final Set<Node> newNodes = new HashSet<>(members);
-            newNodes.removeAll(previousMembers);
-            try (Batch batch = this.batcher.createBatch()) {
+            this.executor.execute(() -> {
+                Set<Node> deadNodes = new HashSet<>(previousMembers);
+                deadNodes.removeAll(members);
+                Set<Node> newNodes = new HashSet<>(members);
+                newNodes.removeAll(previousMembers);
                 if (!deadNodes.isEmpty()) {
-                    try (CloseableIterator<Map.Entry<T, Set<Node>>> entries = this.cache.entrySet().iterator()) {
-                        while (entries.hasNext()) {
-                            Map.Entry<T, Set<Node>> entry = entries.next();
-                            Set<Node> nodes = entry.getValue();
-                            if (nodes.removeAll(deadNodes)) {
-                                entry.setValue(nodes);
-                            }
-                        }
-                    }
-                }
-                if (merged) {
-                    for (Node node: newNodes) {
-                        // Re-assert services for new members following merge since these may have been lost following split
-                        List<T> services = CacheServiceProviderRegistry.this.getServices(node);
-                        for (T service: services) {
-                            Set<Node> nodes = new HashSet<>(Collections.singleton(node));
-                            Set<Node> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
-                            if (existing != null) {
-                                if (existing.add(node)) {
-                                    this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
+                    try (Batch batch = this.batcher.createBatch()) {
+                        try (CloseableIterator<Map.Entry<T, Set<Node>>> entries = this.cache.entrySet().iterator()) {
+                            while (entries.hasNext()) {
+                                Map.Entry<T, Set<Node>> entry = entries.next();
+                                Set<Node> nodes = entry.getValue();
+                                if (nodes.removeAll(deadNodes)) {
+                                    entry.setValue(nodes);
                                 }
                             }
                         }
                     }
                 }
-            }
+                if (merged) {
+                    try (Batch batch = this.batcher.createBatch()) {
+                        for (Node node: newNodes) {
+                            // Re-assert services for new members following merge since these may have been lost following split
+                            for (T service: CacheServiceProviderRegistry.this.getServices(node)) {
+                                this.register(node, service);
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 

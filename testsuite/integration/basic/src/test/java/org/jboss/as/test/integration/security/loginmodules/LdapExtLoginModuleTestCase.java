@@ -90,6 +90,7 @@ public class LdapExtLoginModuleTestCase {
     private static final String DEP4_DIRECT = "DEP4-direct";
     private static final String DEP5 = "DEP5";
     private static final String DEP6 = "DEP6";
+    private static final String DEP7 = "DEP7";
 
     // Public methods --------------------------------------------------------
 
@@ -172,7 +173,15 @@ public class LdapExtLoginModuleTestCase {
     public static WebArchive deployment6() {
         return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP6);
     }
-
+    /**
+     * Creates {@link WebArchive} for {@link #test1(URL)}.
+     *
+     * @return
+     */
+    @Deployment(name = DEP7)
+    public static WebArchive deployment7() {
+        return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP7);
+    }
     /**
      * Test case for Example 1.
      *
@@ -262,6 +271,57 @@ public class LdapExtLoginModuleTestCase {
         testDeployment(webAppURL, "jduke", "theduke", "Admin");
     }
 
+    /**
+     * Test case for Example 1. With name stripping #1
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment(DEP7)
+    public void test7(@ArquillianResource URL webAppURL) throws Exception {
+        testDeployment(webAppURL, "cn=jduke,ou=JBoss,o=Red Hat", "theduke", "TheDuke", "Echo", "Admin");
+        // referral authenticated user
+        testDeployment(webAppURL, "mmcfly", "sugarless", "Admin");
+    }
+    
+    /**
+     * Test case for Example 1. With name stripping #2
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment(DEP7)
+    public void test8(@ArquillianResource URL webAppURL) throws Exception {
+        testDeployment(webAppURL, "garbage,cn=jduke,ou=JBoss,o=Red Hat", "theduke", "TheDuke", "Echo", "Admin");
+        // referral authenticated user
+        testDeployment(webAppURL, "mmcfly", "sugarless", "Admin");
+    }
+    
+    /**
+     * Test case for Example 1. With name stripping #3
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment(DEP7)
+    public void test9(@ArquillianResource URL webAppURL) throws Exception {
+        testDeployment(webAppURL, "jduke,ou=JBoss,o=Red Hat", "theduke", "TheDuke", "Echo", "Admin");
+        // referral authenticated user
+        testDeployment(webAppURL, "mmcfly", "sugarless", "Admin");
+    }
+    
+    /**
+     * Test case for Example 1. With name stripping #4
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment(DEP7)
+    public void test10(@ArquillianResource URL webAppURL) throws Exception {
+        testDeployment(webAppURL, "jduke", "theduke", "TheDuke", "Echo", "Admin");
+        // referral authenticated user
+        testDeployment(webAppURL, "mmcfly", "sugarless", "Admin");
+    }
     // Private methods -------------------------------------------------------
 
     /**
@@ -466,7 +526,26 @@ public class LdapExtLoginModuleTestCase {
                                     .putOption("roleAttributeID", "cn")
                                     .build()) //
                     .build();
-            return new SecurityDomain[] { sd1, sd2, sd2throw, sd3, sd4, sd4_direct, sd5, sd6 };
+            final SecurityDomain sd7 = new SecurityDomain.Builder()
+            .name(SECURITY_DOMAIN_NAME_PREFIX + DEP7)
+            .loginModules(
+                    new SecurityModule.Builder()
+                            .name("org.jboss.security.auth.spi.LdapExtLoginModule")
+                            .options(getCommonOptions())
+                            .putOption(Context.REFERRAL, "follow")
+                            .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org")
+                            .putOption("java.naming.provider.url", ldapUrl)
+                            .putOption("baseFilter", "(|(objectClass=referral)(uid={0}))")
+                            .putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
+                            .putOption("roleFilter", "(|(objectClass=referral)(member={1}))")
+                            .putOption("roleAttributeID", "cn")
+                            .putOption("referralUserAttributeIDToCheck", "member")
+                            .putOption("parseUsername", "true")
+                            .putOption("usernameBeginString", "cn=")
+                            .putOption("usernameEndString", ",")
+                            .build()) //
+            .build();
+            return new SecurityDomain[] { sd1, sd2, sd2throw, sd3, sd4, sd4_direct, sd5, sd6, sd7 };
         }
 
         private Map<String, String> getCommonOptions() {

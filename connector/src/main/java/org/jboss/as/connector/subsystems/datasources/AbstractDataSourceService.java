@@ -205,7 +205,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             if (deploymentMD.getResourceAdapter() != null) {
                 deploymentMD.getResourceAdapter().stop();
 
-                BootstrapContextCoordinator.getInstance().removeBootstrapContext(deploymentMD.getBootstrapContextIdentifier());
+                if (BootstrapContextCoordinator.getInstance() != null && deploymentMD.getBootstrapContextIdentifier() != null) {
+                    BootstrapContextCoordinator.getInstance().removeBootstrapContext(deploymentMD.getBootstrapContextIdentifier());
+                }
             }
 
             if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {

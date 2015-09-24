@@ -100,11 +100,9 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.logging.Logger;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.negotiation.AdvancedLdapLoginModule;
-import org.jboss.security.negotiation.NegotiationAuthenticator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -120,7 +118,6 @@ import org.junit.runner.RunWith;
         AdvancedLdapLoginModuleTestCase.DirectoryServerSetupTask.class, //
         AdvancedLdapLoginModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
-@Ignore("AS7-6796 - Undertow SPNEGO")
 public class AdvancedLdapLoginModuleTestCase {
     private static Logger LOGGER = Logger.getLogger(AdvancedLdapLoginModuleTestCase.class);
 
@@ -263,8 +260,7 @@ public class AdvancedLdapLoginModuleTestCase {
                 PrincipalPrintingServlet.class);
         war.addAsWebInfResource(AdvancedLdapLoginModuleTestCase.class.getPackage(),
                 AdvancedLdapLoginModuleTestCase.class.getSimpleName() + "-web.xml", "web.xml");
-        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(deploymentName, NegotiationAuthenticator.class.getName()),
-                "jboss-web.xml");
+        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(deploymentName),  "jboss-web.xml");
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation"),
                 "jboss-deployment-structure.xml");
         if (LOGGER.isDebugEnabled()) {
@@ -399,6 +395,7 @@ public class AdvancedLdapLoginModuleTestCase {
          * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
          *      java.lang.String)
          */
+        @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             try {
                 if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -463,6 +460,7 @@ public class AdvancedLdapLoginModuleTestCase {
          * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
          *      java.lang.String)
          */
+        @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             ldapServer.stop();
             kdcServer.stop();

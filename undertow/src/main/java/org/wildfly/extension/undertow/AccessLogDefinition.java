@@ -87,6 +87,14 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    protected static final SimpleAttributeDefinition EXTENDED = new SimpleAttributeDefinitionBuilder(Constants.EXTENDED, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
+
+    protected static final SimpleAttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder(Constants.PREDICATE, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
 
     static final Collection<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
@@ -97,7 +105,9 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             ROTATE,
             DIRECTORY,
             USE_SERVER_LOG,
-            RELATIVE_TO
+            RELATIVE_TO,
+            EXTENDED,
+            PREDICATE
     );
     static final AccessLogDefinition INSTANCE = new AccessLogDefinition();
     private final List<AccessConstraintDefinition> accessConstraints;

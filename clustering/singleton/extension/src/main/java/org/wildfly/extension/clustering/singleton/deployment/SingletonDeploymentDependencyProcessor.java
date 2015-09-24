@@ -23,7 +23,6 @@
 package org.wildfly.extension.clustering.singleton.deployment;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -46,9 +45,6 @@ public class SingletonDeploymentDependencyProcessor implements DeploymentUnitPro
         SingletonDeploymentConfiguration config = unit.getAttachment(CONFIGURATION_KEY);
         if (config != null) {
             context.addDependency(new SingletonPolicyBuilder(config.getPolicy()).getServiceName(), SingletonDeploymentProcessor.POLICY_KEY);
-
-            // We need to allow restarting of subsequent phases
-            unit.putAttachment(Attachments.ALLOW_PHASE_RESTART, Boolean.TRUE);
         }
     }
 

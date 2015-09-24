@@ -73,7 +73,11 @@
             <xs:extension base="tns:election-policy">
                 <xs:attribute name="position" type="xs:integer" default="0">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>
+                            Indicates the index of the node to be elected from a list of candidates sorted by descending age.
+                            0 would indicate the oldest node, 1 the second oldest, etc.  Whereas -1 indicates the youngest node, -2 the second youngest, etc.
+                            If the specified position exceeds the number of candidates, a modulus operation is applied.
+                        </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>

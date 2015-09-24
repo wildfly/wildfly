@@ -78,12 +78,15 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -127,7 +130,7 @@ public class MigrateOperation implements OperationStepHandler {
 
     private static final String MESSAGING_ACTIVEMQ_EXTENSION = "org.wildfly.extension.messaging-activemq";
     private static final String MESSAGING_ACTIVEMQ_MODULE = "org.wildfly.extension.messaging-activemq";
-    private static final String MESSAGING_MODULE = "org.jboss.as.messaging";
+    private static final PathAddress MESSAGING_EXTENSION = pathAddress(PathElement.pathElement(EXTENSION, "org.jboss.as.messaging"));
 
     private static final String NEW_ENTRY_SUFFIX = "-new";
     private static final String HORNETQ_NETTY_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
@@ -207,10 +210,10 @@ public class MigrateOperation implements OperationStepHandler {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // transform the legacy add operations and put them in migrationOperations
-                transformResources(legacyModelAddOps, migrationOperations, addLegacyEntries, warnings);
+                transformResources(context, legacyModelAddOps, migrationOperations, addLegacyEntries, warnings);
 
                 // put the /subsystem=messaging:remove operation
-                removeMessagingSubsystem(migrationOperations);
+                removeMessagingSubsystem(migrationOperations, context.getProcessType() == ProcessType.STANDALONE_SERVER);
 
                 PathAddress parentAddress = context.getCurrentAddress().getParent();
                 fixAddressesForDomainMode(parentAddress, migrationOperations);
@@ -313,10 +316,14 @@ public class MigrateOperation implements OperationStepHandler {
         }
     }
 
-    private void removeMessagingSubsystem(Map<PathAddress, ModelNode> migrationOperations) {
+    private void removeMessagingSubsystem(Map<PathAddress, ModelNode> migrationOperations, boolean standalone) {
         PathAddress subsystemAddress =  pathAddress(MessagingExtension.SUBSYSTEM_PATH);
         ModelNode removeOperation = createRemoveOperation(subsystemAddress);
         migrationOperations.put(subsystemAddress, removeOperation);
+        if(standalone) {
+            removeOperation = createRemoveOperation(MESSAGING_EXTENSION);
+            migrationOperations.put(MESSAGING_EXTENSION, removeOperation);
+        }
     }
 
     private Map<PathAddress, ModelNode> migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) throws OperationFailedException {
@@ -344,7 +351,7 @@ public class MigrateOperation implements OperationStepHandler {
         return newAddress;
     }
 
-    private void transformResources(final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations, boolean addLegacyEntries, List<String> warnings) throws OperationFailedException {
+    private void transformResources(OperationContext context, final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations, boolean addLegacyEntries, List<String> warnings) throws OperationFailedException {
         for (ModelNode legacyAddOp : legacyModelDescription.get(RESULT).asList()) {
             final ModelNode newAddOp = legacyAddOp.clone();
 
@@ -373,11 +380,15 @@ public class MigrateOperation implements OperationStepHandler {
                             break;
                         case CONNECTION_FACTORY:
                             if (addLegacyEntries) {
-                                PathAddress legacyConnectionFactoryAddress = address.getParent().append("legacy-connection-factory", address.getLastElement().getValue());
-                                final ModelNode addLegacyConnectionFactoryOp = legacyAddOp.clone();
-                                addLegacyConnectionFactoryOp.get(OP_ADDR).set(legacyConnectionFactoryAddress.toModelNode());
-                                migrateConnectionFactory(addLegacyConnectionFactoryOp, "");
-                                newAddOperations.put(pathAddress(addLegacyConnectionFactoryOp.get(OP_ADDR)), addLegacyConnectionFactoryOp);
+                                if(connectionFactoryIsUsingInVMConnectors(context, legacyAddOp)) {
+                                    warnings.add(ROOT_LOGGER.couldNotCreateLegacyConnectionFactoryUsingInVMConnector(address));
+                                } else {
+                                    PathAddress legacyConnectionFactoryAddress = address.getParent().append("legacy-connection-factory", address.getLastElement().getValue());
+                                    final ModelNode addLegacyConnectionFactoryOp = legacyAddOp.clone();
+                                    addLegacyConnectionFactoryOp.get(OP_ADDR).set(legacyConnectionFactoryAddress.toModelNode());
+                                    migrateConnectionFactory(addLegacyConnectionFactoryOp, "");
+                                    newAddOperations.put(pathAddress(addLegacyConnectionFactoryOp.get(OP_ADDR)), addLegacyConnectionFactoryOp);
+                                }
                             }
                             migrateConnectionFactory(newAddOp, addLegacyEntries ? NEW_ENTRY_SUFFIX : "");
                             break;
@@ -411,7 +422,11 @@ public class MigrateOperation implements OperationStepHandler {
                                 String name = address.getLastElement().getValue();
                                 ModelNode value = newAddOp.get(VALUE);
                                 ModelNode parentAddOp = newAddOperations.get(address.getParent());
-                                parentAddOp.get("params").add(new Property(name, value));
+                                if (name.equals("http-upgrade-endpoint") && address.getParent().getLastElement().getKey().equals("http-connector")) {
+                                    parentAddOp.get("endpoint").set(value);
+                                } else {
+                                    parentAddOp.get("params").add(new Property(name, value));
+                                }
                                 continue;
                             }
                             break;
@@ -421,6 +436,26 @@ public class MigrateOperation implements OperationStepHandler {
 
             newAddOperations.put(address, newAddOp);
         }
+    }
+
+    private boolean connectionFactoryIsUsingInVMConnectors(OperationContext context, ModelNode connectionFactoryAddOp) {
+        ModelNode connector = connectionFactoryAddOp.get(CONNECTOR);
+        if (connector.isDefined()) {
+
+            PathAddress legacyServerAddress = pathAddress(connectionFactoryAddOp.get(OP_ADDR)).getParent();
+            Resource serverResource = context.readResourceFromRoot(legacyServerAddress, false);
+            Set<String> definedInVMConnectors = serverResource.getChildrenNames("in-vm-connector");
+
+            // legacy connector is a property list where the name is the connector and the value is undefined
+            List<Property> connectorProps = connector.asPropertyList();
+            for (Property connectorProp : connectorProps) {
+                String connectorName = connectorProp.getName();
+                if (definedInVMConnectors.contains(connectorName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void migrateDiscoveryGroup(ModelNode newAddOp, List<String> warnings) {

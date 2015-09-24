@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
@@ -57,9 +56,9 @@ public class DistributableImmutableSession implements Session {
             this.attributes.put(name, attributes.getAttribute(name));
         }
         ImmutableSessionMetaData metaData = session.getMetaData();
-        this.creationTime = metaData.getCreationTime().getTime();
-        this.lastAccessedTime = metaData.getLastAccessedTime().getTime();
-        this.maxInactiveInterval = (int) metaData.getMaxInactiveInterval(TimeUnit.SECONDS);
+        this.creationTime = metaData.getCreationTime().toEpochMilli();
+        this.lastAccessedTime = metaData.getLastAccessedTime().toEpochMilli();
+        this.maxInactiveInterval = (int) metaData.getMaxInactiveInterval().getSeconds();
     }
 
     @Override

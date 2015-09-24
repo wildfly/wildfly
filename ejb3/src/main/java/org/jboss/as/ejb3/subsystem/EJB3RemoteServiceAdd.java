@@ -60,7 +60,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
@@ -106,32 +105,32 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
     }
 
     void installRuntimeServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        final String clientMappingsClusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model).asString();
         final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
         final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final ServiceName remotingServerInfoServiceName = RemotingConnectorBindingInfoService.serviceName(connectorName);
 
         final ServiceTarget target = context.getServiceTarget();
-
         // Install the client-mapping service for the remoting connector
-        new EJBRemotingConnectorClientMappingsEntryProviderService().build(target, remotingServerInfoServiceName)
+        new EJBRemotingConnectorClientMappingsEntryProviderService().build(target, clientMappingsClusterName, remotingServerInfoServiceName)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
-        new RegistryInstallerService().build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new RegistryInstallerService(clientMappingsClusterName).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
         Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
         PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
-        if (!rootResource.hasChild(infinispanPath) || !rootResource.getChild(infinispanPath).hasChild(PathElement.pathElement("cache-container", BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME))) {
+        if (!rootResource.hasChild(infinispanPath) || !rootResource.getChild(infinispanPath).hasChild(PathElement.pathElement("cache-container", clientMappingsClusterName))) {
             // Install services that would normally be installed by this container/cache
             ModuleIdentifier module = Module.forClass(this.getClass()).getIdentifier();
             for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, module)) {
+                for (Builder<?> builder : provider.getBuilders(clientMappingsClusterName, module)) {
                     builder.build(target).install();
                 }
             }
             for (CacheGroupBuilderProvider provider : ServiceLoader.load(LocalCacheGroupBuilderProvider.class, LocalCacheGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) {
+                for (Builder<?> builder : provider.getBuilders(clientMappingsClusterName, SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) {
                     builder.build(target).install();
                 }
             }
@@ -161,6 +160,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.validateAndSet(operation, model);
         EJB3RemoteResourceDefinition.CONNECTOR_REF.validateAndSet(operation, model);
         EJB3RemoteResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
     }

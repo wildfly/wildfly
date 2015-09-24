@@ -11,6 +11,16 @@
             connection-ttl-override="${connection.ttl.override:5432}"
             async-connection-execution-enabled="${async.connection.execution.enabled:false}">
 
+        <incoming-interceptors>
+            <class name="org.foo.incoming.myInterceptor" module="org.foo" />
+            <class name="org.bar.incoming.myOtherInterceptor" module="org.bar" />
+        </incoming-interceptors>
+
+        <outgoing-interceptors>
+            <class name="org.foo.outgoing.myInterceptor" module="org.foo" />
+            <class name="org.bar.outgoing.myOtherInterceptor" module="org.bar" />
+        </outgoing-interceptors>
+
         <security
                 enabled="${security.enabled:false}"
                 domain="someDomain"
@@ -54,10 +64,6 @@
         <message-expiry
                 scan-period="${message.expiry.scan.period:7654}"
                 thread-priority="${message.expiry.thread.priority:7}"/>
-
-        <remoting-interceptors
-                incoming="foo.bar bar.foo"
-                outgoing="bar.foo foo.bar" />
 
         <debug
                 perf-blast-pages="${perf.blast.pages:70}"
@@ -116,7 +122,8 @@
                          slow-consumer-threshold="${slow.consumer.threshold:456}"/>
 
         <http-connector name="http"
-                        socket-binding="http">
+                        socket-binding="http"
+                        endpoint="http">
             <param name="batch-delay" value="${batch.delay:50}"/>
         </http-connector>
         <remote-connector name="netty"
@@ -151,7 +158,7 @@
                         server-id="${my.server-id:0}"/>
         <acceptor name="myacceptor"
                   factory-class="org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory">
-            <param name="batch-delay" value="${batch.delay:50}"/>
+            <param name="batchDelay" value="${batch.delay:50}"/>
         </acceptor>
 
         <broadcast-group name="groupT"
@@ -183,7 +190,7 @@
                             max-retry-interval="${max.retry.interval:3600}"
                             reconnect-attempts="${reconnect.attempts:-1}"
                             use-duplicate-detection="${use.duplicate.detection:true}"
-                            forward-when-no-consumers="${forward.when.no.consumers:true}"
+                            message-load-balancing-type="${message.load.balancing.type:STRICT}"
                             max-hops="${max.hops:7}"
                             confirmation-window-size="${confirmation.windows.size:459}"
                             notification-attempts="${notification.attempts:2}"

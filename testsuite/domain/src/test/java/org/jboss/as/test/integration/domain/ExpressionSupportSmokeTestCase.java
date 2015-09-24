@@ -401,9 +401,9 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
             if (attrName.contains("jdbc")) {
                 // Ignore jdbc store attributes unless jdbc store is enabled
                 return !resourceNoDefaults.hasDefined("use-jdbc-store") || !resourceNoDefaults.get("use-jdbc-store").asBoolean();
-            } else if (attrName.contains("hornetq")) {
-                // Ignore hornetq store attributes unless hornetq store is enabled
-                return !resourceNoDefaults.hasDefined("use-hornetq-store") || !resourceNoDefaults.get("use-hornetq-store").asBoolean();
+            } else if (attrName.contains("journal")) {
+                // Ignore journal store attributes unless journal store is enabled
+                return !resourceNoDefaults.hasDefined("use-journal-store") || !resourceNoDefaults.get("use-journal-store").asBoolean();
             }
         }
 

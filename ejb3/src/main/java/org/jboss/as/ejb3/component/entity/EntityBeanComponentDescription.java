@@ -47,7 +47,7 @@ import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanRemoveIntercept
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.PoolConfigService;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
@@ -269,11 +269,11 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
             final String poolName = this.entityComponentDescription.getPoolConfigName();
             // if no pool name has been explicitly set, then inject the optional "default entity bean pool config"
             if (poolName == null) {
-                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, PoolConfigService.DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME,
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, StrictMaxPoolConfigService.DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME,
                         PoolConfig.class, entityBeanComponentCreateService.getPoolConfigInjector());
             } else {
                 // pool name has been explicitly set so the pool config is a required dependency
-                serviceBuilder.addDependency(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
+                serviceBuilder.addDependency(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
                         PoolConfig.class, entityBeanComponentCreateService.getPoolConfigInjector());
             }
             //is optimistic locking configured by default

@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.web.session;
 
+import java.util.Collection;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
@@ -35,13 +37,13 @@ public interface SessionContext {
      * Returns the registered session listeners.
      * @return a non-null collection of session listeners.
      */
-    Iterable<HttpSessionListener> getSessionListeners();
+    Collection<HttpSessionListener> getSessionListeners();
 
     /**
      * Returns the registered session attribute listeners.
      * @return a non-null collection of session listeners.
      */
-    Iterable<HttpSessionAttributeListener> getSessionAttributeListeners();
+    Collection<HttpSessionAttributeListener> getSessionAttributeListeners();
 
     /**
      * Returns the servlet context of this application.

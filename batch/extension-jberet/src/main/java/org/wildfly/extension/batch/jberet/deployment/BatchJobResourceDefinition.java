@@ -54,7 +54,7 @@ public class BatchJobResourceDefinition extends SimpleResourceDefinition {
     public static final BatchJobResourceDefinition INSTANCE = new BatchJobResourceDefinition();
 
     private BatchJobResourceDefinition() {
-        super(PathElement.pathElement(JOB), BatchResourceDescriptionResolver.getResourceDescriptionResolver("deployment", "job"));
+        super(new Parameters(PathElement.pathElement(JOB), BatchResourceDescriptionResolver.getResourceDescriptionResolver("deployment", "job")).setRuntime());
     }
 
     @Override

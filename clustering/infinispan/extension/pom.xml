@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-clustering-infinispan</artifactId>
-        <version>10.0.0.CR1-SNAPSHOT</version>
+        <version>10.0.0.CR2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-infinispan-extension</artifactId>
@@ -126,6 +126,12 @@
             <version>${project.version}</version><!--$NO-MVN-MAN-VER$-->
             <scope>test</scope>
             <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-connector</artifactId>
+            <version>${project.version}</version><!--$NO-MVN-MAN-VER$-->
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

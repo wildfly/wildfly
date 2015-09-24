@@ -207,6 +207,7 @@
         <xs:attribute name="directory-listing" type="xs:boolean" use="optional" />
         <xs:attribute name="proactive-authentication" type="xs:string" use="optional" default="false" />
         <xs:attribute name="session-id-length" type="xs:int" use="optional" default="30" />
+        <xs:attribute name="max-sessions" type="xs:int" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="mime-mappingsType">
@@ -276,6 +277,7 @@
         <xs:attribute name="java-encoding" default="UTF8" type="xs:string"/>
         <xs:attribute name="x-powered-by" default="true" type="xs:boolean"/>
         <xs:attribute name="display-source-fragment" default="true" type="xs:boolean"/>
+        <xs:attribute name="optimize-scriptlets" default="false" type="xs:string" />
     </xs:complexType>
 
     <xs:complexType name="session-cookieType">
@@ -338,6 +340,8 @@
         <xs:attribute name="suffix" use="optional" type="xs:string" default=".log"/>
         <xs:attribute name="rotate" use="optional" type="xs:string" default="true"/>
         <xs:attribute name="use-server-log" use="optional" type="xs:string" default="false"/>
+        <xs:attribute name="extended" use="optional" type="xs:string" default="false" />
+        <xs:attribute name="predicate" use="optional" type="xs:string" />
     </xs:complexType>
     <xs:complexType name="errorPageType">
         <xs:attribute name="name" use="required" type="xs:string"/>

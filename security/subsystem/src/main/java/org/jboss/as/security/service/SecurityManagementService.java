@@ -34,6 +34,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.ISecurityManagement;
+import org.picketbox.factories.SecurityFactory;
 
 /**
  * Security Management service for the security container
@@ -58,6 +59,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     private final String mappingManagerClassName;
 
+    private volatile ISecurityManagement previousSecurityManagement;
     private volatile ISecurityManagement securityManagement;
 
     private final InjectedValue<ServiceModuleLoader> serviceModuleLoaderValue = new InjectedValue<ServiceModuleLoader>();
@@ -88,12 +90,15 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
         securityManagement.setIdentityTrustManagerClassName(identityTrustManagerClassName);
         securityManagement.setMappingManagerClassName(mappingManagerClassName);
         this.securityManagement = securityManagement;
+
+        previousSecurityManagement = SecurityFactory.getSecurityManagement();
+        SecurityFactory.setSecurityManagement(securityManagement);
     }
 
     /** {@inheritDoc} */
     @Override
     public void stop(StopContext context) {
-        // nothing to do
+        SecurityFactory.setSecurityManagement(previousSecurityManagement);
     }
 
     /** {@inheritDoc} */

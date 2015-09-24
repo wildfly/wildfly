@@ -201,7 +201,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     break;
                 }
                 default:
-                    break;
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         if (poolName == null || poolName.trim().equals("")) {

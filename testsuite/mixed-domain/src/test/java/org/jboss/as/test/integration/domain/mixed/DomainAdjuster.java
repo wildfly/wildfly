@@ -52,6 +52,7 @@ import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.eap620.DomainAdjuster620;
 import org.jboss.as.test.integration.domain.mixed.eap630.DomainAdjuster630;
+import org.jboss.as.test.integration.domain.mixed.eap640.DomainAdjuster640;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
@@ -90,6 +91,9 @@ public class DomainAdjuster {
                 break;
             case EAP_6_3_0:
                 adjuster = new DomainAdjuster630();
+                break;
+            case EAP_6_4_0:
+                adjuster = new DomainAdjuster640();
                 break;
             default:
                 adjuster = new DomainAdjuster();

@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import java.util.concurrent.ExecutorService;
-
 import org.jberet.repository.JobRepository;
 
 /**
@@ -33,18 +31,24 @@ import org.jberet.repository.JobRepository;
  */
 class BatchEnvironmentMetaData {
     private final JobRepository jobRepository;
-    private final ExecutorService executorService;
+    private final String jobRepositoryName;
+    private final String executorName;
 
-    protected BatchEnvironmentMetaData(final JobRepository jobRepository, final ExecutorService executorService) {
+    protected BatchEnvironmentMetaData(final JobRepository jobRepository, final String jobRepositoryName, final String executorName) {
         this.jobRepository = jobRepository;
-        this.executorService = executorService;
+        this.jobRepositoryName = jobRepositoryName;
+        this.executorName = executorName;
     }
 
     public JobRepository getJobRepository() {
         return jobRepository;
     }
 
-    public ExecutorService getExecutorService() {
-        return executorService;
+    public String getJobRepositoryName() {
+        return jobRepositoryName;
+    }
+
+    public String getExecutorName() {
+        return executorName;
     }
 }

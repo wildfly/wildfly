@@ -1,19 +1,49 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2015, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.io.IOException;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 /**
 * Base test case for testing management operations.
@@ -107,6 +137,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createWriteAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), new SimpleAttribute(PropertyResourceDefinition.VALUE), new ModelNode(propertyValue));
     }
 
+    // Transport property map operations
     protected static ModelNode getTransportGetPropertyOperation(String stackName, String type, String propertyName) {
         return Operations.createMapGetOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
@@ -119,6 +150,24 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapRemoveOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
 
+    protected static ModelNode getTransportClearPropertiesOperation(String stackName, String type) {
+        return Operations.createMapClearOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    }
+
+    protected static ModelNode getTransportUndefinePropertiesOperation(String stackName, String type) {
+        return Operations.createUndefineAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    }
+
+    /**
+     * Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d})".
+     *
+     * @return resulting :write-attribute operation
+     */
+    protected static ModelNode getTransportSetPropertiesOperation(String stackName, String type, ModelNode values) {
+        return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, values);
+    }
+
+    // Protocol operations
     protected static ModelNode getProtocolAddOperation(String stackName, String type) {
         return Util.createAddOperation(getProtocolAddress(stackName, type));
     }
@@ -170,6 +219,21 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapRemoveOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
 
+    protected static ModelNode getProtocolClearPropertiesOperation(String stackName, String protocolName) {
+        return Operations.createMapClearOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    }
+
+    protected static ModelNode getProtocolUndefinePropertiesOperation(String stackName, String protocolName) {
+        return Operations.createUndefineAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    }
+
+    /**
+     * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
+     */
+    protected static ModelNode getProtocolSetPropertiesOperation(String stackName, String protocolName, ModelNode values) {
+        return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES, values);
+    }
+
     protected static ModelNode getProtocolRemoveOperation(String stackName, String type) {
         return Util.createRemoveOperation(getProtocolAddress(stackName, type));
     }
@@ -205,4 +269,34 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     protected KernelServices buildKernelServices() throws Exception {
         return createKernelServicesBuilder(new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
     }
+
+    protected List<ModelNode> executeOpInBothControllers(KernelServices services, ModelVersion version, ModelNode operation) throws Exception {
+        List<ModelNode> results = new ArrayList<>(2);
+        results.add(ModelTestUtils.checkOutcome(services.executeOperation(operation.clone())));
+        results.add(ModelTestUtils.checkOutcome(services.executeOperation(version, services.transformOperation(version, operation.clone()))));
+        return results;
+    }
+
+    /**
+     * Executes a given operation asserting that an attachment has been created. Given {@link KernelServices} must have enabled attachment grabber.
+     *
+     * @return {@link ModelNode} result of the transformed operation
+     */
+    protected ModelNode executeOpInBothControllersWithAttachments(KernelServices services, ModelVersion version, ModelNode operation) throws Exception {
+        OperationTransformer.TransformedOperation op = services.executeInMainAndGetTheTransformedOperation(operation, version);
+        Assert.assertFalse(op.rejectOperation(success()));
+        //System.out.println(operation + "\nbecomes\n" + op.getTransformedOperation());
+        if (op.getTransformedOperation() != null) {
+            return ModelTestUtils.checkOutcome(services.getLegacyServices(version).executeOperation(op.getTransformedOperation()));
+        }
+        return null;
+    }
+
+    private static ModelNode success() {
+        final ModelNode result = new ModelNode();
+        result.get(OUTCOME).set(SUCCESS);
+        result.get(RESULT);
+        return result;
+    }
+
 }

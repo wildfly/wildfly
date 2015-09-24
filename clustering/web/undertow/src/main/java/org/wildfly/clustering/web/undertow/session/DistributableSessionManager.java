@@ -28,9 +28,9 @@ import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -145,7 +145,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public void setDefaultSessionTimeout(int timeout) {
-        this.manager.setDefaultMaxInactiveInterval(timeout, TimeUnit.SECONDS);
+        this.manager.setDefaultMaxInactiveInterval(Duration.ofSeconds(timeout));
     }
 
     @Override

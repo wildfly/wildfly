@@ -24,78 +24,27 @@ package org.jboss.as.test.manualmode.parse;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ModelParserUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests the ability to parse the config files we ship or have shipped in the past, as well as the ability
  * to marshal them back to xml in a manner such that reparsing them produces a consistent in-memory configuration model.
- * <p/>
- * <b>Note:</b>The standard {@code build/src/main/resources/standalone/configuration} and
- * {@code build/src/main/resources/domain/configuration} files are tested in the smoke integration module ParseAndMarshalModelsTestCase.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
-@Ignore("WFLY-5138")
 public class ParseAndMarshalModelsTestCase {
 
-    @Deployment(name = "test", managed = false, testable = true)
-    public static Archive<?> getDeployment() {
-
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bogus.jar");
-        archive.addPackage(ParseAndMarshalModelsTestCase.class.getPackage());
-        archive.addClass(FileUtils.class);
-        archive.addClass(ModelParserUtils.class);
-        archive.add(new Asset() {
-            @Override
-            public InputStream openStream() {
-                return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
-            }
-        }, "META-INF/MANIFEST.MF");
-        return archive;
-    }
-
-    @Test
-    @InSequence(-1)
-    @RunAsClient
-    public void start(@ArquillianResource ContainerController cc, @ArquillianResource Deployer deployer) {
-        cc.start("default-jbossas");
-        deployer.deploy("test");
-    }
-
-    @Test
-    @InSequence(1)
-    @RunAsClient
-    public void stop(@ArquillianResource ContainerController cc, @ArquillianResource Deployer deployer) {
-        deployer.undeploy("test");
-        cc.stop("default-jbossas");
-    }
+    private static final File JBOSS_HOME = new File(".." + File.separatorChar + "jbossas-parse-marshal");
 
     @Test
     public void testStandaloneXml() throws Exception {
@@ -124,22 +73,22 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandalonePicketLinkXml() throws Exception {
-        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-picketlink.xml"));
+        standaloneXmlTest(getDocsExampleConfigFile("standalone-picketlink.xml"));
     }
 
     @Test
     public void testStandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-xts.xml"));
+        standaloneXmlTest(getDocsExampleConfigFile("standalone-xts.xml"));
     }
 
     @Test
     public void testStandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-jts.xml"));
+        standaloneXmlTest(getDocsExampleConfigFile("standalone-jts.xml"));
     }
 
     @Test
     public void testStandaloneGenericJMSXml() throws Exception {
-        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-genericjms.xml"));
+        standaloneXmlTest(getDocsExampleConfigFile("standalone-genericjms.xml"));
     }
 
     @Test
@@ -373,11 +322,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode standaloneXmlTest(File original) throws Exception {
-        File file = new File("target/standalone-copy.xml");
-        if (file.exists()) {
-            file.delete();
-        }
-        return ModelParserUtils.standaloneXmlTest(original, file);
+        return ModelParserUtils.standaloneXmlTest(original, JBOSS_HOME);
     }
 
     @Test
@@ -421,74 +366,58 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private void hostXmlTest(final File original) throws Exception {
-        File file = new File("target/host-copy.xml");
-        if (file.exists()) {
-            file.delete();
-        }
-        ModelParserUtils.hostXmlTest(original, file);
+        ModelParserUtils.hostXmlTest(original, JBOSS_HOME);
     }
 
     @Test
-    @TargetsContainer("class-jbossas")
     public void testDomainXml() throws Exception {
         domainXmlTest(getOriginalDomainXml("domain.xml"));
     }
 
     @Test
-    @TargetsContainer("class-jbossas")
     public void test713DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-1-3.xml"));
         validateJsfProfiles(model);
     }
 
     @Test
-    @TargetsContainer("class-jbossas")
     public void test720DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-2-0.xml"));
         validateJsfProfiles(model);
     }
 
     @Test
-    @TargetsContainer("class-jbossas")
     public void testEAP600DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-0-0.xml"));
         validateJsfProfiles(model);
     }
 
     @Test
-    @TargetsContainer("class-jbossas")
     public void testEAP610DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-1-0.xml"));
         validateJsfProfiles(model);
     }
 
     @Test
-    @TargetsContainer("class-jbossas")
     public void testEAP620DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-2-0.xml"));
         validateJsfProfiles(model);
     }
 
     @Test
-    @TargetsContainer("class-jbossas")
     public void testEAP630DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-3-0.xml"));
         validateJsfProfiles(model);
     }
 
     @Test
-    @TargetsContainer("class-jbossas")
     public void testEAP640DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-4-0.xml"));
         validateJsfProfiles(model);
     }
 
     private ModelNode domainXmlTest(final File original) throws Exception {
-        File file = new File("target/domain-copy.xml");
-        if (file.exists()) {
-            file.delete();
-        }
-        return ModelParserUtils.domainXmlTest(original, file);
+        return ModelParserUtils.domainXmlTest(original, JBOSS_HOME);
     }
 
     private static void validateJsfProfiles(ModelNode model) {
@@ -506,7 +435,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.inst", "../../.."),
+                System.getProperty("jboss.dist"),
                 "standalone/configuration/" + profile
         );
     }
@@ -538,14 +467,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private File getDocsExampleConfigFile(String name) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.inst", "../../.."),
-                "docs/examples/configs" + File.separator + name
-        );
-    }
-
-    private File getGeneratedExampleConfigFile(String name) throws FileNotFoundException {
-        return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.inst", "../../.."),
+                System.getProperty("jboss.dist"),
                 "docs/examples/configs" + File.separator + name
         );
     }
@@ -554,14 +476,14 @@ public class ParseAndMarshalModelsTestCase {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.inst", "../../.."),
+                System.getProperty("jboss.dist"),
                 "domain/configuration"
         );
     }
 
     private File getDomainConfigDir() throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jboss.inst", "../../.."),
+                System.getProperty("jboss.dist"),
                 "domain/configuration"
         );
     }

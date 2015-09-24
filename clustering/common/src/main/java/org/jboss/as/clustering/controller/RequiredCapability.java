@@ -27,6 +27,7 @@ package org.jboss.as.clustering.controller;
  * @author Paul Ferraro
  */
 public enum RequiredCapability implements Requirement {
+    DATA_SOURCE("org.wildfly.data-source"),
     OUTBOUND_SOCKET_BINDING("org.wildfly.network.outbound-socket-binding"),
     SOCKET_BINDING("org.wildfly.network.socket-binding"),
     ;

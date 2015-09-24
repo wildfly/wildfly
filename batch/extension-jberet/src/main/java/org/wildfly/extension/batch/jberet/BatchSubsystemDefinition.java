@@ -24,11 +24,11 @@ package org.wildfly.extension.batch.jberet;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jberet.repository.JobRepository;
+import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,10 +46,8 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
-import org.jboss.as.threads.ThreadFactoryResolver;
+import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
 import org.jboss.as.threads.ThreadFactoryResourceDefinition;
-import org.jboss.as.threads.ThreadsServices;
-import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceTarget;
@@ -58,8 +56,10 @@ import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_1_0;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchEnvironmentProcessor;
+import org.wildfly.extension.batch.jberet.impl.JobExecutorService;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
 public class BatchSubsystemDefinition extends SimpleResourceDefinition {
@@ -69,9 +69,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
      */
     public static final String NAME = "batch-jberet";
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NAME);
-    static final String THREAD_POOL = "thread-pool";
     static final String THREAD_FACTORY = "thread-factory";
-    static final PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
 
     static final SimpleAttributeDefinition DEFAULT_JOB_REPOSITORY = SimpleAttributeDefinitionBuilder.create("default-job-repository", ModelType.STRING, true)
             .setAllowExpression(false)
@@ -108,9 +106,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new InMemoryJobRepositoryDefinition());
         resourceRegistration.registerSubModel(new JdbcJobRepositoryDefinition());
         // thread-pool resource
-        final UnboundedQueueThreadPoolResourceDefinition threadPoolResource = UnboundedQueueThreadPoolResourceDefinition.create(THREAD_POOL_PATH,
-                BatchThreadFactoryResolver.INSTANCE, BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME, registerRuntimeOnly);
-        resourceRegistration.registerSubModel(threadPoolResource);
+        resourceRegistration.registerSubModel(new BatchThreadPoolResourceDefinition(registerRuntimeOnly));
 
         // thread-factory resource
         final ThreadFactoryResourceDefinition threadFactoryResource = new ThreadFactoryResourceDefinition();
@@ -182,28 +178,15 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             final ModelNode defaultThreadPool = DEFAULT_THREAD_POOL.resolveModelAttribute(context, model);
             if (defaultThreadPool.isDefined()) {
                 final String name = defaultThreadPool.asString();
-                final DefaultValueService<ExecutorService> service = DefaultValueService.create();
-                target.addService(context.getCapabilityServiceName(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY.getName(), ExecutorService.class), service)
+                final JobExecutorService service = new JobExecutorService();
+                target.addService(context.getCapabilityServiceName(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY.getName(), JobExecutor.class), service)
                         .addDependency(
                                 BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME.append(name),
-                                ExecutorService.class,
-                                service.getInjector()
+                                ManagedJBossThreadPoolExecutorService.class,
+                                service.getThreadPoolInjector()
                         )
                         .install();
             }
-        }
-    }
-
-    private static class BatchThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
-        static final BatchThreadFactoryResolver INSTANCE = new BatchThreadFactoryResolver();
-
-        private BatchThreadFactoryResolver() {
-            super(ThreadsServices.FACTORY);
-        }
-
-        @Override
-        protected String getThreadGroupName(String threadPoolName) {
-            return "Batch Thread";
         }
     }
 }

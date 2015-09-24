@@ -455,8 +455,11 @@ public interface JacORBLogger extends BasicLogger {
             + "using OpenJDK ORB will be removed in future.")
     void jacorbEmulationWarning();
 
-    @LogMessage(level = WARN)
+
     @Message(id = 134, value = "Properties %s cannot be emulated using OpenJDK ORB and are not supported")
-    void cannotEmulatePropertiesWarning(List<String> property);
+    String cannotEmulatePropertiesWarning(List<String> property);
+
+    @Message(id = 135, value = "Migration failed, see results for more details.")
+    String migrationFailed();
 
 }

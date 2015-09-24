@@ -29,6 +29,7 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
 import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
@@ -46,31 +47,34 @@ import org.jboss.msc.service.ServiceRegistry;
 @Remote(TopologyChangeListener.class)
 @Listener(sync = false)
 public class TopologyChangeListenerBean implements TopologyChangeListener {
-    public static final long TIMEOUT = 15000;
 
     @Override
-    public void establishTopology(String containerName, String cacheName, String... nodes) throws InterruptedException {
+    public void establishTopology(String containerName, String cacheName, long timeout, String... nodes) throws InterruptedException {
         Set<String> expectedMembers = new TreeSet<>(Arrays.asList(nodes));
         ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();
-        ServiceName name = ServiceName.JBOSS.append("infinispan", containerName, cacheName);
-        Cache<?, ?> cache = ServiceContainerHelper.findValue(registry, name);
-        if (cache == null) {
+        ServiceName name = ServiceName.JBOSS.append("infinispan", containerName);
+        EmbeddedCacheManager cacheContainer = ServiceContainerHelper.findValue(registry, name);
+        if (cacheContainer == null) {
             throw new IllegalStateException(String.format("Failed to locate %s", name));
+        }
+        Cache cache = cacheContainer.getCache(cacheName);
+        if (cache == null) {
+            throw new IllegalStateException(String.format("Cache %s not found", cacheName));
         }
         cache.addListener(this);
         try
         {
             long start = System.currentTimeMillis();
             long now = start;
-            long timeout = start + TIMEOUT;
+            long endTime = start + timeout;
             synchronized (this) {
                 Set<String> members = getMembers(cache);
                 while (!expectedMembers.equals(members)) {
                     System.out.println(String.format("%s != %s, waiting for a topology change event...", expectedMembers, members));
-                    this.wait(timeout - now);
+                    this.wait(endTime - now);
                     now = System.currentTimeMillis();
-                    if (now >= timeout) {
-                        throw new InterruptedException(String.format("Cache %s/%s failed to establish view %s within %d ms.  Current view is: %s", containerName, cacheName, expectedMembers, TIMEOUT, members));
+                    if (now >= endTime) {
+                        throw new InterruptedException(String.format("Cache %s/%s failed to establish view %s within %d ms.  Current view is: %s", containerName, cacheName, expectedMembers, timeout, members));
                     }
                     members = getMembers(cache);
                 }

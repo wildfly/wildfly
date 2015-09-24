@@ -94,6 +94,8 @@ public class ConnectorServices {
 
     public static final ServiceName RA_REPOSITORY_SERVICE = ServiceName.JBOSS.append("rarepository");
 
+    public static final ServiceName NON_JTA_DS_RA_REPOSITORY_SERVICE = ServiceName.JBOSS.append("non_jta_ds_rarepository");
+
     public static final ServiceName MANAGEMENT_REPOSITORY_SERVICE = ServiceName.JBOSS.append("management_repository");
 
     public static final ServiceName RESOURCEADAPTERS_SERVICE = ServiceName.JBOSS.append("resourceadapters");

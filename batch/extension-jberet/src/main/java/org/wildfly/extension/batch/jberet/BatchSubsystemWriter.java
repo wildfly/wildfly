@@ -33,6 +33,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -72,8 +73,8 @@ public class BatchSubsystemWriter implements XMLElementWriter<SubsystemMarshalli
         }
 
         // Write the thread pool
-        if (model.hasDefined(BatchSubsystemDefinition.THREAD_POOL)) {
-            final List<Property> threadPools = model.get(BatchSubsystemDefinition.THREAD_POOL).asPropertyList();
+        if (model.hasDefined(BatchThreadPoolResourceDefinition.NAME)) {
+            final List<Property> threadPools = model.get(BatchThreadPoolResourceDefinition.NAME).asPropertyList();
             for (Property threadPool : threadPools) {
                 threadsParser.writeUnboundedQueueThreadPool(writer, threadPool, Element.THREAD_POOL.getLocalName(), true);
             }

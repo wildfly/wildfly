@@ -22,9 +22,10 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -39,9 +40,9 @@ import org.wildfly.clustering.web.session.InactiveSessionStatistics;
 public class RecordableInactiveSessionStatistics implements InactiveSessionStatistics, Recordable<ImmutableSession> {
 
     private final AtomicLong expiredSessions = new AtomicLong();
-    private final AtomicReference<Long> maxLifetime = new AtomicReference<>();
+    private final AtomicReference<Duration> maxLifetime = new AtomicReference<>();
     // Tuple containing total lifetime of sessions, and total session count
-    private final AtomicReference<Map.Entry<Long, Long>> totals = new AtomicReference<>();
+    private final AtomicReference<Map.Entry<Duration, Long>> totals = new AtomicReference<>();
 
     public RecordableInactiveSessionStatistics() {
         this.reset();
@@ -49,19 +50,18 @@ public class RecordableInactiveSessionStatistics implements InactiveSessionStati
 
     @Override
     public void record(ImmutableSession session) {
-        long now = System.currentTimeMillis();
-        long lifetime = now - session.getMetaData().getCreationTime().getTime();
-        long currentMaxLifetime = this.maxLifetime.get();
+        Duration lifetime = Duration.between(session.getMetaData().getCreationTime(), Instant.now());
+        Duration currentMaxLifetime = this.maxLifetime.get();
 
-        while (lifetime > currentMaxLifetime) {
+        while (lifetime.compareTo(currentMaxLifetime) > 0) {
             if (this.maxLifetime.compareAndSet(currentMaxLifetime, lifetime)) {
                 break;
             }
             currentMaxLifetime = this.maxLifetime.get();
         }
 
-        Map.Entry<Long, Long> currentTotals = this.totals.get();
-        Map.Entry<Long, Long> sessions = createNewTotals(currentTotals, lifetime);
+        Map.Entry<Duration, Long> currentTotals = this.totals.get();
+        Map.Entry<Duration, Long> sessions = createNewTotals(currentTotals, lifetime);
         while (!this.totals.compareAndSet(currentTotals, sessions)) {
             currentTotals = this.totals.get();
             sessions = createNewTotals(currentTotals, lifetime);
@@ -72,23 +72,23 @@ public class RecordableInactiveSessionStatistics implements InactiveSessionStati
         }
     }
 
-    private static Map.Entry<Long, Long> createNewTotals(Map.Entry<Long, Long> totals, long lifetime) {
-        long totalLifetime = totals.getKey();
+    private static Map.Entry<Duration, Long> createNewTotals(Map.Entry<Duration, Long> totals, Duration lifetime) {
+        Duration totalLifetime = totals.getKey();
         long totalSessions = totals.getValue();
-        return new AbstractMap.SimpleImmutableEntry<>(totalLifetime + lifetime, totalSessions + 1);
+        return new AbstractMap.SimpleImmutableEntry<>(totalLifetime.plus(lifetime), totalSessions + 1);
     }
 
     @Override
-    public long getMeanSessionLifetime(TimeUnit unit) {
-        Map.Entry<Long, Long> totals = this.totals.get();
-        long lifetime = totals.getKey();
+    public Duration getMeanSessionLifetime() {
+        Map.Entry<Duration, Long> totals = this.totals.get();
+        Duration lifetime = totals.getKey();
         long count = totals.getValue();
-        return (count > 0) ? unit.convert(lifetime, TimeUnit.MILLISECONDS) / count : 0;
+        return (count > 0) ? lifetime.dividedBy(count) : Duration.ZERO;
     }
 
     @Override
-    public long getMaxSessionLifetime(TimeUnit unit) {
-        return unit.convert(this.maxLifetime.get(), TimeUnit.MILLISECONDS);
+    public Duration getMaxSessionLifetime() {
+        return this.maxLifetime.get();
     }
 
     @Override
@@ -98,8 +98,8 @@ public class RecordableInactiveSessionStatistics implements InactiveSessionStati
 
     @Override
     public void reset() {
-        this.maxLifetime.set(0L);
-        this.totals.set(new AbstractMap.SimpleImmutableEntry<>(0L, 0L));
+        this.maxLifetime.set(Duration.ZERO);
+        this.totals.set(new AbstractMap.SimpleImmutableEntry<>(Duration.ZERO, 0L));
         this.expiredSessions.set(0L);
     }
 }

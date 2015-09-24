@@ -10,7 +10,7 @@
                              default-timeout="${test.default.timeout:300}"/>
     <object-store path="${test.store.path:tx-object-store}" relative-to="${test.store.relative-to:jboss.server.data.dir}"/>
     <jts/>
-    <use-hornetq-store enable-async-io="${test.enable.async.io:false}"/>
+    <use-journal-store enable-async-io="${test.enable.async.io:false}"/>
     <commit-markable-resources>
         <commit-markable-resource jndi-name="java:/foo">
             <xid-location name="${test.table:fooTable}" batch-size="${test.batch:10}" immediate-cleanup="${test.immediate:false}"/>

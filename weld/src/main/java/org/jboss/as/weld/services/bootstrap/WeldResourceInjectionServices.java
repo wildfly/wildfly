@@ -59,6 +59,8 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     private static final String HANDLE_DELEGATE_CLASS_NAME = "javax.ejb.spi.HandleDelegate";
     private static final String TIMER_SERVICE_CLASS_NAME = "javax.ejb.TimerService";
     private static final String ORB_CLASS_NAME = "org.omg.CORBA.ORB";
+    private static final String TRANSACTION_SYNC_REGISTRY_LOCATION = "java:comp/TransactionSynchronizationRegistry";
+    private static final String TRANSACTION_SYNC_REGISTRY_CLASS_NAME = "javax.transaction.TransactionSynchronizationRegistry";
 
     private static final String EE_CONTEXT_SERVICE_CLASS_NAME = "javax.enterprise.concurrent.ContextService";
     private static final String EE_DATASOURCE_CLASS_NAME = "javax.sql.DataSource";
@@ -102,7 +104,9 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
                 //there is not actually a binding we can use for this
                 //the whole CDI+bindings thing will likely be reviewed in EE8
                 return WEB_SERVICE_CONTEXT_CLASS_NAME;
-            }  else {
+            } else if (TRANSACTION_SYNC_REGISTRY_CLASS_NAME.equals(typeName)) {
+                return TRANSACTION_SYNC_REGISTRY_LOCATION;
+            } else {
                 // EE default bindings
                 EEDefaultResourceJndiNames eeDefaultResourceJndiNames = moduleDescription.getDefaultResourceJndiNames();
                 if (eeDefaultResourceJndiNames.getContextService() != null && EE_CONTEXT_SERVICE_CLASS_NAME.equals(typeName)) {

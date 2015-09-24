@@ -50,7 +50,7 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.PoolConfigService;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
@@ -202,6 +202,14 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.clusteredSingleton = clusteredSingleton;
     }
 
+    public boolean isDeliveryControlled() {
+        return deliveryGroup != null || clusteredSingleton;
+    }
+
+    public ServiceName getDeliveryControllerName() {
+        return getServiceName().append("DELIVERY");
+    }
+
     public String getResourceAdapterName() {
         return resourceAdapterName;
     }
@@ -315,11 +323,11 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
             // if no pool name has been explicitly set, then inject the *optional* "default mdb pool config"
             // If the default mdb pool config itself is not configured, then pooling is disabled for the bean
             if (poolName == null) {
-                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, PoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, StrictMaxPoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
                         PoolConfig.class, mdbComponentCreateService.getPoolConfigInjector());
             } else {
                 // pool name has been explicitly set so the pool config is a required dependency
-                serviceBuilder.addDependency(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
+                serviceBuilder.addDependency(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
                         PoolConfig.class, mdbComponentCreateService.getPoolConfigInjector());
             }
         }

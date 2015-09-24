@@ -139,8 +139,8 @@ public interface TransactionLogger extends BasicLogger {
     @Message(id = 10, value = "MBean Server service not installed, this functionality is not available if the JMX subsystem has not been installed.")
     RuntimeException jmxSubsystemNotInstalled();
 
-    @Message(id = 11, value = "'hornetq-store-enable-async-io' must be true.")
-    String transformHornetQStoreEnableAsyncIoMustBeTrue();
+    @Message(id = 11, value = "'journal-store-enable-async-io' must be true.")
+    String transformJournalStoreEnableAsyncIoMustBeTrue();
 
     @Message(id = 12, value = "Attributes %s and %s are alternatives; both cannot be set with conflicting values.")
     OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);

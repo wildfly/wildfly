@@ -236,13 +236,6 @@
                 <xs:documentation>Uniquely identifies this cache within its cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="indexing" type="tns:indexing" default="NONE">
-            <xs:annotation>
-                <xs:documentation>
-                    The indexing mode of the cache. Defaults to NONE.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="jndi-name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
@@ -578,9 +571,9 @@
     <xs:complexType name="jdbc-store">
         <xs:complexContent>
             <xs:extension base="tns:store">
-                <xs:attribute name="datasource" type="xs:string" use="required">
+                <xs:attribute name="data-source" type="xs:string" use="required">
                     <xs:annotation>
-                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
+                        <xs:documentation>References the pool name of a data source.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="dialect" type="tns:dialect" use="optional">
@@ -749,14 +742,14 @@
     </xs:complexType>
 
     <xs:complexType name="state-transfer">
-        <xs:attribute name="timeout" type="xs:long" default="60000">
+        <xs:attribute name="timeout" type="xs:long" default="240000">
             <xs:annotation>
                 <xs:documentation>The maximum amount of time (ms) to wait for state from neighboring caches, before throwing an exception and aborting startup.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="chunk-size" type="xs:integer" default="10000">
+        <xs:attribute name="chunk-size" type="xs:integer" default="512">
             <xs:annotation>
-                <xs:documentation>The size, in bytes, in which to batch the transfer of cache entries.</xs:documentation>
+                <xs:documentation>The number of cache entries to batch in each transfer.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -909,32 +902,6 @@
             <xs:enumeration value="FULL_XA">
                 <xs:annotation>
                     <xs:documentation>Cache will enlist within transactions as a javax.transaction.xa.XAResource, with recovery.</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
-
-    <xs:simpleType name="indexing">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="NONE">
-                <xs:annotation>
-                    <xs:documentation>
-                        Do not index data. This is the default.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="LOCAL">
-                <xs:annotation>
-                    <xs:documentation>
-                        Only index changes made locally, ignoring remote changes. This is useful if indexes are shared across a cluster to prevent redundant indexing of updates.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="ALL">
-                <xs:annotation>
-                    <xs:documentation>
-                        Index all data.
-                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>

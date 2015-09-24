@@ -21,14 +21,15 @@
  */
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.MutableCacheEntry;
 import org.wildfly.clustering.ee.infinispan.Mutator;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;
@@ -37,7 +38,16 @@ import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
+import org.wildfly.clustering.web.infinispan.session.MutableSessionAccessMetaData;
+import org.wildfly.clustering.web.infinispan.session.MutableSessionCreationMetaData;
+import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaData;
+import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaDataKey;
+import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaData;
+import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataEntry;
+import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
 import org.wildfly.clustering.web.infinispan.session.SessionFactory;
+import org.wildfly.clustering.web.infinispan.session.SimpleSessionAccessMetaData;
+import org.wildfly.clustering.web.infinispan.session.SimpleSessionCreationMetaData;
 import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaData;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
@@ -49,21 +59,26 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
  * {@link SessionFactory} for coarse granularity sessions.
- * A given session is mapped to 2 co-located cache entries, one containing the session meta data and local context (updated every request)
- * and the other containing the map of session attributes.
+ * A given session is mapped to 3 co-located cache entries, one containing the static session meta-data and local context, one the dynamic session meta-data (updated every request),
+ * and the other containing a map of session attributes.
  * @author Paul Ferraro
  */
 public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntry<L>, L> {
 
     private final SessionContext context;
-    private final Cache<String, CoarseSessionCacheEntry<L>> sessionCache;
-    private final Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache;
+    private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
+    private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> findCreationMetaDataCache;
+    private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
+    private final Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache;
     private final Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
-    public CoarseSessionFactory(Cache<String, CoarseSessionCacheEntry<L>> sessionCache, Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache, SessionContext context, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory) {
-        this.sessionCache = sessionCache;
-        this.attributesCache = attributesCache;
+    @SuppressWarnings("unchecked")
+    public CoarseSessionFactory(Cache<? extends Key<String>, ?> cache, SessionContext context, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead) {
+        this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
+        this.findCreationMetaDataCache = lockOnRead ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
+        this.accessMetaDataCache = (Cache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
+        this.attributesCache = (Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>>) cache;
         this.context = context;
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
@@ -71,81 +86,124 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     @Override
     public Session<L> createSession(String id, CoarseSessionEntry<L> entry) {
-        MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry = entry.getMutableSessionEntry();
+        MutableCacheEntry<SessionCreationMetaData> creationMetaDataEntry = entry.getMutableSessionCreationMetaDataEntry();
+        MutableCacheEntry<SessionAccessMetaData> accessMetaDataEntry = entry.getMutableSessionAccessMetaDataEntry();
         MutableCacheEntry<Map<String, Object>> attributesEntry = entry.getMutableAttributesEntry();
-        SessionMetaData metaData = sessionEntry.getValue().getMetaData();
+
+        SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(creationMetaDataEntry.getValue(), creationMetaDataEntry.getMutator());
+        SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(accessMetaDataEntry.getValue(), accessMetaDataEntry.getMutator());
+        SessionMetaData metaData = new SimpleSessionMetaData(creationMetaData, accessMetaData);
         SessionAttributes attributes = new CoarseSessionAttributes(attributesEntry.getValue(), attributesEntry.getMutator(), this.marshaller.getContext());
-        return new InfinispanSession<>(id, metaData, attributes, sessionEntry.getValue().getLocalContext(), this.localContextFactory, this.context, sessionEntry.getMutator(), this);
+
+        return new InfinispanSession<>(id, metaData, attributes, entry.getLocalContext(), this.localContextFactory, this.context, this);
     }
 
     @Override
     public ImmutableSession createImmutableSession(String id, CoarseSessionEntry<L> entry) {
-        MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry = entry.getMutableSessionEntry();
+        MutableCacheEntry<SessionCreationMetaData> creationMetaDataEntry = entry.getMutableSessionCreationMetaDataEntry();
+        MutableCacheEntry<SessionAccessMetaData> accessMetaDataEntry = entry.getMutableSessionAccessMetaDataEntry();
         MutableCacheEntry<Map<String, Object>> attributesEntry = entry.getMutableAttributesEntry();
-        ImmutableSessionMetaData metaData = sessionEntry.getValue().getMetaData();
+
+        ImmutableSessionMetaData metaData = new SimpleSessionMetaData(creationMetaDataEntry.getValue(), accessMetaDataEntry.getValue());
         ImmutableSessionAttributes attributes = new CoarseImmutableSessionAttributes(attributesEntry.getValue());
+
         return new InfinispanImmutableSession(id, metaData, attributes, this.context);
     }
 
     @Override
     public CoarseSessionEntry<L> createValue(String id, Void context) {
-        CoarseSessionCacheEntry<L> entry = new CoarseSessionCacheEntry<>(new SimpleSessionMetaData());
-        CoarseSessionCacheEntry<L> existingEntry = this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(id, entry);
-        SessionAttributesCacheKey key = new SessionAttributesCacheKey(id);
-        Map<String, Object> attributes = new HashMap<>();
-        MutableCacheEntry<Map<String, Object>> attributesEntry = new MutableCacheEntry<>(attributes, Mutator.PASSIVE);
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.marshaller.write(attributes);
-        if (existingEntry == null) {
-            this.attributesCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(key, value);
-            MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry = new MutableCacheEntry<>(entry, Mutator.PASSIVE);
-            return new CoarseSessionEntry<>(sessionEntry, attributesEntry);
+        SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData());
+        SessionCreationMetaDataEntry<L> existingCreationMetaDataEntry = this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(creationMetaDataKey, creationMetaDataEntry);
+        Mutator creationMetaDataMutator = Mutator.PASSIVE;
+        if (existingCreationMetaDataEntry != null) {
+            creationMetaDataEntry = existingCreationMetaDataEntry;
+            creationMetaDataMutator = new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, creationMetaDataEntry);
         }
-        MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry = new MutableCacheEntry<>(existingEntry, new CacheEntryMutator<>(this.sessionCache, id, existingEntry));
-        MarshalledValue<Map<String, Object>, MarshallingContext> existingValue = this.attributesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(key, value);
-        if (existingValue != null) {
-            try {
-                Map<String, Object> existingAttributes = this.marshaller.read(existingValue);
-                MutableCacheEntry<Map<String, Object>> existingAttributesEntry = new MutableCacheEntry<>(existingAttributes, new CacheEntryMutator<>(this.attributesCache, key, existingValue));
-                return new CoarseSessionEntry<>(sessionEntry, existingAttributesEntry);
-            } catch (InvalidSerializedFormException e) {
-                InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
-                new CacheEntryMutator<>(this.attributesCache, key, value).mutate();
+
+        SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
+        SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
+        Mutator accessMetaDataMutator = Mutator.PASSIVE;
+        if (existingCreationMetaDataEntry == null) {
+            this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(accessMetaDataKey, accessMetaData);
+        } else {
+            SessionAccessMetaData existingAccessMetaData = this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(accessMetaDataKey, accessMetaData);
+            if (existingAccessMetaData != null) {
+                accessMetaData = existingAccessMetaData;
+                accessMetaDataMutator = new CacheEntryMutator<>(this.accessMetaDataCache, accessMetaDataKey, accessMetaData);
             }
         }
-        return new CoarseSessionEntry<>(sessionEntry, attributesEntry);
+
+        SessionAttributesKey attributesKey = new SessionAttributesKey(id);
+        Map<String, Object> attributes = new ConcurrentHashMap<>();
+        MarshalledValue<Map<String, Object>, MarshallingContext> attributesValue = this.marshaller.write(attributes);
+        Mutator attributesMutator = Mutator.PASSIVE;
+        if (existingCreationMetaDataEntry == null) {
+            this.attributesCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(attributesKey, attributesValue);
+        } else {
+            MarshalledValue<Map<String, Object>, MarshallingContext> existingAttributesValue = this.attributesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(attributesKey, attributesValue);
+            if (existingAttributesValue != null) {
+                try {
+                    attributes = this.marshaller.read(existingAttributesValue);
+                    attributesMutator = new CacheEntryMutator<>(this.attributesCache, attributesKey, existingAttributesValue);
+                } catch (InvalidSerializedFormException e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
+                    // Invalidate
+                    this.remove(id);
+                    return this.createValue(id, context);
+                }
+            }
+        }
+
+        return new CoarseSessionEntry<>(new MutableCacheEntry<>(creationMetaDataEntry.getMetaData(), creationMetaDataMutator), new MutableCacheEntry<>(accessMetaData, accessMetaDataMutator), new MutableCacheEntry<>(attributes, attributesMutator), creationMetaDataEntry.getLocalContext());
     }
 
     @Override
     public CoarseSessionEntry<L> findValue(String id) {
-        CoarseSessionCacheEntry<L> entry = this.sessionCache.get(id);
-        if (entry != null) {
-            MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry = new MutableCacheEntry<>(entry, new CacheEntryMutator<>(this.sessionCache, id, entry));
-            SessionAttributesCacheKey key = new SessionAttributesCacheKey(id);
-            MarshalledValue<Map<String, Object>, MarshallingContext> value = this.attributesCache.get(key);
-            if (value != null) {
-                try {
-                    Map<String, Object> attributes = this.marshaller.read(value);
-                    return new CoarseSessionEntry<>(sessionEntry, new MutableCacheEntry<>(attributes, new CacheEntryMutator<>(this.attributesCache, key, value)));
-                } catch (InvalidSerializedFormException e) {
-                    InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
-                    this.remove(id);
+        SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = this.findCreationMetaDataCache.get(creationMetaDataKey);
+        if (creationMetaDataEntry != null) {
+            SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
+            SessionAccessMetaData accessMetaData = this.accessMetaDataCache.get(accessMetaDataKey);
+            if (accessMetaData != null) {
+                SessionAttributesKey attributesKey = new SessionAttributesKey(id);
+                MarshalledValue<Map<String, Object>, MarshallingContext> attributesValue = this.attributesCache.get(attributesKey);
+                if (attributesValue != null) {
+                    try {
+                        Map<String, Object> attributes = this.marshaller.read(attributesValue);
+                        Mutator creationMetaDataMutator = new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, creationMetaDataEntry);
+                        Mutator accessMetaDataMutator = new CacheEntryMutator<>(this.accessMetaDataCache, accessMetaDataKey, accessMetaData);
+                        Mutator attributesMutator = new CacheEntryMutator<>(this.attributesCache, attributesKey, attributesValue);
+                        return new CoarseSessionEntry<>(new MutableCacheEntry<>(creationMetaDataEntry.getMetaData(), creationMetaDataMutator), new MutableCacheEntry<>(accessMetaData, accessMetaDataMutator), new MutableCacheEntry<>(attributes, attributesMutator), creationMetaDataEntry.getLocalContext());
+                    } catch (InvalidSerializedFormException e) {
+                        InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
+                        // Invalidate
+                        this.remove(id);
+                        return null;
+                    }
                 }
+                // Purge orphaned entry
+                this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(accessMetaDataKey);
             }
+            // Purge orphaned entry, making sure not to trigger cache listener
+            this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LISTENER_NOTIFICATION).remove(creationMetaDataKey);
         }
         return null;
     }
 
     @Override
     public void remove(String id) {
-        this.sessionCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(id);
-        this.attributesCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributesCacheKey(id));
+        this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionCreationMetaDataKey(id));
+        this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAccessMetaDataKey(id));
+        this.attributesCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributesKey(id));
     }
 
     @Override
     public void evict(String id) {
         try {
-            this.sessionCache.evict(id);
-            this.attributesCache.evict(new SessionAttributesCacheKey(id));
+            this.creationMetaDataCache.evict(new SessionCreationMetaDataKey(id));
+            this.accessMetaDataCache.evict(new SessionAccessMetaDataKey(id));
+            this.attributesCache.evict(new SessionAttributesKey(id));
         } catch (Throwable e) {
             InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, id);
         }

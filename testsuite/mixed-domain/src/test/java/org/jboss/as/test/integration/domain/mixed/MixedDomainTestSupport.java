@@ -44,28 +44,43 @@ import org.junit.Assert;
 
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class MixedDomainTestSupport extends DomainTestSupport {
 
+    public static final String STANDARD_DOMAIN_CONFIG = "copied-master-config/domain.xml";
+
     private final Version.AsVersion version;
+    private final boolean adjustDomain;
 
     private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String masterConfig, String slaveConfig,
-                                   String jbossHome)
+                                   String jbossHome, boolean adjustDomain)
             throws Exception {
-        super(testClass, domainConfig, masterConfig, slaveConfig,  new WildFlyManagedConfiguration(), new WildFlyManagedConfiguration(jbossHome));
+        super(testClass, domainConfig, masterConfig, slaveConfig, new WildFlyManagedConfiguration(), new WildFlyManagedConfiguration(jbossHome));
         this.version = version;
+        this.adjustDomain = adjustDomain;
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
+        return create(testClass, version, STANDARD_DOMAIN_CONFIG, true);
+    }
+
+    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, boolean adjustDomain) throws Exception {
         final File dir = OldVersionCopier.expandOldVersion(version);
-        final String copiedDomainXml = copyDomainFile();
-        return new MixedDomainTestSupport(version, testClass, copiedDomainXml, "master-config/host.xml",
-                "slave-config/host-slave.xml", dir.getAbsolutePath());
+        return new MixedDomainTestSupport(version, testClass, domainConfig, "master-config/host.xml",
+                "slave-config/host-slave.xml", dir.getAbsolutePath(), adjustDomain);
     }
 
     public void start() {
+        if (adjustDomain) {
+            startAndAdjust();
+        } else {
+            super.start();
+        }
+    }
+
+    private void startAndAdjust() {
+
         try {
             //Start the master in admin only  and reconfigure the domain with what
             //we want to test in the mixed domain and have the DomainAdjuster
@@ -95,7 +110,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         }
     }
 
-    private static String copyDomainFile() throws Exception {
+    static String copyDomainFile() {
 
         final File originalDomainXml = loadFile("target", "jbossas", "domain", "configuration", "domain.xml");
         final File targetDirectory = createDirectory("target", "test-classes", "copied-master-config");
@@ -103,8 +118,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         if (copiedDomainXml.exists()) {
             Assert.assertTrue(copiedDomainXml.delete());
         }
-        final InputStream in = new BufferedInputStream(new FileInputStream(originalDomainXml));
-        try {
+        try (InputStream in = new BufferedInputStream(new FileInputStream(originalDomainXml))) {
             final OutputStream out = new BufferedOutputStream(new FileOutputStream(copiedDomainXml));
             try {
                 byte[] bytes = new byte[1024];
@@ -116,10 +130,10 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             } finally {
                 safeClose(out);
             }
-        } finally {
-            safeClose(in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return "copied-master-config/domain.xml";
+        return STANDARD_DOMAIN_CONFIG;
     }
 
     private static File loadFile(String first, String... parts) {
@@ -130,10 +144,14 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     }
 
 
-    private static File createDirectory(String first, String... parts) throws IOException {
+    private static File createDirectory(String first, String... parts) {
         Path p = Paths.get(first, parts);
-        File dir = Files.createDirectories(p).toFile();
-        Assert.assertTrue(dir.exists());
-        return dir;
+        try {
+            File dir = Files.createDirectories(p).toFile();
+            Assert.assertTrue(dir.exists());
+            return dir;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

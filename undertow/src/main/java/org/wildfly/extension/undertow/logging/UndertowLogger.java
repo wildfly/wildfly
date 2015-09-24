@@ -27,7 +27,8 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.File;
-import java.net.InetSocketAddress;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -89,12 +90,12 @@ public interface UndertowLogger extends BasicLogger {
      * @param address socket address
      */
     @LogMessage(level = INFO)
-    @Message(id = 6, value = "Undertow %s listener %s listening on %s")
-    void listenerStarted(String type, String name, InetSocketAddress address);
+    @Message(id = 6, value = "Undertow %s listener %s listening on %s:%d")
+    void listenerStarted(String type, String name, String address, int port);
 
     @LogMessage(level = INFO)
-    @Message(id = 7, value = "Undertow %s listener %s stopped, was bound to %s")
-    void listenerStopped(String type, String name, InetSocketAddress address);
+    @Message(id = 7, value = "Undertow %s listener %s stopped, was bound to %s:%d")
+    void listenerStopped(String type, String name, String address, int port);
 
     @LogMessage(level = INFO)
     @Message(id = 8, value = "Undertow %s listener %s suspending")
@@ -279,7 +280,7 @@ public interface UndertowLogger extends BasicLogger {
     StartException failedToCreatePersistentSessionDir(File baseDir);
 
     @Message(id = 62, value = "Could not create log directory: %s")
-    StartException couldNotCreateLogDirectory(File directory);
+    StartException couldNotCreateLogDirectory(Path directory, @Cause IOException e);
 
     @Message(id = 63, value = "Could not find the port number listening for protocol %s")
     IllegalStateException noPortListeningForProtocol(final String protocol);

@@ -27,12 +27,12 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
+import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -86,28 +86,28 @@ public class DistributableSession implements io.undertow.server.session.Session 
     @Override
     public long getCreationTime() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return this.entry.getKey().getMetaData().getCreationTime().getTime();
+            return this.entry.getKey().getMetaData().getCreationTime().toEpochMilli();
         }
     }
 
     @Override
     public long getLastAccessedTime() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return this.entry.getKey().getMetaData().getLastAccessedTime().getTime();
+            return this.entry.getKey().getMetaData().getLastAccessedTime().toEpochMilli();
         }
     }
 
     @Override
     public int getMaxInactiveInterval() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return (int) this.entry.getKey().getMetaData().getMaxInactiveInterval(TimeUnit.SECONDS);
+            return (int) this.entry.getKey().getMetaData().getMaxInactiveInterval().getSeconds();
         }
     }
 
     @Override
     public void setMaxInactiveInterval(int interval) {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            this.entry.getKey().getMetaData().setMaxInactiveInterval(interval, TimeUnit.SECONDS);
+            this.entry.getKey().getMetaData().setMaxInactiveInterval(Duration.ofSeconds(interval));
         }
     }
 
@@ -192,7 +192,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
             for (String name: oldSession.getAttributes().getAttributeNames()) {
                 newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
             }
-            newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+            newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
             newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
             newSession.getLocalContext().setAuthenticatedSession(oldSession.getLocalContext().getAuthenticatedSession());
             config.setSessionId(exchange, id);

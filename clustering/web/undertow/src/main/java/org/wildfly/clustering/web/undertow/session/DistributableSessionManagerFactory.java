@@ -23,11 +23,9 @@ package org.wildfly.clustering.web.undertow.session;
 
 import io.undertow.UndertowLogger;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.session.SecureRandomSessionIdGenerator;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ThreadSetupAction;
-
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.session.SessionContext;
@@ -52,7 +50,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         boolean statisticsEnabled = deployment.getDeploymentInfo().getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
         SessionContext context = new UndertowSessionContext(deployment);
-        IdentifierFactory<String> factory = new IdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
+        IdentifierFactory<String> factory = new IdentifierFactoryAdapter(deployment.getDeploymentInfo().getSessionIdGenerator());
         final SessionManager<LocalSessionContext, Batch> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory(), inactiveSessionStatistics);
         DeploymentInfo info = deployment.getDeploymentInfo();
         ThreadSetupAction action = new ThreadSetupAction() {

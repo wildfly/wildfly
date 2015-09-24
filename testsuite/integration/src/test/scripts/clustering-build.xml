@@ -93,6 +93,7 @@
             <param name="cacheMode" value="ASYNC"/>
             <param name="stack" value="udp"/>
         </antcall>
+        <antcall target="build-clustering-tunnel"/>
     </target>
 
     <!-- Single node tests -->
@@ -276,5 +277,17 @@
 
     </target>
 
+    <target name="build-clustering-tunnel" description="Builds server configuration with JGroups tunnel transport">
+        <antcall target="abstract-build-clustering">
+            <param name="cacheMode" value="ASYNC"/>
+            <param name="stack" value="tunnel"/>
+        </antcall>
+        <ts.config-as.add-tunnel-transport-stack name="wildfly-ASYNC-tunnel-0"
+                                                 stack="tunnel"
+                                                 router-inet-address="${node0}"/>
+        <ts.config-as.add-tunnel-transport-stack name="wildfly-ASYNC-tunnel-1"
+                                                 stack="tunnel"
+                                                 router-inet-address="${node0}"/>
+    </target>
 
 </project>

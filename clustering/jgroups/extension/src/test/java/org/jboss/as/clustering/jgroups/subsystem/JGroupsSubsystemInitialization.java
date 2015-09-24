@@ -36,8 +36,6 @@ import org.jboss.as.controller.registry.Resource;
 public class JGroupsSubsystemInitialization extends AdditionalInitialization {
     private static final long serialVersionUID = -4433079373360352449L;
 
-    private final String module = "jgroups";
-
     public JGroupsSubsystemInitialization() {
         super();
     }
@@ -48,7 +46,7 @@ public class JGroupsSubsystemInitialization extends AdditionalInitialization {
 
     @Override
     protected void initializeExtraSubystemsAndModel(ExtensionRegistry registry, Resource root, ManagementResourceRegistration registration, RuntimeCapabilityRegistry capabilityRegistry) {
-        new JGroupsExtension().initialize(registry.getExtensionContext(this.module, registration, ExtensionRegistryType.MASTER));
+        new JGroupsExtension().initialize(registry.getExtensionContext("jgroups", registration, ExtensionRegistryType.MASTER));
 
         Resource subsystem = Resource.Factory.create();
         subsystem.getModel().get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).set("tcp");

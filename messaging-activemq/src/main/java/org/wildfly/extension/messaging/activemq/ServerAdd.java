@@ -28,10 +28,14 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAST_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.INCOMING_INTERCEPTORS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CHANNEL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_STACK;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.MODULE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.OUTGOING_INTERCEPTORS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECURITY_SETTING;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.PATHS;
@@ -96,6 +100,7 @@ import javax.management.MBeanServer;
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
+import org.apache.activemq.artemis.api.core.Interceptor;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
@@ -119,6 +124,8 @@ import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
@@ -127,6 +134,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.extension.messaging.activemq.jms.JMSService;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 
 /**
@@ -144,7 +152,7 @@ class ServerAdd extends AbstractAddStepHandler {
     public static final ServerAdd INSTANCE = new ServerAdd();
 
     private ServerAdd() {
-        super(ServerDefinition.ATTRIBUTES);
+        super(ACTIVEMQ_SERVER_CAPABILITY, ServerDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -152,13 +160,6 @@ class ServerAdd extends AbstractAddStepHandler {
         ActiveMQServerResource resource = new ActiveMQServerResource();
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
         return resource;
-    }
-
-    @Override
-    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
-
-        context.registerCapability(ACTIVEMQ_SERVER_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue()), null);
     }
 
     @Override
@@ -211,6 +212,8 @@ class ServerAdd extends AbstractAddStepHandler {
                 // Create the ActiveMQ Service
                 final ActiveMQServerService serverService = new ActiveMQServerService(
                         configuration, new ActiveMQServerService.PathConfig(bindingsPath, bindingsRelativeToPath, journalPath, journalRelativeToPath, largeMessagePath, largeMessageRelativeToPath, pagingPath, pagingRelativeToPath));
+                processIncomingInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation), serverService);
+                processOutgoingInterceptors(OUTGOING_INTERCEPTORS.resolveModelAttribute(context, operation), serverService);
 
                 // Add the ActiveMQ Service
                 ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(serverName);
@@ -398,9 +401,6 @@ class ServerAdd extends AbstractAddStepHandler {
 
         processAddressSettings(context, configuration, model);
         processSecuritySettings(context, configuration, model);
-        //process new interceptors
-        processRemotingIncomingInterceptors(context, configuration, model);
-        processRemotingOutgoingInterceptors(context, configuration, model);
 
         // Add in items from child resources
         GroupingHandlerAdd.addGroupingHandlerConfig(context,configuration, model);
@@ -438,33 +438,52 @@ class ServerAdd extends AbstractAddStepHandler {
         }
     }
 
-    /**
-     * Process the ActiveMQ server-side incoming interceptors.
-     */
-    static void processRemotingIncomingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
-        // TODO preemptively check that the interceptor classes can be loaded
-        ModelNode interceptors = params.get(CommonAttributes.REMOTING_INCOMING_INTERCEPTORS.getName());
-        if (interceptors.isDefined()) {
-            final List<String> interceptorClassNames = new ArrayList<String>();
-            for (ModelNode child : interceptors.asList()) {
-                interceptorClassNames.add(child.asString());
+    private List<Class> unwrapClasses(List<ModelNode> classesModel) throws OperationFailedException {
+        List<Class> classes = new ArrayList<>();
+
+        for (ModelNode classModel : classesModel) {
+            String className = classModel.get(NAME).asString();
+            String moduleName = classModel.get(MODULE).asString();
+            try {
+                ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
+                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+                Class<?> clazz = module.getClassLoader().loadClass(className);
+                classes.add(clazz);
+            } catch (Exception e) {
+                throw MessagingLogger.ROOT_LOGGER.unableToLoadClassFromModule(className, moduleName);
             }
-            configuration.setIncomingInterceptorClassNames(interceptorClassNames);
+        }
+
+        return classes;
+    }
+
+    private void processIncomingInterceptors(ModelNode model, ActiveMQServerService serverService) throws OperationFailedException {
+        if (!model.isDefined()) {
+            return;
+        }
+        List<ModelNode> interceptors = model.asList();
+        for (Class clazz : unwrapClasses(interceptors)) {
+            try {
+                Interceptor interceptor = Interceptor.class.cast(clazz.newInstance());
+                serverService.getIncomingInterceptors().add(interceptor);
+            } catch (Exception e) {
+                throw new OperationFailedException(e);
+            }
         }
     }
 
-    /**
-     * Process the ActiveMQ server-side outgoing interceptors.
-     */
-    static void processRemotingOutgoingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
-        // TODO preemptively check that the interceptor classes can be loaded
-        ModelNode interceptors = params.get(CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS.getName());
-        if (interceptors.isDefined()) {
-            final List<String> interceptorClassNames = new ArrayList<String>();
-            for (ModelNode child : interceptors.asList()) {
-                interceptorClassNames.add(child.asString());
+    private void processOutgoingInterceptors(ModelNode model, ActiveMQServerService serverService) throws OperationFailedException {
+        if (!model.isDefined()) {
+            return;
+        }
+        List<ModelNode> interceptors = model.asList();
+        for (Class clazz : unwrapClasses(interceptors)) {
+            try {
+                Interceptor interceptor = Interceptor.class.cast(clazz.newInstance());
+                serverService.getIncomingInterceptors().add(interceptor);
+            } catch (Exception e) {
+                throw new OperationFailedException(e);
             }
-            configuration.setOutgoingInterceptorClassNames(interceptorClassNames);
         }
     }
 

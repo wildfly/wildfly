@@ -91,7 +91,8 @@ public class QueueDefinition extends PersistentResourceDefinition {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.QUEUE),
                 runtimeOnly ? null : QueueAdd.INSTANCE,
-                runtimeOnly ? null : QueueRemove.INSTANCE);
+                runtimeOnly ? null : QueueRemove.INSTANCE,
+                runtimeOnly);
         this.runtimeOnly = runtimeOnly;
     }
 

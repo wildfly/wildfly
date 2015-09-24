@@ -50,7 +50,9 @@ public class DistributableSingleSignOnManagerFactory implements SingleSignOnMana
 
     @Override
     public SingleSignOnManager createSingleSignOnManager(Host host) {
-        IdentifierFactory<String> identifierFactory = new IdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
+        SecureRandomSessionIdGenerator sessionIdGenerator = new SecureRandomSessionIdGenerator();
+        sessionIdGenerator.setLength(host.getServer().getServletContainer().getSessionIdLength());
+        IdentifierFactory<String> identifierFactory = new IdentifierFactoryAdapter(sessionIdGenerator);
         SSOManager<AuthenticatedSession, String, Void, Batch> manager = this.factory.createSSOManager(identifierFactory, this);
         return new DistributableSingleSignOnManager(manager, this.registry);
     }

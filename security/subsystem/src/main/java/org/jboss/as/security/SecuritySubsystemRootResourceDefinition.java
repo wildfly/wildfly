@@ -97,8 +97,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
-
-
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
          resourceRegistration.registerReadWriteAttribute(DEEP_COPY_SUBJECT_MODE, null, new ReloadRequiredWriteAttributeHandler(DEEP_COPY_SUBJECT_MODE));
     }
@@ -172,6 +171,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 AUTHORIZATION_MANAGER, AUDIT_MANAGER, IDENTITY_TRUST_MANAGER, MAPPING_MANAGER);
             target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
                     .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, securityManagementService.getServiceModuleLoaderInjectedValue())
+                    .addDependency(JaasConfigurationService.SERVICE_NAME) // We need to ensure the global JAAS Configuration has been set.
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             // add subject factory service
@@ -202,11 +202,11 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             final SimpleSecurityManagerService simpleSecurityManagerService = new SimpleSecurityManagerService();
 
             target.addService(SimpleSecurityManagerService.SERVICE_NAME, simpleSecurityManagerService)
-                .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                            simpleSecurityManagerService.getSecurityManagementInjector())
+                .addDependency(SecurityManagementService.SERVICE_NAME)
                 .install();
 
             context.addStep(new AbstractDeploymentChainStep() {
+                @Override
                 protected void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JACC_POLICY,
                             new JaccEarDeploymentProcessor());

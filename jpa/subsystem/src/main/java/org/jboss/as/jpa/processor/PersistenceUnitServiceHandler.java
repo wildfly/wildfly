@@ -41,6 +41,8 @@ import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceProviderResolverHolder;
 import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import javax.validation.ValidatorFactory;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -69,6 +71,7 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.service.PhaseOnePersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
+import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -332,6 +335,8 @@ public class PersistenceUnitServiceHandler {
             final PersistenceProviderAdaptor adaptor,
             final boolean allowCdiBeanManagerAccess) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
+        TransactionManager transactionManager = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_MANAGER);
+        TransactionSynchronizationRegistry transactionSynchronizationRegistry = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
         try {
             ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
@@ -410,7 +415,7 @@ public class PersistenceUnitServiceHandler {
             /**
              * handle extension that binds a transaction scoped entity manager to specified JNDI location
              */
-            entityManagerBind(eeModuleDescription, serviceTarget, pu, puServiceName);
+            entityManagerBind(eeModuleDescription, serviceTarget, pu, puServiceName, transactionManager, transactionSynchronizationRegistry);
 
             /**
              * handle extension that binds an entity manager factory to specified JNDI location
@@ -567,6 +572,8 @@ public class PersistenceUnitServiceHandler {
             final PersistenceUnitMetadata pu,
             final PersistenceProvider provider,
             final PersistenceProviderAdaptor adaptor) throws DeploymentUnitProcessingException {
+        TransactionManager transactionManager = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_MANAGER);
+        TransactionSynchronizationRegistry transactionSynchronizationRegistry = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
         pu.setClassLoader(classLoader);
         try {
             ValidatorFactory validatorFactory = null;
@@ -654,7 +661,7 @@ public class PersistenceUnitServiceHandler {
             /**
              * handle extension that binds a transaction scoped entity manager to specified JNDI location
              */
-            entityManagerBind(eeModuleDescription, serviceTarget, pu, puServiceName);
+            entityManagerBind(eeModuleDescription, serviceTarget, pu, puServiceName, transactionManager, transactionSynchronizationRegistry);
 
             /**
              * handle extension that binds an entity manager factory to specified JNDI location
@@ -677,7 +684,7 @@ public class PersistenceUnitServiceHandler {
         }
     }
 
-    private static void entityManagerBind(EEModuleDescription eeModuleDescription, ServiceTarget serviceTarget, final PersistenceUnitMetadata pu, ServiceName puServiceName) {
+    private static void entityManagerBind(EEModuleDescription eeModuleDescription, ServiceTarget serviceTarget, final PersistenceUnitMetadata pu, ServiceName puServiceName, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
         if (pu.getProperties().containsKey(ENTITYMANAGER_JNDI_PROPERTY)) {
             String jndiName = pu.getProperties().get(ENTITYMANAGER_JNDI_PROPERTY).toString();
             final ContextNames.BindInfo bindingInfo;
@@ -701,7 +708,7 @@ public class PersistenceUnitServiceHandler {
                                                 pu.getScopedPersistenceUnitName(),
                                                 Collections.emptyMap(),
                                                 value.getEntityManagerFactory(),
-                                                SynchronizationType.SYNCHRONIZED))));
+                                                SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager))));
                     }
 
                     @Override
@@ -832,10 +839,10 @@ public class PersistenceUnitServiceHandler {
                 // the noop adaptor is returned (can be used against any provider but the integration classes
                 // are handled externally via properties or code in the persistence provider).
                 if (adaptorModule != null) { // legacy way of loading adapter module
-                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule, platform);
+                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule, platform, createManager(deploymentUnit));
                 }
                 else {
-                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider, platform);
+                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider, platform, createManager(deploymentUnit));
                 }
             } catch (ModuleLoadException e) {
                 throw JpaLogger.ROOT_LOGGER.persistenceProviderAdaptorModuleLoadError(e, adaptorModule);
@@ -847,6 +854,10 @@ public class PersistenceUnitServiceHandler {
             throw JpaLogger.ROOT_LOGGER.failedToGetAdapter(pu.getPersistenceProviderClassName());
         }
         return adaptor;
+    }
+
+    private static JtaManagerImpl createManager(DeploymentUnit deploymentUnit) {
+        return new JtaManagerImpl(deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_MANAGER), deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY));
     }
 
     /**

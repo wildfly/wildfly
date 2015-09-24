@@ -5,6 +5,8 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+
 /**
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  * */
@@ -35,21 +37,24 @@ public class TransformUtilsTestCase {
     public void testRejectedOnOffAttributeTurnedOff() throws Exception {
         ModelNode model = new ModelNode();
         model.get("iona").set("off");
-        TransformUtils.checkLegacyModel(model, true);
+        List<String> result =TransformUtils.checkLegacyModel(model);
+        Assert.assertTrue(result.isEmpty());
     }
 
-    @Test(expected = OperationFailedException.class)
+    @Test
     public void testRejectedOnOffAttribute() throws Exception {
         ModelNode model = new ModelNode();
         model.get("iona").set("on");
-        TransformUtils.checkLegacyModel(model, true);
+        List<String> result = TransformUtils.checkLegacyModel(model);
+        Assert.assertFalse(result.isEmpty());
     }
 
-    @Test(expected = OperationFailedException.class)
+    @Test
     public void testRejectedAttribute() throws Exception {
         ModelNode model = new ModelNode();
         model.get("queue-min").set(5);
-        TransformUtils.checkLegacyModel(model, true);
+        List<String> result = TransformUtils.checkLegacyModel(model);
+        Assert.assertFalse(result.isEmpty());
     }
 
 }

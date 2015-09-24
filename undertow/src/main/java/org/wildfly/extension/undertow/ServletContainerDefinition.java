@@ -109,13 +109,13 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(true))
-                    .build(); //30 minutes
+                    .build();
 
     protected static final AttributeDefinition DIRECTORY_LISTING =
             new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY_LISTING, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .build(); //30 minutes
+                    .build();
 
     protected static final AttributeDefinition PROACTIVE_AUTHENTICATION =
             new SimpleAttributeDefinitionBuilder(Constants.PROACTIVE_AUTHENTICATION, ModelType.BOOLEAN, true)
@@ -128,9 +128,16 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.SESSION_ID_LENGTH, ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setValidator(new IntRangeValidator(20, 200, true, true))
+                    .setValidator(new IntRangeValidator(16, 200, true, true))
                     .setDefaultValue(new ModelNode(30))
-                    .build(); //30 minutes
+                    .build();
+
+
+    protected static final AttributeDefinition MAX_SESSIONS =
+            new SimpleAttributeDefinitionBuilder(Constants.MAX_SESSIONS, ModelType.INT, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .build();
 
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
@@ -145,7 +152,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             DISABLE_CACHING_FOR_SECURED_PAGES,
             DIRECTORY_LISTING,
             PROACTIVE_AUTHENTICATION,
-            SESSION_ID_LENGTH
+            SESSION_ID_LENGTH,
+            MAX_SESSIONS
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();

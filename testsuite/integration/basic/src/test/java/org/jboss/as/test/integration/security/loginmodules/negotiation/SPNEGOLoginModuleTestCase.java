@@ -74,13 +74,11 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.integration.security.loginmodules.LdapExtLoginModuleTestCase;
 import org.jboss.logging.Logger;
 import org.jboss.security.SecurityConstants;
-import org.jboss.security.negotiation.NegotiationAuthenticator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -96,7 +94,6 @@ import org.junit.runner.RunWith;
         GSSTestServer.class, //
         SPNEGOLoginModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
-@Ignore("AS7-6796 - Undertow SPNEGO")
 public class SPNEGOLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(SPNEGOLoginModuleTestCase.class);
@@ -263,8 +260,7 @@ public class SPNEGOLoginModuleTestCase {
         war.addClasses(SimpleSecuredServlet.class, SimpleServlet.class, PropagateIdentityServlet.class, GSSTestClient.class,
                 GSSTestConstants.class);
         war.addAsWebInfResource(SPNEGOLoginModuleTestCase.class.getPackage(), webXmlFilename, "web.xml");
-        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(securityDomain, NegotiationAuthenticator.class.getName()),
-                "jboss-web.xml");
+        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(securityDomain), "jboss-web.xml");
         war.addAsManifestResource(
                 Utils.getJBossDeploymentStructure("org.jboss.security.negotiation", "org.apache.commons.lang"),
                 "jboss-deployment-structure.xml");
@@ -334,6 +330,7 @@ public class SPNEGOLoginModuleTestCase {
          * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
          *      java.lang.String)
          */
+        @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             try {
                 if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -374,6 +371,7 @@ public class SPNEGOLoginModuleTestCase {
          * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
          *      java.lang.String)
          */
+        @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             kdcServer.stop();
             directoryService.shutdown();

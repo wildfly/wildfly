@@ -33,6 +33,7 @@ import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.ModuleClassLoaderLocator;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -53,6 +54,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Anil Saldhana
  */
 public class SecurityBootstrapService implements Service<Void> {
+
+    static final String JACC_MODULE = "org.jboss.as.security.jacc-module";
 
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("bootstrap");
 
@@ -82,8 +85,9 @@ public class SecurityBootstrapService implements Service<Void> {
 
             // Get the current Policy impl
             oldPolicy = Policy.getPolicy();
+            String module = WildFlySecurityManager.getPropertyPrivileged(JACC_MODULE, null);
             String provider = WildFlySecurityManager.getPropertyPrivileged(JACC_POLICY_PROVIDER, "org.jboss.security.jacc.DelegatingPolicy");
-            Class<?> providerClass = SecurityActions.loadClass(provider);
+            Class<?> providerClass = loadClass(module, provider);
             try {
                 // Look for a ctor(Policy) signature
                 Class<?>[] ctorSig = { Policy.class };
@@ -120,6 +124,14 @@ public class SecurityBootstrapService implements Service<Void> {
         } catch (Exception e) {
             throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);
         }
+    }
+
+    private Class<?> loadClass(final String module, final String className) throws ClassNotFoundException, ModuleLoadException {
+        if (module != null) {
+            return SecurityActions.getModuleClassLoader(module).loadClass(className);
+        }
+
+        return SecurityActions.loadClass(className);
     }
 
     /** {@inheritDoc} */

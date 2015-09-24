@@ -63,7 +63,7 @@
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:UNORDERED}"/>
             <expiration interval="${test.xxx:10000}" lifespan="${test.xxx:10}" max-idle="${test.xxx:10}"/>
             <state-transfer timeout="${test.xxx:60000}" chunk-size="${test.xxx:10000}"/>
-            <mixed-keyed-jdbc-store datasource="${test.xxx:java:jboss/jdbc/store}" fetch-state="${test.xxx:false}" passivation="${test.xxx:false}" preload="${test.xxx:true}" purge="${test.xxx:false}" shared="${tst.xxx:true}" singleton="${test.xxx:true}">
+            <mixed-keyed-jdbc-store data-source="ExampleDS" fetch-state="${test.xxx:false}" passivation="${test.xxx:false}" preload="${test.xxx:true}" purge="${test.xxx:false}" shared="${tst.xxx:true}" singleton="${test.xxx:true}">
                 <write-behind modification-queue-size="${test.xxx:2048}" thread-pool-size="${test.xxx:1}"/>
                 <string-keyed-table prefix="${test.xxx:ispn_bucket}" batch-size="${tst.xxx:100}" fetch-size="${test.xxx:100}">
                     <id-column name="${test.xxx:id}" type="${test.xxx:VARCHAR}"/>

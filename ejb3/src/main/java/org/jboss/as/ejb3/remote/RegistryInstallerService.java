@@ -28,7 +28,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 
@@ -36,15 +35,20 @@ public class RegistryInstallerService implements Service<Void> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remoting", "connector", "client-mappings", "installer");
 
+    private final String clientMappingsClusterName;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<RegistryCollector> collector = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Registry> registry = new InjectedValue<>();
 
+    public RegistryInstallerService(String clientMappingsClusterName) {
+        this.clientMappingsClusterName = clientMappingsClusterName;
+    }
+
     public ServiceBuilder<Void> build(ServiceTarget target) {
         return target.addService(SERVICE_NAME, this)
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, this.collector)
-                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME), Registry.class, this.registry)
+                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(this.clientMappingsClusterName), Registry.class, this.registry)
         ;
     }
 

@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.web.session;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -43,7 +43,7 @@ public class HttpSessionAdapter extends ImmutableHttpSessionAdapter {
 
     @Override
     public void setMaxInactiveInterval(int interval) {
-        this.session.getMetaData().setMaxInactiveInterval(interval, TimeUnit.SECONDS);
+        this.session.getMetaData().setMaxInactiveInterval(Duration.ofSeconds(interval));
     }
 
     @Override

@@ -23,6 +23,8 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -89,45 +91,37 @@ public class SessionExpirationScheduler implements Scheduler {
 
     @Override
     public void schedule(ImmutableSession session) {
-        long timeout = session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS);
-        if (timeout > 0) {
-            long lastAccessed = session.getMetaData().getLastAccessedTime().getTime();
-            long delay = Math.max(lastAccessed + timeout - System.currentTimeMillis(), 0);
+        Duration maxInactiveInterval = session.getMetaData().getMaxInactiveInterval();
+        if (!maxInactiveInterval.isZero()) {
+            Instant lastAccessed = session.getMetaData().getLastAccessedTime();
+            Duration delay = Duration.between(Instant.now(), lastAccessed.plus(maxInactiveInterval));
             String id = session.getId();
             Runnable task = new ExpirationTask(id);
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d ms", id, timeout);
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d sec", id, maxInactiveInterval.getSeconds());
             synchronized (task) {
-                this.expirationFutures.put(id, this.executor.schedule(task, delay, TimeUnit.MILLISECONDS));
+                this.expirationFutures.put(id, this.executor.schedule(task, !delay.isNegative() ? delay.getSeconds() : 0, TimeUnit.SECONDS));
             }
         }
     }
 
     @Override
     public void cancel(Locality locality) {
-        for (String sessionId: this.expirationFutures.keySet()) {
-            if (!locality.isLocal(sessionId)) {
-                this.cancel(sessionId);
-            }
-        }
+        this.expirationFutures.keySet().stream().filter(sessionId -> !locality.isLocal(sessionId)).forEach(sessionId -> this.cancel(sessionId));
     }
 
     @Override
     public void close() {
         this.executor.shutdown();
-        for (Future<?> future: this.expirationFutures.values()) {
-            future.cancel(false);
-        }
-        for (Future<?> future: this.expirationFutures.values()) {
-            if (!future.isDone()) {
-                try {
-                    future.get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException e) {
-                    // Ignore
-                }
+        this.expirationFutures.values().forEach(future -> future.cancel(false));
+        this.expirationFutures.values().stream().filter(future -> !future.isDone()).forEach(future -> {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+                // Ignore
             }
-        }
+        });
         this.expirationFutures.clear();
     }
 

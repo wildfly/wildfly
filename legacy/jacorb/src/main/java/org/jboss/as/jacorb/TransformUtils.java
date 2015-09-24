@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.wildfly.iiop.openjdk.Constants;
@@ -18,7 +17,7 @@ public class TransformUtils {
     private TransformUtils() {
     }
 
-    static List<String> checkLegacyModel(final ModelNode model, final boolean failOnErrors) throws OperationFailedException {
+    static List<String> checkLegacyModel(final ModelNode model) throws OperationFailedException {
         final List<String> propertiesToReject = new LinkedList<>();
         for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ON_OFF_ATTRIBUTES_TO_REJECT) {
             if (model.hasDefined(attribute.getName())
@@ -31,13 +30,6 @@ public class TransformUtils {
                 propertiesToReject.add(attribute.getName());
             }
         }
-        if (!propertiesToReject.isEmpty()) {
-            if(failOnErrors) {
-                throw JacORBLogger.ROOT_LOGGER.cannotEmulateProperties(propertiesToReject);
-            } else {
-                JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(propertiesToReject);
-            }
-        }
         return propertiesToReject;
     }
 
@@ -47,6 +39,10 @@ public class TransformUtils {
             String name = property.getName();
             final ModelNode legacyValue = property.getValue();
             if (legacyValue.isDefined()) {
+                if(name.equals(JacORBSubsystemConstants.IOR_SETTINGS)){
+                    transformIorSettings(model, legacyValue);
+                    continue;
+                }
                 final ModelNode value;
                 switch (name) {
                     case JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION:
@@ -87,5 +83,14 @@ public class TransformUtils {
             }
         }
         return model;
+    }
+
+    private static void transformIorSettings(final ModelNode model, final ModelNode legacyValue) {
+        for (final Property category : legacyValue.get(JacORBSubsystemConstants.DEFAULT).get(JacORBSubsystemConstants.SETTING)
+                .asPropertyList()) {
+            for (final Property property : category.getValue().asPropertyList()) {
+                model.get(property.getName()).set(property.getValue());
+            }
+        }
     }
 }

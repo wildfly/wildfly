@@ -35,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.junit.Ignore;
 import org.wildfly.test.api.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
@@ -124,6 +125,7 @@ public class EjbRemoveUnitTestCase {
      * the CountedSessionBean1 is not referenced to any specific pool and as a default behaviour the been won't be pooled.
      */
     @Test
+    @Ignore("Pooling is on by default")
     @OperateOnDeployment("beans")
     public void testEjbRemoveCalledForEveryCall() throws Exception {
 

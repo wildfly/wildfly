@@ -81,7 +81,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
     private final Attribute queueLength;
     private final Attribute keepAliveTime;
 
-    private ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
+    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
         this.name = name;
         this.prefix = prefix;
         this.descriptionResolver = new JGroupsResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE));

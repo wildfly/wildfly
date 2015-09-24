@@ -42,8 +42,8 @@
                 <filter-ref name="404-handler"/>
                 <filter-ref name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']"/>
             </location>
-            <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access" rotate="false"/>
-            <single-sign-on domain="${prop.domain:myDomain}" http-only="true" secure="true" path="/" cookie-name="SSOID"/>
+            <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access" rotate="false" predicate="not path-suffix[*.css]"/>
+            <single-sign-on domain="${prop.domain:myDomain}" http-only="true" secure="true" path="/path" cookie-name="SSOID"/>
         </host>
         <host name="other-host" alias="www.mysite.com, ${prop.value:default-alias}" default-web-module="something.war" disable-console-redirect="true">
             <location name="/" handler="welcome-content">
@@ -78,7 +78,8 @@
                 target-vm="${prop.target-vm:1.7}"
                 java-encoding="${prop.java-encoding:utf-8}"
                 x-powered-by="${prop.x-powered-by:true}"
-                display-source-fragment="${prop.display-source-fragment:true}"/>
+                display-source-fragment="${prop.display-source-fragment:true}"
+                optimize-scriptlets="${prop.optimise-scriptlets:true}"/>
         <session-cookie name="MYSESSIONCOOKIE"
                         domain="example.com"
                         comment="session cookie"

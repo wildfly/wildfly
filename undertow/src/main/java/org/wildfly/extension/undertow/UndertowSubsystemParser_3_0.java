@@ -105,7 +105,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                                 )
                                                 ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
-                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.RELATIVE_TO, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE, AccessLogDefinition.USE_SERVER_LOG)
+                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.RELATIVE_TO, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE, AccessLogDefinition.USE_SERVER_LOG, AccessLogDefinition.EXTENDED, AccessLogDefinition.PREDICATE)
                                         ).addChild(
                                                 builder(FilterRefDefinition.INSTANCE)
                                                         .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
@@ -129,6 +129,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.DIRECTORY_LISTING)
                                 .addAttribute(ServletContainerDefinition.PROACTIVE_AUTHENTICATION)
                                 .addAttribute(ServletContainerDefinition.SESSION_ID_LENGTH)
+                                .addAttribute(ServletContainerDefinition.MAX_SESSIONS)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
@@ -151,7 +152,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         JspDefinition.TARGET_VM,
                                                         JspDefinition.JAVA_ENCODING,
                                                         JspDefinition.X_POWERED_BY,
-                                                        JspDefinition.DISPLAY_SOURCE_FRAGMENT)
+                                                        JspDefinition.DISPLAY_SOURCE_FRAGMENT,
+                                                        JspDefinition.OPTIMIZE_SCRIPTLETS)
                                 )
                                 .addChild(
                                         builder(SessionCookieDefinition.INSTANCE)

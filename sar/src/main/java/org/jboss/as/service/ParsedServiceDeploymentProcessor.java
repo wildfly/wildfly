@@ -130,7 +130,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final String mBeanName = mBeanConfig.getName();
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, deploymentUnit.getAttachmentList(Attachments.SETUP_ACTIONS), classLoader, mbeanServerServiceName);
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS), classLoader, mbeanServerServiceName);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         addDependencies(dependencyConfigs, mBeanClassHierarchy, mBeanServices);

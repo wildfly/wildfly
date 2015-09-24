@@ -26,6 +26,7 @@ import io.undertow.Handlers;
 import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.security.api.AuthenticationMode;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -62,6 +63,7 @@ import io.undertow.servlet.handlers.ServletPathMatches;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
+
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -149,6 +151,7 @@ import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
+import org.wildfly.extension.undertow.security.jaspi.JASPICInitialHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
@@ -161,6 +164,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -173,6 +177,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
@@ -407,6 +412,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 deploymentInfo.addInitialHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint));
             }
 
+            container.getValue().getAuthenticationMechanisms().entrySet().forEach(
+                            (Entry<String, AuthenticationMechanismFactory> e) -> deploymentInfo.addAuthenticationMechanism(e.getKey(), e.getValue()));
+
             this.deploymentInfo = deploymentInfo;
         } finally {
             Thread.currentThread().setContextClassLoader(oldTccl);
@@ -461,8 +469,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             LoginConfig loginConfig = deploymentInfo.getLoginConfig();
             if (loginConfig != null && loginConfig.getAuthMethods().size() > 0)
                 authMethod = loginConfig.getAuthMethods().get(0).getName();
-
-            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain, authMethod));
+            deploymentInfo.addSecurityWrapper(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler handler) {
+                    return new JASPICInitialHandler(securityDomain, handler);
+                }
+            });
+            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(authMethod, securityDomain));
             deploymentInfo.setSecurityContextFactory(new JASPICSecurityContextFactory(this.securityDomain));
         }
     }

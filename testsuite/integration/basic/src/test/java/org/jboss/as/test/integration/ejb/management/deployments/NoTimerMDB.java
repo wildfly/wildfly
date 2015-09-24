@@ -26,6 +26,7 @@ import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
+import javax.jms.JMSDestinationDefinition;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
@@ -36,9 +37,13 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@JMSDestinationDefinition(
+        name="java:/queue/NoTimerMDB-queue",
+        interfaceName = "javax.jms.Queue"
+)
 @MessageDriven(activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/queue/test")
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/queue/NoTimerMDB-queue")
 })
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})

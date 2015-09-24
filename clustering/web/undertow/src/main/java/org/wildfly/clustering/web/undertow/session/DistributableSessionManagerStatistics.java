@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.wildfly.clustering.web.session.ActiveSessionStatistics;
@@ -85,12 +84,12 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
 
     @Override
     public long getMaxSessionAliveTime() {
-        return this.inactiveSessionStatistics.getMaxSessionLifetime(TimeUnit.MILLISECONDS);
+        return this.inactiveSessionStatistics.getMaxSessionLifetime().toMillis();
     }
 
     @Override
     public long getAverageSessionAliveTime() {
-        return this.inactiveSessionStatistics.getMeanSessionLifetime(TimeUnit.MILLISECONDS);
+        return this.inactiveSessionStatistics.getMeanSessionLifetime().toMillis();
     }
 
     @Override

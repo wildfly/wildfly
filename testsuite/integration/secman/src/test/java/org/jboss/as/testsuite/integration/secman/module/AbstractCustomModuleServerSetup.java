@@ -57,6 +57,7 @@ public abstract class AbstractCustomModuleServerSetup implements ServerSetupTask
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         LOGGER.info("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
         FileUtils.deleteDirectory(WORK_DIR);
+        removeModule(getModuleSuffix());
         WORK_DIR.mkdirs();
 
         ShrinkWrap.create(JavaArchive.class, MODULE_JAR).addClass(CheckJSMUtils.class)

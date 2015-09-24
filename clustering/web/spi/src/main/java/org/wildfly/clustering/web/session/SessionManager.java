@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.web.session;
 
+import java.time.Duration;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
@@ -56,18 +56,16 @@ public interface SessionManager<L, B extends Batch> extends IdentifierFactory<St
     Session<L> createSession(String id);
 
     /**
-     * Returns the default maximum inactive interval, using the specified unit, for all sessions created by this session manager.
-     * @param unit a time unit
-     * @return a time interval
+     * Returns the default maximum inactive interval, as a duration, for all sessions created by this session manager.
+     * @return a duration
      */
-    long getDefaultMaxInactiveInterval(TimeUnit unit);
+    Duration getDefaultMaxInactiveInterval();
 
     /**
-     * Set the default maximum inactive interval, using the specified unit, for all sessions created by this session manager.
-     * @return value a time interval
-     * @param unit a time unit
+     * Set the default maximum inactive interval, using the specified time duration, for all sessions created by this session manager.
+     * @param duration a time duration
      */
-    void setDefaultMaxInactiveInterval(long value, TimeUnit unit);
+    void setDefaultMaxInactiveInterval(Duration duration);
 
     /**
      * Exposes the batching mechanism used by this session manager.
