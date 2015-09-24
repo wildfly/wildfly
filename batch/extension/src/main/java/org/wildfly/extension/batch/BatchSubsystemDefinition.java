@@ -195,7 +195,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             final ServiceTarget target = context.getServiceTarget();
             final JobExecutorService service = new JobExecutorService();
             target.addService(context.getCapabilityServiceName(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY.getName(), JobExecutor.class), service)
-                    .addDependency(BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME,
+                    .addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME,
                             ManagedJBossThreadPoolExecutorService.class,
                             service.getThreadPoolInjector()
                     )
