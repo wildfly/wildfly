@@ -104,11 +104,6 @@ public class DomainContextRealm implements SecurityRealm {
         }
 
         @Override
-        public String getName() {
-            return this.identityName;
-        }
-
-        @Override
         public CredentialSupport getCredentialSupport(final Class<?> credentialType, final String algorithmName) throws RealmUnavailableException {
             return DomainContextRealm.this.getCredentialSupport(credentialType, algorithmName);
         }
