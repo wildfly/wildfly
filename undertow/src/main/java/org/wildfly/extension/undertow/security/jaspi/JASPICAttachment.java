@@ -14,7 +14,7 @@ class JASPICAttachment {
 
     public static final AttachmentKey<JASPICAttachment> ATTACHMENT_KEY = AttachmentKey.create(JASPICAttachment.class);
 
-    private final boolean isValid;
+    private Boolean valid;
     private final ServletRequestContext requestContext;
     private final JASPIServerAuthenticationManager sam;
     private final GenericMessageInfo messageInfo;
@@ -23,7 +23,7 @@ class JASPICAttachment {
     private final Account cachedAccount;
 
     JASPICAttachment(boolean isValid, ServletRequestContext requestContext, JASPIServerAuthenticationManager sam, GenericMessageInfo messageInfo, String applicationIdentifier, JASPICallbackHandler cbh, Account cachedAccount) {
-        this.isValid = isValid;
+        this.valid = isValid;
         this.requestContext = requestContext;
         this.sam = sam;
         this.messageInfo = messageInfo;
@@ -32,8 +32,8 @@ class JASPICAttachment {
         this.cachedAccount = cachedAccount;
     }
 
-    public boolean isValid() {
-        return isValid;
+    public boolean getValid() {
+        return valid;
     }
 
     public ServletRequestContext getRequestContext() {
@@ -58,5 +58,9 @@ class JASPICAttachment {
 
     public Account getCachedAccount() {
         return cachedAccount;
+    }
+
+    public void setValid(Boolean isValid) {
+        this.valid = isValid;
     }
 }
