@@ -225,6 +225,12 @@ public class TransportConfigOperationHandlers {
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, ACCEPTOR_KEYS_MAP);
                 final String clazz = config.get(FACTORY_CLASS.getName()).asString();
+                ModelNode socketBinding = GenericTransportDefinition.SOCKET_BINDING.resolveModelAttribute(context, config);
+                if (socketBinding.isDefined()) {
+                    bindings.add(socketBinding.asString());
+                    // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
+                    parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), socketBinding.asString());
+                }
                 acceptors.put(acceptorName, new TransportConfiguration(clazz, parameters, acceptorName));
             }
         }
@@ -297,6 +303,12 @@ public class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, CONNECTORS_KEYS_MAP);
+                ModelNode socketBinding = GenericTransportDefinition.SOCKET_BINDING.resolveModelAttribute(context, config);
+                if (socketBinding.isDefined()) {
+                    bindings.add(socketBinding.asString());
+                    // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
+                    parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), socketBinding.asString());
+                }
                 final String clazz = FACTORY_CLASS.resolveModelAttribute(context, config).asString();
                 connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
             }
