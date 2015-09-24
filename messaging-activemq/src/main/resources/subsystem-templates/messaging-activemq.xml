@@ -91,12 +91,12 @@
             <broadcast-group name="bg-group1"
                              connectors="http-connector"
                              jgroups-stack="udp"
-                             jgroups-channel="activemq-cluster"/>
+                             jgroups-channel="ee"/>
         </replacement>
         <replacement placeholder="DISCOVERY-GROUPS">
             <discovery-group name="dg-group1"
                              jgroups-stack="udp"
-                             jgroups-channel="activemq-cluster"/>
+                             jgroups-channel="ee"/>
         </replacement>
         <replacement placeholder="CLUSTER-CONNECTIONS">
                 <cluster-connection name="my-cluster"
