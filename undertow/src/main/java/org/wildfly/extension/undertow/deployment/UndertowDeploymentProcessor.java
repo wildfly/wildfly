@@ -400,7 +400,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     private static ServiceName installSessionManagerFactory(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, Module module, JBossWebMetaData metaData, ServletContainerService servletContainerService) {
 
         Integer maxActiveSessions = metaData.getMaxActiveSessions();
-        if(maxActiveSessions == null) {
+        if(maxActiveSessions == null && servletContainerService != null) {
             maxActiveSessions = servletContainerService.getMaxSessions();
         }
         ServiceName name = deploymentServiceName.append("session");
