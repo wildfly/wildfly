@@ -30,7 +30,6 @@ import io.undertow.util.AttachmentKey;
 
 import io.undertow.util.StatusCodes;
 import org.jboss.security.SecurityConstants;
-import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.identity.plugins.SimpleRole;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
@@ -45,6 +44,7 @@ import java.util.Set;
 import org.jboss.security.auth.callback.JASPICallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
+import org.wildfly.extension.undertow.security.UndertowSecurityAttachments;
 
 import javax.security.auth.message.AuthException;
 
@@ -65,6 +65,8 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
     public static final AttachmentKey<HttpServerExchange> HTTP_SERVER_EXCHANGE_ATTACHMENT_KEY = AttachmentKey.create(HttpServerExchange.class);
     public static final AttachmentKey<SecurityContext> SECURITY_CONTEXT_ATTACHMENT_KEY = AttachmentKey.create(SecurityContext.class);
+
+    public static final int DEFAULT_ERROR_CODE = StatusCodes.UNAUTHORIZED;
 
     private final String configuredAuthMethod;
 
@@ -111,9 +113,9 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
             sc.authenticationFailed("JASPIC authentication failed.", authType);
 
-            final Object ex = SecurityContextAssociation.getSecurityContext().getData().get(AuthException.class.getName());
-            if (exchange.getResponseCode() == StatusCodes.OK && ex != null) {
-                exchange.setResponseCode(StatusCodes.INTERNAL_SERVER_ERROR);
+            // make sure we don't return status OK if the AuthException was thrown
+            if (wasAuthExceptionThrown(exchange) && !statusIndicatesError(exchange)) {
+                exchange.setResponseCode(DEFAULT_ERROR_CODE);
             }
         }
 
@@ -173,5 +175,13 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
      */
     private Boolean isMandatory(final ServletRequestContext attachment) {
         return attachment.getExchange().getSecurityContext() != null && attachment.getExchange().getSecurityContext().isAuthenticationRequired();
+    }
+
+    private boolean wasAuthExceptionThrown(HttpServerExchange exchange) {
+        return exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT).getData().get(AuthException.class.getName()) != null;
+    }
+
+    private boolean statusIndicatesError(HttpServerExchange exchange) {
+        return exchange.getResponseCode() != StatusCodes.OK;
     }
 }
