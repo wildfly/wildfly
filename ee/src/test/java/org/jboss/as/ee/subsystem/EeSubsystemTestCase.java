@@ -66,7 +66,35 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-ee_3_0.xsd";
+        return "schema/jboss-as-ee_4_0.xsd";
+    }
+
+    @Test
+    public void testTransformers800() throws Exception {
+        final ModelVersion legacyModelVersion = ModelVersion.create(3, 0, 0);
+        final ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.WILDFLY_8_2_0_FINAL;
+
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, legacyModelVersion)
+                .addMavenResourceURL("org.wildfly:wildfly-ee:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(legacyModelVersion);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> bootOps = builder.parseXmlResource("subsystem-wf8-transformer.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(
+                mainServices,
+                legacyModelVersion,
+                bootOps,
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, ManagedExecutorServiceResourceDefinition.INSTANCE.getPathElement()),
+                                new RejectUndefinedAttribute(new ModelNode(Integer.MAX_VALUE), ManagedExecutorServiceResourceDefinition.CORE_THREADS_AD.getName()))
+                        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, ManagedScheduledExecutorServiceResourceDefinition.INSTANCE.getPathElement()),
+                                new RejectUndefinedAttribute(new ModelNode(Integer.MAX_VALUE), ManagedScheduledExecutorServiceResourceDefinition.CORE_THREADS_AD.getName())));
     }
 
     @Test
@@ -358,6 +386,30 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                 module.remove(SERVICES);
             }
             return toResolve;
+        }
+    }
+
+    private static class RejectUndefinedAttribute extends AttributesPathAddressConfig<RejectUndefinedAttribute> {
+        private final ModelNode replacementValue;
+
+        private RejectUndefinedAttribute(final ModelNode replacementValue, final String... attributes) {
+            super(attributes);
+            this.replacementValue = replacementValue;
+        }
+
+        @Override
+        protected boolean isAttributeWritable(final String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(final String attrName, final ModelNode attribute, final boolean isWriteAttribute) {
+            return !attribute.isDefined();
+        }
+
+        @Override
+        protected ModelNode correctValue(final ModelNode toResolve, final boolean isWriteAttribute) {
+            return replacementValue.clone();
         }
     }
 
