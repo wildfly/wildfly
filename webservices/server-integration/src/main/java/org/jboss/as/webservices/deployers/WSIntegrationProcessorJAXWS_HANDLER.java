@@ -90,7 +90,6 @@ public final class WSIntegrationProcessorJAXWS_HANDLER extends AbstractIntegrati
             }
 
             if (classInfo != null && isJaxwsEndpoint(classInfo, index, false)) {
-                unit.putAttachment(WSAttachmentKeys.WEB_SERVICES_DEPLOYMENT, true);
                 final String endpointClassName = classInfo.name().toString();
                 final ConfigResolver configResolver = new ConfigResolver(classInfo, jbossWebservicesMD, jwmd, root, war);
                 final EndpointConfig config = configResolver.resolveEndpointConfig();
