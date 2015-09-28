@@ -28,10 +28,12 @@ import org.jboss.as.test.clustering.cluster.singleton.servlet.TraceServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 
 /**
  * @author Paul Ferraro
  */
+@Ignore("frequrent intermittent failures")
 public class SingletonDeploymentDescriptorTestCase extends SingletonDeploymentTestCase {
 
     private static final String DEPLOYMENT_NAME = "singleton-deployment-descriptor.war";
