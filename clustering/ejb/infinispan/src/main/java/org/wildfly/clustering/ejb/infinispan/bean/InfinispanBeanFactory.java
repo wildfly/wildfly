@@ -85,9 +85,7 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
 
     @Override
     public BeanEntry<G> createValue(I id, G groupId) {
-        BeanEntry<G> entry = new InfinispanBeanEntry<>(groupId);
-        BeanEntry<G> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(this.createKey(id), entry);
-        return (existing != null) ? existing : entry;
+        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(this.createKey(id), key -> new InfinispanBeanEntry<>(groupId));
     }
 
     @Override

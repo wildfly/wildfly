@@ -21,8 +21,7 @@
  */
 package org.wildfly.clustering.ejb.infinispan.group;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -58,10 +57,7 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
 
     @Override
     public BeanGroupEntry<I, T> createValue(G id, Void context) {
-        Map<I, T> beans = new HashMap<>();
-        BeanGroupEntry<I, T> entry = new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(beans));
-        BeanGroupEntry<I, T> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(id, entry);
-        return (existing != null) ? existing : entry;
+        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(id, key -> new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(new ConcurrentHashMap<>())));
     }
 
     @Override

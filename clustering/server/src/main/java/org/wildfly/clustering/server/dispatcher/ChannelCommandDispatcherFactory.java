@@ -91,13 +91,14 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         this.dispatcher.setChannel(channel);
         this.dispatcher.setRequestHandler(this);
         this.dispatcher.setMembershipListener(this);
-        this.dispatcher.start();
+        this.dispatcher.asyncDispatching(true).start();
         this.view.compareAndSet(null, channel.getView());
     }
 
     @Override
     public void close() {
         this.dispatcher.stop();
+        this.dispatcher.getChannel().setUpHandler(null);
     }
 
     @Override

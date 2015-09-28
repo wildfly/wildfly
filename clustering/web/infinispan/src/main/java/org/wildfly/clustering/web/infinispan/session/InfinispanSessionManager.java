@@ -190,8 +190,8 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         this.invoker.invoke(() -> {
             // This should only go remote following a failover
             Node node = this.locatePrimaryOwner(session);
-            return this.dispatcher.executeOnNode(command, node).get();
-        });
+            return this.dispatcher.executeOnNode(command, node);
+        }).get();
     }
 
     private Node locatePrimaryOwner(ImmutableSession session) {
