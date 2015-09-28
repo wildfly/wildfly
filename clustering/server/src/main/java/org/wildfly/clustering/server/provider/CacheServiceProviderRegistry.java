@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.util.CloseableIterator;
@@ -35,7 +36,6 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
-import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.ee.Batch;
@@ -123,8 +123,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     }
 
     void register(Node node, T service) {
-        Set<Node> nodes = new ConcurrentHashSet<>();
-        nodes.add(node);
+        Set<Node> nodes = new CopyOnWriteArraySet<>(Collections.singleton(node));
         Set<Node> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
         if (existing != null) {
             if (existing.add(node)) {
@@ -169,9 +168,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                     try (Batch batch = this.batcher.createBatch()) {
                         for (Node node: newNodes) {
                             // Re-assert services for new members following merge since these may have been lost following split
-                            for (T service: CacheServiceProviderRegistry.this.getServices(node)) {
-                                this.register(node, service);
-                            }
+                            CacheServiceProviderRegistry.this.getServices(node).forEach(service -> this.register(node, service));
                         }
                     }
                 }
