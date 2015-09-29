@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -46,19 +47,20 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private static final int MAX_SESSION_ID_GENERATION_ATTEMPTS = 10;
 
     private final String deploymentName;
-    private final SessionListeners sessionListeners = new SessionListeners();
+    private final SessionListeners listeners;
     private final SessionManager<LocalSessionContext, Batch> manager;
     private final RecordableSessionManagerStatistics statistics;
 
-    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager, RecordableSessionManagerStatistics statistics) {
+    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager, SessionListeners listeners, RecordableSessionManagerStatistics statistics) {
         this.deploymentName = deploymentName;
         this.manager = manager;
+        this.listeners = listeners;
         this.statistics = statistics;
     }
 
     @Override
     public SessionListeners getSessionListeners() {
-        return this.sessionListeners;
+        return this.listeners;
     }
 
     @Override
@@ -99,11 +101,12 @@ public class DistributableSessionManager implements UndertowSessionManager {
             config.setSessionId(exchange, id);
         }
 
-        Batch batch = this.manager.getBatcher().createBatch();
+        Batcher<Batch> batcher = this.manager.getBatcher();
+        Batch batch = batcher.createBatch();
         try {
             Session<LocalSessionContext> session = this.manager.createSession(id);
             io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batch);
-            this.sessionListeners.sessionCreated(adapter, exchange);
+            this.listeners.sessionCreated(adapter, exchange);
             if (this.statistics != null) {
                 this.statistics.record(adapter);
             }
@@ -111,6 +114,11 @@ public class DistributableSessionManager implements UndertowSessionManager {
         } catch (RuntimeException | Error e) {
             batch.discard();
             throw e;
+        } finally {
+            if (batch.isActive()) {
+                // Always disassociate the batch with the thread
+                batcher.suspendBatch();
+            }
         }
     }
 
@@ -119,7 +127,8 @@ public class DistributableSessionManager implements UndertowSessionManager {
         String id = config.findSessionId(exchange);
         if (id == null) return null;
 
-        Batch batch = this.manager.getBatcher().createBatch();
+        Batcher<Batch> batcher = this.manager.getBatcher();
+        Batch batch = batcher.createBatch();
         try {
             Session<LocalSessionContext> session = this.manager.findSession(id);
             if (session == null) {
@@ -128,19 +137,26 @@ public class DistributableSessionManager implements UndertowSessionManager {
             }
             return new DistributableSession(this, session, config, batch);
         } catch (RuntimeException | Error e) {
-            batch.discard();
+            if (batch.isActive()) {
+                batch.discard();
+            }
             throw e;
+        } finally {
+            if (batch.isActive()) {
+                // Always disassociate the batch with the thread
+                batcher.suspendBatch();
+            }
         }
     }
 
     @Override
     public void registerSessionListener(SessionListener listener) {
-        this.sessionListeners.addSessionListener(listener);
+        this.listeners.addSessionListener(listener);
     }
 
     @Override
     public void removeSessionListener(SessionListener listener) {
-        this.sessionListeners.removeSessionListener(listener);
+        this.listeners.removeSessionListener(listener);
     }
 
     @Override

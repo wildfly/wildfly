@@ -92,8 +92,9 @@ public class CoarseSessionAttributesFactory implements SessionAttributesFactory<
     }
 
     @Override
-    public void remove(String id) {
+    public boolean remove(String id) {
         this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributesKey(id));
+        return true;
     }
 
     @Override

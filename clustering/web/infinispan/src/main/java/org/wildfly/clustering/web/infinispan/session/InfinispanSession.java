@@ -30,7 +30,6 @@ import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
-import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
@@ -46,8 +45,8 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
     private final Remover<String> remover;
     private final AtomicBoolean valid = new AtomicBoolean(true);
 
-    public InfinispanSession(String id, SessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, SessionContext context, Remover<String> remover) {
-        super(id, metaData, attributes, context);
+    public InfinispanSession(String id, SessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
+        super(id, metaData, attributes);
         this.metaData = metaData;
         this.attributes = attributes;
         this.localContext = localContext;

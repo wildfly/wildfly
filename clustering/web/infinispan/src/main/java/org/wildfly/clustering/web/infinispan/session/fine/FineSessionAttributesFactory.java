@@ -89,8 +89,9 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Ob
     }
 
     @Override
-    public void remove(String id) {
+    public boolean remove(String id) {
         this.cache.getAdvancedCache().removeGroup(id);
+        return true;
     }
 
     @Override

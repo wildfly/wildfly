@@ -35,7 +35,6 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
-import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
@@ -44,10 +43,9 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 public class InfinispanSessionFactoryTestCase {
     private final SessionMetaDataFactory<InfinispanSessionMetaData<Object>, Object> metaDataFactory = mock(SessionMetaDataFactory.class);
     private final SessionAttributesFactory<Object> attributesFactory = mock(SessionAttributesFactory.class);
-    private final SessionContext context = mock(SessionContext.class);
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
 
-    private final SessionFactory<InfinispanSessionMetaData<Object>, Object, Object> factory = new InfinispanSessionFactory<>(this.metaDataFactory, this.attributesFactory, this.context, this.localContextFactory);
+    private final SessionFactory<InfinispanSessionMetaData<Object>, Object, Object> factory = new InfinispanSessionFactory<>(this.metaDataFactory, this.attributesFactory, this.localContextFactory);
 
     @Test
     public void createValue() {
@@ -102,9 +100,16 @@ public class InfinispanSessionFactoryTestCase {
     public void remove() {
         String id = "id";
 
+        when (this.metaDataFactory.remove(id)).thenReturn(false);
+
         this.factory.remove(id);
 
-        verify(this.metaDataFactory).remove(id);
+        verify(this.attributesFactory, never()).remove(id);
+
+        when (this.metaDataFactory.remove(id)).thenReturn(true);
+
+        this.factory.remove(id);
+
         verify(this.attributesFactory).remove(id);
     }
 
@@ -146,7 +151,6 @@ public class InfinispanSessionFactoryTestCase {
         assertSame(metaData, result.getMetaData());
         assertSame(attributes, result.getAttributes());
         assertSame(localContext, result.getLocalContext());
-        assertSame(this.context, result.getContext());
     }
 
     @Test
@@ -170,6 +174,5 @@ public class InfinispanSessionFactoryTestCase {
         assertSame(id, result.getId());
         assertSame(metaData, result.getMetaData());
         assertSame(attributes, result.getAttributes());
-        assertSame(this.context, result.getContext());
     }
 }

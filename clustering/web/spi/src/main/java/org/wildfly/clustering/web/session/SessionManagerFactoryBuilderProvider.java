@@ -29,5 +29,5 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 public interface SessionManagerFactoryBuilderProvider<B extends Batch> {
-    Builder<SessionManagerFactory<B>> getBuilder(SessionManagerConfiguration configuration);
+    Builder<SessionManagerFactory<B>> getBuilder(SessionManagerFactoryConfiguration configuration);
 }

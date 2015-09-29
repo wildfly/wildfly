@@ -21,33 +21,38 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.Map;
+
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * Session remover that removes a session if and only if it is expired.
  * @author Paul Ferraro
  */
-public class ExpiredSessionRemover<V, L> implements Remover<String> {
+public class ExpiredSessionRemover<MV, AV, L> implements Remover<String> {
 
-    private final SessionMetaDataFactory<V, L> factory;
-    private final Remover<String> remover;
+    private final SessionFactory<MV, AV, L> factory;
+    private final SessionExpirationListener listener;
 
-    public ExpiredSessionRemover(SessionMetaDataFactory<V, L> factory, Remover<String> remover) {
+    public ExpiredSessionRemover(SessionFactory<MV, AV, L> factory, SessionExpirationListener listener) {
         this.factory = factory;
-        this.remover = remover;
+        this.listener = listener;
     }
 
     @Override
-    public void remove(String id) {
-        V value = this.factory.tryValue(id);
+    public boolean remove(String id) {
+        Map.Entry<MV, AV> value = this.factory.tryValue(id);
         if (value != null) {
-            ImmutableSessionMetaData metaData = this.factory.createImmutableSessionMetaData(id, value);
-            if (metaData.isExpired()) {
+            ImmutableSession session = this.factory.createImmutableSession(id, value);
+            if (session.getMetaData().isExpired()) {
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s has expired.", id);
-                this.remover.remove(id);
+                this.listener.sessionExpired(this.factory.createImmutableSession(id, value));
+                return this.factory.remove(id);
             }
         }
+        return false;
     }
 }
