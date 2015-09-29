@@ -19,22 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
-
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.session.SessionManagerFactory;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
+package org.wildfly.clustering.web.session;
 
 /**
- * Service building strategy the Infinispan session manager factory.
+ * Listener for session expiration notifications.
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryBuilderProvider implements SessionManagerFactoryBuilderProvider<TransactionBatch> {
+public interface SessionExpirationListener {
 
-    @Override
-    public Builder<SessionManagerFactory<TransactionBatch>> getBuilder(SessionManagerFactoryConfiguration config) {
-        return new InfinispanSessionManagerFactoryBuilder(config);
-    }
+    /**
+     * Invoked when the specified session expires.
+     * @param session a session
+     */
+    void sessionExpired(ImmutableSession session);
 }

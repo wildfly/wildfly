@@ -54,7 +54,6 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
-import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
@@ -65,7 +64,6 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  */
 public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntry<L>, L> {
 
-    private final SessionContext context;
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> findCreationMetaDataCache;
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
@@ -74,12 +72,11 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
     private final LocalContextFactory<L> localContextFactory;
 
     @SuppressWarnings("unchecked")
-    public CoarseSessionFactory(Cache<? extends Key<String>, ?> cache, SessionContext context, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead) {
+    public CoarseSessionFactory(Cache<? extends Key<String>, ?> cache, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead) {
         this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
         this.findCreationMetaDataCache = lockOnRead ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
         this.accessMetaDataCache = (Cache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
         this.attributesCache = (Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>>) cache;
-        this.context = context;
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
     }
@@ -95,7 +92,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         SessionMetaData metaData = new SimpleSessionMetaData(creationMetaData, accessMetaData);
         SessionAttributes attributes = new CoarseSessionAttributes(attributesEntry.getValue(), attributesEntry.getMutator(), this.marshaller.getContext());
 
-        return new InfinispanSession<>(id, metaData, attributes, entry.getLocalContext(), this.localContextFactory, this.context, this);
+        return new InfinispanSession<>(id, metaData, attributes, entry.getLocalContext(), this.localContextFactory, this);
     }
 
     @Override
@@ -107,7 +104,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         ImmutableSessionMetaData metaData = new SimpleSessionMetaData(creationMetaDataEntry.getValue(), accessMetaDataEntry.getValue());
         ImmutableSessionAttributes attributes = new CoarseImmutableSessionAttributes(attributesEntry.getValue());
 
-        return new InfinispanImmutableSession(id, metaData, attributes, this.context);
+        return new InfinispanImmutableSession(id, metaData, attributes);
     }
 
     @Override

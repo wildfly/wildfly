@@ -21,22 +21,16 @@
  */
 package org.wildfly.clustering.web.session;
 
-import org.jboss.modules.Module;
+import javax.servlet.ServletContext;
 
-/**
- * Encapsulates the configuration of a session manager.
- * @author Paul Ferraro
- */
-public interface SessionManagerConfiguration {
-    enum SessionAttributePersistenceStrategy { COARSE, FINE }
+import org.wildfly.clustering.ee.Recordable;
+import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.LocalContextFactory;
 
-    int getMaxActiveSessions();
-
-    SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
-
-    String getDeploymentName();
-
-    Module getModule();
-
-    String getCacheName();
+public interface SessionManagerConfiguration<C> {
+    ServletContext getServletContext();
+    IdentifierFactory<String> getIdentifierFactory();
+    SessionExpirationListener getExpirationListener();
+    LocalContextFactory<C> getLocalContextFactory();
+    Recordable<ImmutableSession> getInactiveSessionRecorder();
 }

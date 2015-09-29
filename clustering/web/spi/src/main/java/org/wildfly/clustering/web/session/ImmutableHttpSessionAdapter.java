@@ -35,9 +35,11 @@ import javax.servlet.http.HttpSession;
 public class ImmutableHttpSessionAdapter implements HttpSession {
 
     private final ImmutableSession session;
+    private final ServletContext context;
 
-    public ImmutableHttpSessionAdapter(ImmutableSession session) {
+    public ImmutableHttpSessionAdapter(ImmutableSession session, ServletContext context) {
         this.session = session;
+        this.context = context;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class ImmutableHttpSessionAdapter implements HttpSession {
 
     @Override
     public ServletContext getServletContext() {
-        return this.session.getContext().getServletContext();
+        return this.context;
     }
 
     @Override

@@ -46,19 +46,20 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private static final int MAX_SESSION_ID_GENERATION_ATTEMPTS = 10;
 
     private final String deploymentName;
-    private final SessionListeners sessionListeners = new SessionListeners();
+    private final SessionListeners listeners;
     private final SessionManager<LocalSessionContext, Batch> manager;
     private final RecordableSessionManagerStatistics statistics;
 
-    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager, RecordableSessionManagerStatistics statistics) {
+    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager, SessionListeners listeners, RecordableSessionManagerStatistics statistics) {
         this.deploymentName = deploymentName;
         this.manager = manager;
+        this.listeners = listeners;
         this.statistics = statistics;
     }
 
     @Override
     public SessionListeners getSessionListeners() {
-        return this.sessionListeners;
+        return this.listeners;
     }
 
     @Override
@@ -103,7 +104,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         try {
             Session<LocalSessionContext> session = this.manager.createSession(id);
             io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batch);
-            this.sessionListeners.sessionCreated(adapter, exchange);
+            this.listeners.sessionCreated(adapter, exchange);
             if (this.statistics != null) {
                 this.statistics.record(adapter);
             }
@@ -128,19 +129,21 @@ public class DistributableSessionManager implements UndertowSessionManager {
             }
             return new DistributableSession(this, session, config, batch);
         } catch (RuntimeException | Error e) {
-            batch.discard();
+            if (batch.isActive()) {
+                batch.discard();
+            }
             throw e;
         }
     }
 
     @Override
     public void registerSessionListener(SessionListener listener) {
-        this.sessionListeners.addSessionListener(listener);
+        this.listeners.addSessionListener(listener);
     }
 
     @Override
     public void removeSessionListener(SessionListener listener) {
-        this.sessionListeners.removeSessionListener(listener);
+        this.listeners.removeSessionListener(listener);
     }
 
     @Override
