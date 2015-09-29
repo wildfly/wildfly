@@ -26,11 +26,11 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.web.session.SessionManagerConfiguration;
+import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
 public interface InfinispanSessionManagerFactoryConfiguration {
 
-    SessionManagerConfiguration getSessionManagerConfiguration();
+    SessionManagerFactoryConfiguration getSessionManagerConfiguration();
 
     <K, V> Cache<K, V> getCache();
 

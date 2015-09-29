@@ -169,10 +169,11 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public void invalidate(HttpServerExchange exchange) {
+        // Invoke listeners outside of the context of the batch associated with this session
+        this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         Map.Entry<Session<LocalSessionContext>, SessionConfig> entry = this.entry;
         Session<LocalSessionContext> session = entry.getKey();
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
             session.invalidate();
             if (exchange != null) {
                 String id = session.getId();
@@ -198,8 +199,10 @@ public class DistributableSession implements io.undertow.server.session.Session 
             config.setSessionId(exchange, id);
             this.entry = new SimpleImmutableEntry<>(newSession, config);
             oldSession.invalidate();
-            return id;
         }
+        // Invoke listeners outside of the context of the batch associated with this session
+        this.manager.getSessionListeners().sessionIdChanged(this, oldSession.getId());
+        return id;
     }
 
     private AuthenticatedSession setLocalContext(AuthenticatedSession auth) {

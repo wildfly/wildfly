@@ -42,7 +42,7 @@ import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 import org.wildfly.clustering.spi.GroupServiceName;
-import org.wildfly.clustering.web.session.SessionManagerConfiguration;
+import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 
 public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionManagerFactory<TransactionBatch>>, Value<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration {
@@ -57,7 +57,7 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
         return (serviceName.length() < 4) ? serviceName.append(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP) : serviceName;
     }
 
-    private final SessionManagerConfiguration configuration;
+    private final SessionManagerFactoryConfiguration configuration;
 
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
@@ -66,7 +66,7 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
     @SuppressWarnings("rawtypes")
     private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
 
-    public InfinispanSessionManagerFactoryBuilder(SessionManagerConfiguration configuration) {
+    public InfinispanSessionManagerFactoryBuilder(SessionManagerFactoryConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -103,7 +103,7 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
     }
 
     @Override
-    public SessionManagerConfiguration getSessionManagerConfiguration() {
+    public SessionManagerFactoryConfiguration getSessionManagerConfiguration() {
         return this.configuration;
     }
 

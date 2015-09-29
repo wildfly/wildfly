@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.BatchContext;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -42,15 +44,17 @@ import org.wildfly.clustering.web.sso.Sessions;
  * Adapts an {@link SSO} to a {@link SingleSignOn}.
  * @author Paul Ferraro
  */
-public class DistributableSingleSignOn implements SingleSignOn {
+public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
 
     private final SSO<AuthenticatedSession, String, Void> sso;
     private final SessionManagerRegistry registry;
+    private final Batcher<Batch> batcher;
     private final Batch batch;
 
-    public DistributableSingleSignOn(SSO<AuthenticatedSession, String, Void> sso, SessionManagerRegistry registry, Batch batch) {
+    public DistributableSingleSignOn(SSO<AuthenticatedSession, String, Void> sso, SessionManagerRegistry registry, Batcher<Batch> batcher, Batch batch) {
         this.sso = sso;
         this.registry = registry;
+        this.batcher = batcher;
         this.batch = batch;
     }
 
@@ -61,70 +65,110 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
     @Override
     public Account getAccount() {
-        return this.sso.getAuthentication().getAccount();
+        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            return this.sso.getAuthentication().getAccount();
+        }
     }
 
     @Override
     public String getMechanismName() {
-        return this.sso.getAuthentication().getMechanism();
+        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            return this.sso.getAuthentication().getMechanism();
+        }
     }
 
     @Override
     public Iterator<Session> iterator() {
-        Sessions<String> sessions = this.sso.getSessions();
-        Set<String> deployments = sessions.getDeployments();
-        List<Session> result = new ArrayList<>(deployments.size());
-        for (String deployment: deployments) {
-            SessionManager manager = this.registry.getSessionManager(deployment);
-            if (manager != null) {
+        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            Sessions<String> sessions = this.sso.getSessions();
+            Set<String> deployments = sessions.getDeployments();
+            List<Session> result = new ArrayList<>(deployments.size());
+            for (String deployment : sessions.getDeployments()) {
                 String sessionId = sessions.getSession(deployment);
                 if (sessionId != null) {
-                    Session session = manager.getSession(sessions.getSession(deployment));
-                    if (session != null) {
-                        result.add(new InvalidatableSession(session));
+                    SessionManager manager = this.registry.getSessionManager(deployment);
+                    if (manager != null) {
+                        result.add(new InvalidatableSession(manager, sessionId));
                     }
                 }
             }
+            return result.iterator();
         }
-        return result.iterator();
     }
 
     @Override
     public boolean contains(Session session) {
-        return this.sso.getSessions().getDeployments().contains(session.getSessionManager().getDeploymentName());
+        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            return this.sso.getSessions().getDeployments().contains(session.getSessionManager().getDeploymentName());
+        }
     }
 
     @Override
     public void add(Session session) {
-        this.sso.getSessions().addSession(session.getSessionManager().getDeploymentName(), session.getId());
+        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            this.sso.getSessions().addSession(session.getSessionManager().getDeploymentName(), session.getId());
+        }
     }
 
     @Override
     public void remove(Session session) {
-        this.sso.getSessions().removeSession(session.getSessionManager().getDeploymentName());
+        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            this.sso.getSessions().removeSession(session.getSessionManager().getDeploymentName());
+        }
     }
 
     @Override
     public Session getSession(SessionManager manager) {
-        String sessionId = this.sso.getSessions().getSession(manager.getDeploymentName());
-        return (sessionId != null) ? manager.getSession(sessionId) : null;
+        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            String sessionId = this.sso.getSessions().getSession(manager.getDeploymentName());
+            return (sessionId != null) ? new InvalidatableSession(manager, sessionId) : null;
+        }
     }
 
     @Override
     public void close() {
-        this.batch.close();
+        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            this.batch.close();
+        }
+    }
+
+    @Override
+    public void invalidate() {
+        // The batch associated with this SSO might not be valid (e.g. in the case of logout).
+        if (this.batch.isActive()) {
+            try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+                this.sso.invalidate();
+                this.batch.close();
+            }
+        } else {
+            try (Batch batch = this.batcher.createBatch()) {
+                this.sso.invalidate();
+            }
+        }
     }
 
     private static class InvalidatableSession implements Session {
-        private final Session session;
+        private final SessionManager manager;
+        private final String sessionId;
 
-        InvalidatableSession(Session session) {
-            this.session = session;
+        InvalidatableSession(SessionManager manager, String sessionId) {
+            this.manager = manager;
+            this.sessionId = sessionId;
+        }
+
+        @Override
+        public String getId() {
+            return this.sessionId;
+        }
+
+        @Override
+        public SessionManager getSessionManager() {
+            return this.manager;
         }
 
         @Override
         public void invalidate(HttpServerExchange exchange) {
-            Session session = this.session.getSessionManager().getSession(exchange, new SimpleSessionConfig(this.session.getId()));
+            Session session = this.manager.getSession(exchange, new SimpleSessionConfig(this.sessionId));
             if (session != null) {
                 session.invalidate(exchange);
             }
@@ -132,62 +176,52 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
         @Override
         public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
-            return this.session.changeSessionId(exchange, config);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Object getAttribute(String name) {
-            return this.session.getAttribute(name);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Set<String> getAttributeNames() {
-            return this.session.getAttributeNames();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public long getCreationTime() {
-            return this.session.getCreationTime();
-        }
-
-        @Override
-        public String getId() {
-            return this.session.getId();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public long getLastAccessedTime() {
-            return this.session.getLastAccessedTime();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public int getMaxInactiveInterval() {
-            return this.session.getMaxInactiveInterval();
-        }
-
-        @Override
-        public SessionManager getSessionManager() {
-            return this.session.getSessionManager();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Object removeAttribute(String name) {
-            return this.session.removeAttribute(name);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void requestDone(HttpServerExchange exchange) {
-            this.session.requestDone(exchange);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Object setAttribute(String name, Object value) {
-            return this.session.setAttribute(name, value);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void setMaxInactiveInterval(int interval) {
-            this.session.setMaxInactiveInterval(interval);
+            throw new UnsupportedOperationException();
         }
     }
 
