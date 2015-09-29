@@ -164,6 +164,54 @@ public abstract class SSOTestBase {
         }
     }
 
+    /**
+     * Test single sign-on across two web apps using form based auth.
+     *
+     * Test that after session timeout SSO is destroyed.
+     *
+     * @throws Exception
+     */
+    public static void executeFormAuthSSOTimeoutTest(URL serverA, URL serverB, Logger log) throws Exception {
+        URL warA1 = new URL(serverA, "/war1/");
+        URL warB2 = new URL(serverB, "/war2/");
+
+        // Start by accessing the secured index.html of war1
+        CookieStore store = new BasicCookieStore();
+        HttpClient httpclient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
+                .setDefaultCookieStore(store)
+                .disableRedirectHandling()
+                .build();
+        try {
+            checkAccessDenied(httpclient, warA1 + "index.html");
+
+            log.debug("Saw JSESSIONID=" + getSessionIdValueFromState(store));
+
+            // Submit the login form
+            executeFormLogin(httpclient, warA1);
+
+            String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
+            log.debug("Saw JSESSIONIDSSO=" + ssoID);
+
+            // After login I should still have access + set session timeout to 5 seconds
+            checkAccessAllowed(httpclient, warA1 + "set_session_timeout.jsp");
+
+            // Also access to war2 should be granted + set session timeout to 5 seconds
+            checkAccessAllowed(httpclient, warB2 + "set_session_timeout.jsp");
+
+            // wait 5 seconds session timeout + 1 seconds reserve
+            Thread.sleep((5+1)*1000);
+
+            // After timeout I should be not able to access the app
+            checkAccessDenied(httpclient, warA1 + "index.html");
+            checkAccessDenied(httpclient, warB2 + "index.html");
+
+        } finally {
+            HttpClientUtils.closeQuietly(httpclient);
+        }
+
+    }
+
+
     public static void executeLogout(HttpClient httpConn, URL warURL) throws IOException {
         HttpGet logout = new HttpGet(warURL + "Logout");
         HttpResponse response = httpConn.execute(logout);
@@ -305,6 +353,7 @@ public abstract class SSOTestBase {
         war.addAsWebResource(tccl.getResource(resourcesLocation + "error.html"), "error.html");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "index.html"), "index.html");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "index.jsp"), "index.jsp");
+        war.addAsWebResource(tccl.getResource(resourcesLocation + "set_session_timeout.jsp"), "set_session_timeout.jsp");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "login.html"), "login.html");
 
         war.addClass(EJBServlet.class);
