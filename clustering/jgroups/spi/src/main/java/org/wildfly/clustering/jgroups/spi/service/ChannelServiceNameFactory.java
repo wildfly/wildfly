@@ -31,11 +31,6 @@ import org.wildfly.clustering.service.GroupServiceNameFactory;
 public interface ChannelServiceNameFactory extends GroupServiceNameFactory {
 
     /**
-     * The alias for the default channel.
-     */
-    String DEFAULT_CHANNEL = "default";
-
-    /**
      * Returns an appropriate service name for the default channel
      * @return
      */
