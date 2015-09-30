@@ -59,7 +59,7 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
         final ModelNode subsystemAddOp = Util.createAddOperation(subsystemAddress);
         ops.add(subsystemAddOp);
 
-        final Set<Element> requiredElements = EnumSet.of(Element.JOB_REPOSITORY, Element.THREAD_POOL);
+        final Set<Element> requiredElements = EnumSet.of(Element.JOB_REPOSITORY, Element.THREAD_POOL, Element.DEFAULT_JOB_REPOSITORY, Element.DEFAULT_THREAD_POOL);
         final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -72,6 +72,7 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
             } else if (element == Element.DEFAULT_JOB_REPOSITORY) {
                 BatchSubsystemDefinition.DEFAULT_JOB_REPOSITORY.parseAndSetParameter(readNameAttribute(reader), subsystemAddOp, reader);
                 ParseUtils.requireNoContent(reader);
+                requiredElements.remove(Element.DEFAULT_JOB_REPOSITORY);
             } else if (element == Element.JOB_REPOSITORY) {
                 final String name = readNameAttribute(reader);
                 parseJobRepository(reader, subsystemAddress, name, ops);
