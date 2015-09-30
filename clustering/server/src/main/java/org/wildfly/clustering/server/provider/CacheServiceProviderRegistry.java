@@ -123,12 +123,9 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     }
 
     void register(Node node, T service) {
-        Set<Node> nodes = new CopyOnWriteArraySet<>(Collections.singleton(node));
-        Set<Node> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
-        if (existing != null) {
-            if (existing.add(node)) {
-                this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
-            }
+        Set<Node> nodes = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(service, key -> new CopyOnWriteArraySet<>(Collections.singleton(node)));
+        if (nodes.add(node)) {
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, nodes);
         }
     }
 
@@ -145,8 +142,8 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     @Override
     public void membershipChanged(List<Node> previousMembers, List<Node> members, final boolean merged) {
-        if (this.getGroup().isCoordinator()) {
-            this.executor.execute(() -> {
+        this.executor.execute(() -> {
+            if (this.getGroup().isCoordinator()) {
                 Set<Node> deadNodes = new HashSet<>(previousMembers);
                 deadNodes.removeAll(members);
                 Set<Node> newNodes = new HashSet<>(members);
@@ -172,18 +169,20 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                         }
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
     @CacheEntryCreated
     @CacheEntryModified
     public void modified(CacheEntryEvent<ServiceName, Set<Node>> event) {
         if (event.isPre()) return;
-        Listener listener = this.listeners.get(event.getKey());
-        if (listener != null) {
-            listener.providersChanged(event.getValue());
-        }
+        this.executor.execute(() -> {
+            Listener listener = this.listeners.get(event.getKey());
+            if (listener != null) {
+                listener.providersChanged(event.getValue());
+            }
+        });
     }
 
     List<T> getServices(Node node) {
