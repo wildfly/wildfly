@@ -74,6 +74,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
     private final InjectedValue<ThreadPoolConfiguration> remoteCommandThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> stateTransferThreadPool = new InjectedValue<>();
     private final InjectedValue<ThreadPoolConfiguration> transportThreadPool = new InjectedValue<>();
+    private final InjectedValue<ThreadPoolConfiguration> replicationQueueThreadPool = new InjectedValue<>();
     private final String name;
 
     private volatile boolean statisticsEnabled;
@@ -132,6 +133,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
         builder.listenerThreadPool().read(this.listenerThreadPool.getValue());
         builder.stateTransferThreadPool().read(this.stateTransferThreadPool.getValue());
         builder.persistenceThreadPool().read(this.persistenceThreadPool.getValue());
+        builder.replicationQueueThreadPool().read(this.replicationQueueThreadPool.getValue());
 
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
         builder.globalJmxStatistics()
@@ -157,6 +159,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
                 .addDependency(ThreadPoolResourceDefinition.PERSISTENCE.getServiceName(this.name), ThreadPoolConfiguration.class, this.persistenceThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.REMOTE_COMMAND.getServiceName(this.name), ThreadPoolConfiguration.class, this.remoteCommandThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.TRANSPORT.getServiceName(this.name), ThreadPoolConfiguration.class, this.transportThreadPool)
+                .addDependency(ScheduledThreadPoolResourceDefinition.REPLICATION_QUEUE.getServiceName(this.name), ThreadPoolConfiguration.class, this.replicationQueueThreadPool)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
     }

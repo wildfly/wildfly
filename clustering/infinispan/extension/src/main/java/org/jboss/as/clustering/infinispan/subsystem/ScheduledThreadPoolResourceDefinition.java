@@ -69,6 +69,7 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
  */
 public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition, Registration<ManagementResourceRegistration>, ScheduledThreadPoolDefinition {
 
+    REPLICATION_QUEUE("replication-queue", 1, 60000),
     EXPIRATION("expiration", 1, 60000), // called eviction prior to Infinispan 8
     ;
 
