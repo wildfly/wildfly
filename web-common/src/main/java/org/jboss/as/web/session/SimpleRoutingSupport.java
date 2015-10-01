@@ -46,7 +46,7 @@ public class SimpleRoutingSupport implements RoutingSupport {
     @Override
     public Map.Entry<String, String> parse(String id) {
         int index = (id != null) ? id.indexOf(this.delimiter) : -1;
-        return (index < 0) ? new SimpleImmutableEntry<String, String>(id, null) : new SimpleImmutableEntry<>(id.substring(0, index), id.substring(index + this.delimiter.length()));
+        return (index < 0) ? new SimpleImmutableEntry<>(id, null) : new SimpleImmutableEntry<>(id.substring(0, index), id.substring(index + this.delimiter.length()));
     }
 
     @Override
