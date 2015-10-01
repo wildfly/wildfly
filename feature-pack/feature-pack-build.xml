@@ -53,7 +53,7 @@
                 <property name="jgroups.supplement" value="ec2" />
        </standalone>
         <standalone
-                template="configuration/standalone/template.xml"
+                template="configuration/standalone/template-elytron.xml"
                 subsystems="configuration/standalone/subsystems-elytron.xml"
                 output-file="standalone/configuration/standalone-elytron.xml"/>
         <standalone
@@ -115,7 +115,7 @@
                 subsystems="configuration/host/subsystems.xml"
                 output-file="domain/configuration/host-slave.xml" />
         <host
-                template="configuration/host/host.xml"
+                template="configuration/host/host-elytron.xml"
                 subsystems="configuration/host/subsystems-elytron.xml"
                 output-file="domain/configuration/host-elytron.xml" />
     </config>
