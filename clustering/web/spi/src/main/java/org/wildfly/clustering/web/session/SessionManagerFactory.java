@@ -22,9 +22,6 @@
 package org.wildfly.clustering.web.session;
 
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
 
 /**
  * A factory for creating a session manager.
@@ -37,5 +34,5 @@ public interface SessionManagerFactory<B extends Batch> {
      * @param idFactory a session identifier factory
      * @return a new session manager
      */
-    <C> SessionManager<C, B> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory, Recordable<ImmutableSession> inactiveSessionRecorder);
+    <C> SessionManager<C, B> createSessionManager(SessionManagerConfiguration<C> configuration);
 }

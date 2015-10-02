@@ -24,7 +24,6 @@ package org.wildfly.clustering.web.infinispan.session;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionContext;
 
 /**
  * Generic immutable session implementation - independent of cache mapping strategy.
@@ -35,13 +34,11 @@ public class InfinispanImmutableSession implements ImmutableSession {
     private final String id;
     private final ImmutableSessionMetaData metaData;
     private final ImmutableSessionAttributes attributes;
-    private final SessionContext context;
 
-    public InfinispanImmutableSession(String id, ImmutableSessionMetaData metaData, ImmutableSessionAttributes attributes, SessionContext context) {
+    public InfinispanImmutableSession(String id, ImmutableSessionMetaData metaData, ImmutableSessionAttributes attributes) {
         this.id = id;
         this.metaData = metaData;
         this.attributes = attributes;
-        this.context = context;
     }
 
     @Override
@@ -52,11 +49,6 @@ public class InfinispanImmutableSession implements ImmutableSession {
     @Override
     public ImmutableSessionAttributes getAttributes() {
         return this.attributes;
-    }
-
-    @Override
-    public SessionContext getContext() {
-        return this.context;
     }
 
     @Override

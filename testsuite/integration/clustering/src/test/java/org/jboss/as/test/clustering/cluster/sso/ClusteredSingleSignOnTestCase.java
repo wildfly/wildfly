@@ -36,6 +36,7 @@ import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -132,6 +133,20 @@ public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
         log.info("+++ testNoAuthSingleSignOn");
         SSOTestBase.executeNoAuthSingleSignOnTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
+    }
+
+    /**
+     * Test single sign-on is destroyed after session timeout
+     *
+     * Testing https://issues.jboss.org/browse/WFLY-5422
+     */
+    @Test
+    @Ignore("https://issues.jboss.org/browse/WFLY-5422")
+    public void testSessionTimeoutDestroysSSO(
+            @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
+        log.info("+++ testSessionTimeoutDestroysSSO");
+        SSOTestBase.executeFormAuthSSOTimeoutTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
     }
 
 }

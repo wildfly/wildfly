@@ -25,7 +25,6 @@ package org.wildfly.clustering.web.infinispan.session;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionContext;
 
 /**
  * {@link ImmutableSession} optimization used to avoid full session lookup
@@ -75,14 +74,6 @@ public class MockImmutableSession implements ImmutableSession {
      */
     @Override
     public ImmutableSessionAttributes getAttributes() {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SessionContext getContext() {
         return null;
     }
 }

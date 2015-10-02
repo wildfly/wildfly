@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,33 +21,22 @@
  */
 package org.wildfly.clustering.web.session;
 
-import java.util.Collection;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionListener;
+import org.jboss.modules.Module;
 
 /**
- * Context exposed to the session.
+ * Encapsulates the configuration of a session manager.
  * @author Paul Ferraro
  */
-public interface SessionContext {
+public interface SessionManagerFactoryConfiguration {
+    enum SessionAttributePersistenceStrategy { COARSE, FINE }
 
-    /**
-     * Returns the registered session listeners.
-     * @return a non-null collection of session listeners.
-     */
-    Collection<HttpSessionListener> getSessionListeners();
+    int getMaxActiveSessions();
 
-    /**
-     * Returns the registered session attribute listeners.
-     * @return a non-null collection of session listeners.
-     */
-    Collection<HttpSessionAttributeListener> getSessionAttributeListeners();
+    SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
 
-    /**
-     * Returns the servlet context of this application.
-     * @return the non-null servlet context
-     */
-    ServletContext getServletContext();
+    String getDeploymentName();
+
+    Module getModule();
+
+    String getCacheName();
 }
