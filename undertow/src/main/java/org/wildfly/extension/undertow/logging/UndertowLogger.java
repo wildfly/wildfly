@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow.logging;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -329,11 +328,4 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 76, value = "Cannot remove resource of type %s")
     IllegalArgumentException cannotRemoveResourceOfType(String type);
 
-    @LogMessage(level = DEBUG)
-    @Message(id = 78, value = "Ciphers used: %s")
-    void ciphersUsed(String ciphers);
-
-    @LogMessage(level = WARN)
-    @Message(id = 79, value = "Unknown element in cipher string: %s")
-    void unknownElementInCipher(String cipher);
 }

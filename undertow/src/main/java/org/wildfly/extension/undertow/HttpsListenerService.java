@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+
 import javax.net.ssl.SSLContext;
 
 import io.undertow.UndertowOptions;
@@ -34,16 +35,20 @@ import io.undertow.server.protocol.http.AlpnOpenListener;
 import io.undertow.server.protocol.http.HttpOpenListener;
 import io.undertow.server.protocol.http2.Http2OpenListener;
 import io.undertow.server.protocol.spdy.SpdyOpenListener;
+
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.security.ssl.CipherSuiteSelector;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
+import org.xnio.Option;
 import org.xnio.Options;
 import org.xnio.Pool;
+import org.xnio.Sequence;
 import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
@@ -61,9 +66,11 @@ public class HttpsListenerService extends HttpListenerService {
     private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
     private volatile AcceptingChannel<SslConnection> sslServer;
     static final String PROTOCOL = "https";
+    private final String cipherSuites;
 
-    public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, OptionMap socketOptions) {
+    public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions) {
         super(name, serverName, listenerOptions, socketOptions, false, false);
+        this.cipherSuites = cipherSuites;
     }
 
     @Override
@@ -108,6 +115,12 @@ public class HttpsListenerService extends HttpListenerService {
         Builder builder = OptionMap.builder().addAll(commonOptions);
         builder.addAll(socketOptions);
         builder.set(Options.USE_DIRECT_BUFFERS, true);
+
+        if (cipherSuites != null) {
+            String[] cipherList = CipherSuiteSelector.fromString(cipherSuites).evaluate(sslContext.getSupportedSSLParameters().getCipherSuites());
+            builder.setSequence((Option<Sequence<String>>) HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.getOption(), cipherList);
+        }
+
         OptionMap combined = builder.getMap();
 
         XnioSsl xnioSsl = new UndertowXnioSsl(worker.getXnio(), combined, sslContext);
