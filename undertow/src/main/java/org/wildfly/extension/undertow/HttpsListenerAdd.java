@@ -19,16 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.undertow;
 
 import io.undertow.server.ListenerRegistry;
+import java.util.List;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.wildfly.extension.undertow.security.openssl.OpenSSLCipherConfigurationParser;
+import org.xnio.Option;
 import org.xnio.OptionMap;
+import org.xnio.Sequence;
 
 /**
  * Add handler for HTTPS listeners.
@@ -44,15 +47,26 @@ public class HttpsListenerAdd extends ListenerAdd {
     @Override
     ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         OptionMap.Builder builder = OptionMap.builder().addAll(socketOptions);
-        HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model,builder);
-        HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveOption(context, model, builder);
+        HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model, builder);
+        ModelNode value = HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveModelAttribute(context, model);
+        if (value.isDefined()) {
+            String[] cipherList;
+            String ciphers = value.asString();
+            if (!("ALL".equals(ciphers)) && ciphers.indexOf(':') == -1) {
+                cipherList = ciphers.split("\\s*,\\s*");
+            } else {
+                List<String> temp = OpenSSLCipherConfigurationParser.parseExpression(ciphers);
+                cipherList = temp.toArray(new String[temp.size()]);
+            }
+            builder.setSequence((Option<Sequence<String>>) HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.getOption(), cipherList);
+        }
         HttpsListenerResourceDefinition.ENABLED_PROTOCOLS.resolveOption(context, model, builder);
         HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE.resolveOption(context, model, builder);
         HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT.resolveOption(context, model, builder);
 
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
-        HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model,listenerBuilder);
-        HttpsListenerResourceDefinition.ENABLE_SPDY.resolveOption(context, model,listenerBuilder);
+        HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model, listenerBuilder);
+        HttpsListenerResourceDefinition.ENABLE_SPDY.resolveOption(context, model, listenerBuilder);
         return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), builder.getMap());
     }
 
