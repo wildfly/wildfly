@@ -58,7 +58,6 @@ import org.jgroups.protocols.relay.config.RelayConfig;
 import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
-import org.jgroups.util.SocketFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
@@ -99,15 +98,10 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         final JChannel channel = WildFlySecurityManager.doChecked(action);
         ProtocolStack stack = channel.getProtocolStack();
 
-        // We need to synchronize on shared transport,
-        // so we don't attempt to init a shared transport multiple times
-        TP transport = stack.getTransport();
-        if (transport.isSingleton()) {
-            synchronized (transport) {
-                this.init(transport);
-            }
-        } else {
-            this.init(transport);
+        TransportConfiguration transportConfig = this.configuration.getTransport();
+        SocketBinding binding = transportConfig.getSocketBinding();
+        if (binding != null) {
+            channel.setSocketFactory(new ManagedSocketFactory(binding.getSocketBindings()));
         }
 
         // Relay protocol is added to stack programmatically, not via ProtocolStackConfigurator
@@ -198,17 +192,6 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
     @Override
     public boolean isUnknownForkResponse(ByteBuffer buffer) {
         return UNKNOWN_FORK_RESPONSE.equals(buffer);
-    }
-
-    private void init(TP transport) {
-        TransportConfiguration transportConfig = this.configuration.getTransport();
-        SocketBinding binding = transportConfig.getSocketBinding();
-        if (binding != null) {
-            SocketFactory factory = transport.getSocketFactory();
-            if (!(factory instanceof ManagedSocketFactory)) {
-                transport.setSocketFactory(new ManagedSocketFactory(factory, binding.getSocketBindings()));
-            }
-        }
     }
 
     /**
