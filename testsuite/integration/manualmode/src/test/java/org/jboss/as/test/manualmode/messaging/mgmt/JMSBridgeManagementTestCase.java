@@ -40,8 +40,9 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_BRIDGE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_ENABLED;
-import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
-import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.STARTED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ENTRIES;
@@ -54,6 +55,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
+import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -68,6 +71,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -94,21 +98,26 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
     @ArquillianResource
     private static ContainerController container;
 
+    static final String NAME_QUEUE_SOURCE = "sourceQueue";
+    static final String NAME_QUEUE_TARGET = "targetQueue";
+    static final String NAME_BRIDGE = "outBridge";
+    static final String NAME_CONNECTION_FACTORY = "XAConnectionFactory";
+    static final String NAME_CONNECTOR = "netty";
     static final PathAddress ADDRESS_HORNETQ = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
             PathElement.pathElement(SERVER, "default"));
     static final PathAddress ADDRESS_XA_CONNECTION_FACTORY = ADDRESS_HORNETQ.append(PathElement.pathElement(CONNECTION_FACTORY,
             "XAConnectionFactory"));
-    static final PathAddress ADDRESS_QUEUE_SOURCE = ADDRESS_HORNETQ.append(PathElement.pathElement(JMS_QUEUE, "sourceQueue"));
-    static final PathAddress ADDRESS_QUEUE_TARGET = ADDRESS_HORNETQ.append(PathElement.pathElement(JMS_QUEUE, "targetQueue"));
+    static final PathAddress ADDRESS_QUEUE_SOURCE = ADDRESS_HORNETQ.append(PathElement.pathElement(JMS_QUEUE, NAME_QUEUE_SOURCE));
+    static final PathAddress ADDRESS_QUEUE_TARGET = ADDRESS_HORNETQ.append(PathElement.pathElement(JMS_QUEUE, NAME_QUEUE_TARGET));
 
     static final PathAddress ADDRESS_JMS_BRIDGE = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
-            PathElement.pathElement(JMS_BRIDGE, "outBridge"));
+            PathElement.pathElement(JMS_BRIDGE,NAME_BRIDGE));
 
     static final PathAddress ADDRESS_SOCKET_BINDING = PathAddress.pathAddress(PathElement.pathElement("socket-binding-group","standard-sockets"),
-            PathElement.pathElement("socket-binding","for-netty"));
+            PathElement.pathElement(SOCKET_BINDING.getName(),"for-netty"));
     
-    static final PathAddress ADDRESS_NETTY_CONNECTOR = ADDRESS_HORNETQ.append(PathElement.pathElement("remote-connector", "netty"));
-    static final PathAddress ADDRESS_NETTY_ACCEPTOR = ADDRESS_HORNETQ.append(PathElement.pathElement("remote-acceptor", "netty"));
+    static final PathAddress ADDRESS_NETTY_CONNECTOR = ADDRESS_HORNETQ.append(PathElement.pathElement(REMOTE_CONNECTOR, NAME_CONNECTOR));
+    static final PathAddress ADDRESS_NETTY_ACCEPTOR = ADDRESS_HORNETQ.append(PathElement.pathElement(REMOTE_ACCEPTOR, NAME_CONNECTOR));
 
     public static final String CONTAINER = "jbossas-messaging-ha-server1";
     public static final String DEPLOYMENT_NAME = "DUMMY";
@@ -204,19 +213,18 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            final ModelNode operation = Util.createAddOperation(ADDRESS_XA_CONNECTION_FACTORY);
-            operation.get(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.getName()).set("XA_GENERIC");
-            operation.get(CommonAttributes.CONNECTORS).add("netty");
-            operation.get(ENTRIES).add("java:jboss/jms/XAConnectionFactory")
-                    .add("java:jboss/exported/jms/XAConnectionFactory");
-
-            ModelNode result = managementClient.getControllerClient().execute(operation);
-            Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
+            final JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            final ModelNode attributes = new ModelNode();
+            attributes.get(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.getName()).set("XA_GENERIC");
+            attributes.get(CommonAttributes.CONNECTORS).add(NAME_CONNECTOR);
+            attributes.get(ENTRIES).add("java:jboss/jms/XAConnectionFactory");
+            jmsOperations.addJmsConnectionFactory(NAME_CONNECTION_FACTORY, "java:jboss/exported/jms/XAConnectionFactory", attributes);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            managementClient.getControllerClient().execute(Util.createRemoveOperation(ADDRESS_XA_CONNECTION_FACTORY));
+            final JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsConnectionFactory(NAME_CONNECTION_FACTORY);
         }
     }
 
@@ -224,25 +232,25 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            ModelNode result = setUpQueue(managementClient.getControllerClient(), "sourceQueue", ADDRESS_QUEUE_SOURCE);
-            Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
-            result = setUpQueue(managementClient.getControllerClient(), "targetQueue", ADDRESS_QUEUE_TARGET);
-            Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
+            setUpQueue(managementClient.getControllerClient(), NAME_QUEUE_SOURCE, ADDRESS_QUEUE_SOURCE);
+            setUpQueue(managementClient.getControllerClient(), NAME_QUEUE_TARGET, ADDRESS_QUEUE_TARGET);
+
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            managementClient.getControllerClient().execute(Util.createRemoveOperation(ADDRESS_QUEUE_SOURCE));
-            managementClient.getControllerClient().execute(Util.createRemoveOperation(ADDRESS_QUEUE_TARGET));
+            final JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsQueue(NAME_QUEUE_SOURCE);
+            jmsOperations.removeJmsQueue(NAME_QUEUE_TARGET);
         }
 
-        private ModelNode setUpQueue(final ModelControllerClient client, final String name, final PathAddress address)
+        private void setUpQueue(final ModelControllerClient client, final String name, final PathAddress address)
                 throws IOException {
-            final ModelNode operation = Util.createAddOperation(address);
-            operation.get(ENTRIES).add("java:jboss/jms/queue/" + name).add("java:jboss/exported/jms/queue/" + name);
-            operation.get(DURABLE.getName()).set(true);
-            return client.execute(operation);
-
+            final JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
+            final ModelNode attributes = new ModelNode();
+            attributes.get(ENTRIES).add("java:jboss/jms/queue/" + name);
+            attributes.get(DURABLE.getName()).set(true);
+            jmsOperations.createJmsQueue(name, "java:jboss/exported/jms/queue/" + name, attributes);
         }
     }
 
@@ -283,35 +291,36 @@ public class JMSBridgeManagementTestCase extends AbstractMgmtTestBase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            final ModelNode operation = Util.createAddOperation(ADDRESS_JMS_BRIDGE);
 
-             // final ModelNode source = operation.get("source");
-            operation.get(JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY.getName()).set("java:jboss/jms/XAConnectionFactory");
-            operation.get(JMSBridgeDefinition.SOURCE_DESTINATION.getName()).set("java:jboss/jms/queue/sourceQueue");
+            final JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            final ModelNode attributes = new ModelNode();
+            // final ModelNode source = operation.get("source");
+            attributes.get(JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY.getName()).set("java:jboss/jms/XAConnectionFactory");
+            attributes.get(JMSBridgeDefinition.SOURCE_DESTINATION.getName()).set("java:jboss/jms/queue/sourceQueue");
 
             // final ModelNode target = operation.get("target");
-            operation.get(JMSBridgeDefinition.TARGET_CONNECTION_FACTORY.getName()).set("jms/XAConnectionFactory");
-            operation.get(JMSBridgeDefinition.TARGET_DESTINATION.getName()).set("/jms/queue/targetQueue");
+            attributes.get(JMSBridgeDefinition.TARGET_CONNECTION_FACTORY.getName()).set("jms/XAConnectionFactory");
+            attributes.get(JMSBridgeDefinition.TARGET_DESTINATION.getName()).set("/jms/queue/targetQueue");
             
-            operation.get(JMSBridgeDefinition.TARGET_CONTEXT.getName(), "java.naming.factory.initial").set(
+            attributes.get(JMSBridgeDefinition.TARGET_CONTEXT.getName(), "java.naming.factory.initial").set(
                     "org.jboss.naming.remote.client.InitialContextFactory");
-            operation.get(JMSBridgeDefinition.TARGET_CONTEXT.getName(), "java.naming.provider.url").set("http-remoting://localhost:8080 ");
+            attributes.get(JMSBridgeDefinition.TARGET_CONTEXT.getName(), "java.naming.provider.url").set("http-remoting://"+managementClient.getMgmtAddress()+":8080 ");
 
             // other conf opts if need be
-            operation.get(JMSBridgeDefinition.QUALITY_OF_SERVICE.getName()).set("ONCE_AND_ONLY_ONCE");
-            operation.get(JMSBridgeDefinition.FAILURE_RETRY_INTERVAL.getName()).set(60);
-            operation.get(JMSBridgeDefinition.MAX_RETRIES.getName()).set("-1");
-            operation.get(JMSBridgeDefinition.MAX_BATCH_SIZE.getName()).set("10");
-            operation.get(JMSBridgeDefinition.MAX_BATCH_TIME.getName()).set("500");
-            operation.get(JMSBridgeDefinition.ADD_MESSAGE_ID_IN_HEADER.getName()).set("true");
-
-            final ModelNode result = managementClient.getControllerClient().execute(operation);
-            Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
+            attributes.get(JMSBridgeDefinition.QUALITY_OF_SERVICE.getName()).set("ONCE_AND_ONLY_ONCE");
+            attributes.get(JMSBridgeDefinition.FAILURE_RETRY_INTERVAL.getName()).set(60);
+            attributes.get(JMSBridgeDefinition.MAX_RETRIES.getName()).set("-1");
+            attributes.get(JMSBridgeDefinition.MAX_BATCH_SIZE.getName()).set("10");
+            attributes.get(JMSBridgeDefinition.MAX_BATCH_TIME.getName()).set("500");
+            attributes.get(JMSBridgeDefinition.ADD_MESSAGE_ID_IN_HEADER.getName()).set("true");
+            
+            jmsOperations.addJmsBridge(NAME_BRIDGE, attributes);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            managementClient.getControllerClient().execute(Util.createRemoveOperation(ADDRESS_JMS_BRIDGE));
+            final JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            jmsOperations.removeJmsBridge(NAME_BRIDGE);
         }
     }
 
