@@ -145,14 +145,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         requireNoNamespaceAttribute(reader, i);
                         final String value = reader.getAttributeValue(i);
                         final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                        switch (attribute) {
-                            case CODE: {
-                                vault.get(CODE).set(value);
-                                break;
-                            }
-                            default:
-                                throw unexpectedAttribute(reader, i);
-                        }
+                        if (CODE.equals(attribute)) {
+                            vault.get(CODE).set(value);   
+                        } else {
+                            throw unexpectedAttribute(reader, i);
+                        } 
                     }
                     parseProperties(Element.VAULT_OPTION.getLocalName(), reader, vault, VaultResourceDefinition.OPTIONS);
                     break;
