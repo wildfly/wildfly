@@ -73,8 +73,6 @@ public class SharedTldsMetaDataBuilder {
                     jstlTlds.add(tldMetaData);
                 }
             }
-        } catch (ModuleLoadException e) {
-            // Ignore
         } catch (Exception e) {
             // Ignore
         }
