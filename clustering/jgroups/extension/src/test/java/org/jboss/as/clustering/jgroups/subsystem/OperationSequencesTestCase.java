@@ -5,6 +5,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
@@ -123,6 +125,29 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // add a sample stack to test legacy paths on
         ModelNode result = services.executeOperation(getProtocolStackAddOperationWithParameters(stackName));
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // add a thread pool
+        result = services.executeOperation(getLegacyThreadPoolAddOperation(stackName, "default"));
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        ModelNode op = getLegacyThreadPoolAddOperation(stackName, "default");
+        op.get("operation").set("write-attribute");
+        op.get("name").set("keepalive-time");
+        op.get("value").set(999);
+        result = services.executeOperation(op);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        op = Operations.createReadResourceOperation(getSubsystemAddress());
+        op.get(ModelDescriptionConstants.INCLUDE_ALIASES).set("true");
+        op.get(ModelDescriptionConstants.RECURSIVE).set("true");
+        result = services.executeOperation(op);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        op = Util.createOperation(ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION, getSubsystemAddress());
+        op.get(ModelDescriptionConstants.INCLUDE_ALIASES).set("true");
+        op.get(ModelDescriptionConstants.RECURSIVE).set("true");
+        result = services.executeOperation(op);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         result = services.executeOperation(getLegacyTransportRemoveOperation(stackName));

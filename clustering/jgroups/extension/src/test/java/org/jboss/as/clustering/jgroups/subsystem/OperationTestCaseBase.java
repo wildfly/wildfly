@@ -177,6 +177,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, values);
     }
 
+    protected static ModelNode getLegacyThreadPoolAddOperation(String stackName, String threadPoolName) {
+        return Util.createAddOperation(getLegacyTransportAddress(stackName).append("thread-pool", threadPoolName));
+    }
+
     // Protocol operations
     protected static ModelNode getProtocolAddOperation(String stackName, String type) {
         return Util.createAddOperation(getProtocolAddress(stackName, type));
