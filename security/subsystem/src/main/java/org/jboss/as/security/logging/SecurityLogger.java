@@ -291,8 +291,8 @@ public interface SecurityLogger extends BasicLogger {
      * Create a {@link SecurityException} to indicate that no password validation mechanism has been identified.
      * @return {@link SecurityException}
      */
-    @Message(id = 30, value = "No suitable password validation mechanism identified for realm '%s'")
-    SecurityException noPasswordValidationAvailable(final String realmName);
+    //@Message(id = 30, value = "No suitable password validation mechanism identified for realm '%s'")
+    //SecurityException noPasswordValidationAvailable(final String realmName);
 
     /**
      * Create a {@link LoginException} to indicate a failure calling the security realm.
