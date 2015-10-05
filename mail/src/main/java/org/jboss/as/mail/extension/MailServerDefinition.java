@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshallers;
+import org.jboss.as.controller.AttributeParsers;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -52,6 +54,7 @@ import org.jboss.msc.service.ServiceName;
  */
 class MailServerDefinition extends PersistentResourceDefinition {
 
+
     static final SensitivityClassification MAIL_SERVER_SECURITY =
             new SensitivityClassification(MailExtension.SUBSYSTEM_NAME, "mail-server-security", false, false, true);
 
@@ -62,6 +65,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                    .setCapabilityReference(MailSessionDefinition.OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, MailSessionDefinition.MAIL_SESSION_CAPABILITY)
                     .build();
 
     protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF_OPTIONAL = SimpleAttributeDefinitionBuilder.create(OUTBOUND_SOCKET_BINDING_REF)
@@ -103,9 +107,9 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .build();
 
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)
-            .setXmlName("property")
-            .setWrapXmlElement(false)
             .setAllowExpression(true)
+            .setAttributeParser(AttributeParsers.PROPERTIES_UNWRAPPED)
+            .setAttributeMarshaller(new AttributeMarshallers.PropertiesAttributeMarshaller(null,false))
             .build();
 
 
@@ -148,13 +152,19 @@ class MailServerDefinition extends PersistentResourceDefinition {
         }
 
         @Override
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            context.readResource(PathAddress.EMPTY_ADDRESS, false); //to make sure resource we are removing exists! it will throw exception.
+            super.updateModel(context, operation);
+        }
+
+        @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
             MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel);
         }
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(parentAddress.getLastElement().getValue());
+            return MailSessionDefinition.MAIL_SESSION_CAPABILITY.getCapabilityServiceName(parentAddress.getLastElement().getValue());
         }
 
         @Override
@@ -164,7 +174,5 @@ class MailServerDefinition extends PersistentResourceDefinition {
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
             context.removeService(bindInfo.getBinderServiceName());
         }
-
-
     }
 }

@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -44,6 +45,12 @@ import org.jboss.dmr.ModelType;
  */
 class MailSessionDefinition extends PersistentResourceDefinition {
 
+    private static final String MAIL_SESSION_CAPABILITY_NAME = "org.wildfly.mail.session";
+        static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.outbound-socket-binding";
+            static final RuntimeCapability<Void> MAIL_SESSION_CAPABILITY = RuntimeCapability.Builder.of(MAIL_SESSION_CAPABILITY_NAME, true, MailSessionService.class)
+                    .build();
+
+
     static final MailSessionDefinition INSTANCE = new MailSessionDefinition();
 
     private final List<AccessConstraintDefinition> accessConstraints;
@@ -52,7 +59,7 @@ class MailSessionDefinition extends PersistentResourceDefinition {
         super(MailExtension.MAIL_SESSION_PATH,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION),
                 MailSessionAdd.INSTANCE,
-                new ServiceRemoveStepHandler(MailSessionAdd.MAIL_SESSION_SERVICE_NAME, MailSessionAdd.INSTANCE));
+                new ServiceRemoveStepHandler(MailSessionAdd.INSTANCE, MAIL_SESSION_CAPABILITY));
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);
         accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
@@ -112,4 +119,8 @@ class MailSessionDefinition extends PersistentResourceDefinition {
         return accessConstraints;
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(MailSessionDefinition.MAIL_SESSION_CAPABILITY);
+    }
 }

@@ -66,7 +66,7 @@ class MailServerAdd extends RestartParentResourceAddHandler {
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(parentAddress.getLastElement().getValue());
+        return MailSessionDefinition.MAIL_SESSION_CAPABILITY.getCapabilityServiceName(parentAddress.getLastElement().getValue());
     }
 
     @Override
