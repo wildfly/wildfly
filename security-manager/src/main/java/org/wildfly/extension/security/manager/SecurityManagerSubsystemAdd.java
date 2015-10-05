@@ -32,6 +32,7 @@ import static org.wildfly.extension.security.manager.Constants.PERMISSION_MODULE
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_NAME;
 
 import java.security.AllPermission;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,10 +49,13 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.security.FactoryPermissionCollection;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.LoadedPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
-import org.wildfly.extension.security.manager.deployment.PermissionsParseProcessor;
+import org.wildfly.extension.security.manager.deployment.PermissionsParserProcessor;
+import org.wildfly.extension.security.manager.deployment.PermissionsValidationProcessor;
+import org.wildfly.extension.security.manager.logging.SecurityManagerLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -112,13 +116,27 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
             maximumSet.add(new ImmediatePermissionFactory(new AllPermission()));
         }
 
-        // TODO validate the permission sets: the minimum-set must be implied by the maximum-set.
+        // validate the configured permissions - the mininum set must be implid by the maximum set.
+        final FactoryPermissionCollection maxPermissionCollection = new FactoryPermissionCollection(maximumSet.toArray(new PermissionFactory[maximumSet.size()]));
+        final StringBuilder failedPermissions = new StringBuilder();
+        for (PermissionFactory factory : minimumSet) {
+            Permission permission = factory.construct();
+            if (!maxPermissionCollection.implies(permission)) {
+                failedPermissions.append("\n\t\t" + permission);
+            }
+        }
+        if (failedPermissions.length() > 0) {
+            throw SecurityManagerLogger.ROOT_LOGGER.invalidSubsystemConfiguration(failedPermissions);
+        }
 
-        // install the DUP responsible for parsing security permissions found in META-INF/permissions.xml.
+
+        // install the DUPs responsible for parsing and validating security permissions found in META-INF/permissions.xml.
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                  processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_PERMISSIONS,
-                         new PermissionsParseProcessor(minimumSet, maximumSet));
+                         new PermissionsParserProcessor(minimumSet));
+                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_PERMISSIONS_VALIDATION,
+                         new PermissionsValidationProcessor(maximumSet));
             }
         }, OperationContext.Stage.RUNTIME);
     }
