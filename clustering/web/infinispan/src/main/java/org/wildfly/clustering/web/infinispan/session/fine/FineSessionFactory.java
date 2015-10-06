@@ -155,9 +155,18 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionEntry<L>
     }
 
     @Override
+    public FineSessionEntry<L> tryValue(String id) {
+        return this.getValue(id, this.findCreationMetaDataCache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY));
+    }
+
+    @Override
     public FineSessionEntry<L> findValue(String id) {
+        return this.getValue(id, this.findCreationMetaDataCache);
+    }
+
+    public FineSessionEntry<L> getValue(String id, Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache) {
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        SessionCreationMetaDataEntry<L> creationMetaDataEntry = this.findCreationMetaDataCache.get(creationMetaDataKey);
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = creationMetaDataCache.get(creationMetaDataKey);
         if (creationMetaDataEntry != null) {
             Mutator creationMetaDataMutator = new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, creationMetaDataEntry);
             SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);

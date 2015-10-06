@@ -159,9 +159,18 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
     }
 
     @Override
+    public CoarseSessionEntry<L> tryValue(String id) {
+        return this.getValue(id, this.findCreationMetaDataCache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY));
+    }
+
+    @Override
     public CoarseSessionEntry<L> findValue(String id) {
+        return this.getValue(id, this.findCreationMetaDataCache);
+    }
+
+    private CoarseSessionEntry<L> getValue(String id, Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache) {
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        SessionCreationMetaDataEntry<L> creationMetaDataEntry = this.findCreationMetaDataCache.get(creationMetaDataKey);
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = creationMetaDataCache.get(creationMetaDataKey);
         if (creationMetaDataEntry != null) {
             SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
             SessionAccessMetaData accessMetaData = this.accessMetaDataCache.get(accessMetaDataKey);

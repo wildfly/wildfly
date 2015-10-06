@@ -49,10 +49,10 @@ public class ExpiredSessionRemoverTestCase {
         Object validValue = new Object();
         Object invalidValue = new Object();
         
-        when(factory.findValue(missingSessionId)).thenReturn(null);
-        when(factory.findValue(expiredSessionId)).thenReturn(expiredValue);
-        when(factory.findValue(validSessionId)).thenReturn(validValue);
-        when(factory.findValue(invalidSessionId)).thenReturn(invalidValue);
+        when(factory.tryValue(missingSessionId)).thenReturn(null);
+        when(factory.tryValue(expiredSessionId)).thenReturn(expiredValue);
+        when(factory.tryValue(validSessionId)).thenReturn(validValue);
+        when(factory.tryValue(invalidSessionId)).thenReturn(invalidValue);
         
         when(factory.createSession(expiredSessionId, expiredValue)).thenReturn(expiredSession);
         when(factory.createSession(validSessionId, validValue)).thenReturn(validSession);
