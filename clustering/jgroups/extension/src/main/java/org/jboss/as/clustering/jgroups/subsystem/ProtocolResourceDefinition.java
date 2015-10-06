@@ -22,12 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -35,6 +29,10 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
@@ -174,7 +172,7 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
                     addProtocolOp.get(ModelDescriptionConstants.OP_ADDR).set(stackAddress.toModelNode());
                     addProtocolOp.get(ModelDescriptionConstants.OP).set("add-protocol");
 
-                    addProtocolOp = PropertyResourceDefinition.PROPERTIES_ADD_OP_TRANSFORMER.transformOperation(addProtocolOp);
+                    addProtocolOp = new LegacyPropertyAddOperationTransformer().transformOperation(addProtocolOp);
 
                     return addProtocolOp;
                 }
@@ -195,7 +193,7 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
             };
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleOperationTransformer(removeTransformer));
 
-            builder.setCustomResourceTransformer(PropertyResourceDefinition.PROPERTIES_RESOURCE_TRANSFORMER);
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
@@ -222,29 +220,12 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
                     .setValueConverter(typeConverter, DeprecatedAttribute.TYPE.getDefinition())
                     .end();
 
-            OperationTransformer getPropertyTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(Attribute.PROPERTIES.getDefinition().getName())) {
-                        String key = operation.get("key").asString();
-                        PathAddress address = Operations.getPathAddress(operation);
-                        ModelNode transformedOperation = Util.createOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address.append(PropertyResourceDefinition.pathElement(key)));
-                        transformedOperation.get(ModelDescriptionConstants.NAME).set(PropertyResourceDefinition.VALUE.getName());
-                        return transformedOperation;
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(getPropertyTransformer));
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
 
-            Set<String> writeAttributeOperations = new HashSet(MapOperations.MAP_OPERATION_NAMES);
-            writeAttributeOperations.remove(MapOperations.MAP_GET_DEFINITION.getName());
-            writeAttributeOperations.add(WRITE_ATTRIBUTE_OPERATION);
-            writeAttributeOperations.add(UNDEFINE_ATTRIBUTE_OPERATION);
-            for (String opName : writeAttributeOperations) {
+            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
                 builder.addOperationTransformationOverride(opName)
                         .inheritResourceAttributeDefinitions()
-                        .setCustomOperationTransformer(PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER);
+                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer());
             }
         }
     }
@@ -265,4 +246,5 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
     public void register(ManagementResourceRegistration registration) {
         new PropertyResourceDefinition().register(registration);
     }
+
 }
