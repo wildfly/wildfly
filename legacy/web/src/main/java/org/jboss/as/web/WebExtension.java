@@ -397,7 +397,7 @@ public class WebExtension implements Extension {
         }
 
         @Override
-        public PathAddress convertToTargetAddress(PathAddress addr) {
+        public PathAddress convertToTargetAddress(PathAddress addr, AliasContext aliasContext) {
             final PathAddress targetAddress = getTargetAddress();
             List<PathElement> list = new ArrayList<PathElement>();
             int i = 0;
