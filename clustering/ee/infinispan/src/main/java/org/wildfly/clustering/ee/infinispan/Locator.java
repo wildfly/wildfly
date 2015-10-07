@@ -33,4 +33,13 @@ public interface Locator<K, V> {
      * @return the value of the cache entry, or null if not found.
      */
     V findValue(K id);
+
+    /**
+     * Returns the value for the specified key, if possible.
+     * @param key a cache key
+     * @return the value of the cache entry, or null if not found or unavailable.
+     */
+    default V tryValue(K key) {
+        return this.findValue(key);
+    }
 }

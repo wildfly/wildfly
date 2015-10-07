@@ -373,7 +373,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
                 Batch batch = this.batcher.createBatch();
                 try {
                     // We need to lookup the session to obtain its meta data
-                    V value = this.factory.findValue(id);
+                    V value = this.factory.tryValue(id);
                     if (value != null) {
                         this.scheduler.schedule(this.factory.createImmutableSession(id, value));
                     }
