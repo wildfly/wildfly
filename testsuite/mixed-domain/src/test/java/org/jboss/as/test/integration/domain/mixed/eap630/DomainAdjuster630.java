@@ -35,4 +35,5 @@ public class DomainAdjuster630 extends DomainAdjuster640 {
     protected String getJaspiTestAuthModuleName() {
         return "org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule";
     }
+
 }

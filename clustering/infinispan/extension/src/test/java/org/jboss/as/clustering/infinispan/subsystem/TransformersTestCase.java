@@ -297,6 +297,41 @@ public class TransformersTestCase extends OperationTestCaseBase {
             }
         }
 
+        if (InfinispanModel.VERSION_1_5_0.requiresTransformation(version)) {
+            config.addFailedAttribute(
+                    containerAddress, new ChangeToTrueConfig(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()));
+            config.addFailedAttribute(
+                    containerAddress.append(LocalCacheResourceDefinition.WILDCARD_PATH), new ChangeToTrueConfig(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()));
+            config.addFailedAttribute(
+                    containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH), new ChangeToTrueConfig(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()));
+            config.addFailedAttribute(
+                    containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH), new ChangeToTrueConfig(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()));
+            config.addFailedAttribute(
+                    containerAddress.append(InvalidationCacheResourceDefinition.WILDCARD_PATH), new ChangeToTrueConfig(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()));
+
+        }
+
         return config;
+    }
+
+    private static class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig> {
+        public ChangeToTrueConfig(String... attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return !attribute.equals(new ModelNode(true));
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode(true);
+        }
     }
 }

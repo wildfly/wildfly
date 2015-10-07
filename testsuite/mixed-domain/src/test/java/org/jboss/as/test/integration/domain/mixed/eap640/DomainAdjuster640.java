@@ -191,35 +191,14 @@ public class DomainAdjuster640 extends DomainAdjuster {
 
         list.add(getWriteAttributeOperation(subsystem.append("cache-container", "server").append("transport", "jgroups"), "stack", new ModelNode("udp")));
 
-        //Statistics need to be enabled for all cache containers and caches
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "server")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "server").append("replicated-cache", "default")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "web")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "web").append("distributed-cache", "dist")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "ejb")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "ejb").append("distributed-cache", "dist")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("invalidation-cache", "entity")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("local-cache", "local-query")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("replicated-cache", "timestamps")));
+        this.adjustInfinispanStatisticsEnabled(list, subsystem);
 
         return list;
     }
 
-    private ModelNode setStatisticsEnabledTrue(final PathAddress addr) {
-        return getWriteAttributeOperation(addr, "statistics-enabled", true);
+    public void adjustInfinispanStatisticsEnabled(final List<ModelNode> list, final PathAddress subsystem) {
+        // No-op for 6.4.0
     }
-
 
     private List<ModelNode> adjustJGroups(final PathAddress subsystem) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
