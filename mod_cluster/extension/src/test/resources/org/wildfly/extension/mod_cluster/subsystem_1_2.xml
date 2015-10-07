@@ -45,7 +45,8 @@
                         ttl="${modcluster.ttl:1}"
                         worker-timeout="${modcluster.worker-timeout:2}"
                         session-draining-strategy="${modcluster.session-draining-strategy:ALWAYS}"
-            >
+        >
+        <simple-load-provider factor="${modcluster.simple-load-provider.factor:15}"/>
         <dynamic-load-provider decay="${modcluster.dynamic-load-provider.decay:2}" history="${modcluster.dynamic-load-provider.history:10}">
             <load-metric capacity="${modcluster.load-metric.capacity:1000.1}" type="sessions" weight="${modcluster.load-metric.weight:2}"/>
             <load-metric capacity="512.2" type="send-traffic" weight="3"/>
@@ -68,6 +69,6 @@
              cipher-suite="${modcluster.cipher-suite:SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA}"
              key-alias="${modcluster.key-alias:mykeyalias}"
              password="${modcluster.password:mypassword}"
-             protocol="${modcluster.protocol:TLSv1}"/>
+             protocol="${modcluster.protocol:TLS}"/>
     </mod-cluster-config>
 </subsystem>

@@ -21,16 +21,12 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:modcluster:1.1">
-    <mod-cluster-config advertise="true"
+    <mod-cluster-config proxy-list="example.com:6666" load-balancing-group="mydomain" advertise="true"
                         advertise-security-key="mysecuritykey"
-                        auto-enable-contexts="true"
-                        connector="http"
-                        excluded-contexts="a,b,c"
-                        load-balancing-group="mydomain"
-                        proxy-list="example.com:6666"
+                        excluded-contexts="a,b,c" auto-enable-contexts="true" stop-context-timeout="10"
                         socket-timeout="20"
-                        stop-context-timeout="10"
-            >
+                        connector="http">
+        <simple-load-provider factor="15"/>
         <dynamic-load-provider decay="2" history="10">
             <load-metric capacity="1000" type="sessions" weight="2"/>
             <load-metric capacity="512" type="send-traffic" weight="3"/>
