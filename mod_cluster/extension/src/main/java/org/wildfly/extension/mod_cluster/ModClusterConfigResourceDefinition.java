@@ -73,7 +73,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition SESSION_DRAINING_STRATEGY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SESSION_DRAINING_STRATEGY, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(SessionDrainingStrategyEnum.DEFAULT.name()))
-            .setValidator(new EnumValidator<SessionDrainingStrategyEnum>(SessionDrainingStrategyEnum.class, true, true,
+            .setValidator(new EnumValidator<>(SessionDrainingStrategyEnum.class, true, true,
                     SessionDrainingStrategyEnum.ALWAYS,
                     SessionDrainingStrategyEnum.DEFAULT,
                     SessionDrainingStrategyEnum.NEVER))
@@ -310,7 +310,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
                     .end();
         }
 
-        if (ModClusterModel.VERSION_2_0_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_1_5_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                     .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
