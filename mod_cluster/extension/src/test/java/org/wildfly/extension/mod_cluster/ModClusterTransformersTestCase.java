@@ -40,9 +40,9 @@ import org.junit.Test;
  * @author Radoslav Husar
  * @version Oct 2015
  */
-public class TransformersTestCase extends AbstractSubsystemTest {
+public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
-    public TransformersTestCase() {
+    public ModClusterTransformersTestCase() {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
     }
 

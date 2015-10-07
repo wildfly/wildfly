@@ -45,9 +45,9 @@ import org.junit.Test;
  * @author Radoslav Husar
  * @version Apr 2015
  */
-public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
+public class ModClusterSubsystemParsingTestCase extends AbstractSubsystemBaseTest {
 
-    public SubsystemParsingTestCase() {
+    public ModClusterSubsystemParsingTestCase() {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
     }
 
