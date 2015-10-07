@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
-import io.undertow.security.impl.SingleSignOnManager;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -48,7 +47,7 @@ public class DistributableSingleSignOnManagerTestCase {
     private final SSOManager<AuthenticatedSession, String, Void, Batch> manager = mock(SSOManager.class);
     private final SessionManagerRegistry registry = mock(SessionManagerRegistry.class);
 
-    private final SingleSignOnManager subject = new DistributableSingleSignOnManager(this.manager, this.registry);
+    private final DistributableSingleSignOnManager subject = new DistributableSingleSignOnManager(this.manager, this.registry);
 
     @Test
     public void createSingleSignOn() {
