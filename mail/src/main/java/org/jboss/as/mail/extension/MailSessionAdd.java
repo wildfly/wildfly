@@ -23,6 +23,7 @@
 package org.jboss.as.mail.extension;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.mail.extension.MailSessionDefinition.MAIL_SESSION_CAPABILITY;
 import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM;
 import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
 import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
@@ -57,10 +58,8 @@ import org.jboss.msc.service.ServiceTarget;
 class MailSessionAdd extends AbstractAddStepHandler {
 
     static final MailSessionAdd INSTANCE = new MailSessionAdd();
-    public static final ServiceName MAIL_SESSION_SERVICE_NAME = ServiceName.JBOSS.append("mail-session");
-
-    protected MailSessionAdd() {
-    }
+    @Deprecated
+    public static final ServiceName MAIL_SESSION_SERVICE_NAME = MailSessionDefinition.MAIL_SESSION_CAPABILITY.getCapabilityServiceName();
 
     /**
      * {@inheritDoc}
@@ -102,14 +101,14 @@ class MailSessionAdd extends AbstractAddStepHandler {
 
         final MailSessionConfig config = from(context, fullModel);
         final MailSessionService service = new MailSessionService(config);
-        final ServiceName serviceName = MAIL_SESSION_SERVICE_NAME.append(name);
+        final ServiceName serviceName = MAIL_SESSION_CAPABILITY.getCapabilityServiceName(name);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
-        addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
-        addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
-        addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
+        addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer(), context);
+        addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server(), context);
+        addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer(), context);
         for (CustomServerConfig server : config.getCustomServers()) {
             if (server.getOutgoingSocketBinding() != null) {
-                addOutboundSocketDependency(service, mailSessionBuilder, server);
+                addOutboundSocketDependency(service, mailSessionBuilder, server, context);
             }
         }
 
@@ -137,6 +136,9 @@ class MailSessionAdd extends AbstractAddStepHandler {
                         }
                     }
                 });
+        //only for backward compatibility
+        @SuppressWarnings("deprecation") final ServiceName legacyServiceName = MAIL_SESSION_SERVICE_NAME.append(name);
+        mailSessionBuilder.addAliases(legacyServiceName);
 
         mailSessionBuilder
                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -169,10 +171,11 @@ class MailSessionAdd extends AbstractAddStepHandler {
     }
 
 
-    private static void addOutboundSocketDependency(MailSessionService service, ServiceBuilder<?> mailSessionBuilder, ServerConfig server) {
+    private static void addOutboundSocketDependency(MailSessionService service, ServiceBuilder<?> mailSessionBuilder, ServerConfig server, OperationContext context) {
         if (server != null) {
             final String ref = server.getOutgoingSocketBinding();
-            mailSessionBuilder.addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(ref),
+            final ServiceName socketBindingServiceName = context.getCapabilityServiceName(MailSessionDefinition.OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, ref, OutboundSocketBinding.class);
+            mailSessionBuilder.addDependency(socketBindingServiceName,
                     OutboundSocketBinding.class, service.getSocketBindingInjector(ref));
         }
     }

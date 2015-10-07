@@ -82,7 +82,7 @@ class MailSessionDefinitionInjectionSource extends ResourceDefinitionInjectionSo
                                   final ServiceBuilder<?> valueSourceServiceBuilder, final Injector<ManagedReferenceFactory> injector) {
 
 
-        final ServiceName mailSessionServiceName = MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("MailSessionDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
+        final ServiceName mailSessionServiceName = MailSessionDefinition.MAIL_SESSION_CAPABILITY.getCapabilityServiceName().append("MailSessionDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
         final ServiceBuilder<?> mailSessionServiceBuilder = serviceTarget
                 .addService(mailSessionServiceName, mailSessionService);
 
