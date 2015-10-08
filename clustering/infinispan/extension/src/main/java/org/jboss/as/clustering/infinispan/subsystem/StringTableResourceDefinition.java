@@ -25,9 +25,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Arrays;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
@@ -81,7 +81,7 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress storeAddress = Operations.getPathAddress(operation).getParent();
                     ModelNode value = new ModelNode();
-                    for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(Attribute.class, TableResourceDefinition.Attribute.class)) {
+                    for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(Attribute.class, TableResourceDefinition.Attribute.class, TableResourceDefinition.ColumnAttribute.class)) {
                         for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
                             String name = attribute.getDefinition().getName();
                             if (operation.hasDefined(name)) {

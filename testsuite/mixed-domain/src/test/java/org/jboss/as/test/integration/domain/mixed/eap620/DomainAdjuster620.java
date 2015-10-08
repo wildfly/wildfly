@@ -64,4 +64,34 @@ public class DomainAdjuster620 extends DomainAdjuster630 {
 
         return list;
     }
+
+    @Override
+    public void adjustInfinispanStatisticsEnabled(final List<ModelNode> list, final PathAddress subsystem) {
+        //Statistics need to be enabled for all cache containers and caches
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "server")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "server").append("replicated-cache", "default")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "web")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "web").append("distributed-cache", "dist")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "ejb")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "ejb").append("distributed-cache", "dist")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "hibernate")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "hibernate").append("invalidation-cache", "entity")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "hibernate").append("local-cache", "local-query")));
+        list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "hibernate").append("replicated-cache", "timestamps")));
+    }
+
+    private ModelNode setStatisticsEnabledTrue(final PathAddress addr) {
+        return getWriteAttributeOperation(addr, "statistics-enabled", true);
+    }
+
 }

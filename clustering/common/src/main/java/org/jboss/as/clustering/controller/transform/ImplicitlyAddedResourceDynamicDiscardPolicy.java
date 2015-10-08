@@ -46,9 +46,11 @@ public class ImplicitlyAddedResourceDynamicDiscardPolicy implements DynamicDisca
     public DiscardPolicy checkResource(TransformationContext context, PathAddress address) {
         ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
 
-        for (Property entry : model.asPropertyList()) {
-            if (entry.getValue().isDefined()) {
-                return DiscardPolicy.REJECT_AND_WARN;
+        if (model.isDefined()) {
+            for (Property entry : model.asPropertyList()) {
+                if (entry.getValue().isDefined()) {
+                    return DiscardPolicy.REJECT_AND_WARN;
+                }
             }
         }
 

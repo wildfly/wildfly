@@ -152,8 +152,9 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
                 }
             };
             builder.getAttributeBuilder()
+                    .addRename(Attribute.DATA_SOURCE.getDefinition().getName(), DeprecatedAttribute.DATASOURCE.getDefinition().getName())
                     .setValueConverter(new SimpleAttributeConverter(converter), Attribute.DATA_SOURCE.getDefinition())
-                    ;
+            ;
         }
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
@@ -174,7 +175,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
                 String poolName = findPoolName(context, jndiName);
                 operation.get(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName()).set(poolName);
             } else {
-                ControllerLogger.MGMT_OP_LOGGER.validationFailedRequiredParameterNotPresent(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName(), operation.toString());
+                throw ControllerLogger.MGMT_OP_LOGGER.validationFailedRequiredParameterNotPresent(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName(), operation.toString());
             }
         }
     }

@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Set;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
@@ -51,7 +51,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/transport=TRANSPORT
+ * Resource description for the addressable resource and its alias
+ *
+ * /subsystem=infinispan/cache-container=X/transport=jgroups
+ * /subsystem=infinispan/cache-container=X/transport=TRANSPORT
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */

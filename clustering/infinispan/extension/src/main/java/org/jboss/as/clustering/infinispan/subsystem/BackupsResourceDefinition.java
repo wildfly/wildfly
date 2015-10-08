@@ -37,6 +37,10 @@ import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Definition of a backups resource.
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/component=backups
+ *
  * @author Paul Ferraro
  */
 public class BackupsResourceDefinition extends ComponentResourceDefinition {
