@@ -24,13 +24,16 @@ package org.jboss.as.test.integration.security.loginmodules.negotiation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.net.SocketPermission;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PropertyPermission;
 
+import javax.security.auth.kerberos.ServicePermission;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -72,6 +75,8 @@ import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUti
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.integration.security.loginmodules.LdapExtLoginModuleTestCase;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.logging.Logger;
 import org.jboss.security.SecurityConstants;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -123,7 +128,20 @@ public class SPNEGOLoginModuleTestCase {
     @Deployment(name = "WEB", testable = false)
     public static WebArchive deployment() {
         LOGGER.debug("Web deployment");
-        return createWebApp(WEBAPP_NAME, "web-spnego-authn.xml", "SPNEGO");
+        final WebArchive war = createWebApp(WEBAPP_NAME, "web-spnego-authn.xml", "SPNEGO");
+        war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                // Permissions for PropagateIdentityServlet to get delegation credentials DelegationCredentialContext.getDelegCredential()
+                new RuntimePermission("org.jboss.security.negotiation.getDelegCredential"),
+                // Permissions for PropagateIdentityServlet to read properties
+                new PropertyPermission(GSSTestConstants.PROPERTY_PORT,"read"),
+                new PropertyPermission(GSSTestConstants.PROPERTY_PRINCIPAL,"read"),
+                new PropertyPermission(GSSTestConstants.PROPERTY_PASSWORD,"read"),
+                // Permissions for GSSTestClient to connect to GSSTestServer
+                new SocketPermission(TestSuiteEnvironment.getServerAddress(),"resolve,connect"),
+                // Permissions for GSSTestClient to initiate gss context
+                new ServicePermission(GSSTestConstants.PRINCIPAL, "initiate")),
+                "permissions.xml");
+        return war;
     }
 
     /**
