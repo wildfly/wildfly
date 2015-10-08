@@ -55,8 +55,8 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
-import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionFactory;
-import org.wildfly.clustering.web.infinispan.session.fine.FineSessionFactory;
+import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionAttributesFactory;
+import org.wildfly.clustering.web.infinispan.session.fine.FineSessionAttributesFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -148,27 +148,31 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
                 return inactiveSessionRecorder;
             }
         };
-        return new InfinispanSessionManager<>(this.getSessionFactory(context, localContextFactory), config);
+        return new InfinispanSessionManager<>(this.createSessionFactory(context, localContextFactory), config);
     }
 
-    private <L> SessionFactory<?, L> getSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory) {
+    private <L> SessionFactory<?, ?, L> createSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory) {
+        Configuration config = this.config.getCache().getCacheConfiguration();
+        boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
+        boolean requireMarshallable = config.clustering().cacheMode().needsStateTransfer() || config.persistence().usingStores();
+        SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.config.getCache(), lockOnRead);
+        return new InfinispanSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(lockOnRead, requireMarshallable), context, localContextFactory);
+    }
+
+    private <L> SessionAttributesFactory<?> createSessionAttributesFactory(boolean lockOnRead, boolean requireMarshallable) {
         SessionManagerConfiguration config = this.config.getSessionManagerConfiguration();
         Module module = config.getModule();
         MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
-        Cache<Key<String>, ?> cache = this.config.getCache();
-        Configuration cacheConfig = cache.getCacheConfiguration();
-        boolean lockOnRead = cacheConfig.transaction().transactionMode().isTransactional() && (cacheConfig.transaction().lockingMode() == LockingMode.PESSIMISTIC) && cacheConfig.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
-        boolean requireMarshallable = cacheConfig.clustering().cacheMode().needsStateTransfer() || cacheConfig.persistence().usingStores();
 
-        switch (config.getAttributePersistenceStrategy()) {
+        switch (this.config.getSessionManagerConfiguration().getAttributePersistenceStrategy()) {
             case FINE: {
                 Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new FineSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead, requireMarshallable);
+                return new FineSessionAttributesFactory(this.config.getCache(), marshaller, requireMarshallable);
             }
             case COARSE: {
                 Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new CoarseSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead, requireMarshallable);
+                return new CoarseSessionAttributesFactory(this.config.getCache(), marshaller, lockOnRead, requireMarshallable);
             }
             default: {
                 // Impossible

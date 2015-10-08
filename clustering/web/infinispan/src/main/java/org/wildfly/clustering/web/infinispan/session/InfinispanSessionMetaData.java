@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Cache entry containing the session creation meta data and local context.
+ * Wrapper for the components of a sessions's meta-data,
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataEntry<L> {
-
-    private final SessionCreationMetaData metaData;
+public class InfinispanSessionMetaData<L> {
+    private final SessionCreationMetaData creationMetaData;
+    private final SessionAccessMetaData accessMetaData;
     private final AtomicReference<L> localContext;
 
-    public SessionCreationMetaDataEntry(SessionCreationMetaData metaData) {
-        this(metaData, new AtomicReference<>());
-    }
-
-    public SessionCreationMetaDataEntry(SessionCreationMetaData metaData, AtomicReference<L> localContext) {
-        this.metaData = metaData;
+    public InfinispanSessionMetaData(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, AtomicReference<L> localContext) {
+        this.creationMetaData = creationMetaData;
+        this.accessMetaData = accessMetaData;
         this.localContext = localContext;
     }
 
-    public SessionCreationMetaData getMetaData() {
-        return this.metaData;
+    public SessionCreationMetaData getCreationMetaData() {
+        return this.creationMetaData;
+    }
+
+    public SessionAccessMetaData getAccessMetaData() {
+        return this.accessMetaData;
     }
 
     public AtomicReference<L> getLocalContext() {
