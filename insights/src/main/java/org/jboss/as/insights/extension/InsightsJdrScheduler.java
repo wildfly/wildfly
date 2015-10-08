@@ -193,6 +193,7 @@ class InsightsJdrScheduler implements InsightsScheduler {
             ROOT_LOGGER.couldNotFindSystem(e);
         }
         try {
+            // upload JDR to insights
             api.getInsights().upload((insightsEndpoint + uuid), file, description);
         } catch (FileNotFoundException e) {
             wasSuccessful = false;

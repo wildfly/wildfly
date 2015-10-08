@@ -49,6 +49,8 @@ PutObjectStoreDirHere
 /.m2
 # ignore eap repo
 local-repo-eap
+#ignore bin folders
+*bin/
 
 #These keep hanging around
 arquillian/*/server.log*
