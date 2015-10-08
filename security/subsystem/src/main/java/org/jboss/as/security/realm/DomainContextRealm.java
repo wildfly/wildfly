@@ -86,10 +86,10 @@ public class DomainContextRealm implements SecurityRealm {
     }
 
     @Override
-    public CredentialSupport getCredentialSupport(final Class<?> credentialType, final String algorithmName) throws RealmUnavailableException {
-        if (char[].class.isAssignableFrom(credentialType) || String.class.isAssignableFrom(credentialType) || ClearPassword.class.isAssignableFrom(credentialType)) {
-            return CredentialSupport.VERIFIABLE_ONLY;
-        }
+    public CredentialSupport getCredentialSupport(final String credentialName) throws RealmUnavailableException {
+        //if (char[].class.isAssignableFrom(credentialType) || String.class.isAssignableFrom(credentialType) || ClearPassword.class.isAssignableFrom(credentialType)) {
+        //    return CredentialSupport.VERIFIABLE_ONLY;
+        //}
         return CredentialSupport.POSSIBLY_VERIFIABLE;
     }
 
@@ -104,17 +104,17 @@ public class DomainContextRealm implements SecurityRealm {
         }
 
         @Override
-        public CredentialSupport getCredentialSupport(final Class<?> credentialType, final String algorithmName) throws RealmUnavailableException {
-            return DomainContextRealm.this.getCredentialSupport(credentialType, algorithmName);
+        public CredentialSupport getCredentialSupport(final String credentialName) throws RealmUnavailableException {
+            return DomainContextRealm.this.getCredentialSupport(credentialName);
         }
 
         @Override
-        public <C> C getCredential(final Class<C> credentialType, final String algorithmName) throws RealmUnavailableException {
+        public <C> C getCredential(final String credentialName, final Class<C> credentialType) throws RealmUnavailableException {
             return null;
         }
 
         @Override
-        public boolean verifyCredential(final Object credential) throws RealmUnavailableException {
+        public boolean verifyCredential(final String credentialName, final Object credential) throws RealmUnavailableException {
             if (domainContext == null || domainContext.getAuthenticationManager() == null) {
                 throw new RealmUnavailableException();
             }
