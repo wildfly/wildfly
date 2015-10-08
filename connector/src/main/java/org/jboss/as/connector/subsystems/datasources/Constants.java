@@ -327,7 +327,7 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
             .setAllowNull(true)
-            .setDeprecated(ModelVersion.create(3))
+            .setDeprecated(ModelVersion.create(3), false)
             .build();
 
     static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
