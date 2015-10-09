@@ -37,12 +37,14 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     private final Map<String, Object> attributes;
     private final Mutator mutator;
     private final MarshallingContext context;
+    private final boolean requireMarshallable;
 
-    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, MarshallingContext context) {
+    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, MarshallingContext context, boolean requireMarshallable) {
         super(attributes);
         this.attributes = attributes;
         this.mutator = mutator;
         this.context = context;
+        this.requireMarshallable = requireMarshallable;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
         if (value == null) {
             return this.removeAttribute(name);
         }
-        if (!this.context.isMarshallable(value)) {
+        if (this.requireMarshallable && !this.context.isMarshallable(value)) {
             throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
         Object old = this.attributes.put(name, value);

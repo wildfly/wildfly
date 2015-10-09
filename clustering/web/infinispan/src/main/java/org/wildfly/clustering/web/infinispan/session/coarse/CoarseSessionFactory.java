@@ -72,9 +72,10 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
     private final Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache;
     private final Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller;
     private final LocalContextFactory<L> localContextFactory;
+    private final boolean requireMarshallable;
 
     @SuppressWarnings("unchecked")
-    public CoarseSessionFactory(Cache<? extends Key<String>, ?> cache, SessionContext context, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead) {
+    public CoarseSessionFactory(Cache<? extends Key<String>, ?> cache, SessionContext context, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead, boolean requireMarshallable) {
         this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
         this.findCreationMetaDataCache = lockOnRead ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
         this.accessMetaDataCache = (Cache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
@@ -82,6 +83,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         this.context = context;
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
+        this.requireMarshallable = requireMarshallable;
     }
 
     @Override
@@ -93,7 +95,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(creationMetaDataEntry.getValue(), creationMetaDataEntry.getMutator());
         SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(accessMetaDataEntry.getValue(), accessMetaDataEntry.getMutator());
         SessionMetaData metaData = new SimpleSessionMetaData(creationMetaData, accessMetaData);
-        SessionAttributes attributes = new CoarseSessionAttributes(attributesEntry.getValue(), attributesEntry.getMutator(), this.marshaller.getContext());
+        SessionAttributes attributes = new CoarseSessionAttributes(attributesEntry.getValue(), attributesEntry.getMutator(), this.marshaller.getContext(), this.requireMarshallable);
 
         return new InfinispanSession<>(id, metaData, attributes, entry.getLocalContext(), this.localContextFactory, this.context, this);
     }

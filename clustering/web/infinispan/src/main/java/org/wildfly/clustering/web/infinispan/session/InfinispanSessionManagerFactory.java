@@ -159,15 +159,16 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
         Cache<Key<String>, ?> cache = this.config.getCache();
         Configuration cacheConfig = cache.getCacheConfiguration();
         boolean lockOnRead = cacheConfig.transaction().transactionMode().isTransactional() && (cacheConfig.transaction().lockingMode() == LockingMode.PESSIMISTIC) && cacheConfig.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
+        boolean requireMarshallable = cacheConfig.clustering().cacheMode().needsStateTransfer() || cacheConfig.persistence().usingStores();
 
         switch (config.getAttributePersistenceStrategy()) {
             case FINE: {
                 Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new FineSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead);
+                return new FineSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead, requireMarshallable);
             }
             case COARSE: {
                 Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new CoarseSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead);
+                return new CoarseSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead, requireMarshallable);
             }
             default: {
                 // Impossible
