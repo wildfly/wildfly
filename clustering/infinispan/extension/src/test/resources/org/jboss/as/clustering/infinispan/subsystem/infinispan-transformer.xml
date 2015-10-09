@@ -33,6 +33,8 @@
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="false">
                 <!-- Leave out flush-lock-timeout here to test transformations of the default value (to 5 seconds) -->
                 <write-behind modification-queue-size="2048" thread-pool-size="1"/>
+                <property name="test-property">test-value</property>
+                <property name="test-property2">test-value2</property>
             </file-store>
         </local-cache>
         <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="10" queue-size="1000" statistics-enabled="true">
@@ -64,6 +66,8 @@
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <mixed-keyed-jdbc-store data-source="ExampleDS" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false">
                 <write-behind modification-queue-size="2048" thread-pool-size="1"/>
+                <property name="test-property">test-value</property>
+                <property name="test-property2">test-value2</property>
                 <binary-keyed-table prefix="ispn_entry" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
@@ -77,10 +81,8 @@
             </mixed-keyed-jdbc-store>
             <state-transfer timeout="60000" chunk-size="10000"/>
         </distributed-cache>
-        <!-- fails EAP 6.2.0 -->
-        <!--
-        <replicated-cache name="cache-with-binary-keyed-store" mode="ASYNC">
-            <binary-keyed-jdbc-store datasource="java:jboss/jdbc/binaryDs">
+        <replicated-cache name="cache-with-binary-keyed-store" mode="ASYNC" statistics-enabled="true">
+            <binary-keyed-jdbc-store data-source="ExampleDS">
                 <binary-keyed-table prefix="ispn_entry" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
@@ -88,8 +90,8 @@
                 </binary-keyed-table>
             </binary-keyed-jdbc-store>
         </replicated-cache>
-        <replicated-cache name="cache-with-string-keyed-store" mode="ASYNC">
-            <string-keyed-jdbc-store datasource="java:jboss/jdbc/stringDs">
+        <replicated-cache name="cache-with-string-keyed-store" mode="ASYNC" statistics-enabled="true">
+            <string-keyed-jdbc-store data-source="ExampleDS">
                 <string-keyed-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
@@ -97,6 +99,5 @@
                 </string-keyed-table>
             </string-keyed-jdbc-store>
         </replicated-cache>
-        -->
     </cache-container>
 </subsystem>
