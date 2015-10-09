@@ -26,22 +26,32 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.common.jms.JMSOperations;
-import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
+import org.junit.Ignore;
 
 /**
  * Failover and failback tests using 2 Artemis nodes (with replication).
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-public class ReplicatedFailoverTestCase extends FailoverTestCase {
+@Ignore
+public class MulticastReplicatedFailoverTestCase extends FailoverTestCase {
+
+    @Before
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+
+        // leave some time after servers are setup and reloaded so that the cluster is formed
+        Thread.sleep(60000);
+    }
 
     @Override
     protected void setUpServer1(ModelControllerClient client) throws Exception {
@@ -49,7 +59,8 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
 
         addDebug(client, "SERVER #1");
         configureCluster(client);
-        useTCPStack(client);
+        addMessagingGroupSocketBinding(client);
+        useSocketBindingForDiscoveryAndBroadcastGroups(client);
 
         // /subsystem=messaging-activemq/server=default/ha-policy=replication-master:add(cluster-name=my-cluster, check-for-live-server=true)
         ModelNode operation = new ModelNode();
@@ -66,12 +77,12 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
     protected void setUpServer2(ModelControllerClient client) throws Exception {
         super.setUpServer2(client);
 
-        addDebug(client, "SERVER #2");
+        addDebug(client, "SERVER #1");
         configureCluster(client);
-        useTCPStack(client);
+        addMessagingGroupSocketBinding(client);
+        useSocketBindingForDiscoveryAndBroadcastGroups(client);
 
         // /subsystem=messaging-activemq/server=default/ha-policy=replication-slave:add(cluster-name=my-cluster, restart-backup=true, failback-delay=2000)
-
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).add("subsystem", "messaging-activemq");
         operation.get(OP_ADDR).add("server", "default");
@@ -81,15 +92,6 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
         operation.get("failback-delay").set(2000);
         operation.get("restart-backup").set(true);
         execute(client, operation, true);
-    }
-
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        // leave some time after servers are setup and reloaded so that the cluster is formed
-        Thread.sleep(60000);
     }
 
     protected void configureCluster(ModelControllerClient client) throws Exception {
@@ -113,22 +115,46 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
         execute(client, operation, true);
     }
 
-    private void useTCPStack(ModelControllerClient client) throws Exception {
-        // /subsystem=messaging-activemq/server=default/broadcast-group=bg-group1:write-attribute(name=jgroups-stack, value=tcp)
-        // /subsystem=messaging-activemq/server=default/discovery-group=dg-group1:write-attribute(name=jgroups-stack, value=tcp)
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).add("subsystem", "messaging-activemq");
-        operation.get(OP_ADDR).add("server", "default");
-        operation.get(OP_ADDR).add("broadcast-group", "bg-group1");
-        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set("jgroups-stack");
-        operation.get(VALUE).set("tcp");
-        execute(client, operation, true);
+    private void useSocketBindingForDiscoveryAndBroadcastGroups(ModelControllerClient client) throws Exception {
+        // /subsystem=messaging-activemq/server=default/broadcast-group=bg-group1:remove
+        // /subsystem=messaging-activemq/server=default/broadcast-group=bg-group1:add(connectors=[http-connector], socket-binding=messaging-group)
+        // /subsystem=messaging-activemq/server=default/discovery-group=dg-group1:remove
+        // /subsystem=messaging-activemq/server=default/discovery-group=dg-group1:add(socket-binding=messaging-group)
 
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(OP_ADDR).add("subsystem", "messaging-activemq");
-        operation.get(OP_ADDR).add("server", "default");
-        operation.get(OP_ADDR).add("discovery-group", "dg-group1");
-        execute(client, operation, true);
+        ModelNode broadcastGroupOp = new ModelNode();
+        broadcastGroupOp.get(OP_ADDR).add(SUBSYSTEM, "messaging-activemq");
+        broadcastGroupOp.get(OP_ADDR).add("server", "default");
+        broadcastGroupOp.get(OP_ADDR).add("broadcast-group", "bg-group1");
+        broadcastGroupOp.get(OP).set(REMOVE);
+        execute(client, broadcastGroupOp, true);
+
+        broadcastGroupOp.get(OP).set(ADD);
+        broadcastGroupOp.get("connectors").add("http-connector");
+        broadcastGroupOp.get("socket-binding").set("messaging-group");
+        execute(client, broadcastGroupOp, true);
+
+        ModelNode discoveryGroupOp = new ModelNode();
+        discoveryGroupOp.get(OP_ADDR).add(SUBSYSTEM, "messaging-activemq");
+        discoveryGroupOp.get(OP_ADDR).add("server", "default");
+        discoveryGroupOp.get(OP_ADDR).add("discovery-group", "dg-group1");
+        discoveryGroupOp.get(OP).set(REMOVE);
+        execute(client, discoveryGroupOp, true);
+
+        discoveryGroupOp.get(OP).set(ADD);
+        discoveryGroupOp.get("socket-binding").set("messaging-group");
+        execute(client, discoveryGroupOp, true);
+    }
+
+    private void addMessagingGroupSocketBinding(ModelControllerClient client) throws Exception {
+        // /socket-binding-group=standard-sockets/socket-binding=messaging-group:add(port=0, multicast-address="${jboss.messaging.group.address:231.7.7.7}", multicast-port="${jboss.messaging.group.port:9876}")
+
+        ModelNode addOp = new ModelNode();
+        addOp.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
+        addOp.get(OP_ADDR).add("socket-binding", "messaging-group");
+        addOp.get(OP).set(ADD);
+        addOp.get("port").set(0);
+        addOp.get("multicast-address").set("${jboss.messaging.group.address:231.7.7.7}");
+        addOp.get("multicast-port").set("${jboss.messaging.group.port:9876}");
+        execute(client, addOp, true);
     }
 }
