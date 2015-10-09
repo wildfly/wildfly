@@ -71,7 +71,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NAME);
     static final String THREAD_FACTORY = "thread-factory";
 
-    static final SimpleAttributeDefinition DEFAULT_JOB_REPOSITORY = SimpleAttributeDefinitionBuilder.create("default-job-repository", ModelType.STRING, true)
+    static final SimpleAttributeDefinition DEFAULT_JOB_REPOSITORY = SimpleAttributeDefinitionBuilder.create("default-job-repository", ModelType.STRING, false)
             .setAllowExpression(false)
             .setAttributeGroup("environment")
             .setAttributeMarshaller(NameAttributeMarshaller.INSTANCE)
@@ -79,7 +79,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    static final SimpleAttributeDefinition DEFAULT_THREAD_POOL = SimpleAttributeDefinitionBuilder.create("default-thread-pool", ModelType.STRING, true)
+    static final SimpleAttributeDefinition DEFAULT_THREAD_POOL = SimpleAttributeDefinitionBuilder.create("default-thread-pool", ModelType.STRING, false)
             .setAllowExpression(false)
             .setAttributeGroup("environment")
             .setAttributeMarshaller(NameAttributeMarshaller.INSTANCE)

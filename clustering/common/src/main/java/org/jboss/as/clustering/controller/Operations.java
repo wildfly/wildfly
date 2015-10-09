@@ -23,8 +23,10 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -250,6 +252,18 @@ public final class Operations {
         ModelNode operation = createAttributeOperation(definition.getName(), address, attribute);
         operation.get(KEY).set(key);
         return operation;
+    }
+
+    /**
+     * @return set of all operations that are or do result in a write
+     */
+    public static Set<String> getAllWriteAttributeOperationNames() {
+        Set<String> writeAttributeOperations = new HashSet<>();
+        writeAttributeOperations.addAll(MapOperations.MAP_OPERATION_NAMES);
+        writeAttributeOperations.remove(MapOperations.MAP_GET_DEFINITION.getName());
+        writeAttributeOperations.add(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        writeAttributeOperations.add(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION);
+        return writeAttributeOperations;
     }
 
     private Operations() {

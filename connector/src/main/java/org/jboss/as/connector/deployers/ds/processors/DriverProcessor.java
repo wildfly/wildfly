@@ -76,8 +76,8 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                                 Integer.valueOf(minorVersion));
                     }
                     String driverName = deploymentUnit.getName();
-                    if ((deploymentUnit.getName().contains(".") && ! deploymentUnit.getName().endsWith(".jar")) || driverNames.size() != 1) {
-                        driverName = deploymentUnit.getName() + "_" + driverClassName + "_" + majorVersion +"_" + minorVersion;
+                    if ((driverName.contains(".") && ! driverName.endsWith(".jar")) || driverNames.size() != 1) {
+                        driverName += "_" + driverClassName + "_" + majorVersion + "_" + minorVersion;
                     }
                     InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, null, majorVersion,
                             minorVersion, compliant);

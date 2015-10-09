@@ -317,8 +317,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
 
     private void setProperty(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> dataSourceClass, final Map<String, String> properties, final String name, final Object value) {
         // Ignore defaulted values
-        if (value == null) return;
-        if (value instanceof String && "".equals(value)) return;
+        if (value == null || "".equals(value)) return;
         if (value instanceof Integer && ((Integer) value).intValue() == -1) return;
         StringBuilder builder = new StringBuilder("set").append(name);
         builder.setCharAt(3, Character.toUpperCase(name.charAt(0)));

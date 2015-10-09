@@ -4,13 +4,14 @@
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.clustering.jgroups"/>
-        <!--<extension module="org.jboss.as.cmp"/>-->
+        <extension module="org.jboss.as.cmp"/>
+        <extension module="org.jboss.as.configadmin"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
-        <!--<extension module="org.jboss.as.jaxr"/>-->
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
@@ -25,9 +26,9 @@
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
-        <!--<extension module="org.jboss.as.threads"/>-->
+        <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
-        <!--<extension module="org.jboss.as.web"/>-->
+        <extension module="org.jboss.as.web"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.jboss.as.weld"/>
     </extensions>
@@ -90,7 +91,8 @@
                 </handlers>
             </root-logger>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:cmp:1.0"/>-->
+        <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.1">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
@@ -211,9 +213,9 @@
                 <initializers transactions="spec" security="on"/>
             </orb>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:jaxr:1.1">
+        <subsystem xmlns="urn:jboss:domain:jaxr:1.1">
             <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
-        </subsystem>-->
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -414,7 +416,7 @@
                 </security-domain>
             </security-domains>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:threads:1.1"/>-->
+        <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.2">
             <core-environment>
                 <process-id>
@@ -424,14 +426,14 @@
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <coordinator-environment default-timeout="300"/>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="false">
+        <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="false">
             <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
             <connector name="ajp" protocol="AJP/1.3" scheme="http" socket-binding="ajp"/>
             <virtual-server name="default-host" enable-welcome-root="true">
                 <alias name="localhost"/>
                 <alias name="example.com"/>
             </virtual-server>
-        </subsystem>-->
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.1">
             <modify-wsdl-address>true</modify-wsdl-address>
             <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
@@ -478,7 +480,6 @@
         <socket-binding name="messaging-group" port="0" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
         <socket-binding name="messaging-throughput" port="5455"/>
         <socket-binding name="modcluster" port="0" multicast-address="224.0.1.105" multicast-port="23364"/>
-        <socket-binding name="osgi-http" interface="management" port="8090"/>
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>

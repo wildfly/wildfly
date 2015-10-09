@@ -66,6 +66,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition CACHE_TYPE = new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
+            .setAllowedValues("default", "infinispan")
             .build();
 
     public static final SimpleAttributeDefinition EXPORT_ELYTRON_REALM = new SimpleAttributeDefinitionBuilder(Constants.EXPORT_ELYTRON_REALM, ModelType.STRING, true)

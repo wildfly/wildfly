@@ -22,14 +22,9 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,6 +41,10 @@ import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.transform.ImplicitlyAddedResourceDynamicDiscardPolicy;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -66,7 +65,6 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -188,48 +186,34 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
             builder.setCustomResourceTransformer(new ResourceTransformer() {
                 @Override
                 public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    PropertyResourceDefinition.PROPERTIES_RESOURCE_TRANSFORMER.transformResource(context, LEGACY_ADDRESS_TRANSFORMER.transform(address), resource);
+                    new LegacyPropertyResourceTransformer().transformResource(context, LEGACY_ADDRESS_TRANSFORMER.transform(address), resource);
                 }
             });
             builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleOperationTransformer(new org.jboss.as.clustering.controller.transform.OperationTransformer() {
                 @Override
                 public ModelNode transformOperation(final ModelNode operation) {
                     operation.get(ModelDescriptionConstants.OP_ADDR).set(LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation)).toModelNode());
-                    return PropertyResourceDefinition.PROPERTIES_ADD_OP_TRANSFORMER.transformOperation(operation);
+                    return new LegacyPropertyAddOperationTransformer().transformOperation(operation);
                 }
             })).inheritResourceAttributeDefinitions();
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleRemoveOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleReadAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.DESCRIBE).setCustomOperationTransformer(new SimpleDescribeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
 
-            org.jboss.as.clustering.controller.transform.OperationTransformer getPropertyTransformer = new org.jboss.as.clustering.controller.transform.OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName())) {
-                        String key = operation.get("key").asString();
-                        PathAddress address = TransportResourceDefinition.LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation));
-                        ModelNode transformedOperation = Util.createOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address.append(PropertyResourceDefinition.pathElement(key)));
-                        transformedOperation.get(ModelDescriptionConstants.NAME).set(PropertyResourceDefinition.VALUE.getName());
-                        return transformedOperation;
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(getPropertyTransformer));
+            List<OperationTransformer> getOpTransformerChain = new LinkedList<>();
+            getOpTransformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            getOpTransformerChain.add(new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
+            ChainedOperationTransformer getOpChainedTransformer = new ChainedOperationTransformer(getOpTransformerChain, false);
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), getOpChainedTransformer);
 
-            List<OperationTransformer> transformerChain = new LinkedList<>();
-            transformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            transformerChain.add(PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER);
-            ChainedOperationTransformer chainedTransformer = new ChainedOperationTransformer(transformerChain, false);
-
-            Set<String> writeAttributeOperations = new HashSet(MapOperations.MAP_OPERATION_NAMES);
-            writeAttributeOperations.remove(MapOperations.MAP_GET_DEFINITION.getName());
-            writeAttributeOperations.add(WRITE_ATTRIBUTE_OPERATION);
-            writeAttributeOperations.add(UNDEFINE_ATTRIBUTE_OPERATION);
-            for (String opName : writeAttributeOperations) {
+            List<OperationTransformer> writeOpTransformerChain = new LinkedList<>();
+            writeOpTransformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            writeOpTransformerChain.add(new LegacyPropertyWriteOperationTransformer());
+            ChainedOperationTransformer writeOpChainedTransformer = new ChainedOperationTransformer(writeOpTransformerChain, false);
+            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
                 builder.addOperationTransformationOverride(opName)
                         .inheritResourceAttributeDefinitions()
-                        .setCustomOperationTransformer(chainedTransformer);
+                        .setCustomOperationTransformer(writeOpChainedTransformer);
             }
 
             // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes

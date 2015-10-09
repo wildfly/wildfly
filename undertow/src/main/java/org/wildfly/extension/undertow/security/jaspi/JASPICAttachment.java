@@ -32,7 +32,7 @@ class JASPICAttachment {
         this.cachedAccount = cachedAccount;
     }
 
-    public boolean getValid() {
+    public Boolean getValid() {
         return valid;
     }
 

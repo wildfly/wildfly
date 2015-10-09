@@ -252,6 +252,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
     public void start() {
         // If we were not already master
         if (this.master.compareAndSet(false, true)) {
+            ClusteringServerLogger.ROOT_LOGGER.startSingleton(this.singletonServiceName.getCanonicalName());
             ServiceController<?> service = this.serviceRegistry.getRequiredService(this.targetServiceName);
             try {
                 ServiceContainerHelper.start(service);
@@ -266,6 +267,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
     public void stop() {
         // If we were the previous master
         if (this.master.compareAndSet(true, false)) {
+            ClusteringServerLogger.ROOT_LOGGER.stopSingleton(this.singletonServiceName.getCanonicalName());
             ServiceContainerHelper.stop(this.serviceRegistry.getRequiredService(this.targetServiceName));
         }
     }
@@ -291,7 +293,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
             Map<Node, CommandResponse<AtomicReference<T>>> results = Collections.emptyMap();
             while (results.isEmpty()) {
                 if (!CacheSingletonServiceBuilder.this.started) {
-                    throw new IllegalStateException(ClusteringServerLogger.ROOT_LOGGER.notStarted(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName()));
+                    throw ClusteringServerLogger.ROOT_LOGGER.notStarted(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName());
                 }
                 results = CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new SingletonValueCommand<T>());
                 Iterator<CommandResponse<AtomicReference<T>>> responses = results.values().iterator();
@@ -321,6 +323,8 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
                 }
             }
             return results.values().iterator().next().get();
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

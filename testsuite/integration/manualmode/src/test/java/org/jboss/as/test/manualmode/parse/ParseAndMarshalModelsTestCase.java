@@ -18,7 +18,7 @@
 * License along with this software; if not, write to the Free
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ */
 package org.jboss.as.test.manualmode.parse;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -35,14 +35,17 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Tests the ability to parse the config files we ship or have shipped in the past, as well as the ability
- * to marshal them back to xml in a manner such that reparsing them produces a consistent in-memory configuration model.
+ * Tests the ability to parse the config files we ship or have shipped in the past, as well as the ability to marshal
+ * them back to xml in a manner such that reparsing them produces a consistent in-memory configuration model.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ParseAndMarshalModelsTestCase {
+
+    private static final String[] EAP_VERSIONS = {"6-0-0", "6-1-0", "6-2-0", "6-3-0"};
+    private static final String[] AS_VERSIONS = {"7-1-3", "7-2-0"};
 
     private static final File JBOSS_HOME = new File(".." + File.separatorChar + "jbossas-parse-marshal");
 
@@ -92,233 +95,129 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void test713StandaloneXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3.xml"));
-        validateJsfSubsystem(model);
+    public void testJBossASStandaloneXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version + ".xml"));
+            validateJsfSubsystem(model, version);
+        }
     }
 
     @Test
-    public void test713StandaloneFullHaXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3-full-ha.xml"));
-        validateJsfSubsystem(model);
+    public void testJBossASStandaloneFullHaXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version + "-full-ha.xml"));
+            validateJsfSubsystem(model, version);
+        }
     }
 
     @Test
-    public void test713StandaloneFullXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3-full.xml"));
-        validateJsfSubsystem(model);
+    public void testJBossASStandaloneFullXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version + "-full.xml"));
+            validateJsfSubsystem(model, version);
+        }
     }
 
     @Test
-    public void test713StandaloneHornetQCollocatedXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3-hornetq-colocated.xml"));
+    public void testJBossASStandaloneHornetQCollocatedXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            standaloneXmlTest(getLegacyConfigFile("standalone", version + "-hornetq-colocated.xml"));
+        }
     }
 
     @Test
-    public void test713StandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3-jts.xml"));
+    public void testJBossASStandaloneJtsXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            standaloneXmlTest(getLegacyConfigFile("standalone", version + "-jts.xml"));
+        }
     }
 
     @Test
-    public void test713StandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3-minimalistic.xml"));
+    public void testJBossASStandaloneMinimalisticXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            standaloneXmlTest(getLegacyConfigFile("standalone", version + "-minimalistic.xml"));
+        }
     }
 
     @Test
-    public void test713StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-3-xts.xml"));
+    public void testJBossASStandaloneXtsXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            standaloneXmlTest(getLegacyConfigFile("standalone", version + "-xts.xml"));
+        }
     }
 
     @Test
-    public void test720StandaloneFullHaXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-2-0-full-ha.xml"));
-        validateJsfSubsystem(model);
+    public void testEAPStandaloneFullHaXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + "-full-ha.xml"));
+            validateWebSubsystem(model, version);
+            validateJsfSubsystem(model, version);
+            validateCmpSubsystem(model, version);
+            validateMessagingSubsystem(model, version);
+        }
     }
 
     @Test
-    public void test720StandaloneFullXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "7-2-0-full.xml"));
-        validateJsfSubsystem(model);
+    public void testEAPStandaloneFullXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + "-full.xml"));
+            validateWebSubsystem(model, version);
+            validateJsfSubsystem(model, version);
+            validateCmpSubsystem(model, version);
+            validateMessagingSubsystem(model, version);
+        }
     }
 
     @Test
-    public void test720StandaloneHornetQCollocatedXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-2-0-hornetq-colocated.xml"));
+    public void testEAPStandaloneXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + ".xml"));
+            validateWebSubsystem(model, version);
+            validateJsfSubsystem(model, version);
+        }
     }
 
     @Test
-    public void test720StandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-2-0-jts.xml"));
+    public void testEAPStandaloneHornetQCollocatedXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + "-hornetq-colocated.xml"));
+            validateWebSubsystem(model, version);
+            validateJsfSubsystem(model, version);
+            validateMessagingSubsystem(model, version);
+            validateThreadsSubsystem(model, version);
+            validateJacordSubsystem(model, version);
+        }
     }
 
     @Test
-    public void test720StandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-2-0-minimalistic.xml"));
+    public void testEAPStandaloneJtsXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + "-jts.xml"));
+            validateWebSubsystem(model, version);
+            validateJsfSubsystem(model, version);
+            validateThreadsSubsystem(model, version);
+            validateJacordSubsystem(model, version);
+        }
     }
 
     @Test
-    public void test720StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "7-2-0-xts.xml"));
+    public void testEAPStandaloneMinimalisticXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + "-minimalistic.xml"));
+        }
     }
 
     @Test
-    public void testEAP600StandaloneFullHaXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-full-ha.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP600StandaloneFullXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-full.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP600StandaloneHornetQCollocatedXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-hornetq-colocated.xml"));
-    }
-
-    @Test
-    public void testEAP600StandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-jts.xml"));
-    }
-
-    @Test
-    public void testEAP600StandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-minimalistic.xml"));
-    }
-
-    @Test
-    public void testEAP600StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-0-0-xts.xml"));
-    }
-
-    @Test
-    public void testEAP610StandaloneFullHaXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-full-ha.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP610StandaloneFullXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-full.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP610StandaloneHornetQCollocatedXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-hornetq-colocated.xml"));
-    }
-
-    @Test
-    public void testEAP610StandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-jts.xml"));
-    }
-
-    @Test
-    public void testEAP610StandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-minimalistic.xml"));
-    }
-
-    @Test
-    public void testEAP610StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-1-0-xts.xml"));
-    }
-
-    @Test
-    public void testEAP620StandaloneFullHaXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-full-ha.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP620StandaloneFullXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-full.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP620StandaloneHornetQCollocatedXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-hornetq-colocated.xml"));
-    }
-
-    @Test
-    public void testEAP620StandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-jts.xml"));
-    }
-
-    @Test
-    public void testEAP620StandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-minimalistic.xml"));
-    }
-
-    @Test
-    public void testEAP620StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-xts.xml"));
-    }
-
-    @Test
-    public void testEAP630StandaloneFullHaXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-full-ha.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP630StandaloneFullXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-full.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP630StandaloneHornetQCollocatedXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-hornetq-colocated.xml"));
-    }
-
-    @Test
-    public void testEAP630StandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-jts.xml"));
-    }
-
-    @Test
-    public void testEAP630StandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-minimalistic.xml"));
-    }
-
-    @Test
-    public void testEAP630StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-3-0-xts.xml"));
-    }
-
-    @Test
-    public void testEAP640StandaloneFullHaXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-full-ha.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP640StandaloneFullXml() throws Exception {
-        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-full.xml"));
-        validateJsfSubsystem(model);
-    }
-
-    @Test
-    public void testEAP640StandaloneHornetQCollocatedXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-hornetq-colocated.xml"));
-    }
-
-    @Test
-    public void testEAP640StandaloneJtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-jts.xml"));
-    }
-
-    @Test
-    public void testEAP640StandaloneMinimalisticXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-minimalistic.xml"));
-    }
-
-    @Test
-    public void testEAP640StandaloneXtsXml() throws Exception {
-        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-4-0-xts.xml"));
+    public void testEAPStandaloneXtsXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + "-xts.xml"));
+            validateCmpSubsystem(model, version);
+            validateWebSubsystem(model, version);
+            validateJsfSubsystem(model, version);
+            validateThreadsSubsystem(model, version);
+            validateJacordSubsystem(model, version);
+            validateXtsSubsystem(model, version);
+        }
     }
 
     private ModelNode standaloneXmlTest(File original) throws Exception {
@@ -331,38 +230,17 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void test713HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "7-1-3.xml"));
+    public void testJBossASHostXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            hostXmlTest(getLegacyConfigFile("host", version + ".xml"));
+        }
     }
 
     @Test
-    public void test720HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "7-2-0.xml"));
-    }
-
-    @Test
-    public void testEAP600HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "eap-6-0-0.xml"));
-    }
-
-    @Test
-    public void testEAP610HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "eap-6-1-0.xml"));
-    }
-
-    @Test
-    public void testEAP620HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "eap-6-2-0.xml"));
-    }
-
-    @Test
-    public void testEAP630HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "eap-6-3-0.xml"));
-    }
-
-    @Test
-    public void testEAP640HostXml() throws Exception {
-        hostXmlTest(getLegacyConfigFile("host", "eap-6-4-0.xml"));
+    public void testEAPHostXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            hostXmlTest(getLegacyConfigFile("host", "eap-" + version + ".xml"));
+        }
     }
 
     private void hostXmlTest(final File original) throws Exception {
@@ -375,61 +253,68 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void test713DomainXml() throws Exception {
-        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-1-3.xml"));
-        validateJsfProfiles(model);
+    public void testJBossASDomainXml() throws Exception {
+        for (String version : AS_VERSIONS) {
+            ModelNode model = domainXmlTest(getLegacyConfigFile("domain", version + ".xml"));
+            validateProfiles(model, version);
+        }
     }
 
     @Test
-    public void test720DomainXml() throws Exception {
-        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-2-0.xml"));
-        validateJsfProfiles(model);
-    }
-
-    @Test
-    public void testEAP600DomainXml() throws Exception {
-        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-0-0.xml"));
-        validateJsfProfiles(model);
-    }
-
-    @Test
-    public void testEAP610DomainXml() throws Exception {
-        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-1-0.xml"));
-        validateJsfProfiles(model);
-    }
-
-    @Test
-    public void testEAP620DomainXml() throws Exception {
-        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-2-0.xml"));
-        validateJsfProfiles(model);
-    }
-
-    @Test
-    public void testEAP630DomainXml() throws Exception {
-        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-3-0.xml"));
-        validateJsfProfiles(model);
-    }
-
-    @Test
-    public void testEAP640DomainXml() throws Exception {
-        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-4-0.xml"));
-        validateJsfProfiles(model);
+    public void testEAPDomainXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-" + version + ".xml"));
+            validateProfiles(model, version);
+        }
     }
 
     private ModelNode domainXmlTest(final File original) throws Exception {
         return ModelParserUtils.domainXmlTest(original, JBOSS_HOME);
     }
 
-    private static void validateJsfProfiles(ModelNode model) {
+    private static void validateProfiles(ModelNode model, String version) {
         Assert.assertTrue(model.hasDefined(PROFILE));
         for (Property prop : model.get(PROFILE).asPropertyList()) {
-            validateJsfSubsystem(prop.getValue());
+            validateWebSubsystem(prop.getValue(), version);
+            validateJsfSubsystem(prop.getValue(), version); 
+            validateThreadsSubsystem(prop.getValue(), version);
         }
     }
 
-    private static void validateJsfSubsystem(ModelNode model) {
+    private static void validateWebSubsystem(ModelNode model, String version) {
+        validateSubsystem(model, "web", version);
+        Assert.assertTrue(model.hasDefined(SUBSYSTEM, "web", "connector", "http"));
+    }
+
+    private static void validateJsfSubsystem(ModelNode model, String version) {
+        validateSubsystem(model, "jsf", version); //we cannot check for it as web subsystem is not present to add jsf one
+    }
+
+    private static void validateCmpSubsystem(ModelNode model, String version) {
+        validateSubsystem(model, "cmp", version);
+    }
+
+    private static void validateMessagingSubsystem(ModelNode model, String version) {
+        validateSubsystem(model, "messaging", version);
+        Assert.assertTrue(model.hasDefined(SUBSYSTEM, "messaging", "hornetq-server", "default"));
+    }
+
+    private static void validateThreadsSubsystem(ModelNode model, String version) {
+        validateSubsystem(model, "threads", version);
+    }
+
+    private static void validateJacordSubsystem(ModelNode model, String version) {
+        validateSubsystem(model, "jacorb", version);
+    }
+
+    private static void validateXtsSubsystem(ModelNode model, String version) {
+        validateSubsystem(model, "xts", version);
+        Assert.assertTrue(model.hasDefined(SUBSYSTEM, "xts", "host"));
+    }
+
+    private static void validateSubsystem(ModelNode model, String subsystem, String version) {
         Assert.assertTrue(model.hasDefined(SUBSYSTEM));
-        //Assert.assertTrue(model.get(SUBSYSTEM).hasDefined("jsf")); //we cannot check for it as web subsystem is not present to add jsf one
+        Assert.assertTrue("Missing " + subsystem + " subsystem for " + version, model.get(SUBSYSTEM).hasDefined(subsystem));
     }
     //  Get-config methods
 
