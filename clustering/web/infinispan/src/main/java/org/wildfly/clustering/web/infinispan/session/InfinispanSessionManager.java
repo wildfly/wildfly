@@ -115,7 +115,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         // If cache is clustered or configured with a write-through cache store
         // then we need to trigger any HttpSessionActivationListeners per request
         // See SRV.7.7.2 Distributed Environments
-        this.persistent = config.clustering().cacheMode().isClustered() || (config.persistence().usingStores() && !config.persistence().passivation());
+        this.persistent = config.clustering().cacheMode().needsStateTransfer() || (config.persistence().usingStores() && !config.persistence().passivation());
     }
 
     @Override
