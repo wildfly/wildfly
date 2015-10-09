@@ -200,6 +200,9 @@ public interface ConnectionFactoryAttributes {
                 .setAllowExpression(true)
                 .build();
 
+        AttributeDefinition PROTOCOL_MANAGER_FACTORY = SimpleAttributeDefinitionBuilder.create("protocol-manager-factory", STRING)
+                .setAllowNull(true)
+                .build();
 
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
                 .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_RECONNECT_ATTEMPTS))
@@ -261,6 +264,7 @@ public interface ConnectionFactoryAttributes {
                 create(CONFIRMATION_WINDOW_SIZE, "confirmationWindowSize", true),
                 create(PRODUCER_WINDOW_SIZE, "producerWindowSize", true),
                 create(PRODUCER_MAX_RATE, "producerMaxRate", true),
+                create(PROTOCOL_MANAGER_FACTORY, "protocolManagerFactoryStr", true),
                 create(COMPRESS_LARGE_MESSAGES, "compressLargeMessage", true),
                 create(CACHE_LARGE_MESSAGE_CLIENT, "cacheLargeMessagesClient", true),
                 create(CommonAttributes.MIN_LARGE_MESSAGE_SIZE, "minLargeMessageSize", true),
