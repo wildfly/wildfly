@@ -455,7 +455,7 @@ public interface EjbLogger extends BasicLogger {
      * @param channel The channel for which the {@link Channel.Receiver#handleEnd(org.jboss.remoting3.Channel)} notification
      *                was received
      */
-    @LogMessage(level = ERROR)
+    @LogMessage(level = DEBUG)
     @Message(id = 41, value = "Channel end notification received, closing channel %s")
     void closingChannelOnChannelEnd(Channel channel);
 
