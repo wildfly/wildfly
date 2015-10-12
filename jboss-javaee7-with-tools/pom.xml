@@ -51,19 +51,6 @@
     <dependencyManagement>
 
         <dependencies>
-            <!-- JBoss distributes a complete set of Java EE 7 APIs including
-                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
-                a collection) of artifacts. We use this here so that we always get the correct
-                versions of artifacts. Here we use the jboss-javaee-7.0 stack (you can read
-                this as the JBoss stack of the Java EE full Profile 7 APIs). You can actually use
-                this stack with any version of WildFly that implements Java EE 7! -->
-            <dependency>
-                <groupId>org.jboss.spec</groupId>
-                <artifactId>jboss-javaee-7.0</artifactId>
-                <version>${version.org.jboss.spec.jboss.javaee.7.0}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
 
             <!-- Recommended JUnit version -->
             <!-- Note that JUnit is preferred framework -->
