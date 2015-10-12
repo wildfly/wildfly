@@ -26,11 +26,11 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <artifactId>jboss-javaee-7.0-wildfly</artifactId>
+        <artifactId>jboss-javaee7-wildfly</artifactId>
         <version>10.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-javaee-7.0-wildfly-with-tools</artifactId>
+    <artifactId>jboss-javaee7-wildfly-with-tools</artifactId>
     <packaging>pom</packaging>
 
     <name>WildFly JBoss Java EE 7 Specification APIs with Tools</name>
