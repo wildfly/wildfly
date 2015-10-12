@@ -32,7 +32,7 @@
     </parent>
 
     <groupId>org.wildfly.bom</groupId>
-    <artifactId>jboss-javaee-7.0-wildfly</artifactId>
+    <artifactId>jboss-javaee7-wildfly</artifactId>
     <version>10.0.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
@@ -83,7 +83,7 @@
         <version.org.jboss.logging.jboss-logging-tools>2.0.1.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.resteasy>3.0.13.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.negotiation>2.3.6.Final</version.org.jboss.security.negotiation>
-        <version.org.jboss.spec.jboss.javaee.7.0>1.0.3.Final</version.org.jboss.spec.jboss.javaee.7.0>
+        <version.org.jboss.spec.jboss.javaee7>1.0.3.Final</version.org.jboss.spec.jboss.javaee7>
         <version.org.jboss.shrinkwrap.resolver>2.1.1</version.org.jboss.shrinkwrap.resolver>
         <version.org.picketlink>2.7.0.Final</version.org.picketlink>
 
@@ -116,7 +116,7 @@
             <dependency>
                 <groupId>org.jboss.spec</groupId>
                 <artifactId>jboss-javaee-7.0</artifactId>
-                <version>${version.org.jboss.spec.jboss.javaee.7.0}</version>
+                <version>${version.org.jboss.spec.jboss.javaee7}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -565,7 +565,7 @@
     </dependencyManagement>
 
     <modules>
-        <module>jboss-javaee-7.0-with-tools</module>
+        <module>jboss-javaee7-with-tools</module>
     </modules>
 
     <build>
