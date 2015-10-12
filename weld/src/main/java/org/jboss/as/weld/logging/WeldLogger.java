@@ -231,16 +231,8 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 49, value = "Error injecting resource into CDI managed bean. Can't find a resource named %s defined on %s")
     IllegalArgumentException couldNotFindResource(String resourceName, String member, @Cause Throwable cause);
 
-    @LogMessage(level = Logger.Level.DEBUG)
-    @Message(value = "Discovered %s")
-    void beanArchiveDiscovered(BeanDeploymentArchive bda);
-
     @Message(id = 50, value = "%s was not found in composite index")
     ClassFileInfoException nameNotFoundInIndex(String name);
-
-    @LogMessage(level = Logger.Level.DEBUG)
-    @Message(id = Message.NONE, value = "Unable to load annotation %s")
-    void unableToLoadAnnotation(String annotationClassName);
 
     @Message(id = 51, value = "Cannot load %s")
     ClassFileInfoException cannotLoadClass(String name, @Cause Throwable throwable);
@@ -248,5 +240,13 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 52, value = "Using deployment classloader to load proxy classes for module %s. Package-private access will not work. To fix this the module should declare dependencies on %s")
     void loadingProxiesUsingDeploymentClassLoader(ModuleIdentifier moduleIdentifier, String dependencies);
+
+    @LogMessage(level = Logger.Level.DEBUG)
+    @Message(id = 53, value = "Discovered %s")
+    void beanArchiveDiscovered(BeanDeploymentArchive bda);
+
+    @LogMessage(level = Logger.Level.DEBUG)
+    @Message(id = 54, value = "Unable to load annotation %s")
+    void unableToLoadAnnotation(String annotationClassName);
 
 }
