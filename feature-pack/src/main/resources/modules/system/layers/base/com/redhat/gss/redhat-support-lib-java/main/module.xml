@@ -1,6 +1,7 @@
 <module xmlns="urn:jboss:module:1.0" name="com.redhat.gss.redhat-support-lib-java">
     
     <resources>
+        <artifact name="${commons-net:commons-net}"/>
         <artifact name="${com.redhat.gss:redhat-support-lib-java}"/>
     </resources>
 
@@ -8,7 +9,7 @@
         <module name="javax.api"/>
         <module name="javax.ws.rs.api" services="import"/>
         <!-- <module name="javax.net.ssl" slot='main'/> -->
-        <module name="org.apache.commons.net" slot='main'/>
+        <!-- <module name="org.apache.commons.net" slot='main'/> -->
         <module name="org.apache.httpcomponents"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="import"/>
