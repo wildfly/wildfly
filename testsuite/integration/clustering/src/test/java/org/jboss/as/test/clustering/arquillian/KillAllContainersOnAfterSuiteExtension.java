@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,7 +22,6 @@
 package org.jboss.as.test.clustering.arquillian;
 
 import org.jboss.arquillian.container.spi.Container;
-import org.jboss.arquillian.container.spi.Container.State;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.core.spi.LoadableExtension;
@@ -34,27 +33,26 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @author Radoslav Husar
- * @version $Revision: $
+ * @version October 2015
  */
-public class StopCustomContainersOnAfterSuiteExtension implements LoadableExtension {
+public class KillAllContainersOnAfterSuiteExtension implements LoadableExtension {
 
-    private static final Logger log = Logger.getLogger(StopCustomContainersOnAfterSuiteExtension.class);
+    private static final Logger log = Logger.getLogger(KillAllContainersOnAfterSuiteExtension.class);
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.observer(StopCustomContainers.class);
+        builder.observer(KillAllContainers.class);
     }
 
-    public static class StopCustomContainers {
+    public static class KillAllContainers {
+        @SuppressWarnings("UnusedParameters")
         public void close(@Observes AfterSuite event, ContainerRegistry registry) {
-            for (Container c: registry.getContainers()) {
-                if (c.getState() == State.STARTED && "custom".equalsIgnoreCase(c.getContainerConfiguration().getMode())) {
-                    try {
-                        c.stop();
-                        log.info("Stopped custom container: " + c.getName());
-                    } catch (Exception e) {
-                        log.error("Failed to stop custom container: " + c.getName(), e);
-                    }
+            for (Container container : registry.getContainers()) {
+                try {
+                    container.kill();
+                    log.info("Killed container: " + container.getName());
+                } catch (Exception e) {
+                    log.error("Failed to kill container: " + container.getName(), e);
                 }
             }
         }
