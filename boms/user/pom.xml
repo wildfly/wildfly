@@ -565,7 +565,7 @@
     </dependencyManagement>
 
     <modules>
-        <module>jboss-javaee-7.0-with-tools</module>
+        <module>jboss-javaee7-with-tools</module>
     </modules>
 
     <build>
