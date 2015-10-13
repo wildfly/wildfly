@@ -37,11 +37,13 @@ import org.wildfly.clustering.web.session.SessionAttributes;
 public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> implements SessionAttributes {
     private final Cache<SessionAttributeKey, V> cache;
     private final Marshaller<Object, V, MarshallingContext> marshaller;
+    private final boolean requireMarshallable;
 
-    public FineSessionAttributes(String id, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V, MarshallingContext> marshaller) {
+    public FineSessionAttributes(String id, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V, MarshallingContext> marshaller, boolean requireMarshallable) {
         super(id, attributeCache, marshaller);
         this.cache = attributeCache;
         this.marshaller = marshaller;
+        this.requireMarshallable = requireMarshallable;
     }
 
     @Override
@@ -55,7 +57,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (attribute == null) {
             return this.removeAttribute(name);
         }
-        if (!this.marshaller.getContext().isMarshallable(attribute)) {
+        if (this.requireMarshallable && !this.marshaller.getContext().isMarshallable(attribute)) {
             throw new IllegalArgumentException(new NotSerializableException(attribute.getClass().getName()));
         }
         SessionAttributeKey key = this.createKey(name);
