@@ -90,12 +90,10 @@
         <replacement placeholder="BROADCAST-GROUPS">
             <broadcast-group name="bg-group1"
                              connectors="http-connector"
-                             jgroups-stack="udp"
                              jgroups-channel="activemq-cluster"/>
         </replacement>
         <replacement placeholder="DISCOVERY-GROUPS">
             <discovery-group name="dg-group1"
-                             jgroups-stack="udp"
                              jgroups-channel="activemq-cluster"/>
         </replacement>
         <replacement placeholder="CLUSTER-CONNECTIONS">

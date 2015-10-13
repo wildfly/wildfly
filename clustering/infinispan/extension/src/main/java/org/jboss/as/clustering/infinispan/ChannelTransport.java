@@ -43,6 +43,9 @@ public class ChannelTransport extends JGroupsTransport {
     public ChannelTransport(Channel channel, ChannelFactory factory) {
         this.channel = channel;
         this.factory = factory;
+        this.connectChannel = true;
+        this.disconnectChannel = true;
+        this.closeChannel = false;
     }
 
     @Override
@@ -64,12 +67,9 @@ public class ChannelTransport extends JGroupsTransport {
     }
 
     @Override
-    protected synchronized void initChannel() {
-        this.channel.setDiscardOwnMessages(false);
+    protected void initChannel() {
         // This is necessary because JGroupsTransport nulls its channel reference in stop()
         super.channel = this.channel;
-        super.connectChannel = true;
-        super.disconnectChannel = true;
-        super.closeChannel = false;
+        super.channel.setDiscardOwnMessages(false);
     }
 }

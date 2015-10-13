@@ -110,6 +110,7 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
 
             // keepalive_time in milliseconds
             this.getProperties().put(prefix + ".keep_alive_time", pool.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asString());
+            this.getProperties().put(prefix + ".rejection_policy", "abort");
         }
 
         return super.configure(context, transport);

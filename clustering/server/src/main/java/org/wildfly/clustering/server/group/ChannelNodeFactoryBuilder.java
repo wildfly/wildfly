@@ -53,7 +53,7 @@ public class ChannelNodeFactoryBuilder extends GroupNodeFactoryServiceNameProvid
     public ServiceBuilder<JGroupsNodeFactory> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), this)
                 .addDependency(ChannelServiceName.CONNECTOR.getServiceName(this.group), Channel.class, this.channel)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+                .setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
     @Override

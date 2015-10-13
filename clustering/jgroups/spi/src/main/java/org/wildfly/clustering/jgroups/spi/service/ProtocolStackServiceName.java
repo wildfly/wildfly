@@ -35,4 +35,8 @@ public enum ProtocolStackServiceName implements ProtocolStackServiceNameFactory 
 
     static final ServiceName BASE_NAME = ServiceName.JBOSS.append("jgroups");
 
+    @Override
+    public ServiceName getServiceName() {
+        return this.getServiceName(DEFAULT_GROUP);
+    }
 }

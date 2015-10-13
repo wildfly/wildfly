@@ -38,8 +38,8 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
 
 /**
  * @author Paul Ferraro
@@ -65,7 +65,7 @@ public class SiteBuilder extends CacheContainerComponentBuilder<SiteConfiguratio
 
     @Override
     public Builder<SiteConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.channelName = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
+        this.channelName = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model), GroupServiceNameFactory.DEFAULT_GROUP);
         return this;
     }
 

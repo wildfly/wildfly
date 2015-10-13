@@ -157,7 +157,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
                 .addDependency(ThreadPoolResourceDefinition.PERSISTENCE.getServiceName(this.name), ThreadPoolConfiguration.class, this.persistenceThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.REMOTE_COMMAND.getServiceName(this.name), ThreadPoolConfiguration.class, this.remoteCommandThreadPool)
                 .addDependency(ThreadPoolResourceDefinition.TRANSPORT.getServiceName(this.name), ThreadPoolConfiguration.class, this.transportThreadPool)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
     }
 }

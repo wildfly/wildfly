@@ -202,7 +202,6 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
     /**
      * Builds transformations common to both protocols and transport.
      */
-    @SuppressWarnings("deprecation")
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
