@@ -37,7 +37,7 @@
 
     <packaging>pom</packaging>
 
-    <name>WildFly JBoss Java EE 7 BOM</name>
+    <name>WildFly Java EE 7 BOM</name>
     <description>Dependency Management BOM</description>
 
     <url>http://www.wildfly.org</url>
@@ -565,7 +565,7 @@
     </dependencyManagement>
 
     <modules>
-        <module>jboss-javaee7-with-tools</module>
+        <module>wildfly-javaee7-with-tools</module>
     </modules>
 
     <build>
