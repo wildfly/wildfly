@@ -32,7 +32,7 @@
     </parent>
 
     <groupId>org.wildfly.bom</groupId>
-    <artifactId>jboss-javaee7-wildfly</artifactId>
+    <artifactId>wildfly-javaee7</artifactId>
     <version>10.0.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
