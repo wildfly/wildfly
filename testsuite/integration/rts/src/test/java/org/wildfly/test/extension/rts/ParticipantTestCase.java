@@ -22,16 +22,18 @@
 package org.wildfly.test.extension.rts;
 
 import java.io.File;
+import java.net.SocketPermission;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.PropertyPermission;
 
 import javax.xml.bind.JAXBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.jbossts.star.util.TxStatus;
 import org.jboss.jbossts.star.util.TxSupport;
 import org.jboss.narayana.rest.integration.api.Aborted;
@@ -58,15 +60,23 @@ public final class ParticipantTestCase extends AbstractTestCase {
 
     private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts\n";
 
-    @ArquillianResource
-    private ManagementClient managementClient;
+    private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":"
+            + TestSuiteEnvironment.getHttpPort();
 
     @Deployment
     public static WebArchive getDeployment() {
         return AbstractTestCase.getDeployment()
-                .addClasses(LoggingParticipant.class, AbstractTestCase.class)
+                .addClasses(LoggingParticipant.class, AbstractTestCase.class, TestSuiteEnvironment.class)
                 .addAsWebInfResource(new File("../test-classes", "web.xml"), "web.xml")
-                .addAsManifestResource(new StringAsset(DEPENDENCIES), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset(DEPENDENCIES), "MANIFEST.MF")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        // Permissions required to get SERVER_HOST_PORT
+                        new PropertyPermission("management.address", "read"),
+                        new PropertyPermission("node0", "read"),
+                        new PropertyPermission("jboss.http.port", "read"),
+                        // Permissions required to access SERVER_HOST_PORT
+                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve")
+                ), "permissions.xml");
     }
 
     @Test
@@ -224,7 +234,7 @@ public final class ParticipantTestCase extends AbstractTestCase {
     }
 
     protected String getBaseUrl() {
-        return managementClient.getWebUri().toString();
+        return "http://" + SERVER_HOST_PORT;
     }
 
 }
