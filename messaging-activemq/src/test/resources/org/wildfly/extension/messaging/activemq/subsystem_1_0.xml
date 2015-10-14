@@ -373,6 +373,8 @@
                                    password="${password:alicepassword}"
                                    min-pool-size="${min.pool.size:42}"
                                    max-pool-size="${max.pool.size:242}"
+                                   managed-connection-pool="${managed.connection.pool:org.foo.bar.ConnectionPool}"
+                                   enlistment-trace="${enlistment.trace:false}"
                                    initial-message-packet-size="${initial.message.packet.size:9876}"
                                    initial-connect-attempts="${initial.connect.attempts:5432}"
                                    connectors="in-vm netty"
