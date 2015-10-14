@@ -48,7 +48,7 @@ public enum Namespace {
     private final int minor;
     private final XMLElementReader<List<ModelNode>> reader;
 
-    private Namespace(int major, int minor, XMLElementReader<List<ModelNode>> reader) {
+    Namespace(int major, int minor, XMLElementReader<List<ModelNode>> reader) {
         this.major = major;
         this.minor = minor;
         this.reader = reader;

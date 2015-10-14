@@ -63,9 +63,9 @@ public class CustomErrorsUnitTestCase {
         war.addAsWebResource(tccl.getResource(resourcesLocation + "403.jsp"), "403.jsp");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "404.jsp"), "404.jsp");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "500.jsp"), "500.jsp");
+        war.addAsManifestResource(CustomErrorsUnitTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
         war.addClass(ErrorGeneratorServlet.class);
 
-        System.out.println(war.toString(true));
         return war;
     }
 
@@ -76,10 +76,10 @@ public class CustomErrorsUnitTestCase {
         
         WebArchive war = ShrinkWrap.create(WebArchive.class, "error-producer.war");
         war.setWebXML(tccl.getResource(resourcesLocation + "error-producer-web.xml"));
+        war.addAsManifestResource(CustomErrorsUnitTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
         war.addClass(ErrorGeneratorServlet.class);
         war.addClass(ContextForwardServlet.class);
 
-        System.out.println(war.toString(true));
         return war;
     }
 

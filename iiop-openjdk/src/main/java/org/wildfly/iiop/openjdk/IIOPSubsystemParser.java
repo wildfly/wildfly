@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,6 +29,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -54,44 +55,7 @@ public class IIOPSubsystemParser implements XMLStreamConstants, XMLElementReader
 
     static {
         xmlDescription = builder(IIOPRootDefinition.INSTANCE)
-                .addChild(
-                        builder(ORBDefinition.INSTANCE)
-                                .addAttributes(ORBDefinition.PERSISTENT_SERVER_ID, ORBDefinition.GIOP_VERSION,
-                                        ORBDefinition.SOCKET_BINDING, ORBDefinition.SSL_SOCKET_BINDING)
-                                .addChild(
-                                        builder(TCPDefinition.INSTANCE).addAttributes(TCPDefinition.HIGH_WATER_MARK,
-                                                TCPDefinition.NUMBER_TO_RECLAIM))
-                                .addChild(
-                                        builder(InitializersDefinition.INSTANCE).addAttributes(InitializersDefinition.SECURITY,
-                                                InitializersDefinition.TRANSACTIONS)))
-                .addChild(
-                        builder(NamingDefinition.INSTANCE).addAttributes(NamingDefinition.EXPORT_CORBALOC,
-                                NamingDefinition.ROOT_CONTEXT))
-                .addChild(
-                        builder(SecurityDefinition.INSTANCE).addAttributes(SecurityDefinition.SUPPORT_SSL,
-                                SecurityDefinition.SECURITY_DOMAIN, SecurityDefinition.ADD_COMPONENT_INTERCEPTOR,
-                                SecurityDefinition.CLIENT_SUPPORTS, SecurityDefinition.CLIENT_REQUIRES,
-                                SecurityDefinition.SERVER_SUPPORTS, SecurityDefinition.SERVER_REQUIRES))
-                .addChild(
-                        builder(IORSettingsDefinition.INSTANCE)
-                                .addChild(
-                                        builder(IORTransportConfigDefinition.INSTANCE).addAttributes(
-                                                IORTransportConfigDefinition.INTEGRITY,
-                                                IORTransportConfigDefinition.CONFIDENTIALITY,
-                                                IORTransportConfigDefinition.TRUST_IN_CLIENT,
-                                                IORTransportConfigDefinition.TRUST_IN_TARGET,
-                                                IORTransportConfigDefinition.DETECT_REPLAY,
-                                                IORTransportConfigDefinition.DETECT_MISORDERING))
-                                .addChild(
-                                        builder(IORASContextDefinition.INSTANCE).addAttributes(
-                                                IORASContextDefinition.AUTH_METHOD, IORASContextDefinition.REALM,
-                                                IORASContextDefinition.REQUIRED))
-                                .addChild(
-                                        builder(IORSASContextDefinition.INSTANCE).addAttribute(
-                                                IORSASContextDefinition.CALLER_PROPAGATION)))
-                .addChild(
-                        builder(PropertiesDefinition.INSTANCE).addChild(
-                                builder(PropertyDefinition.INSTANCE).addAttributes(PropertyDefinition.VALUE)))
+                .addAttributes(IIOPRootDefinition.ALL_ATTRIBUTES.toArray(new AttributeDefinition[0]))
                 .build();
     }
 
@@ -110,6 +74,8 @@ public class IIOPSubsystemParser implements XMLStreamConstants, XMLElementReader
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
         xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
     }
+
+
 
     /**
      * {@inheritDoc}

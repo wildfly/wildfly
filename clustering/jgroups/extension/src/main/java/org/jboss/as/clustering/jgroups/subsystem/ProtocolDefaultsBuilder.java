@@ -49,7 +49,6 @@ import org.wildfly.clustering.service.Builder;
 public class ProtocolDefaultsBuilder implements Builder<ProtocolDefaults>, Value<ProtocolDefaults>, ProtocolDefaults {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME, "defaults");
-
     private static final String DEFAULTS = "jgroups-defaults.xml";
 
     private static ProtocolStackConfigurator load(String resource) throws IllegalStateException {
@@ -92,7 +91,7 @@ public class ProtocolDefaultsBuilder implements Builder<ProtocolDefaults>, Value
 
     @Override
     public ServiceBuilder<ProtocolDefaults> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(SERVICE_NAME, new ValueService<>(this)).build(target);
+        return new AsynchronousServiceBuilder<>(this.getServiceName(), new ValueService<>(this)).build(target);
     }
 
     /**

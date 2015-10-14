@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
@@ -32,24 +31,6 @@ public class ProtocolConfigurationBuilder extends AbstractProtocolConfigurationB
 
     public ProtocolConfigurationBuilder(String stackName, String name) {
         super(stackName, name);
-    }
-
-    @Override
-    public ProtocolConfigurationBuilder setModule(ModuleIdentifier module) {
-        super.setModule(module);
-        return this;
-    }
-
-    @Override
-    public ProtocolConfigurationBuilder setSocketBinding(String socketBindingName) {
-        super.setSocketBinding(socketBindingName);
-        return this;
-    }
-
-    @Override
-    public ProtocolConfigurationBuilder addProperty(String name, String value) {
-        super.addProperty(name, value);
-        return this;
     }
 
     @Override

@@ -29,11 +29,10 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-client-all</artifactId>
     <packaging>jar</packaging>
 

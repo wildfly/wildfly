@@ -24,39 +24,21 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.ModelOnlyResourceDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelType;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleResourceDefinition;
 
 /**
  * @author Stuart Douglas
  */
-class CMPSubsystemRootResourceDefinition extends ModelOnlyResourceDefinition {
+class CMPSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
     static final CMPSubsystemRootResourceDefinition INSTANCE = new CMPSubsystemRootResourceDefinition();
 
-    /** AttributeDefinition common to multiple child resources */
-    static final SimpleAttributeDefinition JNDI_NAME =
-            new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.JNDI_NAME, ModelType.STRING, true)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
     private CMPSubsystemRootResourceDefinition() {
         super(CmpSubsystemModel.SUBSYSTEM_PATH,
-                CmpExtension.getResolver(CmpExtension.SUBSYSTEM_NAME));
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration subsystem) {
-
-        subsystem.registerSubModel(new ModelOnlyResourceDefinition(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH,
-                CmpExtension.getResolver(CmpSubsystemModel.UUID_KEY_GENERATOR),
-                JNDI_NAME));
-
-        subsystem.registerSubModel(HiLoKeyGeneratorResourceDefinition.INSTANCE);
+                CmpExtension.getResolver(CmpExtension.SUBSYSTEM_NAME),
+                CmpSubsystemAdd.INSTANCE,
+                ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(CmpExtension.DEPRECATED_SINCE);
     }
 }

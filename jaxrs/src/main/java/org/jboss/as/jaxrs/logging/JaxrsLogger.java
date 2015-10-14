@@ -48,7 +48,7 @@ public interface JaxrsLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.jboss.jaxrs}.
      */
-    JaxrsLogger JAXRS_LOGGER = Logger.getMessageLogger(JaxrsLogger.class, "org.jboss.jaxrs");
+    JaxrsLogger JAXRS_LOGGER = Logger.getMessageLogger(JaxrsLogger.class, "org.jboss.as.jaxrs");
 
     /**
      * Logs a warning message indicating the annotation, represented by the {@code annotation} parameter, not on Class,
@@ -147,7 +147,7 @@ public interface JaxrsLogger extends BasicLogger {
      * @return
      */
     @Message(id = 10, value = "JAX-RS resource %s does not correspond to a view on the EJB %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of an EJB.")
-    DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class> type, String ejbName);
+    DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class<?>> type, String ejbName);
 
     @Message(id = 11, value = "Invalid value for parameter %s: %s")
     DeploymentUnitProcessingException invalidParamValue(String param, String value);

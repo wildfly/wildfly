@@ -31,36 +31,39 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * Parser for urn:jboss:ejb-client:1.2:jboss-ejb-client
+ * Parser for urn:jboss:ejb-client:1.3:jboss-ejb-client
  *
  * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 class EJBClientDescriptor13Parser extends EJBClientDescriptor12Parser {
 
     public static final String NAMESPACE_1_3 = "urn:jboss:ejb-client:1.3";
 
-    public static final EJBClientDescriptor13Parser INSTANCE = new EJBClientDescriptor13Parser();
-
-
-    protected EJBClientDescriptor13Parser() {
+    protected EJBClientDescriptor13Parser(final PropertyReplacer propertyReplacer) {
+        super(propertyReplacer);
     }
 
-    protected void parseClientContext(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
+    protected void parseClientContext(final XMLExtendedStreamReader reader,
+            final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader.getAttributeLocalName(i));
-            final String val = reader.getAttributeValue(i);
+            final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader
+                    .getAttributeLocalName(i));
+            final String value =  readResolveValue(reader, i);
             switch (attribute) {
                 case INVOCATION_TIMEOUT:
-                    final Long invocationTimeout = Long.parseLong(val.trim());
+                    final Long invocationTimeout = Long.parseLong(value);
                     ejbClientDescriptorMetaData.setInvocationTimeout(invocationTimeout);
                     break;
                 case DEPLOYMENT_NODE_SELECTOR:
-                    ejbClientDescriptorMetaData.setDeploymentNodeSelector(val.trim());
+                    final String deploymentNodeSelector = readResolveValue(reader, i);
+                    ejbClientDescriptorMetaData.setDeploymentNodeSelector(deploymentNodeSelector);
                     break;
                 default:
                     unexpectedContent(reader);
@@ -87,7 +90,7 @@ class EJBClientDescriptor13Parser extends EJBClientDescriptor12Parser {
                             this.parseClusters(reader, ejbClientDescriptorMetaData);
                             break;
                         case PROFILE:
-                            this.parseProfile(reader,ejbClientDescriptorMetaData);
+                            this.parseProfile(reader, ejbClientDescriptorMetaData);
                             break;
                         default:
                             unexpectedElement(reader);
@@ -102,16 +105,19 @@ class EJBClientDescriptor13Parser extends EJBClientDescriptor12Parser {
         unexpectedEndOfDocument(reader.getLocation());
     }
 
-    protected void parseProfile(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
+    protected void parseProfile(final XMLExtendedStreamReader reader,
+            final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
         final Set<EJBClientDescriptorXMLAttribute> required = EnumSet.of(EJBClientDescriptorXMLAttribute.NAME);
         final int count = reader.getAttributeCount();
         String profileName = null;
         for (int i = 0; i < count; i++) {
-            final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader.getAttributeLocalName(i));
+            final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader
+                    .getAttributeLocalName(i));
             required.remove(attribute);
+            final String value =  readResolveValue(reader, i);
             switch (attribute) {
                 case NAME:
-                    profileName = reader.getAttributeValue(i).trim();
+                    profileName = value;
                     break;
                 default:
                     unexpectedContent(reader);

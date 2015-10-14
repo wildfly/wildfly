@@ -34,6 +34,7 @@ enum Namespace {
 
     MAIL_1_0("urn:jboss:domain:mail:1.0"),
     MAIL_1_1("urn:jboss:domain:mail:1.1"),
+    MAIL_1_2("urn:jboss:domain:mail:1.2"),
     MAIL_2_0("urn:jboss:domain:mail:2.0");
 
     /**

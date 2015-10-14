@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-feature-pack</artifactId>
@@ -98,7 +98,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-web-feature-pack</artifactId>
+            <artifactId>wildfly-servlet-feature-pack</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -131,6 +131,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-system-jmx</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
 
         <dependency>
             <groupId>org.jboss.narayana.rts</groupId>
@@ -188,6 +200,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.spullara.mustache.java</groupId>
+            <artifactId>compiler</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
@@ -195,11 +212,6 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sun.codemodel</groupId>
-            <artifactId>codemodel</artifactId>
         </dependency>
 
         <dependency>
@@ -224,7 +236,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
+            <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-core</artifactId>
             <exclusions>
                 <exclusion>
@@ -235,8 +247,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -246,7 +258,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
+            <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-xjc</artifactId>
             <exclusions>
                 <exclusion>
@@ -255,6 +267,23 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-jxc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>codemodel</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>com.sun.xml.fastinfoset</groupId>
@@ -273,8 +302,13 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.txw2</groupId>
+            <groupId>org.glassfish.jaxb</groupId>
             <artifactId>txw2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.bind.external</groupId>
+            <artifactId>rngom</artifactId>
         </dependency>
 
         <dependency>
@@ -284,7 +318,7 @@
 
         <dependency>
             <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils-core</artifactId>
+            <artifactId>commons-beanutils</artifactId>
         </dependency>
 
         <dependency>
@@ -310,11 +344,6 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
         </dependency>
 
         <dependency>
@@ -395,6 +424,76 @@
             </exclusions>
         </dependency>
 
+        <!-- DO NOT MOVE the JBossWS dependencies here below; they need to come BEFORE the Apache CXF ones (see WFLY-5067) -->
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-common-tools</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.cxf</groupId>
+            <artifactId>jbossws-cxf-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.cxf</groupId>
+            <artifactId>jbossws-cxf-jaspi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.cxf</groupId>
+            <artifactId>jbossws-cxf-factories</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.cxf</groupId>
+            <artifactId>jbossws-cxf-resources</artifactId>
+            <classifier>wildfly1000</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.cxf</groupId>
+            <artifactId>jbossws-cxf-server</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.cxf</groupId>
+            <artifactId>jbossws-cxf-transports-udp</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-bindings-coloc</artifactId>
@@ -464,6 +563,11 @@
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-security-saml</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
         </dependency>
 
@@ -485,6 +589,12 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-wsdl</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -589,6 +699,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.cxf.xjc-utils</groupId>
+            <artifactId>cxf-xjc-runtime</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-boolean</artifactId>
         </dependency>
@@ -632,12 +747,11 @@
         <dependency>
             <groupId>org.jboss.narayana.compensations</groupId>
             <artifactId>compensations</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.narayana.txframework</groupId>
+            <artifactId>txframework</artifactId>
         </dependency>
 
         <dependency>
@@ -668,8 +782,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
-            <artifactId>jipijapa-hibernate3</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>jipijapa-hibernate5</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -679,7 +793,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-hibernate4-3</artifactId>
             <exclusions>
                 <exclusion>
@@ -690,7 +804,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-hibernate4-1</artifactId>
             <exclusions>
                 <exclusion>
@@ -701,7 +815,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-eclipselink</artifactId>
             <exclusions>
                 <exclusion>
@@ -712,12 +826,12 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-openjpa</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jipijapa</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -827,12 +941,6 @@
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
             <artifactId>narayana-jts-idlj</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -908,8 +1016,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>jaxrs-api</artifactId>
+            <groupId>io.undertow.js</groupId>
+            <artifactId>undertow-js</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.ws.rs</groupId>
+            <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -1026,21 +1139,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.shrinkwrap</groupId>
-            <artifactId>shrinkwrap-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.shrinkwrap</groupId>
-            <artifactId>shrinkwrap-impl-base</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.shrinkwrap</groupId>
-            <artifactId>shrinkwrap-spi</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.spec.javax.batch</groupId>
             <artifactId>jboss-batch-api_1.0_spec</artifactId>
             <exclusions>
@@ -1130,6 +1228,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.weld.probe</groupId>
+            <artifactId>weld-probe-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core-jsf</artifactId>
         </dependency>
@@ -1146,86 +1249,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.ws</groupId>
-            <artifactId>jbossws-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws</groupId>
-            <artifactId>jbossws-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws</groupId>
-            <artifactId>jbossws-common-tools</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws</groupId>
-            <artifactId>jbossws-spi</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws.cxf</groupId>
-            <artifactId>jbossws-cxf-client</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws.cxf</groupId>
-            <artifactId>jbossws-cxf-jaspi</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws.cxf</groupId>
-            <artifactId>jbossws-cxf-factories</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws.cxf</groupId>
-            <artifactId>jbossws-cxf-resources</artifactId>
-            <classifier>wildfly900</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws.cxf</groupId>
-            <artifactId>jbossws-cxf-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ws.cxf</groupId>
-            <artifactId>jbossws-cxf-transports-udp</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jbossxb</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
         </dependency>
@@ -1233,11 +1256,6 @@
         <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.kohsuke.rngom</groupId>
-            <artifactId>rngom</artifactId>
         </dependency>
 
         <dependency>
@@ -1330,8 +1348,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.opensaml</groupId>
-            <artifactId>opensaml</artifactId>
+            <groupId>org.cryptacular</groupId>
+            <artifactId>cryptacular</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1342,7 +1360,7 @@
 
         <dependency>
             <groupId>org.opensaml</groupId>
-            <artifactId>openws</artifactId>
+            <artifactId>opensaml-core</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1353,7 +1371,308 @@
 
         <dependency>
             <groupId>org.opensaml</groupId>
-            <artifactId>xmltooling</artifactId>
+            <artifactId>opensaml-profile-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-saml-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-saml-impl</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-security-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-security-impl</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-soap-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-xacml-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-xacml-impl</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-xacml-saml-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-xacml-saml-impl</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-xmlsec-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-xmlsec-impl</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>net.shibboleth.utilities</groupId>
+            <artifactId>java-support</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.activemq.artemis.integration</groupId>
+            <artifactId>artemis-wildfly-integration</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-amqp-protocol</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-cli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-commons</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-core-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-dto</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-hornetq-protocol</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-server</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-journal</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-native</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-proton-plug</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-ra</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-selector</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-server</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-service-extensions</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-stomp-protocol</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1406,11 +1725,19 @@
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-memory</artifactId>
+            <artifactId>lucene-queryparser</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-misc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
         </dependency>
 
         <dependency>
@@ -1426,17 +1753,12 @@
 
         <dependency>
             <groupId>org.apache.qpid</groupId>
-            <artifactId>proton-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.qpid</groupId>
             <artifactId>proton-jms</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.apache.qpid</groupId>
-            <artifactId>proton-j-impl</artifactId>
+            <artifactId>proton-j</artifactId>
         </dependency>
 
         <dependency>
@@ -1638,7 +1960,7 @@
         
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-infinispan</artifactId>
+            <artifactId>hibernate-search-orm</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1646,10 +1968,32 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-orm</artifactId>
+            <artifactId>hibernate-search-backend-jms</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-backend-jgroups</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-serialization-avro</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1670,56 +2014,12 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate.hql</groupId>
-            <artifactId>hibernate-hql-lucene</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.hibernate.hql</groupId>
-            <artifactId>hibernate-hql-parser</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-amqp-protocol</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-commons</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-tools</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1742,17 +2042,6 @@
 
         <dependency>
             <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-jms-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.jbossts.jts</groupId>
-                    <artifactId>jbossjts-jacorb</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hornetq</groupId>
             <artifactId>hornetq-journal</artifactId>
             <exclusions>
                 <exclusion>
@@ -1765,39 +2054,6 @@
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-native</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-ra</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-stomp-protocol</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -1825,22 +2081,6 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-lucene-directory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-objectfilter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-query</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-query-dsl</artifactId>
         </dependency>
 
         <dependency>
@@ -1908,12 +2148,8 @@
             <artifactId>wildfly-client-all</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-ejb-client-bom</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-jms-client-bom</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -2036,7 +2272,17 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-marshalling</artifactId>
+            <artifactId>wildfly-clustering-marshalling-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2069,7 +2315,17 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-singleton</artifactId>
+            <artifactId>wildfly-clustering-singleton-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-singleton-extension</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2142,6 +2398,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-configadmin</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.hal</groupId>
             <artifactId>release-stream</artifactId>
             <classifier>resources</classifier>
@@ -2150,6 +2416,17 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-batch</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-batch-jberet</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2194,17 +2471,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb3</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-embedded</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2309,6 +2575,17 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-messaging</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-messaging-activemq</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

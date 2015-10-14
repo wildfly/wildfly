@@ -57,6 +57,7 @@ public class WebAccessLogDirectoryDefinition extends ModelOnlyResourceDefinition
         super(WebExtension.DIRECTORY_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.access-log.directory"),
                 RELATIVE_TO, PATH);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 }

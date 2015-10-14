@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -124,7 +124,24 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
-
+                            <!-- TCP clustering tests with custom containers with manual deployments. -->
+                            <execution>
+                                <id>ts.surefire.clustering.custom-manual-messaging</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/messaging/**/*TestCase.java</include>
+                                    </includes>
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>clustered-messaging</arquillian.launch>
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -263,6 +280,33 @@
 
                                     <!-- Differentiate surefire TCP and UDP reports. -->
                                     <reportNameSuffix>SYNC-tcp-extended</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                            <!-- TUNNEL-ASYNC -->
+                            <execution>
+                                <id>ts.surefire.clustering.multinode-tunnel-async</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>reversealphabetical</runOrder>
+
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/tunnel/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables combine.children="append"> <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <cacheMode>ASYNC</cacheMode>
+                                        <stack>tunnel</stack>
+                                    </systemPropertyVariables>
+
+                                    <!-- Differentiate surefire TCP and UDP reports. -->
+                                    <reportNameSuffix>ASYNC-tunnel</reportNameSuffix>
                                 </configuration>
                             </execution>
 

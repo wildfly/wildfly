@@ -1,0 +1,3 @@
+org.wildfly.clustering.server.group.AddressableNodeExternalizer
+org.wildfly.clustering.server.registry.CacheRegistryFilterExternalizer
+org.wildfly.clustering.server.singleton.ServiceNameExternalizer

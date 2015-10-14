@@ -37,6 +37,7 @@ import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.naming.ContextInjectionSource;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -47,8 +48,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.CircularDependencyException;
 import org.jboss.msc.service.DuplicateServiceException;
@@ -81,7 +81,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (moduleConfiguration == null || DeploymentUtils.skipRepeatedActivation(deploymentUnit, 0)) {
             return;
         }
@@ -135,8 +135,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
             for (final InterceptorDescription interceptor : componentConfiguration.getComponentDescription().getAllInterceptors()) {
                 try {
-                    final ClassIndex interceptorClass = classIndex.classIndex(interceptor.getInterceptorClassName());
-                    classConfigurations.add(interceptorClass.getModuleClass());
+                    classConfigurations.add(ClassLoadingUtils.loadClass(interceptor.getInterceptorClassName(), module));
                 } catch (ClassNotFoundException e) {
                     throw EeLogger.ROOT_LOGGER.cannotLoadInterceptor(e, interceptor.getInterceptorClassName(), componentConfiguration.getComponentClass());
                 }

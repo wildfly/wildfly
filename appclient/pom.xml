@@ -31,7 +31,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-appclient</artifactId>
@@ -55,7 +55,7 @@
 
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-security-manager</artifactId>
+            <artifactId>wildfly-elytron</artifactId>
         </dependency>
 
         <dependency>
@@ -81,11 +81,6 @@
         <dependency>
             <groupId>org.hibernate.javax.persistence</groupId>
             <artifactId>hibernate-jpa-2.1-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-common-core</artifactId>
         </dependency>
 
         <dependency>

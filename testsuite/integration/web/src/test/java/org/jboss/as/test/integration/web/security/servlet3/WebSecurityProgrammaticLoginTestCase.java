@@ -121,7 +121,7 @@ public class WebSecurityProgrammaticLoginTestCase {
 
             HttpResponse res =  httpclient.execute(new HttpGet(managementClient.getWebUri() + "/" + getContextPath() + "/login/?username=" + user + "&password=" + pass));
             Assert.assertEquals(expectedStatusCode, res.getStatusLine().getStatusCode());
-            System.out.println("Response content length: " + EntityUtils.toString(res.getEntity()));
+            //System.out.println("Response content length: " + EntityUtils.toString(res.getEntity()));
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure

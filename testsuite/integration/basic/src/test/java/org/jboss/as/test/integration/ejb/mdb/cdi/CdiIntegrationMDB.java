@@ -40,7 +40,6 @@ import org.jboss.logging.Logger;
 @MessageDriven(activationConfig = {
         @ActivationConfigProperty(propertyName = "destination", propertyValue = MDBCdiIntegrationTestCase.QUEUE_JNDI_NAME)
 })
-@ResourceAdapter(value = "hornetq-ra.rar")
 public class CdiIntegrationMDB implements MessageListener {
 
     private static final Logger logger = Logger.getLogger(CdiIntegrationMDB.class);

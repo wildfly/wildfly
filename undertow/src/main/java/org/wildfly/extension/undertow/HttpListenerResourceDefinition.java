@@ -22,12 +22,14 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.UndertowOptions;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.io.OptionAttributeDefinition;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +56,12 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    protected static final OptionAttributeDefinition ENABLE_HTTP2 = OptionAttributeDefinition.builder("enable-http2", UndertowOptions.ENABLE_HTTP2)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
     private HttpListenerResourceDefinition() {
         super(UndertowExtension.HTTP_LISTENER_PATH);
@@ -69,6 +77,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
         attrs.add(CERTIFICATE_FORWARDING);
         attrs.add(REDIRECT_SOCKET);
         attrs.add(PROXY_ADDRESS_FORWARDING);
+        attrs.add(ENABLE_HTTP2);
         return attrs;
     }
 }

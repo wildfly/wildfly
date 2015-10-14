@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
+import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
@@ -63,6 +64,11 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
     public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription viewDescription, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
         if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
             throw EjbLogger.ROOT_LOGGER.invalidEjbComponent(componentConfiguration.getComponentName(), componentConfiguration.getComponentClass());
+        }
+
+        if(!context.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
+            //the security subsystem is not present, we don't apply any security settings
+            return;
         }
         final DeploymentReflectionIndex deploymentReflectionIndex = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
@@ -94,7 +100,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             viewMethodSecurityAttributesServiceBuilder = null;
             viewMethodSecurityAttributesServiceName = null;
         } else {
-            viewMethodSecurityAttributesServiceBuilder = new EJBViewMethodSecurityAttributesService.Builder(viewClassName);
+            viewMethodSecurityAttributesServiceBuilder = new EJBViewMethodSecurityAttributesService.Builder();
             viewMethodSecurityAttributesServiceName =  EJBViewMethodSecurityAttributesService.getServiceName(ejbComponentDescription.getApplicationName(), ejbComponentDescription.getModuleName(), ejbComponentDescription.getEJBName(), viewClassName);
         }
         // setup the method specific security interceptor(s)
@@ -206,7 +212,9 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                 ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.rolesAllowed(rolesAllowed);
             }
             // build the EJBViewMethodSecurityAttributesService to expose these security attributes to other components like WS (@see https://issues.jboss.org/browse/WFLY-308)
-            viewMethodSecurityAttributesServiceBuilder.addMethodSecurityMetadata(viewMethod, ejbMethodSecurityMetaData);
+            if (viewMethodSecurityAttributesServiceBuilder != null) {
+                viewMethodSecurityAttributesServiceBuilder.addMethodSecurityMetadata(viewMethod, ejbMethodSecurityMetaData);
+            }
             // add the interceptor
             final Interceptor authorizationInterceptor = new AuthorizationInterceptor(ejbMethodSecurityMetaData, viewClassName, viewMethod, contextID);
             viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);

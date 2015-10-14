@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.transaction.TransactionManager;
@@ -36,8 +35,9 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.core.security.ServerSecurityManager;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
+import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.common.beans.property.BeanUtils;
 import org.jboss.jca.core.spi.rar.Activation;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.jca.core.spi.rar.MessageListener;
@@ -50,7 +50,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.util.propertyeditor.PropertyEditors;
 
 /**
  * The gas, water & energy for the EJB subsystem.
@@ -109,7 +108,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
             final Properties validActivationConfigProps = this.filterUnknownActivationConfigProperties(resourceAdapterName, activation, activationConfigProperties);
             // now set the activation config properties on the ActivationSpec
             final ActivationSpec activationSpec = activation.createInstance();
-            PropertyEditors.mapJavaBeanProperties(activationSpec, validActivationConfigProps);
+            BeanUtils.mapJavaBeanProperties(activationSpec, validActivationConfigProps);
 
             return activationSpec;
 

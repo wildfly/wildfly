@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
 
@@ -47,6 +46,7 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.wildfly.security.manager.action.GetClassLoaderAction;
 import org.jboss.invocation.Interceptor;
 import org.jboss.jca.core.spi.rar.Endpoint;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.security.AccessController.doPrivileged;
@@ -67,10 +67,9 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final SuspendController suspendController;
     private final ActivationSpec activationSpec;
     private final MessageEndpointFactory endpointFactory;
-    private final Class<?> messageListenerInterface;
     private final ClassLoader classLoader;
     private volatile boolean deliveryActive;
-    private ResourceAdapter resourceAdapter;
+    private final ServiceName deliveryControllerName;
     private Endpoint endpoint;
     private String activationName;
 
@@ -92,11 +91,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             listener.done();
         }
 
-        @Deprecated
-        public void suspened(ServerActivityCallback listener) {
-            suspended(listener);
-        }
-
         public void suspended(ServerActivityCallback listener) {
             listener.done();
         }
@@ -115,7 +109,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
      * @param ejbComponentCreateService the component configuration
      * @param deliveryActive true if the component must start delivering messages as soon as it is started
      */
-    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec, final boolean deliveryActive) {
+    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec, final boolean deliveryActive, final ServiceName deliveryControllerName) {
         super(ejbComponentCreateService);
 
         StatelessObjectFactory<MessageDrivenComponentInstance> factory = new StatelessObjectFactory<MessageDrivenComponentInstance>() {
@@ -142,7 +136,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         this.classLoader = ejbComponentCreateService.getModuleClassLoader();
         this.suspendController = ejbComponentCreateService.getSuspendControllerInjectedValue().getValue();
         this.activationSpec = activationSpec;
-        this.messageListenerInterface = messageListenerInterface;
         final ClassLoader componentClassLoader = doPrivileged(new GetClassLoaderAction(ejbComponentCreateService.getComponentClass()));
         final MessageEndpointService<?> service = new MessageEndpointService<Object>() {
             @Override
@@ -187,6 +180,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         };
         this.endpointFactory = new JBossMessageEndpointFactory(componentClassLoader, service, (Class<Object>) getComponentClass(), messageListenerInterface);
         this.deliveryActive = deliveryActive;
+        this.deliveryControllerName = deliveryControllerName;
     }
 
     @Override
@@ -202,10 +196,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public String getPoolName() {
         return poolName;
-    }
-
-    protected void setResourceAdapter(ResourceAdapter resourceAdapter) {
-        this.resourceAdapter = resourceAdapter;
     }
 
     void setEndpoint(final Endpoint endpoint) {
@@ -270,17 +260,31 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     }
 
     public void startDelivery() {
-        this.deliveryActive = true;
-        activate();
+        if (!this.deliveryActive) {
+            this.deliveryActive = true;
+            activate();
+            ROOT_LOGGER.mdbDeliveryStarted(getApplicationName(), getComponentName());
+        }
     }
 
     public void stopDelivery() {
-        this.deactivate();
-        this.deliveryActive = false;
+        if (this.deliveryActive) {
+            this.deactivate();
+            this.deliveryActive = false;
+            ROOT_LOGGER.mdbDeliveryStopped(getApplicationName(), getComponentName());
+        }
     }
 
     public boolean isDeliveryActive() {
         return deliveryActive;
+    }
+
+    public boolean isDeliveryControlled() {
+        return deliveryControllerName != null;
+    }
+
+    public ServiceName getDeliveryControllerName() {
+        return deliveryControllerName;
     }
 
     @Override

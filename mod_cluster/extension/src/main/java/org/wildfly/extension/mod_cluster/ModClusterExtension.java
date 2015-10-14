@@ -22,6 +22,13 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -34,12 +41,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-
-import java.util.EnumSet;
-import java.util.List;
-import javax.xml.stream.XMLStreamConstants;
-
-import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
 /**
  * Domain extension used to initialize the mod_cluster subsystem element handlers.
@@ -76,8 +77,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debugf("Activating mod_cluster extension");
 
-        ModelVersion current = ModClusterModel.CURRENT.getVersion();
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, current.getMajor(), current.getMinor(), current.getMicro());
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ModClusterModel.CURRENT.getVersion());
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ModClusterSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
 
         final ManagementResourceRegistration configuration = registration.registerSubModel(new ModClusterConfigResourceDefinition());

@@ -16,11 +16,17 @@
  */
 package org.jboss.as.weld.util;
 
+import java.util.Map;
+
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.web.common.WebComponentDescription;
 
 /**
  * Various utilities for working with WildFly APIs
@@ -58,5 +64,20 @@ public class Utils {
 
     public static boolean isComponentWithView(ComponentDescription component) {
         return (component instanceof EJBComponentDescription) || (component instanceof ManagedBeanComponentDescription);
+    }
+
+    public static void registerAsComponent(String listener, DeploymentUnit deploymentUnit) {
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final EEModuleDescription module = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final WebComponentDescription componentDescription = new WebComponentDescription(listener, listener, module, deploymentUnit.getServiceName(),
+                applicationClasses);
+        module.addComponent(componentDescription);
+        deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, componentDescription.getStartServiceName());
+    }
+
+    public static <K, V> void putIfValueNotNull(Map<K, V> map, K key, V value) {
+        if (value != null) {
+            map.put(key, value);
+        }
     }
 }

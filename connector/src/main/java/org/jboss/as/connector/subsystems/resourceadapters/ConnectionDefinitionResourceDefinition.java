@@ -21,15 +21,8 @@
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
@@ -122,7 +115,7 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
 
     }
 
-    static void registerTransformer120(ResourceTransformationDescriptionBuilder parentBuilder) {
+    static void registerTransformer130(ResourceTransformationDescriptionBuilder parentBuilder) {
         parentBuilder.addChildResource(PATH).getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.ALWAYS, Constants.ENLISTMENT, Constants.SHARABLE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
@@ -130,25 +123,5 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH);
-    }
-
-    static void registerTransformer110(ResourceTransformationDescriptionBuilder parentBuilder) {
-        parentBuilder.addChildResource(PATH).getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.SECURITY_DOMAIN, Constants.SECURITY_DOMAIN_AND_APPLICATION, Constants.APPLICATION,
-                        CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_CLASS,
-                        INITIAL_POOL_SIZE, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_INCREMENTER_PROPERTIES)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), ENLISTMENT, SHARABLE)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SECURITY_DOMAIN, Constants.SECURITY_DOMAIN_AND_APPLICATION, Constants.APPLICATION,
-                                CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_CLASS,
-                                INITIAL_POOL_SIZE, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_INCREMENTER_PROPERTIES)
-                        .addRejectCheck(RejectAttributeChecker.UNDEFINED, ENLISTMENT, SHARABLE)
-                        .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(new ModelNode(true)), ENLISTMENT, SHARABLE)
-                                //Did not use to be nillable
-                        .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.RECOVERLUGIN_PROPERTIES)
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.RECOVERLUGIN_PROPERTIES)
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH);
-
     }
 }

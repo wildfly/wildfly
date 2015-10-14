@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import static org.jboss.as.weld.util.Utils.registerAsComponent;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -37,7 +39,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.WarMetaData;
-import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.webtier.jsp.WeldJspExpressionFactoryWrapper;
@@ -98,11 +99,8 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             return; // Skip non web deployments
         }
 
-        if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
-            return; // skip non weld deployments
-        }
-
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+
         if (warMetaData == null) {
             WeldLogger.DEPLOYMENT_LOGGER.debug("Not installing Weld web tier integration as no war metadata found");
             return;
@@ -112,9 +110,14 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             WeldLogger.DEPLOYMENT_LOGGER.debug("Not installing Weld web tier integration as no merged web metadata found");
             return;
         }
+        if(!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+            if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+                createDependency(deploymentUnit, warMetaData);
+            }
+            return;
+        }
 
-        final ServiceName weldStartService = (deploymentUnit.getParent() != null ? deploymentUnit.getParent() : deploymentUnit).getServiceName().append(WeldStartService.SERVICE_NAME);
-        warMetaData.addAdditionalDependency(weldStartService);
+        createDependency(deploymentUnit, warMetaData);
 
         List<ListenerMetaData> listeners = webMetaData.getListeners();
         if (listeners == null) {
@@ -137,8 +140,8 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         listeners.add(TERMINAL_LISTENER_MEDATADA);
 
         //These listeners use resource injection, so they need to be components
-        registerAsComponent(WELD_INITIAL_LISTENER, module, deploymentUnit, applicationClasses);
-        registerAsComponent(WELD_TERMINAL_LISTENER, module, deploymentUnit, applicationClasses);
+        registerAsComponent(WELD_INITIAL_LISTENER, deploymentUnit);
+        registerAsComponent(WELD_TERMINAL_LISTENER, deploymentUnit);
 
         deploymentUnit.addToAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY, WeldJspExpressionFactoryWrapper.INSTANCE);
 
@@ -173,12 +176,17 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
                 }
                 if (!filterFound) {
                     webMetaData.getFilters().add(conversationFilterMetadata);
-                    registerAsComponent(CONVERSATION_FILTER_CLASS, module, deploymentUnit, applicationClasses);
+                    registerAsComponent(CONVERSATION_FILTER_CLASS, deploymentUnit);
                     webMetaData.getContextParams().add(CONVERSATION_FILTER_INITIALIZED);
                 }
             }
 
         }
+    }
+
+    private void createDependency(DeploymentUnit deploymentUnit, WarMetaData warMetaData) {
+        final ServiceName weldStartService = (deploymentUnit.getParent() != null ? deploymentUnit.getParent() : deploymentUnit).getServiceName().append(WeldStartService.SERVICE_NAME);
+        warMetaData.addAdditionalDependency(weldStartService);
     }
 
     private void setupWeldContextIgnores(List<ParamValueMetaData> contextParams, String parameterName) {
@@ -195,11 +203,5 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
-    }
-
-    private void registerAsComponent(String listener, EEModuleDescription module, DeploymentUnit deploymentUnit, EEApplicationClasses applicationClasses) {
-        final WebComponentDescription componentDescription = new WebComponentDescription(listener, listener, module, deploymentUnit.getServiceName(), applicationClasses);
-        module.addComponent(componentDescription);
-        deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, componentDescription.getStartServiceName());
     }
 }

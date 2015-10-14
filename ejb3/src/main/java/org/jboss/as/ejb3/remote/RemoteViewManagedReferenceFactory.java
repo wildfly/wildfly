@@ -89,7 +89,7 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
                 throw EjbLogger.ROOT_LOGGER.failToLoadViewClassEjb(beanName, ce);
             }
         }
-        EJBLocator ejbLocator = null;
+        EJBLocator<?> ejbLocator = null;
         if (EJBHome.class.isAssignableFrom(viewClass) || EJBLocalHome.class.isAssignableFrom(viewClass)) {
             ejbLocator = new EJBHomeLocator(viewClass, appName, moduleName, beanName, distinctName);
         } else if (stateful) {

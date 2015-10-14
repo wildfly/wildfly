@@ -22,14 +22,14 @@ public class BatchServiceNames {
     public static final ServiceName BATCH_THREAD_POOL_NAME = BASE_BATCH_THREAD_POOL_NAME.append("batch");
 
     /**
-     * Creates a service name for the deployment unit to define the service.
+     * Creates a service name for the batch environment service.
      *
      * @param deploymentUnit the deployment unit to create the service name for
      *
      * @return the service name
      */
-    public static ServiceName batchDeploymentServiceName(final DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getServiceName().append("batch");
+    public static ServiceName batchEnvironmentServiceName(final DeploymentUnit deploymentUnit) {
+        return deploymentUnit.getServiceName().append("batch").append("environment");
     }
 
     /**

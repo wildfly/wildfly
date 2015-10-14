@@ -34,11 +34,13 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -47,7 +49,6 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -70,19 +71,25 @@ public class SarExtension implements Extension {
     private static final String RESOURCE_NAME = SarExtension.class.getPackage().getName() + ".LocalDescriptions";
     private static final ResourceDescriptionResolver RESOLVER = new StandardResourceDescriptionResolver("sar", RESOURCE_NAME, SarExtension.class.getClassLoader());
     private static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SarExtension.SUBSYSTEM_NAME);
-    private static final ResourceDefinition RESOURCE_DEFINITION = new SimpleResourceDefinition(PATH, RESOLVER,
-                            SarSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
-                            OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
+    static final RuntimeCapability<Void> SAR_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.sar-deployment")
+            .addRequirements(JMX_CAPABILITY)
+            .build();
+
+    private static final ResourceDefinition RESOURCE_DEFINITION = new SimpleResourceDefinition(
+                new SimpleResourceDefinition.Parameters(PATH, RESOLVER)
+            .setAddHandler(SarSubsystemAdd.INSTANCE)
+            .setRemoveHandler(new ReloadRequiredRemoveStepHandler(SAR_CAPABILITY))
+            .setCapabilities(SAR_CAPABILITY)
+    );
+
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
 
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(RESOURCE_DEFINITION);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(parser);

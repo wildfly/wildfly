@@ -68,8 +68,8 @@ public class RemoteOutboundConnectionReconnectTestCase {
     private static final String SERVER_ONE_MODULE_NAME = "server-one-module";
     private static final String SERVER_TWO_MODULE_NAME = "server-two-module";
 
-    private static final String DEFAULT_JBOSSAS = "default-jbossas";
-    private static final String JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION = "jbossas-with-remote-outbound-connection";
+    private static final String JBOSSAS_NON_CLUSTERED = "jbossas-non-clustered";
+    private static final String JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION_NON_CLUSTERED = "jbossas-with-remote-outbound-connection-non-clustered";
 
     private static final String DEFAULT_AS_DEPLOYMENT = "default-jbossas-deployment";
     private static final String DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML = "other-deployment";
@@ -99,7 +99,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
     }
 
     @Deployment(name = DEFAULT_AS_DEPLOYMENT, managed = false, testable = false)
-    @TargetsContainer(DEFAULT_JBOSSAS)
+    @TargetsContainer(JBOSSAS_NON_CLUSTERED)
     public static Archive<?> createContainer1Deployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SERVER_TWO_MODULE_NAME + ".jar");
         ejbJar.addClasses(EchoOnServerTwo.class, RemoteEcho.class);
@@ -107,7 +107,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
     }
 
     @Deployment(name = DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML, managed = false, testable = false)
-    @TargetsContainer(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION)
+    @TargetsContainer(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION_NON_CLUSTERED)
     public static Archive<?> createContainer2Deployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SERVER_ONE_MODULE_NAME + ".jar");
         ejbJar.addClasses(EchoOnServerOne.class, RemoteEcho.class, IndependentBean.class);
@@ -127,7 +127,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
     @Test
     public void testRemoteServerStartsLate() throws Exception {
         // First start the server which has a remote-outbound-connection
-        this.container.start(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+        this.container.start(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION_NON_CLUSTERED);
         boolean defaultContainerStarted = false;
         try {
             // deploy a deployment which contains jboss-ejb-client.xml that contains an EJB receiver pointing
@@ -151,7 +151,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
                 logger.info("Got the expected exception on invoking a bean when other server was down", e);
             }
             // now start the main server
-            this.container.start(DEFAULT_JBOSSAS);
+            this.container.start(JBOSSAS_NON_CLUSTERED);
             defaultContainerStarted = true;
             // deploy to this container
             this.deployer.deploy(DEFAULT_AS_DEPLOYMENT);
@@ -164,14 +164,14 @@ public class RemoteOutboundConnectionReconnectTestCase {
         } finally {
             try {
                 this.deployer.undeploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
-                this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+                this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION_NON_CLUSTERED);
             } catch (Exception e) {
                 logger.debug("Exception during container shutdown", e);
             }
             if (defaultContainerStarted) {
                 try {
                     this.deployer.undeploy(DEFAULT_AS_DEPLOYMENT);
-                    this.container.stop(DEFAULT_JBOSSAS);
+                    this.container.stop(JBOSSAS_NON_CLUSTERED);
                 } catch (Exception e) {
                     logger.debug("Exception during container shutdown", e);
                 }
@@ -192,12 +192,12 @@ public class RemoteOutboundConnectionReconnectTestCase {
     @Test
     public void testRemoteServerRestarts() throws Exception {
         // Start the main server
-        this.container.start(DEFAULT_JBOSSAS);
+        this.container.start(JBOSSAS_NON_CLUSTERED);
         // deploy to this container
         this.deployer.deploy(DEFAULT_AS_DEPLOYMENT);
 
         // Now start the server which has a remote-outbound-connection
-        this.container.start(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+        this.container.start(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION_NON_CLUSTERED);
         this.deployer.deploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
 
         boolean defaultContainerStarted = true;
@@ -216,7 +216,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
             Assert.assertEquals("Unexpected echo from bean", EchoOnServerTwo.ECHO_PREFIX + msg, echoBeforeShuttingDownServer);
 
             // now stop the main server
-            this.container.stop(DEFAULT_JBOSSAS);
+            this.container.stop(JBOSSAS_NON_CLUSTERED);
             defaultContainerStarted = false;
 
             try {
@@ -228,7 +228,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
             }
 
             // now restart the main server
-            this.container.start(DEFAULT_JBOSSAS);
+            this.container.start(JBOSSAS_NON_CLUSTERED);
             defaultContainerStarted = true;
 
             final String echoAfterServerRestart = dependentBean.echo(msg);
@@ -238,14 +238,14 @@ public class RemoteOutboundConnectionReconnectTestCase {
         } finally {
             try {
                 this.deployer.undeploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
-                this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
+                this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION_NON_CLUSTERED);
             } catch (Exception e) {
                 logger.debug("Exception during container shutdown", e);
             }
             if (defaultContainerStarted) {
                 try {
                     this.deployer.undeploy(DEFAULT_AS_DEPLOYMENT);
-                    this.container.stop(DEFAULT_JBOSSAS);
+                    this.container.stop(JBOSSAS_NON_CLUSTERED);
                 } catch (Exception e) {
                     logger.debug("Exception during container shutdown", e);
                 }

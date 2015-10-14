@@ -39,7 +39,7 @@ public class ClusteredAnnotationInformationFactory extends ClassAnnotationInform
 
     @Override
     protected Void fromAnnotation(AnnotationInstance annotationInstance, PropertyReplacer propertyReplacer) {
-        EjbLogger.ROOT_LOGGER.deprecatedAnnotation(Clustered.class.getSimpleName());
+        EjbLogger.DEPLOYMENT_LOGGER.deprecatedAnnotation(Clustered.class.getSimpleName());
         return null;
     }
 }

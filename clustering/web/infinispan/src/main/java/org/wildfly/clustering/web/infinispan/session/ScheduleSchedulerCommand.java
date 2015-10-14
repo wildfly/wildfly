@@ -21,11 +21,13 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
  * Command that schedules a session.
@@ -36,19 +38,30 @@ public class ScheduleSchedulerCommand implements Command<Void, Scheduler> {
 
     private final transient ImmutableSession session;
     private final String id;
-    private final long maxInactiveInterval;
-    private final long lastAccessedTime;
+    private final Instant creationTime;
+    private final Duration maxInactiveInterval;
+    private final Duration lastAccessedDuration;
 
     public ScheduleSchedulerCommand(ImmutableSession session) {
         this.session = session;
         this.id = session.getId();
-        this.maxInactiveInterval = session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS);
-        this.lastAccessedTime = session.getMetaData().getLastAccessedTime().getTime();
+        ImmutableSessionMetaData metaData = session.getMetaData();
+        this.creationTime = metaData.getCreationTime();
+        this.maxInactiveInterval = metaData.getMaxInactiveInterval();
+        this.lastAccessedDuration = Duration.between(this.creationTime, metaData.getLastAccessedTime());
     }
 
     @Override
     public Void execute(Scheduler scheduler) {
-        ImmutableSession session = (this.session != null) ? this.session : new MockImmutableSession(this.id, new SimpleSessionMetaData(null, new Date(this.lastAccessedTime), new Time(this.maxInactiveInterval, TimeUnit.MILLISECONDS)));
+        ImmutableSession session = this.session;
+        if (session == null) {
+            SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData(this.creationTime);
+            creationMetaData.setMaxInactiveInterval(this.maxInactiveInterval);
+            SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
+            accessMetaData.setLastAccessedDuration(this.lastAccessedDuration);
+            SessionMetaData metaData = new SimpleSessionMetaData(creationMetaData, accessMetaData);
+            session = new MockImmutableSession(this.id, metaData);
+        }
         scheduler.schedule(session);
         return null;
     }

@@ -54,9 +54,9 @@
     </xs:complexType>
     <xs:complexType name="serverType">
         <xs:sequence>
+            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="https-listener" type="https-listener-type" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="host" type="hostType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
@@ -95,6 +95,8 @@
                 <xs:attribute name="max-buffered-request-size" type="xs:long" default="16384"/>
                 <xs:attribute name="record-request-start-time" type="xs:boolean" default="false"/>
                 <xs:attribute name="allow-equals-in-cookie-value" type="xs:boolean" default="false"/>
+                <xs:attribute name="no-request-timeout" type="xs:integer" default="-1"/>
+                <xs:attribute name="request-parse-timeout" type="xs:integer" default="-1"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

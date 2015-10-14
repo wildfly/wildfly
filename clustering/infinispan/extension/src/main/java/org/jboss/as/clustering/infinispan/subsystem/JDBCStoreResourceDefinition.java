@@ -22,20 +22,32 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+
+import javax.sql.DataSource;
 
 import org.infinispan.persistence.jdbc.DatabaseType;
+import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
+import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
+import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -47,140 +59,146 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
+public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final SimpleAttributeDefinition DATA_SOURCE = new SimpleAttributeDefinitionBuilder(ModelKeys.DATASOURCE, ModelType.STRING, false)
-            .setXmlName(Attribute.DATASOURCE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        DATA_SOURCE("org.wildfly.clustering.infinispan.cache-container.cache.store.jdbc.data-source", DataSource.class),
+        ;
+        private final RuntimeCapability<Void> definition;
 
-    static final SimpleAttributeDefinition DIALECT = new SimpleAttributeDefinitionBuilder(ModelKeys.DIALECT, ModelType.STRING, true)
-            .setXmlName(Attribute.DIALECT.getLocalName())
-            .setValidator(new EnumValidator<>(DatabaseType.class, true, true))
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        Capability(String name, Class<?> serviceType) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DATA_SOURCE, DIALECT };
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
 
-    static final SimpleAttributeDefinition BATCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.BATCH_SIZE, ModelType.INT, true)
-            .setXmlName(Attribute.BATCH_SIZE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(100))
-            .build();
+        @Override
+        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+            PathAddress cacheAddress = address.getParent();
+            PathAddress containerAddress = cacheAddress.getParent();
+            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue() + "." + cacheAddress.getLastElement().getValue());
+        }
+    }
 
-    static final SimpleAttributeDefinition FETCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_SIZE, ModelType.INT, true)
-            .setXmlName(Attribute.FETCH_SIZE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(100))
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        DATA_SOURCE("data-source", ModelType.STRING, new CapabilityReference(RequiredCapability.DATA_SOURCE, Capability.DATA_SOURCE)),
+        DIALECT("dialect", ModelType.STRING, new EnumValidatorBuilder<>(DatabaseType.class)),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(ModelKeys.PREFIX, ModelType.STRING, true)
-            .setXmlName(Attribute.PREFIX.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, type, true).setAllowExpression(false).setCapabilityReference(reference).build();
+        }
 
-    static final SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinitionBuilder("name", ModelType.STRING, true)
-            .setXmlName("name")
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set("name"))
-            .build();
+        Attribute(String name, ModelType type, ParameterValidatorBuilder validator) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, true).setAllowExpression(true);
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        }
 
-    static final SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinitionBuilder("type", ModelType.STRING, true)
-            .setXmlName("type")
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set("type"))
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
-    static final AttributeDefinition[] COLUMN_ATTRIBUTES = new AttributeDefinition[] { COLUMN_NAME, COLUMN_TYPE };
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        DATASOURCE("datasource", ModelType.STRING, InfinispanModel.VERSION_4_0_0), // Defines data source as JNDI name
+        ;
+        private final AttributeDefinition definition;
 
-    static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.ID_COLUMN, COLUMN_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("column")
-            .build();
+        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
+            this.definition = createBuilder(name, type, true).setAllowExpression(true).setDeprecated(deprecation.getVersion()).build();
+        }
 
-    static final ObjectTypeAttributeDefinition DATA_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.DATA_COLUMN, COLUMN_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("column")
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
-    static final ObjectTypeAttributeDefinition TIMESTAMP_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.TIMESTAMP_COLUMN, COLUMN_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("column")
-            .build();
-
-    static final AttributeDefinition[] TABLE_ATTRIBUTES = new AttributeDefinition[] { PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN };
-
-    @Deprecated
-    static final ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.ENTRY_TABLE, TABLE_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("table")
-            .build();
-
-    @Deprecated
-    static final ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BUCKET_TABLE, TABLE_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("table")
-            .build();
-
-    static final ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.STRING_KEYED_TABLE, TABLE_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("table")
-            .build();
-
-    static final ObjectTypeAttributeDefinition BINARY_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BINARY_KEYED_TABLE, TABLE_ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("table")
-            .build();
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, boolean allowNull) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowNull(allowNull)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+        ;
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
-        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            // Converts pool name to its JNDI name
+            Converter converter = new Converter() {
+                @Override
+                public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
+                    if (!value.isDefined()) {
+                        PathAddress rootAddress = address.subAddress(0, address.size() - 4);
+                        PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));
+                        Resource subsystem = context.readResourceFromRoot(subsystemAddress);
+                        String poolName = value.asString();
+                        for (String type : Arrays.asList("data-source", "xa-data-source")) {
+                            if (subsystem.hasChildren(type)) {
+                                for (Resource.ResourceEntry entry : subsystem.getChildren(type)) {
+                                    if (entry.getName().equals(poolName)) {
+                                        value.set(entry.getModel().get("jndi-name"));
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
             builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, DIALECT)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, DIALECT);
+                    .addRename(Attribute.DATA_SOURCE.getDefinition().getName(), DeprecatedAttribute.DATASOURCE.getDefinition().getName())
+                    .setValueConverter(new SimpleAttributeConverter(converter), Attribute.DATA_SOURCE.getDefinition())
+            ;
         }
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            Map<String, RejectAttributeChecker> columnCheckers = new HashMap<>();
-            columnCheckers.put(COLUMN_NAME.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            columnCheckers.put(COLUMN_TYPE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            RejectAttributeChecker columnChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(columnCheckers);
-
-            Map<String, RejectAttributeChecker> tableCheckers = new HashMap<>();
-            tableCheckers.put(PREFIX.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            tableCheckers.put(BATCH_SIZE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            tableCheckers.put(FETCH_SIZE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
-            tableCheckers.put(ID_COLUMN.getName(), columnChecker);
-            tableCheckers.put(DATA_COLUMN.getName(), columnChecker);
-            tableCheckers.put(TIMESTAMP_COLUMN.getName(), columnChecker);
-            RejectAttributeChecker tableChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(tableCheckers);
-
+        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .addRejectCheck(tableChecker, BINARY_KEYED_TABLE, STRING_KEYED_TABLE)
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATA_SOURCE);
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.DIALECT.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.DIALECT.getDefinition())
+                    .end();
         }
 
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    JDBCStoreResourceDefinition(StoreType store, boolean allowRuntimeOnlyRegistration) {
-        super(store, allowRuntimeOnlyRegistration);
+    static void translateAddOperation(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (!operation.hasDefined(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName())) {
+            if (operation.hasDefined(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.getDefinition().getName())) {
+                // Translate JNDI name into pool name
+                String jndiName = JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.getDefinition().resolveModelAttribute(context, operation).asString();
+                String poolName = findPoolName(context, jndiName);
+                operation.get(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName()).set(poolName);
+            } else {
+                throw ControllerLogger.MGMT_OP_LOGGER.validationFailedRequiredParameterNotPresent(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName(), operation.toString());
+            }
+        }
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
+    private static String findPoolName(OperationContext context, String jndiName) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        PathAddress rootAddress = address.subAddress(0, address.size() - 4);
+        PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));
+        Resource subsystem = context.readResourceFromRoot(subsystemAddress);
+        for (String type : Arrays.asList("data-source", "xa-data-source")) {
+            if (subsystem.hasChildren(type)) {
+                for (Resource.ResourceEntry entry : subsystem.getChildren(type)) {
+                    ModelNode model = entry.getModel();
+                    if (model.get("jndi-name").asString().equals(jndiName)) {
+                        return entry.getName();
+                    }
+                }
+            }
         }
+        throw InfinispanLogger.ROOT_LOGGER.dataSourceJndiNameNotFound(jndiName);
+    }
+
+    JDBCStoreResourceDefinition(PathElement path, InfinispanResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration) {
+        super(path, resolver, allowRuntimeOnlyRegistration);
     }
 }

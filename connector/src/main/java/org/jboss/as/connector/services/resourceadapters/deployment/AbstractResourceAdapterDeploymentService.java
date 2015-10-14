@@ -29,6 +29,7 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTO
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,6 +63,7 @@ import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.common.api.metadata.spec.XsdString;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
@@ -87,7 +89,6 @@ import org.jboss.security.SubjectFactory;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
 
 /**
@@ -200,6 +201,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 }
             }
+
+            if (value.getDeployment() != null && value.getDeployment().getBootstrapContextIdentifier() != null) {
+                BootstrapContextCoordinator.getInstance().removeBootstrapContext(value.getDeployment().getBootstrapContextIdentifier());
+            }
         }
         if (raRepositoryRegistrationId != null  && raRepository != null && raRepository.getValue() != null) {
             try {
@@ -222,7 +227,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 DEPLOYMENT_CONNECTOR_LOGGER.debug("Failed to unregister RA from MDR", e);
             }
         }
-
     }
 
     public Injector<AS7MetadataRepository> getMdrInjector() {
@@ -276,8 +280,11 @@ public abstract class AbstractResourceAdapterDeploymentService {
             // add-on projects don't know to inject it....
             final ThreadGroup threadGroup = new ThreadGroup("ResourceAdapterDeploymentService ThreadGroup");
             final String namePattern = "ResourceAdapterDeploymentService Thread Pool -- %t";
-            final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern,
-                    null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
+            final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+                public JBossThreadFactory run() {
+                    return new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
+                }
+            });
             result = Executors.newSingleThreadExecutor(threadFactory);
         }
         return result;
@@ -345,7 +352,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
         }
     }
 
-    protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {
+    protected abstract class AbstractWildFlyRaDeployer extends AbstractResourceAdapterDeployer {
 
         protected final ServiceTarget serviceTarget;
         protected final URL url;
@@ -355,8 +362,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
         protected final Connector cmd;
         protected final ServiceName deploymentServiceName;
 
-        protected AbstractAS7RaDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd,  final ServiceName deploymentServiceName) {
+        protected AbstractWildFlyRaDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
+                                            Connector cmd, final ServiceName deploymentServiceName) {
             super(true);
             this.serviceTarget = serviceTarget;
             this.url = url;

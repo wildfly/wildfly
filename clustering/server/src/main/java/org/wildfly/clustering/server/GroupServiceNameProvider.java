@@ -23,8 +23,8 @@
 package org.wildfly.clustering.server;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
 import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.spi.GroupServiceNameFactory;
 
 /**
  * Provides a service name for a group-based service.

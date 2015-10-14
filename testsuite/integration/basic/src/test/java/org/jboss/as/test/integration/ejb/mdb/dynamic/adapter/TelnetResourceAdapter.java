@@ -73,11 +73,6 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
             workManager.scheduleWork(new Work() {
                 @Override
                 public void release() {
-                    try {
-                        telnetServer.deactivate();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
                 }
 
                 @Override

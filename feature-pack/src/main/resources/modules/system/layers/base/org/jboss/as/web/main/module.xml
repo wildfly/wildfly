@@ -38,5 +38,6 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.logging"/>
+        <module name="org.wildfly.extension.undertow"/>
     </dependencies>
 </module>

@@ -22,21 +22,19 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.jboss.as.ee.logging.EeLogger;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.value.Value;
@@ -64,11 +62,10 @@ public final class MethodInjectionTarget extends InjectionTarget {
         final String name = getName();
         final String className = getClassName();
         final String paramType = getDeclaredValueClassName();
-        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
-        final DeploymentClassIndex index = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
+        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
         final Class<?> clazz;
         try {
-             clazz = index.classIndex(className).getModuleClass();
+             clazz = ClassLoadingUtils.loadClass(className, deploymentUnit);
         } catch (ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException(e);
         }
@@ -77,7 +74,7 @@ public final class MethodInjectionTarget extends InjectionTarget {
     }
 
     public Method getMethod(final DeploymentReflectionIndex reflectionIndex, final Class<?> clazz) throws DeploymentUnitProcessingException {
-        final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(clazz);
+        final ClassReflectionIndex classIndex = reflectionIndex.getClassIndex(clazz);
         Collection<Method> methods = null;
         final String paramType = getDeclaredValueClassName();
         final String name = getName();

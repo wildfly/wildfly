@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.component;
 
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
-
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
@@ -51,6 +49,7 @@ import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
+import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -67,7 +66,6 @@ import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -78,7 +76,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class EJBComponent extends BasicComponent implements ServerActivityCallback {
-    private static final Logger log = Logger.getLogger(EJBComponent.class);
 
     private static final ApplicationExceptionDetails APPLICATION_EXCEPTION = new ApplicationExceptionDetails("java.lang.Exception", true, false);
 
@@ -106,6 +103,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
 
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
+    private final ShutDownInterceptorFactory shutDownInterceptorFactory;
     private final TransactionManager transactionManager;
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final UserTransaction userTransaction;
@@ -163,6 +161,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
         this.ejbRemoteTransactionsRepository = ejbComponentCreateService.getEJBRemoteTransactionsRepository();
         this.timeoutInterceptors = Collections.unmodifiableMap(ejbComponentCreateService.getTimeoutInterceptors());
+        this.shutDownInterceptorFactory = ejbComponentCreateService.getShutDownInterceptorFactory();
         this.transactionManager = ejbComponentCreateService.getTransactionManager();
         this.transactionSynchronizationRegistry = ejbComponentCreateService.getTransactionSynchronizationRegistry();
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
@@ -317,9 +316,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             // This is counter to EJB 3.1 where an asynchronous call does not inherit the transaction context!
 
             int status = tm.getStatus();
-            if (log.isTraceEnabled()) {
-                ROOT_LOGGER.trace("Current transaction status is " + status);
-            }
+            EjbLogger.ROOT_LOGGER.tracef("Current transaction status is %d", status);
             switch (status) {
                 case Status.STATUS_COMMITTED:
                 case Status.STATUS_ROLLEDBACK:
@@ -330,7 +327,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             }
             return false;
         } catch (SystemException se) {
-            ROOT_LOGGER.getTxManagerStatusFailed(se);
+            EjbLogger.ROOT_LOGGER.getTxManagerStatusFailed(se);
             return true;
         }
     }
@@ -446,7 +443,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         } else {
             throw EjbLogger.ROOT_LOGGER.failToLookupJNDINameSpace(name);
         }
-        ROOT_LOGGER.debugf("Looking up %s in jndi context: %s", namespaceStrippedJndiName, jndiContext);
+        EjbLogger.ROOT_LOGGER.debugf("Looking up %s in jndi context: %s", namespaceStrippedJndiName, jndiContext);
         try {
             return jndiContext.lookup(namespaceStrippedJndiName);
         } catch (NamingException ne) {
@@ -468,7 +465,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             // set rollback
             tm.setRollbackOnly();
         } catch (SystemException se) {
-            ROOT_LOGGER.setRollbackOnlyFailed(se);
+            EjbLogger.ROOT_LOGGER.setRollbackOnlyFailed(se);
         }
     }
 
@@ -540,10 +537,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     @Override
     public synchronized void start() {
+        getShutDownInterceptorFactory().start();
         super.start();
-        if (this.controlPoint != null) {
-            this.controlPoint.resume();
-        }
         if(this.timerService instanceof TimerServiceImpl) {
             ((TimerServiceImpl) this.timerService).activate();
         }
@@ -551,9 +546,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     @Override
     public final void stop() {
-        if (this.controlPoint != null) {
-            this.controlPoint.pause(this);
-        }
+        getShutDownInterceptorFactory().shutdown();
         if(this.timerService instanceof TimerServiceImpl) {
             ((TimerServiceImpl) this.timerService).deactivate();
         }
@@ -568,5 +561,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public boolean isExceptionLoggingEnabled() {
         return exceptionLoggingEnabled.get();
+    }
+
+
+    protected ShutDownInterceptorFactory getShutDownInterceptorFactory() {
+        return shutDownInterceptorFactory;
     }
 }

@@ -102,7 +102,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
     protected Object prepareResults(final InterceptorContext context, final Object result, final EntityBeanComponent component) throws Exception {
         switch (returnType) {
             case COLLECTION: {
-                Collection keys = (Collection) result;
+                Collection<?> keys = (Collection<?>) result;
                 final Set<Object> results = new LinkedHashSet<Object>();
                 if (keys != null) {
                     for (Object key : keys) {
@@ -112,7 +112,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
                 return results;
             }
             case ENUMERATION: {
-                Enumeration keys = (Enumeration) result;
+                Enumeration<?> keys = (Enumeration<?>) result;
                 final Set<Object> results = new LinkedHashSet<Object>();
                 if (keys != null) {
                     while (keys.hasMoreElements()) {

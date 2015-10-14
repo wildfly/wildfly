@@ -21,6 +21,7 @@
  */
 package org.jboss.as.jdr.commands;
 
+import org.jboss.as.cli.scriptsupport.CLI;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.jdr.util.JdrZipFile;
 
@@ -40,6 +41,15 @@ public class JdrEnvironment {
     private String hostControllerName;
     private String serverName;
     private ModelControllerClient client;
+
+    public CLI getCli() {
+        return cli;
+    }
+
+    public void setCli(CLI cli) {
+        this.cli = cli;
+    }
+    private CLI cli;
     private JdrZipFile zip;
     private boolean isServerRunning;
 
@@ -55,6 +65,7 @@ public class JdrEnvironment {
         this.setHostControllerName(copy.getHostControllerName());
         this.setServerName(copy.getServerName());
         this.setClient(copy.getClient());
+        this.setCli(copy.getCli());
         this.setZip(copy.getZip());
         this.setServerRunning(copy.isServerRunning());
     }

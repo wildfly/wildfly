@@ -47,8 +47,13 @@ public class GzipFilter extends Filter {
     @Override
     public HttpHandler createHttpHandler(final Predicate predicate, ModelNode model, HttpHandler next) {
         EncodingHandler encodingHandler = new EncodingHandler(new ContentEncodingRepository()
-                .addEncodingHandler("gzip", new GzipEncodingProvider(), 50, predicate!=null?predicate : Predicates.truePredicate()));
+                .addEncodingHandler("gzip", new GzipEncodingProvider(), 50, predicate != null ? predicate : Predicates.truePredicate()));
         encodingHandler.setNext(next);
         return encodingHandler;
+    }
+
+    @Override
+    protected Class[] getConstructorSignature() {
+        throw new IllegalStateException(); //should not be used, as the handler is constructed above
     }
 }

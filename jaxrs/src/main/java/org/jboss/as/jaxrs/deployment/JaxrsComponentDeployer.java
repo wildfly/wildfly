@@ -30,9 +30,6 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -48,6 +45,17 @@ import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
  * @author Stuart Douglas
  */
 public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
+
+    /**
+     * We use hard coded class names to avoid a direct dependency on EJB
+     *
+     * This allows the use of JAX-RS in cut down servers without EJB
+     *
+     * Kinda yuck, but there is not really any alternative if we want don't want the dependency
+     */
+    private static final String SESSION_BEAN_DESCRIPTION_CLASS_NAME = "org.jboss.as.ejb3.component.session.SessionBeanComponentDescription";
+
+    private static final String STATEFUL_SESSION_BEAN_DESCRIPTION_CLASS_NAME = "org.jboss.as.ejb3.component.stateful.StatefulComponentDescription";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -82,8 +90,8 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             }
             if (!GetRestful.isRootResource(componentClass)) continue;
 
-            if (component instanceof SessionBeanComponentDescription) {
-                if (component instanceof StatefulComponentDescription) {
+            if (isInstanceOf(component, SESSION_BEAN_DESCRIPTION_CLASS_NAME)) {
+                if (isInstanceOf(component, STATEFUL_SESSION_BEAN_DESCRIPTION_CLASS_NAME)) {
                     //using SFSB's as JAX-RS endpoints is not recommended, but if people really want to do it they can
 
                     JAXRS_LOGGER.debugf("Stateful session bean %s is being used as a JAX-RS endpoint, this is not recommended", component.getComponentName());
@@ -93,7 +101,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                     }
                 }
 
-                Class[] jaxrsType = GetRestful.getSubResourceClasses(componentClass);
+                Class<?>[] jaxrsType = GetRestful.getSubResourceClasses(componentClass);
                 final String jndiName;
                 if (component.getViews().size() == 1) {
                     //only 1 view, just use the simple JNDI name
@@ -102,7 +110,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                     boolean found = false;
                     String foundType = null;
                     for (final ViewDescription view : component.getViews()) {
-                        for (Class subResource : jaxrsType) {
+                        for (Class<?> subResource : jaxrsType) {
                             if (view.getViewClassName().equals(subResource.getName())) {
                                 foundType = subResource.getName();
                                 found = true;
@@ -114,7 +122,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                         }
                     }
                     if (!found) {
-                        throw JaxrsLogger.JAXRS_LOGGER.typeNameNotAnEjbView(Arrays.asList(jaxrsType), component.getComponentName());
+                        throw JAXRS_LOGGER.typeNameNotAnEjbView(Arrays.asList(jaxrsType), component.getComponentName());
                     }
                     jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + component.getComponentName() + "!" + foundType;
                 }
@@ -138,6 +146,17 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                 resteasy.getScannedResourceClasses().remove(component.getComponentClassName());
             }
         }
+    }
+
+    private boolean isInstanceOf(ComponentDescription component, String className) {
+        Class<?> c = component.getClass();
+        while (c != Object.class && c != null) {
+            if(c.getName().equals(className)) {
+                return true;
+            }
+            c = c.getSuperclass();
+        }
+        return false;
     }
 
     @Override

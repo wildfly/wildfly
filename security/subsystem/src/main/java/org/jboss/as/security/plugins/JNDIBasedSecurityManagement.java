@@ -53,8 +53,6 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     private static final long serialVersionUID = 1924631329555621041L;
 
-    protected static SecurityLogger log = SecurityLogger.ROOT_LOGGER;
-
     private transient ConcurrentHashMap<String, SecurityDomainContext> securityMgrMap = new ConcurrentHashMap<String, SecurityDomainContext>();
     private transient ConcurrentHashMap<String, AuthenticationManager> authMgrMap = new ConcurrentHashMap<String, AuthenticationManager>();
     private transient ConcurrentHashMap<String, AuthorizationManager> authzMgrMap = new ConcurrentHashMap<String, AuthorizationManager>();
@@ -91,7 +89,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 auditMgrMap.put(securityDomain, am);
             }
         } catch (Exception e) {
-            log.tracef("Exception getting AuditManager for domain=" + securityDomain, e);
+            SecurityLogger.ROOT_LOGGER.tracef(e, "Exception getting AuditManager for domain=%s", securityDomain);
         }
         return am;
     }
@@ -106,7 +104,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 authMgrMap.put(securityDomain, am);
             }
         } catch (Exception e) {
-            log.tracef("Exception getting AuthenticationManager for domain=" + securityDomain, e);
+            SecurityLogger.ROOT_LOGGER.tracef(e, "Exception getting AuthenticationManager for domain=%s", securityDomain);
         }
         return am;
     }
@@ -121,7 +119,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 authzMgrMap.put(securityDomain, am);
             }
         } catch (Exception e) {
-            log.tracef("Exception getting AuthorizationManager for domain=", e);
+            SecurityLogger.ROOT_LOGGER.tracef(e, "Exception getting AuthorizationManager for domain=%s", securityDomain);
         }
         return am;
     }
@@ -136,7 +134,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 idmMgrMap.put(securityDomain, itm);
             }
         } catch (Exception e) {
-            log.tracef("Exception getting IdentityTrustManager for domain=" + securityDomain, e);
+            SecurityLogger.ROOT_LOGGER.tracef(e, "Exception getting IdentityTrustManager for domain=%s" + securityDomain);
         }
         return itm;
     }
@@ -151,7 +149,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 mappingMgrMap.put(securityDomain, mm);
             }
         } catch (Exception e) {
-            log.tracef("Exception getting MappingManager for domain=" + securityDomain, e);
+            SecurityLogger.ROOT_LOGGER.tracef(e, "Exception getting MappingManager for domain=%s", securityDomain);
         }
         return mm;
     }
@@ -166,7 +164,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
                 jsseMap.put(securityDomain, jsse);
             }
         } catch (Exception e) {
-            log.tracef("Exception getting JSSESecurityDomain for domain=" + securityDomain, e);
+            SecurityLogger.ROOT_LOGGER.tracef(e, "Exception getting JSSESecurityDomain for domain=%s", securityDomain);
         }
         return jsse;
     }
@@ -257,7 +255,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             else
                 result = ctx.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + contextName);
         } catch (Exception e) {
-            log.tracef("Look up of JNDI for " + contextName + " failed with " + e.getLocalizedMessage());
+            SecurityLogger.ROOT_LOGGER.tracef("Look up of JNDI for %s failed with %s", contextName, e.getLocalizedMessage());
             return null;
         }
         return result;
@@ -272,7 +270,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
      * @throws Exception if an error occurs during creation
      */
     public SecurityDomainContext createSecurityDomainContext(String securityDomain, AuthenticationCacheFactory cacheFactory) throws Exception {
-        log.debugf("Creating SDC for domain = %s", securityDomain);
+        SecurityLogger.ROOT_LOGGER.debugf("Creating SDC for domain = %s", securityDomain);
         AuthenticationManager am = createAuthenticationManager(securityDomain);
         if (cacheFactory != null && am instanceof CacheableManager) {
             // create authentication cache
@@ -407,7 +405,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             Object[] deepCopyArgs = { Boolean.TRUE };
             m.invoke(authenticationManager, deepCopyArgs);
         } catch (Exception e) {
-            log.tracef("Optional setDeepCopySubjectMode failed: " + e.getLocalizedMessage());
+            SecurityLogger.ROOT_LOGGER.tracef("Optional setDeepCopySubjectMode failed: %s", e.getLocalizedMessage());
         }
     }
 

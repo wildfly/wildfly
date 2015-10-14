@@ -26,10 +26,11 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
+import io.undertow.server.session.SessionManagerStatistics;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -47,10 +48,12 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private final String deploymentName;
     private final SessionListeners sessionListeners = new SessionListeners();
     private final SessionManager<LocalSessionContext, Batch> manager;
+    private final RecordableSessionManagerStatistics statistics;
 
-    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager) {
+    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager, RecordableSessionManagerStatistics statistics) {
         this.deploymentName = deploymentName;
         this.manager = manager;
+        this.statistics = statistics;
     }
 
     @Override
@@ -66,6 +69,9 @@ public class DistributableSessionManager implements UndertowSessionManager {
     @Override
     public void start() {
         this.manager.start();
+        if (this.statistics != null) {
+            this.statistics.reset();
+        }
     }
 
     @Override
@@ -98,6 +104,9 @@ public class DistributableSessionManager implements UndertowSessionManager {
             Session<LocalSessionContext> session = this.manager.createSession(id);
             io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batch);
             this.sessionListeners.sessionCreated(adapter, exchange);
+            if (this.statistics != null) {
+                this.statistics.record(adapter);
+            }
             return adapter;
         } catch (RuntimeException | Error e) {
             batch.discard();
@@ -136,7 +145,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public void setDefaultSessionTimeout(int timeout) {
-        this.manager.setDefaultMaxInactiveInterval(timeout, TimeUnit.SECONDS);
+        this.manager.setDefaultMaxInactiveInterval(Duration.ofSeconds(timeout));
     }
 
     @Override
@@ -169,6 +178,11 @@ public class DistributableSessionManager implements UndertowSessionManager {
     @Override
     public String getDeploymentName() {
         return this.deploymentName;
+    }
+
+    @Override
+    public SessionManagerStatistics getStatistics() {
+        return this.statistics;
     }
 
     @Override

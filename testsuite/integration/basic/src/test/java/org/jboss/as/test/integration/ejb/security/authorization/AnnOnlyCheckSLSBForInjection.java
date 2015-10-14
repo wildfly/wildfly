@@ -61,4 +61,10 @@ public class AnnOnlyCheckSLSBForInjection {
    public String denyAll(String message) {
       return message;
    }
+
+   @RolesAllowed("**")
+   public String starRoleAllowed(String message) {
+      return message;
+   }
+
 }

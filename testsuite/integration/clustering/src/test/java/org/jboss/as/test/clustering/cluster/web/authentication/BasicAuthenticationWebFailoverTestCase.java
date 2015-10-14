@@ -80,7 +80,6 @@ public class BasicAuthenticationWebFailoverTestCase extends ClusterAbstractTestC
         war.addAsWebInfResource(SecureServlet.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsResource(SecureServlet.class.getPackage(), "users.properties", "users.properties");
         war.addAsResource(SecureServlet.class.getPackage(), "roles.properties", "roles.properties");
-        log.info(war.toString(true));
         return war;
     }
 

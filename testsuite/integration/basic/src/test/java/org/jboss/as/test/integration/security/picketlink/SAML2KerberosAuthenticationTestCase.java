@@ -61,6 +61,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.hamcrest.Matcher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -68,7 +69,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
 import org.jboss.as.test.integration.security.common.NullHCCredentials;
@@ -76,13 +80,14 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
+import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils;
 import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
-import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -93,8 +98,12 @@ import org.junit.runner.RunWith;
  * @author Hynek Mlnarik
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ KerberosServerSetupTask.SystemPropertiesSetup.class, KerberosServerSetupTask.class, KerberosKeyTabSetup.class,
-        SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class })
+@ServerSetup({
+    KerberosServerSetupTask.Krb5ConfServerSetupTask.class,
+    KerberosServerSetupTask.SystemPropertiesSetup.class,
+    KerberosServerSetupTask.class,
+    SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class
+})
 @RunAsClient
 @Ignore("AS7-6796 - Undertow SPNEGO")
 public class SAML2KerberosAuthenticationTestCase {
@@ -115,12 +124,23 @@ public class SAML2KerberosAuthenticationTestCase {
 
     private static final String DUKE_PASSWORD = "theduke";
 
+    @ArquillianResource
+    ManagementClient mgmtClient;
+
     private static void consumeResponse(final HttpResponse response) {
         HttpEntity entity = response.getEntity();
         EntityUtils.consumeQuietly(entity);
     }
 
     // Public methods --------------------------------------------------------
+
+    /**
+     * Skip unsupported/unstable/buggy Kerberos configurations.
+     */
+    @BeforeClass
+    public static void beforeClass() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    }
 
     /**
      * Creates a {@link WebArchive} for given security domain.
@@ -201,20 +221,21 @@ public class SAML2KerberosAuthenticationTestCase {
             final HttpGet httpGet = new HttpGet(webAppURL.toURI());
             final HttpResponse response = httpClient.execute(httpGet);
 
-            assertThat("Unexpected status code when expecting negotiation challenge.",
-                    response.getStatusLine().getStatusCode(), equalTo(HttpServletResponse.SC_UNAUTHORIZED));
+            assertThat("Unexpected status code.", response.getStatusLine().getStatusCode(),
+                    equalTo(HttpServletResponse.SC_UNAUTHORIZED));
 
             final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
             assertThat("WWW-Authenticate header is present", authnHeaders, notNullValue());
             assertThat("WWW-Authenticate header is non-empty", authnHeaders.length, not(equalTo(0)));
 
-            final Set<String> authnHeaderValues = new HashSet<String>();
+            final Set<? super String> authnHeaderValues = new HashSet<String>();
             for (final Header header : authnHeaders) {
                 authnHeaderValues.add(header.getValue());
             }
 
-            assertThat("WWW-Authenticate [Negotiate] header is missing", authnHeaderValues,
-                    hasItem(containsString("Negotiate")));
+            Matcher<String> matcherContainsString = containsString("Negotiate");
+            Matcher<Iterable<? super String>> matcherAnyContainsNegotiate = hasItem(matcherContainsString);
+            assertThat("WWW-Authenticate [Negotiate] header is missing", authnHeaderValues, matcherAnyContainsNegotiate);
 
             consumeResponse(response);
         } finally {
@@ -258,10 +279,11 @@ public class SAML2KerberosAuthenticationTestCase {
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testJDukePrincipal(@ArquillianResource URL webAppURL,
             @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
+        final String cannonicalHost = Utils.getCannonicalHost(mgmtClient);
         final URI principalPrintingURL = new URI(webAppURL.toExternalForm()
                 + PrincipalPrintingServlet.SERVLET_PATH.substring(1) + "?test=testDeploymentViaKerberos");
-
-        String responseBody = makeCallWithKerberosAuthn(principalPrintingURL, idpURL.toURI(), "jduke", DUKE_PASSWORD);
+        String responseBody = makeCallWithKerberosAuthn(principalPrintingURL,
+                Utils.replaceHost(idpURL.toURI(), cannonicalHost), "jduke", DUKE_PASSWORD);
 
         assertThat("Unexpected principal", responseBody, equalTo("jduke"));
     }
@@ -282,19 +304,28 @@ public class SAML2KerberosAuthenticationTestCase {
      * @throws PrivilegedActionException
      * @throws LoginException
      */
-    public static String makeCallWithKerberosAuthn(final URI uri, final URI idpUri, final String user, final String pass)
-            throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
+    public static String makeCallWithKerberosAuthn(URI uri, URI idpUri, final String user, final String pass)
+            throws IOException, URISyntaxException,
+            PrivilegedActionException, LoginException {
+        
+        final String canonicalHost = Utils.getDefaultHost(true);
+        uri = Utils.replaceHost(uri, canonicalHost);
+        idpUri = Utils.replaceHost(idpUri, canonicalHost);
 
+        LOGGER.info("Making call to: " + uri);
+        LOGGER.info("Expected IDP: " + idpUri);
+
+        final Krb5LoginConfiguration krb5configuration = new Krb5LoginConfiguration(Utils.getLoginConfiguration());
         // Use our custom configuration to avoid reliance on external config
-        Configuration.setConfiguration(new Krb5LoginConfiguration());
+        Configuration.setConfiguration(krb5configuration);
 
         // 1. Authenticate to Kerberos.
-        final LoginContext lc = new LoginContext(Utils.class.getName(), new UsernamePasswordHandler(user, pass));
-        lc.login();
+        final LoginContext lc = Utils.loginWithKerberos(krb5configuration, user, pass);
 
         // 2. Perform the work as authenticated Subject.
         final String responseBody = Subject.doAs(lc.getSubject(), new HttpGetInKerberos(uri, idpUri));
         lc.logout();
+        krb5configuration.resetConfiguration();
         return responseBody;
     }
 
@@ -329,7 +360,7 @@ public class SAML2KerberosAuthenticationTestCase {
                                     .options(
                                             Krb5LoginConfiguration.getOptions(
                                                     KerberosServerSetupTask.getHttpServicePrincipal(managementClient),
-                                                    KerberosKeyTabSetup.getKeyTab(), true)).build()).build());
+                                                    AbstractKrb5ConfServerSetupTask.HTTP_KEYTAB_FILE, true)).build()).build());
 
             // Add IdP security domain
             res.add(new SecurityDomain.Builder()
@@ -348,7 +379,9 @@ public class SAML2KerberosAuthenticationTestCase {
                                     .putOption("password-stacking", "useFirstPass")
                                     .putOption(
                                             Context.PROVIDER_URL,
-                                            "ldap://" + KerberosServerSetupTask.getCannonicalHost(managementClient) + ":"
+                                            "ldap://"
+                                                    + NetworkUtils.formatPossibleIpv6Address(Utils
+                                                            .getCannonicalHost(managementClient)) + ":"
                                                     + KerberosServerSetupTask.LDAP_PORT)
                                     .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org").putOption("baseFilter", "(uid={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
@@ -416,36 +449,42 @@ public class SAML2KerberosAuthenticationTestCase {
                 HttpGet initialIdpHttpGet = new HttpGet(this.idpUri); // GET /idp-test-DEP1
                 initialIdpHttpGet.setParams(doRedirect);
                 HttpResponse response = httpClient.execute(initialIdpHttpGet);
-                assertThat("Unexpected status code when expecting successfull kerberos authentication", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
+                assertThat("Unexpected status code when expecting successfull kerberos authentication", response
+                        .getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
                 consumeResponse(response);
-
 
                 // 2. Do the work, manually do the redirect
                 HttpGet initialHttpGet = new HttpGet(this.uri); // GET /test-DEP1/printRoles?role=TheDuke2&role=...
                 initialHttpGet.setParams(doNotRedirect);
                 response = httpClient.execute(initialHttpGet);
-                assertThat("Unexpected status code when expecting redirect to IdP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+                assertThat("Unexpected status code when expecting redirect to IdP", response.getStatusLine().getStatusCode(),
+                        equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
                 String initialHttpGetRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
                 consumeResponse(response);
 
                 HttpGet idpHttpGet = new HttpGet(initialHttpGetRedirect); // GET /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf.....
                 idpHttpGet.setParams(doNotRedirect);
                 response = httpClient.execute(idpHttpGet);
-                assertThat("Unexpected status code when expecting redirect from SP with SAML request", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+                assertThat("Unexpected status code when expecting redirect from SP with SAML request", response.getStatusLine()
+                        .getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
                 String idpHttpGetRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
                 consumeResponse(response);
 
-                HttpGet idpHttpGetRedirectForAuth = new HttpGet(idpHttpGetRedirect);   // GET /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf....., Authorization: Negotiate
+                HttpGet idpHttpGetRedirectForAuth = new HttpGet(idpHttpGetRedirect); // GET
+                                                                                     // /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf.....,
+                                                                                     // Authorization: Negotiate
                 idpHttpGetRedirectForAuth.setParams(doNotRedirect);
                 response = httpClient.execute(idpHttpGetRedirectForAuth);
-                assertThat("Unexpected status code when expecting redirect from IdP with SAML response", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+                assertThat("Unexpected status code when expecting redirect from IdP with SAML response", response
+                        .getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
                 String idpHttpGetRedirectAuth = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
                 consumeResponse(response);
 
                 HttpGet spHttpGet = new HttpGet(idpHttpGetRedirectAuth); // GET /test-DEP1/?SAMLResponse=...
                 spHttpGet.setParams(doNotRedirect);
                 response = httpClient.execute(spHttpGet);
-                assertThat("Unexpected status code when expecting succesfull authentication to the SP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
+                assertThat("Unexpected status code when expecting succesfull authentication to the SP", response
+                        .getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
                 return EntityUtils.toString(response.getEntity());
             } finally {
                 // When HttpClient instance is no longer needed,

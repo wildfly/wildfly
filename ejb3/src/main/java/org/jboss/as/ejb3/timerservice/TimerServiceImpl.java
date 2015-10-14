@@ -65,9 +65,7 @@ import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -91,11 +89,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * inactive timer states
      */
     private static final Set<TimerState> ineligibleTimerStates;
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(TimerServiceImpl.class);
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("ejb3", "timerService");
 
@@ -135,7 +128,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Key that is used to store timers that are waiting on transaction completion in the transaction local
      */
-    private static final Object waitingOnTxCompletionKey = new Object();
+    private final Object waitingOnTxCompletionKey = new Object();
 
     private TransactionManager transactionManager;
     private TransactionSynchronizationRegistry tsr;
@@ -187,8 +180,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
+        if (EjbLogger.ROOT_LOGGER.isDebugEnabled()) {
+            EjbLogger.ROOT_LOGGER.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
         }
         final EJBComponent component = ejbComponentInjectedValue.getValue();
         this.transactionManager = component.getTransactionManager();
@@ -743,10 +736,16 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 if (!found) {
                     activeTimer.setTimerState(TimerState.CANCELED);
                 } else {
+                    // ensure state switch to active if was TIMEOUT in the DB
+                    // if the persistence is shared it must be ensured to not update
+                    // timers of other nodes in the cluster
+                    activeTimer.setTimerState(TimerState.ACTIVE);
+                }
+                this.persistTimer(activeTimer, false);
+                if (found) {
                     startTimer(activeTimer);
                     ROOT_LOGGER.debugv("Started timer: {0}", activeTimer);
                 }
-                this.persistTimer(activeTimer, false);
             } else if (!ineligibleTimerStates.contains(activeTimer.getState())) {
                 startTimer(activeTimer);
             }
@@ -768,6 +767,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // Else, the timer will be scheduled on tx synchronization callback
         if (!transactionActive()) {
             this.timers.put(timer.getId(), timer);
+            // set active if the timer is started if it was read
+            // from persistence as current running to ensure correct schedule here
             timer.setTimerState(TimerState.ACTIVE);
             // create and schedule a timer task
             this.registerTimerResource(timer.getId());
@@ -858,7 +859,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
-     * Creates and schedules a {@link org.jboss.as.ejb3.timerservice.task.TimerTask} for the next timeout of the passed <code>timer</code>
+     * Creates and schedules a {@link TimerTask} for the next timeout of the passed <code>timer</code>
      */
     protected void scheduleTimeout(TimerImpl timer, boolean newTimer) {
         synchronized (scheduledTimerFutures) {
@@ -910,14 +911,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             java.util.TimerTask timerTask = this.scheduledTimerFutures.remove(timer.getId());
             if (timerTask != null) {
                 timerTask.cancel();
-            }
-        }
-    }
-
-    public void invokeTimeout(final TimerImpl timer) {
-        synchronized (this.scheduledTimerFutures) {
-            if (this.scheduledTimerFutures.containsKey(timer.getId())) {
-                timer.getTimerTask().run();
             }
         }
     }
@@ -1062,14 +1055,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             ROOT_LOGGER.ignoringException(ise);
         } catch (SystemException se) {
             ROOT_LOGGER.ignoringException(se);
-        }
-    }
-
-    private void startNewTx() {
-        try {
-            this.transactionManager.begin();
-        } catch (Throwable t) {
-            throw EjbLogger.ROOT_LOGGER.failToStartTransaction(t);
         }
     }
 

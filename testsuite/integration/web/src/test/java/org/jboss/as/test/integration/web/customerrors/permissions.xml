@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<permissions xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+             http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd"
+             version="7">
+    <permission>
+        <class-name>java.io.FilePermission</class-name>
+        <name>&lt;&lt;ALL FILES&gt;&gt;</name>
+        <actions>read</actions>
+    </permission>
+</permissions>

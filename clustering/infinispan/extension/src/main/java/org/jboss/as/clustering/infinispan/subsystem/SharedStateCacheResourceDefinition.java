@@ -22,9 +22,11 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.transform.ImplicitlyAddedResourceDynamicDiscardPolicy;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -39,27 +41,37 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
 
         StateTransferResourceDefinition.buildTransformation(version, builder);
 
-        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
-            builder.rejectChildResource(BackupSiteResourceDefinition.WILDCARD_PATH);
-            builder.rejectChildResource(BackupForResourceDefinition.PATH);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.addChildResource(PartitionHandlingResourceDefinition.PATH, new ImplicitlyAddedResourceDynamicDiscardPolicy());
         } else {
-            BackupSiteResourceDefinition.buildTransformation(version, builder);
+            PartitionHandlingResourceDefinition.buildTransformation(version, builder);
+        }
+
+        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
+            final ResourceTransformationDescriptionBuilder backupsBuilder = builder.addChildResource(BackupsResourceDefinition.PATH, new ImplicitlyAddedResourceDynamicDiscardPolicy());
+            backupsBuilder.rejectChildResource(BackupResourceDefinition.WILDCARD_PATH);
+
+            builder.addChildResource(BackupForResourceDefinition.PATH, new ImplicitlyAddedResourceDynamicDiscardPolicy());
+        } else {
+            BackupsResourceDefinition.buildTransformation(version, builder);
             BackupForResourceDefinition.buildTransformation(version, builder);
         }
 
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    SharedStateCacheResourceDefinition(CacheType type, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(type, resolvePathHandler, allowRuntimeOnlyRegistration);
+    SharedStateCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(path, pathManager, allowRuntimeOnlyRegistration);
     }
 
     @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        super.registerChildren(registration);
+    public void register(ManagementResourceRegistration registration) {
 
-        registration.registerSubModel(new StateTransferResourceDefinition());
-        registration.registerSubModel(new BackupSiteResourceDefinition(this.allowRuntimeOnlyRegistration));
-        registration.registerSubModel(new BackupForResourceDefinition());
+        new PartitionHandlingResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
+        new StateTransferResourceDefinition().register(registration);
+        new BackupsResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
+        new BackupForResourceDefinition().register(registration);
+
+        super.register(registration);
     }
 }

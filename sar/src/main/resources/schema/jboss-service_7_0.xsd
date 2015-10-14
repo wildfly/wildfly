@@ -69,7 +69,7 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:complexType name="attribute">
+    <xs:complexType name="attribute" mixed="true">
         <xs:choice minOccurs="0" maxOccurs="1">
             <xs:element name="inject" type="inject"/>
             <xs:element name="value-factory" type="value-factory"/>

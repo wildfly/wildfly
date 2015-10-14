@@ -21,18 +21,31 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+
+import java.util.Map;
+import java.util.concurrent.Executor;
+
+import org.jboss.as.connector.services.workmanager.statistics.DistributedWorkManagerStatisticsService;
+import org.jboss.as.connector.services.workmanager.statistics.WorkManagerStatisticsService;
 import org.jboss.as.connector.services.workmanager.DistributedWorkManagerService;
 import org.jboss.as.connector.services.workmanager.NamedDistributedWorkManager;
+import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
+import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.workmanager.policy.Always;
 import org.jboss.jca.core.workmanager.policy.Never;
 import org.jboss.jca.core.workmanager.policy.WaterMark;
@@ -43,15 +56,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
-import org.wildfly.clustering.jgroups.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
-
-import java.util.Map;
-import java.util.concurrent.Executor;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 
 /**
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -69,8 +75,8 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+        ModelNode model = resource.getModel();
         String name = JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
 
         String policy = JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().resolveModelAttribute(context, model).asString();
@@ -138,16 +144,10 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
             namedDistributedWorkManager.setSelector(new PingTime());
         }
 
-        String jgroupsStack = model.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute().getName()) ?
-                JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute().resolveModelAttribute(context, model).asString() :
-                "udp";
-        String channelName = JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute().resolveModelAttribute(context, model).asString();
-        Long requestTimeout = JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute().resolveModelAttribute(context, model).asLong();
-
-        DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager, channelName, requestTimeout);
+        DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager);
         ServiceBuilder<DistributedWorkManager> builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
-        builder.addDependency(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(jgroupsStack), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
+        builder.addDependency(ChannelServiceName.FACTORY.getServiceName(), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
 
 
         builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name), Executor.class, wmService.getExecutorLongInjector());
@@ -156,5 +156,28 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
+        WorkManagerStatisticsService wmStatsService = new WorkManagerStatisticsService(context.getResourceRegistrationForUpdate(), name, true);
+        serviceTarget
+                .addService(ConnectorServices.WORKMANAGER_STATS_SERVICE.append(name), wmStatsService)
+                .addDependency(ConnectorServices.WORKMANAGER_SERVICE.append(name), WorkManager.class, wmStatsService.getWorkManagerInjector())
+                .setInitialMode(ServiceController.Mode.PASSIVE).install();
+        DistributedWorkManagerStatisticsService dwmStatsService = new DistributedWorkManagerStatisticsService(context.getResourceRegistrationForUpdate(), name, true);
+        serviceTarget
+                .addService(ConnectorServices.DISTRIBUTED_WORKMANAGER_STATS_SERVICE.append(name), dwmStatsService)
+                .addDependency(ConnectorServices.WORKMANAGER_SERVICE.append(name), DistributedWorkManager.class, dwmStatsService.getDistributedWorkManagerInjector())
+                .setInitialMode(ServiceController.Mode.PASSIVE).install();
+        PathElement peDistributedWm = PathElement.pathElement(org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_NAME, "distributed");
+        PathElement peLocaldWm = PathElement.pathElement(org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_NAME, "local");
+
+        final Resource wmResource = new IronJacamarResource.IronJacamarRuntimeResource();
+
+        if (!resource.hasChild(peLocaldWm))
+            resource.registerChild(peLocaldWm, wmResource);
+
+
+        final Resource dwmResource = new IronJacamarResource.IronJacamarRuntimeResource();
+
+        if (!resource.hasChild(peDistributedWm))
+            resource.registerChild(peDistributedWm, dwmResource);
     }
 }

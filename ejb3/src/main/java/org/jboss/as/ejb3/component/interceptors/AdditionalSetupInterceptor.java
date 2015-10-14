@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.interceptors;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -40,24 +39,23 @@ import org.jboss.invocation.InterceptorFactory;
  */
 public class AdditionalSetupInterceptor implements Interceptor {
 
-    private final List<SetupAction> actions;
+    private final SetupAction[] actions;
 
     public AdditionalSetupInterceptor(final List<SetupAction> actions) {
-        this.actions = actions;
+        this.actions = actions.toArray(new SetupAction[actions.size()]);
     }
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         try {
-            for (SetupAction action : actions) {
-                action.setup(Collections.<String, Object>emptyMap());
+            for (int i = 0; i < actions.length; ++i) {
+                actions[i].setup(Collections.<String, Object>emptyMap());
             }
             return context.proceed();
         } finally {
-            final ListIterator<SetupAction> iterator = actions.listIterator(actions.size());
             Throwable error = null;
-            while (iterator.hasPrevious()) {
-                SetupAction action = iterator.previous();
+            for (int i = actions.length - 1; i >=0; --i) {
+                SetupAction action = actions[i];
                 try {
                     action.teardown(Collections.<String, Object>emptyMap());
                 } catch (Throwable e) {

@@ -47,7 +47,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.ejb.EJB;
@@ -68,8 +67,6 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     private static final DotName EJBS_ANNOTATION_NAME = DotName.createSimple(EJBs.class.getName());
 
     private final boolean appclient;
-
-    private static final Logger logger = Logger.getLogger(EjbResourceInjectionAnnotationProcessor.class);
 
     public EjbResourceInjectionAnnotationProcessor(final boolean appclient) {
         this.appclient = appclient;
@@ -149,11 +146,8 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     private void process(final DeploymentUnit deploymentUnit, final String beanInterface, final String beanName, final String lookup, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName, final EEModuleDescription eeModuleDescription) {
 
         if (!isEmpty(lookup) && !isEmpty(beanName)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Both beanName = " + beanName + " and lookup = " + lookup
-                        + " have been specified in @EJB annotation." + " lookup will be given preference. Class: "
-                        + classInfo.name());
-            }
+            EjbLogger.DEPLOYMENT_LOGGER.debugf("Both beanName = %s and lookup = %s have been specified in @EJB annotation. Lookup will be given preference. Class: %s"
+                    , beanName, lookup, classInfo.name());
         }
 
         final EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
@@ -203,7 +197,6 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         private final String beanInterface;
         private final String beanName;
         private final String lookup;
-        private final String description;
         private final PropertyReplacer propertyReplacer;
 
         public EJBResourceWrapper(AnnotationInstance annotation, PropertyReplacer propertyReplacer) {
@@ -217,7 +210,6 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
                 lookupValue = stringValueOrNull(annotation, "mappedName");
             }
             this.lookup = lookupValue;
-            description = stringValueOrNull(annotation, "description");
         }
 
         private String name() {
@@ -234,10 +226,6 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
         private String lookup() {
             return lookup;
-        }
-
-        private String description() {
-            return description;
         }
 
         private String stringValueOrNull(final AnnotationInstance annotation, final String attribute) {

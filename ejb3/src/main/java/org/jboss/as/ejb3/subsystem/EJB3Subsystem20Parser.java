@@ -139,7 +139,7 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
         }
     }
 
-    private void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    protected void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
         final ModelNode address = new ModelNode();
         address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);

@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-mod_cluster</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-mod_cluster-extension</artifactId>
@@ -37,6 +37,10 @@
     <name>WildFly: mod_cluster Extension</name>
 
     <dependencies>
+        <dependency>
+            <groupId>org.jboss.common</groupId>
+            <artifactId>jboss-common-beans</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>

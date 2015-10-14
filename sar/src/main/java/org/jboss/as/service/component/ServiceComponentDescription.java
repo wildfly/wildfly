@@ -28,7 +28,7 @@ import org.jboss.as.ee.component.ComponentFactory;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
@@ -50,7 +50,7 @@ public final class ServiceComponentDescription extends ComponentDescription {
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader,
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader,
             final ModuleLoader moduleLoader) {
         final ComponentConfiguration configuration = super.createConfiguration(classIndex, moduleClassLoader, moduleLoader);
         // will not be used, but if instance factory is not set then components must have default constructor, which is not a

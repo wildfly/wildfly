@@ -26,6 +26,9 @@ import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
 
+import javax.naming.Reference;
+import javax.resource.spi.ManagedConnectionFactory;
+import javax.sql.DataSource;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Driver;
@@ -37,14 +40,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import javax.naming.Reference;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.sql.DataSource;
-
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.JDBCResourceAdapter;
 import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
@@ -80,6 +80,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -98,7 +99,16 @@ import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
  */
 public abstract class AbstractDataSourceService implements Service<DataSource> {
 
+    /**
+     * Consumers outside of the data-source subsystem should use the capability {@code org.wildfly.data-source} where
+     * the dynamic name is the resource name in the model.
+     */
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source");
+
+    public static ServiceName getServiceName(ContextNames.BindInfo bindInfo) {
+        return SERVICE_NAME_BASE.append(bindInfo.getBinderServiceName().getCanonicalName());
+    }
+
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
     protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
@@ -112,7 +122,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
 
     private final String dsName;
-    private final String jndiName;
+    private final ContextNames.BindInfo jndiName;
 
     protected CommonDeployment deploymentMD;
     private WildFlyDataSource sqlDataSource;
@@ -122,7 +132,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
      */
     private final ClassLoader classLoader;
 
-    protected AbstractDataSourceService(final String dsName, final String jndiName, final ClassLoader classLoader ) {
+    protected AbstractDataSourceService(final String dsName, final ContextNames.BindInfo jndiName, final ClassLoader classLoader ) {
         this.dsName = dsName;
         this.classLoader = classLoader;
         this.jndiName = jndiName;
@@ -136,8 +146,15 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             if (deploymentMD.getCfs().length != 1) {
                 throw ConnectorLogger.ROOT_LOGGER.cannotStartDs();
             }
-            sqlDataSource = new WildFlyDataSource((javax.sql.DataSource) deploymentMD.getCfs()[0], jndiName);
+            sqlDataSource = new WildFlyDataSource((javax.sql.DataSource) deploymentMD.getCfs()[0], jndiName.getAbsoluteJndiName());
             DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
+            CommonDeploymentService cdService = new CommonDeploymentService(deploymentMD);
+            final ServiceName cdServiceName = CommonDeploymentService.getServiceName(jndiName);
+            startContext.getController().getServiceContainer().addService(cdServiceName, cdService)
+                    // The dependency added must be the JNDI name which for subsystem resources is an alias. This service
+                    // is also used in deployments where the capability service name is not registered for the service.
+                    .addDependency(getServiceName(jndiName))
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (Throwable t) {
             throw ConnectorLogger.ROOT_LOGGER.deploymentError(t, dsName);
         }
@@ -146,6 +163,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     protected abstract AS7DataSourceDeployer getDeployer() throws ValidateException ;
 
     public void stop(final StopContext stopContext) {
+        final ServiceController<?> serviceController = stopContext.getController().getServiceContainer().getService(CommonDeploymentService.getServiceName(jndiName));
+        if (serviceController != null) {
+            serviceController.setMode(ServiceController.Mode.REMOVE);
+        }
         ExecutorService executorService = executor.getValue();
         Runnable r = new Runnable() {
             @Override
@@ -184,24 +205,23 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             if (deploymentMD.getResourceAdapter() != null) {
                 deploymentMD.getResourceAdapter().stop();
 
-                BootstrapContextCoordinator.getInstance().removeBootstrapContext(deploymentMD.getBootstrapContextIdentifier());
+                if (BootstrapContextCoordinator.getInstance() != null && deploymentMD.getBootstrapContextIdentifier() != null) {
+                    BootstrapContextCoordinator.getInstance().removeBootstrapContext(deploymentMD.getBootstrapContextIdentifier());
+                }
             }
 
+            if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
+                for (org.jboss.jca.core.api.management.DataSource mgtDs : deploymentMD.getDataSources()) {
+                    managementRepositoryValue.getValue().getDataSources().remove(mgtDs);
+                }
+            }
 
-        }
-
-        if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
-            for (org.jboss.jca.core.api.management.DataSource mgtDs : deploymentMD.getDataSources()) {
-                managementRepositoryValue.getValue().getDataSources().remove(mgtDs);
+            if (deploymentMD.getConnectionManagers() != null) {
+                for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+                    cm.shutdown();
+                }
             }
         }
-
-        if (deploymentMD.getConnectionManagers() != null) {
-            for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
-                cm.shutdown();
-            }
-        }
-
 
         sqlDataSource = null;
 
@@ -290,8 +310,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         private final XaDataSource xaDataSourceConfig;
         private final String profile;
 
-        private ServiceContainer serviceContainer;
-
         public AS7DataSourceDeployer(XaDataSource xaDataSourceConfig, final String profile) {
             super();
             this.xaDataSourceConfig = xaDataSourceConfig;
@@ -313,7 +331,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 if (serviceContainer == null) {
                     throw new DeployException(ConnectorLogger.ROOT_LOGGER.nullVar("ServiceContainer"));
                 }
-                this.serviceContainer = serviceContainer;
 
                 HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver> drivers = new HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver>(
                         1);
@@ -409,7 +426,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         @Override
         protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            if (securityDomain == null || securityDomain.trim().equals("")) {
+            if (securityDomain == null || securityDomain.trim().equals("") || subjectFactory.getOptionalValue() == null) {
                 return null;
             } else {
                 return new PicketBoxSubjectFactory(subjectFactory.getValue());

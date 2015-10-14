@@ -38,6 +38,8 @@ import org.junit.Test;
  */
 public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest {
 
+    private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(JSR77ManagementRootResource.JMX_CAPABILITY);
+
     public JSR77ManagementSubsystemTestCase() {
         super(JSR77ManagementExtension.SUBSYSTEM_NAME, new JSR77ManagementExtension());
     }
@@ -45,6 +47,11 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
     @Override
     protected String getSubsystemXml() throws IOException {
         return "<subsystem xmlns=\"urn:jboss:domain:jsr77:1.0\"/>";
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return ADDITIONAL_INITIALIZATION;
     }
 
     @Override
@@ -98,12 +105,13 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
     private void testTransformers_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION)
                 .setSubsystemXml(getSubsystemXml());
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-jsr77:" + controllerVersion.getMavenGavVersion());
+                .addMavenResourceURL("org.jboss.as:jboss-as-jsr77:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(ADDITIONAL_INITIALIZATION, null);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

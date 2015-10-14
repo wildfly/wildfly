@@ -42,6 +42,7 @@ public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefin
         super(SecurityExtension.PATH_CLASSIC_AUTHENTICATION,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHENTICATION + "." + Constants.CLASSIC),
                 new ClassicAuthenticationResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

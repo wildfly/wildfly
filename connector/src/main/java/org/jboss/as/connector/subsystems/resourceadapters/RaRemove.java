@@ -25,13 +25,13 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -57,14 +57,14 @@ public class RaRemove implements OperationStepHandler {
 
         // Compensating is add
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
-        final String archiveName;
-        final boolean isModule;
+        final String archiveOrModuleName;
+        if (!model.hasDefined(ARCHIVE.getName()) && !model.hasDefined(MODULE.getName())) {
+            throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
+        }
         if (model.get(ARCHIVE.getName()).isDefined()) {
-            isModule = false;
-            archiveName = ARCHIVE.resolveModelAttribute(context, model).asString();
+            archiveOrModuleName = model.get(ARCHIVE.getName()).asString();
         } else {
-            archiveName = null;
-            isModule = true;
+            archiveOrModuleName = model.get(MODULE.getName()).asString();
         }
         final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
 
@@ -81,21 +81,18 @@ public class RaRemove implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final boolean wasActive;
-                if (isModule) {
-                    wasActive = RaOperationUtil.removeIfActive(context, null, idName);
-                } else {
-                    wasActive = RaOperationUtil.removeIfActive(context, archiveName, idName);
-                    if (wasActive) {
-                        context.reloadRequired();
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                context.revertReloadRequired();
-                            }
-                        });
-                        return;
-                    }
+                wasActive = RaOperationUtil.removeIfActive(context, archiveOrModuleName, idName);
+                if (wasActive) {
+                    context.reloadRequired();
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            context.revertReloadRequired();
+                        }
+                    });
+                    return;
                 }
+
                 ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, idName);
                 ServiceController<?> serviceController =  context.getServiceRegistry(false).getService(raServiceName);
                 final ModifiableResourceAdapter resourceAdapter;
@@ -132,18 +129,15 @@ public class RaRemove implements OperationStepHandler {
                                 RaOperationUtil.installRaServices(context, idName, resourceAdapter, newControllers);
                             } else {
                                 try {
-                                    RaOperationUtil.installRaServicesAndDeployFromModule(context, idName, resourceAdapter, archiveName, newControllers);
+                                    RaOperationUtil.installRaServicesAndDeployFromModule(context, idName, resourceAdapter, archiveOrModuleName, newControllers);
                                 } catch (OperationFailedException e) {
 
                                 }
                             }
                             try {
                                 if (wasActive){
-                                    if(isModule){
-                                        RaOperationUtil.activate(context, idName, archiveName, STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
-                                    } else {
-                                        RaOperationUtil.activate(context, archiveName, archiveName, STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
-                                    }
+                                    RaOperationUtil.activate(context, idName, archiveOrModuleName);
+
                                 }
                             } catch (OperationFailedException e) {
 

@@ -38,5 +38,6 @@
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

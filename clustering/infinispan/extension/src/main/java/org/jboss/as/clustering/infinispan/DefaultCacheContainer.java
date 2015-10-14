@@ -22,23 +22,15 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
-import org.infinispan.notifications.Listener;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
@@ -46,25 +38,34 @@ import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
  */
 public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer {
 
+    private final String name;
     private final BatcherFactory batcherFactory;
     private final String defaultCacheName;
 
-    public DefaultCacheContainer(GlobalConfiguration global, String defaultCacheName) {
-        this(new DefaultCacheManager(global, null, false), defaultCacheName);
+    public DefaultCacheContainer(String name, EmbeddedCacheManager container, String defaultCacheName) {
+        this(name, container, defaultCacheName, new InfinispanBatcherFactory());
     }
 
-    public DefaultCacheContainer(GlobalConfiguration global, Configuration config, String defaultCacheName) {
-        this(new DefaultCacheManager(global, config, false), defaultCacheName);
-    }
-
-    public DefaultCacheContainer(EmbeddedCacheManager container, String defaultCacheName) {
-        this(container, defaultCacheName, new InfinispanBatcherFactory());
-    }
-
-    public DefaultCacheContainer(EmbeddedCacheManager container, String defaultCacheName, BatcherFactory batcherFactory) {
+    public DefaultCacheContainer(String name, EmbeddedCacheManager container, String defaultCacheName, BatcherFactory batcherFactory) {
         super(container);
+        this.name = name;
         this.defaultCacheName = defaultCacheName;
         this.batcherFactory = batcherFactory;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public void start() {
+        // No-op.  Lifecycle is managed by container
+    }
+
+    @Override
+    public void stop() {
+        // No-op.  Lifecycle is managed by container
     }
 
     @Override
@@ -80,6 +81,11 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public Configuration defineConfiguration(String cacheName, String templateCacheName, Configuration configurationOverride) {
         return this.cm.defineConfiguration(this.getCacheName(cacheName), this.getCacheName(templateCacheName), configurationOverride);
+    }
+
+    @Override
+    public Configuration getDefaultCacheConfiguration() {
+        return this.cm.getCacheConfiguration(this.defaultCacheName);
     }
 
     @Override
@@ -112,16 +118,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
         Cache<K, V> cache = this.cm.<K, V>getCache(this.getCacheName(cacheName), createIfAbsent);
-        return (cache != null) ? new DelegatingCache<>(this, this.batcherFactory, cache) : null;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.EmbeddedCacheManager#getCacheNames()
-     */
-    @Override
-    public Set<String> getCacheNames() {
-        return new HashSet<>(this.cm.getCacheNames());
+        return (cache != null) ? new DefaultCache<>(this, this.batcherFactory, cache.getAdvancedCache()) : null;
     }
 
     /**
@@ -170,8 +167,13 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         return this;
     }
 
+    @Override
+    public void addCacheDependency(String from, String to) {
+        this.cm.addCacheDependency(this.getCacheName(from), this.getCacheName(to));
+    }
+
     private String getCacheName(String name) {
-        return ((name == null) || name.equals(CacheServiceNameFactory.DEFAULT_CACHE)) ? this.defaultCacheName : name;
+        return ((name == null) || name.equals(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) ? this.defaultCacheName : name;
     }
 
     /**
@@ -190,75 +192,5 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public String toString() {
         return this.cm.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName();
-    }
-
-    private static class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
-        private static final ThreadLocal<Batch> CURRENT_BATCH = new ThreadLocal<>();
-        private final EmbeddedCacheManager manager;
-        private final Batcher<? extends Batch> batcher;
-
-        DelegatingCache(final EmbeddedCacheManager manager, final BatcherFactory batcherFactory, AdvancedCache<K, V> cache) {
-            super(cache, new AdvancedCacheWrapper<K, V>() {
-                    @Override
-                    public AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
-                        return new DelegatingCache<>(manager, batcherFactory, cache);
-                    }
-                }
-            );
-            this.manager = manager;
-            this.batcher = batcherFactory.createBatcher(cache);
-        }
-
-        DelegatingCache(EmbeddedCacheManager manager, BatcherFactory batcherFactory, Cache<K, V> cache) {
-            this(manager, batcherFactory, cache.getAdvancedCache());
-        }
-
-        @Override
-        public EmbeddedCacheManager getCacheManager() {
-            return this.manager;
-        }
-
-        @Override
-        public boolean startBatch() {
-            if (this.batcher == null) return false;
-            Batch batch = CURRENT_BATCH.get();
-            if (batch != null) return false;
-            CURRENT_BATCH.set(this.batcher.createBatch());
-            return true;
-        }
-
-        @Override
-        public void endBatch(boolean successful) {
-            Batch batch = CURRENT_BATCH.get();
-            if (batch != null) {
-                try {
-                    if (successful) {
-                        batch.close();
-                    } else {
-                        batch.discard();
-                    }
-                } finally {
-                    CURRENT_BATCH.remove();
-                }
-            }
-        }
-
-        // Workaround for https://hibernate.atlassian.net/browse/HHH-9337
-        @Override
-        public void removeListener(Object listener) {
-            if (listener.getClass().isAnnotationPresent(Listener.class)) {
-                super.removeListener(listener);
-            }
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            return (object == this) || (object == this.cache);
-        }
-
-        @Override
-        public int hashCode() {
-            return this.cache.hashCode();
-        }
     }
 }

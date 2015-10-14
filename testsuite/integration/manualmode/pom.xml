@@ -7,15 +7,13 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
     <!-- ************************* Manual-mode Integration Tests ************************** -->
     <!-- ********************************************************************************** -->
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-manualmode</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - Manual Mode Tests</name>
 
@@ -90,13 +88,15 @@
                             <!-- Parameters to test cases. -->
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>manual-mode</arquillian.launch>
-                                <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                 <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
                                 <javax.net.ssl.trustStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
                                 <javax.net.ssl.keyStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
                                 <javax.net.ssl.trustStorePassword>clientPassword</javax.net.ssl.trustStorePassword>
                                 <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
                                 <javax.net.debug>ssl</javax.net.debug>
+                                <!-- EJB client library hack, see WFLY-4973-->
+                                <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                             </systemPropertyVariables>
                         </configuration>
 

@@ -39,21 +39,21 @@ public class SerializedStatefulSessionObject implements Serializable {
 
     private final String componentServiceName;
     private final SessionID sessionID;
-    private final Map<String, String> serviceNames;
+    private final Map<Class<?>, String> serviceNames;
 
-    public SerializedStatefulSessionObject(final ServiceName componentServiceName, final SessionID sessionID, final Map<String, ServiceName> serviceNames) {
+    public SerializedStatefulSessionObject(final ServiceName componentServiceName, final SessionID sessionID, final Map<Class<?>, ServiceName> serviceNames) {
         this.componentServiceName = componentServiceName.getCanonicalName();
         this.sessionID = sessionID;
-        Map<String, String> names = new HashMap<String, String>();
-        for (Map.Entry<String, ServiceName> e : serviceNames.entrySet()) {
+        Map<Class<?>, String> names = new HashMap<Class<?>, String>();
+        for (Map.Entry<Class<?>, ServiceName> e : serviceNames.entrySet()) {
             names.put(e.getKey(), e.getValue().getCanonicalName());
         }
         this.serviceNames = names;
     }
 
     private Object readResolve() throws ObjectStreamException {
-        Map<String, ServiceName> names = new HashMap<String, ServiceName>();
-        for (Map.Entry<String, String> e : serviceNames.entrySet()) {
+        Map<Class<?>, ServiceName> names = new HashMap<Class<?>, ServiceName>();
+        for (Map.Entry<Class<?>, String> e : serviceNames.entrySet()) {
             names.put(e.getKey(), ServiceName.parse(e.getValue()));
         }
         return new StatefulSessionObjectReferenceImpl(sessionID, ServiceName.parse(componentServiceName), names);

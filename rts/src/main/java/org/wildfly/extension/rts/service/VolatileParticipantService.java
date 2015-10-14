@@ -28,6 +28,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.narayana.rest.integration.VolatileParticipantResource;
 import org.jboss.narayana.rest.integration.api.ParticipantsManagerFactory;
+import org.wildfly.extension.rts.jaxrs.VolatileParticipantApplication;
 import org.wildfly.extension.rts.logging.RTSLogger;
 
 import java.util.HashMap;
@@ -46,18 +47,14 @@ public final class VolatileParticipantService extends AbstractRTSService impleme
 
     @Override
     public VolatileParticipantService getValue() throws IllegalStateException, IllegalArgumentException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("VolatileParticipantService.getValue");
-        }
+        RTSLogger.ROOT_LOGGER.trace("VolatileParticipantService.getValue");
 
         return this;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("VolatileParticipantService.start");
-        }
+        RTSLogger.ROOT_LOGGER.trace("VolatileParticipantService.start");
 
         deployParticipant();
         ParticipantsManagerFactory.getInstance().setBaseUrl(getBaseUrl());
@@ -65,9 +62,7 @@ public final class VolatileParticipantService extends AbstractRTSService impleme
 
     @Override
     public void stop(StopContext context) {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("ParticipantService.stop");
-        }
+        RTSLogger.ROOT_LOGGER.trace("ParticipantService.stop");
 
         undeployServlet();
     }
@@ -76,7 +71,7 @@ public final class VolatileParticipantService extends AbstractRTSService impleme
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", "org.wildfly.extension.rts.jaxrs.VolatileParticipantApplication");
+        initialParameters.put("javax.ws.rs.Application", VolatileParticipantApplication.class.getName());
 
         final DeploymentInfo participantDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 

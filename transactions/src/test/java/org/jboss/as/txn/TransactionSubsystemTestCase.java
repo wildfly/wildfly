@@ -32,15 +32,13 @@ import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinit
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.PATH;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.RELATIVE_TO;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.STATUS_BINDING;
 import static org.junit.Assert.assertNotNull;
@@ -103,7 +101,9 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        String transformed = ModelTestUtils.normalizeXML(original.replace("enable-statistics", "statistics-enabled"));
+        String transformed = ModelTestUtils.normalizeXML(
+                original.replace("enable-statistics", "statistics-enabled")
+                        .replace("use-hornetq-store", "use-journal-store"));
         super.compareXml(configId, transformed, marshalled, true);
     }
 
@@ -176,7 +176,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         LegacyKernelServicesInitializer init = builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
-            .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
+            .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_JOURNAL_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
             .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
         if (controllerVersion == ModelTestControllerVersion.EAP_6_0_0) {
             //EAP_6_0_0 does not have OperationFixer, so disable the validation of the ADD operation
@@ -242,7 +242,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
                 .addOperationValidationResolve(ADD, subsystemAddress)
                 .addOperationValidationFixer(ADD, subsystemAddress, RemoveProcessUUIDOperationFixer.INSTANCE)
-                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_JOURNAL_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
                 .addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
@@ -283,14 +283,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                                 STATUS_BINDING,
                                 RECOVERY_LISTENER,
                                 NODE_IDENTIFIER,
-                                PATH,
-                                RELATIVE_TO,
                                 PROCESS_ID_SOCKET_BINDING,
                                 PROCESS_ID_SOCKET_MAX_PORTS,
                                 OBJECT_STORE_PATH,
                                 OBJECT_STORE_RELATIVE_TO
                                 ),
-                        new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)
+                        new ChangeToTrueConfig(JOURNAL_STORE_ENABLE_ASYNC_IO)
                 }) ,
                         DEFAULT_TIMEOUT,
                         STATISTICS_ENABLED,
@@ -300,13 +298,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                         STATUS_BINDING,
                         RECOVERY_LISTENER,
                         NODE_IDENTIFIER,
-                        PATH,
-                        RELATIVE_TO,
                         PROCESS_ID_SOCKET_BINDING,
                         PROCESS_ID_SOCKET_MAX_PORTS,
                         OBJECT_STORE_PATH,
                         OBJECT_STORE_RELATIVE_TO,
-                        HORNETQ_STORE_ENABLE_ASYNC_IO))
+                        JOURNAL_STORE_ENABLE_ASYNC_IO))
         .addFailedAttribute(PathAddress.pathAddress(
                 PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
                 FailedOperationTransformationConfig.REJECTED_RESOURCE);
@@ -316,7 +312,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testRejectTransformers713() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 1), new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO))
+                    new ChangeToTrueConfig(JOURNAL_STORE_ENABLE_ASYNC_IO))
             .addFailedAttribute(PathAddress.pathAddress(
                     PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE));
@@ -327,7 +323,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testRejectTransformers720() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 2, 0), new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO))
+                    new ChangeToTrueConfig(JOURNAL_STORE_ENABLE_ASYNC_IO))
             .addFailedAttribute(PathAddress.pathAddress(
                     PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE));    }
@@ -336,7 +332,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testRejectTransformersEAP610() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_1_0, ModelVersion.create(1, 2, 0), new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO))
+                    new ChangeToTrueConfig(JOURNAL_STORE_ENABLE_ASYNC_IO))
             .addFailedAttribute(PathAddress.pathAddress(
                     PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE));    }
@@ -345,7 +341,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testRejectTransformersEAP611() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_1_1, ModelVersion.create(1, 2, 0), new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO))
+                    new ChangeToTrueConfig(JOURNAL_STORE_ENABLE_ASYNC_IO))
             .addFailedAttribute(PathAddress.pathAddress(
                     PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE));
@@ -369,11 +365,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, config);
     }
 
-    private static ModelFixer ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO = new ModelFixer() {
+    private static ModelFixer ADD_REMOVED_JOURNAL_STORE_ENABLE_ASYNC_IO = new ModelFixer() {
 
         @Override
         public ModelNode fixModel(ModelNode modelNode) {
-            modelNode.get(TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.getName()).set(true);
+            modelNode.get(TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.getName()).set(true);
             return modelNode;
         }
     };

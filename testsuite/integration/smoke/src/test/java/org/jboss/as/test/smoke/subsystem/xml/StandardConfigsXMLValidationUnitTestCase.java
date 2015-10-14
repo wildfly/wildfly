@@ -107,7 +107,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-full.xml");
     }
 
-  //TODO Leave commented out until domain-jts.xml is definitely removed from the configuration
+    //TODO Leave commented out until domain-jts.xml is definitely removed from the configuration
 //    @Test
 //    public void testDomainJTS() throws Exception {
 //        parseXml("docs/examples/configs/domain-jts.xml");
@@ -131,11 +131,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     @Test
     public void testStandaloneGossipFullHA() throws Exception {
         parseXml("docs/examples/configs/standalone-gossip-full-ha.xml");
-    }
-
-    @Test
-    public void testHornetQColocated() throws Exception {
-        parseXml("docs/examples/configs/standalone-hornetq-colocated.xml");
     }
 
     @Test

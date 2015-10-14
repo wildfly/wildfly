@@ -22,117 +22,157 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import java.util.List;
 
 import org.infinispan.commons.api.BasicCacheContainer;
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.AttributeParsers;
+import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/remote-store=REMOTE_STORE
+ * Resource description for the addressable resource and its alias
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/store=remote
+ * /subsystem=infinispan/cache-container=X/cache=Y/remote-store=REMOTE_STORE
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+    static final PathElement LEGACY_PATH = PathElement.pathElement("remote-store", "REMOTE_STORE");
+    static final PathElement PATH = pathElement("remote");
 
-    // attributes
-    static final SimpleAttributeDefinition CACHE = new SimpleAttributeDefinitionBuilder(ModelKeys.CACHE, ModelType.STRING, true)
-            .setXmlName(Attribute.CACHE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME))
-            .build();
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        OUTBOUND_SOCKET_BINDING("org.wildfly.clustering.infinispan.cache-container.cache.store.remote.outbound-socket-binding", OutboundSocketBinding.class),
+        ;
+        private final RuntimeCapability<Void> definition;
 
-    static final SimpleAttributeDefinition TCP_NO_DELAY = new SimpleAttributeDefinitionBuilder(ModelKeys.TCP_NO_DELAY, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.TCP_NO_DELAY.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(true))
-            .build();
+        Capability(String name, Class<?> serviceType) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        }
 
-    static final SimpleAttributeDefinition SOCKET_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_TIMEOUT, ModelType.LONG, true)
-            .setXmlName(Attribute.SOCKET_TIMEOUT.getLocalName())
-            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(60000L))
-            .build();
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
 
-    // the remote servers parameter is required (not null), and the list of remote-server objects must have size >= 1
-    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelKeys.OUTBOUND_SOCKET_BINDING, ModelType.STRING)
-            .setAllowNull(false)
-            .setXmlName(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName())
-            .build();
+        @Override
+        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+            PathAddress cacheAddress = address.getParent();
+            PathAddress containerAddress = cacheAddress.getParent();
+            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue() + "." + cacheAddress.getLastElement().getValue());
+        }
+    }
 
-    static final ObjectTypeAttributeDefinition REMOTE_SERVER = ObjectTypeAttributeDefinition. Builder.of(ModelKeys.REMOTE_SERVER, OUTBOUND_SOCKET_BINDING)
-            .setAllowNull(false)
-            .setSuffix("remote-server")
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        CACHE("cache", ModelType.STRING, new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME)),
+        SOCKET_TIMEOUT("socket-timeout", ModelType.LONG, new ModelNode(60000L)),
+        TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, new ModelNode(true)),
+        SOCKET_BINDINGS("remote-servers")
+        ;
+        private final AttributeDefinition definition;
 
-    static final ObjectListAttributeDefinition REMOTE_SERVERS = ObjectListAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVERS, REMOTE_SERVER)
-            .setAllowNull(false)
-            .setMinSize(1)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+                    .build();
+        }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS };
+        Attribute(String name) {
+            this.definition = new StringListAttributeDefinition.Builder(name)
+                    .setAttributeParser(AttributeParsers.COLLECTION)
+                    .setCapabilityReference(new CapabilityReference(RequiredCapability.OUTBOUND_SOCKET_BINDING, Capability.OUTBOUND_SOCKET_BINDING))
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setMinSize(1)
+                    .build();
+        }
 
-    // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
-            .setParameters(PARAMETERS)
-            .addParameter(CACHE)
-            .addParameter(TCP_NO_DELAY)
-            .addParameter(SOCKET_TIMEOUT)
-            .addParameter(REMOTE_SERVERS)
-            .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CACHE, SOCKET_TIMEOUT, TCP_NO_DELAY);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                        @Override
+                        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                            if (attributeValue.isDefined()) {
+                                List<ModelNode> remoteServers = attributeValue.clone().asList();
+                                ModelNode legacyListObject = new ModelNode();
+                                for (ModelNode server : remoteServers) {
+                                    ModelNode legacyListItem = new ModelNode();
+                                    legacyListItem.get("outbound-socket-binding").set(server);
+                                    legacyListObject.add(legacyListItem);
+                                }
+                                attributeValue.set(legacyListObject);
+                            }
+                        }
+                    }, Attribute.SOCKET_BINDINGS.getDefinition());
+        }
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer())).inheritResourceAttributeDefinitions();
+
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
         }
 
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
     RemoteStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(StoreType.REMOTE, allowRuntimeOnlyRegistration);
+        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
-    @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(ADD_DEFINITION, handler);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addCapabilities(Capability.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RemoteStoreBuilderFactory());
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
+
+        super.register(registration);
     }
 }

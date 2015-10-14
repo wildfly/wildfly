@@ -198,12 +198,12 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         final String className = mdbClass.name().toString();
         // must *not* be an interface
         if (Modifier.isInterface(flags)) {
-            EjbLogger.ROOT_LOGGER.mdbClassCannotBeAnInterface(className);
+            EjbLogger.DEPLOYMENT_LOGGER.mdbClassCannotBeAnInterface(className);
             return false;
         }
         // bean class must be public, must *not* be abstract or final
         if (!Modifier.isPublic(flags) || Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
-            EjbLogger.ROOT_LOGGER.mdbClassMustBePublicNonAbstractNonFinal(className);
+            EjbLogger.DEPLOYMENT_LOGGER.mdbClassMustBePublicNonAbstractNonFinal(className);
             return false;
         }
         // valid class

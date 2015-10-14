@@ -33,21 +33,20 @@ public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    DATASOURCES_1_0("urn:jboss:domain:datasources:1.0"),
-
     DATASOURCES_1_1("urn:jboss:domain:datasources:1.1"),
 
     DATASOURCES_1_2("urn:jboss:domain:datasources:1.2"),
 
     DATASOURCES_2_0("urn:jboss:domain:datasources:2.0"),
 
-    DATASOURCES_3_0("urn:jboss:domain:datasources:3.0");
+    DATASOURCES_3_0("urn:jboss:domain:datasources:3.0"),
 
+    DATASOURCES_4_0("urn:jboss:domain:datasources:4.0");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DATASOURCES_3_0;
+    public static final Namespace CURRENT = DATASOURCES_4_0;
 
     private final String name;
 

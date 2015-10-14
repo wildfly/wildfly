@@ -24,12 +24,11 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.servlet.websockets.WebSocketServlet;
 import io.undertow.websockets.WebSocketConnectionCallback;
-import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -49,18 +48,22 @@ public class UndertowNativeWebSocketDeploymentProcessor implements DeploymentUni
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
         WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         if (metaData == null) {
             return;
         }
+
         JBossWebMetaData mergedMetaData = metaData.getMergedJBossWebMetaData();
+
+        if(!mergedMetaData.isEnableWebSockets()) {
+            return;
+        }
 
         if (mergedMetaData.getServlets() != null) {
             for (final JBossServletMetaData servlet : mergedMetaData.getServlets()) {
                 if (servlet.getServletClass() != null) {
                     try {
-                        Class<?> clazz = classIndex.classIndex(servlet.getServletClass()).getModuleClass();
+                        Class<?> clazz = ClassLoadingUtils.loadClass(servlet.getServletClass(), deploymentUnit);
                         if (WebSocketConnectionCallback.class.isAssignableFrom(clazz)) {
                             servlet.setServletClass(WebSocketServlet.class.getName());
                             if (servlet.getInitParam() == null) {

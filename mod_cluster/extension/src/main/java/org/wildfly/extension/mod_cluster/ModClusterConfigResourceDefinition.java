@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
@@ -31,15 +31,14 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -74,25 +73,18 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition SESSION_DRAINING_STRATEGY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SESSION_DRAINING_STRATEGY, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(SessionDrainingStrategyEnum.DEFAULT.name()))
-            .setValidator(new EnumValidator<SessionDrainingStrategyEnum>(SessionDrainingStrategyEnum.class, true, true,
+            .setValidator(new EnumValidator<>(SessionDrainingStrategyEnum.class, true, true,
                     SessionDrainingStrategyEnum.ALWAYS,
                     SessionDrainingStrategyEnum.DEFAULT,
                     SessionDrainingStrategyEnum.NEVER))
             .setRestartAllServices()
             .build();
 
-    static final AttributeDefinition PROXY = new SimpleAttributeDefinitionBuilder(CommonAttributes.PROXY, ModelType.STRING, true)
-            // We don't allow expressions for model references!
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-            .build();
-
-    static final SimpleListAttributeDefinition PROXIES = SimpleListAttributeDefinition.Builder.of(CommonAttributes.PROXIES, PROXY)
+    static final StringListAttributeDefinition PROXIES = new StringListAttributeDefinition.Builder(CommonAttributes.PROXIES)
             // We don't allow expressions for model references!
             .setAllowExpression(false)
             .setAllowNull(true)
-            .setAttributeMarshaller(AttributeMarshallerFactory.createSimpleListAttributeMarshaller())
+            .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
             .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
             .setRestartAllServices()
             .build();
@@ -318,16 +310,10 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
                     .end();
         }
 
-        if (ModClusterModel.VERSION_2_0_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_1_5_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                     .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
-                    .end();
-        }
-
-        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
                     .end();
         }
 

@@ -29,18 +29,18 @@ import org.junit.runner.RunWith;
 
 /**
  * AS7-5768 -Support for RA module deployment
- * 
+ *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- * 
+ *         <p>
  *         Tests for module deployment of resource adapter archive in
  *         uncompressed form with classes, packed in .jar file
- * 
- *         Structure of module is: 
- *         modulename 
+ *         <p>
+ *         Structure of module is:
+ *         modulename
  *         modulename/main
- *         modulename/main/module.xml 
+ *         modulename/main/module.xml
  *         modulename/main/META-INF
- *         modulename/main/META-INF/ra.xml 
+ *         modulename/main/META-INF/ra.xml
  *         modulename/main/module.jar
  */
 @RunWith(Arquillian.class)
@@ -48,20 +48,19 @@ import org.junit.runner.RunWith;
 public class BasicJarTestCase extends BasicFlatTestCase {
 
 
-	static class ModuleAcDeploymentTestCaseSetup extends
-			AbstractModuleDeploymentTestCaseSetup {
-		@Override
-		public void doSetup(ManagementClient managementClient) throws Exception {
+    static class ModuleAcDeploymentTestCaseSetup extends AbstractModuleDeploymentTestCaseSetup {
+        @Override
+        public void doSetup(ManagementClient managementClient) throws Exception {
 
-			addModule(defaultPath, "module-jar.xml");
-			fillModuleWithJar("ra1.xml");
-			setConfiguration("basic.xml");
+            addModule(defaultPath, "module-jar.xml");
+            fillModuleWithJar("ra1.xml");
+            setConfiguration("basic.xml");
 
-		}
+        }
 
         @Override
         protected String getSlot() {
             return BasicJarTestCase.class.getSimpleName().toLowerCase();
         }
-	}
+    }
 }

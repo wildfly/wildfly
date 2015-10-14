@@ -43,7 +43,6 @@
         <module name="org.hibernate.validator"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.transactions"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.logging"/>

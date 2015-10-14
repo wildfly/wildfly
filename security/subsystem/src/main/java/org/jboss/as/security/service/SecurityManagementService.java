@@ -34,6 +34,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.ISecurityManagement;
+import org.picketbox.factories.SecurityFactory;
 
 /**
  * Security Management service for the security container
@@ -43,8 +44,6 @@ import org.jboss.security.ISecurityManagement;
 public class SecurityManagementService implements Service<ISecurityManagement> {
 
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("security-management");
-
-    private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
 
     private final String authenticationManagerClassName;
 
@@ -60,6 +59,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     private final String mappingManagerClassName;
 
+    private volatile ISecurityManagement previousSecurityManagement;
     private volatile ISecurityManagement securityManagement;
 
     private final InjectedValue<ServiceModuleLoader> serviceModuleLoaderValue = new InjectedValue<ServiceModuleLoader>();
@@ -79,7 +79,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting SecurityManagementService");
+        SecurityLogger.ROOT_LOGGER.debugf("Starting SecurityManagementService");
         // set properties of JNDIBasedSecurityManagement
         JNDIBasedSecurityManagement securityManagement = new JNDIBasedSecurityManagement(serviceModuleLoaderValue.getValue());
         securityManagement.setAuthenticationManagerClassName(authenticationManagerClassName);
@@ -90,12 +90,15 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
         securityManagement.setIdentityTrustManagerClassName(identityTrustManagerClassName);
         securityManagement.setMappingManagerClassName(mappingManagerClassName);
         this.securityManagement = securityManagement;
+
+        previousSecurityManagement = SecurityFactory.getSecurityManagement();
+        SecurityFactory.setSecurityManagement(securityManagement);
     }
 
     /** {@inheritDoc} */
     @Override
     public void stop(StopContext context) {
-        // nothing to do
+        SecurityFactory.setSecurityManagement(previousSecurityManagement);
     }
 
     /** {@inheritDoc} */

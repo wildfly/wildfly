@@ -29,11 +29,10 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jms-client-bom</artifactId>
     <packaging>pom</packaging>
 
@@ -46,20 +45,25 @@
 
     <dependencies>
 
-        <!-- required until HORNETQ-1053 is fixed -->
         <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-commons</artifactId>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-commons</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-core-client</artifactId>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-core-client</artifactId>
+        </dependency>
+
+        <!-- required to allow Artemis client to connect to HornetQ servers -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-hornetq-protocol</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-jms-client</artifactId>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-client</artifactId>
         </dependency>
 
         <dependency>
@@ -80,11 +84,6 @@
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
         </dependency>
 
         <dependency>
@@ -112,6 +111,10 @@
             <artifactId>xnio-nio</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

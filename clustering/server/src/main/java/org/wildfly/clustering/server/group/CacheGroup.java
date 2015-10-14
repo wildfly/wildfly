@@ -22,18 +22,26 @@
 package org.wildfly.clustering.server.group;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
+import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
+import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.service.concurrent.ServiceExecutor;
+import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 
 /**
  * {@link Group} implementation based on the topology of a cache.
@@ -45,16 +53,22 @@ public class CacheGroup implements Group, AutoCloseable {
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final Cache<?, ?> cache;
     private final InfinispanNodeFactory factory;
+    private final SortedMap<Integer, Boolean> views = Collections.synchronizedSortedMap(new TreeMap<>());
+    private final ServiceExecutor executor = new StampedLockServiceExecutor();
 
     public CacheGroup(CacheGroupConfiguration config) {
         this.cache = config.getCache();
         this.factory = config.getNodeFactory();
+        this.cache.getCacheManager().addListener(this);
         this.cache.addListener(this);
     }
 
     @Override
     public void close() {
-        this.cache.removeListener(this);
+        this.executor.close(() -> {
+            this.cache.removeListener(this);
+            this.cache.getCacheManager().removeListener(this);
+        });
     }
 
     @Override
@@ -92,22 +106,36 @@ public class CacheGroup implements Group, AutoCloseable {
         return nodes;
     }
 
+    @Merged
+    @ViewChanged
+    public void viewChanged(ViewChangedEvent event) {
+        // Record view status for use by @TopologyChanged event
+        this.views.put(event.getViewId(), event.isMergeView());
+    }
+
     @TopologyChanged
     public void topologyChanged(TopologyChangedEvent<?, ?> event) {
         if (event.isPre()) return;
 
-        List<Address> oldAddresses = event.getConsistentHashAtStart().getMembers();
-        List<Node> oldNodes = this.getNodes(oldAddresses);
-        List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
-        List<Node> newNodes = this.getNodes(newAddresses);
+        this.executor.execute(() -> {
+            List<Address> oldAddresses = event.getConsistentHashAtStart().getMembers();
+            List<Node> oldNodes = this.getNodes(oldAddresses);
+            List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
+            List<Node> newNodes = this.getNodes(newAddresses);
 
-        Set<Address> obsolete = new HashSet<>(oldAddresses);
-        obsolete.removeAll(newAddresses);
-        this.factory.invalidate(obsolete);
+            Set<Address> obsolete = new HashSet<>(oldAddresses);
+            obsolete.removeAll(newAddresses);
+            this.factory.invalidate(obsolete);
 
-        for (Listener listener: this.listeners) {
-            listener.membershipChanged(oldNodes, newNodes, false);
-        }
+            int viewId = event.getCache().getCacheManager().getTransport().getViewId();
+            Boolean status = this.views.get(viewId);
+            boolean merged = (status != null) ? status.booleanValue() : false;
+            for (Listener listener: this.listeners) {
+                listener.membershipChanged(oldNodes, newNodes, merged);
+            }
+            // Purge obsolete views
+            this.views.headMap(viewId).clear();
+        });
     }
 
     private List<Node> getNodes(List<Address> addresses) {

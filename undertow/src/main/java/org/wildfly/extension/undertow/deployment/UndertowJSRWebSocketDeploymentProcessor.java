@@ -23,27 +23,19 @@
 package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.websockets.jsr.JsrWebSocketLogger;
-import io.undertow.websockets.jsr.ServerWebSocketContainer;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.naming.ImmediateManagedReferenceFactory;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import javax.websocket.ClientEndpoint;
@@ -74,7 +66,6 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             return;
@@ -86,7 +77,10 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
 
             WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-            if (metaData == null) {
+            if (metaData == null || metaData.getMergedJBossWebMetaData() == null) {
+                return;
+            }
+            if(!metaData.getMergedJBossWebMetaData().isEnableWebSockets()) {
                 return;
             }
 
@@ -102,7 +96,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
                     if (endpoint.target() instanceof ClassInfo) {
                         ClassInfo clazz = (ClassInfo) endpoint.target();
                         try {
-                            Class<?> moduleClass = classIndex.classIndex(clazz.name().toString()).getModuleClass();
+                            Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                             if (!Modifier.isAbstract(moduleClass.getModifiers())) {
                                 annotatedEndpoints.add(moduleClass);
                             }
@@ -119,7 +113,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
                     if (endpoint.target() instanceof ClassInfo) {
                         ClassInfo clazz = (ClassInfo) endpoint.target();
                         try {
-                            Class<?> moduleClass = classIndex.classIndex(clazz.name().toString()).getModuleClass();
+                            Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                             if (!Modifier.isAbstract(moduleClass.getModifiers())) {
                                 annotatedEndpoints.add(moduleClass);
                             }
@@ -135,7 +129,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
             if (subclasses != null) {
                 for (final ClassInfo clazz : subclasses) {
                     try {
-                        Class<?> moduleClass = classIndex.classIndex(clazz.name().toString()).getModuleClass();
+                        Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                         if (!Modifier.isAbstract(moduleClass.getModifiers())) {
                             config.add((Class) moduleClass);
                         }
@@ -150,7 +144,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
             if (epClasses != null) {
                 for (final ClassInfo clazz : epClasses) {
                     try {
-                        Class<?> moduleClass = classIndex.classIndex(clazz.name().toString()).getModuleClass();
+                        Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                         if (!Modifier.isAbstract(moduleClass.getModifiers())) {
                             endpoints.add((Class) moduleClass);
                         }
@@ -174,32 +168,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
     private void installWebsockets(final DeploymentPhaseContext phaseContext, final WebSocketDeploymentInfo webSocketDeploymentInfo) {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-
         deploymentUnit.putAttachment(UndertowAttachments.WEB_SOCKET_DEPLOYMENT_INFO, webSocketDeploymentInfo);
-
-        //bind the container to JNDI to make it available for resource injection
-        //this is not request by the spec, but is a convenient extension
-        if(moduleDescription != null) {
-            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-            bindJndiServices(deploymentUnit, phaseContext.getServiceTarget(), moduleContextServiceName, webSocketDeploymentInfo);
-        }
-    }
-
-    private void bindJndiServices(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, final ServiceName contextServiceName, final WebSocketDeploymentInfo webSocketInfo) {
-        final ServiceName bindingServiceName = contextServiceName.append("ServerContainer");
-        final BinderService binderService = new BinderService("ServerContainer");
-        serviceTarget.addService(bindingServiceName, binderService)
-                .addDependency(contextServiceName, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .install();
-
-        webSocketInfo.addListener(new WebSocketDeploymentInfo.ContainerReadyListener() {
-            @Override
-            public void ready(ServerWebSocketContainer container) {
-                binderService.getManagedObjectInjector().inject(new ImmediateManagedReferenceFactory(container));
-            }
-        });
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, bindingServiceName);
     }
 
     private void doDeployment(final WebSocketDeploymentInfo container, final Set<Class<?>> annotatedEndpoints, final Set<Class<? extends ServerApplicationConfig>> serverApplicationConfigClasses, final Set<Class<? extends Endpoint>> endpoints) throws DeploymentUnitProcessingException {

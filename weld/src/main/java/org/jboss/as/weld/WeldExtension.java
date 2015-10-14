@@ -61,9 +61,7 @@ public class WeldExtension implements Extension {
 
     private static final String RESOURCE_NAME = WeldExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -77,11 +75,10 @@ public class WeldExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         WeldLogger.ROOT_LOGGER.debug("Activating Weld Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WeldResourceDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(WeldSubsystem20Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(WeldSubsystem30Parser.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             registerTransformers(subsystem);
@@ -93,12 +90,13 @@ public class WeldExtension implements Extension {
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem10Parser.NAMESPACE, WeldSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem20Parser.NAMESPACE, WeldSubsystem20Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem30Parser.NAMESPACE, WeldSubsystem30Parser.INSTANCE);
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        //These new attributes are assumed to be 'true' in the old version but default to false in the current version. So discard if 'true' and reject if 'undefined'.
         builder.getAttributeBuilder()
+                //These new attributes are assumed to be 'true' in the old version but default to false in the current version. So discard if 'true' and reject if 'undefined'.
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -115,6 +113,12 @@ public class WeldExtension implements Extension {
                         return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
                     }
                 }, WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+
+                // development mode - not supported in older versions
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),
+                        WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
+                 // if the attribute was not discarded it means that it is defined as 'true'. Therefore, reject.
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
                 .end();
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
     }

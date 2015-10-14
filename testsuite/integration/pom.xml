@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-testsuite</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -50,6 +50,7 @@
             <id>ts.integ.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
+                <module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
@@ -61,6 +62,7 @@
                 <module>multinode</module>
                 <module>manualmode</module>
                 <module>picketlink</module>
+                <module>secman</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -68,6 +70,7 @@
             <id>ts.integ.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
+                <module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
@@ -79,6 +82,7 @@
                 <module>multinode</module>
                 <module>manualmode</module>
                 <module>picketlink</module>
+                <module>secman</module>
             </modules>
         </profile>
 
@@ -97,6 +101,7 @@
             <id>ts.integ.group.basic</id>
             <activation><property><name>ts.basic</name></property></activation>
             <modules>
+                <module>ws</module>
                 <module>basic</module>
             </modules>
         </profile>
@@ -179,6 +184,15 @@
             <activation><property><name>ts.picketlink</name></property></activation>
             <modules>
                 <module>picketlink</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.secman -->
+        <profile>
+            <id>ts.integ.group.secman</id>
+            <activation><property><name>ts.secman</name></property></activation>
+            <modules>
+                <module>secman</module>
             </modules>
         </profile>
     </profiles>

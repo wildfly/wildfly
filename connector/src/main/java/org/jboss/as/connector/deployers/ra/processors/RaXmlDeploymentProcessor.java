@@ -41,7 +41,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -59,10 +58,8 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private final MetadataRepository mdr;
+    public RaXmlDeploymentProcessor() {
 
-    public RaXmlDeploymentProcessor(final MetadataRepository mdr) {
-        this.mdr = mdr;
     }
 
     /**
@@ -71,7 +68,6 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
-     *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -113,19 +109,13 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
             final String deploymentUnitName = deploymentUnitPrefix + deploymentUnit.getName();
 
-            final String deployment;
-            if (deploymentUnitName.lastIndexOf('.') == -1) {
-                deployment = deploymentUnitName;
-            } else {
-                deployment = deploymentUnitName.substring(0, deploymentUnitName.lastIndexOf('.'));
-            }
             if (raxmls != null) {
                 for (Activation raxml : raxmls.getActivations()) {
 
                     String rarName = raxml.getArchive();
 
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource, false);
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource);
 
                     }
                 }
@@ -145,4 +135,6 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
     public void undeploy(final DeploymentUnit context) {
     }
+
+
 }

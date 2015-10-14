@@ -22,41 +22,35 @@
 
 package org.jboss.as.test.integration.messaging.mgmt;
 
+import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueSession;
-import javax.jms.TopicSession;
+import javax.jms.Session;
+import javax.naming.Context;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -69,60 +63,42 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class JMSQueueManagementTestCase {
 
+    private static final String EXPORTED_PREFIX = "java:jboss/exported/";
+
     private static long count = System.currentTimeMillis();
 
-    private static HornetQConnectionFactory connectionFactory;
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("host", TestSuiteEnvironment.getServerAddress());
-        map.put("port", 8080);
-        map.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
-        map.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
-        TransportConfiguration transportConfiguration =
-                     new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-        connectionFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
-        connectionFactory.setClientID("sender");
-        connectionFactory.setBlockOnDurableSend(true);
-        connectionFactory.setBlockOnNonDurableSend(true);
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-
-        if (connectionFactory != null) {
-            connectionFactory.close();
-        }
-    }
+    @ContainerResource
+    private Context remoteContext;
 
     @ContainerResource
     private ManagementClient managementClient;
 
     private JMSOperations adminSupport;
 
-    private QueueConnection conn;
+    private Connection conn;
     private Queue queue;
     private Queue otherQueue;
-    private QueueSession session;
+    private Session session;
 
-    private QueueConnection consumerConn;
-    private QueueSession consumerSession;
+    private Connection consumerConn;
+    private Session consumerSession;
 
     @Before
     public void addQueues() throws Exception {
 
-        adminSupport = JMSOperationsProvider.getInstance(managementClient);
+        adminSupport = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
         count++;
-        adminSupport.createJmsQueue(getQueueName(), getQueueJndiName());
-        adminSupport.createJmsQueue(getOtherQueueName(), getOtherQueueJndiName());
+        adminSupport.createJmsQueue(getQueueName(), EXPORTED_PREFIX + getQueueJndiName());
+        adminSupport.createJmsQueue(getOtherQueueName(), EXPORTED_PREFIX + getOtherQueueJndiName());
 
-        conn = connectionFactory.createQueueConnection("guest", "guest");
+        ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
+        assertNotNull(cf);
+        conn = cf.createConnection("guest", "guest");
         conn.start();
-        queue = HornetQJMSClient.createQueue(getQueueName());
-        otherQueue = HornetQJMSClient.createQueue(getOtherQueueName());
-        session = conn.createQueueSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+        queue = (Queue) remoteContext.lookup(getQueueJndiName());
+        otherQueue = (Queue) remoteContext.lookup(getOtherQueueJndiName());
+        session = conn.createSession(false, AUTO_ACKNOWLEDGE);
     }
 
     @After
@@ -352,20 +328,10 @@ public class JMSQueueManagementTestCase {
 
     @Test
     public void testListConsumers() throws Exception {
-
-
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("host", TestSuiteEnvironment.getServerAddress());
-        map.put("port", managementClient.getWebUri().getPort());
-        map.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
-        map.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
-        TransportConfiguration transportConfiguration =
-                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-        HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
-        cf.setClientID("consumer");
-        consumerConn = cf.createQueueConnection("guest", "guest");
+        ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
+        consumerConn = cf.createConnection("guest", "guest");
         consumerConn.start();
-        consumerSession = consumerConn.createQueueSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+        consumerSession = consumerConn.createSession(false, AUTO_ACKNOWLEDGE);
 
         ModelNode result = execute(getQueueOperation("list-consumers-as-json"), true);
         Assert.assertTrue(result.isDefined());
@@ -419,7 +385,7 @@ public class JMSQueueManagementTestCase {
     @Test
     public void testRemoveLastJndi() throws Exception {
         ModelNode op = getQueueOperation("remove-jndi");
-        op.get("jndi-binding").set(getQueueJndiName());
+        op.get("jndi-binding").set(EXPORTED_PREFIX + getQueueJndiName());
 
         // removing the last jndi name must generate a failure
         execute(op, false);
@@ -429,18 +395,15 @@ public class JMSQueueManagementTestCase {
         ModelNode result = execute(op, true);
         Assert.assertTrue(result.isDefined());
         for (ModelNode binding : result.asList()) {
-            if (binding.asString().equals(getQueueJndiName()))
+            if (binding.asString().equals(EXPORTED_PREFIX + getQueueJndiName()))
                 return;
         }
         Assert.fail(getQueueJndiName() + " was not found");
     }
 
     private ModelNode getQueueOperation(String operationName) {
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
-        address.add("jms-queue", getQueueName());
-        return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
+        final ModelNode address = adminSupport.getServerAddress().add("jms-queue", getQueueName());
+        return getEmptyOperation(operationName, address);
     }
 
     private ModelNode execute(final ModelNode op, final boolean expectSuccess) throws IOException {
@@ -474,13 +437,8 @@ public class JMSQueueManagementTestCase {
 
         // remove the queue
         adminSupport.removeJmsQueue(getQueueName());
-        try {
-            consumer.receive(5000);
-            fail("consumer is not valid after the queue is removed");
-        } catch (javax.jms.IllegalStateException e) {
-        }
         // add the queue back
-        adminSupport.createJmsQueue(getQueueName(), getQueueJndiName());
+        adminSupport.createJmsQueue(getQueueName(), EXPORTED_PREFIX + getQueueJndiName());
 
         result = execute(getQueueOperation("count-messages"), true);
         Assert.assertTrue(result.isDefined());

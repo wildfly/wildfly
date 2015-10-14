@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.manualmode.ws;
 
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
@@ -28,14 +30,13 @@ import java.net.ProxySelector;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -44,24 +45,14 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.Operations;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.After;
 import org.junit.Assert;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.xnio.IoUtils;
 
 /**
  *
@@ -111,7 +102,7 @@ public class ReloadWSDLPublisherTestCase {
         Service service = Service.create(wsdlURL, serviceName);
         EndpointIface proxy = service.getPort(EndpointIface.class);
         Assert.assertEquals("Hello World!", proxy.helloString("World"));
-        reloadServer(managementClient, 100000);
+        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 100000);
         checkWsdl(wsdlURL);
         serviceName = new QName("http://jbossws.org/basic", "POJOService");
         service = Service.create(wsdlURL, serviceName);
@@ -130,53 +121,6 @@ public class ReloadWSDLPublisherTestCase {
         if (containerController.isStarted(DEFAULT_JBOSSAS)) {
             containerController.stop(DEFAULT_JBOSSAS);
         }
-    }
-
-    private void reloadServer(ManagementClient managementClient, int timeout) throws Exception {
-        executeReload(managementClient.getControllerClient());
-        waitForLiveServerToReload(timeout);
-    }
-
-    private void executeReload(ModelControllerClient client) throws IOException {
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(OP).set("reload");
-        try {
-            Assert.assertTrue(Operations.isSuccessfulOutcome(client.execute(operation)));
-        } catch(IOException e) {
-            final Throwable cause = e.getCause();
-            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
-                throw e;
-            } // else ignore, this might happen if the channel gets closed before we got the response
-        } finally {
-            client.close();
-        }
-    }
-
-    private void waitForLiveServerToReload(int timeout) throws Exception {
-        long start = System.currentTimeMillis();
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set("server-state");
-        while (System.currentTimeMillis() - start < timeout) {
-            ModelControllerClient liveClient = ModelControllerClient.Factory.create(
-                    TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
-            try {
-                ModelNode result = liveClient.execute(operation);
-                if ("running".equals(result.get(RESULT).asString())) {
-                    return;
-                }
-            } catch (IOException e) {
-            } finally {
-                IoUtils.safeClose(liveClient);
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-            }
-        }
-        fail("Live Server did not reload in the imparted time.");
     }
 
     private void checkWsdl(URL wsdlURL) throws IOException {

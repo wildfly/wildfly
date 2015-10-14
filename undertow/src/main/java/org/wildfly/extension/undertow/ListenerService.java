@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.xnio.ByteBufferSlicePool;
 import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
 import org.xnio.OptionMap;
@@ -64,7 +64,7 @@ public abstract class ListenerService<T> implements Service<T> {
     protected final InjectedValue<SocketBinding> binding = new InjectedValue<>();
     protected final InjectedValue<SocketBinding> redirectSocket = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    protected final InjectedValue<Pool> bufferPool = new InjectedValue<>();
+    protected final InjectedValue<Pool<ByteBuffer>> bufferPool = new InjectedValue<>();
     protected final InjectedValue<Server> serverService = new InjectedValue<>();
     private final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
 
@@ -93,7 +93,7 @@ public abstract class ListenerService<T> implements Service<T> {
     }
 
     @SuppressWarnings("rawtypes")
-    public InjectedValue<Pool> getBufferPool() {
+    public InjectedValue<Pool<ByteBuffer>> getBufferPool() {
         return bufferPool;
     }
 
@@ -103,15 +103,6 @@ public abstract class ListenerService<T> implements Service<T> {
 
     protected UndertowService getUndertowService() {
         return serverService.getValue().getUndertowService();
-    }
-
-    protected int getBufferSize() {
-        //not sure if this is best possible solution
-        if (bufferPool.getValue() instanceof ByteBufferSlicePool){
-            ByteBufferSlicePool pool =(ByteBufferSlicePool)bufferPool.getValue();
-            return pool.getBufferSize();
-        }
-        return 8192;
     }
 
     public String getName() {
@@ -147,9 +138,12 @@ public abstract class ListenerService<T> implements Service<T> {
             startListening(worker.getValue(), socketAddress, acceptListener);
             registerBinding();
         } catch (IOException e) {
+            cleanFailedStart();
             throw new StartException("Could not start http listener", e);
         }
     }
+
+    protected abstract void cleanFailedStart();
 
     @Override
     public void stop(StopContext context) {

@@ -26,11 +26,11 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.undertow</extension-module>
-    <subsystem xmlns="urn:jboss:domain:undertow:2.0">
+    <subsystem xmlns="urn:jboss:domain:undertow:3.0">
         <buffer-cache name="default" />
         <server name="default-server">
             <?AJP?>
-            <http-listener name="default" socket-binding="http" />
+            <http-listener name="default" socket-binding="http" redirect-socket="https" />
             <host name="default-host" alias="localhost">
                 <location name="/" handler="welcome-content" />
                 <filter-ref name="server-header"/>
@@ -45,7 +45,7 @@
             <file name="welcome-content" path="${jboss.home.dir}/welcome-content" />
         </handlers>
         <filters>
-            <response-header name="server-header" header-name="Server" header-value="WildFly/9"/>
+            <response-header name="server-header" header-name="Server" header-value="WildFly/10"/>
             <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow/1"/>
         </filters>
     </subsystem>

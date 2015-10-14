@@ -26,11 +26,11 @@ import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
@@ -65,9 +65,8 @@ public class EjbLookupInjectionSource extends InjectionSource {
         if (targetType != null) {
             type = targetType;
         } else if (targetTypeName != null) {
-            final DeploymentClassIndex index = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
             try {
-                type = index.classIndex(targetTypeName).getModuleClass();
+                type = ClassLoadingUtils.loadClass(targetTypeName, phaseContext.getDeploymentUnit());
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }

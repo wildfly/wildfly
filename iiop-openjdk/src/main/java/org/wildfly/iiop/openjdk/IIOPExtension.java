@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -71,9 +72,7 @@ public class IIOPExtension implements Extension {
 
     private static final String RESOURCE_NAME = IIOPExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(IIOPExtension.SUBSYSTEM_NAME);
@@ -86,8 +85,7 @@ public class IIOPExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(IIOPRootDefinition.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(IIOPSubsystemParser.INSTANCE);

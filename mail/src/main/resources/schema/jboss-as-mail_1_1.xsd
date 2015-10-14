@@ -99,7 +99,8 @@
             <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="0"/>
             <xs:element name="property" type="property-type" maxOccurs="unbounded" minOccurs="0"/>
         </xs:sequence>
-        <xs:attribute name="outbound-socket-binding-ref" use="required" type="xs:string">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="outbound-socket-binding-ref" use="optional" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[

@@ -25,8 +25,8 @@ package org.wildfly.mod_cluster.undertow.metric;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.concurrent.atomic.LongAdder;
 
-import org.wildfly.mod_cluster.undertow.metric.jdk8backported.LongAdder;
 import org.xnio.channels.StreamSinkChannel;
 import org.xnio.conduits.AbstractSourceConduit;
 import org.xnio.conduits.StreamSourceConduit;

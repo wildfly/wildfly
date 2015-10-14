@@ -27,7 +27,7 @@
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   elementFormDefault="qualified"
   attributeFormDefault="unqualified"
-  version="1.0">
+  version="1.1">
 
   <xs:element name="subsystem" type="webservicesSubsystemType" />
 

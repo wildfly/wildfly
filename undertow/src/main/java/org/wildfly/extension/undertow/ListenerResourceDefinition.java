@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -30,19 +32,18 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import io.undertow.UndertowOptions;
-import io.undertow.server.ConnectorStatistics;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -50,11 +51,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.xnio.Options;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import io.undertow.UndertowOptions;
+import io.undertow.server.ConnectorStatistics;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -62,23 +64,34 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  */
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
+    static final String IO_WORKER_CAPABILITY = "org.wildfly.io.worker";
+    static final String IO_BUFFER_POOL_CAPABILITY = "org.wildfly.io.buffer-pool";
+    static final String SOCKET_CAPABILITY = "org.wildfly.network.socket-binding";
+
+    private static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
+    static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(LISTENER_CAPABILITY_NAME, true, ListenerService.class)
+            .build();
+
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setCapabilityReference(SOCKET_CAPABILITY, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
+            .setCapabilityReference(IO_WORKER_CAPABILITY, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition BUFFER_POOL = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_POOL, ModelType.STRING)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
+            .setCapabilityReference(IO_BUFFER_POOL_CAPABILITY, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
             .setAllowNull(true)
@@ -93,13 +106,20 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(false)
             .build();
 
-    protected static final SimpleAttributeDefinition RESOLVE_PEER_ADDRESS = new SimpleAttributeDefinitionBuilder("resolve-peer-address", ModelType.BOOLEAN)
+    protected static final SimpleAttributeDefinition RESOLVE_PEER_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_PEER_ADDRESS, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .build();
 
+    protected static final StringListAttributeDefinition DISALLOWED_METHODS = new StringListAttributeDefinition.Builder(Constants.DISALLOWED_METHODS)
+            .setDefaultValue(new ModelNode().add("TRACE"))
+            .setAllowNull(true)
+            .setValidator(new StringLengthValidator(0))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setAllowExpression(true)
+            .build();
 
     public static final OptionAttributeDefinition BACKLOG = OptionAttributeDefinition.builder("tcp-backlog", Options.BACKLOG).setAllowExpression(true).build();
     public static final OptionAttributeDefinition RECEIVE_BUFFER = OptionAttributeDefinition.builder("receive-buffer", Options.RECEIVE_BUFFER).setAllowExpression(true).build();
@@ -107,6 +127,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public static final OptionAttributeDefinition KEEP_ALIVE = OptionAttributeDefinition.builder("tcp-keep-alive", Options.KEEP_ALIVE).setAllowExpression(true).build();
     public static final OptionAttributeDefinition READ_TIMEOUT = OptionAttributeDefinition.builder("read-timeout", Options.READ_TIMEOUT).setAllowExpression(true).build();
     public static final OptionAttributeDefinition WRITE_TIMEOUT = OptionAttributeDefinition.builder("write-timeout", Options.WRITE_TIMEOUT).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_CONNECTIONS = OptionAttributeDefinition.builder(Constants.MAX_CONNECTIONS, Options.CONNECTION_HIGH_WATER).setAllowExpression(true).build();
 
 
     public static final OptionAttributeDefinition MAX_HEADER_SIZE = OptionAttributeDefinition.builder("max-header-size", UndertowOptions.MAX_HEADER_SIZE).setDefaultValue(new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE)).setAllowExpression(true).build();
@@ -119,19 +140,25 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public static final OptionAttributeDefinition DECODE_URL = OptionAttributeDefinition.builder("decode-url", UndertowOptions.DECODE_URL).setDefaultValue(new ModelNode(true)).setAllowExpression(true).build();
     public static final OptionAttributeDefinition URL_CHARSET = OptionAttributeDefinition.builder("url-charset", UndertowOptions.URL_CHARSET).setDefaultValue(new ModelNode("UTF-8")).setAllowExpression(true).build();
     public static final OptionAttributeDefinition ALWAYS_SET_KEEP_ALIVE = OptionAttributeDefinition.builder("always-set-keep-alive", UndertowOptions.ALWAYS_SET_KEEP_ALIVE).setDefaultValue(new ModelNode(true)).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition MAX_BUFFERED_REQUEST_SIZE = OptionAttributeDefinition.builder("max-buffered-request-size", UndertowOptions.MAX_BUFFERED_REQUEST_SIZE).setDefaultValue(new ModelNode(16384)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_BUFFERED_REQUEST_SIZE = OptionAttributeDefinition.builder(Constants.MAX_BUFFERED_REQUEST_SIZE, UndertowOptions.MAX_BUFFERED_REQUEST_SIZE).setDefaultValue(new ModelNode(16384)).setAllowExpression(true).build();
     public static final OptionAttributeDefinition RECORD_REQUEST_START_TIME = OptionAttributeDefinition.builder("record-request-start-time", UndertowOptions.RECORD_REQUEST_START_TIME).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
     public static final OptionAttributeDefinition ALLOW_EQUALS_IN_COOKIE_VALUE = OptionAttributeDefinition.builder("allow-equals-in-cookie-value", UndertowOptions.ALLOW_EQUALS_IN_COOKIE_VALUE).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
     public static final OptionAttributeDefinition NO_REQUEST_TIMEOUT = OptionAttributeDefinition.builder("no-request-timeout", UndertowOptions.NO_REQUEST_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setAllowNull(true).setAllowExpression(true).build();
     public static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setAllowNull(true).setAllowExpression(true).build();
 
     public enum ConnectorStat {
-        REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG, false).setStorageRuntime().build()),
-        BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG, false).setStorageRuntime().build()),
-        BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG, false).setStorageRuntime().build()),
-        ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG, false).setStorageRuntime().build()),
-        PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG, false).setStorageRuntime().build()),
-        MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG, false).setStorageRuntime().build());
+        REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
 
         private static final Map<String, ConnectorStat> MAP = new HashMap<>();
 
@@ -165,10 +192,10 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             URL_CHARSET, ALWAYS_SET_KEEP_ALIVE, MAX_BUFFERED_REQUEST_SIZE, RECORD_REQUEST_START_TIME,
             ALLOW_EQUALS_IN_COOKIE_VALUE, NO_REQUEST_TIMEOUT, REQUEST_PARSE_TIMEOUT);
 
-    public static final List<OptionAttributeDefinition> SOCKET_OPTIONS = Arrays.asList(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT);
+    public static final List<OptionAttributeDefinition> SOCKET_OPTIONS = Arrays.asList(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT, MAX_CONNECTIONS);
 
     static {
-        ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, RESOLVE_PEER_ADDRESS));
+        ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, RESOLVE_PEER_ADDRESS, DISALLOWED_METHODS));
         ATTRIBUTES.addAll(LISTENER_OPTIONS);
         ATTRIBUTES.addAll(SOCKET_OPTIONS);
     }
@@ -216,11 +243,14 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         }
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String name = address.getLastElement().getValue();
-            ListenerService<?> service = (ListenerService<?>) context.getServiceRegistry(false).getService(UndertowService.listenerName(name)).getValue();
+            final String name = context.getCurrentAddressValue();
+            ServiceController<ListenerService> listenerSC = (ServiceController<ListenerService>) context.getServiceRegistry(false).getService(UndertowService.listenerName(name));
+            if (listenerSC ==null || listenerSC.getState() != ServiceController.State.UP){
+                context.getResult().set(0L);
+                return;
+            }
             String op = operation.get(NAME).asString();
+            ListenerService<?> service = listenerSC.getValue();
             ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
             if(stats != null) {
                 ConnectorStat element = ConnectorStat.getStat(op);
@@ -249,7 +279,10 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
-
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(LISTENER_CAPABILITY);
+    }
 }

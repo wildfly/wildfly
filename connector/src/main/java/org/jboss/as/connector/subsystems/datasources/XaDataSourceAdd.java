@@ -22,11 +22,11 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -35,18 +35,22 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * Operation handler responsible for adding a XA data-source.
  *
- * @author John Bailey
  * @author Stefano Maestri
  */
 public class XaDataSourceAdd extends AbstractDataSourceAdd {
     static final XaDataSourceAdd INSTANCE = new XaDataSourceAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        populateAddModel(operation, model, XADATASOURCE_PROPERTIES.getName(), XA_DATASOURCE_ATTRIBUTE, XA_DATASOURCE_PROPERTIES_ATTRIBUTES);
+    private XaDataSourceAdd() {
+        super(join(XA_DATASOURCE_ATTRIBUTE, XA_DATASOURCE_PROPERTIES_ATTRIBUTES));
     }
 
     protected AbstractDataSourceService createDataSourceService(final String dsName, final String jndiName) throws OperationFailedException {
-        return new XaDataSourceService(dsName, jndiName);
+        return new XaDataSourceService(dsName, ContextNames.bindInfoFor(jndiName));
+    }
+
+    @Override
+    protected boolean isXa() {
+        return true;
     }
 
     @Override

@@ -109,7 +109,7 @@ public class PooledEJBLifecycleTestCase {
         archive.addClass(Constants.class);
         archive.setManifest(new StringAsset(
                 Descriptors.create(ManifestDescriptor.class)
-                        .attribute("Dependencies", DEPLOYED_SINGLETON_MODULE + ", org.hornetq.ra")
+                        .attribute("Dependencies", DEPLOYED_SINGLETON_MODULE + ", org.apache.activemq.artemis.ra")
                         .exportAsString()));
 
         log.info(archive.toString(true));
@@ -124,7 +124,7 @@ public class PooledEJBLifecycleTestCase {
         archive.addClass(LifecycleTracker.class);
         archive.setManifest(new StringAsset(
                 Descriptors.create(ManifestDescriptor.class)
-                        .attribute("Dependencies", DEPLOYED_SINGLETON_MODULE + ", org.hornetq.ra")
+                        .attribute("Dependencies", DEPLOYED_SINGLETON_MODULE + ", org.apache.activemq.artemis.ra")
                         .exportAsString()));
         log.info(archive.toString(true));
         return archive;

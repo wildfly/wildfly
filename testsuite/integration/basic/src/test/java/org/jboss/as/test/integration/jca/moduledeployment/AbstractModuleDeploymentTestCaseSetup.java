@@ -21,6 +21,14 @@
  */
 package org.jboss.as.test.integration.jca.moduledeployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,15 +38,26 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
+import org.jboss.as.test.integration.management.util.CLITestUtil;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -47,9 +66,6 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.xnio.IoUtils;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * AS7-5768 -Support for RA module deployment
@@ -66,6 +82,8 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     protected File slot;
     public static ModelNode address;
     protected final String defaultPath = "org/jboss/ironjacamar/ra16out";
+    private boolean reloadRequired = false;
+    private List<Path> toRemove = new LinkedList<>();
 
     public void addModule(final String moduleName) throws Exception {
         addModule(moduleName, "module.xml");
@@ -88,19 +106,25 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
             while (!getModulePath().equals(file.getParentFile()))
                 file = file.getParentFile();
         }
-        deleteRecursively(file);
+        toRemove.add(file.toPath());
     }
 
-    private void deleteRecursively(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    deleteRecursively(new File(file, name));
+    private void deleteRecursively(Path file) throws IOException {
+        if (Files.exists(file)) {
+            Files.walkFileTree(file, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
                 }
-            }
-            if (!file.delete()) {
-                log.warn("Could not delete " + file);
-            }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+
+            });
         }
     }
 
@@ -134,20 +158,14 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     }
 
     protected void copyModuleXml(File slot, InputStream src) throws IOException {
-        BufferedReader in = null;
-        PrintWriter out = null;
-        try {
-            in = new BufferedReader(new InputStreamReader(src));
-            out = new PrintWriter(new File(slot, "module.xml"));
+        try(BufferedReader in = new BufferedReader(new InputStreamReader(src));
+                PrintWriter out = new PrintWriter(new File(slot, "module.xml"));) {
             String line;
             while ((line = in.readLine()) != null) {
                 // replace slot name in the module xml file
                 line = MODULE_SLOT_PATTERN.matcher(line).replaceAll("slot=\"" + getSlot() + "\"");
                 out.println(line);
             }
-        } finally {
-            IoUtils.safeClose(in);
-            IoUtils.safeClose(out);
         }
     }
 
@@ -176,11 +194,34 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     }
 
     @Override
-    public void tearDown(ManagementClient managementClient, String containerId)
-            throws Exception {
-        takeSnapShot();
-        remove(address);
-        removeModule(defaultPath, true);
+    public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+        try {
+            remove(address, managementClient);
+        } finally {
+            removeModule(defaultPath, true);
+        }
+        if (reloadRequired){
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        }
+        for (Path p:toRemove) {
+            deleteRecursively(p);
+        }
+        toRemove.clear();
+    }
+
+    protected void remove(final ModelNode address, final ManagementClient managementClient) throws IOException, MgmtOperationException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("remove");
+        operation.get(OP_ADDR).set(address);
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
+
+        if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
+            throw new MgmtOperationException("Module removal failed: " + result.get(FAILURE_DESCRIPTION), operation, result);
+        }
+        final ModelNode responseHeaders = result.get(RESPONSE_HEADERS);
+        if (responseHeaders.hasDefined(PROCESS_STATE) && ControlledProcessState.State.RELOAD_REQUIRED.toString().equals(responseHeaders.get(PROCESS_STATE).asString())) {
+            this.reloadRequired = true;
+        }
     }
 
     @Override

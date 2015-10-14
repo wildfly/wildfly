@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition.Attribute.MODULE;
+
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -86,6 +88,10 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
                 ChannelFactory factory = (ChannelFactory) controller.getValue();
                 if (factory != null) {
                     ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
+                    if (configuration.getTransport().getName().equals(protocolName)) {
+                        Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(configuration.getTransport().getModule()).getClassLoader().loadClass(configuration.getTransport().getProtocolClassName()).asSubclass(Protocol.class);
+                        return channel.getProtocolStack().findProtocol(protocolClass);
+                    }
                     for (ProtocolConfiguration protocol : configuration.getProtocols()) {
                         if (protocol.getName().equals(protocolName)) {
                             Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(protocol.getModule()).getClassLoader().loadClass(protocol.getProtocolClassName()).asSubclass(Protocol.class);
@@ -109,7 +115,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
 
             @Override
             public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                StandardResourceDescriptionResolver resolver = JGroupsExtension.getResourceDescriptionResolver();
+                StandardResourceDescriptionResolver resolver = new JGroupsResourceDescriptionResolver();
                 String description = resolver.getChildTypeDescription(ProtocolResourceDefinition.WILDCARD_PATH.getKey(), locale, resolver.getResourceBundle(locale));
                 ModelNode result = new ModelNode();
                 result.get(ModelDescriptionConstants.DESCRIPTION).set(description);
@@ -125,31 +131,33 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
         for (String name: stackResource.getChildrenNames(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
             PathAddress transportAddress = this.stackAddress.append(TransportResourceDefinition.pathElement(name));
             ModelNode transport = context.readResourceFromRoot(transportAddress, false).getModel();
-            ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, transport));
+            ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, transport));
             Class<? extends Protocol> transportClass = findProtocolClass(context, name, module);
+            // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
             registration.registerSubModel(this.createProtocolResourceDefinition(name, transportClass)).setRuntimeOnly(true);
             resource.registerChild(ProtocolResourceDefinition.pathElement(name), PlaceholderResource.INSTANCE);
         }
 
         for (String name: stackResource.getChildrenNames(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
             Resource protocolResource = context.readResourceFromRoot(this.stackAddress.append(ProtocolResourceDefinition.pathElement(name)), false);
-            ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, protocolResource.getModel()));
+            ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, protocolResource.getModel()));
             Class<? extends Protocol> protocolClass = findProtocolClass(context, name, module);
+            // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
             registration.registerSubModel(this.createProtocolResourceDefinition(name, protocolClass)).setRuntimeOnly(true);
             resource.registerChild(ProtocolResourceDefinition.pathElement(name), PlaceholderResource.INSTANCE);
         }
 
         if (stackResource.hasChild(RelayResourceDefinition.PATH)) {
+            // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
             registration.registerSubModel(this.createProtocolResourceDefinition(RelayConfiguration.PROTOCOL_NAME, RELAY2.class)).setRuntimeOnly(true);
             resource.registerChild(ProtocolResourceDefinition.pathElement(RelayConfiguration.PROTOCOL_NAME), PlaceholderResource.INSTANCE);
         }
-        context.stepCompleted();
     }
 
     private ResourceDefinition createProtocolResourceDefinition(String protocolName, Class<? extends Protocol> protocolClass) {
 
         SimpleResourceDescriptionResolver resolver = new SimpleResourceDescriptionResolver(protocolName, protocolClass.getSimpleName());
-        ResourceBuilder builder = ResourceBuilder.Factory.create(ProtocolResourceDefinition.pathElement(protocolName), resolver);
+        ResourceBuilder builder = ResourceBuilder.Factory.create(ProtocolResourceDefinition.pathElement(protocolName), resolver).setRuntime();
         ProtocolMetricsHandler handler = new ProtocolMetricsHandler(this);
 
         for (Map.Entry<String, Attribute> entry: ProtocolMetricsHandler.findProtocolAttributes(protocolClass).entrySet()) {
@@ -157,7 +165,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
             Attribute attribute = entry.getValue();
             FieldType type = FieldType.valueOf(attribute.getType());
             resolver.addDescription(name, attribute.getDescription());
-            builder.addMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType()).setStorageRuntime().build(), handler);
+            builder.addMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType(), true).setStorageRuntime().build(), handler);
         }
 
         return builder.build();

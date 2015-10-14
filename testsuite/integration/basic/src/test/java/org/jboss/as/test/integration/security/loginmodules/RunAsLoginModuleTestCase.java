@@ -38,8 +38,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Base64;
 
-import org.junit.Assert;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -65,7 +65,7 @@ import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.RunAsLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.util.Base64;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -157,7 +157,7 @@ public class RunAsLoginModuleTestCase {
         log.debug("URL: " + url.toString());
 
         HttpGet httpget = new HttpGet(url.toString());
-        String headerValue = Base64.encodeBytes("anil:anil".getBytes());
+        String headerValue = Base64.getEncoder().encodeToString("anil:anil".getBytes());
         Assert.assertNotNull(headerValue);
         httpget.addHeader("Authorization", "Basic " + headerValue);
         String text;

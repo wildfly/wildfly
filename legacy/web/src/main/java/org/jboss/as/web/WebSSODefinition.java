@@ -84,6 +84,7 @@ public class WebSSODefinition extends ModelOnlyResourceDefinition {
                 SSO_ATTRIBUTES);
         SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-sso", false, true, true);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

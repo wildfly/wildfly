@@ -46,12 +46,15 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
+            <xs:element name="properties" minOccurs="0" maxOccurs="1" type="genericPropertiesType"/>
             <xs:element name="orb" minOccurs="0" maxOccurs="1" type="orbConfigType"/>
+            <xs:element name="tcp" minOccurs="0" maxOccurs="1" type="tcpConfigType"/>
+            <xs:element name="initializers" minOccurs="0" maxOccurs="1" type="initializersConfigType"/>
             <xs:element name="naming" minOccurs="0" maxOccurs="1" type="namingConfigType"/>
             <xs:element name="security" minOccurs="0" maxOccurs="1" type="securityConfigType"/>
-            <xs:element name="ior-settings" minOccurs="0" maxOccurs="1" type="iorSettingsType"/>
-            <xs:element name="client-transport" minOccurs="0" maxOccurs="1" type="clientTransportConfigType"/>
-            <xs:element name="properties" minOccurs="0" maxOccurs="1" type="genericPropertiesType"/>
+            <xs:element name="transport-config" type="iorTransportConfigType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="as-context" minOccurs="0" maxOccurs="1" type="iorASContextType"/>
+            <xs:element name="sas-context" minOccurs="0" maxOccurs="1" type="iorSASContextType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -61,27 +64,21 @@
                 <![CDATA[
                 the orbConfigType specifies the elements and attributes that can be used to configure the behavior of the
                 Object Request Broker (ORB).
-
-                * tcp: this element allows for the configuration of the tcp connection properties.
-                * naming: this element allows for the configuration of the naming initial reference.
                 * giop-version-version: the GIOP version to be used.
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element name="tcp" minOccurs="0" maxOccurs="1" type="orbTCPConfigType"/>
-            <xs:element name="initializers" minOccurs="0" maxOccurs="1" type="orbInitializersConfigType"/>
-        </xs:sequence>
         <xs:attribute name="giop-version" type="xs:string" use="optional" default="1.2"/>
         <xs:attribute name="socket-binding" type="xs:string" use="optional" default="iiop"/>
         <xs:attribute name="ssl-socket-binding" type="xs:string" use="optional" default="iiop-ssl"/>
+        <xs:attribute name="persistent-server-id" type="xs:string" use="optional" default="1"/>
     </xs:complexType>
 
-    <xs:complexType name="orbTCPConfigType">
+    <xs:complexType name="tcpConfigType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                The orbTCPConfigType specifies the attributes used to configure the ORB tcp connections.
+                The orbTCPConfigType specifies the attributes used to configure the TCP connections.
 
                 * high-water-mark: each time the number of connections exceeds this value ORB tries to reclaim connections. 
                 * number-to-reclaim: number of reclaimed connections is specified by this property.
@@ -92,11 +89,11 @@
         <xs:attribute name="number-to-reclaim" type="xs:integer" use="optional"/>
     </xs:complexType>
 
-    <xs:complexType name="orbInitializersConfigType">
+    <xs:complexType name="initializersConfigType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                The orbInitializersConfigType specifies the attributes used to configure the ORB initializers.
+                The initializersConfigType specifies the attributes used to configure the ORB initializers.
 
                 * security: indicates whether the security (SAS and CSIv2) initializers should be installed. There are three possibilities:
                     identity - The server will just send the current username. The recieving server must trust this
@@ -191,25 +188,18 @@
         <xs:attribute name="value" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="iorSettingsType">
+    <xs:simpleType name="iorTransportEnum">
         <xs:annotation>
             <xs:documentation>
-                <![CDATA[
-                The iorSettingsType specifies the elements that can be used to configure settings that are to be applied
-                to all generated IORs.
-
-                - transport-config: holds the attributes used to configure the IOR transport settings.
-                - as-context: holds the attributes used to configure the IOR Authentication Service (AS) settings.
-                - sas-context: holds the attributes used to configure the IOR Secure Attribute Service (SAS) settings.
-                        ]]>
+                Enumeration of allowed values for IOR transport config fields.
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element name="transport-config" minOccurs="0" maxOccurs="1" type="iorTransportConfigType"/>
-            <xs:element name="as-context" minOccurs="0" maxOccurs="1" type="iorASContextType"/>
-            <xs:element name="sas-context" minOccurs="0" maxOccurs="1" type="iorSASContextType"/>
-        </xs:sequence>
-    </xs:complexType>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="supported"/>
+            <xs:enumeration value="required"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:complexType name="iorTransportConfigType">
         <xs:annotation>
@@ -232,13 +222,25 @@
              ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="integrity" type="xs:string" use="optional"/>
-        <xs:attribute name="confidentiality" type="xs:string" use="optional"/>
-        <xs:attribute name="trust-in-target" type="xs:string" use="optional"/>
-        <xs:attribute name="trust-in-client" type="xs:string" use="optional"/>
-        <xs:attribute name="detect-replay" type="xs:string" use="optional"/>
-        <xs:attribute name="detect-misordering" type="xs:string" use="optional"/>
+        <xs:attribute name="integrity" type="iorTransportEnum" use="optional"/>
+        <xs:attribute name="confidentiality" type="iorTransportEnum" use="optional"/>
+        <xs:attribute name="trust-in-target" type="iorTransportEnum" use="optional"/>
+        <xs:attribute name="trust-in-client" type="iorTransportEnum" use="optional"/>
+        <xs:attribute name="detect-replay" type="iorTransportEnum" use="optional"/>
+        <xs:attribute name="detect-misordering" type="iorTransportEnum" use="optional"/>
     </xs:complexType>
+
+    <xs:simpleType name="authMethodEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Enumeration of allowed values for AS Context auth method.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="username_password"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:complexType name="iorASContextType">
         <xs:annotation>
@@ -252,10 +254,22 @@
              ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="auth-method" type="xs:string" use="optional"/>
+        <xs:attribute name="auth-method" type="authMethodEnum" use="optional"/>
         <xs:attribute name="realm" type="xs:string" use="optional"/>
         <xs:attribute name="required" type="xs:boolean" use="optional"/>
     </xs:complexType>
+
+    <xs:simpleType name="callerPropagationEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Enumeration of allowed values for SAS Context caller propagation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="supported"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:complexType name="iorSASContextType">
         <xs:annotation>
@@ -268,36 +282,7 @@
              ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="caller-propagation" type="xs:string" use="optional"/>
-    </xs:complexType>
- 
-    <xs:complexType name="clientTransportConfigType">
-        <xs:annotation>
-            <xs:documentation>
-                <![CDATA[
-                The clientTransportConfigType specifies the attributes used to setup the client transport settings.
-
-                * integrity: indicates whether the transport must require integrity protection or not. Valid values are
-                             "none", "supported" and "required".
-                * confidentiality: indicates whether the transport must require confidentiality protection or not. Valid
-                             values are "none", "supported" and "required".
-                * trust-in-target: indicates if the transport must require trust in target to be established. Valid values
-                             are "none" and "supported".
-                * trust-in-client: indicates if the transport must require trust in client to be established. Valid values
-                             are "none", "supported" and "required".
-                * detect-replay: indicates whether the transport must require replay detection or not. Valid values are
-                             "none", "supported" and "required".
-                * detect-misordering: indicates whether the transport must require misordering detection or not. Valid
-                             values are "none", "supported" and "required".
-             ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="integrity" type="xs:string" use="optional"/>
-        <xs:attribute name="confidentiality" type="xs:string" use="optional"/>
-        <xs:attribute name="trust-in-target" type="xs:string" use="optional"/>
-        <xs:attribute name="trust-in-client" type="xs:string" use="optional"/>
-        <xs:attribute name="detect-replay" type="xs:string" use="optional"/>
-        <xs:attribute name="detect-misordering" type="xs:string" use="optional"/>
+        <xs:attribute name="caller-propagation" type="callerPropagationEnum" use="optional"/>
     </xs:complexType>
 
     <xs:simpleType name="trueFalseType">

@@ -22,124 +22,204 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
-import org.jboss.as.clustering.controller.transform.DefaultValueAttributeConverter;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
+import org.jboss.as.clustering.controller.transform.ImplicitlyAddedResourceDynamicDiscardPolicy;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimplePathOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleReadAttributeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleRemoveOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleResourceTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleUndefineAttributeOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleWriteAttributeOperationTransformer;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Resource description for /subsystem=jgroups/stack=X/transport=*
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Paul Ferraro
  */
-public class TransportResourceDefinition extends SimpleResourceDefinition {
+public class TransportResourceDefinition extends ProtocolResourceDefinition {
 
+    static final PathElement LEGACY_PATH = pathElement("TRANSPORT");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.TRANSPORT, name);
+    public static PathElement pathElement(String name) {
+        return PathElement.pathElement("transport", name);
     }
 
-    static final SimpleAttributeDefinition SHARED = new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.SHARED.getLocalName())
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode().set(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        DIAGNOSTICS_SOCKET_BINDING("org.wildfly.clustering.transport.diagnostics-socket-binding", SocketBinding.class),
+        ;
+        private final RuntimeCapability<Void> definition;
 
-    static final SimpleAttributeDefinition DIAGNOSTICS_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelKeys.DIAGNOSTICS_SOCKET_BINDING, ModelType.STRING, true)
-            .setXmlName(Attribute.DIAGNOSTICS_SOCKET_BINDING.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .build();
+        Capability(String name, Class<?> serviceType) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        }
 
-    static final SimpleAttributeDefinition DEFAULT_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_EXECUTOR, ModelType.STRING, true)
-            .setXmlName(Attribute.DEFAULT_EXECUTOR.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
 
-    static final SimpleAttributeDefinition OOB_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.OOB_EXECUTOR, ModelType.STRING, true)
-            .setXmlName(Attribute.OOB_EXECUTOR.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        @Override
+        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+            PathAddress stackAddress = address.getParent();
+            return this.definition.fromBaseCapability(stackAddress.getLastElement().getValue() + "." + address.getLastElement().getValue());
+        }
+    }
 
-    static final SimpleAttributeDefinition TIMER_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.TIMER_EXECUTOR, ModelType.STRING, true)
-            .setXmlName(Attribute.TIMER_EXECUTOR.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        SHARED("shared", ModelType.BOOLEAN, new ModelNode(false)),
+        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(RequiredCapability.SOCKET_BINDING, Capability.DIAGNOSTICS_SOCKET_BINDING)),
+        SITE("site", ModelType.STRING),
+        RACK("rack", ModelType.STRING),
+        MACHINE("machine", ModelType.STRING),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition THREAD_FACTORY = new SimpleAttributeDefinitionBuilder(ModelKeys.THREAD_FACTORY, ModelType.STRING, true)
-            .setXmlName(Attribute.THREAD_FACTORY.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        Attribute(String name, ModelType type) {
+            this.definition = createBuilder(name, type).build();
+        }
 
-    static final SimpleAttributeDefinition SITE = new SimpleAttributeDefinitionBuilder(ModelKeys.SITE, ModelType.STRING, true)
-            .setXmlName(Attribute.SITE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type).setDefaultValue(defaultValue).build();
+        }
 
-    static final SimpleAttributeDefinition RACK = new SimpleAttributeDefinitionBuilder(ModelKeys.RACK, ModelType.STRING, true)
-            .setXmlName(Attribute.RACK.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        Attribute(String name, ModelType type, AccessConstraintDefinition constraint, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, type).setAccessConstraints(constraint).setCapabilityReference(reference).build();
+        }
 
-    static final SimpleAttributeDefinition MACHINE = new SimpleAttributeDefinitionBuilder(ModelKeys.MACHINE, ModelType.STRING, true)
-            .setXmlName(Attribute.MACHINE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
+            return new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            ;
+        }
 
-    // the list of attributes used by the transport resource
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
-            ProtocolResourceDefinition.TYPE, ProtocolResourceDefinition.MODULE, SHARED, ProtocolResourceDefinition.SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING,
-            DEFAULT_EXECUTOR, OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE
-    };
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
+    @Deprecated
+    enum ThreadingAttribute implements org.jboss.as.clustering.controller.Attribute {
+        DEFAULT_EXECUTOR("default-executor"),
+        OOB_EXECUTOR("oob-executor"),
+        TIMER_EXECUTOR("timer-executor"),
+        THREAD_FACTORY("thread-factory"),
+        ;
+        private final AttributeDefinition definition;
+
+        ThreadingAttribute(String name) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+                    .setAllowExpression(false)
+                    .setAllowNull(true)
+                    .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
         ProtocolResourceDefinition.addTransformations(version, builder);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(SHARED), SHARED);
+            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.SHARED.getDefinition()), Attribute.SHARED.getDefinition());
 
-            builder.setCustomResourceTransformer(new SimpleResourceTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(LEGACY_ADDRESS_TRANSFORMER, ATTRIBUTES)).inheritResourceAttributeDefinitions();
+            builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    new LegacyPropertyResourceTransformer().transformResource(context, LEGACY_ADDRESS_TRANSFORMER.transform(address), resource);
+                }
+            });
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleOperationTransformer(new org.jboss.as.clustering.controller.transform.OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(final ModelNode operation) {
+                    operation.get(ModelDescriptionConstants.OP_ADDR).set(LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation)).toModelNode());
+                    return new LegacyPropertyAddOperationTransformer().transformOperation(operation);
+                }
+            })).inheritResourceAttributeDefinitions();
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleRemoveOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleReadAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleWriteAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleUndefineAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.DESCRIBE).setCustomOperationTransformer(new SimpleDescribeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+
+            List<OperationTransformer> getOpTransformerChain = new LinkedList<>();
+            getOpTransformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            getOpTransformerChain.add(new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
+            ChainedOperationTransformer getOpChainedTransformer = new ChainedOperationTransformer(getOpTransformerChain, false);
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), getOpChainedTransformer);
+
+            List<OperationTransformer> writeOpTransformerChain = new LinkedList<>();
+            writeOpTransformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            writeOpTransformerChain.add(new LegacyPropertyWriteOperationTransformer());
+            ChainedOperationTransformer writeOpChainedTransformer = new ChainedOperationTransformer(writeOpTransformerChain, false);
+            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
+                builder.addOperationTransformationOverride(opName)
+                        .inheritResourceAttributeDefinitions()
+                        .setCustomOperationTransformer(writeOpChainedTransformer);
+            }
+
+            // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
+            builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, new ImplicitlyAddedResourceDynamicDiscardPolicy());
+        } else {
+            Stream.of(ThreadPoolResourceDefinition.values()).forEach(p -> p.buildTransformation(version, parent));
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
@@ -149,24 +229,67 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     static final PathAddressTransformer LEGACY_ADDRESS_TRANSFORMER = new PathAddressTransformer() {
         @Override
         public PathAddress transform(PathAddress address) {
-            return address.subAddress(0, address.size() - 1).append(pathElement(ModelKeys.TRANSPORT_NAME));
+            return address.subAddress(0, address.size() - 1).append(LEGACY_PATH);
         }
     };
 
-    TransportResourceDefinition() {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+    TransportResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), parentBuilderFactory);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(new PropertyResourceDefinition());
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(ProtocolResourceDefinition.Attribute.class)
+                .addExtraParameters(ThreadingAttribute.class)
+                .addExtraParameters(ProtocolResourceDefinition.DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
+                .addCapabilities(ProtocolResourceDefinition.Capability.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
+        new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
+            @Override
+            protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+                super.populateModel(operation, model);
+                // Add deprecated threading attributes to the model for now
+                for (ThreadingAttribute attribute :  EnumSet.allOf(ThreadingAttribute.class)) {
+                    attribute.getDefinition().validateAndSet(operation, model);
+                }
+            }
+        }.register(registration);
+        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+
+        new ReloadRequiredWriteAttributeHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(attribute -> attribute.getDefinition()).collect(Collectors.toList())) {
+            @Override
+            protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+                // Add a new step to validate instead of doing it directly in this method.
+                // This allows a composite op to change both attributes and then the
+                // validation occurs after both have done their work.
+                context.addStep(new OperationStepHandler() {
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        ModelNode conf = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                        // TODO doesn't cover the admin-only modes
+                        if (context.getProcessType().isServer()) {
+                            for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
+                                if (conf.hasDefined(attribute.getDefinition().getName())) {
+                                    // That is not supported.
+                                    throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.threadsAttributesUsedInRuntime());
+                                }
+                            }
+                        }
+                    }
+                }, OperationContext.Stage.MODEL);
+            }
+        }.register(registration);
+
+        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.register(registration));
+
+        super.register(registration);
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -29,9 +31,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
-
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 
 /**
  * WildFly DataSource implementation

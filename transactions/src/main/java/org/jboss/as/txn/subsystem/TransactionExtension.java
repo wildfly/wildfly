@@ -72,9 +72,7 @@ public class TransactionExtension implements Extension {
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
     static final PathElement LOG_STORE_PATH = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
@@ -107,8 +105,7 @@ public class TransactionExtension implements Extension {
         TransactionLogger.ROOT_LOGGER.debug("Initializing Transactions Extension");
         final LogStoreResource resource = new LogStoreResource();
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         final TransactionSubsystemRootResourceDefinition rootResourceDefinition = new TransactionSubsystemRootResourceDefinition(registerRuntimeOnly);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(rootResourceDefinition);
@@ -122,13 +119,6 @@ public class TransactionExtension implements Extension {
                    .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO)
                    .build();
             registration.registerOperationHandler(objectStorePathHandler.getOperationDefinition(), objectStorePathHandler);
-
-            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                    .setPathAttribute(TransactionSubsystemRootResourceDefinition.PATH)
-                    .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.RELATIVE_TO)
-                    .setDeprecated(ModelVersion.create(1,4))
-                    .build();
-            registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
         }
 
 
@@ -176,6 +166,9 @@ public class TransactionExtension implements Extension {
 
         final ModelVersion version200 = ModelVersion.create(2, 0, 0);
         final TransformationDescription description200 = subsystemRoot200.build();
+        subsystemRoot200.getAttributeBuilder()
+                .addRename(TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE, CommonAttributes.USE_HORNETQ_STORE)
+                .addRename(TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO, CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO);
         TransformationDescription.Tools.register(description200, subsystem, version200);
 
 
@@ -187,9 +180,12 @@ public class TransactionExtension implements Extension {
         subsystemRoot.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
+                .addRejectCheck(RejectJournalStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 // Legacy name for enabling/disabling statistics
                 .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS)
+                // Legacy name for hornetq store
+                .addRename(TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE, CommonAttributes.USE_HORNETQ_STORE)
+                .addRename(TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO, CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 //Before 2.0.0 this value was not nillable in practise. Set it to 'false' if undefined.
                 .setValueConverter(ProcessIdUuidConverter.INSTANCE, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
 
@@ -273,12 +269,12 @@ public class TransactionExtension implements Extension {
         }
     }
 
-    private static class RejectHornetQStoreAsyncIOChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker {
-        static final RejectHornetQStoreAsyncIOChecker INSTANCE = new RejectHornetQStoreAsyncIOChecker();
+    private static class RejectJournalStoreAsyncIOChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker {
+        static final RejectJournalStoreAsyncIOChecker INSTANCE = new RejectJournalStoreAsyncIOChecker();
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return TransactionLogger.ROOT_LOGGER.transformHornetQStoreEnableAsyncIoMustBeTrue();
+            return TransactionLogger.ROOT_LOGGER.transformJournalStoreEnableAsyncIoMustBeTrue();
         }
 
         @Override
@@ -301,8 +297,8 @@ public class TransactionExtension implements Extension {
             //Will not get called if it was discarded
             if (!attributeValue.isDefined() || !attributeValue.asString().equals("true")) {
                 //If use-hornetq-store is undefined or false, don't reject
-                if (model.hasDefined(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName())) {
-                    return !model.get(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName()).asString().equals("false");
+                if (model.hasDefined(TransactionSubsystemRootResourceDefinition.USE_HORNETQ_STORE.getName())) {
+                    return !model.get(TransactionSubsystemRootResourceDefinition.USE_HORNETQ_STORE.getName()).asString().equals("false");
                 }
             }
             return false;

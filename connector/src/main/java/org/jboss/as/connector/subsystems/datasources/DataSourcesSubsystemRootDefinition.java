@@ -96,11 +96,33 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
     }
 
     static void registerTransformers(SubsystemRegistration subsystem) {
-        TransformationDescription.Tools.register(get110TransformationDescription(), subsystem, ModelVersion.create(1, 1, 0));
-        TransformationDescription.Tools.register(get111TransformationDescription(), subsystem, ModelVersion.create(1, 1, 1));
+        TransformationDescription.Tools.register(get120TransformationDescription(), subsystem, ModelVersion.create(1, 2, 0)); //EAP 6.2.0
+        TransformationDescription.Tools.register(get130TransformationDescription(), subsystem, ModelVersion.create(1, 3, 0)); //EAP 6.2.0
         TransformationDescription.Tools.register(get200TransformationDescription(), subsystem, ModelVersion.create(2, 0, 0));
+        TransformationDescription.Tools.register(get300TransformationDescription(), subsystem, ModelVersion.create(3, 0, 0));
     }
 
+
+
+    static TransformationDescription get130TransformationDescription() {
+
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        //No change
+        //JdbcDriverDefinition.registerTransformers130(builder);
+        DataSourceDefinition.registerTransformers130(builder);
+        XaDataSourceDefinition.registerTransformers130(builder);
+        return builder.build();
+    }
+
+    static TransformationDescription get120TransformationDescription() {
+
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        //No change
+        //JdbcDriverDefinition.registerTransformers110(builder);
+        DataSourceDefinition.registerTransformers120(builder);
+        XaDataSourceDefinition.registerTransformers120(builder);
+        return builder.build();
+    }
 
     static TransformationDescription get200TransformationDescription() {
 
@@ -112,21 +134,13 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
         return builder.build();
     }
 
-    static TransformationDescription get110TransformationDescription() {
+    static TransformationDescription get300TransformationDescription() {
 
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        JdbcDriverDefinition.registerTransformers110(builder);
-        DataSourceDefinition.registerTransformers110(builder);
-        XaDataSourceDefinition.registerTransformers110(builder);
-        return builder.build();
-    }
-
-    static TransformationDescription get111TransformationDescription() {
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        JdbcDriverDefinition.registerTransformers111(builder);
-        DataSourceDefinition.registerTransformers111(builder);
-        XaDataSourceDefinition.registerTransformers111(builder);
+        //No change
+        //JdbcDriverDefinition.registerTransformers110(builder);
+        DataSourceDefinition.registerTransformers300(builder);
+        XaDataSourceDefinition.registerTransformers300(builder);
         return builder.build();
     }
 

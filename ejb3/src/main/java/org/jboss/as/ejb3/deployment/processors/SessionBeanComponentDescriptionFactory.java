@@ -118,7 +118,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             final AnnotationTarget target = sessionBeanAnnotation.target();
             if (!(target instanceof ClassInfo)) {
                 // Let's just WARN and move on. No need to throw an error
-                EjbLogger.ROOT_LOGGER.warn(EjbLogger.ROOT_LOGGER.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target).getMessage());
+                EjbLogger.DEPLOYMENT_LOGGER.warn(EjbLogger.ROOT_LOGGER.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target).getMessage());
                 continue;
             }
             final ClassInfo sessionBeanClassInfo = (ClassInfo) target;
@@ -200,12 +200,12 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         final String className = sessionBeanClass.name().toString();
         // must *not* be an interface
         if (Modifier.isInterface(flags)) {
-            EjbLogger.ROOT_LOGGER.sessionBeanClassCannotBeAnInterface(className);
+            EjbLogger.DEPLOYMENT_LOGGER.sessionBeanClassCannotBeAnInterface(className);
             return false;
         }
         // bean class must be public, must *not* be abstract or final
         if (!Modifier.isPublic(flags) || Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
-            EjbLogger.ROOT_LOGGER.sessionBeanClassMustBePublicNonAbstractNonFinal(className);
+            EjbLogger.DEPLOYMENT_LOGGER.sessionBeanClassMustBePublicNonAbstractNonFinal(className);
             return false;
         }
         // valid class

@@ -24,16 +24,16 @@ package org.wildfly.clustering.server.singleton;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.wildfly.clustering.marshalling.ClassTableContributor;
+import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
- * ClassTable contributor for a {@link SingletonService}.
+ * ClassTable contributor for a {@link CacheSingletonServiceBuilder}.
  * @author Paul Ferraro
  */
 public class SingletonClassTableContributor implements ClassTableContributor {
 
     @Override
     public Collection<Class<?>> getKnownClasses() {
-        return Arrays.<Class<?>>asList(SingletonValueCommand.class, StopSingletonCommand.class);
+        return Arrays.<Class<?>>asList(SingletonValueCommand.class, StartCommand.class, StopCommand.class);
     }
 }

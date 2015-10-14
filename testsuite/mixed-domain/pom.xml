@@ -29,7 +29,7 @@
     <parent>
         <artifactId>wildfly-testsuite</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-mixed-domain</artifactId>
@@ -58,6 +58,16 @@
             <artifactId>wildfly-model-test</artifactId>
          <scope>test</scope>
        </dependency>
+        <dependency>
+            <groupId>org.wildfly.build</groupId>
+            <artifactId>wildfly-server-provisioning-standalone</artifactId>
+            <!-- Set in root pom.xml -->
+            <version>${version.org.wildfly.build-tools}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem-test-framework</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

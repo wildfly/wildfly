@@ -39,7 +39,6 @@ import javax.ejb.TransactionManagementType;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
@@ -79,7 +78,7 @@ public class SFSBHibernate2LcacheStats {
         // static {
         try {
 
-            System.out.println("setupConfig:  Current dir = " + (new File(".")).getCanonicalPath());
+            //System.out.println("setupConfig:  Current dir = " + (new File(".")).getCanonicalPath());
 
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
@@ -99,15 +98,13 @@ public class SFSBHibernate2LcacheStats {
             ConfigurationHelper.resolvePlaceHolders(properties);
 
             // build the serviceregistry
-            StandardServiceRegistryBuilder registry = new StandardServiceRegistryBuilder().applySettings(properties);
-            sessionFactory = configuration.buildSessionFactory(registry.build());
-
+            sessionFactory = configuration.buildSessionFactory();
         } catch (Throwable ex) { // Make sure you log the exception, as it might be swallowed
             System.err.println("Initial SessionFactory creation failed." + ex);
             throw new ExceptionInInitializerError(ex);
         }
 
-        System.out.println("setupConfig: done");
+        //System.out.println("setupConfig: done");
 
     }
 

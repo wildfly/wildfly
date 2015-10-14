@@ -25,7 +25,6 @@ package org.wildfly.extension.undertow;
 import io.undertow.Version;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
@@ -48,6 +47,7 @@ import org.wildfly.extension.undertow.deployment.UndertowDependencyProcessor;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.UndertowHandlersDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.UndertowJSRWebSocketDeploymentProcessor;
+import org.wildfly.extension.undertow.deployment.UndertowServletContainerDependencyProcessor;
 import org.wildfly.extension.undertow.deployment.WarAnnotationDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.WarDeploymentInitializingProcessor;
 import org.wildfly.extension.undertow.deployment.WarMetaDataProcessor;
@@ -73,16 +73,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final UndertowSubsystemAdd INSTANCE = new UndertowSubsystemAdd();
 
     private UndertowSubsystemAdd() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : UndertowRootDefinition.INSTANCE.getAttributes()) {
-            def.validateAndSet(operation, model);
-        }
+        super(UndertowRootDefinition.ATTRIBUTES);
     }
 
     /**
@@ -115,13 +106,12 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
-                final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(model.clone());
                 final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(model.clone());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_UNDERTOW_SHARED_SESSION, new JBossAllXmlParserRegisteringProcessor<SharedSessionManagerConfig>(SharedSessionConfigParser_1_0.ROOT_ELEMENT, UndertowAttachments.SHARED_SESSION_MANAGER_CONFIG, SharedSessionConfigParser_1_0.INSTANCE));
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_WEB, new JBossAllXmlParserRegisteringProcessor<>(WebJBossAllParser.ROOT_ELEMENT, WebJBossAllParser.ATTACHMENT_KEY, new WebJBossAllParser()));
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
-                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_WAR, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder));
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_WAR, new WarStructureDeploymentProcessor(sharedTldsBuilder));
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT, new WebParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT_FRAGMENT, new WebFragmentParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());
@@ -136,6 +126,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_WEBSOCKETS, new UndertowJSRWebSocketDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS, new UndertowHandlersDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS + 1, new ExternalTldParsingDeploymentProcessor()); //todo: fix priority
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS + 2, new UndertowServletContainerDependencyProcessor(defaultContainer)); //todo: fix priority
 
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SHARED_SESSION_MANAGER, new SharedSessionManagerDeploymentProcessor());

@@ -56,7 +56,7 @@ import com.arjuna.orbportability.ORB;
 import com.sun.corba.se.impl.orbutil.ORBConstants;
 
 public class Util {
-    public static final String HOST = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node0", "localhost"));
+    public static final String HOST = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node1", "localhost"));
     private static ORB orb = null;
 
     // Recovery manager is needed till the end of orb usage
@@ -121,8 +121,7 @@ public class Util {
         System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
         final Properties prope = new Properties();
 
-        prope.put(Context.PROVIDER_URL, "corbaloc::" + HOST + ":3628/NameService");
-        // prope.put(Context.PROVIDER_URL, "corbaloc::" + HOST + ":3528/JBoss/Naming/root");
+        prope.put(Context.PROVIDER_URL, "corbaloc::" + HOST + ":3628/JBoss/Naming/root");
 
         prope.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.iiop.naming:org.jboss.naming.client");
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");

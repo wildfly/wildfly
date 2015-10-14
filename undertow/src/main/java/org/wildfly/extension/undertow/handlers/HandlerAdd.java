@@ -24,13 +24,17 @@ package org.wildfly.extension.undertow.handlers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
@@ -40,7 +44,7 @@ class HandlerAdd extends AbstractAddStepHandler {
     private Handler handler;
 
     HandlerAdd(Handler handler) {
-        super(handler.getAttributes());
+        super(Handler.CAPABILITY, handler.getAttributes());
         this.handler = handler;
     }
 
@@ -49,10 +53,16 @@ class HandlerAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final HandlerService service = new HandlerService(handler.createHandler(context, model));
+        final HandlerService service = new HandlerService(handler.createHandler(context, model), name);
+
         final ServiceTarget target = context.getServiceTarget();
-        target.addService(UndertowService.HANDLER.append(name), service)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install();
+        ServiceBuilder<HttpHandler> builder = target.addService(UndertowService.HANDLER.append(name), service)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        final RuntimeCapability newCapability = Handler.CAPABILITY.fromBaseCapability(name);
+        if(context.hasOptionalCapability(Handler.REQUEST_CONTROLLER, newCapability.getName(), null)) {
+            builder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestControllerInjectedValue());
+        }
+
+        builder.install();
     }
 }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -29,7 +30,11 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -43,15 +48,22 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler {
 
+    private AbstractDataSourceAdd addHandler;
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+    protected AbstractDataSourceRemove(final AbstractDataSourceAdd addHandler) {
+        super(Capabilities.DATA_SOURCE_CAPABILITY);
+        this.addHandler = addHandler;
+    }
+
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
-        final String jndiName = model.get(JNDI_NAME.getName()).asString();
+        final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
 
-        final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        final ServiceName binderServiceName = bindInfo.getBinderServiceName();
         final ServiceController<?> binderController = registry.getService(binderServiceName);
         if (binderController != null) {
             context.removeService(binderServiceName);
@@ -91,11 +103,13 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
             context.removeService(xaDataSourceConfigServiceName);
         }
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceName = Capabilities.DATA_SOURCE_CAPABILITY.getCapabilityServiceName(dsName);
         final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
         if (dataSourceController != null) {
             context.removeService(dataSourceServiceName);
         }
+        context.removeService(CommonDeploymentService.getServiceName(bindInfo));
+        context.removeService(dataSourceServiceName.append(Constants.STATISTICS));
 
 
         final ServiceName driverDemanderServiceName = ServiceName.JBOSS.append("driver-demander").append(jndiName);
@@ -108,8 +122,22 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         context.getResourceRegistrationForUpdate().unregisterOverrideModel(dsName);
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+
+
+        boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
+        if (context.isNormalServer() && enabled) {
+            addHandler.firstRuntimeStep(context, operation, model);
+
+            final ManagementResourceRegistration datasourceRegistration = context.getResourceRegistrationForUpdate();
+            PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
+            Resource resource = context.getOriginalRootResource();
+            for (PathElement element : addr) {
+                resource = resource.getChild(element);
+            }
+            AbstractDataSourceAdd.secondRuntimeStep(context, operation, datasourceRegistration,
+                    Resource.Tools.readModel(resource), this instanceof XaDataSourceRemove);
+        }
     }
 
 }

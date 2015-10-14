@@ -64,6 +64,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition CACHE_TYPE = new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
+            .setAllowedValues("default", "infinispan")
             .build();
 
     private final boolean registerRuntimeOnly;
@@ -77,6 +78,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.SECURITY_DOMAIN);
         AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
         this.accessConstraints = Arrays.asList((AccessConstraintDefinition) SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN, acd);
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     @Override

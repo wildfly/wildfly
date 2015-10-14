@@ -23,79 +23,105 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.eviction.EvictionStrategy;
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/eviction=EVICTION
+ * Resource description for the addressable resource and its alias:
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/component=eviction
+ * /subsystem=infinispan/cache-container=X/cache=Y/eviction=EVICTION
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class EvictionResourceDefinition extends SimpleResourceDefinition {
+public class EvictionResourceDefinition extends ComponentResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+    static final PathElement PATH = pathElement("eviction");
+    static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "EVICTION");
 
-    // attributes
-    static final SimpleAttributeDefinition STRATEGY = new SimpleAttributeDefinitionBuilder(ModelKeys.STRATEGY, ModelType.STRING, true)
-            .setXmlName(Attribute.STRATEGY.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<>(EvictionStrategy.class, true, false))
-            .setDefaultValue(new ModelNode().set(EvictionStrategy.NONE.name()))
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), new EnumValidatorBuilder<>(EvictionStrategy.class)),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition MAX_ENTRIES = new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_ENTRIES, ModelType.INT, true)
-            .setXmlName(Attribute.MAX_ENTRIES.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(-1))
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type, defaultValue).build();
+        }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { STRATEGY, MAX_ENTRIES };
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        }
+
+        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+            return new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ;
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     private final boolean allowRuntimeOnlyRegistration;
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STRATEGY, MAX_ENTRIES);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                @Override
+                protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                    if (attributeValue.isDefined()) {
+                        attributeValue.set(attributeValue.asInt());
+                    }
+                }
+            }, Attribute.MAX_ENTRIES.getDefinition());
         }
     }
 
     EvictionResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.EVICTION), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH);
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new EvictionBuilderFactory());
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler handler = new EvictionMetricsHandler();
-            for (EvictionMetric metric: EvictionMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);
         }
     }
 }

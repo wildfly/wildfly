@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.3" name="javax.ws.rs.api">
     <resources>
-        <artifact name="${org.jboss.resteasy:jaxrs-api}"/>
+        <artifact name="${org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.0_spec}"/>
     </resources>
 
     <dependencies>

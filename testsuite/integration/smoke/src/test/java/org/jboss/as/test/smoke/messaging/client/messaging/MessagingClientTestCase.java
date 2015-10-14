@@ -24,24 +24,24 @@ package org.jboss.as.test.smoke.messaging.client.messaging;
 
 import static org.junit.Assert.assertNotNull;
 
-import javax.resource.spi.IllegalStateException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSession.QueueQuery;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import javax.resource.spi.IllegalStateException;
+
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.ClientConsumer;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientProducer;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -83,7 +83,7 @@ public class MessagingClientTestCase {
 
     public void loop() throws Exception {
         for (int i = 0; i < 1000; i++) {
-            System.out.println("i = " + i);
+            //System.out.println("i = " + i);
             testMessagingClientUsingHTTPPort();
         }
     }
@@ -101,8 +101,8 @@ public class MessagingClientTestCase {
         // Create a new core queue using the standalone client
         ModelNode op = new ModelNode();
         op.get("operation").set("add");
-        op.get("address").add("subsystem", "messaging");
-        op.get("address").add("hornetq-server", "default");
+        op.get("address").add("subsystem", "messaging-activemq");
+        op.get("address").add("server", "default");
         op.get("address").add("queue", queueName);
         op.get("queue-address").set(queueName);
         applyUpdate(op, client);
@@ -135,8 +135,8 @@ public class MessagingClientTestCase {
 
         op = new ModelNode();
         op.get("operation").set("remove");
-        op.get("address").add("subsystem", "messaging");
-        op.get("address").add("hornetq-server", "default");
+        op.get("address").add("subsystem", "messaging-activemq");
+        op.get("address").add("server", "default");
         op.get("address").add("queue", queueName);
         applyUpdate(op, client);
 
@@ -159,10 +159,10 @@ public class MessagingClientTestCase {
         }
     }
 
-    static boolean queueExists(final String queueName, final ClientSessionFactory sf) throws HornetQException {
+    static boolean queueExists(final String queueName, final ClientSessionFactory sf) throws ActiveMQException {
         final ClientSession session = sf.createSession("guest", "guest", false, false, false, false, 1);
         try {
-            final QueueQuery query = session.queueQuery(new SimpleString(queueName));
+            final ClientSession.QueueQuery query = session.queueQuery(new SimpleString(queueName));
             return query.isExists();
         } finally {
             session.close();
@@ -178,7 +178,7 @@ public class MessagingClientTestCase {
             properties.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
         }
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);
-        return HornetQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
+        return ActiveMQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }
 
 }

@@ -20,9 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:1.0">
+<build xmlns="urn:wildfly:feature-pack-build:1.1">
     <dependencies>
-    	<artifact name="org.wildfly:wildfly-web-feature-pack" />        
+    	<artifact name="org.wildfly:wildfly-servlet-feature-pack" />
     </dependencies>
     <config>
         <!-- Core configs -->
@@ -72,10 +72,6 @@
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
-                subsystems="configuration/examples/subsystems-hornetq-colocated.xml"
-                output-file="docs/examples/configs/standalone-hornetq-colocated.xml"/>
-        <standalone
-                template="configuration/standalone/template.xml"
                 subsystems="configuration/examples/subsystems-jts.xml"
                 output-file="docs/examples/configs/standalone-jts.xml"/>
         <standalone
@@ -98,14 +94,30 @@
                 template="configuration/domain/template.xml"
                 subsystems="configuration/domain/subsystems.xml"
                 output-file="domain/configuration/domain.xml"/>
+        <host
+                template="configuration/host/host.xml"
+                subsystems="configuration/host/subsystems.xml"
+                output-file="domain/configuration/host.xml" />
+        <host
+                template="configuration/host/host-master.xml"
+                subsystems="configuration/host/subsystems.xml"
+                output-file="domain/configuration/host-master.xml" />
+        <host
+                template="configuration/host/host-slave.xml"
+                subsystems="configuration/host/subsystems.xml"
+                output-file="domain/configuration/host-slave.xml" />
+
     </config>
     <copy-artifacts>
         <copy-artifact artifact="org.jboss.resteasy:resteasy-spring" to-location="modules/system/layers/base/org/jboss/resteasy/resteasy-spring/main/bundled/resteasy-spring-jar/"/>
         <copy-artifact artifact="org.jboss.seam.integration:jboss-seam-int-jbossas" to-location="modules/system/layers/base/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
         <copy-artifact artifact="org.wildfly:wildfly-client-all" to-location="bin/client/jboss-client.jar"/>
         <copy-artifact artifact="org.wildfly.core:wildfly-cli::client" to-location="bin/client/jboss-cli-client.jar"/>
-        <copy-artifact artifact="org.wildfly.core:wildfly-version" to-location="modules/system/layers/base/org/jboss/as/version/main/jboss-as-version-${project.version}.jar"/>
-        <copy-artifact artifact="org.hornetq:hornetq-native" to-location="modules/system/layers/base/org/hornetq/main" extract="true" >
+        <copy-artifact artifact="org.hornetq:hornetq-native" to-location="modules/system/layers/base/org/hornetq/journal/main" extract="true" >
+            <filter pattern="lib/*" include="true" />
+            <filter pattern="*" include="false"/>
+        </copy-artifact>
+        <copy-artifact artifact="org.apache.activemq:artemis-native" to-location="modules/system/layers/base/org/apache/activemq/artemis/main" extract="true" >
             <filter pattern="lib/*" include="true" />
             <filter pattern="*" include="false"/>
         </copy-artifact>

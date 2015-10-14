@@ -191,7 +191,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                         } catch (Throwable t) {
                             // catch Throwable, so that we don't skip invoking the method, just because we
                             // failed to send a notification to the client that the method is an async method
-                            EjbLogger.ROOT_LOGGER.failedToSendAsyncMethodIndicatorToClient(t, invokedMethod);
+                            EjbLogger.REMOTE_LOGGER.failedToSendAsyncMethodIndicatorToClient(t, invokedMethod);
                         }
                     }
 
@@ -214,9 +214,9 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                         } catch (Throwable ioe) {
                             // we couldn't write out a method invocation failure message. So let's at least log the
                             // actual method invocation exception, for debugging/reference
-                            EjbLogger.ROOT_LOGGER.errorInvokingMethod(throwable, invokedMethod, beanName, appName, moduleName, distinctName);
+                            EjbLogger.REMOTE_LOGGER.errorInvokingMethod(throwable, invokedMethod, beanName, appName, moduleName, distinctName);
                             // now log why we couldn't send back the method invocation failure message
-                            EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
+                            EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
                             // close the channel unless this is a NotSerializableException
                             //as this does not represent a problem with the channel there is no
                             //need to close it (see AS7-3402)
@@ -242,11 +242,11 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                         if (weakAffinity != null) {
                             attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
                         }
-                        writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments, invokedMethod);
+                        writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments, invokedMethod, componentView);
                     } catch (Throwable ioe) {
                         boolean isAsyncVoid = componentView.isAsynchronous(invokedMethod) && invokedMethod.getReturnType().equals(Void.TYPE);
                         if (!isAsyncVoid)
-                            EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
+                            EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
                         // close the channel unless this is a NotSerializableException
                         //as this does not represent a problem with the channel there is no
                         //need to close it (see AS7-3402)
@@ -290,8 +290,8 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                 // these are private to JBoss EJB implementation and not meant to be visible to the
                 // application, so add these attachments to the privateData of the InterceptorContext
                 if (EJBClientInvocationContext.PRIVATE_ATTACHMENTS_KEY.equals(key)) {
-                    final Map<Object, Object> privateAttachments = (Map<Object, Object>) value;
-                    for (final Map.Entry<Object, Object> privateAttachment : privateAttachments.entrySet()) {
+                    final Map<?, ?> privateAttachments = (Map<?, ?>) value;
+                    for (final Map.Entry<?, ?> privateAttachment : privateAttachments.entrySet()) {
                         interceptorContext.putPrivateData(privateAttachment.getKey(), privateAttachment.getValue());
                     }
                 } else {
@@ -311,7 +311,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         if (componentView.isAsynchronous(method)) {
             final Component component = componentView.getComponent();
             if (!(component instanceof SessionBeanComponent)) {
-                EjbLogger.ROOT_LOGGER.asyncMethodSupportedOnlyForSessionBeans(component.getComponentClass(), method);
+                EjbLogger.REMOTE_LOGGER.asyncMethodSupportedOnlyForSessionBeans(component.getComponentClass(), method);
                 // just invoke normally
                 return componentView.invoke(interceptorContext);
             }
@@ -321,7 +321,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
             this.remoteAsyncInvocationCancelStatus.registerAsyncInvocation(invocationId, asyncInvocationCancellationFlag);
             try {
                 final Object result = componentView.invoke(interceptorContext);
-                return result == null ? null : ((Future) result).get();
+                return result == null ? null : ((Future<?>) result).get();
             } finally {
                 // now that the async invocation is done, we no longer need to keep track of the
                 // cancellation flag for this invocation
@@ -355,7 +355,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         return null;
     }
 
-    private void writeMethodInvocationResponse(final ChannelAssociation channelAssociation, final short invocationId, final Object result, final Map<String, Object> attachments, Method invokedMethod) throws IOException {
+    private void writeMethodInvocationResponse(final ChannelAssociation channelAssociation, final short invocationId, final Object result, final Map<String, Object> attachments, Method invokedMethod, ComponentView componentView) throws IOException {
         final DataOutputStream outputStream;
         final MessageOutputStream messageOutputStream;
         try {
@@ -363,7 +363,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         } catch (Throwable e) {
             throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
-        outputStream = wrapMessageOutputStream(messageOutputStream, invokedMethod);
+        outputStream = wrapMessageOutputStream(messageOutputStream, invokedMethod, componentView);
         try {
             // write invocation response header
             outputStream.write(HEADER_METHOD_INVOCATION_RESPONSE);
@@ -383,7 +383,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         }
     }
 
-    protected DataOutputStream wrapMessageOutputStream(MessageOutputStream messageOutputStream, Method invokedMethod) throws IOException {
+    protected DataOutputStream wrapMessageOutputStream(MessageOutputStream messageOutputStream, Method invokedMethod, ComponentView componentView) throws IOException {
         return new DataOutputStream(messageOutputStream);
     }
 

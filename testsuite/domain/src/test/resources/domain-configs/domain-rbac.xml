@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:3.0">
+<domain xmlns="urn:jboss:domain:4.0">
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
@@ -40,7 +40,6 @@
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
-        <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.weld"/>
         <extension module="org.jboss.as.webservices"/>
@@ -90,9 +89,9 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:io:1.0">
-                <worker name="default" io-threads="3"/>
-                <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
+            <subsystem xmlns="urn:jboss:domain:io:1.1">
+                <worker name="default" />
+                <buffer-pool name="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -274,9 +273,9 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:io:1.0">
-                <worker name="default" io-threads="3"/>
-                <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
+            <subsystem xmlns="urn:jboss:domain:io:1.1">
+                <worker name="default" />
+                <buffer-pool name="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -398,7 +397,7 @@
 
         <server-group name="server-group-b" profile="profile-b">
             <jvm name="default">
-                <heap size="64m" max-size="512m"/>
+                <heap size="64m" max-size="100m"/>
             </jvm>
             <socket-binding-group ref="sockets-b"/>
         </server-group>

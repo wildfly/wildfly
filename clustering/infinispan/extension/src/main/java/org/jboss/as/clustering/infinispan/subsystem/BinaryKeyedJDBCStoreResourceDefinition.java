@@ -22,64 +22,170 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
- * Resource description for the addressable resource
- *
- * /subsystem=infinispan/cache-container=X/cache=Y/binary-keyed-jdbc-store=BINARY_KEYED_JDBC_STORE
+ * Definition of a binary JDBC cache store resource.
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Paul Ferraro
  */
 public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+    static final PathElement LEGACY_PATH = PathElement.pathElement("binary-keyed-jdbc-store", "BINARY_KEYED_JDBC_STORE");
+    static final PathElement PATH = pathElement("binary-jdbc");
 
-    // attributes
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { BINARY_KEYED_TABLE };
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        TABLE("binary-keyed-table", BinaryTableResourceDefinition.Attribute.values(), TableResourceDefinition.Attribute.values(), TableResourceDefinition.ColumnAttribute.values()),
+        ;
+        private final AttributeDefinition definition;
 
-    // operations
-    private static final OperationDefinition BINARY_KEYED_JDBC_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE))
-            .setParameters(PARAMETERS)
-            .addParameter(DATA_SOURCE)
-            .addParameter(DIALECT)
-            .addParameter(BINARY_KEYED_TABLE)
-            .build();
+        DeprecatedAttribute(String name, org.jboss.as.clustering.controller.Attribute[]... attributeSets) {
+            int size = 0;
+            for (org.jboss.as.clustering.controller.Attribute[] attributes : attributeSets) {
+                size += attributes.length;
+            }
+            List<AttributeDefinition> definitions = new ArrayList<>(size);
+            for (org.jboss.as.clustering.controller.Attribute[] attributes : attributeSets) {
+                for (org.jboss.as.clustering.controller.Attribute attribute : attributes) {
+                    definitions.add(attribute.getDefinition());
+                }
+            }
+            this.definition = ObjectTypeAttributeDefinition.Builder.of(name, definitions.toArray(new AttributeDefinition[size]))
+                    .setAllowNull(true)
+                    .setDeprecated(InfinispanModel.VERSION_4_0_0.getVersion())
+                    .setSuffix("table")
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    final ModelNode model = resource.getModel();
+
+                    final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
+                    if (binaryTableModel != null && binaryTableModel.isDefined()) {
+                        model.get(DeprecatedAttribute.TABLE.getDefinition().getName()).set(binaryTableModel);
+                    }
+
+                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                    context.processChildren(resource);
+                }
+            });
+        }
+
+        BinaryTableResourceDefinition.buildTransformation(version, builder);
 
         JDBCStoreResourceDefinition.buildTransformation(version, builder);
     }
 
     BinaryKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(StoreType.BINARY_KEYED_JDBC, allowRuntimeOnlyRegistration);
+        super(PATH, new InfinispanResourceDescriptionResolver(PATH, pathElement("jdbc"), WILDCARD_PATH), allowRuntimeOnlyRegistration);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
+    static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            PathAddress address = context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH);
+            ModelNode readResourceOperation = Util.createOperation(ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+            operation.get(ModelDescriptionConstants.ATTRIBUTES_ONLY).set(true);
+            context.addStep(readResourceOperation, new ReadResourceHandler(), context.getCurrentStage());
         }
-    }
+    };
 
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
+    static final OperationStepHandler LEGACY_WRITE_TABLE_HANDLER = new OperationStepHandler() {
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            PathAddress address = context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH);
+            ModelNode table = Operations.getAttributeValue(operation);
+            for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(BinaryTableResourceDefinition.Attribute.class, TableResourceDefinition.Attribute.class)) {
+                for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
+                    ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(address, attribute, table.get(attribute.getDefinition().getName()));
+                    context.addStep(writeAttributeOperation, context.getResourceRegistration().getAttributeAccess(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), attribute.getDefinition().getName()).getWriteHandler(), context.getCurrentStage());
+                }
+            }
+        }
+    };
+
     @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(BINARY_KEYED_JDBC_STORE_ADD_DEFINITION, handler);
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(JDBCStoreResourceDefinition.Attribute.class)
+                .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addExtraParameters(DeprecatedAttribute.class)
+                .addExtraParameters(JDBCStoreResourceDefinition.DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryKeyedJDBCStoreBuilderFactory());
+        new AddStepHandler(descriptor, handler) {
+            @Override
+            protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+                translateAddOperation(context, operation);
+                super.populateModel(context, operation, resource);
+            }
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                super.execute(context, operation);
+                if (operation.hasDefined(DeprecatedAttribute.TABLE.getDefinition().getName())) {
+                    // Translate deprecated TABLE attribute into separate add table operation
+                    ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH));
+                    ModelNode parameters = operation.get(DeprecatedAttribute.TABLE.getDefinition().getName());
+                    for (Property parameter : parameters.asPropertyList()) {
+                        addTableOperation.get(parameter.getName()).set(parameter.getValue());
+                    }
+                    context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), ModelDescriptionConstants.ADD), context.getCurrentStage());
+                }
+            }
+        }.register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
+
+        registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
+
+        new BinaryTableResourceDefinition().register(registration);
+
+        super.register(registration);
     }
 }

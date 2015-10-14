@@ -323,7 +323,7 @@ public class LdapLoginModuleTestCase {
      */
     //@formatter:off
     @CreateDS(
-        name = "JBossDS",
+        name = "JBossDS-LdapLoginModuleTestCase",
         factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {

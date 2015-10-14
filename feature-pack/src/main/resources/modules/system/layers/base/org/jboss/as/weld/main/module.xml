@@ -61,7 +61,7 @@
         <module name="org.jboss.as.jpa"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.naming"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.transactions"/>
@@ -76,6 +76,7 @@
         <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
+        <module name="org.jboss.threads"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.core" />

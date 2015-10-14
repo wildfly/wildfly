@@ -26,13 +26,11 @@ import java.io.Serializable;
 import java.security.AccessController;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.ejb.client.SessionID;
@@ -40,7 +38,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.api.SessionObjectReference;
-import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 
 /**
  * Implementation for SFSB's
@@ -51,12 +48,14 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
 
     private volatile boolean removed = false;
 
-    private final Map<String, ServiceName> viewServices;
     private final ServiceName createServiceName;
     private final SessionID id;
     private final StatefulSessionComponent ejbComponent;
+    private final Map<Class<?>, ServiceName> viewServices;
 
-    public StatefulSessionObjectReferenceImpl(final SessionID id, final ServiceName createServiceName, final Map<String, ServiceName> viewServices) {
+    private transient Map<String, ManagedReference> businessInterfaceToReference;
+
+    public StatefulSessionObjectReferenceImpl(final SessionID id, final ServiceName createServiceName, final Map<Class<?>, ServiceName> viewServices) {
         this.id = id;
         this.createServiceName = createServiceName;
         this.viewServices = viewServices;
@@ -69,70 +68,44 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
         final ServiceController<?> controller = currentServiceContainer().getRequiredService(createServiceName);
         ejbComponent = (StatefulSessionComponent) controller.getValue();
         this.id = ejbComponent.createSession();
-        this.viewServices = buildViews(descriptor);
+        this.viewServices = descriptor.getViewServices();
 
-    }
-
-    private static Map<String, ServiceName> buildViews(final EjbDescriptorImpl<?> descriptor) {
-        final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-        final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
-        for (BusinessInterfaceDescriptor<?> view : descriptor.getRemoteBusinessInterfaces()) {
-            views.put(view.getInterface().getName(), view.getInterface());
-        }
-        for (BusinessInterfaceDescriptor<?> view : descriptor.getLocalBusinessInterfaces()) {
-            views.put(view.getInterface().getName(), view.getInterface());
-        }
-
-        for (Map.Entry<Class<?>, ServiceName> entry : descriptor.getViewServices().entrySet()) {
-            final Class<?> viewClass = entry.getKey();
-            if (viewClass != null) {
-                //see WELD-921
-                //this is horrible, but until it is fixed there is not much that can be done
-
-                final Set<Class<?>> seen = new HashSet<Class<?>>();
-                final Set<Class<?>> toProcess = new HashSet<Class<?>>();
-
-                toProcess.add(viewClass);
-
-                while (!toProcess.isEmpty()) {
-                    Iterator<Class<?>> it = toProcess.iterator();
-                    final Class<?> clazz = it.next();
-                    it.remove();
-                    seen.add(clazz);
-                    viewServices.put(clazz.getName(), entry.getValue());
-                    final Class<?> superclass = clazz.getSuperclass();
-                    if (superclass != Object.class && superclass != null && !seen.contains(superclass)) {
-                        toProcess.add(superclass);
-                    }
-                    for (Class<?> iface : clazz.getInterfaces()) {
-                        if (!seen.contains(iface)) {
-                            toProcess.add(iface);
-                        }
-                    }
-                }
-            }
-        }
-        return viewServices;
     }
 
 
     @Override
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({ "unchecked" })
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
         if (isRemoved()) {
             throw WeldLogger.ROOT_LOGGER.ejbHashBeenRemoved();
         }
-        if (viewServices.containsKey(businessInterfaceType.getName())) {
-            final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
-            final ComponentView view = (ComponentView) serviceController.getValue();
-            try {
-                return (S) view.createInstance(Collections.<Object, Object>singletonMap(SessionID.class, id)).getInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+
+        final String businessInterfaceName = businessInterfaceType.getName();
+        ManagedReference managedReference = null;
+
+        if (businessInterfaceToReference == null) {
+            businessInterfaceToReference = new HashMap<String, ManagedReference>();
         } else {
-            throw WeldLogger.ROOT_LOGGER.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbComponent.getComponentName());
+            managedReference = businessInterfaceToReference.get(businessInterfaceName);
         }
+
+        if (managedReference == null) {
+            if (viewServices.containsKey(businessInterfaceType)) {
+                final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(
+                        viewServices.get(businessInterfaceType));
+                final ComponentView view = (ComponentView) serviceController.getValue();
+                try {
+                    managedReference = view.createInstance(Collections.<Object, Object> singletonMap(SessionID.class, id));
+                    businessInterfaceToReference.put(businessInterfaceName, managedReference);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                throw WeldLogger.ROOT_LOGGER
+                        .viewNotFoundOnEJB(businessInterfaceType.getName(), ejbComponent.getComponentName());
+            }
+        }
+        return (S) managedReference.getInstance();
     }
 
     private static ServiceContainer currentServiceContainer() {

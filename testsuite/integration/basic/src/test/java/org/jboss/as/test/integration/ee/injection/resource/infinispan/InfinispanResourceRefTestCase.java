@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.infinispan;
 
-import java.io.InputStream;
-import java.util.jar.JarFile;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -32,7 +29,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;

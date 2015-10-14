@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -43,9 +44,7 @@ import org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
  */
 public class JAXRExtension extends AbstractLegacyExtension {
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 2, 0);
     static final String SUBSYSTEM_NAME = "jaxr";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -65,8 +64,7 @@ public class JAXRExtension extends AbstractLegacyExtension {
 
     @Override
     protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
-        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         subsystemRegistration.registerXMLElementWriter(JAXRSubsystemWriter.INSTANCE);
 

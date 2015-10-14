@@ -28,7 +28,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -39,11 +38,13 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
 
+import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import static java.security.AccessController.doPrivileged;
+import org.jboss.as.cli.scriptsupport.CLI;
 
 /**
  * Service that provides a {@link JdrReportCollector}.
@@ -74,22 +75,10 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
 
     /**
      * Collect a JDR report when run outside the Application Server.
+     * @param cli
      */
-    public JdrReport standaloneCollect(String protocol, String host, String port) throws OperationFailedException {
-        String username = null;
-        String password = null;
-
-        if (host == null) {
-            host = "localhost";
-        }
-        if (port == null) {
-            port = "9990";
-        }
-        if(protocol == null) {
-            protocol = "http-remoting";
-        }
-
-        return new JdrRunner(protocol, username, password, host, port).collect();
+    public JdrReport standaloneCollect(CLI cli, String protocol, String host, int port) throws OperationFailedException {
+        return new JdrRunner(cli, protocol, host, port, null, null).collect();
     }
 
     /**
@@ -107,10 +96,11 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
     }
 
     public synchronized void start(StartContext context) throws StartException {
-        final ThreadFactory threadFactory = new JBossThreadFactory(
-                new ThreadGroup("JdrReportCollector-threads"),
-                Boolean.FALSE, null, "%G - %t", null, null,
-                doPrivileged(GetAccessControlContextAction.getInstance()));
+        final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+            public JBossThreadFactory run() {
+                return new JBossThreadFactory(new ThreadGroup("JdrReportCollector-threads"), Boolean.FALSE, null, "%G - %t", null, null);
+            }
+        });
         executorService = Executors.newCachedThreadPool(threadFactory);
         serverEnvironment = serverEnvironmentValue.getValue();
         controllerClient = modelControllerValue.getValue().createClient(executorService);

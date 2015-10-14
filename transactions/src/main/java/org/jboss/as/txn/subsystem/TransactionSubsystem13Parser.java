@@ -42,6 +42,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -118,14 +119,14 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
                             parseJts(reader, subsystem);
                             break;
                         }
-                        case USEHORNETQSTORE: {
+                        case USE_HORNETQ_STORE: {
                             if (choiceElementEncountered) {
                                 throw unexpectedElement(reader);
                             }
                             choiceElementEncountered = true;
 
-                            parseUsehornetqstore(reader, logStoreOperation);
-                            subsystem.get(CommonAttributes.USEHORNETQSTORE).set(true);
+                            parseUseJournalstore(reader, logStoreOperation);
+                            subsystem.get(CommonAttributes.USE_JOURNAL_STORE).set(true);
                             break;
                         }
                         case JDBC_STORE: {
@@ -163,8 +164,8 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
         requireNoContent(reader);
     }
 
-    private void parseUsehornetqstore(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
-        operation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("hornetq");
+    private void parseUseJournalstore(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+        operation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("journal");
         requireNoContent(reader);
     }
 
@@ -296,11 +297,8 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
                     TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.parseAndSetParameter(value, operation, reader);
                     break;
                 case PATH:
-                    TransactionSubsystemRootResourceDefinition.PATH.parseAndSetParameter(value, operation, reader);
-                    break;
                 case RELATIVE_TO:
-                    TransactionSubsystemRootResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, operation, reader);
-                    break;
+                    throw TransactionLogger.ROOT_LOGGER.unsupportedAttribute(attribute.getLocalName(), reader.getLocation());
                 default:
                     throw unexpectedAttribute(reader, i);
             }

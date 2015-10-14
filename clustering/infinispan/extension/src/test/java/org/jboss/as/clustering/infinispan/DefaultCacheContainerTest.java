@@ -51,15 +51,18 @@ import org.junit.Test;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceNameFactory;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * @author Paul Ferraro
  */
 public class DefaultCacheContainerTest {
+    private static final String NAME = "name";
+    private static final String DEFAULT_CACHE = "default";
+
     private final BatcherFactory batcherFactory = mock(BatcherFactory.class);
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final CacheContainer subject = new DefaultCacheContainer(this.manager, "default", this.batcherFactory);
+    private final CacheContainer subject = new DefaultCacheContainer("name", this.manager, "default", this.batcherFactory);
 
     @After
     public void cleanup() {
@@ -67,8 +70,13 @@ public class DefaultCacheContainerTest {
     }
 
     @Test
+    public void getName() {
+        assertSame(NAME, this.subject.getName());
+    }
+
+    @Test
     public void getDefaultCacheName() {
-        assertEquals("default", this.subject.getDefaultCacheName());
+        assertSame(DEFAULT_CACHE, this.subject.getDefaultCacheName());
     }
 
     @Test
@@ -164,7 +172,7 @@ public class DefaultCacheContainerTest {
         verify(batch, never()).close();
         verify(batch, never()).discard();
 
-        result = this.subject.getCache(CacheServiceNameFactory.DEFAULT_CACHE);
+        result = this.subject.getCache(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP);
 
         assertNotSame(defaultCache, result);
         assertEquals(result, defaultCache);
@@ -181,14 +189,14 @@ public class DefaultCacheContainerTest {
     public void start() {
         this.subject.start();
 
-        verify(this.manager).start();
+        verify(this.manager, never()).start();
     }
 
     @Test
     public void stop() {
         this.subject.stop();
 
-        verify(this.manager).stop();
+        verify(this.manager, never()).stop();
     }
 
     @Test
@@ -300,7 +308,7 @@ public class DefaultCacheContainerTest {
     public void getDefaultCacheConfiguration() {
         Configuration config = new ConfigurationBuilder().build();
         
-        when(this.manager.getDefaultCacheConfiguration()).thenReturn(config);
+        when(this.manager.getCacheConfiguration("default")).thenReturn(config);
         
         Configuration result = this.subject.getDefaultCacheConfiguration();
         
@@ -342,7 +350,7 @@ public class DefaultCacheContainerTest {
 
         assertTrue(result);
 
-        result = this.subject.isRunning(CacheServiceNameFactory.DEFAULT_CACHE);
+        result = this.subject.isRunning(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP);
 
         assertTrue(result);
 
@@ -364,7 +372,7 @@ public class DefaultCacheContainerTest {
     public void startCaches() {
         when(this.manager.startCaches("other", "default")).thenReturn(this.manager);
         
-        EmbeddedCacheManager result = this.subject.startCaches("other", CacheServiceNameFactory.DEFAULT_CACHE);
+        EmbeddedCacheManager result = this.subject.startCaches("other", SubGroupServiceNameFactory.DEFAULT_SUB_GROUP);
         
         assertSame(this.subject, result);
     }

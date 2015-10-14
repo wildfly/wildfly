@@ -98,6 +98,7 @@ public class WebAccessLogDefinition extends ModelOnlyResourceDefinition {
                 ACCESS_LOG_ATTRIBUTES);
         SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connector xmlns="http://java.sun.com/xml/ns/javaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+           http://java.sun.com/xml/ns/j2ee/connector_1_7.xsd"
+           version="1.7" metadata-complete="true">
+
+    <vendor-name>Red Hat Middleware LLC</vendor-name>
+    <eis-type>Test RA</eis-type>
+    <resourceadapter-version>0.1</resourceadapter-version>
+
+    <resourceadapter>
+        <resourceadapter-class>org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyResourceAdapter
+        </resourceadapter-class>
+        <config-property>
+            <config-property-name>Enable</config-property-name>
+            <config-property-type>java.lang.Boolean</config-property-type>
+            <config-property-value>true</config-property-value>
+        </config-property>
+
+        <outbound-resourceadapter>
+            <connection-definition>
+                <managedconnectionfactory-class>
+                    org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyManagedConnectionFactory
+                </managedconnectionfactory-class>
+
+                <connectionfactory-interface>
+                    org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyConnectionFactory
+                </connectionfactory-interface>
+                <connectionfactory-impl-class>
+                    org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyConnectionFactoryImpl
+                </connectionfactory-impl-class>
+                <connection-interface>org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyConnection
+                </connection-interface>
+                <connection-impl-class>org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyConnectionImpl
+                </connection-impl-class>
+            </connection-definition>
+            <transaction-support>NoTransaction</transaction-support>
+            <reauthentication-support>false</reauthentication-support>
+        </outbound-resourceadapter>
+    </resourceadapter>
+</connector>

@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.ApplicationExceptionDescriptions;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
@@ -35,12 +36,11 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.modules.Module;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
@@ -56,7 +56,7 @@ public class ApplicationExceptionMergingProcessor implements DeploymentUnitProce
             return;
         }
         final List<DeploymentUnit> accessibleSubDeployments = deploymentUnit.getAttachment(Attachments.ACCESSIBLE_SUB_DEPLOYMENTS);
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ApplicationExceptions applicationExceptions = new ApplicationExceptions();
         for (DeploymentUnit unit : accessibleSubDeployments) {
 
@@ -65,8 +65,8 @@ public class ApplicationExceptionMergingProcessor implements DeploymentUnitProce
             if (exceptionDescriptions != null) {
                 for (Map.Entry<String, org.jboss.as.ejb3.tx.ApplicationExceptionDetails> exception : exceptionDescriptions.getApplicationExceptions().entrySet()) {
                     try {
-                        final ClassIndex index = classIndex.classIndex(exception.getKey());
-                        applicationExceptions.addApplicationException(index.getModuleClass(), exception.getValue());
+                        final Class<?> index = ClassLoadingUtils.loadClass(exception.getKey(), module);
+                        applicationExceptions.addApplicationException(index, exception.getValue());
                     } catch (ClassNotFoundException e) {
                         ROOT_LOGGER.debug("Could not load application exception class", e);
                     }
@@ -86,12 +86,12 @@ public class ApplicationExceptionMergingProcessor implements DeploymentUnitProce
                     for (ApplicationExceptionMetaData applicationException : ddAppExceptions) {
                         String exceptionClassName = applicationException.getExceptionClass();
                         try {
-                            final ClassIndex index = classIndex.classIndex(exceptionClassName);
+                            final Class<?> index = ClassLoadingUtils.loadClass(exceptionClassName, module);
                             boolean rollback = applicationException.isRollback();
                             // by default inherited is true
                             boolean inherited = applicationException.isInherited() == null ? true : applicationException.isInherited();
                             // add the application exception to the ejb jar description
-                            applicationExceptions.addApplicationException(index.getModuleClass(), new ApplicationExceptionDetails(exceptionClassName, inherited, rollback));
+                            applicationExceptions.addApplicationException(index, new ApplicationExceptionDetails(exceptionClassName, inherited, rollback));
                         } catch (ClassNotFoundException e) {
                             throw EjbLogger.ROOT_LOGGER.failToLoadAppExceptionClassInEjbJarXml(exceptionClassName, e);
                         }

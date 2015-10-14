@@ -44,11 +44,9 @@ import java.util.Collections;
 public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
 
     private final String nodeIdentifier;
-    private final boolean jts;
 
-    public JTAEnvironmentBeanService(final String nodeIdentifier, final boolean jts) {
+    public JTAEnvironmentBeanService(final String nodeIdentifier) {
         this.nodeIdentifier = nodeIdentifier;
-        this.jts = jts;
     }
 
     @Override

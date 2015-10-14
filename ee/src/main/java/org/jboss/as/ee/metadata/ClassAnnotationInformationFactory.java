@@ -53,7 +53,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
     private final Class<A> annotationType;
     private final Class<?> multiAnnotationType;
     private final DotName annotationDotName;
-    private final DotName multiAnnotationDotName;
+    private final DotName  multiAnnotationDotName;
 
 
     protected ClassAnnotationInformationFactory(final Class<A> annotationType, final Class<?> multiAnnotationType) {

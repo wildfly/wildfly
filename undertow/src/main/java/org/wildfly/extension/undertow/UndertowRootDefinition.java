@@ -42,7 +42,6 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 class UndertowRootDefinition extends PersistentResourceDefinition {
-    public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_HOST, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -80,6 +79,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             FilterDefinitions.INSTANCE
     };
 
+    public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
 
     private UndertowRootDefinition() {
         super(UndertowExtension.SUBSYSTEM_PATH,

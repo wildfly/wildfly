@@ -24,11 +24,12 @@ package org.jboss.as.test.integration.ee.concurrent;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.io.Serializable;
 
 /**
  * @author Eduardo Martins
  */
-public class TestServletRunnable implements Runnable {
+public class TestServletRunnable implements Runnable, Serializable {
 
     private final String moduleName;
 

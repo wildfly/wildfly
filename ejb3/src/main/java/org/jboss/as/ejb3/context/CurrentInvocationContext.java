@@ -34,12 +34,8 @@ public class CurrentInvocationContext {
     private static final ThreadLocalStack<InterceptorContext> stack = new ThreadLocalStack<InterceptorContext>();
 
     public static InterceptorContext get() {
-        InterceptorContext current = stack.get();
+        InterceptorContext current = stack.peek();
         return current;
-    }
-
-    public static <T extends InterceptorContext> T get(Class<T> expectedType) {
-        return expectedType.cast(get());
     }
 
     public static EJBContextImpl getEjbContext() {

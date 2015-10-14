@@ -53,26 +53,23 @@ import org.junit.runner.RunWith;
 @ServerSetup(TwoRaJarTestCase.ModuleAcDeploymentTestCaseSetup1.class)
 public class TwoRaJarTestCase extends TwoRaFlatTestCase {
 
-    static class ModuleAcDeploymentTestCaseSetup1 extends
-            AbstractModuleDeploymentTestCaseSetup {
+    static class ModuleAcDeploymentTestCaseSetup1 extends AbstractModuleDeploymentTestCaseSetup {
 
-        public static ModelNode address1;
+        static ModelNode address1;
 
         @Override
         public void doSetup(ManagementClient managementClient) throws Exception {
-
             addModule(defaultPath, "module-jar.xml");
             fillModuleWithJar("ra1.xml");
             setConfiguration("second.xml");
             address1 = address.clone();
             setConfiguration("basic.xml");
-
         }
 
         @Override
         public void tearDown(ManagementClient managementClient,
                              String containerId) throws Exception {
-            remove(address1);
+            remove(address1, managementClient);
             super.tearDown(managementClient, containerId);
         }
 
@@ -90,8 +87,7 @@ public class TwoRaJarTestCase extends TwoRaFlatTestCase {
     @Test
     @RunAsClient
     public void testConnection2() throws Exception {
-        final ModelNode address1 = ModuleAcDeploymentTestCaseSetup1.address1
-                .clone();
+        final ModelNode address1 = ModuleAcDeploymentTestCaseSetup1.address1.clone();
         address1.add("connection-definitions", cf1);
         address1.protect();
         final ModelNode operation1 = new ModelNode();

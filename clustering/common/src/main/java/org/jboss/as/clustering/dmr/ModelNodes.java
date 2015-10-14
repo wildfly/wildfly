@@ -22,7 +22,13 @@
 
 package org.jboss.as.clustering.dmr;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -101,6 +107,45 @@ public class ModelNodes {
      */
     public static ModuleIdentifier asModuleIdentifier(ModelNode value, ModuleIdentifier defaultValue) {
         return value.isDefined() ? ModuleIdentifier.fromString(value.asString()) : defaultValue;
+    }
+
+    /**
+     * Returns the value of the node as a property list, returning an empty list if the node is undefined.
+     * @param value a model node
+     * @return the value of the node as a property list, returning an empty list if the node is undefined.
+     */
+    public static List<Property> asPropertyList(ModelNode value) {
+        return value.isDefined() ? value.asPropertyList() : Collections.<Property>emptyList();
+    }
+
+    /**
+     * Returns the value of the node as a list of strings, returning an empty list if the node is undefined.
+     * @param value a model node
+     * @return the value of the node as a list of strings, returning an empty list if the node is undefined.
+     */
+    public static List<String> asStringList(ModelNode value) {
+        if (!value.isDefined()) {
+            return Collections.emptyList();
+        }
+        List<ModelNode> nodes = value.asList();
+        List<String> result = new ArrayList<>(nodes.size());
+        for (ModelNode node : value.asList()) {
+            result.add(node.asString());
+        }
+        return result;
+    }
+
+    /**
+     * Returns the value of the node as a properties map, returning an empty properties map if the node is undefined.
+     * @param value a model node
+     * @return the value of the node as a properties map, returning an empty properties map if the node is undefined.
+     */
+    public static Properties asProperties(ModelNode value) {
+        Properties properties = new Properties();
+        for (Property property : asPropertyList(value)) {
+            properties.setProperty(property.getName(), property.getValue().asString());
+        }
+        return properties;
     }
 
     private ModelNodes() {

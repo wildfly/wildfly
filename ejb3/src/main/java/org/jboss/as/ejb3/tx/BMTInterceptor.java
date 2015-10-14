@@ -29,7 +29,6 @@ import javax.transaction.TransactionManager;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 import org.jboss.tm.TransactionTimeoutConfiguration;
 
 /**
@@ -40,7 +39,6 @@ import org.jboss.tm.TransactionTimeoutConfiguration;
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class BMTInterceptor implements Interceptor {
-    private static final Logger log = Logger.getLogger(BMTInterceptor.class);
 
     private final EJBComponent component;
 

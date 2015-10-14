@@ -22,11 +22,10 @@
 
 package org.jboss.as.test.smoke.jms;
 
-import java.io.IOException;
-
-import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.apache.activemq.artemis.jms.bridge.QualityOfServiceMode;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -46,102 +45,38 @@ public class CreateJMSBridgeSetupTask extends CreateQueueSetupTask {
 
     private ManagementClient managementClient;
 
+    private JMSOperations jmsOperations;
+
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         super.setup(managementClient, containerId);
         this.managementClient = managementClient;
+        jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
-        createConnectionFactory(CF_NAME, CF_JNDI_NAME);
-        createJmsBridge(JMS_BRIDGE_NAME);
+        ModelNode connectionFactoryAttributes = new ModelNode();
+        connectionFactoryAttributes.get("connectors").add("in-vm");
+        connectionFactoryAttributes.get("factory-type").set("XA_GENERIC");
+        jmsOperations.addJmsConnectionFactory(CF_NAME, CF_JNDI_NAME, connectionFactoryAttributes);
+
+        ModelNode jmsBridgeAttributes = new ModelNode();
+        jmsBridgeAttributes.get("source-connection-factory").set(CF_JNDI_NAME);
+        jmsBridgeAttributes.get("source-destination").set(QUEUE1_JNDI_NAME);
+        jmsBridgeAttributes.get("target-connection-factory").set(CF_JNDI_NAME);
+        jmsBridgeAttributes.get("target-destination").set(QUEUE2_JNDI_NAME);
+        jmsBridgeAttributes.get("quality-of-service").set(QualityOfServiceMode.ONCE_AND_ONLY_ONCE.toString());
+        jmsBridgeAttributes.get("failure-retry-interval").set(500);
+        jmsBridgeAttributes.get("max-retries").set(2);
+        jmsBridgeAttributes.get("max-batch-size").set(1024);
+        jmsBridgeAttributes.get("max-batch-time").set(100);
+        jmsBridgeAttributes.get("add-messageID-in-header").set("true");
+        jmsOperations.addJmsBridge(JMS_BRIDGE_NAME, jmsBridgeAttributes);
     }
 
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        removeJmsBridge(JMS_BRIDGE_NAME);
-        removeConnectionFactory(CF_NAME);
+        jmsOperations.removeJmsBridge(JMS_BRIDGE_NAME);
+        jmsOperations.removeJmsConnectionFactory(CF_NAME);
         super.tearDown(managementClient, containerId);
     }
-
-
-    private void createConnectionFactory(String cfName, String cfJndiName) {
-        final ModelNode createConnectionFactoryOp = new ModelNode();
-        createConnectionFactoryOp.get(ClientConstants.OP).set(ClientConstants.ADD);
-        createConnectionFactoryOp.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
-        createConnectionFactoryOp.get(ClientConstants.OP_ADDR).add("hornetq-server", "default");
-        createConnectionFactoryOp.get(ClientConstants.OP_ADDR).add("connection-factory", cfName);
-        ModelNode connector = createConnectionFactoryOp.get("connector");
-        connector.get("in-vm").set(new ModelNode());
-
-        createConnectionFactoryOp.get("factory-type").set("XA_GENERIC");
-        createConnectionFactoryOp.get("entries").add(cfJndiName);
-        System.err.println("Create operation =====> " + createConnectionFactoryOp);
-        try {
-            this.applyUpdate(createConnectionFactoryOp);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void removeConnectionFactory(String cfName) {
-        final ModelNode removeConnectionFactoryOp = new ModelNode();
-        removeConnectionFactoryOp.get(ClientConstants.OP).set("remove");
-        removeConnectionFactoryOp.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
-        removeConnectionFactoryOp.get(ClientConstants.OP_ADDR).add("hornetq-server", "default");
-        removeConnectionFactoryOp.get(ClientConstants.OP_ADDR).add("connection-factory", cfName);
-        try {
-            this.applyUpdate(removeConnectionFactoryOp);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private void createJmsBridge(String bridgeName) {
-        final ModelNode createJmsBridgeOp = new ModelNode();
-        createJmsBridgeOp.get(ClientConstants.OP).set(ClientConstants.ADD);
-        createJmsBridgeOp.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
-        createJmsBridgeOp.get(ClientConstants.OP_ADDR).add("jms-bridge", bridgeName);
-        createJmsBridgeOp.get("source-connection-factory").set(CF_JNDI_NAME);
-        createJmsBridgeOp.get("source-destination").set(QUEUE1_JNDI_NAME);
-        createJmsBridgeOp.get("target-connection-factory").set(CF_JNDI_NAME);
-        createJmsBridgeOp.get("target-destination").set(QUEUE2_JNDI_NAME);
-        createJmsBridgeOp.get("quality-of-service").set(QualityOfServiceMode.ONCE_AND_ONLY_ONCE.toString());
-        createJmsBridgeOp.get("failure-retry-interval").set(500);
-        createJmsBridgeOp.get("max-retries").set(2);
-        createJmsBridgeOp.get("max-batch-size").set(1024);
-        createJmsBridgeOp.get("max-batch-time").set(100);
-        createJmsBridgeOp.get("add-messageID-in-header").set("true");
-        try {
-            this.applyUpdate(createJmsBridgeOp);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void removeJmsBridge(String bridgeName) {
-        final ModelNode removeJmsBridgeOp = new ModelNode();
-        removeJmsBridgeOp.get(ClientConstants.OP).set("remove");
-        removeJmsBridgeOp.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
-        removeJmsBridgeOp.get(ClientConstants.OP_ADDR).add("jms-bridge", bridgeName);
-        try {
-            this.applyUpdate(removeJmsBridgeOp);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void applyUpdate(final ModelNode update) throws IOException {
-        ModelNode result = managementClient.getControllerClient().execute(update);
-        if (result.hasDefined(ClientConstants.OUTCOME)
-                && ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
-            logger.info("Operation successful for update = " + update.toString());
-        } else if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
-            final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
-            throw new RuntimeException(failureDesc);
-        } else {
-            throw new RuntimeException("Operation not successful; outcome = " + result.get(ClientConstants.OUTCOME));
-        }
-    }
-
 }

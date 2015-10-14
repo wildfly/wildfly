@@ -62,10 +62,6 @@ import java.util.List;
  */
 public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
 
-    private static final String VERSION_KEY = "resteasy.version";
-
-    private static final String SPRING_INT_JAR_BASE = "resteasy-spring";
-
     private static final String JAR_LOCATION = "resteasy-spring-jar";
     private static final ModuleIdentifier MODULE = ModuleIdentifier.create("org.jboss.resteasy.resteasy-spring");
 
@@ -91,6 +87,9 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
      *          for any error
      */
     protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
+        if(resourceRoot != null) {
+            return resourceRoot;
+        }
         try {
             Module module = Module.getBootModuleLoader().loadModule(MODULE);
             URL fileUrl = module.getClassLoader().getResource(JAR_LOCATION);

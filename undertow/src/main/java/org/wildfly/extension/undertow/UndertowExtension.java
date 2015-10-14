@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -43,27 +44,36 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class UndertowExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "undertow";
+
+    public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     public static final PathElement PATH_HANDLERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER);
     public static final PathElement PATH_FILTERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER);
-    protected static final PathElement PATH_JSP = PathElement.pathElement(Constants.SETTING, Constants.JSP);
-    protected static final PathElement PATH_SESSION_COOKIE = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
-    protected static final PathElement PATH_PERSISTENT_SESSIONS = PathElement.pathElement(Constants.SETTING, Constants.PERSISTENT_SESSIONS);
-    protected static final PathElement PATH_WEBSOCKETS = PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS);
-    protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
-    protected static final PathElement AJP_LISTENER_PATH = PathElement.pathElement(Constants.AJP_LISTENER);
-    protected static final PathElement HOST_PATH = PathElement.pathElement(Constants.HOST);
-    protected static final PathElement HTTP_LISTENER_PATH = PathElement.pathElement(Constants.HTTP_LISTENER);
-    protected static final PathElement HTTPS_LISTENER_PATH = PathElement.pathElement(Constants.HTTPS_LISTENER);
-    protected static final PathElement PATH_SERVLET_CONTAINER = PathElement.pathElement(Constants.SERVLET_CONTAINER);
-    protected static final PathElement PATH_BUFFER_CACHE = PathElement.pathElement(Constants.BUFFER_CACHE);
-    protected static final PathElement PATH_LOCATION = PathElement.pathElement(Constants.LOCATION);
-    protected static final PathElement SERVER_PATH = PathElement.pathElement(Constants.SERVER);
-    protected static final PathElement PATH_ACCESS_LOG = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
-    protected static final PathElement PATH_SSO = PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON);
+    public static final PathElement PATH_JSP = PathElement.pathElement(Constants.SETTING, Constants.JSP);
+    public static final PathElement PATH_SESSION_COOKIE = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
+    public static final PathElement PATH_PERSISTENT_SESSIONS = PathElement.pathElement(Constants.SETTING, Constants.PERSISTENT_SESSIONS);
+    public static final PathElement PATH_WEBSOCKETS = PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS);
+    public static final PathElement PATH_MIME_MAPPING = PathElement.pathElement(Constants.MIME_MAPPING);
+    public static final PathElement PATH_WELCOME_FILE = PathElement.pathElement(Constants.WELCOME_FILE);
+    public static final PathElement AJP_LISTENER_PATH = PathElement.pathElement(Constants.AJP_LISTENER);
+    public static final PathElement HOST_PATH = PathElement.pathElement(Constants.HOST);
+    public static final PathElement HTTP_LISTENER_PATH = PathElement.pathElement(Constants.HTTP_LISTENER);
+    public static final PathElement HTTPS_LISTENER_PATH = PathElement.pathElement(Constants.HTTPS_LISTENER);
+    public static final PathElement PATH_SERVLET_CONTAINER = PathElement.pathElement(Constants.SERVLET_CONTAINER);
+    public static final PathElement PATH_BUFFER_CACHE = PathElement.pathElement(Constants.BUFFER_CACHE);
+    public static final PathElement PATH_LOCATION = PathElement.pathElement(Constants.LOCATION);
+    public static final PathElement SERVER_PATH = PathElement.pathElement(Constants.SERVER);
+    public static final PathElement PATH_ACCESS_LOG = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
+    public static final PathElement PATH_SSO = PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON);
+    public static final PathElement BALANCER = PathElement.pathElement(Constants.BALANCER);
+    public static final PathElement CONTEXT = PathElement.pathElement(Constants.CONTEXT);
+    public static final PathElement LOAD_BALANCING_GROUP = PathElement.pathElement(Constants.LOAD_BALANCING_GROUP);
+    public static final PathElement NODE = PathElement.pathElement(Constants.NODE);
     public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
                     new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
+
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -79,18 +89,19 @@ public class UndertowExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_1.getUriString(), UndertowSubsystemParser_1_1.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_2.getUriString(), UndertowSubsystemParser_1_2.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_2_0.getUriString(), UndertowSubsystemParser_2_0.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_3_0.getUriString(), UndertowSubsystemParser_3_0.INSTANCE);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 2, 0, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(UndertowRootDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
 
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(DeploymentDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
 
-        subsystem.registerXMLElementWriter(UndertowSubsystemParser_2_0.INSTANCE);
+        subsystem.registerXMLElementWriter(UndertowSubsystemParser_3_0.INSTANCE);
     }
 
 

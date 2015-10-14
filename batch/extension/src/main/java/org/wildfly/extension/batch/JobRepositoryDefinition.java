@@ -24,6 +24,8 @@ package org.wildfly.extension.batch;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.DeprecationData;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -45,6 +47,7 @@ import org.wildfly.extension.batch.job.repository.JobRepositoryType;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@Deprecated
 class JobRepositoryDefinition extends SimpleResourceDefinition {
 
     /**
@@ -58,6 +61,7 @@ class JobRepositoryDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition JNDI_NAME = SimpleAttributeDefinitionBuilder.create("jndi-name", ModelType.STRING, true)
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, true, true))
+            .setDeprecated(ModelVersion.create(1, 0, 0), false)
             .build();
 
     /**
@@ -66,8 +70,8 @@ class JobRepositoryDefinition extends SimpleResourceDefinition {
     public static final JobRepositoryDefinition JDBC = new JobRepositoryDefinition(JobRepositoryType.JDBC.toString(), JNDI_NAME);
 
     private JobRepositoryDefinition(final String name, final AttributeDefinition... attributes) {
-        super(PathElement.pathElement(NAME, name), BatchSubsystemDefinition.getResourceDescriptionResolver(NAME, name),
-                new JobRepositoryAdd(attributes), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PathElement.pathElement(NAME, name), BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME, name),
+                new JobRepositoryAdd(attributes), ReloadRequiredRemoveStepHandler.INSTANCE, new DeprecationData(ModelVersion.create(1, 0, 0)));
     }
 
     @Override

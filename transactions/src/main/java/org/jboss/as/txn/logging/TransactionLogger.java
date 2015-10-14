@@ -27,13 +27,20 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
 
+import javax.transaction.Synchronization;
+import javax.transaction.Transaction;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -132,8 +139,8 @@ public interface TransactionLogger extends BasicLogger {
     @Message(id = 10, value = "MBean Server service not installed, this functionality is not available if the JMX subsystem has not been installed.")
     RuntimeException jmxSubsystemNotInstalled();
 
-    @Message(id = 11, value = "'hornetq-store-enable-async-io' must be true.")
-    String transformHornetQStoreEnableAsyncIoMustBeTrue();
+    @Message(id = 11, value = "'journal-store-enable-async-io' must be true.")
+    String transformJournalStoreEnableAsyncIoMustBeTrue();
 
     @Message(id = 12, value = "Attributes %s and %s are alternatives; both cannot be set with conflicting values.")
     OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
@@ -196,4 +203,25 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 25, value = "Either %s must be 'true' or  %s must be defined.")
     OperationFailedException eitherTrueOrDefined(String attrOne, String attrTwo);
+
+    @LogMessage(level = WARN)
+    @Message(id = 26, value = "The transaction %s could not be removed from the cache during cleanup.")
+    void transactionNotFound(Transaction tx);
+
+    @LogMessage(level = WARN)
+    @Message(id = 27, value = "The pre-jca synchronization %s associated with tx %s failed during after completion")
+    void preJcaSyncAfterCompletionFailed(Synchronization preJcaSync, Transaction tx, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 28, value = "The jca synchronization %s associated with tx %s failed during after completion")
+    void jcaSyncAfterCompletionFailed(Synchronization jcaSync, Transaction tx, @Cause Exception e);
+
+    @Message(id = 29, value = "Syncs are not allowed to be registered when the tx is in state %s")
+    IllegalStateException syncsnotallowed(int status);
+
+    @Message(id = 30, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
+    IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
+
+    @Message(id = 31, value = "The attribute '%s' is no longer supported")
+    XMLStreamException unsupportedAttribute(String attribute, @Param Location location);
 }

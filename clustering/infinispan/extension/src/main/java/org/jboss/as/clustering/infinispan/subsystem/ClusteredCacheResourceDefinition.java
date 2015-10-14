@@ -22,18 +22,17 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -45,72 +44,71 @@ import org.jboss.dmr.ModelType;
  */
 public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
-    // attributes
-    static final SimpleAttributeDefinition ASYNC_MARSHALLING = new SimpleAttributeDefinitionBuilder(ModelKeys.ASYNC_MARSHALLING, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.ASYNC_MARSHALLING.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(false))
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        MODE("mode", ModelType.STRING, null, new EnumValidatorBuilder<>(Mode.class)),
+        QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L)),
+        QUEUE_SIZE("queue-size", ModelType.INT, new ModelNode(0)),
+        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(17500L)),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition MODE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, false)
-            .setXmlName(Attribute.MODE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<>(Mode.class, false, true))
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type, defaultValue).build();
+        }
 
-    static final SimpleAttributeDefinition QUEUE_FLUSH_INTERVAL = new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_FLUSH_INTERVAL, ModelType.LONG, true)
-            .setXmlName(Attribute.QUEUE_FLUSH_INTERVAL.getLocalName())
-            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(10L))
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        }
 
-    static final SimpleAttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_SIZE, ModelType.INT, true)
-            .setXmlName(Attribute.QUEUE_SIZE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(0))
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
-    static final SimpleAttributeDefinition REMOTE_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_TIMEOUT, ModelType.LONG, true)
-            .setXmlName(Attribute.REMOTE_TIMEOUT.getLocalName())
-            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(17500L))
-            .build();
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, new ModelNode(false), InfinispanModel.VERSION_4_0_0),
+        ;
+        private final AttributeDefinition definition;
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(defaultValue != null)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+                ;
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ASYNC_MARSHALLING, QUEUE_FLUSH_INTERVAL, QUEUE_SIZE, REMOTE_TIMEOUT);
-        }
 
         CacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    ClusteredCacheResourceDefinition(CacheType type, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(type, resolvePathHandler, allowRuntimeOnlyRegistration);
+    ClusteredCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(path, pathManager, allowRuntimeOnlyRegistration);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attribute : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, null, writeHandler);
-        }
+    public void register(ManagementResourceRegistration registration) {
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler handler = new ClusteredCacheMetricsHandler();
-            for (ClusteredCacheMetric metric: ClusteredCacheMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
         }
+
+        super.register(registration);
     }
 }

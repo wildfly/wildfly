@@ -29,6 +29,7 @@ import javax.ejb.MessageDriven;
 import javax.ejb.Schedule;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.jms.JMSDestinationDefinition;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
@@ -39,9 +40,13 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@JMSDestinationDefinition(
+        name="java:/queue/ManagedMDB-queue",
+        interfaceName = "javax.jms.Queue"
+)
 @MessageDriven(activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/queue/test")
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/queue/ManagedMDB-queue")
 })
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})

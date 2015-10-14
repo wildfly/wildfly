@@ -38,10 +38,10 @@ import org.junit.runner.RunWith;
  * AS7-5768 -Support for RA module deployment
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *         <p/>
+ *         <p>
  *         Tests for module deployment of resource adapter archive in
  *         uncompressed form with classes in flat form (under package structure)
- *         <p/>
+ *         <p>
  *         Structure of module is:
  *         modulename
  *         modulename/main
@@ -60,16 +60,13 @@ public class PureFlatTestCase extends AbstractModuleDeploymentTestCase {
 
     private final String cf = "java:/testMeRA";
 
-    static class ModuleAcDeploymentTestCaseSetup extends
-            AbstractModuleDeploymentTestCaseSetup {
+    static class ModuleAcDeploymentTestCaseSetup extends AbstractModuleDeploymentTestCaseSetup {
 
         @Override
         public void doSetup(ManagementClient managementClient) throws Exception {
-
             super.doSetup(managementClient);
             fillModuleWithFlatClasses("ra.xml");
             setConfiguration("pure.xml");
-
         }
 
         @Override
@@ -78,15 +75,15 @@ public class PureFlatTestCase extends AbstractModuleDeploymentTestCase {
         }
     }
 
-	/**
-	 * Define the deployment
-	 * 
-	 * @return The deployment archive
-	 */
-	@Deployment
-	public static JavaArchive getDeployment() throws Exception {
-		return createDeployment();
-	}
+    /**
+     * Define the deployment
+     *
+     * @return The deployment archive
+     */
+    @Deployment
+    public static JavaArchive getDeployment() throws Exception {
+        return createDeployment();
+    }
 
     @Resource(mappedName = cf)
     private ConnectionFactory connectionFactory;

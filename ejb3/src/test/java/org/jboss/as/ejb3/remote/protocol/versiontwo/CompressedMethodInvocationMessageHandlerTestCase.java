@@ -1,29 +1,6 @@
 package org.jboss.as.ejb3.remote.protocol.versiontwo;
 
-import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
-import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
-import org.jboss.ejb.client.EJBLocator;
-import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.ejb.client.annotation.CompressionHint;
-import org.jboss.marshalling.ByteOutput;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.reflect.SunReflectiveCreator;
-import org.jboss.marshalling.river.RiverMarshallerFactory;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.MessageOutputStream;
-import org.jboss.util.NotImplementedException;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
@@ -48,7 +25,31 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
+import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.remote.CompressedMethodsInformation;
+import org.jboss.as.ejb3.remote.CompressionHintViewConfigurator;
+import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
+import org.jboss.ejb.client.EJBLocator;
+import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.ejb.client.annotation.CompressionHint;
+import org.jboss.marshalling.ByteOutput;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.reflect.SunReflectiveCreator;
+import org.jboss.marshalling.river.RiverMarshallerFactory;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.MessageOutputStream;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * @author <a href="mailto:thofman@redhat.com">Tomas Hofman</a>
@@ -204,6 +205,10 @@ public class CompressedMethodInvocationMessageHandlerTestCase {
         Collections.addAll(viewMethods, iface.getDeclaredMethods());
         Mockito.when(componentView.getViewMethods()).thenReturn(viewMethods);
 
+
+
+        Mockito.when(componentView.getPrivateData(CompressedMethodsInformation.class)).thenReturn(CompressionHintViewConfigurator.getCompressedMethodsInformation(iface));
+
         final InjectedValue<ComponentView> value = new InjectedValue<ComponentView>();
         value.setValue(new Value<ComponentView>() {
             @Override
@@ -308,12 +313,12 @@ public class CompressedMethodInvocationMessageHandlerTestCase {
 
         @Override
         public <T> Future<T> submit(Callable<T> callable) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("not implemented");
         }
 
         @Override
         public <T> Future<T> submit(Runnable runnable, T t) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("not implemented");
         }
 
         @Override
@@ -324,27 +329,27 @@ public class CompressedMethodInvocationMessageHandlerTestCase {
 
         @Override
         public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> collection) throws InterruptedException {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("not implemented");
         }
 
         @Override
         public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> collection, long l, TimeUnit timeUnit) throws InterruptedException {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("not implemented");
         }
 
         @Override
         public <T> T invokeAny(Collection<? extends Callable<T>> collection) throws InterruptedException, ExecutionException {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("not implemented");
         }
 
         @Override
         public <T> T invokeAny(Collection<? extends Callable<T>> collection, long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("not implemented");
         }
 
         @Override
         public void execute(Runnable runnable) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("not implemented");
         }
     }
 

@@ -21,22 +21,23 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
+import org.jboss.as.clustering.controller.AttributeMarshallers;
+import org.jboss.as.clustering.controller.AttributeParsers;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -45,112 +46,91 @@ import org.jboss.dmr.ModelType;
  * Base class for store resources which require common store attributes only.
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Paul Ferraro
  */
-public class StoreResourceDefinition extends SimpleResourceDefinition {
+public abstract class StoreResourceDefinition extends ChildResourceDefinition {
 
-    // attributes
-    static final SimpleAttributeDefinition FETCH_STATE = new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_STATE, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.FETCH_STATE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(true))
-            .build();
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static final SimpleAttributeDefinition PASSIVATION = new SimpleAttributeDefinitionBuilder(ModelKeys.PASSIVATION, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.PASSIVATION.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(true))
-            .build();
+    static PathElement pathElement(String value) {
+        return PathElement.pathElement("store", value);
+    }
 
-    static final SimpleAttributeDefinition PRELOAD = new SimpleAttributeDefinitionBuilder(ModelKeys.PRELOAD, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.PRELOAD.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(false))
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        FETCH_STATE("fetch-state", true),
+        PASSIVATION("passivation", true),
+        PRELOAD("preload", false),
+        PURGE("purge", true),
+        SHARED("shared", false),
+        SINGLETON("singleton", false),
+        PROPERTIES("properties"),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition PURGE = new SimpleAttributeDefinitionBuilder(ModelKeys.PURGE, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.PURGE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(true))
-            .build();
+        Attribute(String name, boolean defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.BOOLEAN)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setDefaultValue(new ModelNode(defaultValue))
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
 
-    static final SimpleAttributeDefinition SHARED = new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.SHARED.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(false))
-            .build();
+        Attribute(String name) {
+            this.definition = new SimpleMapAttributeDefinition.Builder(name, true)
+                    .setAllowExpression(true)
+                    .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
+                    .setAttributeParser(AttributeParsers.COLLECTION)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
 
-    static final SimpleAttributeDefinition SINGLETON = new SimpleAttributeDefinitionBuilder(ModelKeys.SINGLETON, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.SINGLETON.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(false))
-            .build();
-
-    // used to pass in a list of properties to the store add command
-    static final AttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
-    static final SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY)
-            .setAllowNull(true)
-            .build();
-
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
-            SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON
-    };
-    static final AttributeDefinition[] PARAMETERS = new AttributeDefinition[] {
-            SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES
-    };
-
-    // operations
-    private static final OperationDefinition CACHE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
-            .setParameters(PARAMETERS)
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     private final boolean allowRuntimeOnlyRegistration;
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, FETCH_STATE, PASSIVATION, PRELOAD, PURGE, SHARED, SINGLETON);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.discardChildResource(StoreWriteThroughResourceDefinition.PATH);
+        } else {
+            StoreWriteThroughResourceDefinition.buildTransformation(version, builder);
         }
 
-        StorePropertyResourceDefinition.buildTransformation(version, builder);
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
+
+            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
+                builder.addOperationTransformationOverride(opName)
+                        .inheritResourceAttributeDefinitions()
+                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer());
+            }
+        }
+
         StoreWriteBehindResourceDefinition.buildTransformation(version, builder);
     }
 
-    StoreResourceDefinition(StoreType type, boolean allowRuntimeOnlyRegistration) {
-        super(type.pathElement(), type.getResourceDescriptionResolver(), type.getAddHandler(), type.getRemoveHandler());
+    StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration) {
+        super(path, resolver);
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+    public void register(ManagementResourceRegistration registration) {
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler handler = new StoreMetricsHandler();
-            for (StoreMetric metric: StoreMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new StoreMetricExecutor(), StoreMetric.class).register(registration);
         }
-    }
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        // child resources
-        registration.registerSubModel(new StoreWriteBehindResourceDefinition());
-        registration.registerSubModel(new StorePropertyResourceDefinition());
-    }
+        new StoreWriteBehindResourceDefinition().register(registration);
+        new StoreWriteThroughResourceDefinition().register(registration);
 
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
-    @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(CACHE_STORE_ADD_DEFINITION, handler);
+        new StorePropertyResourceDefinition().register(registration);
     }
 }

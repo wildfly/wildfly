@@ -22,18 +22,17 @@
 package org.wildfly.clustering.web.undertow.session;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
-import io.undertow.security.idm.Account;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -49,6 +48,8 @@ import org.wildfly.clustering.web.session.SessionManager;
 public class DistributableSession implements io.undertow.server.session.Session {
     // Undertow stores the authenticated session in the HttpSession using a special attribute with the following name
     private static final String AUTHENTICATED_SESSION_ATTRIBUTE_NAME = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
+    // These mechanisms can auto-reauthenticate and thus use local context (instead of replicating)
+    private static final Set<String> AUTO_REAUTHENTICATING_MECHANISMS = new HashSet<>(Arrays.asList(HttpServletRequest.BASIC_AUTH, HttpServletRequest.DIGEST_AUTH, HttpServletRequest.CLIENT_CERT_AUTH));
 
     private final UndertowSessionManager manager;
     private final Batch batch;
@@ -85,28 +86,28 @@ public class DistributableSession implements io.undertow.server.session.Session 
     @Override
     public long getCreationTime() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return this.entry.getKey().getMetaData().getCreationTime().getTime();
+            return this.entry.getKey().getMetaData().getCreationTime().toEpochMilli();
         }
     }
 
     @Override
     public long getLastAccessedTime() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return this.entry.getKey().getMetaData().getLastAccessedTime().getTime();
+            return this.entry.getKey().getMetaData().getLastAccessedTime().toEpochMilli();
         }
     }
 
     @Override
     public int getMaxInactiveInterval() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return (int) this.entry.getKey().getMetaData().getMaxInactiveInterval(TimeUnit.SECONDS);
+            return (int) this.entry.getKey().getMetaData().getMaxInactiveInterval().getSeconds();
         }
     }
 
     @Override
     public void setMaxInactiveInterval(int interval) {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            this.entry.getKey().getMetaData().setMaxInactiveInterval(interval, TimeUnit.SECONDS);
+            this.entry.getKey().getMetaData().setMaxInactiveInterval(Duration.ofSeconds(interval));
         }
     }
 
@@ -122,8 +123,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
         Session<LocalSessionContext> session = this.entry.getKey();
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
             if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
-                Account account = (Account) session.getAttributes().getAttribute(name);
-                return (account != null) ? new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH) : session.getLocalContext().getAuthenticatedSession();
+                AuthenticatedSession auth = (AuthenticatedSession) session.getAttributes().getAttribute(name);
+                return (auth != null) ? auth : session.getLocalContext().getAuthenticatedSession();
             }
             return session.getAttributes().getAttribute(name);
         }
@@ -137,20 +138,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
         Session<LocalSessionContext> session = this.entry.getKey();
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
             if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
-                AuthenticatedSession authSession = (AuthenticatedSession) value;
-                // If using FORM authentication, we store the corresponding Account in a session attribute
-                if (authSession.getMechanism().equals(HttpServletRequest.FORM_AUTH)) {
-                    Account account = (Account) session.getAttributes().setAttribute(name, authSession.getAccount());
-                    return (account != null) ? new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH) : null;
-                }
-                // Otherwise we store the whole AuthenticatedSession in the local context
-                LocalSessionContext localContext = session.getLocalContext();
-                AuthenticatedSession old = localContext.getAuthenticatedSession();
-                localContext.setAuthenticatedSession(authSession);
-                return old;
-            }
-            if (!(value instanceof Serializable)) {
-                throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
+                AuthenticatedSession auth = (AuthenticatedSession) value;
+                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, new ImmutableAuthenticatedSession(auth));
             }
             Object old = session.getAttributes().setAttribute(name, value);
             if (old == null) {
@@ -167,14 +156,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
         Session<LocalSessionContext> session = this.entry.getKey();
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
             if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
-                Account account = (Account) session.getAttributes().removeAttribute(name);
-                if (account != null) {
-                    return new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
-                }
-                LocalSessionContext localContext = session.getLocalContext();
-                AuthenticatedSession old = localContext.getAuthenticatedSession();
-                localContext.setAuthenticatedSession(null);
-                return old;
+                AuthenticatedSession auth = (AuthenticatedSession) session.getAttributes().removeAttribute(name);
+                return (auth != null) ? auth : this.setLocalContext(null);
             }
             Object old = session.getAttributes().removeAttribute(name);
             if (old != null) {
@@ -209,7 +192,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
             for (String name: oldSession.getAttributes().getAttributeNames()) {
                 newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
             }
-            newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+            newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
             newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
             newSession.getLocalContext().setAuthenticatedSession(oldSession.getLocalContext().getAuthenticatedSession());
             config.setSessionId(exchange, id);
@@ -217,5 +200,12 @@ public class DistributableSession implements io.undertow.server.session.Session 
             oldSession.invalidate();
             return id;
         }
+    }
+
+    private AuthenticatedSession setLocalContext(AuthenticatedSession auth) {
+        LocalSessionContext localContext = this.entry.getKey().getLocalContext();
+        AuthenticatedSession old = localContext.getAuthenticatedSession();
+        localContext.setAuthenticatedSession(auth);
+        return old;
     }
 }

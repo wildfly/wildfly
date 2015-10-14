@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.server.services.security.VaultReaderException;
+import org.jboss.as.server.services.security.RuntimeVaultReader;
 import org.jboss.security.vault.SecurityVault;
 import org.jboss.security.vault.SecurityVaultException;
 import org.jboss.security.vault.SecurityVaultFactory;

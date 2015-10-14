@@ -62,7 +62,7 @@ public class EntityBeanComponent extends EJBComponent implements PooledComponent
     private final Class<EJBLocalHome> localHomeClass;
     private final Class<EJBLocalObject> localClass;
     private final Class<EJBObject> remoteClass;
-    private final Class<Object> primaryKeyClass;
+    private final Class<?> primaryKeyClass;
     private final Boolean optimisticLocking;
 
     private final Method ejbStoreMethod;
@@ -158,6 +158,15 @@ public class EntityBeanComponent extends EJBComponent implements PooledComponent
         }
     }
 
+    public void discardEntityBeanInstance(final EntityBeanComponentInstance instance) {
+        if (pool!=null) {
+            pool.discard(instance);
+        } else {
+            factory.destroy(instance);
+        }
+    }
+
+
     public ReadyEntityCache getCache() {
         return cache;
     }
@@ -201,7 +210,7 @@ public class EntityBeanComponent extends EJBComponent implements PooledComponent
         return remoteClass;
     }
 
-    public Class<Object> getPrimaryKeyClass() {
+    public Class<?> getPrimaryKeyClass() {
         return primaryKeyClass;
     }
 

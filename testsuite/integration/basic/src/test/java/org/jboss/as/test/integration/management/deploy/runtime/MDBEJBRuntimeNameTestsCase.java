@@ -86,7 +86,7 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
         ejbJar.addPackage(BEAN_PACKAGE);
         ejbJar.setManifest(new StringAsset(
                 Descriptors.create(ManifestDescriptor.class)
-                        .attribute("Dependencies", "org.hornetq.ra")
+                        .attribute("Dependencies", "org.apache.activemq.artemis.ra")
                         .exportAsString()));
         EnterpriseArchive earArchive = ShrinkWrap.create(EnterpriseArchive.class, DEPLOYMENT_NAME);
         earArchive.addAsModule(ejbJar);

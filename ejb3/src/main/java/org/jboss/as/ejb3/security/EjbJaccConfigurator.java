@@ -164,7 +164,7 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
         final Method classMethod = ClassReflectionIndexUtil.findMethod(index, ejbViewConfiguration.getComponentConfiguration().getComponentClass(), viewMethod);
         if (ejbMethodSecurityMetaData == null) {
             if (classMethod != null) {
-                methodIdentifier = methodIdentifier.getIdentifierForMethod(classMethod);
+                methodIdentifier = MethodIdentifier.getIdentifierForMethod(classMethod);
                 //if this is null we try with the corresponding bean method.
                 ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewConfiguration.getMethodIntf(), classMethod);
                 if (ejbMethodSecurityMetaData == null) {

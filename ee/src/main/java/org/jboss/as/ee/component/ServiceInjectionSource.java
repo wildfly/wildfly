@@ -50,7 +50,8 @@ public final class ServiceInjectionSource extends InjectionSource {
      * {@inheritDoc}
      */
     public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
-        serviceBuilder.addDependency(serviceName, serviceValueType, ManagedReferenceFactory.class.isAssignableFrom(serviceValueType) ? injector : new ManagedReferenceInjector(injector));
+        Injector inject = ManagedReferenceFactory.class.isAssignableFrom(serviceValueType) ? injector : new ManagedReferenceInjector(injector);
+        serviceBuilder.addDependency(serviceName, serviceValueType, inject);
     }
 
     public boolean equals(final Object other) {

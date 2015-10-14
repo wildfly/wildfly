@@ -48,7 +48,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -66,11 +65,6 @@ import org.wildfly.extension.requestcontroller.RunResult;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitProcessor {
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(EjbJndiBindingsDeploymentUnitProcessor.class);
 
     private final boolean appclient;
 
@@ -113,7 +107,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
     private void setupJNDIBindings(EJBComponentDescription sessionBean, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final Collection<ViewDescription> views = sessionBean.getViews();
         if (views == null || views.isEmpty()) {
-            EjbLogger.ROOT_LOGGER.noJNDIBindingsForSessionBean(sessionBean.getEJBName());
+            EjbLogger.DEPLOYMENT_LOGGER.noJNDIBindingsForSessionBean(sessionBean.getEJBName());
             return;
         }
 
@@ -128,7 +122,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
         // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
         final StringBuilder jndiBindingsLogMessage = new StringBuilder();
-        jndiBindingsLogMessage.append("JNDI bindings for session bean named " + sessionBean.getEJBName() + " in deployment unit " + deploymentUnit + " are as follows:\n\n");
+        jndiBindingsLogMessage.append(System.lineSeparator()).append(System.lineSeparator());
 
         // now create the bindings for each view under the java:global, java:app and java:module namespaces
         EJBViewDescription ejbViewDescription = null;
@@ -196,7 +190,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         }
 
         // log the jndi bindings
-        logger.info(jndiBindingsLogMessage);
+        EjbLogger.DEPLOYMENT_LOGGER.jndiBindings(sessionBean.getEJBName(),deploymentUnit,jndiBindingsLogMessage);
     }
 
     private void registerBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
@@ -271,7 +265,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
     private void logBinding(final StringBuilder jndiBindingsLogMessage, final String jndiName) {
         jndiBindingsLogMessage.append("\t");
         jndiBindingsLogMessage.append(jndiName);
-        jndiBindingsLogMessage.append("\n");
+        jndiBindingsLogMessage.append(System.lineSeparator());
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
 * JBoss, Home of Professional Open Source.
-* Copyright 2012, Red Hat, Inc., and individual contributors
+* Copyright 2014, Red Hat, Inc., and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
 * distribution for a full listing of individual contributors.
 *
@@ -27,26 +27,27 @@ import java.util.Map;
 
 /**
  * <p>
- * Enumeration of the SSL configuration values. Each enum contains the corresponding JacORB value, which is represented
+ * Enumeration of the SSL configuration values. Each enum contains the corresponding IIOP value, which is represented
  * as an int.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  */
 enum SSLConfigValue {
 
     NONE("None", "0"), SERVERAUTH("ServerAuth", "20"), CLIENTAUTH("ClientAuth", "40"), MUTUALAUTH("MutualAuth", "60");
 
     private String name;
-    private String jacorbValue;
+    private String iiopValue;
 
-    SSLConfigValue(String name, String jacorbValue) {
+    SSLConfigValue(String name, String iiopValue) {
         this.name = name;
-        this.jacorbValue = jacorbValue;
+        this.iiopValue = iiopValue;
     }
 
-    public String getJacorbValue() {
-        return this.jacorbValue;
+    public String getIIOPValue() {
+        return this.iiopValue;
     }
 
     private static Map<String, SSLConfigValue> MAP;
@@ -54,7 +55,7 @@ enum SSLConfigValue {
     static {
         final Map<String, SSLConfigValue> map = new HashMap<String, SSLConfigValue>();
         for (SSLConfigValue configValue : values()) {
-            map.put(configValue.getJacorbValue(), configValue);
+            map.put(configValue.getIIOPValue(), configValue);
         }
         MAP = map;
     }

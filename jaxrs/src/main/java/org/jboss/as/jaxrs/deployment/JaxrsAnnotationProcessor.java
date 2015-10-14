@@ -29,8 +29,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.weld.deployment.WeldAttachments;
-import org.jboss.as.weld.discovery.AnnotationType;
+
+import static org.jboss.as.ee.weld.InjectionTargetDefiningAnnotations.INJECTION_TARGET_DEFINING_ANNOTATIONS;
 
 /**
  * Looks for jaxrs annotations in war deployments
@@ -46,8 +46,8 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
 
         if (deploymentUnit.getParent() == null) {
             //register resource, provider and application as CDI annotation defining types
-            deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PROVIDER.getDotName(), false));
-            deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PATH.getDotName(), false));
+            deploymentUnit.addToAttachmentList(INJECTION_TARGET_DEFINING_ANNOTATIONS, JaxrsAnnotations.PROVIDER.getDotName());
+            deploymentUnit.addToAttachmentList(INJECTION_TARGET_DEFINING_ANNOTATIONS, JaxrsAnnotations.PATH.getDotName());
         }
 
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);

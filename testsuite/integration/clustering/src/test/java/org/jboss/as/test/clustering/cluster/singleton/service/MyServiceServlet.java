@@ -52,6 +52,7 @@ public class MyServiceServlet extends HttpServlet {
         if (service == null) {
             throw new ServletException(String.format("No %s specified", SERVICE));
         }
+        this.log(String.format("Received request for %s", service));
         Environment env = (Environment) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(service)).getValue();
         if (env != null) {
             resp.setHeader("node", env.getNodeName());

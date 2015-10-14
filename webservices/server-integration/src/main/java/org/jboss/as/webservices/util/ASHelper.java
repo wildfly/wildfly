@@ -198,6 +198,13 @@ public final class ASHelper {
         return false;
     }
 
+    public static boolean isJaxwsEndpointInterface(final ClassInfo clazz) {
+        final short flags = clazz.flags();
+        if (!Modifier.isInterface(flags)) return false;
+        if (!Modifier.isPublic(flags)) return false;
+        return clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
+    }
+
     public static boolean hasClassesFromPackage(final Index index, final String pck) {
         for (ClassInfo ci : index.getKnownClasses()) {
             if (ci.name().toString().startsWith(pck)) {
@@ -208,6 +215,10 @@ public final class ASHelper {
     }
 
     public static boolean isJaxwsEndpoint(final ClassInfo clazz, final CompositeIndex index) {
+        return isJaxwsEndpoint(clazz, index, true);
+    }
+
+    public static boolean isJaxwsEndpoint(final ClassInfo clazz, final CompositeIndex index, boolean log) {
         // assert JAXWS endpoint class flags
         final short flags = clazz.flags();
         if (Modifier.isInterface(flags)) return false;
@@ -220,11 +231,15 @@ public final class ASHelper {
             return false;
         }
         if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
-            WSLogger.ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
+            if (log) {
+                WSLogger.ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
+            }
             return false;
         }
         if (Modifier.isFinal(flags)) {
-            WSLogger.ROOT_LOGGER.finalEndpointClassDetected(clazz.name().toString());
+            if (log) {
+                WSLogger.ROOT_LOGGER.finalEndpointClassDetected(clazz.name().toString());
+            }
             return false;
         }
         return true;

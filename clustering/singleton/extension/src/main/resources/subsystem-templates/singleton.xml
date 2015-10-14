@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <extension-module>org.wildfly.extension.clustering.singleton</extension-module>
+    <subsystem xmlns="urn:jboss:domain:singleton:1.0">
+        <singleton-policies default="default">
+            <singleton-policy name="default" cache-container="server">
+                <simple-election-policy/>
+            </singleton-policy>
+        </singleton-policies>
+    </subsystem>
+</config>

@@ -38,7 +38,6 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.InitMethodMetaData;
 import org.jboss.metadata.ejb.spec.InitMethodsMetaData;
-import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
@@ -77,9 +76,9 @@ public class InitMethodMergingProcessor extends AbstractMergingProcessor<Statefu
         //we are only looking on the bean class, not sure if that is correct or not
         Class<?> clazz = componentClass;
         while (clazz != Object.class && clazz != null) {
-            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(clazz);
+            final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(clazz);
 
-            for (Method method : index.getMethods()) {
+            for (Method method : (Iterable<Method>)index.getMethods()) {
                 if (method.getName().startsWith("ejbCreate")) {
                     //if there is additional metadata specified for this method
                     //it will be overridden below
@@ -100,7 +99,6 @@ public class InitMethodMergingProcessor extends AbstractMergingProcessor<Statefu
                 for (InitMethodMetaData method : inits) {
                     Method beanMethod = MethodResolutionUtils.resolveMethod(method.getBeanMethod(), componentClass, deploymentReflectionIndex);
                     if (method.getCreateMethod() != null) {
-                        MethodParametersMetaData p = method.getCreateMethod().getMethodParams();
                         description.addInitMethod(beanMethod, method.getCreateMethod().getMethodName());
                     } else {
                         description.addInitMethod(beanMethod, null);

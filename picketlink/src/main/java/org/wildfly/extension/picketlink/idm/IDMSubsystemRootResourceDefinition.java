@@ -41,6 +41,7 @@ public class IDMSubsystemRootResourceDefinition extends SimpleResourceDefinition
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, IDMExtension.SUBSYSTEM_NAME),
                  IDMExtension.getResourceDescriptionResolver(IDMExtension.SUBSYSTEM_NAME),
                  IDMSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(IDMExtension.DEPRECATED_SINCE);
     }
 
     @Override

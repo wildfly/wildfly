@@ -29,6 +29,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -68,7 +69,13 @@ public class WebDefinition extends ModelOnlyResourceDefinition {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, WebExtension.SUBSYSTEM_NAME),
                 WebExtension.getResourceDescriptionResolver(null),
                 DEFAULT_VIRTUAL_SERVER, NATIVE, INSTANCE_ID, DEFAULT_SESSION_TIMEOUT);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
 
+        WebMigrateOperation.registerOperations(resourceRegistration, getResourceDescriptionResolver());
+    }
 }

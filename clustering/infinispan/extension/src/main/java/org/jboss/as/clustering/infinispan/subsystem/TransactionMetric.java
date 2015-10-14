@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.interceptors.TxInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
@@ -36,47 +33,35 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-public enum TransactionMetric implements Metric<TxInterceptor> {
+public enum TransactionMetric implements Metric<TxInterceptor<?, ?>> {
 
     COMMITS(MetricKeys.COMMITS, ModelType.LONG) {
         @Override
-        public ModelNode getValue(TxInterceptor interceptor) {
+        public ModelNode execute(TxInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getCommits());
         }
     },
     PREPARES(MetricKeys.PREPARES, ModelType.LONG) {
         @Override
-        public ModelNode getValue(TxInterceptor interceptor) {
+        public ModelNode execute(TxInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getPrepares());
         }
     },
     ROLLBACKS(MetricKeys.ROLLBACKS, ModelType.LONG) {
         @Override
-        public ModelNode getValue(TxInterceptor interceptor) {
+        public ModelNode execute(TxInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getRollbacks());
         }
     },
     ;
     private final AttributeDefinition definition;
 
-    private TransactionMetric(String name, ModelType type) {
+    TransactionMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
-    }
-
-    private static final Map<String, TransactionMetric> metrics = new HashMap<>();
-
-    static {
-        for (TransactionMetric metric: TransactionMetric.values()) {
-            metrics.put(metric.definition.getName(), metric);
-        }
-    }
-
-    public static TransactionMetric forName(String name) {
-        return metrics.get(name);
     }
 }

@@ -26,24 +26,43 @@ package org.wildfly.extension.undertow.filters;
 
 import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.FilterLocation;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-public class FilterRef extends AbstractService<FilterRef> {
+public class FilterRef implements Service<FilterRef> {
     private final Predicate predicate;
     private final int priority;
     private final InjectedValue<FilterService> filter = new InjectedValue<>();
+    private final InjectedValue<FilterLocation> location = new InjectedValue<>();
 
     public FilterRef(Predicate predicate, int priority) {
         this.predicate = predicate;
         this.priority = priority;
     }
 
+    @Override
+    public void start(StartContext context) throws StartException {
+        location.getValue().addFilterRef(this);
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        location.getValue().removeFilterRef(this);
+    }
+
     InjectedValue<FilterService> getFilter() {
         return filter;
+    }
+
+    InjectedValue<FilterLocation> getLocation() {
+        return location;
     }
 
     public HttpHandler createHttpHandler(HttpHandler next) {

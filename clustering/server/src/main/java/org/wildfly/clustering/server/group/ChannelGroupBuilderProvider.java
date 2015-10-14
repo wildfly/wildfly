@@ -25,13 +25,13 @@ import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.server.GroupBuilderFactory;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for a channel-based {@link Group} service.
  * @author Paul Ferraro
  */
-public class ChannelGroupBuilderProvider extends GroupBuilderProvider implements ClusteredGroupBuilderProvider {
+public class ChannelGroupBuilderProvider extends GroupBuilderProvider implements DistributedGroupBuilderProvider {
 
     private static final GroupBuilderFactory<Group> FACTORY = new GroupBuilderFactory<Group>() {
         @Override

@@ -25,27 +25,16 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.infinispan.commons.marshall.Externalizer;
 import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.ejb.infinispan.SessionIDExternalizer;
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.ejb.infinispan.BasicSessionIDExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanKeyExternalizer extends AbstractSimpleExternalizer<InfinispanBeanKey<SessionID>> {
-    private static final long serialVersionUID = -7421324153578768415L;
+public class InfinispanBeanKeyExternalizer implements Externalizer<InfinispanBeanKey<SessionID>> {
 
-    private final Externalizer<SessionID> externalizer = new SessionIDExternalizer();
-
-    public InfinispanBeanKeyExternalizer() {
-        this(InfinispanBeanKey.class);
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private InfinispanBeanKeyExternalizer(Class targetClass) {
-        super(targetClass);
-    }
+    private final Externalizer<SessionID> externalizer = new BasicSessionIDExternalizer();
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanKey<SessionID> key) throws IOException {
@@ -58,5 +47,12 @@ public class InfinispanBeanKeyExternalizer extends AbstractSimpleExternalizer<In
         String beanName = input.readUTF();
         SessionID id = this.externalizer.readObject(input);
         return new InfinispanBeanKey<>(beanName, id);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Class<InfinispanBeanKey<SessionID>> getTargetClass() {
+        Class targetClass = InfinispanBeanKey.class;
+        return targetClass;
     }
 }

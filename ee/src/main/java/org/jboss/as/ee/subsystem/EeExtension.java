@@ -43,13 +43,13 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -64,9 +64,7 @@ public class EeExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "ee";
     private static final String RESOURCE_NAME = EeExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -79,8 +77,7 @@ public class EeExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         // Register the root subsystem resource.
         final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(EeSubsystemRootResource.create());
@@ -109,13 +106,23 @@ public class EeExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_0.getUriString(), EESubsystemParser10.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_1.getUriString(), EESubsystemParser11.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_2.getUriString(), EESubsystemParser12.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_2_0.getUriString(), EESubsystemParser20.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_3_0.getUriString(), EESubsystemParser20.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_4_0.getUriString(), EESubsystemParser40.INSTANCE);
         context.setProfileParsingCompletionHandler(new BeanValidationProfileParsingCompletionHandler());
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ModelVersion v1_0_0 = ModelVersion.create(1, 0, 0);
+        final ModelVersion v3_0_0 = ModelVersion.create(3, 0, 0);
+        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
+        ResourceTransformationDescriptionBuilder builder_3_0 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), v3_0_0);
+
+        ManagedExecutorServiceResourceDefinition.INSTANCE.registerTransformers_4_0(builder_3_0);
+        ManagedScheduledExecutorServiceResourceDefinition.INSTANCE.registerTransformers_4_0(builder_3_0);
+
+        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(v3_0_0, v1_0_0);
 
         GlobalModulesRejecterConverter globalModulesRejecterConverter = new GlobalModulesRejecterConverter();
 
@@ -135,7 +142,10 @@ public class EeExtension implements Extension {
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
         builder.discardChildResource(EESubsystemModel.DEFAULT_BINDINGS_PATH);
 
-        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[] {
+                v1_0_0,
+                v3_0_0
+        });
     }
 
     /**

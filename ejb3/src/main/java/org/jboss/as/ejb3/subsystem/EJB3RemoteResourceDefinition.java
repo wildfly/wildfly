@@ -34,8 +34,12 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for the EJB remote service
@@ -45,6 +49,13 @@ import org.jboss.dmr.ModelType;
 public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
     public static final EJB3RemoteResourceDefinition INSTANCE = new EJB3RemoteResourceDefinition();
+
+    static final SimpleAttributeDefinition CLIENT_MAPPINGS_CLUSTER_NAME =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME))
+                    .build();
 
     static final SimpleAttributeDefinition CONNECTOR_REF =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CONNECTOR_REF, ModelType.STRING, true)
@@ -63,6 +74,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
     static {
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
+        map.put(CLIENT_MAPPINGS_CLUSTER_NAME.getName(), CLIENT_MAPPINGS_CLUSTER_NAME);
         map.put(CONNECTOR_REF.getName(), CONNECTOR_REF);
         map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
 
@@ -96,4 +108,21 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder builder) {
         RemoteConnectorChannelCreationOptionResource.registerTransformers_1_1_0(builder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH));
     }
+
+    static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder remoteService = parent.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH);
+        remoteService.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME)),CLIENT_MAPPINGS_CLUSTER_NAME)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_MAPPINGS_CLUSTER_NAME)
+                .end();
+    }
+
+    static void registerTransformers_3_0(ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder remoteService = parent.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH);
+        remoteService.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME)),CLIENT_MAPPINGS_CLUSTER_NAME)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_MAPPINGS_CLUSTER_NAME)
+                .end();
+    }
+
 }

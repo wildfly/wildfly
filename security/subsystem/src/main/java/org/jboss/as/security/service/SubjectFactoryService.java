@@ -44,8 +44,6 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
 
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("subject-factory");
 
-    private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
-
     private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
 
     private SubjectFactory subjectFactory;
@@ -59,7 +57,7 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        log.debugf("Starting SubjectFactoryService");
+        SecurityLogger.ROOT_LOGGER.debugf("Starting SubjectFactoryService");
         final ISecurityManagement injectedSecurityManagement = securityManagementValue.getValue();
         int i = subjectFactoryClassName.lastIndexOf(":");
         if (i == -1)

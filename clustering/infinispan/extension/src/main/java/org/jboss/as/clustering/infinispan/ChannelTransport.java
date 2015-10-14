@@ -22,8 +22,14 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.nio.ByteBuffer;
+
+import org.infinispan.remoting.responses.CacheNotFoundResponse;
+import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import org.infinispan.remoting.transport.jgroups.MarshallerAdapter;
 import org.jgroups.Channel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Custom {@link JGroupsTransport} that uses a provided channel.
@@ -31,15 +37,39 @@ import org.jgroups.Channel;
  */
 public class ChannelTransport extends JGroupsTransport {
 
-    public ChannelTransport(Channel channel) {
-        super(channel);
-    }
+    private final Channel channel;
+    private final ChannelFactory factory;
 
-    @Override
-    protected synchronized void initChannel() {
-        this.channel.setDiscardOwnMessages(false);
+    public ChannelTransport(Channel channel, ChannelFactory factory) {
+        this.channel = channel;
+        this.factory = factory;
         this.connectChannel = true;
         this.disconnectChannel = true;
         this.closeChannel = false;
+    }
+
+    @Override
+    protected void initRPCDispatcher() {
+        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.globalHandler, this.getTimeoutExecutor());
+        MarshallerAdapter adapter = new MarshallerAdapter(this.marshaller) {
+            @Override
+            public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
+                return ChannelTransport.this.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length)) ? CacheNotFoundResponse.INSTANCE : super.objectFromBuffer(buffer, offset, length);
+            }
+        };
+        this.dispatcher.setRequestMarshaller(adapter);
+        this.dispatcher.setResponseMarshaller(adapter);
+        this.dispatcher.start();
+    }
+
+    boolean isUnknownForkResponse(ByteBuffer response) {
+        return this.factory.isUnknownForkResponse(response);
+    }
+
+    @Override
+    protected void initChannel() {
+        // This is necessary because JGroupsTransport nulls its channel reference in stop()
+        super.channel = this.channel;
+        super.channel.setDiscardOwnMessages(false);
     }
 }

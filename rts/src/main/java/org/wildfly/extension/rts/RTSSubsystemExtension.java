@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -64,6 +65,8 @@ public final class RTSSubsystemExtension implements Extension {
 
     private static final String RESOURCE_NAME = RTSSubsystemExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
+
     /**
      * The parser used for parsing our subsystem
      */
@@ -82,7 +85,7 @@ public final class RTSSubsystemExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(RTSSubsystemDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 

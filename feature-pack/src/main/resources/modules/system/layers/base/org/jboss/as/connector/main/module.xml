@@ -46,12 +46,11 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server" />
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.as.security" />
         <module name="org.jboss.as.ee" />
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.ironjacamar.api"/>

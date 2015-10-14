@@ -33,6 +33,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -44,6 +45,10 @@ import org.wildfly.extension.undertow.UndertowService;
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 abstract class Handler extends PersistentResourceDefinition {
+
+    public static final String REQUEST_CONTROLLER = "org.wildfly.request-controller";
+    static final RuntimeCapability CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.undertow.handler.file", true)
+            .addOptionalRequirements(REQUEST_CONTROLLER).build();
 
     private static final List<AccessConstraintDefinition> CONSTRAINTS = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-handler", false, false, false)
@@ -59,10 +64,15 @@ abstract class Handler extends PersistentResourceDefinition {
         super.registerOperations(resourceRegistration);
         HandlerAdd add = new HandlerAdd(this);
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add, Handler.CAPABILITY), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
 
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        resourceRegistration.registerCapability(CAPABILITY);
+    }
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return CONSTRAINTS;

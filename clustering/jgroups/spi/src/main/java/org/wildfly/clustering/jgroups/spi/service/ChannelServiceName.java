@@ -47,6 +47,6 @@ public enum ChannelServiceName implements ChannelServiceNameFactory {
 
     @Override
     public ServiceName getServiceName() {
-        return this.getServiceName(DEFAULT_CHANNEL);
+        return this.getServiceName(DEFAULT_GROUP);
     }
 }

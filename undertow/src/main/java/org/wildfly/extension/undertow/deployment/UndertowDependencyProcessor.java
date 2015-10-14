@@ -48,6 +48,7 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier UNDERTOW_SERVLET = ModuleIdentifier.create("io.undertow.servlet");
     private static final ModuleIdentifier UNDERTOW_JSP = ModuleIdentifier.create("io.undertow.jsp");
     private static final ModuleIdentifier UNDERTOW_WEBSOCKET = ModuleIdentifier.create("io.undertow.websocket");
+    private static final ModuleIdentifier UNDERTOW_JS = ModuleIdentifier.create("io.undertow.js");
     private static final ModuleIdentifier CLUSTERING_API = ModuleIdentifier.create("org.wildfly.clustering.web.api");
 
     private static final ModuleIdentifier SERVLET_API = ModuleIdentifier.create("javax.servlet.api");
@@ -74,16 +75,17 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SERVLET_API, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSP_API, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, WEBSOCKET_API, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
 
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
         }
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_CORE, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_SERVLET, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_JSP, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_WEBSOCKET, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_JS, true, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CLUSTERING_API, true, false, false, false));
     }
 

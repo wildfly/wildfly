@@ -45,7 +45,6 @@ import org.jboss.logging.Logger;
 @MessageDriven(name = "TestMD", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:jboss/queue/testQueue") })
-@ResourceAdapter(value = "hornetq-ra.rar")
 public class SimpleMDB implements MessageListener {
 
     private static final Logger log = Logger.getLogger(SimpleMDB.class);

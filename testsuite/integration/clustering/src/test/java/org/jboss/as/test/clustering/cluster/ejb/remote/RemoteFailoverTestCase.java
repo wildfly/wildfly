@@ -39,6 +39,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
@@ -67,6 +68,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-3532")
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(RemoteFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-failover-test";
@@ -97,11 +99,13 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         return jar;
     }
 
+    @InSequence(1)
     @Test
     public void testStatelessFailover() throws Exception {
         this.testStatelessFailover(CLIENT_PROPERTIES, StatelessIncrementorBean.class);
     }
 
+    @InSequence(4)
     @Test
     public void testSecureStatelessFailover() throws Exception {
         this.testStatelessFailover(SECURE_CLIENT_PROPERTIES, SecureStatelessIncrementorBean.class);
@@ -185,6 +189,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         }
     }
 
+    @InSequence(2)
     @Test
     public void testStatefulFailover() throws Exception {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
@@ -275,7 +280,8 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         }
     }
 
-    @Ignore("re-enable when WFLY-3532 resoolved")
+    // @Ignore("re-enable when WFLY-3532 resoolved")
+    @InSequence(3)
     @Test
     public void testConcurrentFailover() throws Exception {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);

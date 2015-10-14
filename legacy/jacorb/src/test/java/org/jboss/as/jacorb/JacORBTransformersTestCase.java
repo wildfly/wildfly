@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -105,7 +105,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
 
     private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(readResource("subsystem-1.2.xml"));
+                .setSubsystemXml(readResource("subsystem.xml"));
 
         // Add legacy subsystems
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
@@ -137,7 +137,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
 
     private void testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(readResource("subsystem-1.2-security-identity.xml"));
+                .setSubsystemXml(readResource("subsystem-security-identity.xml"));
 
         // Add legacy subsystems
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
@@ -203,7 +203,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
                     }
                 });
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("subsystem-1.2-security-client.xml"), config);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("subsystem-security-client.xml"), config);
         checkSubsystemModelTransformation(mainServices, version_1_1_0, new ModelFixer() {
             @Override
             public ModelNode fixModel(ModelNode modelNode) {
@@ -255,7 +255,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
 
 
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("expressions-1.2.xml"), config);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("expressions.xml"), config);
     }
 
     @Test
@@ -286,7 +286,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
                 version,
-                builder.parseXmlResource("subsystem-1.4-ior-settings.xml"),
+                builder.parseXmlResource("subsystem-ior-settings.xml"),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(
                                 PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),

@@ -23,9 +23,9 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
-import org.jboss.logging.Logger;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -37,8 +37,6 @@ import java.io.InputStream;
  * @author Jaikiran Pai
  */
 class InvocationCancellationMessageHandler extends AbstractMessageHandler {
-
-    private static final Logger logger = Logger.getLogger(InvocationCancellationMessageHandler.class);
 
     private final RemoteAsyncInvocationCancelStatusService remoteAsyncInvocationCancelStatus;
 
@@ -58,6 +56,6 @@ class InvocationCancellationMessageHandler extends AbstractMessageHandler {
         }
         // mark it as cancelled
         cancellationFlag.set(true);
-        logger.debugf("Invocation with id %s has been marked as cancelled, as requested", invocationToCancel);
+        EjbLogger.REMOTE_LOGGER.debugf("Invocation with id %s has been marked as cancelled, as requested", invocationToCancel);
     }
 }

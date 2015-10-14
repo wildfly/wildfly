@@ -40,13 +40,13 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.jandex.AnnotationInstance;
@@ -177,8 +177,8 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
 
 
     private static AnnotatedElement elementForInjectionTarget(final DeploymentUnit unit, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
-        final DeploymentClassIndex classIndex = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
-        final Class<?> target = getClass(classIndex, classInfo.name().toString());
+
+        final Class<?> target = getClass(unit, classInfo.name().toString());
         return target;
     }
 
@@ -202,10 +202,10 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
     }
 
 
-    private static Class<?> getClass(final DeploymentClassIndex classIndex, final String className) throws DeploymentUnitProcessingException { // TODO: refactor to common code
+    private static Class<?> getClass(final DeploymentUnit du, final String className) throws DeploymentUnitProcessingException { // TODO: refactor to common code
         if (!isEmpty(className)) {
             try {
-                return classIndex.classIndex(className).getModuleClass();
+                return ClassLoadingUtils.loadClass(className, du);
             } catch (ClassNotFoundException e) {
                 throw new DeploymentUnitProcessingException(e);
             }

@@ -163,10 +163,10 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
 
 
     private String inferRemoteInterfaceFromHome(final String homeClassName, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription description) throws ClassNotFoundException, DeploymentUnitProcessingException {
-        final Class homeClass = module.getClassLoader().loadClass(homeClassName);
-        final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(homeClass);
+        final Class<?> homeClass = module.getClassLoader().loadClass(homeClassName);
+        final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(homeClass);
         Class<?> remote = null;
-        for (final Method method : index.getMethods()) {
+        for (final Method method : (Iterable<Method>)index.getMethods()) {
             if (method.getName().startsWith("create")) {
                 if (remote != null && remote != method.getReturnType()) {
                     throw EjbLogger.ROOT_LOGGER.multipleCreateMethod(homeClass);
@@ -181,10 +181,10 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
     }
 
     private String inferLocalInterfaceFromLocalHome(final String localHomeClassName, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription description) throws ClassNotFoundException, DeploymentUnitProcessingException {
-        final Class localHomeClass = module.getClassLoader().loadClass(localHomeClassName);
-        final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(localHomeClass);
+        final Class<?> localHomeClass = module.getClassLoader().loadClass(localHomeClassName);
+        final ClassReflectionIndex index = deploymentReflectionIndex.getClassIndex(localHomeClass);
         Class<?> localClass = null;
-        for (final Method method : index.getMethods()) {
+        for (final Method method : (Iterable<Method>)index.getMethods()) {
             if (method.getName().startsWith("create")) {
                 if (localClass != null && localClass != method.getReturnType()) {
                     throw EjbLogger.ROOT_LOGGER.multipleCreateMethod(localHomeClass);

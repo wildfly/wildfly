@@ -25,11 +25,11 @@ package org.jboss.as.ejb3.concurrency;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 
 import javax.ejb.LockType;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -41,18 +41,16 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 public class ContainerManagedConcurrencyInterceptor implements Interceptor {
 
     /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(ContainerManagedConcurrencyInterceptor.class);
-
-    /**
      * A spec compliant {@link org.jboss.as.ejb3.concurrency.EJBReadWriteLock}
      */
     private final ReadWriteLock readWriteLock = new EJBReadWriteLock();
 
     private final LockableComponent lockableComponent;
 
-    public ContainerManagedConcurrencyInterceptor(LockableComponent component) {
+    private final Map<Method, Method> viewMethodToComponentMethodMap;
+
+    public ContainerManagedConcurrencyInterceptor(LockableComponent component, Map<Method, Method> viewMethodToComponentMethodMap) {
+        this.viewMethodToComponentMethodMap = viewMethodToComponentMethodMap;
         if (component == null) {
             throw EjbLogger.ROOT_LOGGER.componentIsNull(LockableComponent.class.getName());
         }
@@ -68,9 +66,13 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         final InvocationContext invocationContext = context.getInvocationContext();
         LockableComponent lockableComponent = this.getLockableComponent();
         // get the invoked method
-        Method invokedMethod = invocationContext.getMethod();
-        if (invokedMethod == null) {
+        Method method = invocationContext.getMethod();
+        if (method == null) {
             throw EjbLogger.ROOT_LOGGER.invocationNotApplicableForMethodInvocation(invocationContext);
+        }
+        Method invokedMethod = viewMethodToComponentMethodMap.get(method);
+        if(invokedMethod == null) {
+            invokedMethod = method;
         }
         // get the Lock applicable for this method
         Lock lock = getLock(lockableComponent, invokedMethod);
@@ -101,7 +103,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         // try getting the lock
         boolean success = lock.tryLock(time, unit);
         if (!success) {
-            throw EjbLogger.ROOT_LOGGER.concurrentAccessTimeoutException(invocationContext, time + unit.name());
+            throw EjbLogger.ROOT_LOGGER.concurrentAccessTimeoutException(lockableComponent.getComponentName(), time + unit.name());
         }
         try {
             // lock obtained. now proceed!

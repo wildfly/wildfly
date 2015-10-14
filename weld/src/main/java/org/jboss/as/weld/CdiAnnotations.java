@@ -142,32 +142,44 @@ public enum CdiAnnotations {
      */
     private static class Constants {
         /**
-         * javax.interceptor package.
+         * javax package.
          */
-        public static final DotName JAVAX_INTERCEPTOR = DotName.createSimple("javax.interceptor");
+        public static final DotName JAVAX = DotName.createComponentized(null, "javax");
+
+        /**
+         * javax.interceptor package.
+        */
+        public static final DotName JAVAX_INTERCEPTOR = DotName.createComponentized(JAVAX, "interceptor");
+
         /**
          * javax.decorator package.
          */
-        public static final DotName JAVAX_DECORATOR = DotName.createSimple("javax.decorator");
+        public static final DotName JAVAX_DECORATOR = DotName.createComponentized(JAVAX, "decorator");
+
+        /**
+         * javax.enterprise package.
+         */
+        public static final DotName JAVAX_ENT = DotName.createComponentized(JAVAX, "enterprise");
+
         /**
          * javax.enterprise.context package.
          */
-        public static final DotName JAVAX_ENT_CONTEXT = DotName.createSimple("javax.enterprise.context");
+        public static final DotName JAVAX_ENT_CONTEXT = DotName.createComponentized(JAVAX_ENT, "context");
 
         /**
          * javax.enterprise.event package.
          */
-        public static final DotName JAVAX_ENT_EVT = DotName.createSimple("javax.enterprise.event");
+        public static final DotName JAVAX_ENT_EVT = DotName.createComponentized(JAVAX_ENT, "event");
 
         /**
          * javax.enterprise.inject package.
          */
-        public static final DotName JAVAX_ENT_INJ = DotName.createSimple("javax.enterprise.inject");
+        public static final DotName JAVAX_ENT_INJ = DotName.createComponentized(JAVAX_ENT, "inject");
 
         /**
          * javax.inject package.
          */
-        public static final DotName JAVAX_INJ = DotName.createSimple("javax.inject");
+        public static final DotName JAVAX_INJ = DotName.createComponentized(JAVAX, "inject");
     }
 
     /**

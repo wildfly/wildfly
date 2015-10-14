@@ -32,10 +32,12 @@ public enum InfinispanSchema {
     VERSION_1_2(1, 2),
     VERSION_1_3(1, 3),
     VERSION_1_4(1, 4),
+    VERSION_1_5(1, 5),
     VERSION_2_0(2, 0),
     VERSION_3_0(3, 0),
+    VERSION_4_0(4, 0),
     ;
-    static final InfinispanSchema CURRENT = VERSION_3_0;
+    static final InfinispanSchema CURRENT = VERSION_4_0;
 
     private final int major;
     private final int minor;
@@ -47,7 +49,7 @@ public enum InfinispanSchema {
 
     /**
      * Indicates whether this version of the schema is greater than or equal to the version of the specified schema.
-     * @param a schema
+     * @param schema a schema version with which to compare
      * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
      */
     public boolean since(InfinispanSchema schema) {

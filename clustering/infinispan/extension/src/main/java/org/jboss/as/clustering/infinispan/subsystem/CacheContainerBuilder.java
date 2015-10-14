@@ -21,18 +21,26 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
+
 import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.logging.Logger;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -49,20 +57,18 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 @Listener
-public class CacheContainerBuilder implements Builder<CacheContainer>, Service<CacheContainer> {
-
-    private static final Logger log = Logger.getLogger(CacheContainerBuilder.class.getPackage().getName());
+public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContainer>, Service<CacheContainer> {
 
     private final InjectedValue<GlobalConfiguration> configuration = new InjectedValue<>();
     private final List<String> aliases = new LinkedList<>();
     private final String name;
-    private final String defaultCache;
 
+    private volatile String defaultCache;
     private volatile CacheContainer container;
+    private volatile EmbeddedCacheManager manager;
 
-    public CacheContainerBuilder(String name, String defaultCache) {
+    public CacheContainerBuilder(String name) {
         this.name = name;
-        this.defaultCache = defaultCache;
     }
 
     @Override
@@ -71,18 +77,23 @@ public class CacheContainerBuilder implements Builder<CacheContainer>, Service<C
     }
 
     @Override
+    public Builder<CacheContainer> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.aliases.clear();
+        this.aliases.addAll(ModelNodes.asStringList(ALIASES.getDefinition().resolveModelAttribute(context, model)));
+        return this;
+    }
+
+    @Override
     public ServiceBuilder<CacheContainer> build(ServiceTarget target) {
         ServiceBuilder<CacheContainer> builder = target.addService(this.getServiceName(), this)
                 .addDependency(CacheContainerServiceName.CONFIGURATION.getServiceName(this.name), GlobalConfiguration.class, this.configuration)
         ;
-        for (String alias : this.aliases) {
-            builder.addAliases(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(alias));
-        }
-        return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        this.aliases.forEach(alias -> builder.addAliases(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(alias)));
+        return builder.setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
-    public CacheContainerBuilder addAlias(String alias) {
-        this.aliases.add(alias);
+    CacheContainerBuilder setDefaultCache(String defaultCache) {
+        this.defaultCache = defaultCache;
         return this;
     }
 
@@ -94,19 +105,24 @@ public class CacheContainerBuilder implements Builder<CacheContainer>, Service<C
     @Override
     public void start(StartContext context) {
         GlobalConfiguration config = this.configuration.getValue();
-        this.container = new DefaultCacheContainer(config, this.defaultCache);
-        this.container.addListener(this);
-        this.container.start();
-        log.debugf("%s cache container started", this.name);
+        this.manager = new DefaultCacheManager(config, null, false);
+        this.manager.addListener(this);
+        this.manager.start();
+        this.container = new DefaultCacheContainer(this.name, this.manager, this.defaultCache);
+        InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
+        // Ensure global components of this cache container start eagerly
+        this.container.getGlobalComponentRegistry().start();
     }
 
     @Override
     public void stop(StopContext context) {
-        if ((this.container != null) && this.container.getStatus().allowInvocations()) {
-            this.container.stop();
-            this.container.removeListener(this);
-            log.debugf("%s cache container stopped", this.name);
+        if ((this.manager != null) && this.manager.getStatus().allowInvocations()) {
+            this.manager.stop();
+            this.manager.removeListener(this);
+            this.manager = null;
+            InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
         }
+        this.container = null;
     }
 
     @CacheStarted

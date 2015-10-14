@@ -22,22 +22,24 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -50,65 +52,71 @@ import org.jboss.dmr.ModelType;
  */
 public class FileStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+    static final PathElement LEGACY_PATH = PathElement.pathElement("file-store", "FILE_STORE");
+    static final PathElement PATH = pathElement("file");
 
-    // attributes
-    static final SimpleAttributeDefinition RELATIVE_PATH = new SimpleAttributeDefinitionBuilder(ModelKeys.PATH, ModelType.STRING, true)
-            .setXmlName(Attribute.PATH.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        RELATIVE_PATH("path", ModelType.STRING, null),
+        RELATIVE_TO("relative-to", ModelType.STRING, new ModelNode(ServerEnvironment.SERVER_DATA_DIR)),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelKeys.RELATIVE_TO, ModelType.STRING, true)
-            .setXmlName(Attribute.RELATIVE_TO.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(ServerEnvironment.SERVER_DATA_DIR))
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { RELATIVE_TO, RELATIVE_PATH };
-
-    // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
-            .setParameters(PARAMETERS)
-            .addParameter(RELATIVE_TO)
-            .addParameter(RELATIVE_PATH)
-            .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, RELATIVE_PATH);
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer())).inheritResourceAttributeDefinitions();
+
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
         }
 
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResolvePathHandler resolvePathHandler;
+    private final PathManager pathManager;
 
-    FileStoreResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(StoreType.FILE, allowRuntimeOnlyRegistration);
-        this.resolvePathHandler = resolvePathHandler;
+    FileStoreResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration);
+        this.pathManager = pathManager;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
-    @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(ADD_DEFINITION, handler);
-        if (this.resolvePathHandler != null) {
-            registration.registerOperationHandler(this.resolvePathHandler.getOperationDefinition(), this.resolvePathHandler);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(StoreResourceDefinition.Attribute.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new FileStoreBuilderFactory());
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
+
+        if (this.pathManager != null) {
+            ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(this.pathManager)
+                    .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
+                    .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
+                    .build();
+            registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
         }
+
+        super.register(registration);
     }
 }

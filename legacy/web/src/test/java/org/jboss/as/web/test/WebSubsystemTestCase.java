@@ -109,7 +109,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-2.1.0.xml");
+        return readResource("subsystem-2.2.0.xml");
     }
 
     @Override
@@ -604,7 +604,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.1.0.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
         .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
@@ -634,7 +634,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.1.0.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
         .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
@@ -660,7 +660,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.1.0.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "http")),

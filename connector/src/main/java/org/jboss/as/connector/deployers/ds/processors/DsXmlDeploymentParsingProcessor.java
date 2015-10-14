@@ -80,7 +80,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
         final PropertyReplacer propertyReplacer = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_REPLACER);
 
         final Set<VirtualFile> files = dataSources(deploymentUnit);
-
+        boolean loggedDeprication = false;
         for (VirtualFile f : files) {
             InputStream xmlStream = null;
             try {
@@ -90,6 +90,10 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
                 DataSources dataSources = parser.parse(xmlStream);
 
                 if (dataSources != null) {
+                    if (!loggedDeprication) {
+                        loggedDeprication = true;
+                        ConnectorLogger.ROOT_LOGGER.deprecated();
+                    }
                     for (DataSource ds : dataSources.getDataSource()) {
                         if (ds.getDriver() == null) {
                             throw ConnectorLogger.ROOT_LOGGER.FailedDeployDriverNotSpecified(ds.getJndiName());

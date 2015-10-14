@@ -22,6 +22,7 @@
 
 package org.jboss.as.weld.deployment.processors;
 
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -29,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -45,6 +45,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
     private static ModuleIdentifier JBOSS_AS_WELD_ID = ModuleIdentifier.create("org.jboss.as.weld");
     private static ModuleIdentifier WELD_CORE_ID = ModuleIdentifier.create("org.jboss.weld.core");
+    private static final ModuleIdentifier WELD_PROBE_ID = ModuleIdentifier.create("org.jboss.weld.probe");
     private static ModuleIdentifier WELD_API_ID = ModuleIdentifier.create("org.jboss.weld.api");
     private static ModuleIdentifier WELD_SPI_ID = ModuleIdentifier.create("org.jboss.weld.spi");
     private static ModuleIdentifier CDI_BEAN_VALIDATION_ID = ModuleIdentifier.create("org.hibernate.validator.cdi");
@@ -70,12 +71,16 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         }
         addDependency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_CORE_ID);
+        addDependency(moduleSpecification, moduleLoader, WELD_PROBE_ID, true);
         addDependency(moduleSpecification, moduleLoader, WELD_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_SPI_ID);
 
 
         ModuleDependency dep = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_ID, false, false, false, false);
         dep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        dep.addImportFilter(PathFilters.is("org/jboss/as/weld/ejb"), true);
+        dep.addImportFilter(PathFilters.is("org/jboss/as/weld/injection"), true);
+        dep.addImportFilter(PathFilters.acceptAll(), false);
         dep.addExportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(dep);
 
@@ -85,7 +90,12 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+        addDependency(moduleSpecification, moduleLoader, moduleIdentifier, false);
+    }
+
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+            ModuleIdentifier moduleIdentifier, boolean optional) {
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false));
     }
 
     @Override

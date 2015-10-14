@@ -35,7 +35,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.xerces.dom.DOMInputImpl;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.EntityResolver;
@@ -76,6 +77,8 @@ public class AbstractValidationUnitTest {
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-cache_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-container-interceptors_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-delivery-active_1_0.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-delivery-active_1_1.xsd");
+        EXCLUDED_SCHEMA_FILES.add("jboss-ejb-clustering_1_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-iiop_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-pool_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-resource-adapter-binding_1_0.xsd");
@@ -153,7 +156,13 @@ public class AbstractValidationUnitTest {
     static final LSResourceResolver DEFAULT_RESOURCE_RESOLVER = new LSResourceResolver() {
         @Override
         public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-            LSInput input = new DOMInputImpl();
+            final DOMImplementationLS impl;
+            try {
+                impl = (DOMImplementationLS) DOMImplementationRegistry.newInstance().getDOMImplementation("LS");
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException("could not create LS input" ,e);
+            }
+            LSInput input = impl.createLSInput();
 
             final URL url;
             if (NAMESPACE_MAP.containsKey(systemId)) {

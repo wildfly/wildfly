@@ -47,6 +47,7 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
                 SecurityExtension.getResourceDescriptionResolver(Constants.ACL),
                 ACLResourceDefinitionAdd.INSTANCE,
                 new SecurityDomainReloadRemoveHandler());
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
@@ -63,7 +64,7 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
                 PathElement.pathElement(Constants.LOGIN_MODULE),
                 new AliasEntry(moduleReg) {
                     @Override
-                    public PathAddress convertToTargetAddress(PathAddress address) {
+                    public PathAddress convertToTargetAddress(PathAddress address, AliasContext aliasContext) {
                         PathElement element = address.getLastElement();
                         element = PathElement.pathElement(Constants.ACL_MODULE, element.getValue());
                         return address.subAddress(0, address.size() -1).append(element);

@@ -58,6 +58,14 @@
             <fileset dir="target/jbossas"/>
         </copy>
 
+        <echo message="Copying and configuring instance jbossas-parse-marshal"/>
+        <copy todir="target/jbossas-parse-marshal">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <copy todir="target/jbossas-parse-marshal/modules">
+            <fileset dir="${jboss.dist}/modules"/>
+        </copy>
+
         <!-- Connects back to original host (node0) -->
         <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
                                                      remotePort="8080" protocol="http-remoting" securityRealm="PasswordRealm" userName="user1"/>
@@ -70,12 +78,16 @@
         />
         <ts.config-as.add-port-offset name="jbossas-with-remote-outbound-connection" offset="100" nativePort="9999" httpPort="9990"/>
 
-        <delete dir="target/jbossas-messaging-failover"/>
-        <echo message="Copying and configuring instance jbossas-messaging-failover"/>
-        <copy todir="target/jbossas-messaging-failover">
+        <delete dir="target/jbossas-messaging-ha-server1"/>
+        <echo message="Copying and configuring instance jbossas-messaging-ha-server1"/>
+        <copy todir="target/jbossas-messaging-ha-server1">
             <fileset dir="target/jbossas"/>
         </copy>
-        <ts.config-as.add-messaging-failover name="jbossas-messaging-failover"/>
+        <delete dir="target/jbossas-messaging-ha-server2"/>
+        <echo message="Copying and configuring instance jbossas-messaging-ha-server2"/>
+        <copy todir="target/jbossas-messaging-ha-server2">
+            <fileset dir="target/jbossas"/>
+        </copy>
     </target>
 
 </project>

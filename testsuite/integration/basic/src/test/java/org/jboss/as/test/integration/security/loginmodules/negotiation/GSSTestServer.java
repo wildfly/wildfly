@@ -45,6 +45,7 @@ import org.ietf.jgss.MessageProp;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.callback.UsernamePasswordHandler;
@@ -168,8 +169,12 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
             dos.writeInt(GSSTestConstants.CMD_STOP);
             dos.flush();
             LOGGER.debug("STOP command sent.");
+            // wait for the GSSServer cleanup
+            Thread.sleep(1000L);
         } catch (IOException e) {
             LOGGER.error("Problem occurred during sending stop command", e);
+        } catch (InterruptedException e) {
+            LOGGER.info("Thread.sleep() interrupted", e);
         } finally {
             try {
                 socket.close();
@@ -189,17 +194,18 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
     private void start() throws LoginException, PrivilegedActionException, IOException {
         LOGGER.debug("Starting GSSTestServer - login");
         // Use our custom configuration to avoid reliance on external config
-        Configuration.setConfiguration(new Krb5LoginConfiguration(null, null, true));
+        final Krb5LoginConfiguration krb5configuration = new Krb5LoginConfiguration(null, null, true,
+                Utils.getLoginConfiguration());
+        Configuration.setConfiguration(krb5configuration);
         // 1. Authenticate to Kerberos.
-        final LoginContext lc = new LoginContext("foo", new UsernamePasswordHandler(GSSTestConstants.PRINCIPAL,
-                GSSTestConstants.PASSWORD));
-        lc.login();
+        final LoginContext lc = Utils.loginWithKerberos(krb5configuration, GSSTestConstants.PRINCIPAL,
+                GSSTestConstants.PASSWORD);
         LOGGER.debug("Authentication succeed");
         // 2. Perform the work as authenticated Subject.
         final String finishMsg = Subject.doAs(lc.getSubject(), new ServerAction());
         LOGGER.info("Server stopped with result: " + (finishMsg == null ? "OK" : finishMsg));
         lc.logout();
-
+        krb5configuration.resetConfiguration();
     }
 
     // Embedded classes ------------------------------------------------------

@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.enterprise.inject.spi.BeanManager;
+
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.logging.WeldLogger;
@@ -43,6 +45,7 @@ import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.manager.api.ExecutorServices;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -67,6 +70,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
 
     private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<WeldSecurityServices>();
     private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<WeldTransactionServices>();
+    private final InjectedValue<ExecutorServices> executorServices = new InjectedValue<ExecutorServices>();
 
     private volatile boolean started;
 
@@ -106,6 +110,10 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         addWeldService(SecurityServices.class, securityServices.getValue());
         addWeldService(TransactionServices.class, weldTransactionServices.getValue());
 
+        if (!deployment.getServices().contains(ExecutorServices.class)) {
+            addWeldService(ExecutorServices.class, executorServices.getValue());
+        }
+
         ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(),
                 deployment.getSubDeploymentClassLoaders());
 
@@ -121,25 +129,9 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
     }
 
     /**
-     * Stops the container
-     *
-     * @throws IllegalStateException if the container is not running
+     * This is a no-op, the actual shutdown is performed in {@link WeldStartService#stop(org.jboss.msc.service.StopContext)}
      */
     public synchronized void stop(final StopContext context) {
-        if (!started) {
-            throw WeldLogger.ROOT_LOGGER.notStarted("WeldContainer");
-        }
-        WeldLogger.DEPLOYMENT_LOGGER.stoppingWeldService(deploymentName);
-        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        try {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(deployment.getModule().getClassLoader());
-            WeldProvider.containerShutDown(Container.instance(deploymentName));
-            bootstrap.shutdown();
-        } finally {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
-            ModuleGroupSingletonProvider.removeClassLoader(deployment.getModule().getClassLoader());
-        }
-        started = false;
     }
 
     /**
@@ -190,6 +182,18 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         return started;
     }
 
+    void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    WeldDeployment getDeployment() {
+        return deployment;
+    }
+
+    String getDeploymentName() {
+        return deploymentName;
+    }
+
     WeldBootstrap getBootstrap() {
         return bootstrap;
     }
@@ -205,5 +209,9 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
 
     public InjectedValue<WeldTransactionServices> getWeldTransactionServices() {
         return weldTransactionServices;
+    }
+
+    public InjectedValue<ExecutorServices> getExecutorServices() {
+        return executorServices;
     }
 }

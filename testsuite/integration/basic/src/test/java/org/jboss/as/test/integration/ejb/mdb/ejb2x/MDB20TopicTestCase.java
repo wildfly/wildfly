@@ -35,6 +35,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -81,7 +82,7 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
 
     @Deployment
     public static Archive getDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDB20TopicTestCase.jar");
         ejbJar.addClasses(EJB2xMDB.class, AbstractMDB2xTestCase.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
@@ -112,9 +113,9 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
     @Test
     public void testEjb20TopicMDBs() {
         sendTextMessage("Say hello to the topic", topic);
-        final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(1000));
+        final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Reply message was null on reply queue: " + replyQueueA, replyA);
-        final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(1000));
+        final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Reply message was null on reply queue: " + replyQueueB, replyB);
     }
 }

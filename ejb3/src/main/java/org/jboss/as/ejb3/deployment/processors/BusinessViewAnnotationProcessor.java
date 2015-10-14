@@ -87,7 +87,11 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
                     continue;
                 }
                 final Class<?> ejbClass = this.getEjbClass(componentDescription.getComponentClassName(), moduleClassLoader);
-                this.processViewAnnotations(deploymentUnit, ejbClass, (SessionBeanComponentDescription) componentDescription);
+                try {
+                    this.processViewAnnotations(deploymentUnit, ejbClass, (SessionBeanComponentDescription) componentDescription);
+                } catch (Exception e) {
+                    throw EjbLogger.ROOT_LOGGER.failedToProcessBusinessInterfaces(ejbClass, e);
+                }
             }
         }
         if (appclient) {
@@ -96,7 +100,11 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
                     continue;
                 }
                 final Class<?> ejbClass = this.getEjbClass(componentDescription.getComponentClassName(), moduleClassLoader);
-                this.processViewAnnotations(deploymentUnit, ejbClass, (SessionBeanComponentDescription) componentDescription);
+                try {
+                    this.processViewAnnotations(deploymentUnit, ejbClass, (SessionBeanComponentDescription) componentDescription);
+                } catch (Exception e) {
+                    throw EjbLogger.ROOT_LOGGER.failedToProcessBusinessInterfaces(ejbClass, e);
+                }
             }
         }
     }

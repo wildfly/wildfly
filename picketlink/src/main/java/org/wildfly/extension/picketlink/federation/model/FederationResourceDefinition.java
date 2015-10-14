@@ -54,6 +54,7 @@ public class FederationResourceDefinition extends AbstractFederationResourceDefi
     public FederationResourceDefinition(ExtensionContext extensionContext) {
         super(ModelElement.FEDERATION, FederationAddHandler.INSTANCE, FederationRemoveHandler.INSTANCE);
         this.extensionContext = extensionContext;
+        setDeprecated(FederationExtension.DEPRECATED_SINCE);
     }
 
     @Override

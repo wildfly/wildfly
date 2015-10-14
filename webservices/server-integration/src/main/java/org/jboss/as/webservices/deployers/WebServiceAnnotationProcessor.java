@@ -54,6 +54,7 @@ public class WebServiceAnnotationProcessor implements DeploymentUnitProcessor {
         this.factories = Collections.unmodifiableList(factories);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public final void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 

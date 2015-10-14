@@ -32,6 +32,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.narayana.rest.integration.ParticipantResource;
 import org.jboss.narayana.rest.integration.api.ParticipantsManagerFactory;
+import org.wildfly.extension.rts.jaxrs.ParticipantApplication;
 import org.wildfly.extension.rts.logging.RTSLogger;
 
 /**
@@ -47,18 +48,14 @@ public final class ParticipantService extends AbstractRTSService implements Serv
 
     @Override
     public ParticipantService getValue() throws IllegalStateException, IllegalArgumentException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("ParticipantService.getValue");
-        }
+        RTSLogger.ROOT_LOGGER.trace("ParticipantService.getValue");
 
         return this;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("ParticipantService.start");
-        }
+        RTSLogger.ROOT_LOGGER.trace("ParticipantService.start");
 
         deployParticipant();
         ParticipantsManagerFactory.getInstance().setBaseUrl(getBaseUrl());
@@ -66,9 +63,7 @@ public final class ParticipantService extends AbstractRTSService implements Serv
 
     @Override
     public void stop(StopContext context) {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("ParticipantService.stop");
-        }
+        RTSLogger.ROOT_LOGGER.trace("ParticipantService.stop");
 
         undeployServlet();
     }
@@ -77,7 +72,7 @@ public final class ParticipantService extends AbstractRTSService implements Serv
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", "org.wildfly.extension.rts.jaxrs.ParticipantApplication");
+        initialParameters.put("javax.ws.rs.Application", ParticipantApplication.class.getName());
 
         final DeploymentInfo participantDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 

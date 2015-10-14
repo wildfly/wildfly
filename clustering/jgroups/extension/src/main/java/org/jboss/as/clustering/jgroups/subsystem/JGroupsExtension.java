@@ -21,8 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.jgroups.LogFactory;
@@ -30,10 +28,8 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jgroups.Global;
 
 /**
  * Registers the JGroups subsystem.
@@ -45,29 +41,10 @@ public class JGroupsExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jgroups";
 
-    private static final String RESOURCE_NAME = JGroupsExtension.class.getPackage().getName() + ".LocalDescriptions";
-
     // Workaround for JGRP-1475
     // Configure JGroups to use jboss-logging.
     static {
-        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                if (System.getProperty(Global.CUSTOM_LOG_FACTORY) == null) {
-                    System.setProperty(Global.CUSTOM_LOG_FACTORY, LogFactory.class.getName());
-                }
-                return null;
-            }
-        };
-        AccessController.doPrivileged(action);
-    }
-
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-           prefix.append('.').append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JGroupsExtension.class.getClassLoader(), true, false);
+        org.jgroups.logging.LogFactory.setCustomLogFactory(new LogFactory());
     }
 
     /**
@@ -76,11 +53,9 @@ public class JGroupsExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
 
-        ModelVersion current = JGroupsModel.CURRENT.getVersion();
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, current.getMajor(), current.getMinor(), current.getMicro());
-
-        registration.registerSubsystemModel(new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
+        new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()).register(registration);
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
         if (context.isRegisterTransformers()) {

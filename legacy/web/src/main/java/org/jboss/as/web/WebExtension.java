@@ -31,11 +31,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,8 +43,10 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.extension.AbstractLegacyExtension;
+import org.jboss.as.controller.extension.UnsupportedSubsystemDescribeHandler;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -66,7 +67,7 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  * @author Tomaz Cerar
  */
-public class WebExtension extends AbstractLegacyExtension {
+public class WebExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "web";
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     public static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
@@ -87,9 +88,8 @@ public class WebExtension extends AbstractLegacyExtension {
     protected static final PathElement REWRITECOND_PATH = PathElement.pathElement(Constants.CONDITION);
     protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 2, 0);
+    static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1,5,0);
     private static final String extensionName = "org.jboss.as.web";
 
     static final SensitiveTargetAccessConstraintDefinition WEB_CONNECTOR_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
@@ -99,18 +99,16 @@ public class WebExtension extends AbstractLegacyExtension {
             new SensitivityClassification(SUBSYSTEM_NAME, "web-valve", false, false, false));
 
     public WebExtension() {
-        super(extensionName, SUBSYSTEM_NAME);
     }
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        String prefix = SUBSYSTEM_NAME + (keyPrefix == null ? "" : "." + keyPrefix);
-        return new StandardResourceDescriptionResolver(prefix, RESOURCE_NAME, WebExtension.class.getClassLoader(), true, false);
+        final String prefix = SUBSYSTEM_NAME + (keyPrefix == null ? "" : "." + keyPrefix);
+        return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, prefix, RESOURCE_NAME, WebExtension.class.getClassLoader(), true, false);
     }
 
     @Override
-    protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+    public void initialize(ExtensionContext context) {
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
@@ -162,13 +160,16 @@ public class WebExtension extends AbstractLegacyExtension {
             registerTransformers_1_2_0(subsystem);
             registerTransformers_1_3_0(subsystem);
             registerTransformers_1_4_0(subsystem);
-            registerTransformers_2_0_0(subsystem);
+            registerTransformers_2_x_0(subsystem, 0);
+            registerTransformers_2_x_0(subsystem, 1);
         }
-        return Collections.singleton(registration);
+
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION,
+                new UnsupportedSubsystemDescribeHandler(extensionName));
     }
 
     @Override
-    protected void initializeLegacyParsers(ExtensionParsingContext context) {
+    public void initializeParsers(ExtensionParsingContext context) {
         for (Namespace ns : Namespace.values()) {
             if (ns.getUriString() != null) {
                 context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ns.getUriString(), WebSubsystemParser.getInstance());
@@ -361,7 +362,7 @@ public class WebExtension extends AbstractLegacyExtension {
         TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 4, 0));
     }
 
-    private void registerTransformers_2_0_0(SubsystemRegistration registration) {
+    private void registerTransformers_2_x_0(SubsystemRegistration registration, int minor) {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         subsystemRoot.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
@@ -375,17 +376,19 @@ public class WebExtension extends AbstractLegacyExtension {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
                 .end();
 
-        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
-        connectorBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
-                .end();
+        if (minor == 0) {
+            final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
+            connectorBuilder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                    .end();
 
-        connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebSSLDefinition.CIPHER_SUITE)
-                .end();
+            connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebSSLDefinition.CIPHER_SUITE)
+                    .end();
+        }
 
-        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(2, 0, 0));
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(2, minor, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {
@@ -394,7 +397,7 @@ public class WebExtension extends AbstractLegacyExtension {
         }
 
         @Override
-        public PathAddress convertToTargetAddress(PathAddress addr) {
+        public PathAddress convertToTargetAddress(PathAddress addr, AliasContext aliasContext) {
             final PathAddress targetAddress = getTargetAddress();
             List<PathElement> list = new ArrayList<PathElement>();
             int i = 0;

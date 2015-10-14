@@ -154,9 +154,7 @@ public class ServiceBasedNamingStore implements NamingStore {
             n.initCause(e);
             throw n;
         } catch (Throwable t) {
-            NamingException n = NamingLogger.ROOT_LOGGER.lookupError(name);
-            n.initCause(t);
-            throw n;
+            throw NamingLogger.ROOT_LOGGER.lookupError(t, name);
         }
     }
 

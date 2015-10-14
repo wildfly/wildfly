@@ -24,37 +24,26 @@ package org.jboss.as.ejb3.tx;
 
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.AbstractQueuedSynchronizer;
-import java.util.concurrent.locks.Lock;
-
-import org.jboss.as.ejb3.util.ThreadLocalStack;
-
 
 /**
- * A lock that supports reentrancy based on owner (and not on current thread).  For this to work, the lock needs to be
- * constructed with a reference to the {@link org.infinispan.context.InvocationContextContainer}, so it is able to determine whether the
- * caller's "owner" reference is the current thread or a {@link org.infinispan.transaction.xa.GlobalTransaction} instance.
- * <p/>
- * This makes this lock implementation very closely tied to Infinispan internals, but it provides for a very clean,
- * efficient and moreover familiar interface to work with, since it implements {@link java.util.concurrent.locks.Lock}.
- * <p/>
- * For the sake of performance, this lock only supports nonfair queueing.
- * <p/>
+ * A lock that supports reentrancy based on owner (and not on current thread).
  *
- * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
  * @author Stuart Douglas
- * @since 4.0
  */
-public class OwnableReentrantLock extends AbstractQueuedSynchronizer implements Lock {
+public class OwnableReentrantLock {
 
     private static final long serialVersionUID = 493297473462848792L;
-
-    private final ThreadLocalStack currentRequestor = new ThreadLocalStack();
 
     /**
      * Current owner
      */
-    private transient Object owner;
+    private Object owner;
+
+    private final Object lock = new Object();
+
+    private int lockCount = 0;
+
+    private int waiters = 0;
 
     /**
      * Creates a new lock instance.
@@ -62,126 +51,82 @@ public class OwnableReentrantLock extends AbstractQueuedSynchronizer implements 
     public OwnableReentrantLock() {
     }
 
-    /**
-     * @return a GlobalTransaction instance if the current call is participating in a transaction, or the current thread
-     *         otherwise.
-     */
-    protected Object currentRequestor() {
-        return currentRequestor.get();
-    }
-
-    public void pushOwner(Object owner) {
-
-        currentRequestor.push(owner);
-    }
-
-    public void popOwner() {
-        currentRequestor.pop();
-    }
-
-    public void lock() {
-        if (compareAndSetState(0, 1))
-            owner = currentRequestor();
-        else
-            acquire(1);
-    }
-
-    public void lockInterruptibly() throws InterruptedException {
-        acquireInterruptibly(1);
-    }
-
-    public boolean tryLock() {
-        return tryAcquire(1);
-    }
-
-    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-        return tryAcquireNanos(1, unit.toNanos(time));
-    }
-
-    public void unlock() {
-        try {
-            release(1);
-        } catch (IllegalMonitorStateException imse) {
-            // ignore?
-        }
-    }
-
-    public ConditionObject newCondition() {
-        throw new UnsupportedOperationException("Not supported in this implementation!");
-    }
-
-    @Override
-    protected final boolean tryAcquire(int acquires) {
-        final Object current = currentRequestor();
-        int c = getState();
-        if (c == 0) {
-            if (compareAndSetState(0, acquires)) {
-                owner = current;
-                return true;
+    public void lock(Object owner) {
+        synchronized (this.lock) {
+            if (owner == this.owner) {
+                lockCount++;
+            } else if (this.owner == null) {
+                this.owner = owner;
+                lockCount ++;
+            } else {
+                while (this.owner != null) {
+                    try {
+                        waiters++;
+                        try {
+                            lock.wait();
+                        } finally {
+                            --waiters;
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                this.owner = owner;
+                lockCount ++;
             }
-        } else if (current.equals(owner)) {
-            setState(c + acquires);
-            return true;
+
         }
-        return false;
     }
 
-    @Override
-    protected final boolean tryRelease(int releases) {
-        int c = getState() - releases;
-        if (!currentRequestor().equals(owner)) {
-            //throw new IllegalMonitorStateException(this.toString());
-            // lets be quiet about this
-            return false;
+
+    public boolean tryLock(long timeValue, TimeUnit timeUnit, Object owner) {
+        synchronized (this.lock) {
+            if (owner == this.owner) {
+                lockCount++;
+                return true;
+            } else if (this.owner == null) {
+                this.owner = owner;
+                lockCount ++;
+                return true;
+            } else {
+                long endTime = System.currentTimeMillis() + timeUnit.toMillis(timeValue);
+                while (this.owner != null && System.currentTimeMillis() < endTime) {
+                    try {
+                        waiters++;
+                        try {
+                            lock.wait(endTime - System.currentTimeMillis());
+                        } finally {
+                            waiters--;
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                if(this.owner == null) {
+                    this.owner = owner;
+                    lockCount++;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
         }
-        boolean free = false;
-        if (c == 0) {
-            free = true;
-            owner = null;
+    }
+
+    public void unlock(Object owner) {
+        synchronized (this.lock) {
+            if (owner != this.owner) {
+                throw new IllegalMonitorStateException();
+            } else {
+                if (--lockCount == 0) {
+                    this.owner = null;
+                    if (waiters > 0) {
+                        lock.notifyAll();
+                    }
+                }
+            }
         }
-        setState(c);
-        return free;
-    }
-
-    @Override
-    protected final boolean isHeldExclusively() {
-        return getState() != 0 && currentRequestor().equals(owner);
-    }
-
-    /**
-     * @return the owner of the lock, or null if it is currently unlocked.
-     */
-    public final Object getOwner() {
-        int c = getState();
-        Object o = owner;
-        return (c == 0) ? null : o;
-    }
-
-    /**
-     * @return the hold count of the current lock, or 0 if it is not locked.
-     */
-    public final int getHoldCount() {
-        int c = getState();
-        Object o = owner;
-        return (currentRequestor().equals(o)) ? c : 0;
-    }
-
-    /**
-     * @return true if the lock is locked, false otherwise
-     */
-    public final boolean isLocked() {
-        return getState() != 0;
-    }
-
-    /**
-     * Reconstitute this lock instance from a stream, resetting the lock to an unlocked state.
-     *
-     * @param s the stream
-     */
-    private void readObject(java.io.ObjectInputStream s)
-            throws java.io.IOException, ClassNotFoundException {
-        s.defaultReadObject();
-        setState(0); // reset to unlocked state
     }
 
     /**
@@ -192,7 +137,6 @@ public class OwnableReentrantLock extends AbstractQueuedSynchronizer implements 
      * @return a string identifying this lock, as well as its lock state.
      */
     public String toString() {
-        Object owner = getOwner();
         return super.toString() + ((owner == null) ?
                 "[Unlocked]" :
                 "[Locked by " + owner + "]");

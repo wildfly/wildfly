@@ -39,8 +39,15 @@ import org.junit.Test;
  */
 public class SarSubsystemTestCase extends AbstractSubsystemBaseTest {
 
+    private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities("org.wildfly.management.jmx");
+
     public SarSubsystemTestCase() {
         super(SarExtension.SUBSYSTEM_NAME, new SarExtension());
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return ADDITIONAL_INITIALIZATION;
     }
 
     @Override
@@ -98,12 +105,13 @@ public class SarSubsystemTestCase extends AbstractSubsystemBaseTest {
     private void testTransformers_1_0_0(ModelTestControllerVersion controllerVersion, String commonBeansVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION)
                 .setSubsystemXml(getSubsystemXml());
 
         // Add legacy subsystems
         LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-sar:" + controllerVersion.getMavenGavVersion());
+                .addMavenResourceURL("org.jboss.as:jboss-as-sar:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(ADDITIONAL_INITIALIZATION, null);
         if (commonBeansVersion != null) {
             initializer.addMavenResourceURL("org.jboss.common:jboss-common-beans:" + commonBeansVersion);
         }

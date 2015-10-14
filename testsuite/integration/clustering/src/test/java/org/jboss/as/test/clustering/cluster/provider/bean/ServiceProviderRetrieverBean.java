@@ -17,8 +17,8 @@ import org.wildfly.clustering.provider.ServiceProviderRegistration;
 public class ServiceProviderRetrieverBean implements ServiceProviderRetriever {
 
     @EJB
-    private ServiceProviderRegistration registration;
-    
+    private ServiceProviderRegistration<String> registration;
+
     @Override
     public Collection<String> getProviders() {
         Set<Node> nodes = this.registration.getProviders();

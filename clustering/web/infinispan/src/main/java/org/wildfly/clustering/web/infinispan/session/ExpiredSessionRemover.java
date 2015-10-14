@@ -39,7 +39,7 @@ public class ExpiredSessionRemover<V, L> implements Remover<String> {
 
     @Override
     public void remove(String id) {
-        V value = this.factory.findValue(id);
+        V value = this.factory.tryValue(id);
         if (value != null) {
             Session<L> session = this.factory.createSession(id, value);
             if (session.isValid() && session.getMetaData().isExpired()) {

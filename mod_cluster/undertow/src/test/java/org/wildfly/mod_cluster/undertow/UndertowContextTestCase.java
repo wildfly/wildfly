@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
 import java.util.Collections;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
@@ -68,7 +69,7 @@ public class UndertowContextTestCase {
     }
     
     @Test
-    public void isStarted() {
+    public void isStarted() throws ServletException {
         ServletContext context = mock(ServletContext.class);
         ApplicationListeners listeners = new ApplicationListeners(Collections.<ManagedListener>emptyList(), context);
         
@@ -86,7 +87,7 @@ public class UndertowContextTestCase {
     }
 
     @Test
-    public void addRequestListener() {
+    public void addRequestListener() throws ServletException {
         ServletRequestListener listener = mock(ServletRequestListener.class);
         ServletContext context = mock(ServletContext.class);
         ServletRequest request = mock(ServletRequest.class);
@@ -96,6 +97,7 @@ public class UndertowContextTestCase {
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
         
         this.context.addRequestListener(listener);
+        listeners.start();
         
         listeners.requestInitialized(request);
         
@@ -115,7 +117,7 @@ public class UndertowContextTestCase {
     }
 
     @Test
-    public void addSessionListener() {
+    public void addSessionListener() throws ServletException {
         HttpSessionListener listener = mock(HttpSessionListener.class);
         ServletContext context = mock(ServletContext.class);
         HttpSession session = mock(HttpSession.class);
@@ -125,6 +127,7 @@ public class UndertowContextTestCase {
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
         
         this.context.addSessionListener(listener);
+        listeners.start();
         
         listeners.sessionCreated(session);
         

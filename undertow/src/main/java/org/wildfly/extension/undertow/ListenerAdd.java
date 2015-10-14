@@ -22,53 +22,47 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.DisallowedMethodsHandler;
 import io.undertow.server.handlers.PeerNameResolvingHandler;
+import io.undertow.util.HttpString;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.OptionList;
 import org.xnio.OptionMap;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 abstract class ListenerAdd extends AbstractAddStepHandler {
-    private final ListenerResourceDefinition listenerDefinition;
-
 
     ListenerAdd(ListenerResourceDefinition definition) {
-        this.listenerDefinition = definition;
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr : listenerDefinition.getAttributes()) {
-            attr.validateAndSet(operation, model);
-        }
+        super(ListenerResourceDefinition.LISTENER_CAPABILITY, definition.getAttributes());
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final PathAddress parent = address.subAddress(0, address.size() - 1);
-        String name = address.getLastElement().getValue();
-        String bindingRef = ListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
-        String workerName = ListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
-        String bufferPoolName = ListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
+        final PathAddress address = context.getCurrentAddress();
+        final PathAddress parent = address.getParent();
+        final String name = context.getCurrentAddressValue();
+        final String bindingRef = ListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
+        final String workerName = ListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
+        final String bufferPoolName = ListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
         final boolean enabled = ListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
         final boolean peerHostLookup = ListenerResourceDefinition.RESOLVE_PEER_ADDRESS.resolveModelAttribute(context, model).asBoolean();
 
@@ -85,11 +79,27 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
                 }
             });
         }
+        List<String> disallowedMethods = ListenerResourceDefinition.DISALLOWED_METHODS.unwrap(context, model);
+        if(!disallowedMethods.isEmpty()) {
+            final Set<HttpString> methodSet = new HashSet<>();
+            for(String i : disallowedMethods) {
+                methodSet.add(new HttpString(i.trim()));
+            }
+            service.addWrapperHandler(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler handler) {
+                    return new DisallowedMethodsHandler(handler, methodSet);
+                }
+            });
+        }
 
+        final ServiceName socketBindingServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.SOCKET_CAPABILITY, bindingRef, SocketBinding.class);
+        final ServiceName workerServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, workerName, XnioWorker.class);
+        final ServiceName bufferPoolServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY, bufferPoolName, Pool.class);
         final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
-        serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
+        serviceBuilder.addDependency(workerServiceName, XnioWorker.class, service.getWorker())
+                .addDependency(socketBindingServiceName, SocketBinding.class, service.getBinding())
+                .addDependency(bufferPoolServiceName, (Injector) service.getBufferPool())
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
         configureAdditionalDependencies(context, serviceBuilder, model, service);

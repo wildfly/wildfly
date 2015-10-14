@@ -61,16 +61,18 @@ public class SecurityRoleLinkTestCase {
 
     @Deployment
     public static Archive createDeployment() throws Exception {
+        final Package currentPackage = SecurityRoleLinkTestCase.class.getPackage();
 
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        jar.addPackage(CallerRoleCheckerBean.class.getPackage());
-        jar.addClasses(Util.class, SecurityRoleLinkTestCaseSetup.class);
-        jar.addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class);
-        jar.addAsResource(SecurityRoleLinkTestCase.class.getPackage(), "users.properties", "users.properties");
-        jar.addAsResource(SecurityRoleLinkTestCase.class.getPackage(),"roles.properties", "roles.properties");
-        jar.addAsManifestResource(SecurityRoleLinkTestCase.class.getPackage(),"ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(SecurityRoleLinkTestCase.class.getPackage(),"jboss-ejb3.xml", "jboss-ejb3.xml");
-        jar.addPackage(CommonCriteria.class.getPackage());
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar")
+                .addPackage(CallerRoleCheckerBean.class.getPackage())
+                .addClasses(Util.class, SecurityRoleLinkTestCaseSetup.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
+                .addAsResource(currentPackage, "users.properties", "users.properties")
+                .addAsResource(currentPackage,"roles.properties", "roles.properties")
+                .addAsManifestResource(currentPackage,"ejb-jar.xml", "ejb-jar.xml")
+                .addAsManifestResource(currentPackage,"jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml")
+                .addPackage(CommonCriteria.class.getPackage());
 
         return jar;
     }

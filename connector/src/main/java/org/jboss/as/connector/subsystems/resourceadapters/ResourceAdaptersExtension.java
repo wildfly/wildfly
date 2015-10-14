@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -45,9 +46,7 @@ public class ResourceAdaptersExtension implements Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     private static final String RESOURCE_NAME = ResourceAdaptersExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -64,8 +63,7 @@ public class ResourceAdaptersExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_RA_LOGGER.debugf("Initializing ResourceAdapters Extension");
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
 
         registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);

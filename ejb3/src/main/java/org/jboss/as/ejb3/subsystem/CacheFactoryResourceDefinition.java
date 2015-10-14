@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -42,7 +41,6 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
     public static final StringListAttributeDefinition ALIASES = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.ALIASES)
             .setXmlName(EJB3SubsystemXMLAttribute.ALIASES.getLocalName())
             .setAllowNull(true)
-            .setAttributeMarshaller(AttributeMarshallerFactory.createSimpleListAttributeMarshaller())
             .build();
 
     public static final SimpleAttributeDefinition PASSIVATION_STORE =

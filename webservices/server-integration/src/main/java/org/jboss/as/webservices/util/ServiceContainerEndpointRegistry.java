@@ -79,13 +79,11 @@ public class ServiceContainerEndpointRegistry implements EndpointRegistry {
         return false;
     }
 
-    @Override
     public void register(Endpoint endpoint) {
         // TODO:Remove this interface
 
     }
 
-    @Override
     public void unregister(Endpoint endpoint) {
         // TODO:Remove this interface
     }

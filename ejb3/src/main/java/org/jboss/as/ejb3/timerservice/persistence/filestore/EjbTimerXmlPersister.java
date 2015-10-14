@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
+import java.util.List;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
@@ -31,11 +36,6 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.OutputStreamByteOutput;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.util.Base64;
-
-import javax.xml.stream.XMLStreamException;
-import java.io.ByteArrayOutputStream;
-import java.util.List;
 
 /**
  * @author Stuart Douglas
@@ -107,7 +107,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
                 marshaller.writeObject(timer.getInfo());
                 marshaller.finish();
                 marshaller.flush();
-                info = Base64.encodeBytes(out.toByteArray());
+                info = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
                 EjbLogger.ROOT_LOGGER.failedToPersistTimer(timer, e);
                 return;
@@ -121,7 +121,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
                 marshaller.writeObject(timer.getPrimaryKey());
                 marshaller.finish();
                 marshaller.flush();
-                primaryKey = Base64.encodeBytes(out.toByteArray());
+                primaryKey = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
                 EjbLogger.ROOT_LOGGER.failedToPersistTimer(timer, e);
                 return;
@@ -190,7 +190,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
                 marshaller.writeObject(timer.getInfo());
                 marshaller.finish();
                 marshaller.flush();
-                info = Base64.encodeBytes(out.toByteArray());
+                info = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
                 EjbLogger.ROOT_LOGGER.failedToPersistTimer(timer, e);
                 return;
@@ -204,7 +204,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
                 marshaller.writeObject(timer.getPrimaryKey());
                 marshaller.finish();
                 marshaller.flush();
-                primaryKey = Base64.encodeBytes(out.toByteArray());
+                primaryKey = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
                 EjbLogger.ROOT_LOGGER.failedToPersistTimer(timer, e);
                 return;

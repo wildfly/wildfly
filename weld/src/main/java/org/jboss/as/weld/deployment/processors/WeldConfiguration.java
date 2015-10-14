@@ -36,10 +36,12 @@ class WeldConfiguration {
 
     private final boolean requireBeanDescriptor;
     private final boolean nonPortableMode;
+    private final boolean developmentMode;
 
-    public WeldConfiguration(boolean requireBeanDescriptor, boolean nonPortableMode) {
+    public WeldConfiguration(boolean requireBeanDescriptor, boolean nonPortableMode, boolean developmentMode) {
         this.requireBeanDescriptor = requireBeanDescriptor;
         this.nonPortableMode = nonPortableMode;
+        this.developmentMode = developmentMode;
     }
 
     public boolean isNonPortableMode() {
@@ -49,4 +51,15 @@ class WeldConfiguration {
     public boolean isRequireBeanDescriptor() {
         return requireBeanDescriptor;
     }
+
+    public boolean isDevelopmentMode() {
+        return developmentMode;
+    }
+
+    @Override
+    public String toString() {
+        return "WeldConfiguration [requireBeanDescriptor=" + requireBeanDescriptor + ", nonPortableMode=" + nonPortableMode + ", developmentMode="
+                + developmentMode + "]";
+    }
+
 }

@@ -27,15 +27,15 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -62,9 +62,7 @@ public class JaxrsExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "jaxrs";
     public static final String NAMESPACE = "urn:jboss:domain:jaxrs:1.0";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
 
     private static final JaxrsSubsystemParser parser = new JaxrsSubsystemParser();
 
@@ -85,13 +83,10 @@ public class JaxrsExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         JAXRS_LOGGER.debug("Activating JAX-RS Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new SimpleResourceDefinition(JaxrsExtension.SUBSYSTEM_PATH,
-                JaxrsExtension.getResolver(),
-                JaxrsSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE));
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JaxrsDeploymentDefinition.SUBSYSTEM_INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        subsystem.registerDeploymentModel(JaxrsDeploymentDefinition.DEPLOYMENT_INSTANCE);
         subsystem.registerXMLElementWriter(parser);
     }
 

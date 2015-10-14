@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -44,9 +45,7 @@ public class JdrReportExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jdr";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 2, 0);
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -66,8 +65,7 @@ public class JdrReportExtension implements Extension {
     static final SensitiveTargetAccessConstraintDefinition JDR_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JDR_SENSITIVITY);
 
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         ManagementResourceRegistration root = subsystemRegistration.registerSubsystemModel(JdrReportSubsystemDefinition.INSTANCE);
         root.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);

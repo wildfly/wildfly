@@ -203,6 +203,7 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
                 WebExtension.getResourceDescriptionResolver(Constants.CONNECTOR),
                 new AddressToNameAddAdaptor(CONNECTOR_ATTRIBUTES),
                 CONNECTOR_ATTRIBUTES);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override

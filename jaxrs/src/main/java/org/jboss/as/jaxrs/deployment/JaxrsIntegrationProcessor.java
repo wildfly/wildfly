@@ -56,6 +56,9 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
+import org.jboss.as.jaxrs.JaxrsExtension;
+
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author Stuart Douglas
@@ -88,6 +91,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (resteasy == null)
             return;
 
+        deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
         //remove the resteasy.scan parameter
         //because it is not needed
         final List<ParamValueMetaData> params = webdata.getContextParams();
@@ -182,7 +186,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             return;
 
         // ignore any non-annotated Application class that doesn't have a servlet mapping
-        Set<Class> applicationClassSet = new HashSet<>();
+        Set<Class<? extends Application>> applicationClassSet = new HashSet<>();
         for (Class<? extends Application> clazz : resteasy.getScannedApplicationClasses()) {
             if (clazz.isAnnotationPresent(ApplicationPath.class) || servletMappingsExist(webdata, clazz.getName())) {
                 applicationClassSet.add(clazz);

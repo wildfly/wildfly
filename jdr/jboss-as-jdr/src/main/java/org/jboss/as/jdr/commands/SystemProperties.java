@@ -45,7 +45,7 @@ public class SystemProperties extends JdrCommand {
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
         Properties properties = System.getProperties();
-        Enumeration names = properties.propertyNames();
+        Enumeration<?> names = properties.propertyNames();
         while(names.hasMoreElements()) {
             String name = (String) names.nextElement();
             if(name.matches(".*password.*")) {

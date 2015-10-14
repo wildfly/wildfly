@@ -26,39 +26,34 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Date;
 
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanEntryExternalizer<G> extends AbstractSimpleExternalizer<InfinispanBeanEntry<G>> {
-    private static final long serialVersionUID = -3454159495935772508L;
-
-    public InfinispanBeanEntryExternalizer() {
-        this(InfinispanBeanEntry.class);
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private InfinispanBeanEntryExternalizer(Class targetClass) {
-        super(targetClass);
-    }
+public class InfinispanBeanEntryExternalizer implements Externalizer<InfinispanBeanEntry<Object>> {
 
     @Override
-    public void writeObject(ObjectOutput output, InfinispanBeanEntry<G> entry) throws IOException {
+    public void writeObject(ObjectOutput output, InfinispanBeanEntry<Object> entry) throws IOException {
         output.writeObject(entry.getGroupId());
         Date lastAccessedTime = entry.getLastAccessedTime();
         output.writeLong((lastAccessedTime != null) ? lastAccessedTime.getTime() : 0);
     }
 
     @Override
-    public InfinispanBeanEntry<G> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        @SuppressWarnings("unchecked")
-        G groupId = (G) input.readObject();
-        InfinispanBeanEntry<G> entry = new InfinispanBeanEntry<>(groupId);
+    public InfinispanBeanEntry<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        InfinispanBeanEntry<Object> entry = new InfinispanBeanEntry<>(input.readObject());
         long time = input.readLong();
         if (time > 0) {
             entry.setLastAccessedTime(new Date(time));
         }
         return entry;
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Class<InfinispanBeanEntry<Object>> getTargetClass() {
+        Class targetClass = InfinispanBeanEntry.class;
+        return targetClass;
     }
 }

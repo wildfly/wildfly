@@ -191,7 +191,7 @@ public class CorbaPOAService implements Service<POA> {
 
         // destroy parent POAs, letting they destroy their children POAs in the process.
         if (this.poa.the_parent() == null)
-           this.poa.destroy(false, false);
+           this.poa.destroy(false, true);
     }
 
     @Override

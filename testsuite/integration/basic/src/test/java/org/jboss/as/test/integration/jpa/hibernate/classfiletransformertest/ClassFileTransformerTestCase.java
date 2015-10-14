@@ -36,7 +36,6 @@ import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSession;
 import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSessionFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +49,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ClassFileTransformerTestCase {
 
-    private static final String ARCHIVE_NAME = "jpa_SecondLevelCacheTestCase";
+    private static final String ARCHIVE_NAME = "jpa_ClassFileTransformerTestCase";
 
     @Deployment
     public static Archive<?> deploy() {

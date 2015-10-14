@@ -59,7 +59,6 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final JBossWebMetaData webdata = warMetaData.getMergedJBossWebMetaData();
 

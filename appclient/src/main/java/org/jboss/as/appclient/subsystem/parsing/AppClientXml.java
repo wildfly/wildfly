@@ -45,8 +45,8 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.appclient.logging.AppClientLogger;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
@@ -54,8 +54,9 @@ import org.jboss.as.controller.parsing.ExtensionXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.server.parsing.CommonXml;
+import org.jboss.as.server.parsing.SocketBindingsXml;
+import org.jboss.as.server.services.net.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
@@ -72,7 +73,7 @@ public class AppClientXml extends CommonXml {
     private final ExtensionXml extensionXml;
 
     public AppClientXml(final ModuleLoader loader, final ExtensionRegistry extensionRegistry) {
-        super();
+        super(new AppClientSocketBindingsXml());
         extensionXml = new ExtensionXml(loader, null, extensionRegistry);
     }
 
@@ -410,4 +411,12 @@ public class AppClientXml extends CommonXml {
             throws XMLStreamException {
         // we don't marshall appclient.xml
     }
+
+    static class AppClientSocketBindingsXml extends SocketBindingsXml {
+        @Override
+        protected void writeExtraAttributes(XMLExtendedStreamWriter writer, ModelNode bindingGroup) throws XMLStreamException {
+            SocketBindingGroupResourceDefinition.PORT_OFFSET.marshallAsAttribute(bindingGroup, writer);
+        }
+    }
+
 }

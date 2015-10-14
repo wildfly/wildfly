@@ -45,6 +45,7 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
         super(SecurityExtension.PATH_JASPI_AUTH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHENTICATION + "." + Constants.JASPI),
                 JASPIAuthenticationResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

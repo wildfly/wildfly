@@ -17,18 +17,18 @@ import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.modules.Module;
 
 /**
  * @author Stuart Douglas
@@ -42,7 +42,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
         final boolean metadataComplete = MetadataCompleteMarker.isMetadataComplete(deploymentUnit);
 
@@ -85,7 +85,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         if (instanceFactory != null) {
             instantiator = new ImmediateInterceptorFactory(new ComponentInstantiatorInterceptor(instanceFactory, BasicComponentInstance.INSTANCE_KEY, true));
         } else {
-            final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
+            final ClassReflectionIndex componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
             //use the default constructor if no instanceFactory has been set
             final Constructor<?> constructor = componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (constructor == null) {
@@ -103,9 +103,9 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
 
         for (final InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
             final String interceptorClassName = interceptorDescription.getInterceptorClassName();
-            final ClassIndex interceptorClass;
+            final Class<?> interceptorClass;
             try {
-                interceptorClass = classIndex.classIndex(interceptorClassName);
+                interceptorClass = ClassLoadingUtils.loadClass(interceptorClassName, module);
             } catch (ClassNotFoundException e) {
                 throw EeLogger.ROOT_LOGGER.cannotLoadInterceptor(e, interceptorClassName);
             }
@@ -121,10 +121,10 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
 
 
             //we store the interceptor instance under the class key
-            final Object contextKey = interceptorClass.getModuleClass();
+            final Object contextKey = interceptorClass;
             configuration.getInterceptorContextKeys().add(contextKey);
 
-            final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass.getModuleClass());
+            final ClassReflectionIndex interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
             final Constructor<?> constructor = interceptorIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (constructor == null) {
                 throw EeLogger.ROOT_LOGGER.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());
@@ -135,10 +135,10 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
 
             final boolean interceptorHasLifecycleCallbacks = interceptorWithLifecycleCallbacks.contains(interceptorDescription);
 
-            new ClassDescriptionTraversal(interceptorClass.getModuleClass(), applicationClasses) {
+            new ClassDescriptionTraversal(interceptorClass, applicationClasses) {
                 @Override
                 public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    mergeInjectionsForClass(clazz, interceptorClass.getModuleClass(), classDescription, moduleDescription, deploymentReflectionIndex, description, configuration, context, injectors, contextKey, uninjectors, metadataComplete);
+                    mergeInjectionsForClass(clazz, interceptorClass, classDescription, moduleDescription, deploymentReflectionIndex, description, configuration, context, injectors, contextKey, uninjectors, metadataComplete);
                     final InterceptorClassDescription interceptorConfig;
                     if (classDescription != null && !metadataComplete) {
                         interceptorConfig = InterceptorClassDescription.merge(classDescription.getInterceptorClassDescription(), moduleDescription.getInterceptorClassOverride(clazz.getName()));
@@ -175,7 +175,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                 private void handleInterceptorClass(final Class<?> clazz, final MethodIdentifier methodIdentifier, final Map<String, List<InterceptorFactory>> classMap, final boolean changeMethod, final boolean lifecycleMethod) throws DeploymentUnitProcessingException {
                     if (methodIdentifier != null) {
                         final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
-                        if (isNotOverriden(clazz, method, interceptorClass.getModuleClass(), deploymentReflectionIndex)) {
+                        if (isNotOverriden(clazz, method, interceptorClass, deploymentReflectionIndex)) {
                             final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new ManagedReferenceLifecycleMethodInterceptor(contextKey, method, changeMethod, lifecycleMethod));
                             List<InterceptorFactory> factories = classMap.get(interceptorClassName);
                             if (factories == null) {
@@ -218,41 +218,42 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         // Apply post-construct
 
         if (!injectors.isEmpty()) {
-            configuration.addPostConstructInterceptor(weaved(injectors), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_RESOURCE_INJECTION_INTERCEPTORS);
+            configuration.addPostConstructInterceptors(new ArrayList<>(injectors), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_RESOURCE_INJECTION_INTERCEPTORS);
         }
         if (!instantiators.isEmpty()) {
-            configuration.addPostConstructInterceptor(weaved(instantiators), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_INSTANTIATION_INTERCEPTORS);
+            configuration.addPostConstructInterceptors(new ArrayList<>(instantiators), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_INSTANTIATION_INTERCEPTORS);
         }
         if (!userAroundConstruct.isEmpty()) {
-            configuration.addAroundConstructInterceptor(weaved(userAroundConstruct), InterceptorOrder.AroundConstruct.INTERCEPTOR_AROUND_CONSTRUCT);
+            configuration.addAroundConstructInterceptors(userAroundConstruct, InterceptorOrder.AroundConstruct.INTERCEPTOR_AROUND_CONSTRUCT);
         }
         configuration.addAroundConstructInterceptor(instantiator, InterceptorOrder.AroundConstruct.CONSTRUCT_COMPONENT);
         configuration.addAroundConstructInterceptor(new ImmediateInterceptorFactory(Interceptors.getTerminalInterceptor()), InterceptorOrder.AroundConstruct.TERMINAL_INTERCEPTOR);
 
-        configuration.addPostConstructInterceptor(new AroundConstructInterceptorFactory(weaved(configuration.getAroundConstructInterceptors())), InterceptorOrder.ComponentPostConstruct.AROUND_CONSTRUCT_CHAIN);
-
+        if(!configuration.getAroundConstructInterceptors().isEmpty()) {
+            configuration.addPostConstructInterceptor(new AroundConstructInterceptorFactory(Interceptors.getChainedInterceptorFactory(configuration.getAroundConstructInterceptors())), InterceptorOrder.ComponentPostConstruct.AROUND_CONSTRUCT_CHAIN);
+        }
         if (!userPostConstruct.isEmpty()) {
-            configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_USER_INTERCEPTORS);
+            configuration.addPostConstructInterceptors(userPostConstruct, InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_USER_INTERCEPTORS);
         }
 
         // Apply pre-destroy
         if (!uninjectors.isEmpty()) {
-            configuration.addPreDestroyInterceptor(weaved(uninjectors), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_UNINJECTION_INTERCEPTORS);
+            configuration.addPreDestroyInterceptors(new ArrayList<>(uninjectors), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_UNINJECTION_INTERCEPTORS);
         }
         if (!destructors.isEmpty()) {
-            configuration.addPreDestroyInterceptor(weaved(destructors), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_DESTRUCTION_INTERCEPTORS);
+            configuration.addPreDestroyInterceptors(new ArrayList<>(destructors), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_DESTRUCTION_INTERCEPTORS);
         }
         if (!userPreDestroy.isEmpty()) {
-            configuration.addPreDestroyInterceptor(weaved(userPreDestroy), InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_USER_INTERCEPTORS);
+            configuration.addPreDestroyInterceptors(userPreDestroy, InterceptorOrder.ComponentPreDestroy.INTERCEPTOR_USER_INTERCEPTORS);
         }
 
         if (description.isPassivationApplicable()) {
             if (!userPrePassivate.isEmpty()) {
-                configuration.addPrePassivateInterceptor(weaved(userPrePassivate), InterceptorOrder.ComponentPassivation.INTERCEPTOR_USER_INTERCEPTORS);
+                configuration.addPrePassivateInterceptors(userPrePassivate, InterceptorOrder.ComponentPassivation.INTERCEPTOR_USER_INTERCEPTORS);
             }
 
             if (!userPostActivate.isEmpty()) {
-                configuration.addPostActivateInterceptor(weaved(userPostActivate), InterceptorOrder.ComponentPassivation.INTERCEPTOR_USER_INTERCEPTORS);
+                configuration.addPostActivateInterceptors(userPostActivate, InterceptorOrder.ComponentPassivation.INTERCEPTOR_USER_INTERCEPTORS);
             }
         }
 
@@ -322,7 +323,12 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                         }
                     }
                 }
-                configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.INTERCEPTOR_USER_INTERCEPTORS);
+                if(requiresTimerChain) {
+                    configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.INTERCEPTOR_USER_INTERCEPTORS);
+                } else {
+                    configuration.addComponentInterceptors(method, userAroundInvokes, InterceptorOrder.Component.INTERCEPTOR_USER_INTERCEPTORS);
+
+                }
             }
         }
     }

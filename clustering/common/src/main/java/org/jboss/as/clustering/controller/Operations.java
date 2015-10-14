@@ -22,11 +22,18 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.ListOperations;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,6 +42,9 @@ import org.jboss.dmr.ModelNode;
  */
 public final class Operations {
 
+    private static final String INDEX = "index";
+    private static final String KEY = "key";
+
     /**
      * Returns the address of the specified operation
      * @param operation an operation
@@ -42,6 +52,15 @@ public final class Operations {
      */
     public static PathAddress getPathAddress(ModelNode operation) {
         return PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+    }
+
+    /**
+     * Sets the address of the specified operation.
+     * @param operation an operation
+     * @param address a path address
+     */
+    public static void setPathAddress(ModelNode operation, PathAddress address) {
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
     }
 
     /**
@@ -73,11 +92,11 @@ public final class Operations {
 
     /**
      * Creates a composite operation using the specified operation steps.
-     * @param operation steps
+     * @param operations steps
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(List<ModelNode> operations) {
-        ModelNode operation = Util.createEmptyOperation(ModelDescriptionConstants.COMPOSITE, PathAddress.EMPTY_ADDRESS);
+        ModelNode operation = Util.createOperation(ModelDescriptionConstants.COMPOSITE, PathAddress.EMPTY_ADDRESS);
         ModelNode steps = operation.get(ModelDescriptionConstants.STEPS);
         for (ModelNode step: operations) {
             steps.add(step);
@@ -87,7 +106,7 @@ public final class Operations {
 
     /**
      * Creates a composite operation using the specified operation steps.
-     * @param operation steps
+     * @param operations steps
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(ModelNode... operations) {
@@ -95,27 +114,63 @@ public final class Operations {
     }
 
     /**
-     * Creates a read-attribute operation using the specified address and name.
-     * @param address a resource path
-     * @param name an attribute name
-     * @return a read-attribute operation
+     * Creates an add operation using the specified address and parameters
+     * @param address a path address
+     * @param parameters a map of values per attribute
+     * @return an add operation
      */
-    public static ModelNode createReadAttributeOperation(PathAddress address, String name) {
-        ModelNode operation = Util.createEmptyOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address);
-        operation.get(ModelDescriptionConstants.NAME).set(name);
+    public static ModelNode createAddOperation(PathAddress address, Map<Attribute, ModelNode> parameters) {
+        ModelNode operation = Util.createAddOperation(address);
+        for (Map.Entry<Attribute, ModelNode> entry : parameters.entrySet()) {
+            operation.get(entry.getKey().getDefinition().getName()).set(entry.getValue());
+        }
         return operation;
     }
 
     /**
-     * Creates a write-attribute operation using the specified address, namem and value.
+     * Creates an indexed add operation using the specified address and index
+     * @param address a path address
+     * @param index
+     * @return an add operation
+     */
+    public static ModelNode createAddOperation(PathAddress address, int index) {
+        return createAddOperation(address, index, Collections.emptyMap());
+    }
+
+    /**
+     * Creates an indexed add operation using the specified address and parameters
+     * @param address a path address
+     * @param parameters a map of values per attribute
+     * @return an add operation
+     */
+    public static ModelNode createAddOperation(PathAddress address, int index, Map<Attribute, ModelNode> parameters) {
+        ModelNode operation = Util.createAddOperation(address);
+        operation.get(ModelDescriptionConstants.ADD_INDEX).set(index);
+        for (Map.Entry<Attribute, ModelNode> entry : parameters.entrySet()) {
+            operation.get(entry.getKey().getDefinition().getName()).set(entry.getValue());
+        }
+        return operation;
+    }
+
+    /**
+     * Creates a read-attribute operation using the specified address and name.
      * @param address a resource path
-     * @param name an attribute name
+     * @param attribute an attribute
+     * @return a read-attribute operation
+     */
+    public static ModelNode createReadAttributeOperation(PathAddress address, Attribute attribute) {
+        return createAttributeOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address, attribute);
+    }
+
+    /**
+     * Creates a write-attribute operation using the specified address, name and value.
+     * @param address a resource path
+     * @param attribute an attribute
      * @param value an attribute value
      * @return a write-attribute operation
      */
-    public static ModelNode createWriteAttributeOperation(PathAddress address, String name, ModelNode value) {
-        ModelNode operation = Util.createEmptyOperation(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, address);
-        operation.get(ModelDescriptionConstants.NAME).set(name);
+    public static ModelNode createWriteAttributeOperation(PathAddress address, Attribute attribute, ModelNode value) {
+        ModelNode operation = createAttributeOperation(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, address, attribute);
         operation.get(ModelDescriptionConstants.VALUE).set(value);
         return operation;
     }
@@ -123,12 +178,16 @@ public final class Operations {
     /**
      * Creates an undefine-attribute operation using the specified address and name.
      * @param address a resource path
-     * @param name an attribute name
+     * @param attribute an attribute
      * @return an undefine-attribute operation
      */
-    public static ModelNode createUndefineAttributeOperation(PathAddress address, String name) {
-        ModelNode operation = Util.createEmptyOperation(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, address);
-        operation.get(ModelDescriptionConstants.NAME).set(name);
+    public static ModelNode createUndefineAttributeOperation(PathAddress address, Attribute attribute) {
+        return createAttributeOperation(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, address, attribute);
+    }
+
+    private static ModelNode createAttributeOperation(String operationName, PathAddress address, Attribute attribute) {
+        ModelNode operation = Util.createOperation(operationName, address);
+        operation.get(ModelDescriptionConstants.NAME).set(attribute.getDefinition().getName());
         return operation;
     }
 
@@ -138,7 +197,73 @@ public final class Operations {
      * @return a describe operation
      */
     public static ModelNode createDescribeOperation(PathAddress address) {
-        return Util.createEmptyOperation(ModelDescriptionConstants.DESCRIBE, address);
+        return Util.createOperation(ModelDescriptionConstants.DESCRIBE, address);
+    }
+
+    public static ModelNode createListAddOperation(PathAddress address, Attribute attribute, String value) {
+        return createListElementOperation(ListOperations.LIST_ADD_DEFINITION, address, attribute, value);
+    }
+
+    public static ModelNode createListRemoveOperation(PathAddress address, Attribute attribute, String value) {
+        return createListElementOperation(ListOperations.LIST_REMOVE_DEFINITION, address, attribute, value);
+    }
+
+    public static ModelNode createListRemoveOperation(PathAddress address, Attribute attribute, int index) {
+        return createListElementOperation(ListOperations.LIST_REMOVE_DEFINITION, address, attribute, index);
+    }
+
+    public static ModelNode createListGetOperation(PathAddress address, Attribute attribute, int index) {
+        return createListElementOperation(ListOperations.LIST_GET_DEFINITION, address, attribute, index);
+    }
+
+    private static ModelNode createListElementOperation(OperationDefinition definition, PathAddress address, Attribute attribute, String value) {
+        ModelNode operation = createAttributeOperation(definition.getName(), address, attribute);
+        operation.get(ModelDescriptionConstants.VALUE).set(value);
+        return operation;
+    }
+
+    private static ModelNode createListElementOperation(OperationDefinition definition, PathAddress address, Attribute attribute, int index) {
+        ModelNode operation = createAttributeOperation(definition.getName(), address, attribute);
+        operation.get(INDEX).set(new ModelNode(index));
+        return operation;
+    }
+
+    public static ModelNode createMapGetOperation(PathAddress address, Attribute attribute, String key) {
+        return createMapEntryOperation(MapOperations.MAP_GET_DEFINITION, address, attribute, key);
+    }
+
+    public static ModelNode createMapPutOperation(PathAddress address, Attribute attribute, String key, String value) {
+        ModelNode operation = createMapEntryOperation(MapOperations.MAP_PUT_DEFINITION, address, attribute, key);
+        operation.get(ModelDescriptionConstants.VALUE).set(value);
+        return operation;
+    }
+
+    public static ModelNode createMapRemoveOperation(PathAddress address, Attribute attribute, String key) {
+        return createMapEntryOperation(MapOperations.MAP_REMOVE_DEFINITION, address, attribute, key);
+    }
+
+    public static ModelNode createMapClearOperation(PathAddress address, Attribute attribute) {
+        ModelNode operation = Util.createOperation(MapOperations.MAP_CLEAR_DEFINITION, address);
+        operation.get(ModelDescriptionConstants.NAME).set(attribute.getDefinition().getName());
+        return operation;
+    }
+
+    private static ModelNode createMapEntryOperation(OperationDefinition definition, PathAddress address, Attribute attribute, String key) {
+        ModelNode operation = createAttributeOperation(definition.getName(), address, attribute);
+        operation.get(KEY).set(key);
+        return operation;
+    }
+
+    /**
+     * @return set of all operations that are or do result in a write
+     */
+    public static Set<String> getAllWriteAttributeOperationNames() {
+        Set<String> writeAttributeOperations = new HashSet<>();
+        writeAttributeOperations.addAll(MapOperations.MAP_OPERATION_NAMES);
+        writeAttributeOperations.remove(MapOperations.MAP_GET_DEFINITION.getName());
+        writeAttributeOperations.add(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        writeAttributeOperations.add(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION);
+        return writeAttributeOperations;
     }
 
     private Operations() {

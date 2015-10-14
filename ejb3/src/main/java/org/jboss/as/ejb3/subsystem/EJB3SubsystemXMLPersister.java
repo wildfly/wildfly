@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.remoting.Attribute;
 import org.jboss.as.threads.ThreadsParser;
@@ -31,6 +32,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+
 import java.util.List;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
@@ -51,10 +53,8 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_3_0.getUriString(), false);
-
-        writeElements(writer,  context);
-
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_4_0.getUriString(), false);
+        writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();
     }
@@ -106,7 +106,8 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         }
 
         // write the mdb element
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)) {
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)
+            || model.hasDefined(EJB3SubsystemModel.MDB_DELIVERY_GROUP)) {
             // <mdb>
             writer.writeStartElement(EJB3SubsystemXMLElement.MDB.getLocalName());
             // write out the mdb element contents
@@ -273,6 +274,10 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
 
 
     protected void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        // only write if non-default value?
+        if (model.hasDefined(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME)) {
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CLUSTER_NAME.getLocalName(), model.require(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME).asString());
+        }
         writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
         writer.writeAttribute(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME.getLocalName(), model.require(EJB3SubsystemModel.THREAD_POOL_NAME).asString());
 
@@ -311,6 +316,22 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             // write the value
             writer.writeAttribute(EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName(), poolRefName);
             // </bean-instance-pool-ref>
+            writer.writeEndElement();
+        }
+        if (mdbModelNode.hasDefined(EJB3SubsystemModel.MDB_DELIVERY_GROUP)) {
+            //<delivery-groups>
+            writer.writeStartElement(EJB3SubsystemXMLElement.DELIVERY_GROUPS.getLocalName());
+            for (Property property : mdbModelNode.get(EJB3SubsystemModel.MDB_DELIVERY_GROUP).asPropertyList()) {
+                // <delivery-group
+                writer.writeStartElement(EJB3SubsystemXMLElement.DELIVERY_GROUP.getLocalName());
+                // name=
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                // active=
+                MdbDeliveryGroupResourceDefinition.ACTIVE.marshallAsAttribute(mdbModelNode.get(EJB3SubsystemModel.MDB_DELIVERY_GROUP, property.getName()), writer);
+                // />
+                writer.writeEndElement();
+            }
+            //</delivery-groups>
             writer.writeEndElement();
         }
     }
@@ -402,6 +423,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), strictMaxPoolModel.getName());
 
         StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.marshallAsAttribute(strictMaxPoolModelNode, writer);
+        StrictMaxPoolResourceDefinition.DERIVE_SIZE.marshallAsAttribute(strictMaxPoolModelNode, writer);
         StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.marshallAsAttribute(strictMaxPoolModelNode, writer);
         StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.marshallAsAttribute(strictMaxPoolModelNode, writer);
     }
@@ -413,7 +435,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             ModelNode cache = property.getValue();
             writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
             CacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
-            CacheFactoryResourceDefinition.ALIASES.marshallAsElement(cache, writer);
+            writeAttribute(writer, cache, CacheFactoryResourceDefinition.ALIASES);
             writer.writeEndElement();
         }
     }
@@ -564,5 +586,9 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             }
             writer.writeEndElement();
         }
+    }
+
+    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
+        attribute.getAttributeMarshaller().marshallAsAttribute(attribute, model, true, writer);
     }
 }

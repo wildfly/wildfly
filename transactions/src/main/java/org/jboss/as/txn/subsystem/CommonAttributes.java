@@ -44,8 +44,10 @@ interface CommonAttributes {
     String ACTION_STORE = "action";
 
     String JTS = "jts";
-    String USEHORNETQSTORE = "use-hornetq-store";
+    String USE_HORNETQ_STORE = "use-hornetq-store";
+    String USE_JOURNAL_STORE = "use-journal-store";
     String HORNETQ_STORE_ENABLE_ASYNC_IO = "hornetq-store-enable-async-io";
+    String JOURNAL_STORE_ENABLE_ASYNC_IO = "journal-store-enable-async-io";
     String JDBC_STORE = "jdbc-store";
     String USE_JDBC_STORE = "use-jdbc-store";
     String JDBC_STORE_DATASOURCE = "jdbc-store-datasource";

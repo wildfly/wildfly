@@ -27,7 +27,9 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.File;
-import java.net.InetSocketAddress;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -88,12 +90,12 @@ public interface UndertowLogger extends BasicLogger {
      * @param address socket address
      */
     @LogMessage(level = INFO)
-    @Message(id = 6, value = "Undertow %s listener %s listening on %s")
-    void listenerStarted(String type, String name, InetSocketAddress address);
+    @Message(id = 6, value = "Undertow %s listener %s listening on %s:%d")
+    void listenerStarted(String type, String name, String address, int port);
 
     @LogMessage(level = INFO)
-    @Message(id = 7, value = "Undertow %s listener %s stopped, was bound to %s")
-    void listenerStopped(String type, String name, InetSocketAddress address);
+    @Message(id = 7, value = "Undertow %s listener %s stopped, was bound to %s:%d")
+    void listenerStopped(String type, String name, String address, int port);
 
     @LogMessage(level = INFO)
     @Message(id = 8, value = "Undertow %s listener %s suspending")
@@ -120,8 +122,8 @@ public interface UndertowLogger extends BasicLogger {
     void invalidRedirectURI(@Cause Throwable cause);
 
     @LogMessage(level = INFO)
-    @Message(id = 14, value = "Creating file handler for path %s")
-    void creatingFileHandler(String path);
+    @Message(id = 14, value = "Creating file handler for path '%s' with options [directory-listing: '%s', follow-symlink: '%s', case-sensitive: '%s', safe-symlink-paths: '%s']")
+    void creatingFileHandler(String path, boolean directoryListing, boolean followSymlink, boolean caseSensitive, List<String> safePaths);
 
     // @LogMessage(level = TRACE)
     // @Message(id = 15, value = "registering handler %s under path '%s'")
@@ -172,7 +174,7 @@ public interface UndertowLogger extends BasicLogger {
     // XMLStreamException unknownHandler(String name, @Param Location location);
 
     @Message(id = 27, value = "Failed to parse XML descriptor %s at [%s,%s]")
-    String failToParseXMLDescriptor(String xmlFile, int line, int column);
+    String failToParseXMLDescriptor(String xmlFile, Integer line, Integer column);
 
     @Message(id = 28, value = "Failed to parse XML descriptor %s")
     String failToParseXMLDescriptor(String xmlFile);
@@ -278,7 +280,7 @@ public interface UndertowLogger extends BasicLogger {
     StartException failedToCreatePersistentSessionDir(File baseDir);
 
     @Message(id = 62, value = "Could not create log directory: %s")
-    StartException couldNotCreateLogDirectory(File directory);
+    StartException couldNotCreateLogDirectory(Path directory, @Cause IOException e);
 
     @Message(id = 63, value = "Could not find the port number listening for protocol %s")
     IllegalStateException noPortListeningForProtocol(final String protocol);
@@ -304,5 +306,26 @@ public interface UndertowLogger extends BasicLogger {
     void sharedSessionConfigNotInRootDeployment(String deployment);
 
     @Message(id = 70, value = "Could not load handler %s from %s module")
-    RuntimeException couldNotLoadHandlerFromModule(String className,String moduleName, @Cause Exception e);
+    RuntimeException couldNotLoadHandlerFromModule(String className, String moduleName, @Cause Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 71, value = "Jetty ALPN not found. HTTP2 and SPDY are not available. Please make sure Jetty ALPN is on the boot class path.")
+    void alpnNotFound();
+
+    @Message(id = 72, value = "Could not find configured external path %s")
+    DeploymentUnitProcessingException couldNotFindExternalPath(File path);
+
+    @Message(id = 73, value = "mod_cluster advertise socket binding requires multicast address to be set")
+    StartException advertiseSocketBindingRequiresMulticastAddress();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 74, value = "Could not find TLD %s")
+    void tldNotFound(String location);
+
+    @Message(id = 75, value = "Cannot register resource of type %s")
+    IllegalArgumentException cannotRegisterResourceOfType(String type);
+
+    @Message(id = 76, value = "Cannot remove resource of type %s")
+    IllegalArgumentException cannotRemoveResourceOfType(String type);
+
 }

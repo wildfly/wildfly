@@ -27,18 +27,11 @@ package org.wildfly.extension.undertow;
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import java.util.List;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
@@ -56,12 +49,12 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
     protected static final UndertowSubsystemParser_2_0 INSTANCE = new UndertowSubsystemParser_2_0();
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = builder(UndertowRootDefinition.INSTANCE)
+        xmlDescription = builder(UndertowRootDefinition.INSTANCE, Namespace.UNDERTOW_2_0.getUriString())
                 .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID)
                 .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
@@ -83,7 +76,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                         )
                         .addChild(
                                 builder(HttpListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)
+                                        .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING, HttpListenerResourceDefinition.ENABLE_HTTP2)
                                         .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
                                         .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                 ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES,ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
@@ -94,7 +87,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                         builder(HttpsListenerResourceDefinition.INSTANCE)
                                                 .addAttributes(AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED)
                                                 .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttributes(HttpsListenerResourceDefinition.SECURITY_REALM, HttpsListenerResourceDefinition.VERIFY_CLIENT, HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES, HttpsListenerResourceDefinition.ENABLED_PROTOCOLS)
+                                                .addAttributes(HttpsListenerResourceDefinition.SECURITY_REALM, HttpsListenerResourceDefinition.VERIFY_CLIENT, HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES, HttpsListenerResourceDefinition.ENABLED_PROTOCOLS, HttpsListenerResourceDefinition.ENABLE_HTTP2, HttpsListenerResourceDefinition.ENABLE_SPDY)
                                                 .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
                                                         ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
@@ -112,7 +105,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                                                 )
                                                 ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
-                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
+                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.RELATIVE_TO, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE, AccessLogDefinition.USE_SERVER_LOG)
                                         ).addChild(
                                                 builder(FilterRefDefinition.INSTANCE)
                                                         .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
@@ -202,7 +195,10 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                                         ReverseProxyHandler.CONNECTIONS_PER_THREAD,
                                                         ReverseProxyHandler.SESSION_COOKIE_NAMES,
                                                         ReverseProxyHandler.PROBLEM_SERVER_RETRY,
-                                                        ReverseProxyHandler.MAX_REQUEST_TIME)
+                                                        ReverseProxyHandler.MAX_REQUEST_TIME,
+                                                        ReverseProxyHandler.REQUEST_QUEUE_SIZE,
+                                                        ReverseProxyHandler.CACHED_CONNECTIONS_PER_THREAD,
+                                                        ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
                                                         .setXmlElementName(Constants.HOST)
                                                         .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID, ReverseProxyHandlerHost.PATH, ReverseProxyHandlerHost.SCHEME, ReverseProxyHandlerHost.OUTBOUND_SOCKET_BINDING))
@@ -217,6 +213,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                 .addChild(
                                         builder(BasicAuthHandler.INSTANCE)
                                                 .addAttributes(BasicAuthHandler.SECURITY_DOMAIN)
+                                        .setNoAddOperation(true)
                                 )
                                 .addChild(
                                         builder(ConnectionLimitHandler.INSTANCE)
@@ -239,7 +236,13 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                         ModClusterDefinition.ADVERTISE_FREQUENCY,
                                         ModClusterDefinition.HEALTH_CHECK_INTERVAL,
                                         ModClusterDefinition.BROKEN_NODE_TIMEOUT,
-                                        ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE)
+                                        ModClusterDefinition.WORKER,
+                                        ModClusterDefinition.MAX_REQUEST_TIME,
+                                        ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE,
+                                        ModClusterDefinition.CONNECTIONS_PER_THREAD,
+                                        ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD,
+                                        ModClusterDefinition.CONNECTION_IDLE_TIMEOUT,
+                                        ModClusterDefinition.REQUEST_QUEUE_SIZE)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)
@@ -258,25 +261,12 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                 .build();
     }
 
-    private UndertowSubsystemParser_2_0() {
-    }
+        private UndertowSubsystemParser_2_0() {
+        }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        ModelNode model = new ModelNode();
-        model.get(UndertowRootDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
-        xmlDescription.persist(writer, model, Namespace.CURRENT.getUriString());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
-    }
+        @Override
+        public PersistentResourceXMLDescription getParserDescription() {
+                return xmlDescription;
+        }
 }
 

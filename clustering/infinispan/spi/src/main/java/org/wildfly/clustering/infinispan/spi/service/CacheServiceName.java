@@ -22,12 +22,13 @@
 package org.wildfly.clustering.infinispan.spi.service;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * Enumeration of service name factories for services associated with a cache.
  * @author Paul Ferraro
  */
-public enum CacheServiceName implements CacheServiceNameFactory {
+public enum CacheServiceName implements SubGroupServiceNameFactory {
 
     CACHE {
         @Override
@@ -48,6 +49,7 @@ public enum CacheServiceName implements CacheServiceNameFactory {
         }
     },
     ;
+    public static final String DEFAULT_CACHE = DEFAULT_SUB_GROUP;
 
     @Override
     public ServiceName getServiceName(String container) {

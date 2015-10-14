@@ -82,7 +82,10 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         return new DistributableSingleSignOn(sso, this.registry, batch);
     }
 
-    @Override
+    public void removeSingleSignOn(SingleSignOn sso) {
+        this.removeSingleSignOn(sso.getId());
+    }
+
     public void removeSingleSignOn(String id) {
         Batch batch = this.manager.getBatcher().createBatch();
         SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);

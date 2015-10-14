@@ -86,7 +86,7 @@ public class HibernateNativeAPITransactionTestCase {
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         // add required jars as manifest dependencies
-        ear.addAsManifestResource(new StringAsset("Dependencies: org.hibernate\n"), "MANIFEST.MF");
+        ear.addAsManifestResource(new StringAsset("Dependencies: org.hibernate, org.javassist\n"), "MANIFEST.MF");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
         lib.addClasses(SFSBHibernateTransaction.class);
@@ -126,10 +126,10 @@ public class HibernateNativeAPITransactionTestCase {
 
     // TODO: move this logic to a common base class (might be helpful for writing new tests)
     private static void dumpJndi(String s) {
-        try {
+      /*  try {
             dumpTreeEntry(iniCtx.list(s), s);
         } catch (NamingException ignore) {
-        }
+        }*/
     }
 
     private static void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {

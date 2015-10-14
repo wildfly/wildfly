@@ -22,6 +22,18 @@
 
 package org.jboss.as.ee.structure;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -30,20 +42,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.modules.ModuleLoader;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * A deployment unit processor which parses jboss-ejb-client.xml in top level deployments.
@@ -51,11 +52,13 @@ import java.io.InputStream;
  * out of it and attaches it to the deployment unit at {@link Attachments#EJB_CLIENT_METADATA}
  *
  * @author Jaikiran Pai
+ * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProcessor {
 
-    public static final String[] EJB_CLIENT_DESCRIPTOR_LOCATIONS = {"META-INF/jboss-ejb-client.xml", "WEB-INF/jboss-ejb-client.xml"};
-
+    public static final String[] EJB_CLIENT_DESCRIPTOR_LOCATIONS = { "META-INF/jboss-ejb-client.xml",
+            "WEB-INF/jboss-ejb-client.xml" };
 
     private static final QName ROOT_1_0 = new QName(EJBClientDescriptor10Parser.NAMESPACE_1_0, "jboss-ejb-client");
     private static final QName ROOT_1_1 = new QName(EJBClientDescriptor11Parser.NAMESPACE_1_1, "jboss-ejb-client");
@@ -63,25 +66,18 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
     private static final QName ROOT_1_3 = new QName(EJBClientDescriptor13Parser.NAMESPACE_1_3, "jboss-ejb-client");
     private static final QName ROOT_NO_NAMESPACE = new QName("jboss-ejb-client");
 
-
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
-
-    private final XMLMapper mapper;
-
-    public EJBClientDescriptorParsingProcessor() {
-        mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(ROOT_1_0, EJBClientDescriptor10Parser.INSTANCE);
-        mapper.registerRootElement(ROOT_1_1, EJBClientDescriptor11Parser.INSTANCE);
-        mapper.registerRootElement(ROOT_1_2, EJBClientDescriptor12Parser.INSTANCE);
-        mapper.registerRootElement(ROOT_1_3, EJBClientDescriptor13Parser.INSTANCE);
-        mapper.registerRootElement(ROOT_NO_NAMESPACE, EJBClientDescriptor12Parser.INSTANCE);
-    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ResourceRoot resourceRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-        final ServiceModuleLoader moduleLoader = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.SERVICE_MODULE_LOADER);
+
+        final XMLMapper mapper = createMapper(deploymentUnit);
+
+        final ResourceRoot resourceRoot = deploymentUnit
+                .getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
+        final ServiceModuleLoader moduleLoader = deploymentUnit
+                .getAttachment(org.jboss.as.server.deployment.Attachments.SERVICE_MODULE_LOADER);
 
         VirtualFile descriptorFile = null;
         for (final String loc : EJB_CLIENT_DESCRIPTOR_LOCATIONS) {
@@ -104,7 +100,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
         } catch (IOException e) {
             throw EeLogger.ROOT_LOGGER.failedToProcessEJBClientDescriptor(e);
         }
-        final EJBClientDescriptorMetaData ejbClientDescriptorMetaData = parse(ejbClientDeploymentDescriptorFile, deploymentUnit, moduleLoader);
+        final EJBClientDescriptorMetaData ejbClientDescriptorMetaData = parse(ejbClientDeploymentDescriptorFile, mapper);
         EeLogger.ROOT_LOGGER.debugf("Successfully parsed jboss-ejb-client.xml for deployment unit %s", deploymentUnit);
         // attach the metadata
         deploymentUnit.putAttachment(Attachments.EJB_CLIENT_METADATA, ejbClientDescriptorMetaData);
@@ -114,7 +110,23 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
     public void undeploy(DeploymentUnit context) {
     }
 
-    private EJBClientDescriptorMetaData parse(final File file, final DeploymentUnit deploymentUnit, final ModuleLoader moduleLoader) throws DeploymentUnitProcessingException {
+    private XMLMapper createMapper(final DeploymentUnit deploymentUnit) {
+        final XMLMapper mapper = XMLMapper.Factory.create();
+
+        final PropertyReplacer propertyReplacer = EjbClientDescriptorPropertyReplacement.propertyReplacer(deploymentUnit);
+        final EJBClientDescriptor10Parser ejbClientDescriptor10Parser = new EJBClientDescriptor10Parser(propertyReplacer);
+        mapper.registerRootElement(ROOT_1_0, ejbClientDescriptor10Parser);
+        final EJBClientDescriptor11Parser ejbClientDescriptor11Parser = new EJBClientDescriptor11Parser(propertyReplacer);
+        mapper.registerRootElement(ROOT_1_1, ejbClientDescriptor11Parser);
+        final EJBClientDescriptor11Parser ejbClientDescriptor12Parser = new EJBClientDescriptor12Parser(propertyReplacer);
+        mapper.registerRootElement(ROOT_1_2, ejbClientDescriptor12Parser);
+        final EJBClientDescriptor13Parser ejbClientDescriptor13Parser = new EJBClientDescriptor13Parser(propertyReplacer);
+        mapper.registerRootElement(ROOT_1_3, ejbClientDescriptor13Parser);
+        mapper.registerRootElement(ROOT_NO_NAMESPACE, ejbClientDescriptor13Parser);
+        return mapper;
+    }
+
+    private EJBClientDescriptorMetaData parse(final File file, final XMLMapper mapper) throws DeploymentUnitProcessingException {
         final FileInputStream fis;
         try {
             fis = new FileInputStream(file);
@@ -122,16 +134,15 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
             throw EeLogger.ROOT_LOGGER.failedToProcessEJBClientDescriptor(e);
         }
         try {
-            return parse(fis, file, deploymentUnit, moduleLoader);
+            return parse(fis, file, mapper);
         } finally {
             safeClose(fis);
         }
     }
 
-    private EJBClientDescriptorMetaData parse(final InputStream source, final File file, final DeploymentUnit deploymentUnit, final ModuleLoader moduleLoader)
+    private EJBClientDescriptorMetaData parse(final InputStream source, final File file, final XMLMapper mapper)
             throws DeploymentUnitProcessingException {
         try {
-
             final XMLInputFactory inputFactory = INPUT_FACTORY;
             setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
             setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);

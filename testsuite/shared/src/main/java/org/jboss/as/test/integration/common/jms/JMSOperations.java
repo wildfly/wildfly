@@ -22,27 +22,57 @@
 
 package org.jboss.as.test.integration.common.jms;
 
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
+
 /**
  * Utility to administrate JMS-related resources on the server. An separate implementation should be created for
  * every possible JMS provider to be tested.
  * Use JMSOperationsProvider to get instances of implementing classes.
- * An implementing class must have a default constructor.
+ *
  * Specify the fully qualified name of the activated implementation class in resources/jmsoperations.properties file.
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
 public interface JMSOperations {
 
+    ModelControllerClient getControllerClient();
+
+    ModelNode getServerAddress();
+
+    String getProviderName();
+
     void createJmsQueue(final String queueName, final String jndiName);
 
+    void createJmsQueue(final String queueName, final String jndiName, ModelNode attributes);
+
     void createJmsTopic(final String topicName, final String jndiName);
+
+    void createJmsTopic(final String topicName, final String jndiName, ModelNode attributes);
 
     void removeJmsQueue(final String queueName);
 
     void removeJmsTopic(final String topicName);
 
+    void addJmsConnectionFactory(final String name, final String jndiName, ModelNode attributes);
+
+    void removeJmsConnectionFactory(final String name);
+
+    void addJmsBridge(String name, ModelNode attributes);
+
+    void removeJmsBridge(String name);
+
+    void addCoreQueue(final String queueName, final String queueAddress, boolean durable);
+
+    void removeCoreQueue(final String queueName);
+
     void close();
 
-    void setSystemProperties(String destination, String destinationType);
+    /**
+     * Set system properties for the given destination and resourceAdapter.
+     *
+     * The system property for the given destination is {@code destination} and the one for the resourceAdapter is {@code resource.adapter}.
+     */
+    void setSystemProperties(String destination, String resourceAdapter);
 
     void removeSystemProperties();
 

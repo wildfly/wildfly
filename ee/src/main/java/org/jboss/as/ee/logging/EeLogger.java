@@ -35,6 +35,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -66,11 +67,6 @@ public interface EeLogger extends BasicLogger {
      * A logger with a category of the package name.
      */
     EeLogger ROOT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.ee");
-
-    /**
-     * A logger with a category of {@code org.jboss.as.server.deployment}.
-     */
-    EeLogger SERVER_DEPLOYMENT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.server.deployment");
 
     /**
      * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
@@ -1064,8 +1060,8 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 106, value = "EE Concurrent Context %s service not installed.")
     IOException concurrentContextServiceNotInstalled(ServiceName serviceName);
 
-    //@Message(id = 107, value = "EE Concurrent Transaction Setup Provider service not installed.")
-    //IllegalStateException transactionSetupProviderServiceNotInstalled();
+    @Message(id = 107, value = "EE Concurrent Transaction Setup Provider service not installed.")
+    IllegalStateException transactionSetupProviderServiceNotInstalled();
 
     @Message(id = 108, value = "Instance data can only be set during construction")
     IllegalStateException instanceDataCanOnlyBeSetDuringConstruction();
@@ -1087,4 +1083,25 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 111, value = "Cannot run scheduled task %s as container is suspended")
     IllegalStateException cannotRunScheduledTask(Object delegate);
+
+    /**
+     * Creates an exception indicating the core-threads must be greater than 0 for the task queue.
+     *
+     * @param queueLengthValue the queue length value
+     *
+     * @return an {@link OperationFailedException} for the exception
+     */
+    @Message(id = 112, value = "The core-threads value must be greater than 0 when the queue-length is %s")
+    OperationFailedException invalidCoreThreadsSize(String queueLengthValue);
+
+    /**
+     * Creates an exception indicating the max-threads value cannot be less than the core-threads value.
+     *
+     * @param maxThreads  the size for the max threads
+     * @param coreThreads the size for the core threads
+     *
+     * @return an {@link OperationFailedException} for the exception
+     */
+    @Message(id = 113, value = "The max-threads value %d cannot be less than the core-threads value %d.")
+    OperationFailedException invalidMaxThreads(int maxThreads, int coreThreads);
 }

@@ -29,8 +29,9 @@ import org.wildfly.clustering.group.Node;
  * Registration of a provided service.
  *
  * @author Paul Ferraro
+ * @param <T> a service type
  */
-public interface ServiceProviderRegistration extends AutoCloseable {
+public interface ServiceProviderRegistration<T> extends AutoCloseable {
 
     /**
      * Listener for service provider changes.
@@ -49,7 +50,7 @@ public interface ServiceProviderRegistration extends AutoCloseable {
      *
      * @return a service identifier
      */
-    Object getService();
+    T getService();
 
     /**
      * Returns the set of nodes that can provide this service.
@@ -59,7 +60,7 @@ public interface ServiceProviderRegistration extends AutoCloseable {
     Set<Node> getProviders();
 
     /**
-     * Indicates that this local can no longer provide this service.
+     * Indicates that this node can no longer provide this service.
      * Once closed, this object is no longer functional.
      */
     @Override

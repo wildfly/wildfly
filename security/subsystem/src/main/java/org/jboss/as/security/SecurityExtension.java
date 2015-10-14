@@ -44,6 +44,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -80,9 +81,7 @@ import org.jboss.msc.service.ServiceName;
 
     private static final String RESOURCE_NAME = SecurityExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 3, 0);
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
@@ -103,8 +102,11 @@ import org.jboss.msc.service.ServiceName;
         }
     };
 
+    //deprecated in EAP 6.4
+    static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1,3,0);
+
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);
+        return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);
     }
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
@@ -115,7 +117,7 @@ import org.jboss.msc.service.ServiceName;
             }
             prefix.append(kp);
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, false);
+        return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, prefix.toString(), RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, false);
     }
 
     @Override
@@ -123,8 +125,7 @@ import org.jboss.msc.service.ServiceName;
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SecuritySubsystemRootResourceDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 

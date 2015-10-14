@@ -21,40 +21,106 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import static org.mockito.Mockito.*;
+
+import java.time.Duration;
+import java.time.Instant;
 
 import org.junit.Test;
 import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaData;
-import org.wildfly.clustering.web.infinispan.session.Time;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 import static org.junit.Assert.*;
 
 public class SimpleSessionMetaDataTestCase {
+    private final SessionCreationMetaData creationMetaData = mock(SessionCreationMetaData.class);
+    private final SessionAccessMetaData accessMetaData = mock(SessionAccessMetaData.class);
+
+    private final SessionMetaData metaData = new SimpleSessionMetaData(this.creationMetaData, this.accessMetaData);
+
     @Test
     public void isNew() {
-        SessionMetaData metaData = new SimpleSessionMetaData();
-        assertTrue(metaData.isNew());
+        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(Duration.ZERO);
 
-        metaData.setLastAccessedTime(new Date());
-        assertFalse(metaData.isNew());
+        assertTrue(this.metaData.isNew());
 
-        metaData = new SimpleSessionMetaData(new Date(), new Date(), new Time(0, TimeUnit.SECONDS));
-        assertFalse(metaData.isNew());
+        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(Duration.ofMillis(1L));
+
+        assertFalse(this.metaData.isNew());
     }
 
     @Test
     public void isExpired() {
-        SessionMetaData metaData = new SimpleSessionMetaData();
-        assertFalse(metaData.isExpired());
+        when(this.creationMetaData.getCreationTime()).thenReturn(Instant.now().minus(Duration.ofMinutes(10L)));
+        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(10L));
+        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(Duration.ofMinutes(5L));
 
-        Date now = new Date();
+        assertFalse(this.metaData.isExpired());
 
-        metaData.setMaxInactiveInterval(1, TimeUnit.MINUTES);
-        assertFalse(metaData.isExpired());
+        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(5L));
+        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(Duration.ofMinutes(0L));
 
-        metaData.setLastAccessedTime(new Date(now.getTime() - metaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS) - 1));
-        assertTrue(metaData.isExpired());
+        assertTrue(this.metaData.isExpired());
+
+        // Max inactive interval of 0 means never expire
+        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ZERO);
+
+        assertFalse(this.metaData.isExpired());
+    }
+
+    @Test
+    public void getCreationTime() {
+        Instant expected = Instant.now();
+
+        when(this.creationMetaData.getCreationTime()).thenReturn(expected);
+
+        Instant result = this.metaData.getCreationTime();
+
+        assertSame(expected, result);
+    }
+
+    @Test
+    public void getLastAccessedTime() {
+        Instant now = Instant.now();
+        Duration lastAccessed = Duration.ofSeconds(10L);
+
+        when(this.creationMetaData.getCreationTime()).thenReturn(now.minus(lastAccessed));
+        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(lastAccessed);
+
+        Instant result = this.metaData.getLastAccessedTime();
+
+        assertEquals(now, result);
+    }
+
+    @Test
+    public void getMaxInactiveInterval() {
+        Duration expected = Duration.ofMinutes(30L);
+
+        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(expected);
+
+        Duration result = this.metaData.getMaxInactiveInterval();
+
+        assertSame(expected, result);
+    }
+
+    @Test
+    public void setLastAccessedTime() {
+        Instant now = Instant.now();
+        Duration sinceCreated = Duration.ofSeconds(10L);
+
+        when(this.creationMetaData.getCreationTime()).thenReturn(now.minus(sinceCreated));
+
+        this.metaData.setLastAccessedTime(now);
+
+        verify(this.accessMetaData).setLastAccessedDuration(sinceCreated);
+    }
+
+    @Test
+    public void setMaxInactiveInterval() {
+        Duration duration = Duration.ZERO;
+
+        this.metaData.setMaxInactiveInterval(duration);
+
+        verify(this.creationMetaData).setMaxInactiveInterval(duration);
     }
 }

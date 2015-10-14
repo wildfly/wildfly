@@ -22,26 +22,27 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingStoreService;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -50,7 +51,6 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -63,6 +63,8 @@ import org.wildfly.extension.undertow.filters.FilterRef;
 import org.wildfly.extension.undertow.filters.FilterService;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+import org.xnio.Pool;
+import org.xnio.XnioWorker;
 
 /**
  * This is the barebone test example that tests subsystem
@@ -77,17 +79,17 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-2.0.xml");
+        return readResource("undertow-3.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_2_0.xsd";
+        return "schema/wildfly-undertow_3_0.xsd";
     }
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
+        return new String[]{
                 "/subsystem-templates/undertow.xml"
         };
     }
@@ -107,7 +109,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
-        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization())
+        KernelServicesBuilder builder = createKernelServicesBuilder(RUNTIME)
                 .setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
@@ -132,6 +134,8 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         hostSC.setMode(ServiceController.Mode.ACTIVE);
         Host host = hostSC.getValue();
         Assert.assertEquals(1, host.getFilters().size());
+        Assert.assertEquals(3, host.getAllAliases().size());
+        Assert.assertEquals("default-alias", new ArrayList<>(host.getAllAliases()).get(1));
 
 
         final ServiceName locationServiceName = UndertowService.locationServiceName("some-server", "default-host", "/");
@@ -167,6 +171,16 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         defaultServerSC.setMode(ServiceController.Mode.ACTIVE);
         Server defaultServer = defaultServerSC.getValue();
         Assert.assertNotNull("Default host should exist", defaultServer);
+
+
+        final ServiceName accessLogServiceName = UndertowService.accessLogServiceName("some-server", "default-host");
+        ServiceController<AccessLogService> accessLogSC = (ServiceController<AccessLogService>) mainServices.getContainer().getService(accessLogServiceName);
+        Assert.assertNotNull(accessLogSC);
+        accessLogSC.setMode(ServiceController.Mode.ACTIVE);
+        AccessLogService accessLogService = accessLogSC.getValue();
+        Assert.assertNotNull(accessLogService);
+        Assert.assertFalse(accessLogService.isRotate());
+
     }
 
     private void testCustomFilters(KernelServices mainServices) {
@@ -178,40 +192,61 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
-    }
+    static final AdditionalInitialization DEFAULT = new DefaultInitialization();
+    static final AdditionalInitialization RUNTIME = new RuntimeInitialization();
 
-    private static class RuntimeInitialization extends AdditionalInitialization {
+    private static class DefaultInitialization extends AdditionalInitialization {
+        protected final Map<String, Integer> sockets = new HashMap<>();
 
-        protected ControllerInitializer createControllerInitializer() {
-            ControllerInitializer ci = new ControllerInitializer() {
-
-                @Override
-                protected void initializeSocketBindingsOperations(List<ModelNode> ops) {
-
-                    super.initializeSocketBindingsOperations(ops);
-
-                    final String[] names = {"ajp", "http", "http-2", "https-non-default", "https-2", "ajps"};
-                    final int[] ports = {8009, 8080, 8081, 8433, 8434, 8010};
-                    for (int i = 0; i < names.length; i++) {
-                        final ModelNode op = new ModelNode();
-                        op.get(OP).set(ADD);
-                        op.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME),
-                                PathElement.pathElement(SOCKET_BINDING, names[i])).toModelNode());
-                        op.get(PORT).set(ports[i]);
-                        ops.add(op);
-                    }
-                }
-            };
-
-            // Adding a socket-binding is what triggers ControllerInitializer to set up the interface
-            // and socket-binding-group stuff we depend on TODO something less hacky
-            ci.addSocketBinding("make-framework-happy", 59999);
-            return ci;
+        {
+            sockets.put("ajp", 8009);
+            sockets.put("http", 8080);
+            sockets.put("http-2", 8081);
+            sockets.put("https-non-default", 8433);
+            sockets.put("https-2", 8434);
+            sockets.put("ajps", 8010);
         }
 
+        @Override
+        protected RunningMode getRunningMode() {
+            return RunningMode.ADMIN_ONLY;
+        }
+
+        @Override
+        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+            super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
+            Map<String, Class> capabilities = new HashMap<>();
+            capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, ListenerResourceDefinition.WORKER.getDefaultValue().asString()), XnioWorker.class);
+            capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, "non-default"), XnioWorker.class);
+            capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY, ListenerResourceDefinition.BUFFER_POOL.getDefaultValue().asString()), Pool.class);
+            for (String entry : sockets.keySet()) {
+                capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.SOCKET_CAPABILITY, entry), SocketBinding.class);
+            }
+            registerServiceCapabilities(capabilityRegistry, capabilities);
+
+        }
+    }
+
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return DEFAULT;
+    }
+
+    private static class RuntimeInitialization extends DefaultInitialization {
+        @Override
+        protected RunningMode getRunningMode() {
+            return RunningMode.NORMAL;
+        }
+
+        @Override
+        protected void setupController(ControllerInitializer controllerInitializer) {
+            super.setupController(controllerInitializer);
+
+            for (Map.Entry<String, Integer> entry : sockets.entrySet()) {
+                controllerInitializer.addSocketBinding(entry.getKey(), entry.getValue());
+            }
+        }
 
         @Override
         protected void addExtraServices(ServiceTarget target) {
@@ -225,6 +260,10 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
                     .install();
 
             target.addService(IOServices.WORKER.append("default"), new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
+
+            target.addService(IOServices.WORKER.append("non-default"), new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
 
@@ -242,6 +281,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
             target.addService(SecurityRealm.ServiceUtil.createServiceName("other"), new SecurityRealmService("other", false))
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+
         }
     }
 }

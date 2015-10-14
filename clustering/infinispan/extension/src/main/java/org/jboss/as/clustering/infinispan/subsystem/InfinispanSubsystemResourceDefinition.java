@@ -22,14 +22,18 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.BoottimeAddStepHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -39,7 +43,7 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinition {
+public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME);
 
@@ -51,23 +55,26 @@ public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinit
         return builder.build();
     }
 
-    private final ResolvePathHandler resolvePathHandler;
+    private final PathManager pathManager;
     private final boolean allowRuntimeOnlyRegistration;
 
-    InfinispanSubsystemResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(), new InfinispanSubsystemAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
-        this.resolvePathHandler = resolvePathHandler;
+    InfinispanSubsystemResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+        super(PATH, new InfinispanResourceDescriptionResolver());
+        this.pathManager = pathManager;
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
+    public void register(SubsystemRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubsystemModel(this);
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new CacheContainerResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
+        ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
+        new BoottimeAddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
+
+        new CacheContainerResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
     }
 }

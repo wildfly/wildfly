@@ -22,8 +22,13 @@
 package org.jboss.as.security.plugins;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.security.SecureClassLoader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.modules.ModuleLoadException;
@@ -97,6 +102,14 @@ public class ModuleClassLoaderLocator implements ClassLoaderLocator {
                 is = second.getResourceAsStream(name);
             }
             return is;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            List<URL> combinedList = new ArrayList<URL>();
+            combinedList.addAll(Collections.list(first.getResources(name)));
+            combinedList.addAll(Collections.list(second.getResources(name)));
+            return Collections.enumeration(combinedList);
         }
     }
 }

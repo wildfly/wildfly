@@ -28,6 +28,9 @@ package org.jboss.as.connector.subsystems.datasources;
  * @author John Bailey
  */
 public class XaDataSourceRemove extends AbstractDataSourceRemove {
-    static final XaDataSourceRemove INSTANCE = new XaDataSourceRemove();
+    static final XaDataSourceRemove INSTANCE = new XaDataSourceRemove(XaDataSourceAdd.INSTANCE);
 
+    protected XaDataSourceRemove(final AbstractDataSourceAdd addHandler) {
+        super(addHandler);
+    }
 }

@@ -64,6 +64,7 @@ import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.naming.ContextInjectionSource;
+import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AdditionalSetupInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
@@ -76,6 +77,7 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.remote.CompressionHintViewConfigurator;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
@@ -84,6 +86,7 @@ import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
+import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -250,6 +253,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     private String policyContextID;
 
+    private final ShutDownInterceptorFactory shutDownInterceptorFactory = new ShutDownInterceptorFactory();
+
     /**
      * Construct a new instance.
      *
@@ -305,14 +310,19 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if (!ejbSetupActions.isEmpty()) {
                         configuration.addTimeoutViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                     }
+                    configuration.addTimeoutViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
+
                     final ClassLoader classLoader = configuration.getModuleClassLoader();
                     configuration.addTimeoutViewInterceptor(PrivilegedWithCombinerInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
-                    configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
-                    for (final Method method : configuration.getClassIndex().getClassMethods()) {
+                    if(context.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
+                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                    }
+                    final Set<Method> classMethods = configuration.getClassIndex().getClassMethods();
+                    for (final Method method : classMethods) {
                         configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     }
                 }
@@ -421,8 +431,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     viewConfiguration.addViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                 }
                 viewConfiguration.addViewInterceptor(WaitTimeInterceptor.FACTORY, InterceptorOrder.View.EJB_WAIT_TIME_INTERCEPTOR);
+                viewConfiguration.addViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
+
+
             }
         });
+        view.getConfigurators().add(CompressionHintViewConfigurator.INSTANCE);
         this.addCurrentInvocationContextFactory(view);
         this.setupSecurityInterceptors(view);
         this.setupRemoteViewInterceptors(view);
@@ -1022,6 +1036,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setPolicyContextID(String policyContextID) {
         this.policyContextID = policyContextID;
+    }
+
+    public ShutDownInterceptorFactory getShutDownInterceptorFactory() {
+        return shutDownInterceptorFactory;
     }
 
     @Override

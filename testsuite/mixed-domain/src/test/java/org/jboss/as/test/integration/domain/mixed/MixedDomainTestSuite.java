@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jboss.as.test.integration.domain.mixed.util.MixedDomainTestSupport;
 import org.junit.AfterClass;
 
 /**
@@ -36,7 +35,7 @@ public class MixedDomainTestSuite {
 
 
     static Version.AsVersion getVersion(Class<?> testClass) {
-        Version version = testClass.getAnnotation(Version.class);
+        final Version version = testClass.getAnnotation(Version.class);
         if (version == null) {
             throw new IllegalArgumentException("No @Version");
         }
@@ -51,18 +50,35 @@ public class MixedDomainTestSuite {
      * Call this from a @BeforeClass method
      *
      * @param testClass the test/suite class
-     * @param version the version to test
      */
-    static MixedDomainTestSupport getSupport(Class<?> testClass) {
-        Version.AsVersion version = getVersion(testClass);
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
         if (support == null) {
+            final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
+            return getSupport(testClass, copiedDomainXml, true);
+        } else {
+            return support;
+        }
+    }
+
+    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, boolean adjustDomain) {
+        if (support == null) {
+            final Version.AsVersion version = getVersion(testClass);
+            final MixedDomainTestSupport testSupport;
             try {
-                final MixedDomainTestSupport testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);
-                // Start!
+                if (domainConfig != null) {
+                    testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, adjustDomain);
+                } else {
+                    testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                //Start the the domain with adjustments to domain.xml
                 testSupport.start();
                 support = testSupport;
             } catch (Exception e) {
-                e.printStackTrace();
+                testSupport.stop();
                 throw new RuntimeException(e);
             }
         }
@@ -72,11 +88,6 @@ public class MixedDomainTestSuite {
     protected Version.AsVersion getVersion() {
         return version;
     }
-
-    protected MixedDomainTestSupport getSupport() {
-        return support;
-    }
-
 
     private synchronized static void stop() {
         if(support != null) {

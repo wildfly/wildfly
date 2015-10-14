@@ -21,9 +21,44 @@
  */
 package org.jboss.as.clustering.controller.validation;
 
+import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 
+/**
+ * Builder for a {@link ParameterValidator}.
+ * @author Paul Ferraro
+ */
 public interface ParameterValidatorBuilder {
+
+    /**
+     * Indicates whether {@link org.jboss.dmr.ModelType#UNDEFINED} is allowed
+     * @param allowsUndefined indicates whether {@link org.jboss.dmr.ModelType#UNDEFINED} is allowed
+     * @return a reference to this builder
+     */
+    ParameterValidatorBuilder allowUndefined(boolean allowsUndefined);
+
+    /**
+     * Indicates whether {@link org.jboss.dmr.ModelType#EXPRESSION} is allowed
+     * @param allowExpressions whether {@link org.jboss.dmr.ModelType#EXPRESSION} is allowed
+     * @return a reference to this builder
+     */
+    ParameterValidatorBuilder allowExpression(boolean allowsExpressions);
+
+    /**
+     * Configures this validator builder using the configuration of the specified attribute definition
+     * @param definition an attribute definition
+     * @return a reference to this builder
+     */
+    ParameterValidatorBuilder configure(AttributeDefinition definition);
+
+    /**
+     * Configures this validator builder using the configuration of the specified attribute definition builder
+     * @param builder an attribute definition builder
+     * @return a reference to this builder
+     */
+    ParameterValidatorBuilder configure(AbstractAttributeDefinitionBuilder<?, ?> builder);
+
     /**
      * Builds the validator.
      * @return a parameter validator

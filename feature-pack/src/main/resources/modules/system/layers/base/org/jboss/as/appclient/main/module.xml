@@ -64,14 +64,14 @@
         <module name="org.jboss.as.domain-http-interface"/>
         <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.embedded"/>
+        <module name="org.wildfly.embedded"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.platform-mbean"/>
         <module name="org.jboss.as.process-controller"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security"/>
-        <module name="org.wildfly.security.manager" services="import"/>
+        <module name="org.wildfly.security.elytron" services="import"/>
         <module name="org.jboss.as.version"/>
         <module name="org.picketbox"/>
         <module name="org.jboss.metadata.common"/>

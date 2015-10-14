@@ -56,41 +56,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@ServerSetup(DatabaseTimerServiceTestCase.DatabaseTimerServiceTestCaseServerSetup.class)
+@ServerSetup(DatabaseTimerServerSetup.class)
 public class DatabaseTimerServiceTestCase {
 
     private static int TIMER_INIT_TIME_MS = 100;
     private static int TIMER_TIMEOUT_TIME_MS = 100;
 
     private static String INFO_MSG_FOR_CHECK = "info";
-
-    static class DatabaseTimerServiceTestCaseServerSetup implements ServerSetupTask {
-
-        @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            ModelNode op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
-            op.get(OP_ADDR).add("service", "timer-service");
-            op.get(OP_ADDR).add("database-data-store", "dbstore");
-            op.get("datasource-jndi-name").set("java:jboss/datasources/ExampleDS");
-            op.get("database").set("hsql");
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            ModelNode op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
-            op.get(OP_ADDR).add("service", "timer-service");
-            op.get(OP_ADDR).add("database-data-store", "dbstore");
-            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        }
-    }
 
     @Deployment
     public static Archive<?> deploy() {

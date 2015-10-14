@@ -22,13 +22,14 @@
 
 package org.jboss.as.ejb3.remote;
 
-import com.arjuna.ats.jta.recovery.SerializableXAResourceDeserializer;
-import org.jboss.ejb.client.EJBClientManagedTransactionContext;
-import org.jboss.logging.Logger;
-
-import javax.transaction.xa.XAResource;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+
+import javax.transaction.xa.XAResource;
+
+import org.jboss.ejb.client.EJBClientManagedTransactionContext;
+
+import com.arjuna.ats.jta.recovery.SerializableXAResourceDeserializer;
 
 /**
  * A {@link SerializableXAResourceDeserializer} responsible for deserializing EJB XAResource(s)
@@ -36,8 +37,6 @@ import java.io.ObjectInputStream;
  * @author Jaikiran Pai
  */
 class EJBXAResourceDeserializer implements SerializableXAResourceDeserializer {
-
-    private static final Logger logger = Logger.getLogger(EJBXAResourceDeserializer.class);
 
     static final EJBXAResourceDeserializer INSTANCE = new EJBXAResourceDeserializer();
 

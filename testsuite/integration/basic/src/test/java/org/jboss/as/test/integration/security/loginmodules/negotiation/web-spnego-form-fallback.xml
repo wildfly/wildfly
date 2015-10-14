@@ -4,7 +4,7 @@
 	version="3.0">
 
 	<login-config>
-		<auth-method>SPNEGO</auth-method>
+		<auth-method>SPNEGO,FORM</auth-method>
 		<realm-name>SPNEGO</realm-name>
 		<form-login-config>
 			<form-login-page>/login.jsp</form-login-page>

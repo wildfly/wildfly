@@ -102,6 +102,7 @@ public class WebValveDefinition extends ModelOnlyResourceDefinition {
         super(WebExtension.VALVE_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.VALVE),
                 ATTRIBUTES);
+        setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     /**

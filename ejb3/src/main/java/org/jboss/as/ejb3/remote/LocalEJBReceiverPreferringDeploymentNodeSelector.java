@@ -22,9 +22,9 @@
 
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.DeploymentNodeSelector;
-import org.jboss.logging.Logger;
 
 import java.util.Random;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -36,8 +36,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Jaikiran Pai
  */
 public class LocalEJBReceiverPreferringDeploymentNodeSelector implements DeploymentNodeSelector {
-
-    private static final Logger logger = Logger.getLogger(LocalEJBReceiverPreferringDeploymentNodeSelector.class);
 
     private final String localNodeName;
 
@@ -54,10 +52,8 @@ public class LocalEJBReceiverPreferringDeploymentNodeSelector implements Deploym
         // prefer local node if available
         for (final String eligibleNode : eligibleNodes) {
             if (localNodeName.equals(eligibleNode)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Selected local node " + this.localNodeName + " for [app: " + appName + ", module: "
-                            + moduleName + ",  distinctname: " + distinctName + "]");
-                }
+                EjbLogger.REMOTE_LOGGER.debugf("Selected local node %s for [app: %s, module: %s,  distinctname: %s]",
+                        this.localNodeName, appName, moduleName, distinctName);
                 return eligibleNode;
             }
         }

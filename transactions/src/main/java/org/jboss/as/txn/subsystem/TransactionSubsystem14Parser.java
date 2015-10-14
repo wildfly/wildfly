@@ -23,6 +23,7 @@ package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -136,14 +137,14 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
                 parseJts(reader, subsystemOperation);
                 break;
             }
-            case USEHORNETQSTORE: {
+            case USE_HORNETQ_STORE: {
                 if (choiceObjectStoreEncountered) {
                     throw unexpectedElement(reader);
                 }
                 choiceObjectStoreEncountered = true;
 
-                parseUsehornetqstore(reader, logStoreOperation, subsystemOperation);
-                subsystemOperation.get(CommonAttributes.USEHORNETQSTORE).set(true);
+                parseUseJournalstore(reader, logStoreOperation, subsystemOperation);
+                subsystemOperation.get(CommonAttributes.USE_JOURNAL_STORE).set(true);
                 break;
             }
             case JDBC_STORE: {
@@ -171,8 +172,8 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
         requireNoContent(reader);
     }
 
-    protected void parseUsehornetqstore(final XMLExtendedStreamReader reader, final ModelNode logStoreOperation, final ModelNode operation) throws XMLStreamException {
-        logStoreOperation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("hornetq");
+    protected void parseUseJournalstore(final XMLExtendedStreamReader reader, final ModelNode logStoreOperation, final ModelNode operation) throws XMLStreamException {
+        logStoreOperation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("journal");
 
         // Handle attributes
         final int count = reader.getAttributeCount();
@@ -182,7 +183,7 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ENABLE_ASYNC_IO:
-                    TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.parseAndSetParameter(value, operation, reader);
+                    TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -321,11 +322,8 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
                     TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.parseAndSetParameter(value, operation, reader);
                     break;
                 case PATH:
-                    TransactionSubsystemRootResourceDefinition.PATH.parseAndSetParameter(value, operation, reader);
-                    break;
                 case RELATIVE_TO:
-                    TransactionSubsystemRootResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, operation, reader);
-                    break;
+                    throw TransactionLogger.ROOT_LOGGER.unsupportedAttribute(attribute.getLocalName(), reader.getLocation());
                 default:
                     throw unexpectedAttribute(reader, i);
             }

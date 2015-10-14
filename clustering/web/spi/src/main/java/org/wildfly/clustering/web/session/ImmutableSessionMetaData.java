@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.web.session;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Abstraction for immutable meta information about a web session.
@@ -45,18 +45,18 @@ public interface ImmutableSessionMetaData {
      * Returns the time this session was created.
      * @return the time this session was created
      */
-    Date getCreationTime();
+    Instant getCreationTime();
 
     /**
      * Returns the time this session was last accessed.
      * @return the time this session was last accessed
      */
-    Date getLastAccessedTime();
+    Instant getLastAccessedTime();
 
     /**
      * Returns the time interval, using the specified unit, after which this session will expire.
      * @param unit a time unit
      * @return a time interval
      */
-    long getMaxInactiveInterval(TimeUnit unit);
+    Duration getMaxInactiveInterval();
 }

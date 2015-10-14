@@ -23,17 +23,14 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.filter.NullValueConverter;
-import org.infinispan.iteration.EntryIterable;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -66,6 +63,8 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.service.concurrent.ServiceExecutor;
+import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 
 /**
  * A {@link BeanManager} implementation backed by an infinispan cache.
@@ -97,8 +96,9 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
     private final BeanKeyFilter<I> filter;
 
-    volatile CommandDispatcher<Scheduler<I>> dispatcher;
+    private volatile CommandDispatcher<Scheduler<I>> dispatcher;
     private volatile Scheduler<I> scheduler;
+    private volatile ServiceExecutor executor;
 
     public InfinispanBeanManager(InfinispanBeanManagerConfiguration<T> configuration, final Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration, final Configuration<G, G, BeanGroupEntry<I, T>, BeanGroupFactory<G, I, T>> groupConfiguration) {
         this.beanName = configuration.getBeanName();
@@ -108,35 +108,15 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         this.beanCache = beanConfiguration.getCache();
         this.batcher = new InfinispanBatcher(this.groupCache);
         this.filter = new BeanKeyFilter<>(this.beanName);
-        final Address address = this.groupCache.getCacheManager().getAddress();
-        final KeyGenerator<G> groupKeyGenerator = new KeyGenerator<G>() {
-            @Override
-            public G getKey() {
-                return groupConfiguration.getIdentifierFactory().createIdentifier();
-            }
-        };
+        Address address = this.groupCache.getCacheManager().getAddress();
+        KeyGenerator<G> groupKeyGenerator = () -> groupConfiguration.getIdentifierFactory().createIdentifier();
         KeyAffinityServiceFactory affinityFactory = configuration.getAffinityFactory();
-        final KeyAffinityService<G> groupAffinity = affinityFactory.createService(this.groupCache, groupKeyGenerator);
-        this.groupIdentifierFactory = new IdentifierFactory<G>() {
-            @Override
-            public G createIdentifier() {
-                return groupAffinity.getKeyForAddress(address);
-            }
-        };
+        KeyAffinityService<G> groupAffinity = affinityFactory.createService(this.groupCache, groupKeyGenerator);
+        this.groupIdentifierFactory = () -> groupAffinity.getKeyForAddress(address);
         this.affinityServices.add(groupAffinity);
-        final KeyGenerator<BeanKey<I>> beanKeyGenerator = new KeyGenerator<BeanKey<I>>() {
-            @Override
-            public BeanKey<I> getKey() {
-                return beanConfiguration.getFactory().createKey(beanConfiguration.getIdentifierFactory().createIdentifier());
-            }
-        };
-        final KeyAffinityService<BeanKey<I>> beanAffinity = affinityFactory.createService(this.beanCache, beanKeyGenerator);
-        this.beanIdentifierFactory = new IdentifierFactory<I>() {
-            @Override
-            public I createIdentifier() {
-                return beanAffinity.getKeyForAddress(address).getId();
-            }
-        };
+        KeyGenerator<BeanKey<I>> beanKeyGenerator = () -> beanConfiguration.getFactory().createKey(beanConfiguration.getIdentifierFactory().createIdentifier());
+        KeyAffinityService<BeanKey<I>> beanAffinity = affinityFactory.createService(this.beanCache, beanKeyGenerator);
+        this.beanIdentifierFactory = () -> beanAffinity.getKeyForAddress(address).getId();
         this.affinityServices.add(beanAffinity);
         this.registry = configuration.getRegistry();
         this.nodeFactory = configuration.getNodeFactory();
@@ -147,9 +127,8 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
 
     @Override
     public void start() {
-        for (KeyAffinityService<?> service: this.affinityServices) {
-            service.start();
-        }
+        this.executor = new StampedLockServiceExecutor();
+        this.affinityServices.forEach(service -> service.start());
         final List<Scheduler<I>> schedulers = new ArrayList<>(2);
         Time timeout = this.expiration.getTimeout();
         if ((timeout != null) && (timeout.getValue() >= 0)) {
@@ -161,30 +140,22 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         this.scheduler = new Scheduler<I>() {
             @Override
             public void schedule(I id) {
-                for (Scheduler<I> scheduler: schedulers) {
-                    scheduler.schedule(id);
-                }
+                schedulers.forEach(scheduler -> scheduler.schedule(id));
             }
 
             @Override
             public void cancel(I id) {
-                for (Scheduler<I> scheduler: schedulers) {
-                    scheduler.cancel(id);
-                }
+                schedulers.forEach(scheduler -> scheduler.cancel(id));
             }
 
             @Override
             public void cancel(Locality locality) {
-                for (Scheduler<I> scheduler: schedulers) {
-                    scheduler.cancel(locality);
-                }
+                schedulers.forEach(scheduler -> scheduler.cancel(locality));
             }
 
             @Override
             public void close() {
-                for (Scheduler<I> scheduler: schedulers) {
-                    scheduler.close();
-                }
+                schedulers.forEach(scheduler -> scheduler.close());
             }
         };
         this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.beanName + ".schedulers", this.scheduler);
@@ -194,12 +165,12 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
 
     @Override
     public void stop() {
-        this.beanCache.removeListener(this);
-        this.dispatcher.close();
-        this.scheduler.close();
-        for (KeyAffinityService<?> service: this.affinityServices) {
-            service.stop();
-        }
+        this.executor.close(() -> {
+            this.beanCache.removeListener(this);
+            this.dispatcher.close();
+            this.scheduler.close();
+            this.affinityServices.forEach(service -> service.stop());
+        });
     }
 
     @Override
@@ -229,15 +200,11 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     }
 
     private void executeOnPrimaryOwner(final Bean<G, I, T> bean, final Command<Void, Scheduler<I>> command) throws Exception {
-        Callable<Void> task = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                // This should only go remote following a failover
-                Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
-                return InfinispanBeanManager.this.dispatcher.executeOnNode(command, node).get();
-            }
-        };
-        this.invoker.invoke(task);
+        this.invoker.invoke(() -> {
+            // This should only go remote following a failover
+            Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
+            return InfinispanBeanManager.this.dispatcher.executeOnNode(command, node);
+        }).get();
     }
 
     Node locatePrimaryOwner(I id) {
@@ -290,13 +257,9 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
 
     @Override
     public int getActiveCount() {
-        int size = 0;
-        try (EntryIterable<BeanKey<I>, ?> entries = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).filterEntries(this.filter)) {
-            for (@SuppressWarnings("unused") CacheEntry<BeanKey<I>, ?> entry : entries.converter(NullValueConverter.getInstance())) {
-                size += 1;
-            }
+        try (Stream<BeanKey<I>> keys = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
+            return (int) keys.filter(this.filter).count();
         }
-        return size;
     }
 
     @Override
@@ -309,13 +272,15 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         if (event.isPre()) {
             this.passiveCount.incrementAndGet();
             if (!this.passivation.isPersistent()) {
-                G groupId = event.getValue().getGroupId();
-                BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
-                if (entry != null) {
-                    try (BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, entry)) {
-                        group.prePassivate(event.getKey().getId(), this.passivation.getPassivationListener());
+                this.executor.execute(() -> {
+                    G groupId = event.getValue().getGroupId();
+                    BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
+                    if (entry != null) {
+                        try (BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, entry)) {
+                            group.prePassivate(event.getKey().getId(), this.passivation.getPassivationListener());
+                        }
                     }
-                }
+                });
             }
         }
     }
@@ -325,41 +290,39 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         if (!event.isPre()) {
             this.passiveCount.decrementAndGet();
             if (!this.passivation.isPersistent()) {
-                G groupId = event.getValue().getGroupId();
-                BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
-                if (entry != null) {
-                    try (BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, entry)) {
-                        group.postActivate(event.getKey().getId(), this.passivation.getPassivationListener());
+                this.executor.execute(() -> {
+                    G groupId = event.getValue().getGroupId();
+                    BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
+                    if (entry != null) {
+                        try (BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, entry)) {
+                            group.postActivate(event.getKey().getId(), this.passivation.getPassivationListener());
+                        }
                     }
-                }
+                });
             }
         }
     }
 
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<BeanKey<I>, BeanEntry<G>> event) {
-        Cache<BeanKey<I>, BeanEntry<G>> cache = event.getCache();
-        Address localAddress = cache.getCacheManager().getAddress();
-        Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
-        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
-        if (event.isPre()) {
-            this.scheduler.cancel(newLocality);
-        } else {
-            this.schedule(cache, oldLocality, newLocality);
-        }
+        this.executor.execute(() -> {
+            Cache<BeanKey<I>, BeanEntry<G>> cache = event.getCache();
+            Address localAddress = cache.getCacheManager().getAddress();
+            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+            Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+            if (event.isPre()) {
+                this.scheduler.cancel(newLocality);
+            } else {
+                this.schedule(cache, oldLocality, newLocality);
+            }
+        });
     }
 
     private void schedule(Cache<BeanKey<I>, BeanEntry<G>> cache, Locality oldLocality, Locality newLocality) {
         // Iterate over sessions in memory
-        try (EntryIterable<BeanKey<I>, ?> entries = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).filterEntries(this.filter)) {
-            for (CacheEntry<BeanKey<I>, ?> entry : entries.converter(NullValueConverter.getInstance())) {
-                I id = entry.getKey().getId();
-                // If we are the new primary owner of this session
-                // then schedule expiration of this session locally
-                if (!oldLocality.isLocal(id) && newLocality.isLocal(id)) {
-                    this.scheduler.schedule(id);
-                }
-            }
+        try (Stream<BeanKey<I>> stream = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
+            // If we are the new primary owner of this session then schedule expiration of this session locally
+            stream.filter(this.filter).map(key -> key.getId()).filter(id -> !oldLocality.isLocal(id) && newLocality.isLocal(id)).forEach(id -> this.scheduler.schedule(id));
         }
     }
 

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -28,6 +30,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -43,8 +46,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 /**
  * Extension that hooks the application client work into the deployment
  *
@@ -56,9 +57,7 @@ public class AppClientExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "appclient";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-    private static final int MAJOR_VERSION = 1;
-    private static final int MINOR_VERSION = 1;
-    private static final int MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 1, 0);
 
     private static final ApplicationClientSubsystemParser parser = new ApplicationClientSubsystemParser();
 
@@ -67,7 +66,7 @@ public class AppClientExtension implements Extension {
 
     @Override
     public void initialize(final ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerSubsystemModel(AppClientSubsystemResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(parser);
     }

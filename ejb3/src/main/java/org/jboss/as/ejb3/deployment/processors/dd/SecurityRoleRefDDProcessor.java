@@ -24,12 +24,11 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
@@ -40,8 +39,6 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
  * User: Jaikiran Pai
  */
 public class SecurityRoleRefDDProcessor extends AbstractEjbXmlDescriptorProcessor<EnterpriseBeanMetaData> {
-
-    private static final Logger logger = Logger.getLogger(SecurityRoleRefDDProcessor.class);
 
     @Override
     protected Class<EnterpriseBeanMetaData> getMetaDataType() {

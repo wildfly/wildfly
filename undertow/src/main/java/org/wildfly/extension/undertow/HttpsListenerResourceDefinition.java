@@ -27,9 +27,11 @@ import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import io.undertow.UndertowOptions;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -53,7 +55,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .build();
-    protected static final OptionAttributeDefinition VERIFY_CLIENT = OptionAttributeDefinition.builder("verify-client", SSL_CLIENT_AUTH_MODE)
+    protected static final OptionAttributeDefinition VERIFY_CLIENT = OptionAttributeDefinition.builder(Constants.VERIFY_CLIENT, SSL_CLIENT_AUTH_MODE)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
@@ -61,18 +63,34 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setDefaultValue(new ModelNode(SslClientAuthMode.NOT_REQUESTED.name()))
             .build();
 
-    protected static final OptionAttributeDefinition ENABLED_CIPHER_SUITES = OptionAttributeDefinition.builder("enabled-cipher-suites", Options.SSL_ENABLED_CIPHER_SUITES)
+    protected static final OptionAttributeDefinition ENABLED_CIPHER_SUITES = OptionAttributeDefinition.builder(Constants.ENABLED_CIPHER_SUITES, Options.SSL_ENABLED_CIPHER_SUITES)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
 
-    protected static final OptionAttributeDefinition ENABLED_PROTOCOLS = OptionAttributeDefinition.builder("enabled-protocols", Options.SSL_ENABLED_PROTOCOLS)
+    protected static final OptionAttributeDefinition ENABLED_PROTOCOLS = OptionAttributeDefinition.builder(Constants.ENABLED_PROTOCOLS, Options.SSL_ENABLED_PROTOCOLS)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
 
+    protected static final OptionAttributeDefinition ENABLE_HTTP2 = OptionAttributeDefinition.builder(Constants.ENABLE_HTTP2, UndertowOptions.ENABLE_HTTP2)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    protected static final OptionAttributeDefinition ENABLE_SPDY = OptionAttributeDefinition.builder(Constants.ENABLE_SPDY, UndertowOptions.ENABLE_SPDY)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    public static final OptionAttributeDefinition SSL_SESSION_CACHE_SIZE = OptionAttributeDefinition.builder(Constants.SSL_SESSION_CACHE_SIZE, Options.SSL_SERVER_SESSION_CACHE_SIZE).setAllowNull(true).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition SSL_SESSION_TIMEOUT = OptionAttributeDefinition.builder(Constants.SSL_SESSION_TIMEOUT, Options.SSL_SERVER_SESSION_TIMEOUT).setMeasurementUnit(MeasurementUnit.SECONDS).setAllowNull(true).setAllowExpression(true).build();
 
     private HttpsListenerResourceDefinition() {
         super(UndertowExtension.HTTPS_LISTENER_PATH);
@@ -85,6 +103,10 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
         res.add(VERIFY_CLIENT);
         res.add(ENABLED_CIPHER_SUITES);
         res.add(ENABLED_PROTOCOLS);
+        res.add(ENABLE_HTTP2);
+        res.add(ENABLE_SPDY);
+        res.add(SSL_SESSION_CACHE_SIZE);
+        res.add(SSL_SESSION_TIMEOUT);
         return res;
     }
 

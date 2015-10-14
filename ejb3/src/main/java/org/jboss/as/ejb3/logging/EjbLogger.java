@@ -66,6 +66,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -126,6 +127,16 @@ import static org.jboss.logging.Logger.Level.WARN;
 public interface EjbLogger extends BasicLogger {
 
     EjbLogger ROOT_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3");
+
+    /**
+     * A logger with the category {@code org.jboss.as.ejb3.deployment} used for deployment log messages
+     */
+    EjbLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.deployment");
+
+    /**
+     * A logger with the category {@code org.jboss.as.ejb3.remote} used for remote log messages
+     */
+    EjbLogger REMOTE_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.remote");
 
     /**
      * logger use to log EJB invocation errors
@@ -392,7 +403,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 35, value = "Could not find EJB for locator %s, EJB client proxy will not be replaced")
-    void couldNotFindEjbForLocatorIIOP(EJBLocator locator);
+    void couldNotFindEjbForLocatorIIOP(EJBLocator<?> locator);
 
 
     /**
@@ -400,7 +411,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 36, value = "EJB %s is not being replaced with a Stub as it is not exposed over IIOP")
-    void ejbNotExposedOverIIOP(EJBLocator locator);
+    void ejbNotExposedOverIIOP(EJBLocator<?> locator);
 
     /**
      * Logs an error message indicating that dynamic stub creation failed
@@ -603,19 +614,19 @@ public interface EjbLogger extends BasicLogger {
     IllegalStateException ejbLocalObjectUnavailable(String beanName);
 
     @Message(id = 79, value = "[EJB 3.1 spec, section 14.1.1] Class: %s cannot be marked as an application exception because it is not of type java.lang.Exception")
-    IllegalArgumentException cannotBeApplicationExceptionBecauseNotAnExceptionType(Class klass);
+    IllegalArgumentException cannotBeApplicationExceptionBecauseNotAnExceptionType(Class<?> klass);
 
     @Message(id = 80, value = "[EJB 3.1 spec, section 14.1.1] Exception class: %s cannot be marked as an application exception because it is of type java.rmi.RemoteException")
-    IllegalArgumentException rmiRemoteExceptionCannotBeApplicationException(Class klass);
+    IllegalArgumentException rmiRemoteExceptionCannotBeApplicationException(Class<?> klass);
 
     @Message(id = 81, value = "%s annotation is allowed only on classes. %s is not a class")
     RuntimeException annotationOnlyAllowedOnClass(String annotationName, AnnotationTarget incorrectTarget);
 
     @Message(id = 82, value = "Bean %s specifies @Remote annotation, but does not implement 1 interface")
-    DeploymentUnitProcessingException beanWithRemoteAnnotationImplementsMoreThanOneInterface(Class beanClass);
+    DeploymentUnitProcessingException beanWithRemoteAnnotationImplementsMoreThanOneInterface(Class<?> beanClass);
 
     @Message(id = 83, value = "Bean %s specifies @Local annotation, but does not implement 1 interface")
-    DeploymentUnitProcessingException beanWithLocalAnnotationImplementsMoreThanOneInterface(Class beanClass);
+    DeploymentUnitProcessingException beanWithLocalAnnotationImplementsMoreThanOneInterface(Class<?> beanClass);
 
     @Message(id = 84, value = "Could not analyze remote interface for %s")
     RuntimeException failedToAnalyzeRemoteInterface(@Cause Exception e, String beanName);
@@ -654,22 +665,22 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException unknownSessionBeanType(String sessionType);
 
     @Message(id = 96, value = "More than one method found with name %s on %s")
-    DeploymentUnitProcessingException moreThanOneMethodWithSameNameOnComponent(String methodName, Class componentClass);
+    DeploymentUnitProcessingException moreThanOneMethodWithSameNameOnComponent(String methodName, Class<?> componentClass);
 
     @Message(id = 97, value = "Unknown EJB locator type %s")
-    RuntimeException unknownEJBLocatorType(EJBLocator locator);
+    RuntimeException unknownEJBLocatorType(EJBLocator<?> locator);
 
     @Message(id = 98, value = "Could not create CORBA object for %s")
-    RuntimeException couldNotCreateCorbaObject(@Cause Exception cause, EJBLocator locator);
+    RuntimeException couldNotCreateCorbaObject(@Cause Exception cause, EJBLocator<?> locator);
 
     @Message(id = 99, value = "Provided locator %s was not for EJB %s")
-    IllegalArgumentException incorrectEJBLocatorForBean(EJBLocator locator, String beanName);
+    IllegalArgumentException incorrectEJBLocatorForBean(EJBLocator<?> locator, String beanName);
 
     @Message(id = 100, value = "Failed to lookup java:comp/ORB")
     IOException failedToLookupORB();
 
     @Message(id = 101, value = "%s is not an ObjectImpl")
-    IOException notAnObjectImpl(Class type);
+    IOException notAnObjectImpl(Class<?> type);
 
     @Message(id = 102, value = "Message endpoint %s has already been released")
     UnavailableException messageEndpointAlreadyReleased(MessageEndpoint messageEndpoint);
@@ -752,7 +763,7 @@ public interface EjbLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 123, value = "Asynchronous invocations are only supported on session beans. Bean class %s is not a session bean, invocation on method %s will have no asynchronous semantics")
-    void asyncMethodSupportedOnlyForSessionBeans(Class beanClass, Method invokedMethod);
+    void asyncMethodSupportedOnlyForSessionBeans(Class<?> beanClass, Method invokedMethod);
 
     @LogMessage(level = INFO)
     @Message(id = 124, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for addresses %s")
@@ -859,8 +870,8 @@ public interface EjbLogger extends BasicLogger {
     void couldNotWriteInvocationSuccessMessage(@Cause Throwable cause);
 
     @LogMessage(level = WARN)
-    @Message(id = 154, value = "Received unsupported message header 0x%s on channel %s")
-    void unsupportedMessageHeader(String header, Channel channel);
+    @Message(id = 154, value = "Received unsupported message header 0x%x on channel %s")
+    void unsupportedMessageHeader(int header, Channel channel);
 
     @LogMessage(level = ERROR)
     @Message(id = 155, value = "Error during transaction management of transaction id %s")
@@ -1427,7 +1438,7 @@ public interface EjbLogger extends BasicLogger {
      * @return a {@link ConcurrentAccessTimeoutException} for the error.
      */
     @Message(id = 228, value = "EJB 3.1 FR 4.3.14.1 concurrent access timeout on %s - could not obtain lock within %s %s")
-    ConcurrentAccessTimeoutException failToObtainLock(InterceptorContext context, long value, TimeUnit timeUnit);
+    ConcurrentAccessTimeoutException failToObtainLock(String ejb, long value, TimeUnit timeUnit);
 
     /**
      * Creates an exception indicating it was unable to find method
@@ -1531,7 +1542,7 @@ public interface EjbLogger extends BasicLogger {
      * @return a {@link ConcurrentAccessTimeoutException} for the error.
      */
     @Message(id = 241, value = "EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on %s - could not obtain lock within %s")
-    ConcurrentAccessTimeoutException concurrentAccessTimeoutException(InvocationContext invocationContext, String s);
+    ConcurrentAccessTimeoutException concurrentAccessTimeoutException(String ejb, String s);
 
     /**
      * Creates an exception indicating Illegal lock type for component
@@ -1745,7 +1756,7 @@ public interface EjbLogger extends BasicLogger {
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
     @Message(id = 267, value = "Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)%n due to multiple create* methods with different return types on home %s")
-    DeploymentUnitProcessingException multipleCreateMethod(Class localHomeClass);
+    DeploymentUnitProcessingException multipleCreateMethod(Class<?> localHomeClass);
 
     /**
      * Creates an exception indicating it Could not find EJB referenced by @DependsOn annotation
@@ -2874,9 +2885,8 @@ public interface EjbLogger extends BasicLogger {
      */
     @Message(id = 420, value = "No EjbContext available as no EJB invocation is active")
     IllegalStateException noEjbContextAvailable();
-
-    @Message(id = 421, value = "The request was rejected as the container is suspended")
-    EJBComponentUnavailableException containerSuspended();
+    @Message(id = 421, value = "Invocation cannot proceed as component is shutting down")
+    EJBComponentUnavailableException componentIsShuttingDown();
 
     @Message(id = 422, value = "Could not open message outputstream for writing to Channel")
     IOException failedToOpenMessageOutputStream(@Cause Throwable e);
@@ -3032,4 +3042,67 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 465, value = "Invalid client descriptor configuration: 'profile' and 'remoting-ejb-receivers' cannot be used together")
     DeploymentUnitProcessingException profileAndRemotingEjbReceiversUsedTogether();
 
+    @Message(id = 466, value = "Failed to process business interfaces for EJB class %s")
+    DeploymentUnitProcessingException failedToProcessBusinessInterfaces(Class<?> ejbClass, @Cause Exception e);
+
+    @Message(id = 467, value = "The request was rejected as the container is suspended")
+    EJBComponentUnavailableException containerSuspended();
+
+    @Message(id = 468, value = "Timer invocation failed")
+    OperationFailedException timerInvocationFailed(@Cause Exception e);
+
+    @Message(id = 469, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
+    IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
+
+    @LogMessage(level = INFO)
+    @Message(id = 470, value = "Could not create a connection for cluster node %s in cluster %s")
+    void couldNotCreateClusterConnection(@Cause Throwable cause, String nodeName, String clusterName);
+
+    @Message(id = 471, value = "RMI/IIOP Violation: %s%n")
+    RuntimeException rmiIiopVoliation(String violation);
+
+    @Message(id = 472, value = "Cannot obtain exception repository id for %s:%n%s")
+    RuntimeException exceptionRepositoryNotFound(String name, String message);
+
+    @LogMessage(level = INFO)
+    @Message(id = 473, value = "JNDI bindings for session bean named '%s' in deployment unit '%s' are as follows:%s")
+    void jndiBindings(final String ejbName, final DeploymentUnit deploymentUnit, final StringBuilder bindings);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 474, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'. This attribute should be removed.")
+    void logInconsistentAttributeNotSupported(String attributeName, String mustMatch);
+
+    @LogMessage(level = INFO)
+    @Message(id = 475, value = "MDB delivery started: %s,%s")
+    void mdbDeliveryStarted(String appName, String componentName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 476, value = "MDB delivery stopped: %s,%s")
+    void mdbDeliveryStopped(String appName, String componentName);
+
+    @Message(id = 477, value = "MDB delivery group is missing: %s")
+    DeploymentUnitProcessingException missingMdbDeliveryGroup(String deliveryGroupName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 478, value = "This node is now the active cluster singleton")
+    void logClusterSigletonNode();
+
+    @LogMessage(level = INFO)
+    @Message(id = 479, value = "This node is no longer the active cluster singleton, or the cluster singleton is no longer in use")
+    void logNoLongerClusterSigletonNode();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 480, value = "Loaded timer (%s) for EJB (%s) and this node that is marked as being in a timeout. The original timeout may not have been processed. Please use graceful shutdown to ensure timeout tasks are finished before shutting down.")
+    void loadedPersistentTimerInTimeout(String timer, String timedObject);
+
+    @LogMessage(level = INFO)
+    @Message(id = 481, value = "Strict pool %s is using a max instance size of %d (per class), which is derived from thread worker pool sizing.")
+    void strictPoolDerivedFromWorkers(String name, int max);
+
+    @LogMessage(level = INFO)
+    @Message(id = 482, value = "Strict pool %s is using a max instance size of %d (per class), which is derived from the number of CPUs on this host.")
+    void strictPoolDerivedFromCPUs(String name, int max);
+
+    @Message(id = 483, value = "Attributes are mutually exclusive: %s, %s")
+    XMLStreamException mutuallyExclusiveAttributes(@Param Location location, String attribute1, String attribute2);
 }

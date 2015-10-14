@@ -22,27 +22,42 @@
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.wildfly.clustering.ee.infinispan.MutableCacheEntry;
+import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaData;
+import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaData;
 
 /**
  * Wrapper for session cache entry and session attributes cache entry.
  * @author Paul Ferraro
  */
 public class CoarseSessionEntry<L> {
-    private final MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry;
+    private final MutableCacheEntry<SessionCreationMetaData> creationMetaDataEntry;
+    private final MutableCacheEntry<SessionAccessMetaData> accessMetaDataEntry;
     private final MutableCacheEntry<Map<String, Object>> attributesEntry;
+    private final AtomicReference<L> localContext;
 
-    public CoarseSessionEntry(MutableCacheEntry<CoarseSessionCacheEntry<L>> sessionEntry, MutableCacheEntry<Map<String, Object>> attributesEntry) {
-        this.sessionEntry = sessionEntry;
+    public CoarseSessionEntry(MutableCacheEntry<SessionCreationMetaData> creationMetaDataEntry, MutableCacheEntry<SessionAccessMetaData> accessMetaDataEntry, MutableCacheEntry<Map<String, Object>> attributesEntry, AtomicReference<L> localContext) {
+        this.creationMetaDataEntry = creationMetaDataEntry;
+        this.accessMetaDataEntry = accessMetaDataEntry;
         this.attributesEntry = attributesEntry;
+        this.localContext = localContext;
     }
 
-    public MutableCacheEntry<CoarseSessionCacheEntry<L>> getMutableSessionEntry() {
-        return this.sessionEntry;
+    public MutableCacheEntry<SessionCreationMetaData> getMutableSessionCreationMetaDataEntry() {
+        return this.creationMetaDataEntry;
+    }
+
+    public MutableCacheEntry<SessionAccessMetaData> getMutableSessionAccessMetaDataEntry() {
+        return this.accessMetaDataEntry;
     }
 
     public MutableCacheEntry<Map<String, Object>> getMutableAttributesEntry() {
         return this.attributesEntry;
+    }
+
+    public AtomicReference<L> getLocalContext() {
+        return this.localContext;
     }
 }

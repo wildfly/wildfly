@@ -35,7 +35,6 @@ import javax.jms.MessageProducer;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
 
 /**
@@ -44,7 +43,6 @@ import org.jboss.logging.Logger;
 @MessageDriven(name = "TestEnvEntryMD", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:jboss/queue/testEnvEntry") })
-@ResourceAdapter(value = "hornetq-ra.rar")
 public class TestEnvEntryMDBean implements MessageListener {
     private static final Logger log = Logger.getLogger(TestEnvEntryMDBean.class);
 

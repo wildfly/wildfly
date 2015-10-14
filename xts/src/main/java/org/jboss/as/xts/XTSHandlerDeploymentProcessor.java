@@ -22,6 +22,7 @@
 
 package org.jboss.as.xts;
 
+import com.arjuna.mw.wst11.service.JaxWSHeaderContextProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -37,6 +38,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.jbossts.txbridge.inbound.OptionalJaxWSTxInboundBridgeHandler;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainsMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
@@ -56,9 +58,9 @@ import java.util.Set;
  */
 public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final String TX_BRIDGE_HANDLER = "org.jboss.jbossts.txbridge.inbound.OptionalJaxWSTxInboundBridgeHandler";
+    private static final String TX_BRIDGE_HANDLER = OptionalJaxWSTxInboundBridgeHandler.class.getName();
 
-    private static final String TX_CONTEXT_HANDLER = "com.arjuna.mw.wst11.service.JaxWSHeaderContextProcessor";
+    private static final String TX_CONTEXT_HANDLER = JaxWSHeaderContextProcessor.class.getName();
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();

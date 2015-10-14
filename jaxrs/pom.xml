@@ -29,12 +29,10 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jaxrs</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
 
     <name>WildFly: JAX-RS Integration</name>
 
@@ -52,7 +50,7 @@
 
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-security-manager</artifactId>
+            <artifactId>wildfly-elytron</artifactId>
         </dependency>
 
         <dependency>
@@ -67,7 +65,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-weld</artifactId>
+            <artifactId>wildfly-undertow</artifactId>
         </dependency>
 
         <dependency>
@@ -104,8 +102,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>jaxrs-api</artifactId>
+            <groupId>org.jboss.spec.javax.ws.rs</groupId>
+            <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
         </dependency>
 
         <dependency>

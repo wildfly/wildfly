@@ -25,6 +25,7 @@
 
     <buffer-caches>
         <buffer-cache name="default" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
+        <buffer-cache name="extra" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
     </buffer-caches>
 
     <server name="default-server" default-host="other-host" servlet-container="myContainer">

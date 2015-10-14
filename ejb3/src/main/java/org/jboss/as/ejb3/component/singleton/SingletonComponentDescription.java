@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.component.singleton;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.ejb.ConcurrencyManagementType;
@@ -42,7 +44,6 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
@@ -57,7 +58,6 @@ import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
@@ -78,8 +78,6 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
 
     private final List<ServiceName> dependsOn = new ArrayList<ServiceName>();
 
-    private DefaultAccessTimeoutService defaultAccessTimeoutProvider;
-
     /**
      * Construct a new instance.
      *
@@ -90,19 +88,22 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     public SingletonComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                          final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
-        // add container managed concurrency interceptor to the component
-        this.addConcurrencyManagementInterceptor();
 
         getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.addTimeoutViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+                ConcurrencyManagementType concurrencyManagementType = getConcurrencyManagementType();
+                if (concurrencyManagementType == null || concurrencyManagementType == ConcurrencyManagementType.CONTAINER) {
+                    configuration.addTimeoutViewInterceptor(new ContainerManagedConcurrencyInterceptorFactory(Collections.emptyMap()), InterceptorOrder.View.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
+                }
+
             }
         });
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
 
         ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
@@ -187,6 +188,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         super.setupViewInterceptors(view);
         addViewSerializationInterceptor(view);
 
+        // add container managed concurrency interceptor to the component
+        this.addConcurrencyManagementInterceptor(view);
+
         // add instance associating interceptor at the start of the interceptor chain
         view.getConfigurators().addFirst(new ViewConfigurator() {
             @Override
@@ -207,17 +211,14 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         });
 
 
-        if (view instanceof EJBViewDescription) {
-            EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
-            if (ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
-                view.getConfigurators().add(new ViewConfigurator() {
-                    @Override
-                    public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                        final String earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
-                        configuration.setViewInstanceFactory(new StatelessRemoteViewInstanceFactory(earApplicationName, componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
-                    }
-                });
-            }
+        if (view.getMethodIntf() == MethodIntf.REMOTE) {
+            view.getConfigurators().add(new ViewConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    final String earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
+                    configuration.setViewInstanceFactory(new StatelessRemoteViewInstanceFactory(earApplicationName, componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
+                }
+            });
         }
 
     }
@@ -229,8 +230,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-                ClassReflectionIndex<WriteReplaceInterface> classIndex = index.getClassIndex(WriteReplaceInterface.class);
-                for (Method method : classIndex.getMethods()) {
+                ClassReflectionIndex classIndex = index.getClassIndex(WriteReplaceInterface.class);
+                for (Method method : (Collection<Method>)classIndex.getMethods()) {
                     configuration.addClientInterceptor(method, StatelessWriteReplaceInterceptor.factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
                 }
             }
@@ -242,16 +243,17 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         throw EjbLogger.ROOT_LOGGER.ejb2xViewNotApplicableForSingletonBeans();
     }
 
-    private void addConcurrencyManagementInterceptor() {
-        this.getConfigurators().add(new ComponentConfigurator() {
+    private void addConcurrencyManagementInterceptor(final ViewDescription view) {
+        view.getConfigurators().add(new ViewConfigurator() {
             @Override
-            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                final SingletonComponentDescription singletonComponentDescription = (SingletonComponentDescription) description;
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+
+                final SingletonComponentDescription singletonComponentDescription = (SingletonComponentDescription) componentConfiguration.getComponentDescription();
                 // we don't care about BEAN managed concurrency, so just return
                 if (singletonComponentDescription.getConcurrencyManagementType() == ConcurrencyManagementType.BEAN) {
                     return;
                 }
-                configuration.addComponentInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR, false);
+                configuration.addViewInterceptor(new ContainerManagedConcurrencyInterceptorFactory(configuration.getViewToComponentMethodMap()), InterceptorOrder.View.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
             }
         });
     }

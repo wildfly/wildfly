@@ -54,14 +54,12 @@ import org.junit.runner.RunWith;
 public class TwoModulesOfDifferentTypeTestCase extends TwoModulesFlatTestCase {
 
 
-    static class ModuleAcDeploymentTestCaseSetup extends
-            AbstractModuleDeploymentTestCaseSetup {
+    static class ModuleAcDeploymentTestCaseSetup extends AbstractModuleDeploymentTestCaseSetup {
 
         public static ModelNode address1;
 
         @Override
         public void doSetup(ManagementClient managementClient) throws Exception {
-
             super.doSetup(managementClient);
             fillModuleWithFlatClasses("ra1.xml");
             addModule("org/jboss/ironjacamar/ra16out1", "module1-jar.xml");
@@ -69,22 +67,19 @@ public class TwoModulesOfDifferentTypeTestCase extends TwoModulesFlatTestCase {
             setConfiguration("mod-2.xml");
             address1 = address.clone();
             setConfiguration("basic.xml");
-
         }
 
         @Override
-        public void tearDown(ManagementClient managementClient,
-                             String containerId) throws Exception {
-            super.tearDown(managementClient, containerId);
-            remove(address1);
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            remove(address1, managementClient);
             removeModule("org/jboss/ironjacamar/ra16out1", true);
+            super.tearDown(managementClient, containerId);
         }
 
         @Override
         protected String getSlot() {
-            // change the "main" slot to something different, preferably to XXXYourNewTestCase.class.getSimpleName().toLowerCase(),
-            // if you are going to clone this test case
-            return "main";
+            return TwoModulesOfDifferentTypeTestCase.class.getSimpleName().toLowerCase();
+
         }
     }
 
@@ -96,8 +91,7 @@ public class TwoModulesOfDifferentTypeTestCase extends TwoModulesFlatTestCase {
     @Test
     @RunAsClient
     public void testConnection2() throws Exception {
-        final ModelNode address1 = ModuleAcDeploymentTestCaseSetup.address1
-                .clone();
+        final ModelNode address1 = ModuleAcDeploymentTestCaseSetup.address1.clone();
         address1.add("connection-definitions", cf1);
         address1.protect();
         final ModelNode operation1 = new ModelNode();
@@ -111,6 +105,5 @@ public class TwoModulesOfDifferentTypeTestCase extends TwoModulesFlatTestCase {
     protected ModelNode getAddress() {
         return ModuleAcDeploymentTestCaseSetup.getAddress();
     }
-
 
 }

@@ -29,13 +29,11 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-security-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-security</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>WildFly: Security Subsystem</name>
@@ -80,7 +78,7 @@
 
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-security-manager</artifactId>
+            <artifactId>wildfly-elytron</artifactId>
         </dependency>
 
         <dependency>

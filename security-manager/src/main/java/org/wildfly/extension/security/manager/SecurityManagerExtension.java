@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -41,12 +42,14 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class SecurityManagerExtension implements Extension {
 
-    protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, Constants.SUBSYSTEM_NAME);
+    public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, Constants.SUBSYSTEM_NAME);
     protected static final String RESOURCE_NAME = SecurityManagerExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION =
+            ModelVersion.create(MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(Constants.SUBSYSTEM_NAME);
@@ -58,11 +61,13 @@ public class SecurityManagerExtension implements Extension {
 
         @Override
     public void initialize(final ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(Constants.SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SecurityManagerRootDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
         subsystem.registerXMLElementWriter(SecurityManagerSubsystemParser.INSTANCE);
+
+        //Since version 1.0.0 of this subsystem has not been part of any product release I am not registering
+        //any transformers for it
     }
 
     @Override

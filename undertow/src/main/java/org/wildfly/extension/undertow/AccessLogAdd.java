@@ -22,14 +22,14 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.io.File;
-
+import io.undertow.predicate.Predicate;
+import io.undertow.predicate.Predicates;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -49,23 +49,41 @@ class AccessLogAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
-        final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
+        final PathAddress address = context.getCurrentAddress();
+        final PathAddress hostAddress = address.getParent();
+        final PathAddress serverAddress = hostAddress.getParent();
         final String worker = AccessLogDefinition.WORKER.resolveModelAttribute(context, model).asString();
         final String pattern = AccessLogDefinition.PATTERN.resolveModelAttribute(context, model).asString();
         final String directory = AccessLogDefinition.DIRECTORY.resolveModelAttribute(context, model).asString();
         final String filePrefix = AccessLogDefinition.PREFIX.resolveModelAttribute(context, model).asString();
         final String fileSuffix = AccessLogDefinition.SUFFIX.resolveModelAttribute(context, model).asString();
+        final boolean useServerLog = AccessLogDefinition.USE_SERVER_LOG.resolveModelAttribute(context, model).asBoolean();
+        final boolean rotate = AccessLogDefinition.ROTATE.resolveModelAttribute(context, model).asBoolean();
+        final boolean extended = AccessLogDefinition.EXTENDED.resolveModelAttribute(context, model).asBoolean();
+        final ModelNode relativeToNode = AccessLogDefinition.RELATIVE_TO.resolveModelAttribute(context, model);
+        final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
 
+        Predicate predicate = null;
+        ModelNode predicateNode = AccessLogDefinition.PREDICATE.resolveModelAttribute(context, model);
+        if(predicateNode.isDefined()) {
+            predicate = Predicates.parse(predicateNode.asString(), getClass().getClassLoader());
+        }
 
-        final AccessLogService service = new AccessLogService(pattern, new File(directory), filePrefix, fileSuffix);
+        final AccessLogService service;
+        if (useServerLog) {
+            service = new AccessLogService(pattern, extended, predicate);
+        } else {
+            service = new AccessLogService(pattern, directory, relativeTo, filePrefix, fileSuffix, rotate, extended, predicate);
+        }
+
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
 
         final ServiceName serviceName = UndertowService.accessLogServiceName(serverName, hostName);
         final ServiceBuilder<AccessLogService> builder = context.getServiceTarget().addService(serviceName, service)
-                .addDependency(IOServices.WORKER.append(worker), XnioWorker.class, service.getWorker());
+                .addDependency(IOServices.WORKER.append(worker), XnioWorker.class, service.getWorker())
+                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager())
+                .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class, service.getHost());
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();

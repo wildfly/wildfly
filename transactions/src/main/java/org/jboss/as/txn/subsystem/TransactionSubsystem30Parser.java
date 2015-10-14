@@ -71,14 +71,14 @@ class TransactionSubsystem30Parser extends TransactionSubsystem20Parser {
                 parseJts(reader, subsystemOperation);
                 break;
             }
-            case USEHORNETQSTORE: {
+            case USE_JOURNAL_STORE: {
                 if (choiceObjectStoreEncountered) {
                     throw unexpectedElement(reader);
                 }
                 choiceObjectStoreEncountered = true;
 
-                parseUsehornetqstore(reader, logStoreOperation, subsystemOperation);
-                subsystemOperation.get(CommonAttributes.USEHORNETQSTORE).set(true);
+                parseUseJournalstore(reader, logStoreOperation, subsystemOperation);
+                subsystemOperation.get(CommonAttributes.USE_JOURNAL_STORE).set(true);
                 break;
             }
             case JDBC_STORE: {
@@ -141,14 +141,14 @@ class TransactionSubsystem30Parser extends TransactionSubsystem20Parser {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (Element.CM_RESPOURCE.forName(reader.getLocalName()) == Element.CM_RESPOURCE) {
+                    if (Element.forName(reader.getLocalName()) == Element.CM_RESPOURCE) {
                         cmrAddress.protect();
                         cmrOperation.get(OP_ADDR).set(cmrAddress);
 
                         operations.add(cmrOperation);
                         return;
                     } else {
-                        if (Element.CM_RESPOURCE.forName(reader.getLocalName()) == Element.UNKNOWN) {
+                        if (Element.forName(reader.getLocalName()) == Element.UNKNOWN) {
                             throw unexpectedElement(reader);
                         }
                     }

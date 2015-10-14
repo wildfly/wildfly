@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:3.0">
+<server xmlns="urn:jboss:domain:4.0">
 
     <extensions>
         <?EXTENSIONS?>
@@ -72,7 +72,7 @@
         <!-- TODO - only show this if the jacorb subsystem is added  -->
         <interface name="unsecure">
             <!-- Used for IIOP sockets in the standard configuration.
-                 To secure JacORB you need to setup SSL -->
+                 To secure IIOP connections you need to setup SSL -->
             <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
         </interface>
     </interfaces>

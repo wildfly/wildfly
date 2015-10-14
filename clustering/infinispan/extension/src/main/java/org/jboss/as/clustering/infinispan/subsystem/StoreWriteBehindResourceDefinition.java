@@ -22,20 +22,20 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
-import org.jboss.as.clustering.controller.transform.DefaultValueAttributeConverter;
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -47,66 +47,77 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class StoreWriteBehindResourceDefinition extends SimpleResourceDefinition {
+public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
+    static final PathElement LEGACY_PATH = PathElement.pathElement("write-behind", "WRITE_BEHIND");
+    static final PathElement PATH = pathElement("behind");
 
-    // attributes
-    static final SimpleAttributeDefinition FLUSH_LOCK_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.FLUSH_LOCK_TIMEOUT, ModelType.LONG, true)
-            .setXmlName(Attribute.FLUSH_LOCK_TIMEOUT.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(5000L))
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        MODIFICATION_QUEUE_SIZE("modification-queue-size", ModelType.INT, new ModelNode(1024)),
+        THREAD_POOL_SIZE("thread-pool-size", ModelType.INT, new ModelNode(1)),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition MODIFICATION_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODIFICATION_QUEUE_SIZE, ModelType.INT, true)
-            .setXmlName(Attribute.MODIFICATION_QUEUE_SIZE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(1024))
-            .build();
-
-    static final SimpleAttributeDefinition SHUTDOWN_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.SHUTDOWN_TIMEOUT, ModelType.LONG, true)
-            .setXmlName(Attribute.SHUTDOWN_TIMEOUT.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(25000L))
-            .build();
-
-    static final SimpleAttributeDefinition THREAD_POOL_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.THREAD_POOL_SIZE, ModelType.INT, true)
-            .setXmlName(Attribute.THREAD_POOL_SIZE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(1))
-            .build();
-
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
-            FLUSH_LOCK_TIMEOUT, MODIFICATION_QUEUE_SIZE, THREAD_POOL_SIZE, SHUTDOWN_TIMEOUT
-    };
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(FLUSH_LOCK_TIMEOUT), FLUSH_LOCK_TIMEOUT);
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type, defaultValue).build();
         }
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, FLUSH_LOCK_TIMEOUT, MODIFICATION_QUEUE_SIZE, SHUTDOWN_TIMEOUT, THREAD_POOL_SIZE);
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(5000L), InfinispanModel.VERSION_4_0_0),
+        SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(25000L), InfinispanModel.VERSION_4_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+        ;
+    }
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(DeprecatedAttribute.FLUSH_LOCK_TIMEOUT.getDefinition()), DeprecatedAttribute.FLUSH_LOCK_TIMEOUT.getDefinition());
         }
     }
 
     StoreWriteBehindResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.WRITE_BEHIND),
-                new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(DeprecatedAttribute.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StoreWriteBehindBuilderFactory());
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 }

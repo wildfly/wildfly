@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -37,6 +36,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -51,16 +51,8 @@ class HostDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setElementValidator(new StringLengthValidator(1))
-            .setAttributeParser(new AttributeParser() {
-                @Override
-                public void parseAndSetParameter(AttributeDefinition attribute, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
-                    if (value == null) { return; }
-                    for (String element : value.split(",")) {
-                        ModelNode paramVal = parse(attribute, element, reader);
-                        operation.get(attribute.getName()).add(paramVal);
-                    }
-                }
-            })
+            .setAllowExpression(true)
+            .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
             .setAttributeMarshaller(new DefaultAttributeMarshaller() {
                 @Override
                 public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
@@ -71,11 +63,8 @@ class HostDefinition extends PersistentResourceDefinition {
                             builder.append(p.asString()).append(", ");
                         }
                     }
-                    if (builder.length() > 3) {
-                        builder.setLength(builder.length() - 2);
-                    }
                     if (builder.length() > 0) {
-                        writer.writeAttribute(attribute.getXmlName(), builder.toString());
+                        writer.writeAttribute(attribute.getXmlName(), builder.substring(0, builder.length() - 2));
                     }
                 }
             })
@@ -86,8 +75,20 @@ class HostDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("ROOT.war"))
             .build();
 
+    static final SimpleAttributeDefinition DEFAULT_RESPONSE_CODE = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_RESPONSE_CODE, ModelType.INT, true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setValidator(new IntRangeValidator(400, 599, true, true))
+            .setDefaultValue(new ModelNode(404))
+            .setAllowExpression(true)
+            .build();
+    static final SimpleAttributeDefinition DISABLE_CONSOLE_REDIRECT = new SimpleAttributeDefinitionBuilder("disable-console-redirect", ModelType.BOOLEAN, true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
+
     static final HostDefinition INSTANCE = new HostDefinition();
-    private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE));
+    private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT));
     private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
             LocationDefinition.INSTANCE,
             AccessLogDefinition.INSTANCE,

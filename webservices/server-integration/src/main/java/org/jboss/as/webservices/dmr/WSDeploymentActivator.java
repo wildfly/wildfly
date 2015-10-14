@@ -72,7 +72,7 @@ final class WSDeploymentActivator {
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WS_JMS_INTEGRATION, new WSIntegrationProcessorJAXWS_JMS());
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS, new WSIntegrationProcessorJAXWS_POJO());
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS, new WSIntegrationProcessorJAXWS_HANDLER());
-            processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WS_SERVICES_DEPS, new WSServiceDependenciesProcessor());
+            processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_WS_SERVICES_DEPS, new WSServiceDependenciesProcessor());
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WS_VERIFICATION, new WSClassVerificationProcessor());
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WS_UNIVERSAL_META_DATA_MODEL, new WSModelDeploymentProcessor());
             addDeploymentProcessors(processorTarget, Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_ASPECTS);
@@ -83,7 +83,9 @@ final class WSDeploymentActivator {
         int index = 1;
         List<DeploymentAspect> aspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
         for (final DeploymentAspect da : aspects) {
-            WSLogger.ROOT_LOGGER.tracef("Installing aspect %s", da.getClass().getName());
+            if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
+                WSLogger.ROOT_LOGGER.tracef("Installing aspect %s", da.getClass().getName());
+            }
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, phase, priority + index++, new AspectDeploymentProcessor(da));
         }
     }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd">
+  <assembly-descriptor>
+    <container-transaction>
+      <method>
+        <ejb-name>DescriptorBean</ejb-name>
+        <method-name>*</method-name>
+      </method>
+      <trans-attribute>Supports</trans-attribute>
+    </container-transaction>
+    <container-transaction>
+      <method>
+        <ejb-name>DescriptorBean</ejb-name>
+        <method-intf>Local</method-intf>
+        <method-name>transactionStatus2</method-name>
+      </method>
+      <trans-attribute>Required</trans-attribute>
+    </container-transaction>
+  </assembly-descriptor>
+</ejb-jar>

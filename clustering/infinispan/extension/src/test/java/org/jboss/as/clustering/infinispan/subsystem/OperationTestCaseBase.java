@@ -1,13 +1,13 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DEFAULT_CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.JNDI_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.IOException;
+import java.util.Collections;
 
+import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -35,44 +35,25 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     AdditionalInitialization createAdditionalInitialization() {
-        return new JGroupsSubsystemInitialization();
+        return new JGroupsSubsystemInitialization().require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2");
     }
 
     // cache container access
     protected static ModelNode getCacheContainerAddOperation(String containerName) {
         // create the address of the cache
-        PathAddress containerAddr = getCacheContainerAddress(containerName);
-        ModelNode operation = Util.createAddOperation(containerAddr);
-        // required attributes
-        operation.get(DEFAULT_CACHE).set("default");
-        return operation;
+        PathAddress address = getCacheContainerAddress(containerName);
+        return Operations.createAddOperation(address, Collections.<Attribute, ModelNode>singletonMap(CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE, new ModelNode("default")));
     }
 
-    protected static ModelNode getCacheContainerReadOperation(String containerName, String name) {
+    protected static ModelNode getCacheContainerReadOperation(String containerName, Attribute attribute) {
         // create the address of the subsystem
-        return Operations.createReadAttributeOperation(getCacheContainerAddress(containerName), name);
+        return Operations.createReadAttributeOperation(getCacheContainerAddress(containerName), attribute);
     }
 
-    protected static ModelNode getCacheContainerAddAliasOperation(String containerName, String name) {
-        // create the address of the subsystem
-        ModelNode operation = Util.createOperation(CacheContainerResourceDefinition.ALIAS_ADD.getName(), getCacheContainerAddress(containerName));
-        // required attributes
-        operation.get(NAME).set(name);
-        return operation;
-    }
-
-    protected static ModelNode getCacheContainerRemoveAliasOperation(String containerName, String name) {
-        // create the address of the subsystem
-        ModelNode operation = Util.createOperation(CacheContainerResourceDefinition.ALIAS_REMOVE.getName(), getCacheContainerAddress(containerName));
-        // required attributes
-        operation.get(NAME).set(name);
-        return operation;
-    }
-
-    protected static ModelNode getCacheContainerWriteOperation(String containerName, String name, String value) {
+    protected static ModelNode getCacheContainerWriteOperation(String containerName, Attribute attribute, String value) {
         // create the address of the subsystem
         PathAddress cacheAddress = getCacheContainerAddress(containerName);
-        return Util.getWriteAttributeOperation(cacheAddress, name, new ModelNode().set(value));
+        return Operations.createWriteAttributeOperation(cacheAddress, attribute, new ModelNode(value));
     }
 
     protected static ModelNode getCacheContainerRemoveOperation(String containerName) {
@@ -84,20 +65,17 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     // cache access
     protected static ModelNode getCacheAddOperation(String containerName, String cacheType, String cacheName) {
         // create the address of the cache
-        PathAddress cacheAddr = getCacheAddress(containerName, cacheType, cacheName);
-        ModelNode operation = Util.createAddOperation(cacheAddr);
-        // required attributes
-        operation.get(JNDI_NAME).set("java:/fred/was/here");
-        return operation;
+        PathAddress address = getCacheAddress(containerName, cacheType, cacheName);
+        return Operations.createAddOperation(address, Collections.<Attribute, ModelNode>singletonMap(CacheResourceDefinition.Attribute.JNDI_NAME, new ModelNode("java:/fred/was/here")));
     }
 
-    protected static ModelNode getCacheReadOperation(String containerName, String cacheType, String cacheName, String name) {
+    protected static ModelNode getCacheReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
         // create the address of the subsystem
-        return Operations.createReadAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), name);
+        return Operations.createReadAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), attribute);
     }
 
-    protected static ModelNode getCacheWriteOperation(String containerName, String cacheType, String cacheName, String name, String value) {
-        return Util.getWriteAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), name, new ModelNode().set(value));
+    protected static ModelNode getCacheWriteOperation(String containerName, String cacheType, String cacheName, Attribute attribute, String value) {
+        return Operations.createWriteAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), attribute, new ModelNode(value));
     }
 
     protected static ModelNode getCacheRemoveOperation(String containerName, String cacheType, String cacheName) {
@@ -105,27 +83,22 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     // cache store access
-    protected static ModelNode getCacheStoreReadOperation(String containerName, String cacheType, String cacheName, String name) {
+    protected static ModelNode getCacheStoreReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
         // create the address of the subsystem
-        return Operations.createReadAttributeOperation(getCacheStoreAddress(containerName, cacheType, cacheName), name);
+        return Operations.createReadAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), attribute);
     }
 
-    protected static ModelNode getCacheStoreWriteOperation(String containerName, String cacheName, String cacheType, String name, String value) {
-        return Util.getWriteAttributeOperation(getCacheStoreAddress(containerName,  cacheType, cacheName), name, new ModelNode().set(value));
+    protected static ModelNode getCacheStoreWriteOperation(String containerName, String cacheName, String cacheType, Attribute attribute, String value) {
+        return Operations.createWriteAttributeOperation(getCustomCacheStoreAddress(containerName,  cacheType, cacheName), attribute, new ModelNode(value));
     }
 
-    protected static ModelNode getMixedKeyedJDBCCacheStoreReadOperation(String containerName, String cacheType, String cacheName, String name) {
+    protected static ModelNode getMixedKeyedJDBCCacheStoreReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
         // create the address of the subsystem
-        return Operations.createReadAttributeOperation(getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName), name);
+        return Operations.createReadAttributeOperation(getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName), attribute);
     }
 
-    protected static ModelNode getMixedKeyedJDBCCacheStoreWriteOperation(String containerName, String cacheType, String cacheName, String name, String value) {
-        PathAddress cacheStoreAddress = getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName);
-        return Util.getWriteAttributeOperation(cacheStoreAddress, name, new ModelNode().set(value));
-    }
-
-    protected static ModelNode getMixedKeyedJDBCCacheStoreWriteOperation(String containerName, String cacheType, String cacheName, String name, ModelNode value) {
-        return Util.getWriteAttributeOperation(getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName), name, value);
+    protected static ModelNode getMixedKeyedJDBCCacheStoreWriteOperation(String containerName, String cacheType, String cacheName, Attribute attribute, String value) {
+        return Operations.createWriteAttributeOperation(getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName), attribute, new ModelNode(value));
     }
 
     //cache store property access
@@ -141,8 +114,9 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     // address generation
+    @SuppressWarnings("deprecation")
     protected static PathAddress getCacheStorePropertyAddress(String containerName, String cacheType, String cacheName, String propertyName) {
-        return getCacheStoreAddress(containerName, cacheType, cacheName).append(StorePropertyResourceDefinition.pathElement(propertyName));
+        return getCustomCacheStoreAddress(containerName, cacheType, cacheName).append(StorePropertyResourceDefinition.pathElement(propertyName));
     }
 
     protected static PathAddress getMixedKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
@@ -165,7 +139,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return getCacheAddress(containerName, cacheType, cacheName).append(FileStoreResourceDefinition.PATH);
     }
 
-    protected static PathAddress getCacheStoreAddress(String containerName, String cacheType, String cacheName) {
+    protected static PathAddress getCustomCacheStoreAddress(String containerName, String cacheType, String cacheName) {
         return getCacheAddress(containerName, cacheType, cacheName).append(CustomStoreResourceDefinition.PATH);
     }
 

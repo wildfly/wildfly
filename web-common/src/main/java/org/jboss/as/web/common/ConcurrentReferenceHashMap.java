@@ -1425,7 +1425,9 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
             advance();
         }
 
-        public boolean hasMoreElements() { return hasNext(); }
+        public boolean hasMoreElements() {
+            return hasNext();
+        }
 
         final void advance() {
             if (nextEntry != null && (nextEntry = nextEntry.next) != null)
@@ -1484,15 +1486,23 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
     final class KeyIterator
         extends HashIterator
         implements Iterator<K>, Enumeration<K> {
-        public K next()        { return super.nextEntry().key(); }
-        public K nextElement() { return super.nextEntry().key(); }
+        public K next()        {
+            return super.nextEntry().key();
+        }
+        public K nextElement() {
+            return super.nextEntry().key();
+        }
     }
 
     final class ValueIterator
         extends HashIterator
         implements Iterator<V>, Enumeration<V> {
-        public V next()        { return super.nextEntry().value(); }
-        public V nextElement() { return super.nextEntry().value(); }
+        public V next()        {
+            return super.nextEntry().value();
+        }
+        public V nextElement() {
+            return super.nextEntry().value();
+        }
     }
 
      /*

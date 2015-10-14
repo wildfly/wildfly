@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -35,21 +36,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 
-import org.jboss.as.clustering.concurrent.ManagedExecutorService;
-import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jgroups.Channel;
+import org.jgroups.Event;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
+import org.jgroups.Message;
 import org.jgroups.annotations.Property;
+import org.jgroups.blocks.RequestCorrelator;
+import org.jgroups.blocks.RequestCorrelator.Header;
+import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.conf.ProtocolStackConfigurator;
+import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
 import org.jgroups.protocols.TP;
 import org.jgroups.protocols.relay.RELAY2;
@@ -72,6 +74,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurator {
 
+    static final ByteBuffer UNKNOWN_FORK_RESPONSE = ByteBuffer.allocate(0);
+
     private final ProtocolStackConfiguration configuration;
 
     public JChannelFactory(ProtocolStackConfiguration configuration) {
@@ -93,7 +97,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                 return new JChannel(JChannelFactory.this);
             }
         };
-        JChannel channel = WildFlySecurityManager.doChecked(action);
+        final JChannel channel = WildFlySecurityManager.doChecked(action);
         ProtocolStack stack = channel.getProtocolStack();
 
         // We need to synchronize on shared transport,
@@ -147,8 +151,38 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             relay.init();
         }
 
+        UnknownForkHandler unknownForkHandler = new UnknownForkHandler() {
+            private final short id = ClassConfigurator.getProtocolId(RequestCorrelator.class);
+
+            @Override
+            public Object handleUnknownForkStack(Message message, String forkStackId) {
+                return this.handle(message);
+            }
+
+            @Override
+            public Object handleUnknownForkChannel(Message message, String forkChannelId) {
+                return this.handle(message);
+            }
+
+            private Object handle(Message message) {
+                Header header = (Header) message.getHeader(this.id);
+                // If this is a request expecting a response, don't leave the requester hanging - send an identifiable response on which it can filter
+                if ((header != null) && (header.type == Header.REQ) && header.rsp_expected) {
+                    Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.SCOPED);
+
+                    response.putHeader(FORK.ID, message.getHeader(FORK.ID));
+                    response.putHeader(this.id, new Header(Header.RSP, header.id, false, this.id));
+                    response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
+
+                    channel.down(new Event(Event.MSG, response));
+                }
+                return null;
+            }
+        };
+
         // Add implicit FORK to the top of the stack
         FORK fork = new FORK();
+        fork.setUnknownForkHandler(unknownForkHandler);
         stack.addProtocol(fork);
         fork.init();
 
@@ -162,6 +196,11 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         return channel;
     }
 
+    @Override
+    public boolean isUnknownForkResponse(ByteBuffer buffer) {
+        return UNKNOWN_FORK_RESPONSE.equals(buffer);
+    }
+
     private void init(TP transport) {
         TransportConfiguration transportConfig = this.configuration.getTransport();
         SocketBinding binding = transportConfig.getSocketBinding();
@@ -169,30 +208,6 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             SocketFactory factory = transport.getSocketFactory();
             if (!(factory instanceof ManagedSocketFactory)) {
                 transport.setSocketFactory(new ManagedSocketFactory(factory, binding.getSocketBindings()));
-            }
-        }
-        ThreadFactory threadFactory = transportConfig.getThreadFactory();
-        if (threadFactory != null) {
-            if (!(transport.getThreadFactory() instanceof ThreadFactoryAdapter)) {
-                transport.setThreadFactory(new ThreadFactoryAdapter(threadFactory));
-            }
-        }
-        ExecutorService defaultExecutor = transportConfig.getDefaultExecutor();
-        if (defaultExecutor != null) {
-            if (!(transport.getDefaultThreadPool() instanceof ManagedExecutorService)) {
-                transport.setDefaultThreadPool(new ManagedExecutorService(defaultExecutor));
-            }
-        }
-        ExecutorService oobExecutor = transportConfig.getOOBExecutor();
-        if (oobExecutor != null) {
-            if (!(transport.getOOBThreadPool() instanceof ManagedExecutorService)) {
-                transport.setOOBThreadPool(new ManagedExecutorService(oobExecutor));
-            }
-        }
-        ScheduledExecutorService timerExecutor = transportConfig.getTimerExecutor();
-        if (timerExecutor != null) {
-            if (!(transport.getTimer() instanceof TimerSchedulerAdapter)) {
-                setValue(transport, "timer", new TimerSchedulerAdapter(new ManagedScheduledExecutorService(timerExecutor)));
             }
         }
     }
@@ -335,15 +350,6 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
     private static void setProperty(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
         if (introspector.hasProperty(name)) {
             config.getProperties().put(name, value);
-        }
-    }
-
-    private static void setValue(Protocol protocol, String property, Object value) {
-        ROOT_LOGGER.setProtocolPropertyValue(protocol.getName(), property, value);
-        try {
-            protocol.setValue(property, value);
-        } catch (IllegalArgumentException e) {
-            ROOT_LOGGER.nonExistentProtocolPropertyValue(e, protocol.getName(), property, value);
         }
     }
 

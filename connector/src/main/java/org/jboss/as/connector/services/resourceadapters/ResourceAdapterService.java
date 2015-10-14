@@ -34,14 +34,12 @@ import org.jboss.msc.service.StopContext;
 
 public class ResourceAdapterService implements Service<ResourceAdapter> {
 
-    private String raName;
     private ServiceName serviceName;
     private final ResourceAdapter value;
 
     /** create an instance **/
-    public ResourceAdapterService(String raName, ServiceName serviceName, ResourceAdapter value) {
+    public ResourceAdapterService(ServiceName serviceName, ResourceAdapter value) {
         super();
-        this.raName = raName;
         this.serviceName = serviceName;
         this.value = value;
     }

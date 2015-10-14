@@ -53,26 +53,40 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author Radoslav Husar
  */
-public class Host implements Service<Host> {
+public class Host implements Service<Host>, FilterLocation {
     private final PathHandler pathHandler = new PathHandler();
-    private volatile HttpHandler rootHandler = pathHandler;
+    private volatile HttpHandler rootHandler = null;
     private final Set<String> allAliases;
     private final String name;
     private final String defaultWebModule;
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private final InjectedValue<AccessLogService> accessLogService = new InjectedValue<>();
-    private final List<InjectedValue<FilterRef>> filters = new CopyOnWriteArrayList<>();
+    private volatile AccessLogService  accessLogService;
+    private final List<FilterRef> filters = new CopyOnWriteArrayList<>();
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
+    private final HostRootHandler hostRootHandler = new HostRootHandler();
 
-    protected Host(String name, List<String> aliases, String defaultWebModule) {
+    private final DefaultResponseCodeHandler defaultHandler;
+    protected Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
         hosts.add(name);
         hosts.addAll(aliases);
         allAliases = Collections.unmodifiableSet(hosts);
+        this.defaultHandler = new DefaultResponseCodeHandler(defaultResponseCode);
+        this.setupDefaultResponseCodeHandler();
+    }
+
+    protected Host(final String name, final List<String> aliases, final String defaultWebModule ) {
+        this.name = name;
+        this.defaultWebModule = defaultWebModule;
+        Set<String> hosts = new HashSet<>(aliases.size() + 1);
+        hosts.add(name);
+        hosts.addAll(aliases);
+        this.allAliases = Collections.unmodifiableSet(hosts);
+        this.defaultHandler = null;
     }
 
     private String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -81,21 +95,18 @@ public class Host implements Service<Host> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        rootHandler = configureRootHandler();
         server.getValue().registerHost(this);
         UndertowLogger.ROOT_LOGGER.hostStarting(name);
     }
 
     private HttpHandler configureRootHandler() {
-        AccessLogService logService = accessLogService.getOptionalValue();
+        AccessLogService logService = accessLogService;
+        HttpHandler rootHandler = pathHandler;
         if (logService != null) {
             rootHandler = logService.configureAccessLogHandler(pathHandler);
         }
 
-        ArrayList<FilterRef> filters = new ArrayList<>(this.filters.size());
-        for (InjectedValue<FilterRef> injectedFilter : this.filters) {
-            filters.add(injectedFilter.getValue());
-        }
+        ArrayList<FilterRef> filters = new ArrayList<>(this.filters);
 
         //handle options * requests
         rootHandler = new OptionsHandler(rootHandler);
@@ -122,8 +133,9 @@ public class Host implements Service<Host> {
         return server;
     }
 
-    protected InjectedValue<AccessLogService> getAccessLogService() {
-        return accessLogService;
+    void setAccessLogService(AccessLogService service) {
+        this.accessLogService = service;
+        rootHandler = null;
     }
 
     public Server getServer() {
@@ -143,7 +155,24 @@ public class Host implements Service<Host> {
     }
 
     protected HttpHandler getRootHandler() {
-        return rootHandler;
+        return hostRootHandler;
+    }
+
+    List<FilterRef> getFilters() {
+        return Collections.unmodifiableList(filters);
+    }
+
+    protected HttpHandler getOrCreateRootHandler() {
+        HttpHandler root = rootHandler;
+        if(root == null) {
+            synchronized (this) {
+                root = rootHandler;
+                if(root == null) {
+                    return rootHandler = configureRootHandler();
+                }
+            }
+        }
+        return root;
     }
 
     public String getDefaultWebModule() {
@@ -184,6 +213,9 @@ public class Host implements Service<Host> {
 
     public void unregisterHandler(String path) {
         pathHandler.removePrefixPath(path);
+        if(path.equals("/")){
+            this.setupDefaultResponseCodeHandler();
+        }
     }
 
     /**
@@ -191,10 +223,6 @@ public class Host implements Service<Host> {
      */
     public Set<Deployment> getDeployments() {
         return Collections.unmodifiableSet(deployments);
-    }
-
-    List<InjectedValue<FilterRef>> getFilters() {
-        return filters;
     }
 
     void registerAdditionalAuthenticationMechanism(String name, AuthenticationMechanism authenticationMechanism){
@@ -208,6 +236,26 @@ public class Host implements Service<Host> {
     public Map<String, AuthenticationMechanism> getAdditionalAuthenticationMechanisms() {
         return new LinkedHashMap<>(additionalAuthenticationMechanisms);
     }
+
+
+    @Override
+    public void addFilterRef(FilterRef filterRef) {
+        filters.add(filterRef);
+        rootHandler = null;
+    }
+
+    @Override
+    public void removeFilterRef(FilterRef filterRef) {
+        filters.remove(filterRef);
+        rootHandler = null;
+    }
+
+    protected void setupDefaultResponseCodeHandler(){
+        if(this.defaultHandler != null){
+            this.registerHandler("/", this.defaultHandler);
+        }
+    }
+
 
     private static final class OptionsHandler implements HttpHandler {
 
@@ -227,6 +275,14 @@ public class Host implements Service<Host> {
                 return;
             }
             next.handleRequest(exchange);
+        }
+    }
+
+    private class HostRootHandler implements HttpHandler {
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            getOrCreateRootHandler().handleRequest(exchange);
         }
     }
 }

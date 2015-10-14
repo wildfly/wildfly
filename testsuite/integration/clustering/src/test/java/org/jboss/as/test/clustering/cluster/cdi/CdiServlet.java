@@ -42,12 +42,12 @@ public class CdiServlet extends HttpServlet {
     private static final long serialVersionUID = 5167789049451718160L;
 
     public static final String SERVLET_NAME = "cdi";
-    static final String SERVLET_PATH = "/" + SERVLET_NAME;
+    public static final String SERVLET_PATH = "/" + SERVLET_NAME;
     public static final String SESSION_ID_HEADER = "sessionId";
     public static final String COUNT = "count";
 
     @Inject
-    Incrementor incrementor;
+    private Incrementor incrementor;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -58,7 +58,6 @@ public class CdiServlet extends HttpServlet {
     }
 
     public static URI createURI(URL baseURL) throws URISyntaxException {
-        StringBuilder builder = new StringBuilder(SERVLET_NAME);
-        return baseURL.toURI().resolve(builder.toString());
+        return baseURL.toURI().resolve(SERVLET_NAME);
     }
 }

@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.interceptors.ActivationInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
@@ -40,37 +37,25 @@ public enum StoreMetric implements Metric<ActivationInterceptor> {
 
     CACHE_LOADER_LOADS(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG) {
         @Override
-        public ModelNode getValue(ActivationInterceptor interceptor) {
+        public ModelNode execute(ActivationInterceptor interceptor) {
             return new ModelNode(interceptor.getCacheLoaderLoads());
         }
     },
     CACHE_LOADER_MISSES(MetricKeys.CACHE_LOADER_MISSES, ModelType.LONG) {
         @Override
-        public ModelNode getValue(ActivationInterceptor interceptor) {
+        public ModelNode execute(ActivationInterceptor interceptor) {
             return new ModelNode(interceptor.getCacheLoaderMisses());
         }
     },
     ;
     private final AttributeDefinition definition;
 
-    private StoreMetric(String name, ModelType type) {
+    StoreMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
-    }
-
-    private static final Map<String, StoreMetric> metrics = new HashMap<>();
-
-    static {
-        for (StoreMetric metric: StoreMetric.values()) {
-            metrics.put(metric.definition.getName(), metric);
-        }
-    }
-
-    public static StoreMetric forName(String name) {
-        return metrics.get(name);
     }
 }

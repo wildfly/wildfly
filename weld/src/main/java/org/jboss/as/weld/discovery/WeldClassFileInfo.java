@@ -124,9 +124,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     @Override
     public boolean isTopLevelClass() {
-        // TODO This is not portable per the JSL
-        // TODO Modify jandex to contain isTopLevelClass attribute
-        return !classInfo.name().local().contains("$");
+        return classInfo.nestingType() == ClassInfo.NestingType.TOP_LEVEL;
     }
 
     @Override
@@ -183,6 +181,12 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     private DotName getPackageName(DotName name) {
         if (name.isComponentized()) {
+            while (name.isInner()) {
+                name = name.prefix();
+                if (name == null) {
+                    throw new IllegalStateException("Could not determine package from corrupted class name");
+                }
+            }
             return name.prefix();
         } else {
             final int lastIndex = name.local().lastIndexOf(".");

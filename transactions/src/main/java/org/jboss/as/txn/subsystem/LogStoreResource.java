@@ -22,14 +22,17 @@
 
 package org.jboss.as.txn.subsystem;
 
+import java.util.Collections;
+import java.util.Set;
+
+import javax.management.ObjectName;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.AbstractModelResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
-
-import javax.management.ObjectName;
-import java.util.Set;
 
 /**
  * Resource maintaining the sub-tree for the log-store.
@@ -118,6 +121,16 @@ class LogStoreResource implements Resource {
     @Override
     public boolean isProxy() {
         return false;
+    }
+
+    @Override
+    public void registerChild(PathElement address, int index, Resource resource) {
+        throw TransactionLogger.ROOT_LOGGER.indexedChildResourceRegistrationNotAvailable(address);
+    }
+
+    @Override
+    public Set<String> getOrderedChildTypes() {
+        return Collections.emptySet();
     }
 
     @Override

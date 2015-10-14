@@ -29,6 +29,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.ejb.AsyncResult;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
@@ -71,7 +74,6 @@ import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.remoting.NetworkUtil;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.cloner.ClassLoaderClassCloner;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
@@ -96,7 +98,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbReceiver>, RegistryCollector.Listener<String, List<ClientMapping>> {
 
-    private static final Logger logger = Logger.getLogger(LocalEjbReceiver.class);
     public static final ServiceName DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("default-local-ejb-receiver-service");
     public static final ServiceName BY_VALUE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "value");
     public static final ServiceName BY_REFERENCE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "reference");
@@ -135,7 +136,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
     @Override
     protected void processInvocation(final EJBClientInvocationContext invocation, final EJBReceiverInvocationContext receiverContext) throws Exception {
-        final EJBLocator locator = invocation.getLocator();
+        final EJBLocator<?> locator = invocation.getLocator();
         final EjbDeploymentInformation ejb = findBean(locator.getAppName(), locator.getModuleName(), locator.getDistinctName(), locator.getBeanName());
         final EJBComponent ejbComponent = ejb.getEjbComponent();
 
@@ -202,10 +203,10 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         interceptorContext.putPrivateData(ComponentView.class, view);
 
         if (locator instanceof StatefulEJBLocator) {
-            final SessionID sessionID = ((StatefulEJBLocator) locator).getSessionId();
+            final SessionID sessionID = ((StatefulEJBLocator<?>) locator).getSessionId();
             interceptorContext.putPrivateData(SessionID.class, sessionID);
         } else if (locator instanceof EntityEJBLocator) {
-            final Object primaryKey = ((EntityEJBLocator) locator).getPrimaryKey();
+            final Object primaryKey = ((EntityEJBLocator<?>) locator).getPrimaryKey();
             interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
         }
 
@@ -223,7 +224,24 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                     protected Object runInvocation() throws Exception {
                         setSecurityContextOnAssociation(securityContext);
                         try {
-                            return view.invoke(interceptorContext);
+                            Object result = view.invoke(interceptorContext);
+                            // if the result is null, there is no cloning needed
+                            if(result == null) {
+                                return result;
+                            }
+                            // WFLY-4331 - clone the result of an async task
+                            if(result instanceof Future) {
+                                Object asyncValue = ((Future)result).get();
+                                // if the return value is null, there is no cloning needed
+                                if(asyncValue == null) {
+                                    return asyncValue;
+                                }
+                                return new AsyncResult(LocalEjbReceiver.clone(asyncValue.getClass(), resultCloner, asyncValue, allowPassByReference));
+                            }
+                            return LocalEjbReceiver.clone(result.getClass(), resultCloner, result, allowPassByReference);
+                        } catch(ExecutionException e) {
+                            // WFLY-4331 - clone the exception of an async task
+                            throw ((Exception) LocalEjbReceiver.clone(e.getClass(), resultCloner, e, allowPassByReference));
                         } finally {
                             clearSecurityContextOnAssociation();
                         }
@@ -231,8 +249,6 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                 };
                 interceptorContext.putPrivateData(CancellationFlag.class, flag);
                 component.getAsynchronousExecutor().submit(task);
-                //TODO: we do not clone the result of an async task
-                //TODO: we do not clone the exception of an async task
                 receiverContext.resultReady(new ImmediateResultProducer(task));
             } else {
                 throw EjbLogger.ROOT_LOGGER.asyncInvocationOnlyApplicableForSessionBeans();
@@ -281,7 +297,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         return new StatefulEJBLocator<T>(viewType, appName, moduleName, beanName, distinctName, sessionID, statefulComponent.getCache().getStrictAffinity(), this.getNodeName());
     }
 
-    private Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
+    private static Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
         if (object == null) {
             return null;
         }
@@ -295,7 +311,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         return clone(cloner, object);
     }
 
-    private Object clone(final ObjectCloner cloner, final Object object) {
+    private static Object clone(final ObjectCloner cloner, final Object object) {
         if (object == null) {
             return null;
         }
@@ -486,7 +502,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             // which can only handle local receiver and no remote receivers (due to lack of configurations
             // to connect to them), then skip that context
             if (this.isLocalOnlyEJBClientContext(ejbClientContext)) {
-                logger.debugf("Skipping cluster node additions to EJB client context %s since it can only handle local node", ejbClientContext);
+                EjbLogger.REMOTE_LOGGER.debugf("Skipping cluster node additions to EJB client context %s since it can only handle local node", ejbClientContext);
                 continue;
             }
             // find a matching client mapping for our bind address
@@ -499,7 +515,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                     final boolean match = NetworkUtil.belongsToNetwork(binding.getAddress().getAddress(), sourceNetworkAddress, (byte) (netMask & 0xff));
                     if (match) {
                         resolvedClientMapping = clientMapping;
-                        logger.debugf("Client mapping %s matches client address %s", clientMapping, binding.getAddress().getAddress());
+                        EjbLogger.REMOTE_LOGGER.debugf("Client mapping %s matches client address %s", clientMapping, binding.getAddress().getAddress());
                         break;
                     }
                 }
@@ -650,6 +666,51 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
         void unregisterListener() {
             this.cluster.removeListener(this);
+        }
+    }
+
+    @Override
+    protected void disassociate(EJBReceiverContext receiverContext) {
+        this.contexts.remove(receiverContext);
+
+        final RegistryCollector<String, List<ClientMapping>> clusters = this.clusterRegistryCollector.getOptionalValue();
+        if (clusters == null) {
+            return;
+        }
+
+        // for each cluster update the EJB client context with the current nodes in the cluster
+        for (final Registry<String, List<ClientMapping>> cluster : clusters.getRegistries()) {
+            this.removeClusterNodes(receiverContext.getClientContext(), cluster.getGroup().getName(), cluster.getEntries());
+        }
+    }
+
+    private void removeClusterNodes(final EJBClientContext ejbClientContext, final String clusterName, final Map<String, List<ClientMapping>> removedNodes) {
+        if (removedNodes == null || removedNodes.isEmpty()) {
+            return;
+        }
+        final EJBRemoteConnectorService ejbRemoteConnectorService = this.ejbRemoteConnectorServiceValue.getOptionalValue();
+        final Endpoint endpoint = this.endpointValue.getOptionalValue();
+        if(ejbRemoteConnectorService == null || endpoint == null) {
+            return;
+        }
+
+        final ClusterContext clusterContext = ejbClientContext.getClusterContext(clusterName);
+        // remove the nodes from the cluster context
+        for (Map.Entry<String, List<ClientMapping>> entry : removedNodes.entrySet()) {
+            final String removedNodeName = entry.getKey();
+            // if the current node is being removed, then let the local receiver handle it
+            if (LocalEjbReceiver.this.getNodeName().equals(removedNodeName)) {
+                clusterContext.removeClusterNode(removedNodeName);
+                continue;
+            }
+            // if the EJB client context is the default server level EJB client context
+            // which can only handle local receiver and no remote receivers (due to lack of configurations
+            // to connect to them), then skip that context
+            if (this.isLocalOnlyEJBClientContext(ejbClientContext)) {
+                EjbLogger.REMOTE_LOGGER.debugf("Skipping cluster node removal to EJB client context %s since it can only handle local node", ejbClientContext);
+                continue;
+            }
+            clusterContext.removeClusterNode(removedNodeName);
         }
     }
 }

@@ -59,7 +59,6 @@ public class ConnectionPropertyAdd extends AbstractAddStepHandler {
         final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
 
         ServiceName serviceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append("connection-properties").append(configPropertyName);
-        ServiceName dsServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
 

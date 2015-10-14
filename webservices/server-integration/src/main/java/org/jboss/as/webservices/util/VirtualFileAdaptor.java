@@ -58,7 +58,7 @@ public final class VirtualFileAdaptor implements UnifiedVirtualFile {
             if (throwExceptionIfNotFound) {
                 throw WSLogger.ROOT_LOGGER.missingChild(child, virtualFile);
             } else {
-                if (WSLogger.ROOT_LOGGER.isTraceEnabled()) WSLogger.ROOT_LOGGER.tracef("Child '%s' not found for VirtualFile: %s", child, virtualFile);
+                WSLogger.ROOT_LOGGER.tracef("Child '%s' not found for VirtualFile: %s", child, virtualFile);
                 return null;
             }
         }

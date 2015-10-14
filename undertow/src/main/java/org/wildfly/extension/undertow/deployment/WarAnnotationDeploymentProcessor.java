@@ -172,7 +172,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                     servlet.setName(nameValue.asString());
                 }
                 AnnotationValue loadOnStartup = annotation.value("loadOnStartup");
-                if (loadOnStartup != null && loadOnStartup.asInt() > 0) {
+                if (loadOnStartup != null && loadOnStartup.asInt() >= 0) {
                     servlet.setLoadOnStartupInt(loadOnStartup.asInt());
                 }
                 AnnotationValue asyncSupported = annotation.value("asyncSupported");

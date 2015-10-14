@@ -21,31 +21,19 @@
 */
 package org.jboss.as.jsr77.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLParser;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  *
@@ -58,9 +46,7 @@ public class JSR77ManagementExtension  implements Extension {
     private static final J2EEManagementSubsystemParser parser = new J2EEManagementSubsystemParser();
     private static final String RESOURCE_NAME = JSR77ManagementExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, JSR77ManagementExtension.class.getClassLoader(), true, true);
@@ -71,11 +57,10 @@ public class JSR77ManagementExtension  implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         // Register the root subsystem resource.
-        final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(JSR77ManagementRootResource.INSTANCE);
+        final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(new JSR77ManagementRootResource(context.getProcessType() == ProcessType.APPLICATION_CLIENT));
 
         // Mandatory describe operation
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
@@ -89,31 +74,16 @@ public class JSR77ManagementExtension  implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE, parser);
     }
 
-    static ModelNode createSubsystemAddOperation() {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-        return subsystem;
-    }
+    static class J2EEManagementSubsystemParser extends PersistentResourceXMLParser {
 
-    static class J2EEManagementSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-
-        /** {@inheritDoc} */
-        @Override
-        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
-            //context.startSubsystemElement(NewNamingExtension.NAMESPACE, true);
-            context.startSubsystemElement(JSR77ManagementExtension.NAMESPACE, false);
-            writer.writeEndElement();
+        private static PersistentResourceXMLDescription xmlDescription;
+        static {
+            xmlDescription = PersistentResourceXMLDescription.builder(new JSR77ManagementRootResource(false), JSR77ManagementExtension.NAMESPACE)
+                    .build();
         }
-
-        /** {@inheritDoc} */
         @Override
-        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
-
-            list.add(createSubsystemAddOperation());
+        public PersistentResourceXMLDescription getParserDescription() {
+            return xmlDescription;
         }
     }
 

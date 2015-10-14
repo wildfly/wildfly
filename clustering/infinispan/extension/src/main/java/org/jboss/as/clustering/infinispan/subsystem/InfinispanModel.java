@@ -29,17 +29,18 @@ import org.jboss.as.controller.ModelVersion;
  */
 public enum InfinispanModel {
 
-    VERSION_1_3_0(1, 3, 0),
-    VERSION_1_4_0(1, 4, 0),
     VERSION_1_4_1(1, 4, 1),
+    VERSION_1_5_0(1, 5, 0),
+    VERSION_1_6_0(1, 6, 0),
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
+    VERSION_4_0_0(4, 0, 0),
     ;
-    static final InfinispanModel CURRENT = VERSION_3_0_0;
+    static final InfinispanModel CURRENT = VERSION_4_0_0;
 
     private final ModelVersion version;
 
-    private InfinispanModel(int major, int minor, int micro) {
+    InfinispanModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 

@@ -42,6 +42,7 @@ public class FederationSubsystemRootResourceDefinition extends SimpleResourceDef
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, FederationExtension.SUBSYSTEM_NAME),
                  FederationExtension.getResourceDescriptionResolver(FederationExtension.SUBSYSTEM_NAME),
                  FederationSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        setDeprecated(FederationExtension.DEPRECATED_SINCE);
         this.extensionContext = extensionContext;
     }
 

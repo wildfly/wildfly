@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 ### ====================================================================== ###
 ##                                                                          ##
 ##  This is the main entry point for the build system.                      ##
@@ -19,7 +19,7 @@ ROOT="/"
 M2_HOME=""
 MAVEN_HOME=""
 
-MAVEN_OPTS="$MAVEN_OPTS -Xmx768M"
+MAVEN_OPTS="$MAVEN_OPTS -Xmx1024M"
 export MAVEN_OPTS
 
 ./tools/download-maven.sh
@@ -97,15 +97,13 @@ main() {
 
     #  Increase the maximum file descriptors if we can.
     if [ $cygwin = "false" ]; then
-        MAX_FD_LIMIT=`ulimit -H -n`
-        if [ $? -eq 0 ]; then
+        if MAX_FD_LIMIT=`ulimit -H -n`; then
             if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ]; then
                 #  Use system's max.
                 MAX_FD="$MAX_FD_LIMIT"
             fi
 
-            ulimit -n $MAX_FD
-            if [ $? -ne 0 ]; then
+            if ! ulimit -n $MAX_FD; then
                 warn "Could not set maximum file descriptor limit: $MAX_FD"
             fi
         else

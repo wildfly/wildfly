@@ -347,26 +347,34 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     public void authenticate(final String runAs, final String runAsPrincipal, final Set<String> extraRoles) {
-        SecurityContext context = SecurityContextAssociation.getSecurityContext();
-        SecurityContextUtil util = context.getUtil();
-
-        Object credential = util.getCredential();
-        Subject subject = null;
-        if (credential instanceof RemotingConnectionCredential) {
-            subject = ((RemotingConnectionCredential) credential).getSubject();
-        }
-
-        if (authenticate(context, subject) == false) {
-            throw SecurityLogger.ROOT_LOGGER.invalidUserException();
-        }
-
+        SecurityContext current = SecurityContextAssociation.getSecurityContext();
         SecurityContext previous = contexts.peek();
+
+        // skip reauthentication if the current context already has an authenticated subject (copied from the previous context
+        // upon creation - see push method) and if both contexts use the same security domain.
+        boolean skipReauthentication = current.getSubjectInfo() != null && current.getSubjectInfo().getAuthenticatedSubject() != null &&
+                previous != null && current.getSecurityDomain().equals(previous.getSecurityDomain());
+
+        if (!skipReauthentication) {
+            SecurityContextUtil util = current.getUtil();
+            Object credential = util.getCredential();
+            Subject subject = null;
+            if (credential instanceof RemotingConnectionCredential) {
+                subject = ((RemotingConnectionCredential) credential).getSubject();
+            }
+
+            if (authenticate(current, subject) == false) {
+                throw SecurityLogger.ROOT_LOGGER.invalidUserException();
+            }
+        }
+
+        // setup the run-as identity.
         if (runAs != null) {
             RunAs runAsIdentity = new RunAsIdentity(runAs, runAsPrincipal, extraRoles);
-            context.setOutgoingRunAs(runAsIdentity);
+            current.setOutgoingRunAs(runAsIdentity);
         } else if (propagate && previous != null && previous.getOutgoingRunAs() != null) {
             // Ensure the propagation continues.
-            context.setOutgoingRunAs(previous.getOutgoingRunAs());
+            current.setOutgoingRunAs(previous.getOutgoingRunAs());
         }
     }
 

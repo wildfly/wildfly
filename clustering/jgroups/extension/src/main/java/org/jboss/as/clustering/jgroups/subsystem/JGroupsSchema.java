@@ -31,20 +31,21 @@ public enum JGroupsSchema {
     VERSION_1_1(1, 1),
     VERSION_2_0(2, 0),
     VERSION_3_0(3, 0),
+    VERSION_4_0(4, 0),
     ;
-    public static final JGroupsSchema CURRENT = VERSION_3_0;
+    public static final JGroupsSchema CURRENT = VERSION_4_0;
 
     private final int major;
     private final int minor;
 
-    private JGroupsSchema(int major, int minor) {
+    JGroupsSchema(int major, int minor) {
         this.major = major;
         this.minor = minor;
     }
 
     /**
      * Indicates whether this version of the schema is greater than or equal to the version of the specified schema.
-     * @param a schema
+     * @param schema
      * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
      */
     public boolean since(JGroupsSchema schema) {

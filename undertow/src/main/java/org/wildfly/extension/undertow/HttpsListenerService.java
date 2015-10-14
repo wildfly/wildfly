@@ -24,9 +24,18 @@ package org.wildfly.extension.undertow;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import javax.net.ssl.SSLContext;
 
+import io.undertow.UndertowOptions;
+import io.undertow.protocols.ssl.UndertowXnioSsl;
+import io.undertow.server.OpenListener;
+import io.undertow.server.protocol.http.AlpnOpenListener;
+import io.undertow.server.protocol.http.HttpOpenListener;
+import io.undertow.server.protocol.http2.Http2OpenListener;
+import io.undertow.server.protocol.spdy.SpdyOpenListener;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.ChannelListener;
@@ -34,10 +43,10 @@ import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
 import org.xnio.Options;
+import org.xnio.Pool;
 import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
-import org.xnio.ssl.JsseXnioSsl;
 import org.xnio.ssl.SslConnection;
 import org.xnio.ssl.XnioSsl;
 
@@ -58,6 +67,41 @@ public class HttpsListenerService extends HttpListenerService {
     }
 
     @Override
+    protected OpenListener createOpenListener() {
+        if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false) || listenerOptions.get(UndertowOptions.ENABLE_SPDY, false)) {
+            try {
+                getClass().getClassLoader().loadClass("org.eclipse.jetty.alpn.ALPN");
+                return createAlpnOpenListener();
+            } catch (ClassNotFoundException e) {
+                UndertowLogger.ROOT_LOGGER.alpnNotFound();
+                return super.createOpenListener();
+            }
+        } else {
+            return super.createOpenListener();
+        }
+    }
+
+    private OpenListener createAlpnOpenListener() {
+        OptionMap undertowOptions = OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_CONNECTOR_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap();
+        Pool<ByteBuffer> bufferPool = getBufferPool().getValue();
+        HttpOpenListener http =  new HttpOpenListener(bufferPool, undertowOptions);
+        AlpnOpenListener alpn = new AlpnOpenListener(bufferPool, undertowOptions, http);
+        if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false)) {
+            Http2OpenListener http2 = new Http2OpenListener(bufferPool, undertowOptions, "h2");
+            alpn.addProtocol(Http2OpenListener.HTTP2, http2, 10);
+            Http2OpenListener http2_14 = new Http2OpenListener(bufferPool, undertowOptions, "h2-14");
+            alpn.addProtocol(Http2OpenListener.HTTP2_14, http2_14, 9);
+        }
+        if(listenerOptions.get(UndertowOptions.ENABLE_SPDY, false)) {
+            //if you want to use spdy you need to configure heap buffers
+            //we may fix this in future, but spdy is going away anyway
+            SpdyOpenListener spdyOpenListener = new SpdyOpenListener(bufferPool, bufferPool, undertowOptions);
+            alpn.addProtocol(SpdyOpenListener.SPDY_3_1, spdyOpenListener, 5);
+        }
+        return alpn;
+    }
+
+    @Override
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
 
         SSLContext sslContext = securityRealm.getValue().getSSLContext();
@@ -66,11 +110,11 @@ public class HttpsListenerService extends HttpListenerService {
         builder.set(Options.USE_DIRECT_BUFFERS, true);
         OptionMap combined = builder.getMap();
 
-        XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), combined, sslContext);
+        XnioSsl xnioSsl = new UndertowXnioSsl(worker.getXnio(), combined, sslContext);
         sslServer = xnioSsl.createSslConnectionServer(worker, socketAddress, (ChannelListener) acceptListener, combined);
         sslServer.resumeAccepts();
 
-        UndertowLogger.ROOT_LOGGER.listenerStarted("HTTPS", getName(), socketAddress);
+        UndertowLogger.ROOT_LOGGER.listenerStarted("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(socketAddress.getAddress()), socketAddress.getPort());
     }
 
     @Override
@@ -84,7 +128,7 @@ public class HttpsListenerService extends HttpListenerService {
         UndertowLogger.ROOT_LOGGER.listenerSuspend("HTTPS", getName());
         IoUtils.safeClose(sslServer);
         sslServer = null;
-        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), getBinding().getValue().getSocketAddress());
+        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getPort());
         httpListenerRegistry.getValue().removeListener(getName());
     }
 
@@ -96,5 +140,4 @@ public class HttpsListenerService extends HttpListenerService {
     protected String getProtocol() {
         return PROTOCOL;
     }
-
 }

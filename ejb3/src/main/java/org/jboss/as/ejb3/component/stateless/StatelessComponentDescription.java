@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.stateless;
 
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 import javax.ejb.TransactionManagementType;
 
@@ -45,7 +46,7 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.PoolConfigService;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
@@ -55,7 +56,6 @@ import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
@@ -84,7 +84,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
+    public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
         final ComponentConfiguration statelessComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
         statelessComponentConfiguration.setComponentCreateServiceFactory(new StatelessComponentCreateServiceFactory());
@@ -183,8 +183,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-                ClassReflectionIndex<WriteReplaceInterface> classIndex = index.getClassIndex(WriteReplaceInterface.class);
-                for (Method method : classIndex.getMethods()) {
+                ClassReflectionIndex classIndex = index.getClassIndex(WriteReplaceInterface.class);
+                for (Method method : (Collection<Method>)classIndex.getMethods()) {
                     configuration.addClientInterceptor(method, StatelessWriteReplaceInterceptor.factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
                 }
             }
@@ -224,11 +224,11 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             // if no pool name has been explicitly set, then inject the *optional* "default slsb pool config".
             // If the default slsb pool config itself is not configured, then the pooling is disabled for the bean
             if (poolName == null) {
-                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, PoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, StrictMaxPoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
                         PoolConfig.class, statelessSessionComponentService.getPoolConfigInjector());
             } else {
                 // pool name has been explicitly set so the pool config is a required dependency
-                serviceBuilder.addDependency(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
+                serviceBuilder.addDependency(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
                         PoolConfig.class, statelessSessionComponentService.getPoolConfigInjector());
             }
         }

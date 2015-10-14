@@ -36,10 +36,10 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
-import java.security.Permission;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +54,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.http.Header;
@@ -71,7 +72,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.AuthPolicy;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
@@ -89,7 +89,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.util.Base64;
 
 /**
  * Common utilities for JBoss AS security tests.
@@ -97,14 +96,19 @@ import org.jboss.util.Base64;
  * @author Jan Lanik
  * @author Josef Cacek
  */
-public class Utils extends CoreUtils{
+public class Utils extends CoreUtils {
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
 
     public static final String UTF_8 = "UTF-8";
 
+    public static final boolean IBM_JDK = StringUtils.startsWith(SystemUtils.JAVA_VENDOR, "IBM");
+    public static final boolean OPEN_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "OpenJDK");
+    public static final boolean ORACLE_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "Java HotSpot");
+
     /** The REDIRECT_STRATEGY for Apache HTTP Client */
     public static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
+
         @Override
         public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) {
             boolean isRedirect = false;
@@ -147,7 +151,7 @@ public class Utils extends CoreUtils{
 
         switch (coding) {
             case BASE_64:
-                encodedHash = Base64.encodeBytes(byteHash);
+                encodedHash = Base64.getEncoder().encodeToString(byteHash);
                 break;
             case HEX:
                 encodedHash = toHex(byteHash);
@@ -268,18 +272,18 @@ public class Utils extends CoreUtils{
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
-            System.out.println("Login form get: " + statusLine);
+            //System.out.println("Login form get: " + statusLine);
             assertEquals(200, statusLine.getStatusCode());
 
-            System.out.println("Initial set of cookies:");
-            List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+            //System.out.println("Initial set of cookies:");
+            /*List<Cookie> cookies = httpclient.getCookieStore().getCookies();
             if (cookies.isEmpty()) {
                 System.out.println("None");
             } else {
                 for (int i = 0; i < cookies.size(); i++) {
                     System.out.println("- " + cookies.get(i).toString());
                 }
-            }
+            }*/
 
             // We should now login with the user name and password
             HttpPost httpost = new HttpPost(URL + "/j_security_check");
@@ -309,7 +313,7 @@ public class Utils extends CoreUtils{
             if (entity != null)
                 EntityUtils.consume(entity);
 
-            System.out.println("Post logon cookies:");
+           /* System.out.println("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();
             if (cookies.isEmpty()) {
                 System.out.println("None");
@@ -317,7 +321,7 @@ public class Utils extends CoreUtils{
                 for (int i = 0; i < cookies.size(); i++) {
                     System.out.println("- " + cookies.get(i).toString());
                 }
-            }
+            }*/
 
             // Either the authentication passed or failed based on the expected status code
             statusLine = response.getStatusLine();
@@ -386,18 +390,17 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Requests given URL and checks if the returned HTTP status code is the
-     * expected one. Returns HTTP response body
+     * Requests given URL and checks if the returned HTTP status code is the expected one. Returns HTTP response body
      *
-     * @param URL url to which the request should be made
-     * @param DefaultHttpClient httpClient to test multiple access
+     * @param url URL to which the request should be made
+     * @param httpClient DefaultHttpClient to test multiple access
      * @param expectedStatusCode expected status code returned from the requested server
      * @return HTTP response body
      * @throws IOException
      * @throws URISyntaxException
      */
-    public static String makeCallWithHttpClient(URL url, HttpClient httpClient, int expectedStatusCode)
-            throws IOException, URISyntaxException {
+    public static String makeCallWithHttpClient(URL url, HttpClient httpClient, int expectedStatusCode) throws IOException,
+            URISyntaxException {
 
         String httpResponseBody = null;
         HttpGet httpGet = new HttpGet(url.toURI());
@@ -481,6 +484,8 @@ public class Utils extends CoreUtils{
             final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
         LOGGER.info("Requesting URI: " + uri);
         final DefaultHttpClient httpClient = new DefaultHttpClient();
+        final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
+
         try {
             httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
@@ -508,10 +513,9 @@ public class Utils extends CoreUtils{
                 EntityUtils.consume(entity);
 
             // Use our custom configuration to avoid reliance on external config
-            Configuration.setConfiguration(new Krb5LoginConfiguration());
+            Configuration.setConfiguration(krb5Configuration);
             // 1. Authenticate to Kerberos.
-            final LoginContext lc = new LoginContext(CoreUtils.class.getName(), new UsernamePasswordHandler(user, pass));
-            lc.login();
+            final LoginContext lc = loginWithKerberos(krb5Configuration, user, pass);
 
             // 2. Perform the work as authenticated Subject.
             final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
@@ -529,6 +533,7 @@ public class Utils extends CoreUtils{
             // shut down the connection manager to ensure
             // immediate deallocation of all system resources
             httpClient.getConnectionManager().shutdown();
+            krb5Configuration.resetConfiguration();
         }
     }
 
@@ -556,6 +561,8 @@ public class Utils extends CoreUtils{
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
         String unauthorizedPageBody = null;
+        final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
+
         try {
             httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
@@ -579,10 +586,9 @@ public class Utils extends CoreUtils{
             unauthorizedPageBody = EntityUtils.toString(response.getEntity());
 
             // Use our custom configuration to avoid reliance on external config
-            Configuration.setConfiguration(new Krb5LoginConfiguration());
+            Configuration.setConfiguration(krb5Configuration);
             // 1. Authenticate to Kerberos.
-            final LoginContext lc = new LoginContext(CoreUtils.class.getName(), new UsernamePasswordHandler(user, pass));
-            lc.login();
+            final LoginContext lc = loginWithKerberos(krb5Configuration, user, pass);
 
             // 2. Perform the work as authenticated Subject.
             final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
@@ -613,6 +619,8 @@ public class Utils extends CoreUtils{
             // shut down the connection manager to ensure
             // immediate deallocation of all system resources
             httpClient.getConnectionManager().shutdown();
+            // reset login configuration
+            krb5Configuration.resetConfiguration();
         }
     }
 
@@ -756,35 +764,6 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Creates content of permissions.xml (or jboss-permissions.xml) which placed in META-INF of the deployment specifies
-     * security permissions granted to the deployment.
-     *
-     * @param permissions instances from which are &lt;permission&gt; elements generated
-     * @return not-<code>null</code> content of permissions.xml (version=7)
-     */
-    public static Asset getPermissionsXml(final Permission... permissions) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<permissions xmlns='http://xmlns.jcp.org/xml/ns/javaee' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd' version='7'>");
-        if (permissions != null) {
-            for (Permission permission : permissions) {
-                if (permission != null) {
-                    sb.append("\n\t<permission>");
-                    sb.append("\n\t\t<class-name>").append(permission.getClass().getName()).append("</class-name>");
-                    if (permission.getName() != null) {
-                        sb.append("\n\t\t<name>").append(permission.getName()).append("</name>");
-                    }
-                    if (permission.getActions() != null) {
-                        sb.append("\n\t\t<actions>").append(permission.getActions()).append("</actions>");
-                    }
-                    sb.append("\n\t</permission>");
-                }
-            }
-        }
-        sb.append("\n</permissions>");
-        return new StringAsset(sb.toString());
-    }
-
-    /**
      * Creates content of users.properties and/or roles.properties files for given array of role names.
      * <p>
      * For instance if you provide 2 roles - "role1", "role2" then the result will be:
@@ -837,8 +816,8 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Copies server and clients keystores and truststores from this package to
-     * the given folder. Server truststore has accepted certificate from client keystore and vice-versa
+     * Copies server and clients keystores and truststores from this package to the given folder. Server truststore has accepted
+     * certificate from client keystore and vice-versa
      *
      * @param workingFolder folder to which key material should be copied
      * @throws IOException copying of keystores fails
@@ -860,8 +839,7 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Copies a resource file from current package to location denoted by given
-     * {@link File} instance.
+     * Copies a resource file from current package to location denoted by given {@link File} instance.
      *
      * @param file
      *
@@ -879,18 +857,19 @@ public class Utils extends CoreUtils{
     }
 
     public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword) {
-        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword, null);
+        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(),
+                keystorePassword, null);
     }
 
-    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword,
-            String vaultConfig) {
-        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword,
-                vaultConfig);
+    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile,
+            String keystorePassword, String vaultConfig) {
+        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(),
+                keystorePassword, vaultConfig);
     }
 
     /**
-     * Replace keystore paths and passwords variables in original configuration file with given values
-     * and set ${hostname} variable from system property: node0
+     * Replace keystore paths and passwords variables in original configuration file with given values and set ${hostname}
+     * variable from system property: node0
      *
      * @param originalFile String
      * @param keystoreFile File
@@ -899,9 +878,9 @@ public class Utils extends CoreUtils{
      * @param vaultConfig - path to vault settings
      * @return String content
      */
-    public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile, String keystorePassword,
-            String vaultConfig) {
-        String hostname = System.getProperty("node0");
+    public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile,
+            String keystorePassword, String vaultConfig) {
+        String hostname = getDefaultHost(false);
 
         // expand possible IPv6 address
         try {
@@ -925,8 +904,7 @@ public class Utils extends CoreUtils{
         map.put("password", keystorePassword);
 
         try {
-            content = StrSubstitutor.replace(
-                    IOUtils.toString(CoreUtils.class.getResourceAsStream(originalFile), "UTF-8"), map);
+            content = StrSubstitutor.replace(IOUtils.toString(CoreUtils.class.getResourceAsStream(originalFile), "UTF-8"), map);
         } catch (IOException ex) {
             String message = "Cannot find or modify configuration file " + originalFile + " , error : " + ex.getMessage();
             LOGGER.error(message);
@@ -975,8 +953,8 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Returns management address (host) from the givem {@link org.jboss.as.arquillian.container.ManagementClient}. If the returned value is IPv6 address then
-     * square brackets around are stripped.
+     * Returns management address (host) from the givem {@link org.jboss.as.arquillian.container.ManagementClient}. If the
+     * returned value is IPv6 address then square brackets around are stripped.
      *
      * @param managementClient
      * @return
@@ -986,7 +964,8 @@ public class Utils extends CoreUtils{
     }
 
     /**
-     * Returns canonical hostname retrieved from management address of the givem {@link org.jboss.as.arquillian.container.ManagementClient}.
+     * Returns canonical hostname retrieved from management address of the givem
+     * {@link org.jboss.as.arquillian.container.ManagementClient}.
      *
      * @param managementClient
      * @return
@@ -998,19 +977,65 @@ public class Utils extends CoreUtils{
     /**
      * Returns servlet URL, as concatenation of webapp URL and servlet path.
      *
-     * @param webAppURL        web application context URL (e.g. injected by Arquillian)
-     * @param servletPath      Servlet path starting with slash (must be not-<code>null</code>)
-     * @param mgmtClient       Management Client (may be null)
+     * @param webAppURL web application context URL (e.g. injected by Arquillian)
+     * @param servletPath Servlet path starting with slash (must be not-<code>null</code>)
+     * @param mgmtClient Management Client (may be null)
      * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
      * @return
      * @throws java.net.URISyntaxException
      */
     public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
-                                          boolean useCanonicalHost) throws URISyntaxException {
+            boolean useCanonicalHost) throws URISyntaxException {
         URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
         if (useCanonicalHost) {
             resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
         }
         return resultURI;
+    }
+
+    /**
+     * Returns hostname - either read from the "node0" system property or the loopback address "127.0.0.1".
+     *
+     * @param canonical return hostname in canonical form
+     *
+     * @return
+     */
+    public static String getDefaultHost(boolean canonical) {
+        final String hostname = System.getProperty("node0", "127.0.0.1");
+        return canonical ? getCannonicalHost(hostname) : hostname;
+    }
+
+    /**
+     * Returns installed login configuration.
+     *
+     * @return Configuration
+     */
+    public static Configuration getLoginConfiguration() {
+        return Configuration.getConfiguration();
+    }
+
+    /**
+     * Creates login context for given {@link Krb5LoginConfiguration} and credentials and calls the {@link LoginContext#login()}
+     * method on it. This method contains workaround for IBM JDK issue described in bugzilla <a
+     * href="https://bugzilla.redhat.com/show_bug.cgi?id=1206177">https://bugzilla.redhat.com/show_bug.cgi?id=1206177</a>.
+     *
+     * @param krb5Configuration
+     * @param user
+     * @param pass
+     * @return
+     * @throws LoginException
+     */
+    public static LoginContext loginWithKerberos(final Krb5LoginConfiguration krb5Configuration, final String user,
+            final String pass) throws LoginException {
+        LoginContext lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordHandler(user, pass));
+        if (IBM_JDK) {
+            // workaround for IBM JDK on RHEL5 issue described in https://bugzilla.redhat.com/show_bug.cgi?id=1206177
+            // The first negotiation always fail, so let's do a dummy login/logout round.
+            lc.login();
+            lc.logout();
+            lc = new LoginContext(krb5Configuration.getName(), new UsernamePasswordHandler(user, pass));
+        }
+        lc.login();
+        return lc;
     }
 }

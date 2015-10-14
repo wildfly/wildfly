@@ -73,39 +73,45 @@ abstract class Filter extends AbstractHandlerDefinition {
         }
     }
 
-    protected static HttpHandler createHandler(Class<? extends HttpHandler> handlerClass, final ModelNode model, List<AttributeDefinition> attributes, HttpHandler next) {
+    protected HttpHandler createHandler(Class<? extends HttpHandler> handlerClass, final ModelNode model, List<AttributeDefinition> attributes, HttpHandler next) {
         int numOfParams = attributes.size();
         if (next != null) {
             numOfParams++;
         }
         try {
-            for (Constructor<?> c : handlerClass.getDeclaredConstructors()) {
-                if (c.getParameterTypes().length == numOfParams) {
-                    Object[] params = new Object[numOfParams];
-                    Class[] parameterTypes = c.getParameterTypes();
-                    int attrCounter = 0;
-                    for (int i = 0; i < parameterTypes.length; i++) {
-                        Class param = parameterTypes[i];
-                        if (param == String.class) {
-                            params[i] = model.get(attributes.get(attrCounter).getName()).asString();
-                            attrCounter++;
-                        } else if (param == Integer.class || param == int.class) {
-                            params[i] = model.get(attributes.get(attrCounter).getName()).asInt();
-                            attrCounter++;
-                        } else if (param == Long.class || param == long.class) {
-                            params[i] = model.get(attributes.get(attrCounter).getName()).asLong();
-                            attrCounter++;
-                        } else if (param == HttpHandler.class) {
-                            params[i] = next;
-                        }
+            Constructor<?> c = handlerClass.getDeclaredConstructor(getConstructorSignature());
+            if (c.getParameterTypes().length == numOfParams) {
+                boolean match = true;
+                Object[] params = new Object[numOfParams];
+                Class[] parameterTypes = c.getParameterTypes();
+                int attrCounter = 0;
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    Class param = parameterTypes[i];
+                    if (param == String.class) {
+                        params[i] = model.get(attributes.get(attrCounter).getName()).asString();
+                        attrCounter++;
+                    } else if (param == Integer.class || param == int.class) {
+                        params[i] = model.get(attributes.get(attrCounter).getName()).asInt();
+                        attrCounter++;
+                    } else if (param == Long.class || param == long.class) {
+                        params[i] = model.get(attributes.get(attrCounter).getName()).asLong();
+                        attrCounter++;
+                    } else if (param == HttpHandler.class) {
+                        params[i] = next;
+                    } else {
+                        match = false;
+                        break;
                     }
+                }
+                if (match) {
                     return (HttpHandler) c.newInstance(params);
                 }
             }
-
         } catch (Throwable e) {
             throw UndertowLogger.ROOT_LOGGER.cannotCreateHttpHandler(handlerClass, model, e);
         }
         throw UndertowLogger.ROOT_LOGGER.cannotCreateHttpHandler(handlerClass, model, null);
     }
+
+    protected abstract Class[] getConstructorSignature();
 }

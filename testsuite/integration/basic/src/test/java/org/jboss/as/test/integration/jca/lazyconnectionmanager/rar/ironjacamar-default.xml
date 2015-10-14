@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ironjacamar>
+    <connection-definitions>
+        <connection-definition
+                class-name="org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyManagedConnectionFactory"
+                jndi-name="java:/eis/Lazy">
+            <pool>
+                <min-pool-size>0</min-pool-size>
+                <max-pool-size>1</max-pool-size>
+            </pool>
+            <timeout>
+                <blocking-timeout-millis>100</blocking-timeout-millis>
+            </timeout>
+        </connection-definition>
+    </connection-definitions>
+</ironjacamar>

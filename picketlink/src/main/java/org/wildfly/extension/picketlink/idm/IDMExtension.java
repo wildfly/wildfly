@@ -22,12 +22,15 @@
 
 package org.wildfly.extension.picketlink.idm;
 
+import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
+import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_0;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
@@ -40,8 +43,6 @@ import org.wildfly.extension.picketlink.idm.model.IdentityConfigurationResourceD
 import org.wildfly.extension.picketlink.idm.model.LDAPStoreResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.PartitionManagerResourceDefinition;
 
-import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_0;
-
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
@@ -50,13 +51,18 @@ public class IDMExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "picketlink-identity-management";
     private static final String RESOURCE_NAME = IDMExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(CURRENT.getMajor(), CURRENT.getMinor());
+
+    //deprecated in EAP 6.4
+    public static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(2,0,0);
+
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, IDMExtension.class.getClassLoader(), true, true);
+        return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, keyPrefix, RESOURCE_NAME, IDMExtension.class.getClassLoader(), true, true);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajor(), Namespace.CURRENT.getMinor());
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         subsystem.registerSubsystemModel(IDMSubsystemRootResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(Namespace.CURRENT.getXMLWriter());

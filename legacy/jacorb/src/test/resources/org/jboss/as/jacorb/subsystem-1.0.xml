@@ -1,12 +1,8 @@
 <subsystem xmlns="urn:jboss:domain:jacorb:1.0">
-    <orb name="JBoss" print-version="off">
-      <connection retries="5" retry-interval="500" client-timeout="0" server-timeout="0"/>
+    <orb>
       <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>    
     </orb>
-    <poa monitoring="off" queue-wait="on" queue-min="10" queue-max="100">        
-      <request-processors pool-size="10" max-threads="32"/>    
-    </poa>    
-    <interop sun="on" comet="off" chunk-custom-rmi-valuetypes="on"/>    
+    <interop sun="on"/>
     <security support-ssl="off" use-domain-socket-factory="off" use-domain-server-socket-factory="off" client-supports="60" client-requires="0"/>    
     <property key="a" value="va"/>    
     <property key="b" value="vb"/>

@@ -28,9 +28,8 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-connector</artifactId>
     <name>WildFly: Connector Subsystem</name>
     <dependencies>
@@ -61,10 +60,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-common-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.threads</groupId>

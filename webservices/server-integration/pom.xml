@@ -29,11 +29,10 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-webservices</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-webservices-server-integration</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>WildFly: Web Services Server Integration Subsystem</name>
@@ -52,7 +51,7 @@
 
     <dependency>
        <groupId>org.wildfly.security</groupId>
-       <artifactId>wildfly-security-manager</artifactId>
+       <artifactId>wildfly-elytron</artifactId>
     </dependency>
 
     <dependency>
@@ -78,12 +77,6 @@
     <dependency>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-web-common</artifactId>
-    </dependency>
-    <!-- TODO remove when undertow is merged in-->
-    <dependency>
-       <groupId>org.wildfly</groupId>
-       <artifactId>wildfly-web</artifactId>
-       <scope>test</scope>
     </dependency>
 
     <dependency>

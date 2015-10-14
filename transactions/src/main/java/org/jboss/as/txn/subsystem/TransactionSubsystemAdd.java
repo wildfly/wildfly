@@ -24,7 +24,7 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
-import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
 
 import java.util.LinkedList;
@@ -105,9 +105,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
 
     private TransactionSubsystemAdd() {
-        //
+        super(TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY);
     }
-
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -121,13 +120,13 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         TransactionSubsystemRootResourceDefinition.JTS.validateAndSet(operation, model);
 
-        TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE.validateAndSet(operation, model);
 
         for (AttributeDefinition ad : TransactionSubsystemRootResourceDefinition.attributes_1_2) {
             ad.validateAndSet(operation, model);
         }
 
-        TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.validateAndSet(operation, model);
     }
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
@@ -158,8 +157,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private void populateModelWithCoreEnvConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
         //core environment
         TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.validateAndSet(operation, model);
-        TransactionSubsystemRootResourceDefinition.PATH.validateAndSet(operation, model);
-        TransactionSubsystemRootResourceDefinition.RELATIVE_TO.validateAndSet(operation, model);
 
         // We have some complex logic for the 'process-id' stuff because of the alternatives
         if (operation.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()) && operation.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
@@ -305,8 +302,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private void performObjectStoreBoottime(OperationContext context, ModelNode model) throws OperationFailedException {
-        boolean useHornetqJournalStore = model.hasDefined(USEHORNETQSTORE) && model.get(USEHORNETQSTORE).asBoolean();
-        final boolean enableAsyncIO = TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.resolveModelAttribute(context, model).asBoolean();
+        boolean useJournalStore = model.hasDefined(USE_JOURNAL_STORE) && model.get(USE_JOURNAL_STORE).asBoolean();
+        final boolean enableAsyncIO = TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.resolveModelAttribute(context, model).asBoolean();
         final String objectStorePathRef = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, model).asString();
         final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.resolveModelAttribute(context, model).asString();
 
@@ -326,13 +323,11 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (model.hasDefined(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.getName()))
             confiBuilder.setCommunicationTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString());
 
-        if (TransactionLogger.ROOT_LOGGER.isDebugEnabled()) {
-            TransactionLogger.ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s%n", objectStorePathRef, objectStorePath);
-        }
+        TransactionLogger.ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s%n", objectStorePathRef, objectStorePath);
 
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
-        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
+        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
         ServiceBuilder<Void> builder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
@@ -354,13 +349,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Configure the core configuration.
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, coreEnvModel).asString();
-        final String varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, coreEnvModel).asString();
-        final String varDirPath = TransactionSubsystemRootResourceDefinition.PATH.resolveModelAttribute(context, coreEnvModel).asString();
-        if (TransactionLogger.ROOT_LOGGER.isDebugEnabled()) {
-            TransactionLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", nodeIdentifier);
-            TransactionLogger.ROOT_LOGGER.debugf("varDirPathRef=%s, varDirPath=%s%n", varDirPathRef, varDirPath);
-        }
-        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, varDirPath, varDirPathRef);
+        TransactionLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", nodeIdentifier);
+        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier);
 
         String socketBindingName = null;
         if (TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.resolveModelAttribute(context, coreEnvModel).asBoolean(false)) {
@@ -381,9 +371,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
             coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
         }
-        coreEnvBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, coreEnvironmentService.getPathManagerInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        coreEnvBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 
     private void performRecoveryEnvBoottime(OperationContext context, ModelNode model, final boolean jts, List<ServiceName> deps) throws OperationFailedException {
@@ -418,19 +406,19 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private void performCoordinatorEnvBoottime(OperationContext context, ModelNode coordEnvModel, final boolean jts) throws OperationFailedException {
 
-        final boolean coordinatorEnableStatistics = TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS.resolveModelAttribute(context, coordEnvModel).asBoolean();
+        final boolean coordinatorEnableStatistics = TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, coordEnvModel).asBoolean();
         final boolean transactionStatusManagerEnable = TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.resolveModelAttribute(context, coordEnvModel).asBoolean();
         final int coordinatorDefaultTimeout = TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.resolveModelAttribute(context, coordEnvModel).asInt();
 
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, coordEnvModel).asString();
 
         // install JTA environment bean service
-        final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(nodeIdentifier, jts);
+        final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(nodeIdentifier);
         context.getServiceTarget().addService(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, jtaEnvironmentBeanService)
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
-        final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts, nodeIdentifier);
+        final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
         final ServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
         // add dependency on JTA environment bean service
         transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, transactionManagerService.getJTAEnvironmentBeanInjector());

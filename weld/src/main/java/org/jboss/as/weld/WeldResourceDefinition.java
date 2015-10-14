@@ -21,6 +21,9 @@
  */
 package org.jboss.as.weld;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -28,9 +31,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Resource definition for Weld subsystem
@@ -44,6 +44,7 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
 
     static final String REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME = "require-bean-descriptor";
     static final String NON_PORTABLE_MODE_ATTRIBUTE_NAME = "non-portable-mode";
+    static final String DEVELOPMENT_MODE_ATTRIBUTE_NAME = "development-mode";
 
     static final SimpleAttributeDefinition REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
@@ -53,6 +54,12 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
 
     static final SimpleAttributeDefinition NON_PORTABLE_MODE_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(NON_PORTABLE_MODE_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    static final SimpleAttributeDefinition DEVELOPMENT_MODE_ATTRIBUTE =
+            new SimpleAttributeDefinitionBuilder(DEVELOPMENT_MODE_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
             .build();
@@ -67,6 +74,6 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(new AttributeDefinition[] {REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE});
+        return Arrays.asList(new AttributeDefinition[] {REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE});
     }
 }

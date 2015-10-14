@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.ee.injection.support.websocket;
 
 import java.net.URI;
 
-import javax.naming.InitialContext;
-import javax.websocket.server.ServerContainer;
+import javax.websocket.ContainerProvider;
+import javax.websocket.WebSocketContainer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -36,6 +36,7 @@ import org.jboss.as.test.integration.ee.injection.support.InjectionSupportTestCa
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,8 +48,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class WebSocketInjectionSupportTestCase {
 
-    private static final String SERVER_CONTAINER_JNDI_NAME = "java:module/ServerContainer";
-
     @Deployment
     public static WebArchive deploy() {
         return ShrinkWrap
@@ -56,7 +55,9 @@ public class WebSocketInjectionSupportTestCase {
                 .addPackage(WebSocketInjectionSupportTestCase.class.getPackage())
                 .addClasses(TestSuiteEnvironment.class, Alpha.class, Bravo.class, ComponentInterceptorBinding.class,
                         ComponentInterceptor.class).addClasses(InjectionSupportTestCase.constructTestsHelperClasses)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
+                        "services/javax.websocket.ContainerProvider");
     }
 
     @Test
@@ -65,7 +66,7 @@ public class WebSocketInjectionSupportTestCase {
         AnnotatedEndpoint.reset();
         ComponentInterceptor.resetInterceptions();
 
-        final ServerContainer serverContainer = (ServerContainer) new InitialContext().lookup(SERVER_CONTAINER_JNDI_NAME);
+        final WebSocketContainer serverContainer = ContainerProvider.getWebSocketContainer();
         serverContainer.connectToServer(AnnotatedClient.class, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), 8080, "/websocket/websocket/cruel", "", ""));
 
         Assert.assertEquals("Hello cruel World", AnnotatedClient.getMessage());

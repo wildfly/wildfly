@@ -21,11 +21,11 @@
  */
 package org.jboss.as.jdr.util;
 
-import org.apache.commons.io.IOUtils;
-import org.jboss.vfs.VirtualFileFilter;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
+import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -36,11 +36,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 
-import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
+import org.apache.commons.io.IOUtils;
+import org.jboss.vfs.VirtualFileFilter;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 /**
  * {@link Sanitizer} subclass that removes the contents of the matched xpath expression
@@ -63,8 +63,9 @@ public class XMLSanitizer extends AbstractSanitizer {
         builder = DBfactory.newDocumentBuilder();
         builder.setErrorHandler(null);
 
-        TransformerFactory transformerFactory = TransformerFactory.newInstance("org.apache.xalan.processor.TransformerFactoryImpl", null);
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
         transformer = transformerFactory.newTransformer();
+
     }
 
     public InputStream sanitize(InputStream in) throws Exception {
@@ -72,6 +73,7 @@ public class XMLSanitizer extends AbstractSanitizer {
         try {
             // storing the entire file in memory in case we need to bail.
             Document doc = builder.parse(new ByteArrayInputStream(content));
+            doc.setXmlStandalone(true);
             Object result = expression.evaluate(doc, XPathConstants.NODESET);
             NodeList nodes = (NodeList) result;
             for (int i = 0; i < nodes.getLength(); i++) {

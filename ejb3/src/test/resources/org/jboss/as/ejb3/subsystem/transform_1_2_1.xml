@@ -1,0 +1,57 @@
+<subsystem xmlns="urn:jboss:domain:ejb3:4.0">
+    <session-bean>
+        <stateless>
+            <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
+        </stateless>
+        <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="distributable" clustered-cache-ref="distributable"/>
+        <singleton default-access-timeout="${prop.default-access-timeout:5000}"/>
+    </session-bean>
+    <entity-bean>
+        <bean-instance-pool-ref pool-name="entity-strict-max-pool"/>
+        <optimistic-locking enabled="true"/>
+    </entity-bean>
+
+    <!-- EJB3 pools -->
+    <pools>
+        <bean-instance-pools>
+            <strict-max-pool name="slsb-strict-max-pool" max-pool-size="${prop.strict-max-pool:20}" instance-acquisition-timeout="${prop.instance-acquisition-timeout:5}" instance-acquisition-timeout-unit="${prop.instance-acquisition-timeout-unit:MINUTES}"/>
+            <strict-max-pool name="mdb-strict-max-pool" max-pool-size="${prop.strict-max-pool:20}" instance-acquisition-timeout="${prop.instance-acquisition-timeout:5}" instance-acquisition-timeout-unit="${prop.instance-acquisition-timeout-unit:MINUTES}"/>
+        </bean-instance-pools>
+    </pools>
+    <caches>
+        <cache name="simple"/>
+        <cache name="distributable" passivation-store-ref="infinispan"/>
+    </caches>
+    <passivation-stores>
+        <passivation-store name="infinispan" cache-container="ejb" bean-cache="default" max-size="10"/>
+    </passivation-stores>
+    <async thread-pool-name="default"/>
+    <timer-service thread-pool-name="default" default-data-store="file-data-store">
+        <data-stores>
+            <file-data-store name="file-data-store" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
+        </data-stores>
+    </timer-service>
+    <remote connector-ref="remoting-connector" thread-pool-name="default">
+        <channel-creation-options>
+            <option name="READ_TIMEOUT" value="${prop.remoting-connector.read.timeout:20}" type="xnio"/>
+            <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
+        </channel-creation-options>
+    </remote>
+
+    <!-- Session bean configurations -->
+    <thread-pools>
+        <thread-pool name="default">
+            <max-threads count="${prop.max-thread-count:10}"/>
+            <keepalive-time time="${prop.keepalive-time:100}" unit="${prop.idle-timeout-unit:milliseconds}"/>
+        </thread-pool>
+    </thread-pools>
+
+    <iiop use-qualified-name="true" enable-by-default="true"/>
+    <!-- Disable pass-by-value for in-vm remote interface invocations on EJBs -->
+    <in-vm-remote-interface-invocation pass-by-value="false"/>
+    <default-distinct-name value="myname"/>
+    <default-security-domain value="domain"/>
+    <default-missing-method-permissions-deny-access value="false" />
+    <disable-default-ejb-permissions value="false"/>
+    <statistics enabled="${ejb.enable-statistics:true}" />
+</subsystem>

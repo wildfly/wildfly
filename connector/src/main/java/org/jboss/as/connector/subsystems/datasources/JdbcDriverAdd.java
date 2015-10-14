@@ -81,12 +81,12 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         if (operation.get(DRIVER_NAME.getName()).isDefined() && !driverName.equals(operation.get(DRIVER_NAME.getName()).asString())) {
             throw ConnectorLogger.ROOT_LOGGER.driverNameAndResourceNameNotEquals(operation.get(DRIVER_NAME.getName()).asString(), driverName);
         }
-        String moduleName = DRIVER_MODULE_NAME.resolveModelAttribute(context, operation).asString();
-        final Integer majorVersion = operation.hasDefined(DRIVER_MAJOR_VERSION.getName()) ? DRIVER_MAJOR_VERSION.resolveModelAttribute(context, operation).asInt() : null;
-        final Integer minorVersion = operation.hasDefined(DRIVER_MINOR_VERSION.getName()) ? DRIVER_MINOR_VERSION.resolveModelAttribute(context, operation).asInt() : null;
-        final String driverClassName = operation.hasDefined(DRIVER_CLASS_NAME.getName()) ? DRIVER_CLASS_NAME.resolveModelAttribute(context, operation).asString() : null;
-        final String dataSourceClassName = operation.hasDefined(DRIVER_DATASOURCE_CLASS_NAME.getName()) ? DRIVER_DATASOURCE_CLASS_NAME.resolveModelAttribute(context, operation).asString() : null;
-        final String xaDataSourceClassName = operation.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()) ? DRIVER_XA_DATASOURCE_CLASS_NAME.resolveModelAttribute(context, operation).asString() : null;
+        String moduleName = DRIVER_MODULE_NAME.resolveModelAttribute(context, model).asString();
+        final Integer majorVersion = model.hasDefined(DRIVER_MAJOR_VERSION.getName()) ? DRIVER_MAJOR_VERSION.resolveModelAttribute(context, model).asInt() : null;
+        final Integer minorVersion = model.hasDefined(DRIVER_MINOR_VERSION.getName()) ? DRIVER_MINOR_VERSION.resolveModelAttribute(context, model).asInt() : null;
+        final String driverClassName = model.hasDefined(DRIVER_CLASS_NAME.getName()) ? DRIVER_CLASS_NAME.resolveModelAttribute(context, model).asString() : null;
+        final String dataSourceClassName = model.hasDefined(DRIVER_DATASOURCE_CLASS_NAME.getName()) ? DRIVER_DATASOURCE_CLASS_NAME.resolveModelAttribute(context, model).asString() : null;
+        final String xaDataSourceClassName = model.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()) ? DRIVER_XA_DATASOURCE_CLASS_NAME.resolveModelAttribute(context, model).asString() : null;
 
         Resource rootNode = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
         ModelNode rootModel = rootNode.getModel();
@@ -96,15 +96,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
 
         final ModuleIdentifier moduleId;
         final Module module;
-        String slot = operation.hasDefined(MODULE_SLOT.getName()) ? MODULE_SLOT.resolveModelAttribute(context, operation).asString() : null;
-        if (moduleName.contains(":")) {
-            slot = moduleName.substring(moduleName.indexOf(":") + 1);
-            moduleName = moduleName.substring(0, moduleName.indexOf(":"));
-        } else {
-            if (slot != null) {
-                model.get(DRIVER_MODULE_NAME.getName()).set(moduleName + ":" + slot);
-            }
-        }
+        String slot = model.hasDefined(MODULE_SLOT.getName()) ? MODULE_SLOT.resolveModelAttribute(context, model).asString() : null;
 
         try {
             moduleId = ModuleIdentifier.create(moduleName, slot);

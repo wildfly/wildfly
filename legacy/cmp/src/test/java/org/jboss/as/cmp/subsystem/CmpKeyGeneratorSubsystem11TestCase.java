@@ -48,9 +48,12 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -119,13 +122,15 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
     }
 
     @Test
-    public void testTransformers_7_1_2() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    public void testTransformers_6_0_0() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
     }
 
     @Test
-    public void testTransformers_7_1_3() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    public void testTransformers_6_0_1() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testTransformers_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -143,10 +148,54 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml()),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(SUBSYSTEM_PATH.append(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH),
-                                new FailedOperationTransformationConfig.NewAttributesConfig(CMPSubsystemRootResourceDefinition.JNDI_NAME))
+                                new FailedOperationTransformationConfig.NewAttributesConfig(AbstractKeyGeneratorResourceDefinition.JNDI_NAME))
                         .addFailedAttribute(SUBSYSTEM_PATH.append(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH),
-                                new FailedOperationTransformationConfig.NewAttributesConfig(CMPSubsystemRootResourceDefinition.JNDI_NAME))
+                                new FailedOperationTransformationConfig.NewAttributesConfig(AbstractKeyGeneratorResourceDefinition.JNDI_NAME))
 
         );
+    }
+
+    @Test
+    public void testTransformers_6_1_0() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+    @Test
+    public void testTransformers_6_1_1() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(getSubsystemXml());
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-cmp:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization() {
+
+            @Override
+            protected ProcessType getProcessType() {
+                return ProcessType.HOST_CONTROLLER;
+            }
+
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.ADMIN_ONLY;
+            }
+        };
     }
 }

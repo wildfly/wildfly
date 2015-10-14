@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.services.workmanager;
 
+import org.jboss.as.connector.services.workmanager.transport.ForkChannelTransport;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
@@ -35,8 +36,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
-import org.jgroups.JChannel;
-import org.wildfly.clustering.jgroups.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 import java.util.concurrent.Executor;
 
@@ -60,22 +60,15 @@ public final class DistributedWorkManagerService implements Service<DistributedW
 
     private final InjectedValue<ChannelFactory> jGroupsChannelFactory = new InjectedValue<ChannelFactory>();
 
-    private final String jgroupsChannelName;
-
-    private final Long requestTimeout;
-
     /**
      * create an instance
      *
      * @param value the work manager
      */
-    public DistributedWorkManagerService(DistributedWorkManager value, final String jgroupsChannelName, final Long requestTimeout) {
+    public DistributedWorkManagerService(DistributedWorkManager value) {
         super();
-        ROOT_LOGGER.debugf("Building WorkManager");
+        ROOT_LOGGER.debugf("Building DistributedWorkManager");
         this.value = value;
-        this.jgroupsChannelName = jgroupsChannelName;
-        this.requestTimeout = requestTimeout;
-
     }
 
     @Override
@@ -87,20 +80,16 @@ public final class DistributedWorkManagerService implements Service<DistributedW
     public void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting JCA DistributedWorkManager: ", value.getName());
 
-        JGroupsTransport transport = new JGroupsTransport();
+        ChannelFactory factory = this.jGroupsChannelFactory.getValue();
+        JGroupsTransport transport = new ForkChannelTransport(factory);
         try {
-            transport.setChannel((JChannel) jGroupsChannelFactory.getValue().createChannel(jgroupsChannelName));
-
-            if (jgroupsChannelName != null)
-                transport.setClusterName(jgroupsChannelName);
-
-            if (requestTimeout != null)
-                transport.setTimeout(requestTimeout);
+            transport.setChannel(factory.createChannel(this.value.getName()));
+            transport.setClusterName(this.value.getName());
 
             this.value.setTransport(transport);
         } catch (Exception e) {
             ROOT_LOGGER.trace("failed to start JGroups channel", e);
-            throw ROOT_LOGGER.failedToStartJGroupsChannel(jgroupsChannelName, this.value.getName());
+            throw ROOT_LOGGER.failedToStartJGroupsChannel(this.value.getName(), this.value.getName());
         }
 
         BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();

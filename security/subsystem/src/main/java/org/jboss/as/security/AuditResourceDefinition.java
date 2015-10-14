@@ -44,7 +44,7 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
         super(SecurityExtension.PATH_AUDIT_CLASSIC,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUDIT),
                 AuditResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
-
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

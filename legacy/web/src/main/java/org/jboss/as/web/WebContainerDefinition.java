@@ -52,6 +52,7 @@ public class WebContainerDefinition extends ModelOnlyResourceDefinition {
     protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true)
             .setAllowExpression(true)
             .setWrapXmlElement(false)
+            .setXmlName(Constants.MIME_MAPPING)
             .build();
     protected static final AttributeDefinition[] CONTAINER_ATTRIBUTES = {
             WELCOME_FILES,
@@ -77,6 +78,7 @@ public class WebContainerDefinition extends ModelOnlyResourceDefinition {
     private WebContainerDefinition() {
         super(WebExtension.CONTAINER_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.CONTAINER), WELCOME_FILES, MIME_MAPPINGS);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     /**

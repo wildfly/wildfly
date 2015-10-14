@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.concurrency;
 
+import org.jboss.invocation.Interceptor;
+
 import javax.ejb.LockType;
 import java.lang.reflect.Method;
 
@@ -61,4 +63,14 @@ public interface LockableComponent {
      * @return
      */
     AccessTimeoutDetails getDefaultAccessTimeout();
+
+    /**
+     *
+     * @return The name of this component
+     */
+    String getComponentName();
+
+    void setConcurrencyManagementInterceptor(Interceptor interceptor);
+
+    Interceptor getConcurrencyManagementInterceptor();
 }

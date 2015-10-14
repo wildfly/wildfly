@@ -70,70 +70,65 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         // we obtain a lock in this synchronization interceptor because the lock needs to be tied to the synchronization
         // so that it can released on the tx synchronization callbacks
         final Object lockOwner = getLockOwner(transactionSynchronizationRegistry);
-        lock.pushOwner(lockOwner);
-        try {
-            lock.lock();
-            boolean syncRegistered = false;
-            synchronized (lock) {
+        lock.lock(lockOwner);
+        boolean syncRegistered = false;
+        synchronized (lock) {
 
-                //if the previous transaction was rolled back we re-load the entity bean state in the current TX
-                if(instance.isReloadRequired()) {
-                    instance.reload();
-                }
+            //if the previous transaction was rolled back we re-load the entity bean state in the current TX
+            if (instance.isReloadRequired()) {
+                instance.reload();
+            }
 
-                if (ROOT_LOGGER.isTraceEnabled()) {
-                    ROOT_LOGGER.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
-                }
+            if (ROOT_LOGGER.isTraceEnabled()) {
+                ROOT_LOGGER.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
+            }
 
-                if (context.getPrivateData(InternalInvocationMarker.class) == null) {
-                    if (instance.isRemoved() || instance.isDiscarded()) {
-                        final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
-                        component.getCache().release(instance, true);
-                        lock.unlock();
-                        throw EjbLogger.ROOT_LOGGER.instanceWasRemoved(component.getComponentName(), primaryKey);
-                    }
-                }
-
-                Object currentTransactionKey = null;
-                try {
-                    // get the key to current transaction associated with this thread
-                    currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
-                    if (!instance.isSynchronizeRegistered()) {
-                        // if this entity instance is already associated with a different transaction, then it's an error
-
-                        // if the thread is currently associated with a tx, then register a tx synchronization
-                        if (currentTransactionKey != null) {
-                            // register a tx synchronization for this entity instance
-                            final Synchronization entitySynchronization = new EntityBeanSynchronization(instance, lockOwner);
-                            transactionSynchronizationRegistry.registerInterposedSynchronization(entitySynchronization);
-                            syncRegistered = true;
-                            if (ROOT_LOGGER.isTraceEnabled()) {
-                                ROOT_LOGGER.trace("Registered tx synchronization: " + entitySynchronization + " for tx: " + currentTransactionKey +
-                                        " associated with stateful component instance: " + instance);
-                            }
-                        }
-                        instance.setSynchronizationRegistered(true);
-                    }
-                    // proceed with the invocation
-                    return context.proceed();
-
-                } finally {
-                    // if the current call did *not* register a tx SessionSynchronization, then we have to explicitly mark the
-                    // entity instance as "no longer in use". If it registered a tx EntityBeanSynchronization, then releasing the lock is
-                    // taken care off by a tx synchronization callbacks.
-                    //if is important to note that we increase the lock count on every invocation
-                    //which means we need to release it on every invocation except for the one where we actually registered the TX synchronization
-                    if (currentTransactionKey == null) {
-                        instance.store();
-                        releaseInstance(instance, true);
-                    } else if (!syncRegistered) {
-                        component.getCache().release(instance, true);
-                        lock.unlock();
-                    }
+            if (context.getPrivateData(InternalInvocationMarker.class) == null) {
+                if (instance.isRemoved() || instance.isDiscarded()) {
+                    final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
+                    component.getCache().release(instance, true);
+                    lock.unlock(lockOwner);
+                    throw EjbLogger.ROOT_LOGGER.instanceWasRemoved(component.getComponentName(), primaryKey);
                 }
             }
-        } finally {
-            lock.popOwner();
+
+            Object currentTransactionKey = null;
+            try {
+                // get the key to current transaction associated with this thread
+                currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
+                if (!instance.isSynchronizeRegistered()) {
+                    // if this entity instance is already associated with a different transaction, then it's an error
+
+                    // if the thread is currently associated with a tx, then register a tx synchronization
+                    if (currentTransactionKey != null) {
+                        // register a tx synchronization for this entity instance
+                        final Synchronization entitySynchronization = new EntityBeanSynchronization(instance, lockOwner);
+                        transactionSynchronizationRegistry.registerInterposedSynchronization(entitySynchronization);
+                        syncRegistered = true;
+                        if (ROOT_LOGGER.isTraceEnabled()) {
+                            ROOT_LOGGER.trace("Registered tx synchronization: " + entitySynchronization + " for tx: " + currentTransactionKey +
+                                    " associated with stateful component instance: " + instance);
+                        }
+                    }
+                    instance.setSynchronizationRegistered(true);
+                }
+                // proceed with the invocation
+                return context.proceed();
+
+            } finally {
+                // if the current call did *not* register a tx SessionSynchronization, then we have to explicitly mark the
+                // entity instance as "no longer in use". If it registered a tx EntityBeanSynchronization, then releasing the lock is
+                // taken care off by a tx synchronization callbacks.
+                //if is important to note that we increase the lock count on every invocation
+                //which means we need to release it on every invocation except for the one where we actually registered the TX synchronization
+                if (currentTransactionKey == null) {
+                    instance.store();
+                    releaseInstance(instance, true);
+                } else if (!syncRegistered) {
+                    component.getCache().release(instance, true);
+                    lock.unlock(lockOwner);
+                }
+            }
         }
     }
 
@@ -158,7 +153,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
      * Releases the lock, held by this thread, on the stateful component instance.
      */
     private void releaseLock(EntityBeanComponentInstance instance) {
-        instance.getLock().unlock();
+        instance.getLock().unlock(getLockOwner(instance.getComponent().getTransactionSynchronizationRegistry()));
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.tracef("Released lock: %s", instance.getLock());
         }
@@ -186,12 +181,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                             componentInstance.store();
                         }
                     } catch (Throwable t) {
-                        componentInstance.getLock().pushOwner(lockOwner);
-                        try {
-                            handleThrowableInTxSync(componentInstance, t);
-                        } finally {
-                            componentInstance.getLock().popOwner();
-                        }
+                        handleThrowableInTxSync(componentInstance, t);
                     }
                 }
             } finally {
@@ -202,7 +192,6 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         @Override
         public void afterCompletion(int status) {
             //now release the lock
-            componentInstance.getLock().pushOwner(lockOwner);
             try {
                 final boolean success = status != Status.STATUS_MARKED_ROLLBACK
                         && status != Status.STATUS_ROLLEDBACK &&
@@ -214,8 +203,6 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                 releaseInstance(componentInstance, success);
             } catch (Exception e) {
                 EjbLogger.ROOT_LOGGER.exceptionReleasingEntity(e);
-            } finally {
-                componentInstance.getLock().popOwner();
             }
         }
 

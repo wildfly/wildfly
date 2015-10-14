@@ -22,8 +22,13 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.Collection;
+import java.util.EnumSet;
+
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -40,6 +45,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
      * {@inheritDoc}
      * @see org.jboss.staxmapper.XMLElementWriter#writeContent(org.jboss.staxmapper.XMLExtendedStreamWriter, java.lang.Object)
      */
+    @SuppressWarnings("deprecation")
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(JGroupsSchema.CURRENT.getNamespaceUri(), false);
@@ -47,19 +53,18 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
 
         if (model.isDefined()) {
             if (model.hasDefined(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
-                writer.writeStartElement(Element.CHANNELS.getLocalName());
-                JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.marshallAsAttribute(model, writer);
+                writer.writeStartElement(XMLElement.CHANNELS.getLocalName());
+                writeAttribute(writer, model, JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL);
                 for (Property property: model.get(ChannelResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                    writer.writeStartElement(Element.CHANNEL.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                    writer.writeStartElement(XMLElement.CHANNEL.getLocalName());
+                    writer.writeAttribute(XMLAttribute.NAME.getLocalName(), property.getName());
                     ModelNode channel = property.getValue();
-                    ChannelResourceDefinition.STACK.marshallAsAttribute(channel, writer);
-                    ChannelResourceDefinition.MODULE.marshallAsAttribute(channel, writer);
+                    writeAttributes(writer, channel, ChannelResourceDefinition.Attribute.class);
 
                     if (channel.hasDefined(ForkResourceDefinition.WILDCARD_PATH.getKey())) {
                         for (Property forkProperty: channel.get(ForkResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                            writer.writeStartElement(Element.FORK.getLocalName());
-                            writer.writeAttribute(Attribute.NAME.getLocalName(), forkProperty.getName());
+                            writer.writeStartElement(XMLElement.FORK.getLocalName());
+                            writer.writeAttribute(XMLAttribute.NAME.getLocalName(), forkProperty.getName());
                             ModelNode fork = forkProperty.getValue();
                             if (fork.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
                                 for (Property protocol: fork.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
@@ -74,11 +79,11 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                 writer.writeEndElement();
             }
             if (model.hasDefined(StackResourceDefinition.WILDCARD_PATH.getKey())) {
-                writer.writeStartElement(Element.STACKS.getLocalName());
-                JGroupsSubsystemResourceDefinition.DEFAULT_STACK.marshallAsAttribute(model, writer);
+                writer.writeStartElement(XMLElement.STACKS.getLocalName());
+                writeAttribute(writer, model, JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK);
                 for (Property property: model.get(StackResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                    writer.writeStartElement(Element.STACK.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                    writer.writeStartElement(XMLElement.STACK.getLocalName());
+                    writer.writeAttribute(XMLAttribute.NAME.getLocalName(), property.getName());
                     ModelNode stack = property.getValue();
                     if (stack.hasDefined(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
                         writeTransport(writer, stack.get(TransportResourceDefinition.WILDCARD_PATH.getKey()).asProperty());
@@ -99,65 +104,80 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writer.writeEndElement();
     }
 
+    @SuppressWarnings("deprecation")
     private static void writeTransport(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
-        writer.writeStartElement(Element.TRANSPORT.getLocalName());
+        writer.writeStartElement(XMLElement.TRANSPORT.getLocalName());
         writeProtocolAttributes(writer, property);
         ModelNode transport = property.getValue();
-        TransportResourceDefinition.SHARED.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.DEFAULT_EXECUTOR.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.OOB_EXECUTOR.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.TIMER_EXECUTOR.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.THREAD_FACTORY.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.MACHINE.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.RACK.marshallAsAttribute(transport, writer);
-        TransportResourceDefinition.SITE.marshallAsAttribute(transport, writer);
-        writeProtocolProperties(writer, transport);
+        writeAttributes(writer, transport, TransportResourceDefinition.Attribute.class);
+        writeAttributes(writer, transport, TransportResourceDefinition.ThreadingAttribute.class);
+        writeElement(writer, transport, ProtocolResourceDefinition.Attribute.PROPERTIES);
+        if (transport.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
+            writeThreadPoolElements(XMLElement.DEFAULT_THREAD_POOL, ThreadPoolResourceDefinition.DEFAULT, writer, transport);
+            writeThreadPoolElements(XMLElement.INTERNAL_THREAD_POOL, ThreadPoolResourceDefinition.INTERNAL, writer, transport);
+            writeThreadPoolElements(XMLElement.OOB_THREAD_POOL, ThreadPoolResourceDefinition.OOB, writer, transport);
+            writeThreadPoolElements(XMLElement.TIMER_THREAD_POOL, ThreadPoolResourceDefinition.TIMER, writer, transport);
+        }
         writer.writeEndElement();
     }
 
     private static void writeProtocol(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
-        writer.writeStartElement(Element.PROTOCOL.getLocalName());
+        writer.writeStartElement(XMLElement.PROTOCOL.getLocalName());
         writeProtocolAttributes(writer, property);
-        writeProtocolProperties(writer, property.getValue());
+        writeElement(writer, property.getValue(), ProtocolResourceDefinition.Attribute.PROPERTIES);
         writer.writeEndElement();
     }
 
     private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
-        writer.writeAttribute(Attribute.TYPE.getLocalName(), property.getName());
-        ModelNode protocol = property.getValue();
-        ProtocolResourceDefinition.SOCKET_BINDING.marshallAsAttribute(protocol, writer);
-        ProtocolResourceDefinition.MODULE.marshallAsAttribute(protocol, writer);
+        writer.writeAttribute(XMLAttribute.TYPE.getLocalName(), property.getName());
+        writeAttributes(writer, property.getValue(), EnumSet.complementOf(EnumSet.of(ProtocolResourceDefinition.Attribute.PROPERTIES)));
     }
 
-    private static void writeProtocolProperties(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
-        // the format of the property elements
-        //  "property" => {
-        //       "relative-to" => {"value" => "fred"},
-        //   }
-        if (protocol.hasDefined(PropertyResourceDefinition.WILDCARD_PATH.getKey())) {
-            for (Property property: protocol.get(PropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                writer.writeStartElement(Element.PROPERTY.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                Property complexValue = property.getValue().asProperty();
-                writer.writeCharacters(complexValue.getValue().asString());
+    private static void writeThreadPoolElements(XMLElement element, ThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode transport) throws XMLStreamException {
+        PathElement path = pool.getPathElement();
+        if (transport.get(path.getKey()).hasDefined(path.getValue())) {
+            ModelNode threadPool = transport.get(path.getKeyValuePair());
+            if (hasDefined(threadPool, pool.getAttributes())) {
+                writer.writeStartElement(element.getLocalName());
+                writeAttributes(writer, threadPool, pool.getAttributes());
                 writer.writeEndElement();
             }
         }
     }
 
     private static void writeRelay(XMLExtendedStreamWriter writer, ModelNode relay) throws XMLStreamException {
-        writer.writeStartElement(Element.RELAY.getLocalName());
-        RelayResourceDefinition.SITE.marshallAsAttribute(relay, writer);
+        writer.writeStartElement(XMLElement.RELAY.getLocalName());
+        writeAttributes(writer, relay, RelayResourceDefinition.Attribute.class);
         if (relay.hasDefined(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey())) {
             for (Property property: relay.get(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                writer.writeStartElement(Element.REMOTE_SITE.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                ModelNode remoteSite = property.getValue();
-                RemoteSiteResourceDefinition.CHANNEL.marshallAsAttribute(remoteSite, writer);
+                writer.writeStartElement(XMLElement.REMOTE_SITE.getLocalName());
+                writer.writeAttribute(XMLAttribute.NAME.getLocalName(), property.getName());
+                writeAttributes(writer, property.getValue(), EnumSet.allOf(RemoteSiteResourceDefinition.Attribute.class));
                 writer.writeEndElement();
             }
         }
         writer.writeEndElement();
+    }
+
+    private static boolean hasDefined(ModelNode model, Collection<? extends Attribute> attributes) {
+        return attributes.stream().anyMatch(attribute -> model.hasDefined(attribute.getDefinition().getName()));
+    }
+
+    private static <A extends Enum<A> & Attribute> void writeAttributes(XMLExtendedStreamWriter writer, ModelNode model, Class<A> attributeClass) throws XMLStreamException {
+        writeAttributes(writer, model, EnumSet.allOf(attributeClass));
+    }
+
+    private static void writeAttributes(XMLExtendedStreamWriter writer, ModelNode model, Collection<? extends Attribute> attributes) throws XMLStreamException {
+        for (Attribute attribute : attributes) {
+            writeAttribute(writer, model, attribute);
+        }
+    }
+
+    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, Attribute attribute) throws XMLStreamException {
+        attribute.getDefinition().getAttributeMarshaller().marshallAsAttribute(attribute.getDefinition(), model, true, writer);
+    }
+
+    private static void writeElement(XMLExtendedStreamWriter writer, ModelNode model, Attribute attribute) throws XMLStreamException {
+        attribute.getDefinition().getAttributeMarshaller().marshallAsElement(attribute.getDefinition(), model, true, writer);
     }
 }

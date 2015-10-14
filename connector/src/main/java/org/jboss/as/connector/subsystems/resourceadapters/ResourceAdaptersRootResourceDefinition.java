@@ -58,17 +58,12 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
     }
 
     static void registerTransformers(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder110 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceAdapterResourceDefinition.registerTransformers110(builder110);
-        TransformationDescription.Tools.register(builder110.build(), subsystem, ModelVersion.create(1, 1, 0));
-        ResourceTransformationDescriptionBuilder builder120 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceAdapterResourceDefinition.registerTransformers120(builder120);
-        TransformationDescription.Tools.register(builder120.build(), subsystem, ModelVersion.create(1, 2, 0));
-        // Apply same to RBAC-updated version
-        TransformationDescription.Tools.register(builder120.build(), subsystem, ModelVersion.create(1, 3, 0));
+        ResourceTransformationDescriptionBuilder builder130 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceAdapterResourceDefinition.registerTransformers130(builder130);
+        TransformationDescription.Tools.register(builder130.build(), subsystem, ModelVersion.create(1, 3, 0));
         ResourceTransformationDescriptionBuilder builder200 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceAdapterResourceDefinition.registerTransformers200(builder200);
-        TransformationDescription.Tools.register(builder120.build(), subsystem, ModelVersion.create(2, 0, 0));
+        TransformationDescription.Tools.register(builder200.build(), subsystem, ModelVersion.create(2, 0, 0));
 
     }
 }

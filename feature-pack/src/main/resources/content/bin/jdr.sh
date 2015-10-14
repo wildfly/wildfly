@@ -59,6 +59,8 @@ if $cygwin; then
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
+#JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y"
+
 eval \"$JAVA\" $JAVA_OPTS \
          -Djboss.home.dir=\""$JBOSS_HOME"\" \
          -jar \""$JBOSS_HOME"/jboss-modules.jar\" \

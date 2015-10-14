@@ -32,6 +32,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
@@ -39,15 +40,14 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  *
  * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
 class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
 
     public static final String NAMESPACE_1_1 = "urn:jboss:ejb-client:1.1";
 
-    public static final EJBClientDescriptor11Parser INSTANCE = new EJBClientDescriptor11Parser();
-
-
-    protected EJBClientDescriptor11Parser() {
+    protected EJBClientDescriptor11Parser(final PropertyReplacer propertyReplacer) {
+        super(propertyReplacer);
     }
 
     protected void parseClientContext(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
@@ -120,24 +120,25 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
         for (int i = 0; i < count; i++) {
             final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader.getAttributeLocalName(i));
             required.remove(attribute);
+            final String value = readResolveValue(reader, i);
             switch (attribute) {
                 case NAME:
-                    clusterName = reader.getAttributeValue(i).trim();
+                    clusterName = value;
                     break;
                 case CONNECT_TIMEOUT:
-                    connectTimeout = reader.getLongAttributeValue(i);
+                    connectTimeout = Long.parseLong(value);
                     break;
                 case CLUSTER_NODE_SELECTOR:
-                    clusterNodeSelector = reader.getAttributeValue(i).trim();
+                    clusterNodeSelector = value;
                     break;
                 case MAX_ALLOWED_CONNECTED_NODES:
-                    maxAllowedConnectedNodes = reader.getLongAttributeValue(i);
+                    maxAllowedConnectedNodes = Long.parseLong(value);
                     break;
                 case USERNAME:
-                    userName = reader.getAttributeValue(i).trim();
+                    userName = value;
                     break;
                 case SECURITY_REALM:
-                    securityRealm = reader.getAttributeValue(i).trim();
+                    securityRealm = value;
                     break;
                 default:
                     unexpectedContent(reader);
@@ -252,18 +253,19 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
         for (int i = 0; i < count; i++) {
             final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader.getAttributeLocalName(i));
             required.remove(attribute);
+            final String value = readResolveValue(reader, i);
             switch (attribute) {
                 case NAME:
-                    nodeName = reader.getAttributeValue(i).trim();
+                    nodeName = value;
                     break;
                 case CONNECT_TIMEOUT:
-                    connectTimeout = reader.getLongAttributeValue(i);
+                    connectTimeout = Long.parseLong(value);
                     break;
                 case USERNAME:
-                    userName = reader.getAttributeValue(i).trim();
+                    userName = value;
                     break;
                 case SECURITY_REALM:
-                    securityRealm = reader.getAttributeValue(i).trim();
+                    securityRealm = value;
                     break;
                 default:
                     unexpectedContent(reader);
@@ -316,12 +318,13 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
         for (int i = 0; i < count; i++) {
             final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader.getAttributeLocalName(i));
             required.remove(attribute);
+            final String val = readResolveValue(reader, i);
             switch (attribute) {
                 case NAME:
-                    name = reader.getAttributeValue(i).trim();
+                    name = val;
                     break;
                 case VALUE:
-                    value = reader.getAttributeValue(i).trim();
+                    value = val;
                     break;
                 default:
                     unexpectedContent(reader);

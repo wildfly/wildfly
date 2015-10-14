@@ -126,10 +126,10 @@ public class LdapUrlInSearchBaseTestCase {
     public static void main(String[] args) throws Exception {
         LDAPServerSetupTask ldapSetup = new LDAPServerSetupTask();
         ldapSetup.setup(null, null);
-        System.out.println("InitialDirContext used:");
+        /*System.out.println("InitialDirContext used:");
         System.out.println(LdapUrlTestServlet.runSearch(null, false));
         System.out.println("InitialLdapContext used:");
-        System.out.println(LdapUrlTestServlet.runSearch(null, true));
+        System.out.println(LdapUrlTestServlet.runSearch(null, true));*/
         ldapSetup.tearDown(null, null);
     }
 
@@ -140,7 +140,7 @@ public class LdapUrlInSearchBaseTestCase {
      */
     //@formatter:off
     @CreateDS(
-        name = "JBossDS",
+        name = "JBossDS-LdapUrlInSearchBaseTestCase",
         factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {

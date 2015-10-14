@@ -34,10 +34,10 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,8 +53,8 @@ public class DistributableSessionManagerTestCase {
     private final String deploymentName = "mydeployment.war";
     private final SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
     private final SessionListener listener = mock(SessionListener.class);
-
-    private DistributableSessionManager adapter = new DistributableSessionManager(this.deploymentName, this.manager);
+    private final RecordableSessionManagerStatistics statistics = mock(RecordableSessionManagerStatistics.class);
+    private DistributableSessionManager adapter = new DistributableSessionManager(this.deploymentName, this.manager, this.statistics);
 
     @Before
     public void init() {
@@ -71,6 +71,7 @@ public class DistributableSessionManagerTestCase {
         this.adapter.start();
         
         verify(this.manager).start();
+        verify(this.statistics).reset();
     }
 
     @Test
@@ -84,7 +85,7 @@ public class DistributableSessionManagerTestCase {
     public void setDefaultSessionTimeout() {
         this.adapter.setDefaultSessionTimeout(10);
         
-        verify(this.manager).setDefaultMaxInactiveInterval(10L, TimeUnit.SECONDS);
+        verify(this.manager).setDefaultMaxInactiveInterval(Duration.ofSeconds(10L));
     }
 
     @Test
@@ -104,14 +105,15 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
-        
+
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
-        
+
         assertNotNull(sessionAdapter);
-        
+
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(config).setSessionId(exchange, sessionId);
         verifyZeroInteractions(batch);
+        verify(this.statistics).record(sessionAdapter);
 
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -142,6 +144,7 @@ public class DistributableSessionManagerTestCase {
         
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verifyZeroInteractions(batch);
+        verify(this.statistics).record(sessionAdapter);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -170,6 +173,7 @@ public class DistributableSessionManagerTestCase {
         assertNotNull(sessionAdapter);
         
         verifyZeroInteractions(batch);
+        verifyZeroInteractions(this.statistics);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -259,9 +263,9 @@ public class DistributableSessionManagerTestCase {
         String name = "name";
         Object value = new Object();
         Set<String> names = Collections.singleton(name);
-        Date creationTime = new Date();
-        Date lastAccessedTime = new Date();
-        long maxInactiveInterval = 30;
+        Instant creationTime = Instant.now();
+        Instant lastAccessedTime = Instant.now();
+        Duration maxInactiveInterval = Duration.ofMinutes(30L);
 
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(this.manager.viewSession(id)).thenReturn(session);
@@ -272,16 +276,16 @@ public class DistributableSessionManagerTestCase {
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.getCreationTime()).thenReturn(creationTime);
         when(metaData.getLastAccessedTime()).thenReturn(lastAccessedTime);
-        when(metaData.getMaxInactiveInterval(TimeUnit.SECONDS)).thenReturn(maxInactiveInterval);
+        when(metaData.getMaxInactiveInterval()).thenReturn(maxInactiveInterval);
         when(batcher.createBatch()).thenReturn(batch);
         
         io.undertow.server.session.Session result = this.adapter.getSession(id);
         
         assertSame(this.adapter, result.getSessionManager());
         assertSame(id, result.getId());
-        assertEquals(creationTime.getTime(), result.getCreationTime());
-        assertEquals(lastAccessedTime.getTime(), result.getLastAccessedTime());
-        assertEquals(maxInactiveInterval, result.getMaxInactiveInterval());
+        assertEquals(creationTime.toEpochMilli(), result.getCreationTime());
+        assertEquals(lastAccessedTime.toEpochMilli(), result.getLastAccessedTime());
+        assertEquals(maxInactiveInterval.getSeconds(), result.getMaxInactiveInterval());
         assertEquals(names, result.getAttributeNames());
         assertSame(value, result.getAttribute(name));
         
@@ -303,5 +307,10 @@ public class DistributableSessionManagerTestCase {
         assertNull(result);
 
         verify(batch).discard();
+    }
+
+    @Test
+    public void getStatistics() {
+        assertSame(this.statistics, this.adapter.getStatistics());
     }
 }

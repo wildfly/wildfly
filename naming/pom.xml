@@ -29,19 +29,17 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-naming</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
 
     <name>WildFly: Naming Subsystem</name>
 
     <dependencies>
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-security-manager</artifactId>
+            <artifactId>wildfly-elytron</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>

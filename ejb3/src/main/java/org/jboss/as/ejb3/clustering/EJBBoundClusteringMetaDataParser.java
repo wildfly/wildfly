@@ -24,21 +24,22 @@ package org.jboss.as.ejb3.clustering;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Parses the urn:clustering namespace elements for clustering related metadata on EJBs.
  *
  * @author Jaikiran Pai
+ * @author Flavia Rainone
  */
 public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataParser<EJBBoundClusteringMetaData> {
 
-    public static final String NAMESPACE_URI = "urn:clustering:1.0";
+    public static final String NAMESPACE_URI_1_0 = "urn:clustering:1.0";
     private static final String ROOT_ELEMENT_CLUSTERING = "clustering";
+    private static final String CLUSTERED_ELEMENT =  "clustered";
 
     @Override
     public EJBBoundClusteringMetaData parse(final XMLStreamReader xmlStreamReader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
@@ -54,10 +55,11 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
 
     @Override
     protected void processElement(final EJBBoundClusteringMetaData metaData, final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
-        if (NAMESPACE_URI.equals(reader.getNamespaceURI())) {
-            EjbLogger.ROOT_LOGGER.deprecatedNamespace(NAMESPACE_URI, ROOT_ELEMENT_CLUSTERING);
+        if (NAMESPACE_URI_1_0.equals(reader.getNamespaceURI())) {
+            EjbLogger.ROOT_LOGGER.deprecatedNamespace(NAMESPACE_URI_1_0, ROOT_ELEMENT_CLUSTERING);
             final String localName = reader.getLocalName();
-            if (localName.equals("clustered")) {
+            if (localName.equals(CLUSTERED_ELEMENT)) {
+                requireNoAttributes(reader);
                 getElementText(reader, propertyReplacer);
             } else {
                 throw unexpectedElement(reader);

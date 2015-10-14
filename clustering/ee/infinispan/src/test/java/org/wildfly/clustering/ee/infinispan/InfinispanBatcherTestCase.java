@@ -24,6 +24,7 @@ package org.wildfly.clustering.ee.infinispan;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -73,10 +74,11 @@ public class InfinispanBatcherTestCase {
     }
 
     @Test
-    public void createExistingBatchClose() throws Exception {
+    public void createExistingActiveBatchClose() throws Exception {
         Transaction tx = mock(Transaction.class);
 
         when(this.tm.getTransaction()).thenReturn(tx);
+        when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE);
 
         try (TransactionBatch batch = this.batcher.createBatch()) {
             verify(this.tm, never()).begin();
@@ -84,14 +86,32 @@ public class InfinispanBatcherTestCase {
             assertSame(tx, batch.getTransaction());
         }
 
-        verifyZeroInteractions(tx);
+        verify(this.tm, never()).commit();
     }
 
     @Test
-    public void createExistingBatchDiscard() throws Exception {
+    public void createExistingNonActiveBatchClose() throws Exception {
         Transaction tx = mock(Transaction.class);
 
         when(this.tm.getTransaction()).thenReturn(tx);
+        when(tx.getStatus()).thenReturn(Status.STATUS_COMMITTED);
+
+        try (TransactionBatch batch = this.batcher.createBatch()) {
+            verify(this.tm).suspend();
+            verify(this.tm).begin();
+
+            assertSame(tx, batch.getTransaction());
+        }
+
+        verify(this.tm).commit();
+    }
+
+    @Test
+    public void createExistingActiveBatchDiscard() throws Exception {
+        Transaction tx = mock(Transaction.class);
+
+        when(this.tm.getTransaction()).thenReturn(tx);
+        when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE);
 
         TransactionBatch batch = this.batcher.createBatch();
         try {
@@ -102,7 +122,27 @@ public class InfinispanBatcherTestCase {
             batch.discard();
         }
 
-        verifyZeroInteractions(tx);
+        verify(this.tm, never()).rollback();
+    }
+
+    @Test
+    public void createExistingNonActiveBatchDiscard() throws Exception {
+        Transaction tx = mock(Transaction.class);
+
+        when(this.tm.getTransaction()).thenReturn(tx);
+        when(tx.getStatus()).thenReturn(Status.STATUS_COMMITTED);
+
+        TransactionBatch batch = this.batcher.createBatch();
+        try {
+            verify(this.tm).suspend();
+            verify(this.tm).begin();
+
+            assertSame(tx, batch.getTransaction());
+        } finally {
+            batch.discard();
+        }
+
+        verify(this.tm).rollback();
     }
 
     @Test

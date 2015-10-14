@@ -6,15 +6,13 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>9.0.0.Alpha2-SNAPSHOT</version>
+        <version>10.0.0.CR3-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
     <!-- *********************************** IIOP *********************************** -->
     <!-- ********************************************************************************** -->
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-iiop</artifactId>
-    <version>9.0.0.Alpha2-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - IIOP</name>
 
@@ -120,6 +118,8 @@
                                         combine.children="append">
                                         <arquillian.launch>iiop</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <!-- EJB client library hack, see WFLY-4973-->
+                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                     </systemPropertyVariables>
                                     <argLine>
                                         -Djava.endorsed.dirs=${project.build.directory}/endorsed

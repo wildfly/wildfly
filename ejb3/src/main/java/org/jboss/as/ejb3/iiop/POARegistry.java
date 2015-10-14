@@ -154,20 +154,14 @@ public class POARegistry implements Service<POARegistry> {
 
     static class PoaReferenceFactory implements ReferenceFactory {
         private final POA poa;
-        private final String servantName;
         private final Policy[] policies;
-        PoaReferenceFactory(final POA poa, final String servantName, final Policy[] policies) {
+        PoaReferenceFactory(final POA poa, final Policy[] policies) {
             this.poa = poa;
-            this.servantName = servantName;
             this.policies = policies;
         }
 
-        PoaReferenceFactory(final POA poa, final String servantName) {
-            this( poa, servantName, null);
-        }
-
         PoaReferenceFactory(final POA poa) {
-            this(poa, null, null);
+            this(poa, null);
         }
 
         public org.omg.CORBA.Object createReference(final String interfId) throws Exception {

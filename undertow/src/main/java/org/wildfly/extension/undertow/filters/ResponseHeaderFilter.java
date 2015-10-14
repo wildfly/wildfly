@@ -62,4 +62,8 @@ public class ResponseHeaderFilter extends Filter {
     }
 
 
+    @Override
+    protected Class[] getConstructorSignature() {
+        return new Class[] {HttpHandler.class, String.class, String.class};
+    }
 }

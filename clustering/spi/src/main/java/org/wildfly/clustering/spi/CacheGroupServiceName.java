@@ -22,12 +22,13 @@
 package org.wildfly.clustering.spi;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * Set of {@link ServiceName} factories for cache-based services.
  * @author Paul Ferraro
  */
-public enum CacheGroupServiceName implements CacheGroupServiceNameFactory {
+public enum CacheGroupServiceName implements SubGroupServiceNameFactory {
     NODE_FACTORY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
@@ -43,7 +44,7 @@ public enum CacheGroupServiceName implements CacheGroupServiceNameFactory {
     REGISTRY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return GroupServiceNameFactory.BASE_SERVICE_NAME.append(this.toString(), container, cache);
+            return GroupServiceName.BASE_SERVICE_NAME.append(this.toString(), container, cache);
         }
 
         @Override
@@ -63,10 +64,10 @@ public enum CacheGroupServiceName implements CacheGroupServiceNameFactory {
             return REGISTRY.getServiceName(container, cache).append("factory");
         }
     },
-    SERVICE_PROVIDER_REGISTRATION() {
+    SERVICE_PROVIDER_REGISTRY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return GroupServiceNameFactory.BASE_SERVICE_NAME.append(this.toString(), container, cache);
+            return GroupServiceName.BASE_SERVICE_NAME.append(this.toString(), container, cache);
         }
 
         @Override
@@ -74,15 +75,10 @@ public enum CacheGroupServiceName implements CacheGroupServiceNameFactory {
             return "providers";
         }
     },
-    SINGLETON_SERVICE_BUILDER() {
-        @Override
-        public ServiceName getServiceName(String container, String cache) {
-            return GroupServiceNameFactory.BASE_SERVICE_NAME.append("singleton", "builder", container, cache);
-        }
-    };
+    ;
 
     @Override
     public ServiceName getServiceName(String group) {
-        return this.getServiceName(group, DEFAULT_CACHE);
+        return this.getServiceName(group, DEFAULT_SUB_GROUP);
     }
 }

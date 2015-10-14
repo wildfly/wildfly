@@ -23,25 +23,24 @@
 package org.jboss.as.test.integration.messaging.mgmt;
 
 import static java.util.UUID.randomUUID;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.junit.Assert;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientProducer;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
+import org.apache.activemq.artemis.api.core.client.ServerLocator;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -50,14 +49,13 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the management API for HornetQ core queues.
+ * Tests the management API for Artemis core queues.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -67,11 +65,17 @@ public class CoreQueueManagementTestCase {
 
     private static long count = System.currentTimeMillis();
 
-    private static ClientSessionFactory sessionFactory;
+    @ContainerResource
+    private ManagementClient managementClient;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
+    private ClientSessionFactory sessionFactory;
+    private ClientSession session;
+    private ClientSession consumerSession;
 
+    @Before
+    public void setup() throws Exception {
+
+        count++;
 
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
@@ -80,32 +84,10 @@ public class CoreQueueManagementTestCase {
         map.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
         TransportConfiguration transportConfiguration =
                 new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-        ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
+        ServerLocator locator = ActiveMQClient.createServerLocatorWithoutHA(transportConfiguration);
         locator.setBlockOnDurableSend(true);
         locator.setBlockOnNonDurableSend(true);
         sessionFactory =  locator.createSessionFactory();
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-
-        if (sessionFactory != null) {
-            sessionFactory.cleanup();
-            sessionFactory.close();
-        }
-    }
-
-
-    @ContainerResource
-    private ManagementClient managementClient;
-
-    private ClientSession session;
-    private ClientSession consumerSession;
-
-    @Before
-    public void setup() throws Exception {
-
-        count++;
 
         session = sessionFactory.createSession("guest", "guest", false, true, true, false, 1);
         session.createQueue(getQueueName(), getQueueName(), false);
@@ -125,6 +107,11 @@ public class CoreQueueManagementTestCase {
             session.deleteQueue(getQueueName());
             session.deleteQueue(getOtherQueueName());
             session.close();
+        }
+
+        if (sessionFactory != null) {
+            sessionFactory.cleanup();
+            sessionFactory.close();
         }
     }
 
@@ -377,16 +364,16 @@ public class CoreQueueManagementTestCase {
 
     private ModelNode getQueueOperation(String operationName, String queueName) {
         final ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
+        address.add("subsystem", "messaging-activemq");
+        address.add("server", "default");
         address.add("queue", queueName);
         return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
     }
 
     private ModelNode getRuntimeQueueOperation(String operationName, String queueName) {
         final ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
+        address.add("subsystem", "messaging-activemq");
+        address.add("server", "default");
         address.add("runtime-queue", queueName);
         return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
     }

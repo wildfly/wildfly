@@ -85,6 +85,7 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
                 SecurityExtension.getResourceDescriptionResolver(Constants.JSSE),
                 JSSEResourceDefinitionAdd.INSTANCE,
                 new SecurityDomainReloadRemoveHandler());
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {

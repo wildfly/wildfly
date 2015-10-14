@@ -78,5 +78,10 @@ public class InterceptorPackagingTestCase {
         Assert.assertEquals("Hello World", simpleEjb.sayHello());
     }
 
+    @Test
+    public void testPostConstructInvoked() {
+        Assert.assertEquals(SimpleInterceptor.POST_CONSTRUCT_MESSAGE  + " World", simpleEjb2.getPostConstructMessage());
+    }
+
 
 }

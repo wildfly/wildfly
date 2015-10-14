@@ -61,6 +61,7 @@
         <module name="javax.transaction.api" />
         <module name="org.jboss.logging" />
         <module name="org.jboss.narayana.compensations" export="true" />
+        <module name="org.jboss.narayana.txframework" export="true" />
         <module name="javax.annotation.api"  export="true" />
         <module name="javax.interceptor.api"  export="true" />
         <module name="org.jboss.weld.spi" />

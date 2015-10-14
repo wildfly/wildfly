@@ -28,6 +28,7 @@ import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.orbportability.internal.utils.PostInitLoader;
 import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.txn.service.internal.tsr.TransactionSynchronizationRegistryWrapper;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -67,15 +68,13 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
     private boolean coordinatorEnableStatistics;
     private int coordinatorDefaultTimeout;
     private final boolean jts;
-    private final String nodeIdentifier;
 
     public ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout,
-                                           final boolean transactionStatusManagerEnable, final boolean jts, final String nodeIdentifier) {
+                                           final boolean transactionStatusManagerEnable, final boolean jts) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
         this.transactionStatusManagerEnable = transactionStatusManagerEnable;
         this.jts = jts;
-        this.nodeIdentifier = nodeIdentifier;
     }
 
     @Override
@@ -105,7 +104,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             userTransactionRegistry.getValue().addProvider(userTransaction);
             jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
-            service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple());
+            service.setTransactionSynchronizationRegistry(new TransactionSynchronizationRegistryWrapper( new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple()));
 
             try {
                 service.create();
@@ -127,7 +126,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
             userTransactionRegistry.getValue().addProvider(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
-            service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple());
+            service.setTransactionSynchronizationRegistry(new TransactionSynchronizationRegistryWrapper( new com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple()));
 
             objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple",
                     "com.arjuna.ats.arjuna.tools.osb.mbean.ActionBean");

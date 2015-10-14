@@ -94,6 +94,8 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
      * @param spy                          spy
      * @param useccm                       useccm
      * @param jta                          jta
+     * @param mcp mcp
+     * @param enlistmentTrace enlistmentTrace
      * @param pool                         pool
      * @param profile                      profile
      * @throws org.jboss.jca.common.api.validator.ValidateException
@@ -104,10 +106,12 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
                                 TimeOut timeOut, DsSecurity security, Statement statement, Validation validation,
                                 String urlDelimiter, String urlSelectorStrategyClassName, String newConnectionSql,
                                 Boolean useJavaContext, String poolName, Boolean enabled, String jndiName,
-                                Boolean spy, Boolean useccm, Boolean jta, final Boolean connectable, final Boolean tracking, DsPool pool, final String profile)
+                                Boolean spy, Boolean useccm, Boolean jta, final Boolean connectable, final Boolean tracking, String mcp,
+                                Boolean enlistmentTrace, DsPool pool, final String profile)
             throws ValidateException {
         super(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
-                urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useccm, driver, newConnectionSql,connectable,tracking);
+                urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useccm, driver,
+                newConnectionSql, connectable, tracking, mcp, enlistmentTrace);
         this.jta = jta;
         this.connectionUrl = connectionUrl;
         this.driverClass = driverClass;
@@ -462,7 +466,7 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
                 timeOut, security, statement, validation,
                 urlDelimiter, urlSelectorStrategyClassName, newConnectionSql,
                 useJavaContext, poolName, enabled, jndiName,
-                spy, useCcm, jta, connectable, tracking, pool);
+                spy, useCcm, jta, connectable, tracking, mcp, enlistmentTrace, pool);
 
     }
 }

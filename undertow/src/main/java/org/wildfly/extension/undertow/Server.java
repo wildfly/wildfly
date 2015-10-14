@@ -24,9 +24,9 @@ package org.wildfly.extension.undertow;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.undertow.server.HttpHandler;
@@ -53,7 +53,7 @@ public class Server implements Service<Server> {
     private final InjectedValue<ServletContainerService> servletContainer = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private volatile HttpHandler root;
-    private final List<ListenerService<?>> listeners = new LinkedList<>();
+    private final List<ListenerService<?>> listeners = new CopyOnWriteArrayList<>();
     private final Set<Host> hosts = new CopyOnWriteArraySet<>();
 
     private final HashMap<Integer,Integer> securePortMappings = new HashMap<>();

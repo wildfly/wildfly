@@ -62,6 +62,7 @@ public class WebReWriteConditionDefinition extends ModelOnlyResourceDefinition {
         super(WebExtension.REWRITECOND_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.rewrite.condition"),
                 ATTRIBUTES);
+                setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
 }

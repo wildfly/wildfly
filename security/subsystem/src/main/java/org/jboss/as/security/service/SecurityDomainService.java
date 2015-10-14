@@ -52,8 +52,6 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
 
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("security-domain");
 
-    private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
-
     private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
 
     private final InjectedValue<Configuration> configurationValue = new InjectedValue<Configuration>();
@@ -81,7 +79,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting SecurityDomainService(" + name + ")");
+        SecurityLogger.ROOT_LOGGER.debugf("Starting SecurityDomainService(%s)", name);
         if (applicationPolicy != null) {
             final ApplicationPolicyRegistration applicationPolicyRegistration = (ApplicationPolicyRegistration) configurationValue
                     .getValue();
@@ -113,7 +111,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
     /** {@inheritDoc} */
     @Override
     public void stop(StopContext context) {
-        log.debug("Stopping security domain service " + name);
+        SecurityLogger.ROOT_LOGGER.debugf("Stopping security domain service %s", name);
         final JNDIBasedSecurityManagement securityManagement = (JNDIBasedSecurityManagement) securityManagementValue.getValue();
         securityManagement.removeSecurityDomain(name);
         // TODO clear auth cache?

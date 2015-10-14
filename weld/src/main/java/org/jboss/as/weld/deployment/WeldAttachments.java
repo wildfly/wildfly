@@ -57,13 +57,6 @@ public class WeldAttachments {
     public static final AttachmentKey<AttachmentList<AnnotationType>> BEAN_DEFINING_ANNOTATIONS = AttachmentKey.createList(AnnotationType.class);
 
     /**
-     * A set of injection target defining annotations. These are annotations that are not enough to cause weld to activate,
-     * however if weld is activated these will be turned into beans.
-     * @see CdiAnnotationProcessor
-     */
-    public static final AttachmentKey<AttachmentList<AnnotationType>> INJECTION_TARGET_DEFINING_ANNOTATIONS = AttachmentKey.createList(AnnotationType.class);
-
-    /**
      * The {@link ResourceRoot} for WEB-INF/classes of a web archive.
      */
     public static final AttachmentKey<ResourceRoot> CLASSES_RESOURCE_ROOT = AttachmentKey.create(ResourceRoot.class);

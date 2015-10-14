@@ -203,7 +203,7 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
 
     static <R> CommandResponse<R> createCommandResponse(Rsp<R> response) {
         Throwable exception = response.getException();
-        return (exception != null) ? new SimpleCommandResponse<R>(exception) : new SimpleCommandResponse<>(response.getValue());
+        return (exception != null) ? new SimpleCommandResponse<>(exception) : new SimpleCommandResponse<>(response.getValue());
     }
 
     private Address getLocalAddress() {

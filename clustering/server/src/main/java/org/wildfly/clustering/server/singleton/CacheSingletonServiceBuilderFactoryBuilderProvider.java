@@ -25,16 +25,21 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.ClusteredCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for a clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactoryBuilderProvider implements ClusteredCacheGroupBuilderProvider {
+public class CacheSingletonServiceBuilderFactoryBuilderProvider implements DistributedCacheGroupBuilderProvider {
 
     @Override
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         return Collections.<Builder<?>>singleton(new CacheSingletonServiceBuilderFactoryBuilder(containerName, cacheName));
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
     }
 }

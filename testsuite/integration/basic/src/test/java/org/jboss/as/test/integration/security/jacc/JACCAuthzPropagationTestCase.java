@@ -62,6 +62,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({ JACCAuthzPropagationTestCase.SecurityDomainsSetup.class })
 @RunAsClient
+@Ignore("See WFLY-4989")
 public class JACCAuthzPropagationTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(JACCAuthzPropagationTestCase.class);
@@ -85,7 +86,6 @@ public class JACCAuthzPropagationTestCase {
         war.addAsWebInfResource(UsersRolesLoginModuleTestCase.class.getPackage(), "web-basic-authn.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(TEST_NAME), "jboss-web.xml");
         war.addAsWebInfResource(Utils.getJBossEjb3XmlAsset(TEST_NAME), "jboss-ejb3.xml");
-        LOGGER.info(war.toString(true));
         return war;
 
     }

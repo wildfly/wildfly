@@ -22,28 +22,17 @@
 package org.wildfly.clustering.jgroups.spi.service;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
 
 /**
  * Factory for creating service names for channel-based services
  * @author Paul Ferraro
  */
-public interface ChannelServiceNameFactory {
-
-    /**
-     * The alias for the default channel.
-     */
-    String DEFAULT_CHANNEL = "default";
+public interface ChannelServiceNameFactory extends GroupServiceNameFactory {
 
     /**
      * Returns an appropriate service name for the default channel
      * @return
      */
     ServiceName getServiceName();
-
-    /**
-     * Returns an appropriate service name for the specified channel
-     * @param name the channel name
-     * @return
-     */
-    ServiceName getServiceName(String name);
 }

@@ -26,8 +26,10 @@ import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.deployers.WSEndpointConfigMapping;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -46,6 +48,7 @@ final class DeploymentModelBuilderJAXWS_EJB extends AbstractDeploymentModelBuild
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
         WSLogger.ROOT_LOGGER.trace("Creating JAXWS EJB endpoints meta data model");
+        WSEndpointConfigMapping ecm = unit.getAttachment(WSAttachmentKeys.WS_ENDPOINT_CONFIG_MAPPING_KEY);
         for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
             final String ejbEndpointName = ejbEndpoint.getName();
             WSLogger.ROOT_LOGGER.tracef("EJB name: %s", ejbEndpointName);
@@ -56,6 +59,7 @@ final class DeploymentModelBuilderJAXWS_EJB extends AbstractDeploymentModelBuild
             if (componentViewName != null) {
                 ep.setProperty(COMPONENT_VIEW_NAME, componentViewName);
             }
+            ep.setEndpointConfig(ecm.getConfig(ejbEndpointClassName));
         }
     }
 

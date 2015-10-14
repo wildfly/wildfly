@@ -49,14 +49,15 @@ public enum JaxrsAnnotations {
     PUT("PUT"),
     QUERY_PARAM("QueryParam"),
     CONTEXT(Constants.JAVAX_WS_CORE,"Context"),
-    PROVIDER(Constants.JAVAX_WS_EXT,"Provider");
+    PROVIDER(Constants.JAVAX_WS_EXT,"Provider"),
+    APPLICATION_PATH("ApplicationPath");
 
     private final String simpleName;
     private final DotName dotName;
 
     private JaxrsAnnotations(String simpleName) {
         this.simpleName = simpleName;
-        this.dotName = DotName.createComponentized(Constants.JAVAX_WS_JAXRS, simpleName);
+        this.dotName = DotName.createComponentized(Constants.JAVAX_WS_RS, simpleName);
     }
     private JaxrsAnnotations(DotName prefix,String simpleName) {
         this.simpleName = simpleName;
@@ -64,9 +65,11 @@ public enum JaxrsAnnotations {
     }
     // this can't go on the enum itself
     private static class Constants {
-        public static final DotName JAVAX_WS_JAXRS = DotName.createSimple("javax.ws.rs");
-        public static final DotName JAVAX_WS_CORE = DotName.createSimple("javax.ws.rs.core");
-        public static final DotName JAVAX_WS_EXT = DotName.createSimple("javax.ws.rs.ext");
+        public static final DotName JAVAX = DotName.createComponentized(null, "javax");
+        public static final DotName JAVAX_WS = DotName.createComponentized(JAVAX, "ws");
+        public static final DotName JAVAX_WS_RS = DotName.createComponentized(JAVAX_WS, "rs");
+        public static final DotName JAVAX_WS_CORE = DotName.createComponentized(JAVAX_WS_RS, "core");
+        public static final DotName JAVAX_WS_EXT = DotName.createComponentized(JAVAX_WS_RS, "ext");
     }
 
     public DotName getDotName() {

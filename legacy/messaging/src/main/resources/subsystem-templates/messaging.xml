@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.jboss.as.messaging</extension-module>
+   <subsystem xmlns="urn:jboss:domain:messaging:3.0">
+       <hornetq-server>
+           <?CLUSTERED?>
+           <journal-file-size>102400</journal-file-size>
+
+           <connectors>
+               <http-connector name="http-connector" socket-binding="http">
+                   <param key="http-upgrade-endpoint" value="http-acceptor"/>
+               </http-connector>
+               <http-connector name="http-connector-throughput" socket-binding="http">
+                   <param key="http-upgrade-endpoint" value="http-acceptor-throughput"/>
+                   <param key="batch-delay" value="50"/>
+               </http-connector>
+               <in-vm-connector name="in-vm" server-id="0"/>
+           </connectors>
+
+           <acceptors>
+               <http-acceptor name="http-acceptor" http-listener="default"/>
+               <http-acceptor name="http-acceptor-throughput" http-listener="default">
+                   <param key="batch-delay" value="50"/>
+                   <param key="direct-deliver" value="false"/>
+               </http-acceptor>
+               <in-vm-acceptor name="in-vm" server-id="0"/>
+           </acceptors>
+
+           <?BROADCAST-GROUPS?>
+           <?DISCOVERY-GROUPS?>
+           <?CLUSTER-CONNECTIONS?>
+
+           <security-settings>
+               <security-setting match="#">
+                   <permission type="send" roles="guest"/>
+                   <permission type="consume" roles="guest"/>
+                   <permission type="createNonDurableQueue" roles="guest"/>
+                   <permission type="deleteNonDurableQueue" roles="guest"/>
+               </security-setting>
+           </security-settings>
+
+           <address-settings>
+               <!--default for catch all-->
+               <address-setting match="#">
+                   <dead-letter-address>jms.queue.DLQ</dead-letter-address>
+                   <expiry-address>jms.queue.ExpiryQueue</expiry-address>
+
+                   <?REDISTRIBUTION-DELAY?>
+
+                   <max-size-bytes>10485760</max-size-bytes>
+                   <page-size-bytes>2097152</page-size-bytes>
+                   <message-counter-history-day-limit>10</message-counter-history-day-limit>
+               </address-setting>
+           </address-settings>
+
+           <jms-connection-factories>
+               <connection-factory name="InVmConnectionFactory">
+                   <connectors>
+                       <connector-ref connector-name="in-vm"/>
+                   </connectors>
+                   <entries>
+                       <entry name="java:/ConnectionFactory"/>
+                   </entries>
+               </connection-factory>
+               <connection-factory name="RemoteConnectionFactory">
+                   <connectors>
+                       <connector-ref connector-name="http-connector"/>
+                   </connectors>
+                   <entries>
+                       <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
+                   </entries>
+                   <?HA-REMOTE-CONNECTION-FACTORY?>
+               </connection-factory>
+               <pooled-connection-factory name="hornetq-ra">
+                   <transaction mode="xa"/>
+                   <connectors>
+                       <connector-ref connector-name="in-vm"/>
+                   </connectors>
+                   <entries>
+                       <entry name="java:/JmsXA"/>
+                       <!-- Global JNDI entry used to provide a default JMS Connection factory to EE application -->
+                       <entry name="java:jboss/DefaultJMSConnectionFactory"/>
+                   </entries>
+               </pooled-connection-factory>
+           </jms-connection-factories>
+           <jms-destinations>
+               <jms-queue name="ExpiryQueue">
+                   <entry name="java:/jms/queue/ExpiryQueue"/>
+               </jms-queue>
+               <jms-queue name="DLQ">
+                   <entry name="java:/jms/queue/DLQ"/>
+               </jms-queue>
+           </jms-destinations>
+       </hornetq-server>
+   </subsystem>
+   <supplement name="ha">
+       <replacement placeholder="CLUSTERED">
+           <cluster-password>${jboss.messaging.cluster.password:CHANGE ME!!}</cluster-password>
+       </replacement>
+       <replacement placeholder="BROADCAST-GROUPS">
+           <broadcast-groups>
+               <broadcast-group name="bg-group1">
+                   <jgroups-stack>udp</jgroups-stack>
+                   <jgroups-channel>hq-cluster</jgroups-channel>
+                   <connector-ref>http-connector</connector-ref>
+               </broadcast-group>
+           </broadcast-groups>
+       </replacement>
+       <replacement placeholder="DISCOVERY-GROUPS">
+           <discovery-groups>
+               <discovery-group name="dg-group1">
+                   <jgroups-stack>udp</jgroups-stack>
+                   <jgroups-channel>hq-cluster</jgroups-channel>
+               </discovery-group>
+           </discovery-groups>
+       </replacement>
+       <replacement placeholder="CLUSTER-CONNECTIONS">
+           <cluster-connections>
+               <cluster-connection name="my-cluster">
+                   <address>jms</address>
+                   <connector-ref>http-connector</connector-ref>
+                   <discovery-group-ref discovery-group-name="dg-group1"/>
+               </cluster-connection>
+           </cluster-connections>
+       </replacement>
+       <replacement placeholder="REDISTRIBUTION-DELAY">
+           <redistribution-delay>1000</redistribution-delay>
+       </replacement>
+       <replacement placeholder="HA-REMOTE-CONNECTION-FACTORY">
+           <ha>true</ha>
+           <block-on-acknowledge>true</block-on-acknowledge>
+           <reconnect-attempts>-1</reconnect-attempts>
+       </replacement>
+   </supplement>
+ </config>

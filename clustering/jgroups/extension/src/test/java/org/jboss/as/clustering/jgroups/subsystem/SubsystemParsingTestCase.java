@@ -31,14 +31,15 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,18 +59,21 @@ import org.junit.runners.Parameterized.Parameters;
 public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private final int expectedOperationCount;
+    private final JGroupsSchema schema;
 
     public SubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
         super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema.format("subsystem-jgroups-%d_%d.xml"));
         this.expectedOperationCount = expectedOperationCount;
+        this.schema = schema;
     }
 
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-                { JGroupsSchema.VERSION_1_1, 22 },
-                { JGroupsSchema.VERSION_2_0, 24 },
-                { JGroupsSchema.VERSION_3_0, 28 },
+                { JGroupsSchema.VERSION_1_1, 28 },
+                { JGroupsSchema.VERSION_2_0, 30 },
+                { JGroupsSchema.VERSION_3_0, 33 },
+                { JGroupsSchema.VERSION_4_0, 33 },
         };
         return Arrays.asList(data);
     }
@@ -83,7 +87,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     private KernelServicesBuilder createKernelServicesBuilder() {
-        return this.createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        return this.createKernelServicesBuilder(this.createAdditionalInitialization());
     }
 
     private KernelServicesBuilder createKernelServicesBuilder(String xml) throws XMLStreamException {
@@ -91,12 +95,11 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
-    protected ValidationConfiguration getModelValidationConfiguration() {
-        // use this configuration to report any exceptional cases for DescriptionProviders
-        return new ValidationConfiguration();
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr");
     }
 
-    /*
+    /**
      *  Create a collection of resources in the test which are not removed by a "remove" command
      *   (i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*)
      *
@@ -192,7 +195,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
         for (int i = 0; i < protocolList.length; i++) {
             ModelNode protocol = new ModelNode();
-            protocol.get(ModelKeys.TYPE).set(protocolList[i]) ;
+            protocol.get("type").set(protocolList[i]) ;
             protocol.get("socket-binding").set("jgroups-udp");
             protocols.add(protocol);
         }
@@ -225,5 +228,58 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         compare(modelA, modelC);
 
         assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());
+    }
+
+    /**
+     * Tests that the 'fork' and 'stack' resources allow indexed adds for the 'protocol' children. This is important for
+     * the work being done for WFCORE-401. This work involves calculating the operations to bring the slave domain model
+     * into sync with the master domain model. Without ordered resources, that would mean on reconnect if the master
+     * had added a protocol somewhere in the middle, the protocol would get added to the end rather at the correct place.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIndexedAdds() throws Exception {
+        if (!this.schema.since(JGroupsSchema.VERSION_3_0)) return;
+
+        final KernelServices services = this.buildKernelServices();
+
+        ModelNode originalSubsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
+        ModelNode originalChannelModel = originalSubsystemModel.get(ChannelResourceDefinition.pathElement("ee").getKeyValuePair());
+        ModelNode originalForkModel = originalChannelModel.get(ForkResourceDefinition.pathElement("web").getKeyValuePair());
+
+        Assert.assertTrue(originalForkModel.isDefined());
+        originalForkModel.protect();
+        Assert.assertTrue(0 < originalForkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().size());
+
+        ModelNode originalStackModel = originalSubsystemModel.get(StackResourceDefinition.pathElement("maximal").getKeyValuePair());
+        Assert.assertTrue(originalStackModel.isDefined());
+        originalStackModel.protect();
+
+
+        final PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+        final PathAddress forkAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement("ee")).append(ForkResourceDefinition.pathElement("web"));
+        final PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement("maximal"));
+
+        //Check the fork protocols honour indexed adds by inserting a protocol at the start
+        ModelNode add = Operations.createAddOperation(forkAddress.append(ProtocolResourceDefinition.pathElement("MERGE2")), 0);
+        ModelTestUtils.checkOutcome(services.executeOperation(add));
+
+        ModelNode subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
+        ModelNode channelModel = subsystemModel.get(ChannelResourceDefinition.pathElement("ee").getKeyValuePair());
+        ModelNode forkModel = channelModel.get(ForkResourceDefinition.pathElement("web").getKeyValuePair());
+
+        Assert.assertEquals(originalForkModel.keys().size() + 1, forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().size());
+        Assert.assertEquals("MERGE2", forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().iterator().next());
+
+        //Check the stack protocols honour indexed adds by removing a protocol in the middle and readding it
+        ModelNode remove = Util.createRemoveOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")));
+        ModelTestUtils.checkOutcome(services.executeOperation(remove));
+        add = Operations.createAddOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")), 3); //The original index of the FD protocol
+        ModelTestUtils.checkOutcome(services.executeOperation(add));
+
+        subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
+        ModelNode stackModel = subsystemModel.get(StackResourceDefinition.pathElement("maximal").getKeyValuePair());
+        Assert.assertEquals(originalStackModel, stackModel);
     }
 }

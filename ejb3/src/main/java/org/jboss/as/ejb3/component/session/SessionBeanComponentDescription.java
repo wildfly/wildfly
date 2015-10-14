@@ -52,8 +52,11 @@ import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextIntercep
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
@@ -157,8 +160,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         viewDescription.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(Attachments.REFLECTION_INDEX);
                 for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
-                    if (!Modifier.isPublic(method.getModifiers())) {
+                    if (!Modifier.isPublic(method.getModifiers()) && isNotOverriden(method, componentConfiguration.getComponentClass(), index)) {
                         configuration.addClientInterceptor(method, new ImmediateInterceptorFactory(new NotBusinessMethodInterceptor(method)), InterceptorOrder.Client.NOT_BUSINESS_METHOD_EXCEPTION);
                     }
                 }
@@ -429,5 +433,10 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     @Override
     public SessionBeanMetaData getDescriptorData() {
         return (SessionBeanMetaData) super.getDescriptorData();
+    }
+
+
+    private boolean isNotOverriden(final Method method, final Class<?> actualClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        return Modifier.isPrivate(method.getModifiers()) || ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, actualClass, method).getDeclaringClass() == method.getDeclaringClass();
     }
 }

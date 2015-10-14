@@ -21,15 +21,8 @@
  */
 package org.jboss.as.test.clustering.cluster.sso;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-
 import java.net.URL;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -38,6 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.logging.Logger;
@@ -50,12 +44,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusteredSingleSignOnTestCase {
-
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
+public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
 
     private static Logger log = Logger.getLogger(ClusteredSingleSignOnTestCase.class);
 
@@ -73,6 +62,16 @@ public class ClusteredSingleSignOnTestCase {
 
     private static Archive<?> createArchive() {
         return SSOTestBase.createSsoEar();
+    }
+
+    @Override
+    public void beforeTestMethod() {
+        // Noop.
+    }
+
+    @Override
+    public void afterTestMethod() {
+        // Noop.
     }
 
     @Test
@@ -94,15 +93,9 @@ public class ClusteredSingleSignOnTestCase {
         SSOTestBase.addSso(client1.getControllerClient());
         SSOTestBase.addSso(client2.getControllerClient());
 
-        controller.stop(CONTAINER_1);
-        controller.stop(CONTAINER_2);
-
-        controller.start(CONTAINER_1);
-        controller.start(CONTAINER_2);
-
-        deployer.deploy(DEPLOYMENT_1);
-        deployer.deploy(DEPLOYMENT_2);
-
+        stop(CONTAINERS);
+        start(CONTAINERS);
+        deploy(DEPLOYMENTS);
     }
 
     @Test
@@ -114,10 +107,8 @@ public class ClusteredSingleSignOnTestCase {
         SSOTestBase.removeSso(client1.getControllerClient());
         SSOTestBase.removeSso(client2.getControllerClient());
 
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_1);
-        deployer.undeploy(DEPLOYMENT_2);
-        controller.stop(CONTAINER_2);
+        undeploy(DEPLOYMENTS);
+        stop(CONTAINERS);
     }
 
 

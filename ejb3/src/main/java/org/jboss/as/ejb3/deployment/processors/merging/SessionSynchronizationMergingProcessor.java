@@ -96,7 +96,7 @@ public class SessionSynchronizationMergingProcessor extends AbstractMergingProce
 
         //if we implement SessionSynchronization we can ignore any DD information
         if (SessionSynchronization.class.isAssignableFrom(componentClass)) {
-            final ClassReflectionIndex<SessionSynchronization> classIndex = reflectionIndex.getClassIndex(SessionSynchronization.class);
+            final ClassReflectionIndex classIndex = reflectionIndex.getClassIndex(SessionSynchronization.class);
             description.setAfterBegin(classIndex.getMethod(void.class, "afterBegin"));
             description.setAfterCompletion(classIndex.getMethod(void.class, "afterCompletion", boolean.class));
             description.setBeforeCompletion(classIndex.getMethod(void.class,"beforeCompletion"));

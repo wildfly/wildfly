@@ -48,6 +48,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
+import static java.lang.reflect.Modifier.ABSTRACT;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static java.lang.reflect.Modifier.STATIC;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
@@ -195,6 +198,10 @@ public class ViewDescription {
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
                 Method componentMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, componentConfiguration.getComponentClass(), methodIdentifier);
 
+                if (componentMethod == null && method.getDeclaringClass().isInterface() && (method.getModifiers() & (ABSTRACT | PUBLIC | STATIC)) == PUBLIC) {
+                    // no component method and the interface method is defaulted, so we really do want to invoke on the interface method
+                    componentMethod = method;
+                }
                 if (componentMethod != null) {
 
                     if ((BRIDGE & componentMethod.getModifiers()) != 0) {
@@ -207,6 +214,7 @@ public class ViewDescription {
 
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+                    configuration.getViewToComponentMethodMap().put(method, componentMethod);
                 }
             }
 
@@ -215,7 +223,7 @@ public class ViewDescription {
         }
 
         private Method findRealMethodForBridgeMethod(final Method componentMethod, final ComponentConfiguration componentConfiguration, final DeploymentReflectionIndex reflectionIndex, final MethodIdentifier methodIdentifier) {
-            final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(componentMethod.getDeclaringClass()); //the non-bridge method will be on the same class as the bridge method
+            final ClassReflectionIndex classIndex = reflectionIndex.getClassIndex(componentMethod.getDeclaringClass()); //the non-bridge method will be on the same class as the bridge method
             final Collection<Method> methods = classIndex.getAllMethods(componentMethod.getName(), componentMethod.getParameterTypes().length);
             for(final Method method : methods) {
                 if ((BRIDGE & method.getModifiers()) == 0) {

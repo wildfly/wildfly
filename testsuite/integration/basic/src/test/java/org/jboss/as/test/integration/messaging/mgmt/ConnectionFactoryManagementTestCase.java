@@ -23,25 +23,26 @@
 package org.jboss.as.test.integration.messaging.mgmt;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
@@ -59,33 +60,21 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
 
     private static final String CF_NAME = randomUUID().toString();
 
-    private static final ModelNode address = new ModelNode();
-
-    static {
-        address.add(SUBSYSTEM, "messaging");
-        address.add(CommonAttributes.HORNETQ_SERVER, "default");
-        address.add(CommonAttributes.CONNECTION_FACTORY, CF_NAME);
-    }
+    @ContainerResource
+    private ManagementClient managementClient;
 
     @Test
     public void testWriteDiscoveryGroupAttributeWhenConnectorIsAlreadyDefined() throws Exception {
-        // /subsystem=messaging/hornetq-server=default/connection-factory=testCF:add(connector={"in-vm" => undefined}, entries=["java:/jms/testCF"])
-        final ModelNode add = new ModelNode();
-        add.get(OP).set(ADD);
-        add.get(OP_ADDR).set(address);
-        ModelNode connector = new ModelNode();
-        connector.get("in-vm").set(new ModelNode());
-        add.get(CommonAttributes.CONNECTOR).set(connector);
-        ModelNode entries = new ModelNode();
-        entries.add("java:/jms/" + CF_NAME);
-        add.get(CommonAttributes.ENTRIES).set(entries);
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
-        executeOperation(add);
+        ModelNode attributes = new ModelNode();
+        attributes.get(CommonAttributes.CONNECTORS).add("in-vm");
+        jmsOperations.addJmsConnectionFactory(CF_NAME, "java:/jms/" + CF_NAME, attributes);
 
         final ModelNode writeAttribute = new ModelNode();
         writeAttribute.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        writeAttribute.get(OP_ADDR).set(address);
-        writeAttribute.get(NAME).set(CommonAttributes.DISCOVERY_GROUP_NAME);
+        writeAttribute.get(OP_ADDR).set(jmsOperations.getServerAddress().add("connection-factory", CF_NAME));
+        writeAttribute.get(NAME).set(CommonAttributes.DISCOVERY_GROUP);
         writeAttribute.get(VALUE).set(randomUUID().toString());
 
         try {
@@ -94,14 +83,10 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
         } catch (MgmtOperationException e) {
             assertEquals(FAILED, e.getResult().get(OUTCOME).asString());
             assertEquals(true, e.getResult().get(ROLLED_BACK).asBoolean());
-            assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains("WFLYMSG0019"));
+            assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains("WFLYMSGAMQ0019"));
         }
 
-        final ModelNode remove = new ModelNode();
-        remove.get(OP).set(REMOVE);
-        remove.get(OP_ADDR).set(address);
-
-        executeOperation(remove);
+        jmsOperations.removeJmsConnectionFactory(CF_NAME);
     }
 
 }

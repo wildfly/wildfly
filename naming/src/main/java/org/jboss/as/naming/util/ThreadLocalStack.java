@@ -23,44 +23,57 @@ package org.jboss.as.naming.util;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.EmptyStackException;
 
 /**
+ * A thread local stack data structure. In order to avoid memory churn the underlying
+ * ArrayDeque is never freed. If we remove the deque when it is empty then this results
+ * in excessive deque allocations.
  *
  * @author Stuart Douglas
  *
  */
 public class ThreadLocalStack<E> {
 
-    private final ThreadLocal<Deque<E>> deque = new ThreadLocal<Deque<E>>();
+    private static final Object NULL_VALUE = new Object();
+
+    private final ThreadLocal<Deque<Object>> deque = new ThreadLocal<Deque<Object>>() {
+        @Override
+        protected ArrayDeque<Object> initialValue() {
+            return new ArrayDeque<>();
+        }
+    };
 
     public void push(E item) {
-        Deque<E> st = deque.get();
-        if (st == null) {
-            st = new ArrayDeque<E>();
-            deque.set(st);
+        Deque<Object> st = deque.get();
+        if(item == null) {
+            st.push(NULL_VALUE);
+        } else {
+            st.push(item);
         }
-        st.push(item);
     }
 
     public E peek() {
-        Deque<E> st = deque.get();
-        if (st == null) {
+        Deque<Object> st = deque.get();
+        Object o =  st.peek();
+        if(o == NULL_VALUE) {
             return null;
+        } else {
+            return (E) o;
         }
-        return st.peek();
     }
 
     public E pop() {
-        Deque<E> st = deque.get();
-        if (st == null) {
-            throw new EmptyStackException();
+        Deque<Object> st = deque.get();
+        Object o =  st.pop();
+        if(o == NULL_VALUE) {
+            return null;
+        } else {
+            return (E) o;
         }
-        E val = st.pop();
-        if (st.isEmpty()) {
-            deque.remove();
-        }
-        return val;
+    }
+
+    public boolean isEmpty() {
+        return deque.get().isEmpty();
     }
 
 }

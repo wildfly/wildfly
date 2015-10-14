@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.iiop.handle;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
 import javax.ejb.EJBHome;
 import javax.ejb.EJBObject;
 import javax.ejb.spi.HandleDelegate;
@@ -34,7 +33,6 @@ import javax.rmi.CORBA.Stub;
 import javax.rmi.PortableRemoteObject;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.util.NestedRuntimeException;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.portable.ObjectImpl;
@@ -112,7 +110,7 @@ public class HandleDelegateImpl implements HandleDelegate {
             final InitialContext ctx = new InitialContext();
             return (HandleDelegate) ctx.lookup("java:comp/HandleDelegate");
         } catch (NamingException e) {
-            throw new NestedRuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 }

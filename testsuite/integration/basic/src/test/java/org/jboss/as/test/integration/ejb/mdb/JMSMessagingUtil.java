@@ -94,7 +94,11 @@ public class JMSMessagingUtil {
 
     public Message receiveMessage(final Destination destination, final long waitInMillis) throws JMSException {
         MessageConsumer consumer = this.session.createConsumer(destination);
-        return consumer.receive(waitInMillis);
+        try {
+            return consumer.receive(waitInMillis);
+        } finally {
+            consumer.close();
+        }
     }
 
     private void sendMessage(final Message message, final Destination destination, final Destination replyDestination) throws JMSException {

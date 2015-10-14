@@ -75,7 +75,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case MAIL_1_0:
-                case MAIL_1_1: {
+                case MAIL_1_1:
+                case MAIL_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case MAIL_SESSION: {
@@ -102,10 +103,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
-            String name;
-            if (attr == Attribute.NAME) {
-                name = value;
-            } else if (attr == Attribute.JNDI_NAME) {
+            if (attr == Attribute.JNDI_NAME) {
                 jndiName = value;
                 JNDI_NAME.parseAndSetParameter(value, operation, reader);
             } else if (attr == Attribute.DEBUG) {
@@ -124,7 +122,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case MAIL_1_0:
-                case MAIL_1_1: {
+                case MAIL_1_1:
+                case MAIL_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SMTP_SERVER: {

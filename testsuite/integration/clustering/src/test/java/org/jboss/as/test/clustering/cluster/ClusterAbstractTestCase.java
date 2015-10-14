@@ -48,8 +48,8 @@ import org.junit.BeforeClass;
  *
  * Should the test demand different node/deployment setup, the methods must be overridden.
  *
- * Furthermore provides convenience methods for {@link NodeUtil} utility ({@link #start(String)},
- * {@link #deploy(String)}, etc).
+ * Furthermore provides convenience methods for {@link NodeUtil} utility ({@link #start(String...)},
+ * {@link #deploy(String...)}, etc).
  *
  * @author Radoslav Husar
  * @version Jul 2013

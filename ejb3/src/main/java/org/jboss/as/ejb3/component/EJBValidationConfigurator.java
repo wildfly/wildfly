@@ -53,7 +53,7 @@ public class EJBValidationConfigurator implements ComponentConfigurator {
     @Override
     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
         final DeploymentReflectionIndex deploymentReflectionIndex = context.getDeploymentUnit().getAttachment(Attachments.REFLECTION_INDEX);
-        final ClassReflectionIndex<?> classIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
+        final ClassReflectionIndex classIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
         final Constructor<?> ctor = classIndex.getConstructor(new String[0]);
         boolean noInterface = false;
         for(ViewDescription view : description.getViews()) {

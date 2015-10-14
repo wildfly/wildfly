@@ -23,21 +23,23 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.util.concurrent.IsolationLevel;
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -47,71 +49,71 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class LockingResourceDefinition extends SimpleResourceDefinition {
+public class LockingResourceDefinition extends ComponentResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+    static final PathElement PATH = pathElement("locking");
+    static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "LOCKING");
 
-    // attributes
-    static final SimpleAttributeDefinition ACQUIRE_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.ACQUIRE_TIMEOUT, ModelType.LONG, true)
-            .setXmlName(Attribute.ACQUIRE_TIMEOUT.getLocalName())
-            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(15000L))
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(15000L)),
+        CONCURRENCY("concurrency-level", ModelType.INT, new ModelNode(1000)),
+        ISOLATION("isolation", ModelType.STRING, new ModelNode(IsolationLevel.READ_COMMITTED.name()), new EnumValidatorBuilder<>(IsolationLevel.class)),
+        STRIPING("striping", ModelType.BOOLEAN, new ModelNode(false)),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition CONCURRENCY_LEVEL = new SimpleAttributeDefinitionBuilder(ModelKeys.CONCURRENCY_LEVEL, ModelType.INT, true)
-            .setXmlName(Attribute.CONCURRENCY_LEVEL.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(1000))
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type, defaultValue).build();
+        }
 
-    static final SimpleAttributeDefinition ISOLATION = new SimpleAttributeDefinitionBuilder(ModelKeys.ISOLATION, ModelType.STRING, true)
-            .setXmlName(Attribute.ISOLATION.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<>(IsolationLevel.class, true, false))
-            .setDefaultValue(new ModelNode().set(IsolationLevel.REPEATABLE_READ.name()))
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        }
 
-    static final SimpleAttributeDefinition STRIPING = new SimpleAttributeDefinitionBuilder(ModelKeys.STRIPING, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.STRIPING.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(false))
-            .build();
+        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+            return new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+                    ;
+        }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL, ISOLATION, STRIPING };
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     private final boolean allowRuntimeOnlyRegistration;
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL, ISOLATION, STRIPING);
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.ISOLATION.getDefinition()), Attribute.ISOLATION.getDefinition());
         }
     }
 
     LockingResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCKING), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH);
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new LockingBuilderFactory());
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
-            OperationStepHandler handler = new LockingMetricsHandler();
-            for (LockingMetric metric: LockingMetric.values()) {
-                registration.registerMetric(metric.getDefinition(), handler);
-            }
+            new MetricHandler<>(new LockingMetricExecutor(), LockingMetric.class).register(registration);
         }
     }
 }

@@ -21,11 +21,10 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
@@ -44,25 +43,20 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
     private final SessionAttributes attributes;
     private final AtomicReference<L> localContext;
     private final LocalContextFactory<L> localContextFactory;
-    private final Mutator mutator;
     private final Remover<String> remover;
     private final AtomicBoolean valid = new AtomicBoolean(true);
 
-    public InfinispanSession(String id, SessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, SessionContext context, Mutator mutator, Remover<String> remover) {
+    public InfinispanSession(String id, SessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, SessionContext context, Remover<String> remover) {
         super(id, metaData, attributes, context);
         this.metaData = metaData;
         this.attributes = attributes;
         this.localContext = localContext;
         this.localContextFactory = localContextFactory;
-        this.mutator = mutator;
         this.remover = remover;
     }
 
     @Override
     public SessionAttributes getAttributes() {
-        if (!this.valid.get()) {
-            throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
-        }
         return this.attributes;
     }
 
@@ -81,17 +75,13 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
 
     @Override
     public SessionMetaData getMetaData() {
-        if (!this.valid.get()) {
-            throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
-        }
         return this.metaData;
     }
 
     @Override
     public void close() {
         if (this.valid.get()) {
-            this.metaData.setLastAccessedTime(new Date());
-            this.mutator.mutate();
+            this.metaData.setLastAccessedTime(Instant.now());
         }
     }
 

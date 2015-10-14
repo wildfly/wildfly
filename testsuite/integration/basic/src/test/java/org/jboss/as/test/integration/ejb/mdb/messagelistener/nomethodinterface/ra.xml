@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           version="1.5">
+    <display-name>EIS Connector</display-name>
+    <vendor-name>My Component</vendor-name>
+    <eis-type>My Remote Server</eis-type>
+    <resourceadapter-version>1.0</resourceadapter-version>
+    <resourceadapter>
+        <resourceadapter-class>
+            org.jboss.as.test.integration.ejb.mdb.messagelistener.nomethodinterface.SimpleResourceAdapter
+        </resourceadapter-class>
+        <inbound-resourceadapter>
+            <messageadapter>
+                <messagelistener>
+                    <messagelistener-type>
+                        org.jboss.as.test.integration.ejb.mdb.messagelistener.nomethodinterface.NoMethodMessageListener
+                    </messagelistener-type>
+                    <activationspec>
+                        <activationspec-class>
+                            org.jboss.as.test.integration.ejb.mdb.messagelistener.nomethodinterface.SimpleActivationSpec
+                        </activationspec-class>
+                    </activationspec>
+                </messagelistener>
+            </messageadapter>
+        </inbound-resourceadapter>
+    </resourceadapter>
+</connector>

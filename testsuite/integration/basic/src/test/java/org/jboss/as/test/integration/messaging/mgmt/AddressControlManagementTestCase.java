@@ -22,29 +22,24 @@
 
 package org.jboss.as.test.integration.messaging.mgmt;
 
-import java.io.IOException;
-import java.util.HashMap;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
 
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.junit.Assert;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import java.io.IOException;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,57 +54,25 @@ public class AddressControlManagementTestCase {
 
     private static long count = System.currentTimeMillis();
 
-    private static ClientSessionFactory sessionFactory;
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-
-
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("host", TestSuiteEnvironment.getServerAddress());
-        map.put("port", 8080);
-        map.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
-        map.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
-        TransportConfiguration transportConfiguration =
-                new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
-        ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
-        locator.setBlockOnDurableSend(true);
-        locator.setBlockOnNonDurableSend(true);
-        sessionFactory =  locator.createSessionFactory();
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-
-        if (sessionFactory != null) {
-            sessionFactory.cleanup();
-            sessionFactory.close();
-        }
-    }
-
     @ContainerResource
     private static ManagementClient managementClient;
 
-    private ClientSession session;
+    private JMSOperations jmsOperations;
 
     @Before
     public void setup() throws Exception {
+        jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
         count++;
 
-        session = sessionFactory.createSession("guest", "guest", false, true, true, false, 1);
-        session.createQueue(getAddress(), getQueueName(), false);
-        session.createQueue(getAddress(), getOtherQueueName(), false);
+        jmsOperations.addCoreQueue(getQueueName(), getAddress(), false);
+        jmsOperations.addCoreQueue(getOtherQueueName(), getAddress(), false);
     }
 
     @After
     public void cleanup() throws Exception {
-
-        if (session != null) {
-            session.deleteQueue(getQueueName());
-            session.deleteQueue(getOtherQueueName());
-            session.close();
-        }
+        jmsOperations.removeCoreQueue(getQueueName());
+        jmsOperations.removeCoreQueue(getOtherQueueName());
     }
 
     @Test
@@ -208,32 +171,16 @@ public class AddressControlManagementTestCase {
         Assert.assertTrue(foundOther);
     }
 
-    @Test
-    public void testGetRolesAsJson() throws Exception {
-
-        ModelNode result = execute(getAddressOperation("get-roles-as-json"), true);
-        Assert.assertEquals(ModelType.STRING, result.getType());
-        ModelNode converted = ModelNode.fromJSONString(result.asString());
-        Assert.assertEquals(ModelType.LIST, converted.getType());
-        if (converted.asInt() > 0) {
-            Assert.assertEquals(ModelType.OBJECT, converted.get(0).getType());
-        }
-    }
-
     private ModelNode getSubsystemOperation(String operationName) {
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
-        return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
+        return getEmptyOperation(operationName, jmsOperations.getServerAddress().clone());
     }
 
     private ModelNode getAddressOperation(String operationName) {
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
+        final ModelNode address = jmsOperations.getServerAddress().clone();
         address.add("core-address", getAddress());
-        return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
+        return getEmptyOperation(operationName, address);
     }
+
 
     private ModelNode execute(final ModelNode op, final boolean expectSuccess) throws IOException {
         ModelNode response = managementClient.getControllerClient().execute(op);

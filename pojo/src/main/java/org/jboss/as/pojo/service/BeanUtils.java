@@ -30,7 +30,6 @@ import org.jboss.as.pojo.descriptor.LifecycleConfig;
 import org.jboss.as.pojo.descriptor.PropertyConfig;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.ImmediateValue;
@@ -47,8 +46,6 @@ import java.util.Set;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public final class BeanUtils {
-
-    private static final Logger log = Logger.getLogger(BeanUtils.class);
 
     /**
      * Instantiate bean.
@@ -165,8 +162,7 @@ public final class BeanUtils {
             try {
                 method = beanInfo.getMethod(defaultMethod);
             } catch (Exception t) {
-                if (log.isTraceEnabled())
-                    log.trace("Ignoring default " + defaultMethod + " invocation.", t);
+                PojoLogger.ROOT_LOGGER.tracef(t, "Ignoring default %s invocation.", defaultMethod);
                 return null;
             }
         } else {

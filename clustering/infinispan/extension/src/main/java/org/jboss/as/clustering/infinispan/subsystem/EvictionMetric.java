@@ -18,9 +18,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.infinispan.Cache;
 import org.infinispan.interceptors.CacheMgmtInterceptor;
 import org.jboss.as.clustering.controller.Metric;
@@ -37,7 +34,7 @@ public enum EvictionMetric implements Metric<Cache<?, ?>> {
 
     EVICTIONS(MetricKeys.EVICTIONS, ModelType.LONG) {
         @Override
-        public ModelNode getValue(Cache<?, ?> cache) {
+        public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = CacheMetric.findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getEvictions() : 0);
         }
@@ -45,24 +42,12 @@ public enum EvictionMetric implements Metric<Cache<?, ?>> {
     ;
     private final AttributeDefinition definition;
 
-    private EvictionMetric(String name, ModelType type) {
+    EvictionMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
-    }
-
-    private static final Map<String, EvictionMetric> metrics = new HashMap<>();
-
-    static {
-        for (EvictionMetric metric: EvictionMetric.values()) {
-            metrics.put(metric.definition.getName(), metric);
-        }
-    }
-
-    public static EvictionMetric forName(String name) {
-        return metrics.get(name);
     }
 }

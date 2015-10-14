@@ -22,22 +22,11 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.msc.service.ServiceController;
-
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public enum StartMode {
-    EAGER(ServiceController.Mode.ACTIVE),
-    LAZY(ServiceController.Mode.ON_DEMAND),
+    LAZY,
     ;
-    private final ServiceController.Mode mode;
-
-    private StartMode(ServiceController.Mode mode) {
-        this.mode = mode;
-    }
-
-    public ServiceController.Mode getMode() {
-        return this.mode;
-    }
 }

@@ -22,6 +22,7 @@
 package org.jboss.as.security;
 
 import javax.security.auth.login.Configuration;
+import javax.transaction.TransactionManager;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -35,6 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -42,6 +44,7 @@ import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
 import org.jboss.as.security.deployment.JaccEarDeploymentProcessor;
 import org.jboss.as.security.deployment.SecurityDependencyProcessor;
+import org.jboss.as.security.deployment.SecurityEnablementProcessor;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
@@ -55,7 +58,9 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.SecurityContextAssociation;
@@ -74,6 +79,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
+    static final RuntimeCapability<?> SECURITY_SUBSYSTEM = RuntimeCapability.Builder.of("org.wildfly.security").build();
+
     static final SensitiveTargetAccessConstraintDefinition MISC_SECURITY_SENSITIVITY = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SecurityExtension.SUBSYSTEM_NAME, "misc-security", false, true, true));
 
@@ -86,11 +93,18 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
     private SecuritySubsystemRootResourceDefinition() {
         super(SecurityExtension.PATH_SUBSYSTEM,
-                SecurityExtension.getResourceDescriptionResolver(SecurityExtension.SUBSYSTEM_NAME), NewSecuritySubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+                SecurityExtension.getResourceDescriptionResolver(SecurityExtension.SUBSYSTEM_NAME), NewSecuritySubsystemAdd.INSTANCE, new ReloadRequiredRemoveStepHandler(SECURITY_SUBSYSTEM));
+        setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
+    @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
          resourceRegistration.registerReadWriteAttribute(DEEP_COPY_SUBJECT_MODE, null, new ReloadRequiredWriteAttributeHandler(DEEP_COPY_SUBJECT_MODE));
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(SECURITY_SUBSYSTEM);
     }
 
     static class NewSecuritySubsystemAdd extends AbstractBoottimeAddStepHandler {
@@ -117,6 +131,9 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
 
         public static final OperationStepHandler INSTANCE = new NewSecuritySubsystemAdd();
 
+        NewSecuritySubsystemAdd() {
+            super(SECURITY_SUBSYSTEM);
+        }
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -138,12 +155,6 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, bootstrapService.getServiceModuleLoaderInjectedValue())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-
-                }
-            }, OperationContext.Stage.RUNTIME);
-
             // add service to bind SecurityDomainJndiInjectable to JNDI
             final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
             final BinderService binderService = new BinderService("jaas");
@@ -160,6 +171,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 AUTHORIZATION_MANAGER, AUDIT_MANAGER, IDENTITY_TRUST_MANAGER, MAPPING_MANAGER);
             target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
                     .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, securityManagementService.getServiceModuleLoaderInjectedValue())
+                    .addDependency(JaasConfigurationService.SERVICE_NAME) // We need to ensure the global JAAS Configuration has been set.
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             // add subject factory service
@@ -175,20 +187,34 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
+            //setup the transaction manager locator
+
+            if(context.hasOptionalCapability("org.wildfly.transactions", SECURITY_SUBSYSTEM.getName(), null)) {
+                TransactionManagerLocatorService service = new TransactionManagerLocatorService();
+                target.addService(TransactionManagerLocatorService.SERVICE_NAME, service)
+                        .addDependency( ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, service.getTransactionManagerInjectedValue())
+                .install();
+            } else {
+                target.addService(TransactionManagerLocatorService.SERVICE_NAME, Service.NULL).install();
+            }
+
             //add Simple Security Manager Service
             final SimpleSecurityManagerService simpleSecurityManagerService = new SimpleSecurityManagerService();
 
             target.addService(SimpleSecurityManagerService.SERVICE_NAME, simpleSecurityManagerService)
-                .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                            simpleSecurityManagerService.getSecurityManagementInjector())
+                .addDependency(SecurityManagementService.SERVICE_NAME)
                 .install();
 
             context.addStep(new AbstractDeploymentChainStep() {
+                @Override
                 protected void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JACC_POLICY,
                             new JaccEarDeploymentProcessor());
                     processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SECURITY,
                             new SecurityDependencyProcessor());
+                    processorTarget.addDeploymentProcessor(SecurityExtension.SUBSYSTEM_NAME, Phase.PARSE, 0x0080,
+                            new SecurityEnablementProcessor());
+
                 }
             }, OperationContext.Stage.RUNTIME);
         }

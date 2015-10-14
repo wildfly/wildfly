@@ -55,9 +55,7 @@ public class XTSExtension implements Extension {
 
     private static final String RESOURCE_NAME = XTSExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         String prefix = SUBSYSTEM_NAME + (keyPrefix == null ? "" : "." + keyPrefix);
@@ -67,8 +65,7 @@ public class XTSExtension implements Extension {
 
     public void initialize(ExtensionContext context) {
         XtsAsLogger.ROOT_LOGGER.debug("Initializing XTS Extension");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerSubsystemModel(XTSSubsystemDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(parser);
 

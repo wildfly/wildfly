@@ -68,12 +68,12 @@ abstract class XidTransactionManagementTask implements Runnable {
             this.manageTransaction();
         } catch (Throwable t) {
             try {
-                EjbLogger.ROOT_LOGGER.errorDuringTransactionManagement(t, this.xidTransactionID);
+                EjbLogger.REMOTE_LOGGER.errorDuringTransactionManagement(t, this.xidTransactionID);
                 // write out a failure message to the channel to let the client know that
                 // the transaction operation failed
                 transactionRequestHandler.writeException(this.channelAssociation, this.marshallerFactory, this.invocationId, t, null);
             } catch (IOException e) {
-                EjbLogger.ROOT_LOGGER.couldNotWriteOutToChannel(e);
+                EjbLogger.REMOTE_LOGGER.couldNotWriteOutToChannel(e);
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
             }
@@ -84,7 +84,7 @@ abstract class XidTransactionManagementTask implements Runnable {
             // write out invocation success message to the channel
             transactionRequestHandler.writeTxInvocationResponseMessage(this.channelAssociation, this.invocationId);
         } catch (IOException e) {
-            EjbLogger.ROOT_LOGGER.couldNotWriteInvocationSuccessMessage(e);
+            EjbLogger.REMOTE_LOGGER.couldNotWriteInvocationSuccessMessage(e);
             // close the channel
             IoUtils.safeClose(this.channelAssociation.getChannel());
         }
@@ -100,7 +100,7 @@ abstract class XidTransactionManagementTask implements Runnable {
     protected SubordinateTransaction tryRecoveryForImportedTransaction() throws Exception {
         final XATerminator xaTerminator = SubordinationManager.getXATerminator();
         if (xaTerminator instanceof XATerminatorImple) {
-            EjbLogger.ROOT_LOGGER.debugf("Trying to recover an imported transaction for Xid %s", this.xidTransactionID.getXid());
+            EjbLogger.REMOTE_LOGGER.debugf("Trying to recover an imported transaction for Xid %s", this.xidTransactionID.getXid());
             // We intentionally pass null for Xid since passing the specific Xid doesn't seem to work for some reason.
             // As for null for parentNodeName, we do that intentionally since we aren't aware of the parent node on which
             // the transaction originated

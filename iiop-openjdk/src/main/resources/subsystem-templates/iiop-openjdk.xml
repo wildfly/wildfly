@@ -3,9 +3,8 @@
 <config>
    <extension-module>org.wildfly.iiop-openjdk</extension-module>
    <subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.0">
-       <orb socket-binding="iiop" ssl-socket-binding="iiop-ssl">
-           <initializers transactions="spec" security="identity"/>
-       </orb>
+       <orb socket-binding="iiop" ssl-socket-binding="iiop-ssl"/>
+       <initializers transactions="spec" security="identity"/>
    </subsystem>
    <socket-binding name="iiop" interface="unsecure" port="3528"/>
    <socket-binding name="iiop-ssl" interface="unsecure" port="3529"/>

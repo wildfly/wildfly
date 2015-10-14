@@ -41,8 +41,6 @@ public class JaasConfigurationService implements Service<Configuration> {
 
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("jaas");
 
-    private static final SecurityLogger log = SecurityLogger.ROOT_LOGGER;
-
     private final Configuration configuration;
 
     public JaasConfigurationService(Configuration configuration) {
@@ -52,17 +50,21 @@ public class JaasConfigurationService implements Service<Configuration> {
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting JaasConfigurationService");
+        SecurityLogger.ROOT_LOGGER.debug("Starting JaasConfigurationService");
 
         // set new configuration
-        Configuration.setConfiguration(configuration);
+        synchronized(Configuration.class) {
+            Configuration.setConfiguration(configuration);
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public void stop(StopContext context) {
-        // restore configuration to null
-        Configuration.setConfiguration(null);
+        // Trigger a reload of configuration if anything else uses it.
+        synchronized(Configuration.class) {
+            Configuration.setConfiguration(null);
+        }
     }
 
     /** {@inheritDoc} */
@@ -70,5 +72,4 @@ public class JaasConfigurationService implements Service<Configuration> {
     public Configuration getValue() throws IllegalStateException, IllegalArgumentException {
         return configuration;
     }
-
 }

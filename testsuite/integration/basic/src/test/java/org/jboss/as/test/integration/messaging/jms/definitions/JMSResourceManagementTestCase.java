@@ -26,20 +26,27 @@ import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,6 +60,13 @@ public class JMSResourceManagementTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
+    private JMSOperations jmsOperations;
+
+    @Before
+    public void setUp() {
+        jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+    }
+
     @Deployment
     public static JavaArchive createArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "JMSResourceDefinitionsTestCase.jar")
@@ -63,7 +77,6 @@ public class JMSResourceManagementTestCase {
                         EmptyAsset.INSTANCE,
                         create("beans.xml"));
 
-        System.out.println("archive = " + archive.toString(true));
         return archive;
     }
 
@@ -113,12 +126,12 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime.get("include-runtime").set(true);
         readResourceWithRuntime.get("operations").set(true);
         ModelNode result = execute(readResourceWithRuntime, true);
-        System.out.println("result = " + result.toJSONString(false));
+        //System.out.println("result = " + result.toJSONString(false));
 
         readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_JMSResourceDefinitionsTestCase_java_module/myFactory1", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
-        System.out.println("result = " + result.toJSONString(false));
+        //System.out.println("result = " + result.toJSONString(false));
         assertEquals(1, result.get("min-pool-size").asInt());
         assertEquals(2, result.get("max-pool-size").asInt());
         assertEquals(3, result.get("initial-connect-attempts").asInt());
@@ -129,7 +142,7 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_MessagingBean_java_comp/env/myFactory2", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
-        System.out.println("result = " + result.toJSONString(false));
+        //System.out.println("result = " + result.toJSONString(false));
         assertEquals(-1, result.get("min-pool-size").asInt());
         assertEquals(-1, result.get("max-pool-size").asInt());
         assertFalse(result.toJSONString(false), result.hasDefined("user"));
@@ -149,7 +162,7 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_JMSResourceDefinitionsTestCase_java_app/myFactory4", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
-        System.out.println("result = " + result.toJSONString(false));
+        //System.out.println("result = " + result.toJSONString(false));
         assertEquals(4, result.get("min-pool-size").asInt());
         assertEquals(5, result.get("max-pool-size").asInt());
         assertEquals(6, result.get("initial-connect-attempts").asInt());
@@ -158,11 +171,36 @@ public class JMSResourceManagementTestCase {
         assertEquals("myClientID4", result.get("client-id").asString());
     }
 
+    @Test
+    public void testRuntimeQueues() throws Exception {
+        //Tests https://issues.jboss.org/browse/WFLY-2807
+        PathAddress addr = PathAddress.pathAddress("subsystem", "messaging-activemq");
+        addr = addr.append("server", "default");
+        ModelNode readResource = Util.createEmptyOperation("read-resource", addr);
+        readResource.get("recursive").set(true);
+
+        ModelNode result = execute(readResource, true);
+        Assert.assertTrue(result.has("runtime-queue"));
+        Assert.assertFalse(result.hasDefined("runtime-queue"));
+
+        readResource.get("include-runtime").set(true);
+        result = execute(readResource, true);
+        Assert.assertTrue(result.hasDefined("runtime-queue"));
+        ModelNode queues = result.get("runtime-queue");
+        List<Property> propsList = queues.asPropertyList();
+        Assert.assertTrue(propsList.size() > 0);
+        for (Property prop : propsList) {
+            Assert.assertTrue(prop.getValue().isDefined());
+        }
+    }
+
+
     private ModelNode getOperation(String resourceType, String resourceName, String operationName) {
         final ModelNode address = new ModelNode();
         address.add("deployment", "JMSResourceDefinitionsTestCase.jar");
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
+        for (Property prop: jmsOperations.getServerAddress().asPropertyList()) {
+            address.add(prop.getName(), prop.getValue().asString());
+        }
         address.add(resourceType, resourceName);
         return getEmptyOperation(operationName, address);
     }

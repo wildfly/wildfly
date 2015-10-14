@@ -34,6 +34,9 @@ import io.undertow.server.handlers.ChannelUpgradeHandler;
 import io.undertow.server.handlers.ProxyPeerAddressHandler;
 import io.undertow.server.handlers.SSLHeaderHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
+import io.undertow.server.protocol.http2.Http2UpgradeHandler;
+
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.ValueService;
@@ -71,6 +74,14 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
                 return httpUpgradeHandler;
             }
         });
+        if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false)) {
+            addWrapperHandler(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler handler) {
+                    return new Http2UpgradeHandler(handler);
+                }
+            });
+        }
         if (certificateForwarding) {
             addWrapperHandler(new HandlerWrapper() {
                 @Override
@@ -114,7 +125,12 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
             throws IOException {
         server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).addAll(socketOptions).getMap());
         server.resumeAccepts();
-        UndertowLogger.ROOT_LOGGER.listenerStarted("HTTP", getName(), socketAddress);
+        UndertowLogger.ROOT_LOGGER.listenerStarted("HTTP", getName(), NetworkUtils.formatIPAddressForURI(socketAddress.getAddress()), socketAddress.getPort());
+    }
+
+    @Override
+    protected void cleanFailedStart() {
+        httpListenerRegistry.getValue().removeListener(getName());
     }
 
     @Override
@@ -123,7 +139,7 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
         UndertowLogger.ROOT_LOGGER.listenerSuspend("HTTP", getName());
         IoUtils.safeClose(server);
         server = null;
-        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTP", getName(), getBinding().getValue().getSocketAddress());
+        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTP", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getPort());
         httpListenerRegistry.getValue().removeListener(getName());
     }
 

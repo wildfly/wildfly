@@ -70,6 +70,7 @@ public interface Constants {
     String SIMPLE_ERROR_PAGE = "simple-error-page";
     String SCHEME = "scheme";
     String MAX_POST_SIZE = "max-post-size";
+    String DEFAULT_RESPONSE_CODE = "default-response-code";
     /*JSP config */
     String CHECK_INTERVAL = "check-interval";
     String CONTAINER = "container";
@@ -81,6 +82,7 @@ public interface Constants {
     String FILE = "file";
     String FILE_ENCODING = "file-encoding";
     String GENERATE_STRINGS_AS_CHAR_ARRAYS = "generate-strings-as-char-arrays";
+    String OPTIMIZE_SCRIPTLETS = "optimize-scriptlets";
     String JAVA_ENCODING = "java-encoding";
     String JSP_CONFIGURATION = "jsp-configuration";
     String KEEP_GENERATED = "keep-generated";
@@ -153,4 +155,65 @@ public interface Constants {
     String HEALTH_CHECK_INTERVAL = "health-check-interval";
     String BROKEN_NODE_TIMEOUT = "broken-node-timeout";
     String MANAGEMENT_ACCESS_PREDICATE = "management-access-predicate";
+    String REQUEST_QUEUE_SIZE = "request-queue-size";
+    String CACHED_CONNECTIONS_PER_THREAD = "cached-connections-per-thread";
+    String CONNECTION_IDLE_TIMEOUT = "connection-idle-timeout";
+
+    String USE_SERVER_LOG = "use-server-log";
+    String VALUE = "value";
+
+    String REWRITE = "rewrite";
+    String DISALLOWED_METHODS = "disallowed-methods";
+    String RESOLVE_PEER_ADDRESS = "resolve-peer-address";
+    String BALANCER = "balancer";
+    String CONTEXT = "context";
+    String NODE = "node";
+    String STATUS = "status";
+    String REQUESTS = "requests";
+    String ENABLE = "enable";
+    String DISABLE = "disable";
+    String LOAD = "load";
+    String USE_ALIAS = "use-alias";
+    String LOAD_BALANCING_GROUP = "load-balancing-group";
+    String CACHE_CONNECTIONS = "cache-connections";
+    String FLUSH_WAIT = "flush-wait";
+    String MAX_CONNECTIONS = "max-connections";
+    String OPEN_CONNECTIONS = "open-connections";
+    String PING = "ping";
+    String READ = "read";
+    String SMAX = "smax";
+    String TIMEOUT = "timeout";
+    String WRITTEN = "written";
+    String TTL = "ttl";
+
+    String STICKY_SESSION = "sticky-session";
+    String STICKY_SESSION_COOKIE = "sticky-session-cookie";
+    String STICKY_SESSION_PATH = "sticky-session-path";
+    String STICKY_SESSION_FORCE = "sticky-session-force";
+    String STICKY_SESSION_REMOVE= "sticky-session-remove";
+    String WAIT_WORKER = "wait-worker";
+    String MAX_ATTEMPTS = "max-attempts";
+    String FLUSH_PACKETS = "flush-packets";
+    String QUEUE_NEW_REQUESTS = "queue-new-requests";
+    String STOP = "stop";
+    String ENABLE_NODES = "enable-nodes";
+    String DISABLE_NODES = "disable-nodes";
+    String STOP_NODES = "stop-nodes";
+    String DEFAULT_SESSION_TIMEOUT = "default-session-timeout";
+    String PREDICATE = "predicate";
+    String SSL_SESSION_CACHE_SIZE = "ssl-session-cache-size";
+    String SSL_SESSION_TIMEOUT = "ssl-session-timeout";
+    String VERIFY_CLIENT = "verify-client";
+    String ENABLED_CIPHER_SUITES = "enabled-cipher-suites";
+    String ENABLED_PROTOCOLS = "enabled-protocols";
+    String ENABLE_HTTP2 = "enable-http2";
+    String ENABLE_SPDY = "enable-spdy";
+    String URI = "uri";
+    String ALIASES = "aliases";
+    String ELECTED = "elected";
+    String PROACTIVE_AUTHENTICATION = "proactive-authentication";
+    String SESSION_ID_LENGTH = "session-id-length";
+    String EXTENDED = "extended";
+    String MAX_BUFFERED_REQUEST_SIZE = "max-buffered-request-size";
+    String MAX_SESSIONS = "max-sessions";
 }

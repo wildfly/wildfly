@@ -57,7 +57,7 @@ public class ClusterTestUtil {
 
     public static void establishTopology(EJBDirectory directory, String container, String cache, String... nodes) throws NamingException, InterruptedException {
         TopologyChangeListener listener = directory.lookupStateless(TopologyChangeListenerBean.class, TopologyChangeListener.class);
-        listener.establishTopology(container, cache, nodes);
+        listener.establishTopology(container, cache, TopologyChangeListener.DEFAULT_TIMEOUT, nodes);
     }
 
     private ClusterTestUtil() {

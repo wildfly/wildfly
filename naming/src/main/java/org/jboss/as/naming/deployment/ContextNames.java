@@ -138,6 +138,7 @@ public class ContextNames {
                 namespace = context.substring(5, i);
             }
 
+            sanitazeNameSpace(namespace,context);
             if (namespace.equals("global")) {
                 return new BindInfo(GLOBAL_CONTEXT_SERVICE_NAME, context.substring(12));
             } else if (namespace.equals("jboss")) {
@@ -161,6 +162,13 @@ public class ContextNames {
         }
     }
 
+    private static void sanitazeNameSpace(final String namespace, final String inContext) {
+        //URL might be:
+        // java:context/restOfURL - where nameSpace is part between ':' and '/'
+        if(namespace.contains(":")){
+            throw NamingLogger.ROOT_LOGGER.invalidJndiName(inContext);
+        }
+    }
     /**
      * Get the service name of an environment entry
      *

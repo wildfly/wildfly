@@ -34,11 +34,12 @@ import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -57,7 +58,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
+        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         if (module == null || moduleDescription == null) {
             return;
         }
@@ -76,7 +77,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                         componentDescription.getComponentName());
                 final ComponentConfiguration componentConfiguration;
                 try {
-                    componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()), module.getClassLoader(), module.getModuleLoader());
+                    componentConfiguration = componentDescription.createConfiguration(reflectionIndex.getClassIndex(ClassLoadingUtils.loadClass(componentDescription.getComponentClassName(), module)), module.getClassLoader(), module.getModuleLoader());
                     for (final ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
                         componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
                     }

@@ -4,12 +4,14 @@
 ~
 target
 # ignore downloaded maven
-tools/maven
+/tools/maven
+/tools/maven.zip
 # ignore eclipse files
 .project
 .classpath
 .settings
 .metadata
+.checkstyle
 # ignore m2e annotation processing files
 .factorypath
 # ignore IDEA files

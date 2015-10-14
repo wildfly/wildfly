@@ -22,9 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.context.Flag;
-import org.infinispan.transaction.LockingMode;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.Bean;
@@ -82,17 +80,12 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
 
     @Override
     public BeanEntry<G> findValue(I id) {
-        TransactionConfiguration transaction = this.cache.getCacheConfiguration().transaction();
-        boolean pessimistic = transaction.transactionMode().isTransactional() && (transaction.lockingMode() == LockingMode.PESSIMISTIC);
-        Cache<BeanKey<I>, BeanEntry<G>> cache = pessimistic ? this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.cache;
-        return cache.get(this.createKey(id));
+        return this.cache.get(this.createKey(id));
     }
 
     @Override
     public BeanEntry<G> createValue(I id, G groupId) {
-        BeanEntry<G> entry = new InfinispanBeanEntry<>(groupId);
-        BeanEntry<G> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(this.createKey(id), entry);
-        return (existing != null) ? existing : entry;
+        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(this.createKey(id), key -> new InfinispanBeanEntry<>(groupId));
     }
 
     @Override

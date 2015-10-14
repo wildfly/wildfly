@@ -21,7 +21,9 @@
  */
 package org.jboss.as.ejb3.cache.simple;
 
-import java.security.AccessController;
+import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.ejb3.cache.CacheFactory;
@@ -35,7 +37,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Service that provides a simple {@link CacheFactoryBuilder}.
@@ -47,7 +48,11 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  */
 public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> extends CacheFactoryBuilderService<K, V> implements CacheFactoryBuilder<K, V>  {
 
-    private static final ThreadFactory THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup(SimpleCache.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+    private static final ThreadFactory THREAD_FACTORY = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+        public JBossThreadFactory run() {
+            return new JBossThreadFactory(new ThreadGroup(SimpleCache.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+        }
+    });
 
     private final String name;
 

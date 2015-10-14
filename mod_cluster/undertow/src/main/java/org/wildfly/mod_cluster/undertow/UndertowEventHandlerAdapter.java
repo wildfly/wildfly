@@ -22,9 +22,11 @@
 
 package org.wildfly.mod_cluster.undertow;
 
+import static java.security.AccessController.doPrivileged;
+
 import io.undertow.servlet.api.Deployment;
 
-import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -50,7 +52,6 @@ import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Service exposing an Undertow subsystem adapter to mod_cluster's ContainerEventHandler.
@@ -58,7 +59,8 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  * @author Paul Ferraro
  */
 public class UndertowEventHandlerAdapter implements UndertowEventListener, Service<Void>, Runnable, ServerActivity {
-    private static final Logger log = Logger.getLogger(UndertowEventHandlerAdapter.class);
+    // No logger interface for this module and no reason to create one for this class only
+    private static final Logger log = Logger.getLogger("org.jboss.mod_cluster.undertow");
 
     @SuppressWarnings("rawtypes")
     private final Value<ListenerService> listener;
@@ -100,7 +102,11 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
 
         // Start the periodic STATUS thread
         ThreadGroup group = new ThreadGroup(UndertowEventHandlerAdapter.class.getSimpleName());
-        ThreadFactory factory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+        ThreadFactory factory = doPrivileged(new PrivilegedAction<ThreadFactory>() {
+            public ThreadFactory run() {
+                return new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null);
+            }
+        });
         this.executor = Executors.newScheduledThreadPool(1, factory);
         this.executor.scheduleWithFixedDelay(this, 0, statusInterval, TimeUnit.SECONDS);
         suspendController.getValue().registerActivity(this);

@@ -62,6 +62,8 @@ public interface EJB3SubsystemModel {
     String FILE_DATA_STORE = "file-data-store";
 
     String MAX_POOL_SIZE = "max-pool-size";
+    String DERIVE_SIZE = "derive-size";
+
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
 
     String MAX_THREADS = "max-threads";
@@ -83,6 +85,7 @@ public interface EJB3SubsystemModel {
     String REMOTING_EJB_RECEIVER = "remoting-ejb-receiver";
     String OUTBOUND_CONNECTION_REF= "outbound-connection-ref";
     String CONNECT_TIMEOUT= "connect-timeout";
+    String CLIENT_MAPPINGS_CLUSTER_NAME = "cluster";
 
     String TIMER = "timer";
     String TIMER_SERVICE = "timer-service";
@@ -95,6 +98,9 @@ public interface EJB3SubsystemModel {
 
     String CACHE = "cache";
     String PASSIVATION_STORE = "passivation-store";
+
+    String MDB_DELIVERY_GROUP="mdb-delivery-group";
+    String MDB_DELVIERY_GROUP_ACTIVE = "active";
 
     @Deprecated String FILE_PASSIVATION_STORE = "file-passivation-store";
     @Deprecated String IDLE_TIMEOUT = "idle-timeout";

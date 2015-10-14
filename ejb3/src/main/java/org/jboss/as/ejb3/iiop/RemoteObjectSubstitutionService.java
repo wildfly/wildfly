@@ -65,14 +65,14 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
         if (EJBClient.isEJBProxy(object)) {
             return createIIOPReferenceForBean(object, deploymentRepository);
         } else if (object instanceof EJBHandle) {
-            final EJBHandle handle = (EJBHandle) object;
+            final EJBHandle<?> handle = (EJBHandle<?>) object;
             final EJBLocator<?> locator = handle.getLocator();
             final EjbIIOPService factory = serviceForLocator(locator, deploymentRepository);
             if (factory != null) {
                 return factory.handleForLocator(locator);
             }
         } else if (object instanceof EJBHomeHandle) {
-            final EJBHomeHandle handle = (EJBHomeHandle) object;
+            final EJBHomeHandle<?> handle = (EJBHomeHandle<?>) object;
             final EJBLocator<?> locator = handle.getLocator();
             final EjbIIOPService factory = serviceForLocator(locator, deploymentRepository);
             if (factory != null) {
@@ -108,7 +108,7 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
         return object;
     }
 
-    private EjbIIOPService serviceForLocator(final EJBLocator locator, DeploymentRepository deploymentRepository) {
+    private EjbIIOPService serviceForLocator(final EJBLocator<?> locator, DeploymentRepository deploymentRepository) {
         final ModuleDeployment module = deploymentRepository.getModules().get(new DeploymentModuleIdentifier(locator.getAppName(), locator.getModuleName(), locator.getDistinctName()));
         if (module == null) {
             EjbLogger.ROOT_LOGGER.couldNotFindEjbForLocatorIIOP(locator);

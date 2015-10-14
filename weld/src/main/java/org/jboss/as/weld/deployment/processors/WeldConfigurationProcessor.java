@@ -39,10 +39,12 @@ public class WeldConfigurationProcessor implements DeploymentUnitProcessor {
 
     private final boolean requireBeanDescriptorGlobal;
     private final boolean nonPortableModeGlobal;
+    private final boolean developmentModeGlobal;
 
-    public WeldConfigurationProcessor(boolean requireBeanDescriptorGlobal, boolean nonPortableModeGlobal) {
+    public WeldConfigurationProcessor(boolean requireBeanDescriptorGlobal, boolean nonPortableModeGlobal, boolean developmentModeGlobal) {
         this.requireBeanDescriptorGlobal = requireBeanDescriptorGlobal;
         this.nonPortableModeGlobal = nonPortableModeGlobal;
+        this.developmentModeGlobal = developmentModeGlobal;
     }
 
     @Override
@@ -55,13 +57,15 @@ public class WeldConfigurationProcessor implements DeploymentUnitProcessor {
 
         boolean requireBeanDescriptor = requireBeanDescriptorGlobal;
         boolean nonPortableMode = nonPortableModeGlobal;
+        boolean developmentMode = developmentModeGlobal;
 
         WeldJBossAllConfiguration configuration = deploymentUnit.getAttachment(WeldJBossAllConfiguration.ATTACHMENT_KEY);
         if (configuration != null) {
             requireBeanDescriptor = getValue(configuration.getRequireBeanDescriptor(), requireBeanDescriptorGlobal);
-            nonPortableMode = getValue(configuration.getNonPortableMode(), nonPortableMode);
+            nonPortableMode = getValue(configuration.getNonPortableMode(), nonPortableModeGlobal);
+            developmentMode = getValue(configuration.getDevelopmentMode(), developmentModeGlobal);
         }
-        WeldConfiguration mergedConfiguration = new WeldConfiguration(requireBeanDescriptor, nonPortableMode);
+        WeldConfiguration mergedConfiguration = new WeldConfiguration(requireBeanDescriptor, nonPortableMode, developmentMode);
         deploymentUnit.putAttachment(WeldConfiguration.ATTACHMENT_KEY, mergedConfiguration);
     }
 

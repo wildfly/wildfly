@@ -249,15 +249,15 @@
                     <xsd:documentation>
                         <![CDATA[
 
-                    Clustering only: Specifies the name of the Infinispan container/cache in which to store session data.
+                    Clustering only: Specifies the name of the Infinispan container and cache in which to store session data.
 
                     Default value, if not explicitly set, is determined by the application server.
 
-                    To use a specific cache within a cache container, use the form "container/cache".
+                    To use a specific cache within a cache container, use the form "container.cache".
                     If unqualified, the default cache of the specified container is used.
 
                     e.g. <cache-name>web</cache-name>
-                         <cache-name>web/dist</cache-name>
+                         <cache-name>web.dist</cache-name>
 
                     ]]>
                     </xsd:documentation>

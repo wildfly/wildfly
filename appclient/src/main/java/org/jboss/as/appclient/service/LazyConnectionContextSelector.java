@@ -86,9 +86,7 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
             ejbClientContext.registerConnection(connection);
 
             this.clientContext = ejbClientContext;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         } finally {
             if(clientContext == null) {

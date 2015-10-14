@@ -25,6 +25,7 @@ import static org.jboss.as.weld.util.Utils.getDeploymentUnitId;
 import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
 import static org.jboss.as.weld.util.Utils.isClassesRoot;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import javax.enterprise.inject.spi.Extension;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.weld.InjectionTargetDefiningAnnotations;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
@@ -51,7 +53,6 @@ import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
@@ -60,6 +61,7 @@ import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.discovery.AnnotationType;
 import org.jboss.as.weld.ejb.EjbDescriptorImpl;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.bootstrap.WeldJaxwsInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.as.weld.util.Indices;
@@ -144,7 +146,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit);
         final JaxwsInjectionServices jaxwsInjectionServices = new WeldJaxwsInjectionServices(deploymentUnit);
 
-        final BeanDeploymentModule bdm = new BeanDeploymentModule(bdaMap.values());
+        final BeanDeploymentModule bdm = new BeanDeploymentModule(handler.module.getIdentifier().toString(), deploymentUnit, bdaMap.values());
         bdm.addService(JpaInjectionServices.class, jpaInjectionServices);
         bdm.addService(JaxwsInjectionServices.class, jaxwsInjectionServices);
         deploymentUnit.putAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE, bdm);
@@ -163,6 +165,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
         private final Multimap<ResourceRoot, ComponentDescription> componentDescriptions = HashMultimap.create();
         private final Multimap<ResourceRoot, EJBComponentDescription> ejbComponentDescriptions = HashMultimap.create();
+        private final List<ComponentDescription> implicitComponentDescriptions = new ArrayList<ComponentDescription>();
 
         public Components(DeploymentUnit deploymentUnit, Map<ResourceRoot, Index> indexes) {
             for (ComponentDescription component : deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION).getComponentDescriptions()) {
@@ -177,11 +180,13 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                         }
                     }
                 }
+                if (resourceRoot == null) {
+                    implicitComponentDescriptions.add(component);
+                }
                 if (resourceRoot == null || isClassesRoot(resourceRoot)) {
                     // special handling
                     resourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
                 }
-
                 componentDescriptions.put(resourceRoot, component);
                 if (component instanceof EJBComponentDescription) {
                     ejbComponentDescriptions.put(resourceRoot, (EJBComponentDescription) component);
@@ -212,7 +217,10 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             this.deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             this.classesResourceRoot = deploymentUnit.getAttachment(WeldAttachments.CLASSES_RESOURCE_ROOT);
             HashSet<AnnotationType> annotationTypes = new HashSet<>(getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS));
-            annotationTypes.addAll(getRootDeploymentUnit(deploymentUnit).getAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS));
+            List<DotName> definingAnnotations = getRootDeploymentUnit(deploymentUnit).getAttachmentList(InjectionTargetDefiningAnnotations.INJECTION_TARGET_DEFINING_ANNOTATIONS);
+            for(DotName annotation : definingAnnotations) {
+                annotationTypes.add(new AnnotationType(annotation, false));
+            }
             this.beanDefiningAnnotations = annotationTypes;
             this.requireBeanDescriptor = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY).isRequireBeanDescriptor();
         }
@@ -305,9 +313,11 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 List<AnnotationInstance> annotationInstances = index.getAnnotations(beanDefiningAnnotation.getName());
                 implicitBeanClasses.addAll(Lists.transform(Indices.getAnnotatedClasses(annotationInstances), Indices.CLASS_INFO_TO_FQCN));
             }
-            //make all components into implicit beans so they will support injection
+            // Make all explicit components into implicit beans so they will support injection
             for(ComponentDescription description : components.componentDescriptions.get(resourceRoot)) {
-                implicitBeanClasses.add(description.getComponentClassName());
+                if(!components.implicitComponentDescriptions.contains(description)) {
+                    implicitBeanClasses.add(description.getComponentClassName());
+                }
             }
             return implicitBeanClasses;
         }

@@ -23,17 +23,13 @@
 package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceUnitInfo;
 import javax.persistence.spi.ProviderUtil;
-
-import org.jboss.as.jpa.container.EntityManagerUnwrappedTargetInvocationHandler;
 
 /**
  * TestPersistenceProvider
@@ -84,7 +80,7 @@ public class TestPersistenceProvider implements PersistenceProvider {
                 testEntityManagerFactory
         );
 
-        System.out.println("TestPersistenceProvider.createContainerEntityManagerFactory() is returning " + proxyEntityManagerFactory);
+        //System.out.println("TestPersistenceProvider.createContainerEntityManagerFactory() is returning " + proxyEntityManagerFactory);
         return proxyEntityManagerFactory;
     }
 

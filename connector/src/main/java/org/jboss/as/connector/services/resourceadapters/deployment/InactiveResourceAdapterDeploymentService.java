@@ -27,8 +27,6 @@ import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.jca.deployers.DeployersLogger;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -44,8 +42,6 @@ import org.jboss.msc.service.StopContext;
  */
 public final class InactiveResourceAdapterDeploymentService implements
         Service<InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment> {
-
-    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, "org.jboss.as.connector.deployers.RaXmlInactiveDeployer");
 
     private final InactiveResourceAdapterDeployment value;
 

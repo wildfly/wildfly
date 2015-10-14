@@ -36,6 +36,7 @@ import java.io.IOException;
  *
  * @author Jaikiran Pai
  */
+@Deprecated
 public class EJBClientContextIdentifierObjectTable implements ObjectTable {
     @Override
     public Writer getObjectWriter(Object o) throws IOException {

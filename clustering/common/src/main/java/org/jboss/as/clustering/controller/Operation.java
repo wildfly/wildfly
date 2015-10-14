@@ -19,16 +19,11 @@
 package org.jboss.as.clustering.controller;
 
 import org.jboss.as.controller.OperationDefinition;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Interface to be implemented by operation enumerations.
  * @author Paul Ferraro
  * @param <C> operation context
  */
-public interface Operation<C> {
-
-    OperationDefinition getDefinition();
-
-    ModelNode getValue(C context);
+public interface Operation<C> extends Definable<OperationDefinition>, Executable<C> {
 }

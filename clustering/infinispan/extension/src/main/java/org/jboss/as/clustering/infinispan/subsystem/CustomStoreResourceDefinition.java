@@ -22,21 +22,22 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
@@ -47,51 +48,58 @@ import org.jboss.dmr.ModelType;
  */
 public class CustomStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
+    static final PathElement LEGACY_PATH = PathElement.pathElement("store", "STORE");
+    static final PathElement PATH = pathElement("custom");
 
-    // attributes
-    static final SimpleAttributeDefinition CLASS = new SimpleAttributeDefinitionBuilder(ModelKeys.CLASS, ModelType.STRING, false)
-            .setXmlName(Attribute.CLASS.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        CLASS("class", ModelType.STRING)
+        ;
+        private final AttributeDefinition definition;
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CLASS };
+        Attribute(String name, ModelType type) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setAllowNull(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
 
-    // operations
-    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
-            .setParameters(PARAMETERS)
-            .addParameter(CLASS)
-            .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CLASS);
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer())).inheritResourceAttributeDefinitions();
+
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
         }
 
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
     CustomStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(StoreType.CUSTOM, allowRuntimeOnlyRegistration);
+        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
-    }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
-    @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(ADD_DEFINITION, handler);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(StoreResourceDefinition.Attribute.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new CustomStoreBuilderFactory());
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
+
+        super.register(registration);
     }
 }

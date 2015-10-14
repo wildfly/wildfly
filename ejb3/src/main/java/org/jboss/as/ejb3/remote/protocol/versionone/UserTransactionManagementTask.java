@@ -65,7 +65,7 @@ abstract class UserTransactionManagementTask implements Runnable {
                 // the transaction operation failed
                 transactionRequestHandler.writeException(this.channelAssociation, this.marshallerFactory, this.invocationId, t, null);
             } catch (IOException e) {
-                EjbLogger.ROOT_LOGGER.couldNotWriteOutToChannel(e);
+                EjbLogger.REMOTE_LOGGER.couldNotWriteOutToChannel(e);
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
             }
@@ -76,7 +76,7 @@ abstract class UserTransactionManagementTask implements Runnable {
             // write out invocation success message to the channel
             transactionRequestHandler.writeTxInvocationResponseMessage(this.channelAssociation, this.invocationId);
         } catch (IOException e) {
-            EjbLogger.ROOT_LOGGER.couldNotWriteInvocationSuccessMessage(e);
+            EjbLogger.REMOTE_LOGGER.couldNotWriteInvocationSuccessMessage(e);
             // close the channel
             IoUtils.safeClose(this.channelAssociation.getChannel());
         }

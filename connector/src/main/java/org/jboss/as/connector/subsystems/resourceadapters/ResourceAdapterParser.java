@@ -84,9 +84,6 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
     public void parse(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
 
-        Activations adapters = null;
-
-
         //iterate over tags
         int iterate;
         try {

@@ -66,7 +66,7 @@ public class SFSBTopLevel {
      */
     @PostConstruct
     public void postconstruct() {
-        System.out.println("SFSBTopLevel PostConstruct occurred for " + this.toString() + ", current thread=" + Thread.currentThread().getName() + ", all dependency injection has been performed.");
+        //System.out.println("SFSBTopLevel PostConstruct occurred for " + this.toString() + ", current thread=" + Thread.currentThread().getName() + ", all dependency injection has been performed.");
     }
 
     public void createEmployee(String name, String address, int id) {

@@ -22,77 +22,107 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/state-transfer=STATE_TRANSFER
+ * Resource description for the addressable resource and its alias
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/component=state-transfer
+ * /subsystem=infinispan/cache-container=X/cache=Y/state-transfer=STATE_TRANSFER
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class StateTransferResourceDefinition extends SimpleResourceDefinition {
+public class StateTransferResourceDefinition extends ComponentResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+    static final PathElement LEGACY_PATH = PathElement.pathElement("state-transfer", "STATE_TRANSFER");
+    static final PathElement PATH = pathElement("state-transfer");
 
-    // attributes
-    static final SimpleAttributeDefinition CHUNK_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.CHUNK_SIZE, ModelType.INT, true)
-            .setXmlName(Attribute.CHUNK_SIZE.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(10000))
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        CHUNK_SIZE("chunk-size", ModelType.INT, new ModelNode(512)),
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(4))),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ModelKeys.ENABLED, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.ENABLED.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(true))
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type, defaultValue).build();
+        }
 
-    static final SimpleAttributeDefinition TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.TIMEOUT, ModelType.LONG, true)
-            .setXmlName(Attribute.TIMEOUT.getLocalName())
-            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(60000L))
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ENABLED, TIMEOUT, CHUNK_SIZE };
+    @Deprecated
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true), InfinispanModel.VERSION_4_0_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .setDefaultValue(defaultValue)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
+        ;
+    }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED, TIMEOUT, CHUNK_SIZE);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.TIMEOUT.getDefinition()), Attribute.TIMEOUT.getDefinition())
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CHUNK_SIZE.getDefinition()), Attribute.CHUNK_SIZE.getDefinition())
+            ;
         }
     }
 
     StateTransferResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STATE_TRANSFER),
-                new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(DeprecatedAttribute.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StateTransferBuilderFactory());
+        new AddStepHandler(descriptor, handler).register(registration);
+        new RemoveStepHandler(descriptor, handler).register(registration);
     }
 }

@@ -27,14 +27,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -122,6 +119,10 @@ public class Constants {
     private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
 
     private static final String CONNECTABLE_NAME = "connectable";
+
+    private static final String MCP_NAME = "mcp";
+
+    private static final String ENLISTMENT_TRACE_NAME = "enlistment-trace";
 
     private static final String TRACKING_NAME = "tracking";
 
@@ -238,7 +239,7 @@ public class Constants {
                 .setAllowNull(true)
                 .build();
 
-    static final String STATISTICS = "statistics";
+    public static final String STATISTICS = "statistics";
 
 
     static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinitionBuilder(CONNECTION_URL_NAME, ModelType.STRING, false)
@@ -326,6 +327,7 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
             .setAllowNull(true)
+            .setDeprecated(ModelVersion.create(3), false)
             .build();
 
     static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
@@ -333,6 +335,20 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
             .setAllowNull(true)
+            .build();
+
+    static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
+            .setXmlName(DataSource.Attribute.ENLISTMENT_TRACE.getLocalName())
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowNull(true)
+            .build();
+
+    static SimpleAttributeDefinition MCP = new SimpleAttributeDefinitionBuilder(MCP_NAME, ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreConcurrentLinkedDequeManagedConnectionPool.class.getName()))
+            .setXmlName(DataSource.Attribute.MCP.getLocalName())
             .build();
 
     static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
@@ -348,7 +364,7 @@ public class Constants {
             .setAllowExpression(true)
             .build();
 
-    static SimpleAttributeDefinition CONNECTION_PROPERTIES = new SimpleAttributeDefinitionBuilder(CONNECTION_PROPERTIES_NAME, ModelType.STRING, true)
+    static final PropertiesAttributeDefinition CONNECTION_PROPERTIES = new PropertiesAttributeDefinition.Builder(CONNECTION_PROPERTIES_NAME, true)
             .setXmlName(DataSource.Tag.CONNECTION_PROPERTY.getLocalName())
             .setAllowExpression(true)
             .build();
@@ -571,7 +587,6 @@ public class Constants {
             .build();
 
 
-    static final List<SimpleAttributeDefinition> DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED = Arrays.asList(JTA, STATISTICS_ENABLED);
     static final SimpleAttributeDefinition[] DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[]{CONNECTION_URL,
             DRIVER_CLASS, Constants.DATASOURCE_CLASS, JNDI_NAME,
             DATASOURCE_DRIVER,
@@ -584,7 +599,7 @@ public class Constants {
             USERNAME, PASSWORD, SECURITY_DOMAIN,
             REAUTH_PLUGIN_CLASSNAME,
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY,
-            ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS, CONNECTION_PROPERTIES,
+            ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS,
             PREPARED_STATEMENTS_CACHE_SIZE,
             SHARE_PREPARED_STATEMENTS,
             TRACK_STATEMENTS,
@@ -603,13 +618,14 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, SPY,
-            USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING};
+            USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING, MCP, ENLISTMENT_TRACE};
 
     static final PropertiesAttributeDefinition[] DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,
             EXCEPTION_SORTER_PROPERTIES,
             STALE_CONNECTION_CHECKER_PROPERTIES,
             VALID_CONNECTION_CHECKER_PROPERTIES, CONNECTION_LISTENER_PROPERTIES,
+            CONNECTION_PROPERTIES,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
 
     };
@@ -678,7 +694,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, XA_RESOURCE_TIMEOUT,
-            SPY, USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING,
+            SPY, USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING, MCP, ENLISTMENT_TRACE,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME,
             NO_RECOVERY, URL_PROPERTY};
@@ -692,7 +708,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
     };
 
-    static SimpleAttributeDefinition XADATASOURCE_PROPERTIES = new SimpleAttributeDefinitionBuilder(XADATASOURCEPROPERTIES_NAME, ModelType.STRING, false)
+    static final PropertiesAttributeDefinition XADATASOURCE_PROPERTIES = new PropertiesAttributeDefinition.Builder(XADATASOURCEPROPERTIES_NAME, false)
             .setXmlName(XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName())
             .setAllowExpression(true)
             .build();
@@ -777,8 +793,8 @@ public class Constants {
             .setReplyParameters(DRIVER_MINOR_VERSION, DRIVER_MAJOR_VERSION, DEPLOYMENT_NAME, DRIVER_NAME, DRIVER_XA_DATASOURCE_CLASS_NAME, XA_DATASOURCE_CLASS, JDBC_COMPLIANT, MODULE_SLOT, DRIVER_CLASS_NAME, DRIVER_MODULE_NAME)
             .setAttributeResolver(DataSourcesExtension.getResourceDescriptionResolver("jdbc-driver"))
             .build();
-    static final SimpleOperationDefinition DATASOURCE_ENABLE = new SimpleOperationDefinitionBuilder(ENABLE, DataSourcesExtension.getResourceDescriptionResolver()).build();
-    static final SimpleOperationDefinition DATASOURCE_DISABLE = new SimpleOperationDefinitionBuilder(DISABLE, DataSourcesExtension.getResourceDescriptionResolver())
+    static final SimpleOperationDefinition DATASOURCE_ENABLE = new SimpleOperationDefinitionBuilder(ENABLE, DataSourcesExtension.getResourceDescriptionResolver()).setDeprecated(ModelVersion.create(3)).build();
+    static final SimpleOperationDefinition DATASOURCE_DISABLE = new SimpleOperationDefinitionBuilder(DISABLE, DataSourcesExtension.getResourceDescriptionResolver()).setDeprecated(ModelVersion.create(3))
             .build();
     static final SimpleOperationDefinition FLUSH_IDLE_CONNECTION = new SimpleOperationDefinitionBuilder("flush-idle-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
             .setRuntimeOnly().build();

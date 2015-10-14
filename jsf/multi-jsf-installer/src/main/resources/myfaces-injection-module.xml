@@ -42,7 +42,7 @@
         <module name="javax.enterprise.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.weld.core"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron"/>
 
         <module name="javax.faces.api" slot="${jsf-impl-name}-${jsf-version}"/>
     </dependencies>

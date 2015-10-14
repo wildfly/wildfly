@@ -36,7 +36,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,7 +82,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.util.Base64;
 
 /**
  * <p>
@@ -100,12 +101,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     private final Map<String, Set<String>> knownTimerIds = new HashMap<>();
 
-    private final String name;
     /** Identifier for the database dialect to be used for the timer-sql.properties */
     private String database;
     /** List of extracted known dialects*/
     private final HashSet<String> databaseDialects = new HashSet<String>();
+    /** Name of the configured partition name*/
     private final String partition;
+    /** Current node name*/
+    private final String nodeName;
     /** Interval in millis to refresh the timers from the persistence store*/
     private final int refreshInterval;
     /** Flag whether this instance should execute persistent timers*/
@@ -126,10 +129,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String DELETE_TIMER = "delete-timer";
     private static final String UPDATE_RUNNING = "update-running";
 
-    public DatabaseTimerPersistence(final String name, final String database, String partition, int refreshInterval, boolean allowExecution) {
-        this.name = name;
+    public DatabaseTimerPersistence(final String database, String partition, String nodeName, int refreshInterval, boolean allowExecution) {
         this.database = database;
         this.partition = partition;
+        this.nodeName = nodeName;
         this.refreshInterval = refreshInterval;
         this.allowExecution = allowExecution;
     }
@@ -359,9 +362,12 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 statement.setTimestamp(1, timestamp(timerEntity.getNextExpiration()));
                 statement.setTimestamp(2, timestamp(timerEntity.getPreviousRun()));
                 statement.setString(3, timerEntity.getState().name());
-                statement.setString(4, timerEntity.getTimedObjectId());
-                statement.setString(5, timerEntity.getId());
-                statement.setString(6, partition);
+                setNodeName(timerEntity.getState(), statement, 4);
+                // WHERE CLAUSE
+                statement.setString(5, timerEntity.getTimedObjectId());
+                statement.setString(6, timerEntity.getId());
+                statement.setString(7, partition);
+                statement.setString(8, nodeName);   // only persist if this node or empty
                 statement.execute();
             }
         } catch (SQLException e) {
@@ -387,12 +393,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 connection = dataSource.getConnection();
                 statement = connection.prepareStatement(loadTimer);
                 statement.setString(1, TimerState.IN_TIMEOUT.name());
-                statement.setString(2, timer.getId());
-                statement.setString(3, TimerState.IN_TIMEOUT.name());
+                setNodeName(TimerState.IN_TIMEOUT, statement, 2);
+                statement.setString(3, timer.getId());
+                statement.setString(4, TimerState.IN_TIMEOUT.name());
+                statement.setString(5, TimerState.RETRY_TIMEOUT.name());
                 if (timer.getNextExpiration() == null) {
-                    statement.setTimestamp(4, null);
+                    statement.setTimestamp(6, null);
                 } else {
-                    statement.setTimestamp(4, new Timestamp(timer.getNextExpiration().getTime()));
+                    statement.setTimestamp(6, timestamp(timer.getNextExpiration()));
                 }
             } catch (SQLException e) {
                 // something wrong with the preparation
@@ -444,10 +452,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement.setString(1, timedObjectId);
             statement.setString(2, partition);
             resultSet = statement.executeQuery();
-            final List<TimerImpl> timers = new ArrayList<TimerImpl>();
+            final List<Holder> timers = new ArrayList<>();
             while (resultSet.next()) {
                 try {
-                    final TimerImpl timerImpl = timerFromResult(resultSet, timerService);
+                    final Holder timerImpl = timerFromResult(resultSet, timerService);
                     if (timerImpl != null) {
                         timers.add(timerImpl);
                     }
@@ -457,13 +465,30 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             }
             synchronized (this) {
                 Set<String> ids = new HashSet<>();
-                for (TimerImpl timer : timers) {
-                    ids.add(timer.getId());
+                for (Holder timer : timers) {
+                    ids.add(timer.timer.getId());
                 }
                 knownTimerIds.put(timedObjectId, ids);
+                for(Holder timer : timers) {
+                    if(timer.requiresReset) {
+                        TimerImpl ret = timer.timer;
+                        EjbLogger.DEPLOYMENT_LOGGER.loadedPersistentTimerInTimeout(ret.getId(), ret.getTimedObjectId());
+                        if(ret.getNextExpiration() == null) {
+                            ret.setTimerState(TimerState.CANCELED);
+                            persistTimer(ret);
+                            return null;
+                        } else {
+                            ret.setTimerState(TimerState.ACTIVE);
+                            persistTimer(ret);
+                        }
+                    }
+                }
             }
-
-            return timers;
+            List<TimerImpl> ret = new ArrayList<>();
+            for(Holder timer : timers) {
+                ret.add(timer.timer);
+            }
+            return ret;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -489,8 +514,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         return this;
     }
 
-    private TimerImpl timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService) throws SQLException {
+    private Holder timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService) throws SQLException {
         boolean calendarTimer = resultSet.getBoolean(24);
+        final String nodeName = resultSet.getString(25);
+        boolean requiresReset = false;
 
         TimerImpl.Builder builder = null;
         if (calendarTimer) {
@@ -536,7 +563,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         builder.setInfo((Serializable) deSerialize(resultSet.getString(8)));
         builder.setTimerState(TimerState.valueOf(resultSet.getString(9)));
         builder.setPersistent(true);
-        return builder.build(timerService);
+
+        TimerImpl ret =  builder.build(timerService);
+        if(nodeName != null && (nodeName.equals(this.nodeName))) {
+            if(ret.getState() == TimerState.IN_TIMEOUT || ret.getState() == TimerState.RETRY_TIMEOUT) {
+                requiresReset = true;
+            }
+        }
+        return new Holder(ret, requiresReset);
     }
 
     private void statementParameters(final TimerImpl timerEntity, final PreparedStatement statement) throws SQLException {
@@ -599,6 +633,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement.setBoolean(24, false);
         }
         statement.setString(25, partition);
+        setNodeName(timerEntity.getState(), statement, 26);
     }
 
     private String serialize(final Serializable serializable) {
@@ -615,14 +650,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return Base64.encodeBytes(out.toByteArray());
+        return Base64.getEncoder().encodeToString(out.toByteArray());
     }
 
     public Object deSerialize(final String data) throws SQLException {
         if (data == null) {
             return null;
         }
-        InputStream in = new ByteArrayInputStream(Base64.decode(data));
+        InputStream in = new ByteArrayInputStream(Base64.getDecoder().decode(data));
         try {
             final Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
             unmarshaller.start(new InputStreamByteInput(in));
@@ -642,7 +677,25 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         if (date == null) {
             return null;
         }
-        return new Timestamp(date.getTime());
+        long time = date.getTime();
+        if(database != null && database.equals("mysql")) {
+            // truncate the milliseconds because MySQL 5.6.4+ and MariaDB 5.3+ do the same
+            // and querying with a Timestamp containing milliseconds doesn't match the rows
+            // with such truncated DATETIMEs
+            time -= time % 1000;
+        }
+        return new Timestamp(time);
+    }
+
+    /**
+     * Set the node name for persistence if the state is IN_TIMEOUT or RETRY_TIMEOUT to show which node is current active for the timer.
+     */
+    private void setNodeName(final TimerState timerState, PreparedStatement statement, int paramIndex) throws SQLException {
+        if(timerState == TimerState.IN_TIMEOUT || timerState == TimerState.RETRY_TIMEOUT) {
+            statement.setString(paramIndex, nodeName);
+        } else {
+            statement.setNull(paramIndex, Types.VARCHAR);
+        }
     }
 
 
@@ -736,8 +789,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                         synchronized (DatabaseTimerPersistence.this) {
                                             knownTimerIds.get(timedObjectId).add(id);
                                         }
-                                        final TimerImpl timerImpl = timerFromResult(resultSet, listener.getTimerService());
-                                        listener.timerAdded(timerImpl);
+                                        final Holder holder = timerFromResult(resultSet, listener.getTimerService());
+                                        if(holder != null) {
+                                            listener.timerAdded(holder.timer);
+                                        }
                                     }
                                 } catch (Exception e) {
                                     EjbLogger.ROOT_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
@@ -764,6 +819,25 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 }
             }
 
+        }
+    }
+
+
+    static final class Holder {
+        final TimerImpl timer;
+        final boolean requiresReset;
+
+        Holder(TimerImpl timer, boolean requiresReset) {
+            this.timer = timer;
+            this.requiresReset = requiresReset;
+        }
+
+        public TimerImpl getTimer() {
+            return timer;
+        }
+
+        public boolean isRequiresReset() {
+            return requiresReset;
         }
     }
 }

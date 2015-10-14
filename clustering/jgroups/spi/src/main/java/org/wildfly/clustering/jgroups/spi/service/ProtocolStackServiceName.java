@@ -37,6 +37,6 @@ public enum ProtocolStackServiceName implements ProtocolStackServiceNameFactory 
 
     @Override
     public ServiceName getServiceName() {
-        return this.getServiceName(DEFAULT_STACK);
+        return this.getServiceName(DEFAULT_GROUP);
     }
 }
