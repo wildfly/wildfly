@@ -116,7 +116,7 @@ public abstract class ClusterPassivationTestBase {
         do {
             clusterContext = ejbClientContext.getClusterContext(CLUSTER_NAME);
             counter--;
-            Thread.sleep(CLUSTER_ESTABLISHMENT_WAIT_MS);
+            Thread.sleep(CLUSTER_ESTABLISHMENT_WAIT_MS); //NOPMD
         } while (clusterContext == null && counter < CLUSTER_ESTABLISHMENT_LOOP_COUNT);
         Assert.assertNotNull("Cluster context for " + CLUSTER_NAME + " was not taken in "
                 + (CLUSTER_ESTABLISHMENT_LOOP_COUNT * CLUSTER_ESTABLISHMENT_WAIT_MS) + " ms", clusterContext);
@@ -136,7 +136,7 @@ public abstract class ClusterPassivationTestBase {
         Assert.assertEquals(++clientNumber, statefulBean.getNumber()); // 41
         // nodeName of nested bean should be the same as the node of parent
         log.info("Called node name first: " + calledNodeFirst);
-        Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
+        Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation //NOPMD
 
         // A small hack - deleting node (by name) from cluster which this client knows
         // It means that the next request (ejb call) will be passed to the server #2
@@ -147,7 +147,7 @@ public abstract class ClusterPassivationTestBase {
         String calledNodeSecond = statefulBean.incrementNumber(); // 42
         statefulBean.setPassivationNode(calledNodeSecond);
         log.info("Called node name second: " + calledNodeSecond);
-        Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
+        Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation //NOPMD
 
         // Resetting cluster context to know both cluster nodes
         setupEJBClientContextSelector();
@@ -167,7 +167,7 @@ public abstract class ClusterPassivationTestBase {
 
         Assert.assertEquals("Supposing to get passivation node which was set", calledNodeSecond, statefulBean.getPassivatedBy());
 
-        Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
+        Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation //NOPMD
         Assert.assertEquals(++clientNumber, statefulBean.getNumber()); // 43
     }
 

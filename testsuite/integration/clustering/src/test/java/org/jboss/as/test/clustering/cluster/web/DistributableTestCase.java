@@ -207,7 +207,7 @@ public class DistributableTestCase extends ClusterAbstractTestCase {
             Future<HttpResponse> future = executor.submit(new RequestTask(client, longRunningURI));
 
             // Make sure long request has started
-            Thread.sleep(1000);
+            Thread.sleep(1000); //NOPMD
 
             if (undeployOnly) {
                 // Undeploy the app only.

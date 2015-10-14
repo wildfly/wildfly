@@ -206,7 +206,7 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
     private static void waitForView(URL baseURL, String... members) throws IOException, URISyntaxException {
         ClusterHttpClientUtil.establishTopology(baseURL, CONTAINER, "default", TOPOLOGY_CHANGE_TIMEOUT, members);
         try {
-            Thread.sleep(5000); // it takes a little extra time after merge for the singleton service to migrate
+            Thread.sleep(5000); // it takes a little extra time after merge for the singleton service to migrate //NOPMD
         } catch (InterruptedException e) {
             Assert.fail("Interrupted.");
         }

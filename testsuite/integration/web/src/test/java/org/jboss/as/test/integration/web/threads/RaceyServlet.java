@@ -41,7 +41,7 @@ public class RaceyServlet extends HttpServlet {
         int value = this.value;
         //incremement the value, with a little sleep to increase the chance of a racey update
         try {
-            Thread.sleep(2);
+            Thread.sleep(2); //NOPMD
         } catch (InterruptedException e) {
 
         }

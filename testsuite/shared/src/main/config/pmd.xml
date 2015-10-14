@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<ruleset name="Tests Best Programming Practises"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+    <description>
+This rulesets regroups some checks that aims at reducing the "instability" of tests by, for instance, detecting use of Thread.sleep().
+    </description>
+
+    <rule   name="DontUseThreadSleep"
+            message="Don't use Thread.sleep() - use more stable alternative as barrier"
+            language="java"
+            class="net.sourceforge.pmd.lang.rule.XPathRule">
+        <description>
+Don't use Thread.sleep() - use more stable alternative as barrier (or other implementation). Rationale behind this is that Thread.sleep tends to make test fails intermittently.
+        </description>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//PrimaryPrefix/Name[contains(@Image, "Thread.sleep") ]
+]]>
+                </value>
+            </property>
+        </properties>
+        <priority>3</priority>
+    </rule>
+
+</ruleset>
