@@ -2,32 +2,40 @@
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
-    <resource-adapter id="myRA">
+    <resource-adapter id="myRA" statistics-enabled="true">
       <!--Optional:-->
-      <archive>archive</archive>
+      <module id="moduleID" slot="main"/>
       <!--Optional:-->
       <bootstrap-context>bootstrapContext</bootstrap-context>
-      <!--Optional:-->
       <bean-validation-groups>
         <!--1 or more repetitions:-->
         <bean-validation-group>group</bean-validation-group>
       </bean-validation-groups>
       <!--Optional:-->
-      <transaction-support>XATransaction</transaction-support>
-      <!--Zero or more repetitions:-->
+      <transaction-support>NoTransaction</transaction-support>
+        <workmanager>
+            <security>
+                <mapping-required>true</mapping-required>
+                <domain>group</domain>
+            </security>
+        </workmanager>
+        <!--Zero or more repetitions:-->
       <config-property name="config1">value</config-property>
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->
-        <connection-definition use-ccm="true" class-name="token" sharable="false" enlistment="false" jndi-name="java:jboss/cf/PoolName" enabled="true" use-java-context="true" pool-name="poolName" connectable="false"
-                               enlistment-trace="true" mcp="org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool">
+        <connection-definition use-ccm="true" sharable="false" enlistment="true" class-name="token" jndi-name="java:jboss/cf/PoolName"
+                               enabled="true" use-java-context="true" pool-name="poolName" connectable="true" tracking="true"
+                               enlistment-trace="true" mcp="org.ironjacamar.myClass">
           <!--Zero or more repetitions:-->
           <config-property name="config2">value</config-property>
           <!--You have a CHOICE of the next 2 items at this level-->
           <!--Optional:-->
-          <xa-pool>
+          <pool>
             <!--Optional:-->
             <min-pool-size>200</min-pool-size>
+            <!--Optional:-->
+            <initial-pool-size>200</initial-pool-size>
             <!--Optional:-->
             <max-pool-size>200</max-pool-size>
             <!--Optional:-->
@@ -36,19 +44,13 @@
             <use-strict-min>true</use-strict-min>
             <!--Optional:-->
             <flush-strategy>FailingConnectionOnly</flush-strategy>
-            <!--Optional:-->
-            <is-same-rm-override>true</is-same-rm-override>
-            <!--Optional:-->
-            <interleaving />
-            <!--Optional:-->
-            <no-tx-separate-pools />
-            <!--Optional:-->
-            <pad-xid>true</pad-xid>
-            <!--Optional:-->
-            <wrap-xa-resource>false</wrap-xa-resource>
-          </xa-pool>
+          </pool>
           <!--Optional:-->
-
+          <security>
+            <!--You have a CHOICE of the next 3 items at this level-->
+            <!--Optional:-->
+            <application/>
+          </security>
           <!--Optional:-->
           <timeout>
             <!--Optional:-->
@@ -79,6 +81,8 @@
               <user-name>userName</user-name>
               <!--Optional:-->
               <password>pwd</password>
+              <!--Optional:-->
+              <security-domain>token</security-domain>
             </recover-credential>
             <!--Optional:-->
             <recover-plugin class-name="aClass">

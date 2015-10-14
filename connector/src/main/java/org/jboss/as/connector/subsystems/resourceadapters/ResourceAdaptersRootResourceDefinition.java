@@ -61,9 +61,14 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
         ResourceTransformationDescriptionBuilder builder130 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceAdapterResourceDefinition.registerTransformers130(builder130);
         TransformationDescription.Tools.register(builder130.build(), subsystem, ModelVersion.create(1, 3, 0));
+
         ResourceTransformationDescriptionBuilder builder200 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceAdapterResourceDefinition.registerTransformers200(builder200);
         TransformationDescription.Tools.register(builder200.build(), subsystem, ModelVersion.create(2, 0, 0));
+
+        ResourceTransformationDescriptionBuilder builder300 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceAdapterResourceDefinition.registerTransformers300(builder300);
+        TransformationDescription.Tools.register(builder200.build(), subsystem, ModelVersion.create(3, 0, 0));
 
     }
 }
