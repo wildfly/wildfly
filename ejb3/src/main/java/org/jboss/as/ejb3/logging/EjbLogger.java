@@ -118,6 +118,7 @@ import org.jboss.remoting3.MessageInputStream;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.Logger.Level.DEBUG;
 
 /**
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
@@ -455,7 +456,7 @@ public interface EjbLogger extends BasicLogger {
      * @param channel The channel for which the {@link Channel.Receiver#handleEnd(org.jboss.remoting3.Channel)} notification
      *                was received
      */
-    @LogMessage(level = ERROR)
+    @LogMessage(level = DEBUG)
     @Message(id = 41, value = "Channel end notification received, closing channel %s")
     void closingChannelOnChannelEnd(Channel channel);
 
