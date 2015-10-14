@@ -94,9 +94,9 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
                     throws IOException, URISyntaxException, InterruptedException {
 
         this.deploy(SINGLETON_DEPLOYMENT_1);
-        Thread.sleep(DELAY);
+        Thread.sleep(DELAY); //NOPMD
         this.deploy(SINGLETON_DEPLOYMENT_2);
-        Thread.sleep(DELAY);
+        Thread.sleep(DELAY); //NOPMD
 
         URI uri1 = TraceServlet.createURI(new URL(baseURL1.getProtocol(), baseURL1.getHost(), baseURL1.getPort(), "/" + this.deploymentName + "/"));
         URI uri2 = TraceServlet.createURI(new URL(baseURL2.getProtocol(), baseURL2.getHost(), baseURL2.getPort(), "/" + this.deploymentName + "/"));
@@ -118,7 +118,7 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             this.undeploy(SINGLETON_DEPLOYMENT_1);
 
-            Thread.sleep(DELAY);
+            Thread.sleep(DELAY); //NOPMD
 
             response = client.execute(new HttpTrace(uri1));
             try {
@@ -136,7 +136,7 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             this.deploy(SINGLETON_DEPLOYMENT_1);
 
-            Thread.sleep(DELAY);
+            Thread.sleep(DELAY); //NOPMD
 
             response = client.execute(new HttpTrace(uri1));
             try {
@@ -154,7 +154,7 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             this.undeploy(SINGLETON_DEPLOYMENT_2);
 
-            Thread.sleep(DELAY);
+            Thread.sleep(DELAY); //NOPMD
 
             response = client.execute(new HttpTrace(uri1));
             try {
@@ -172,7 +172,7 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             this.deploy(SINGLETON_DEPLOYMENT_2);
 
-            Thread.sleep(DELAY);
+            Thread.sleep(DELAY); //NOPMD
 
             response = client.execute(new HttpTrace(uri1));
             try {

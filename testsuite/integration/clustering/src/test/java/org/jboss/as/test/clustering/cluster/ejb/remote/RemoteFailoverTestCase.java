@@ -117,13 +117,13 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             Incrementor bean = context.lookupStateless(beanClass, Incrementor.class);
 
             // Allow sufficient time for client to receive full topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT); //NOPMD
 
             List<String> results = new ArrayList<>(COUNT);
             for (int i = 0; i < COUNT; ++i) {
                 Result<Integer> result = bean.increment();
                 results.add(result.getNode());
-                Thread.sleep(INVOCATION_WAIT);
+                Thread.sleep(INVOCATION_WAIT); //NOPMD
             }
 
             for (String node: NODES) {
@@ -136,7 +136,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             for (int i = 0; i < COUNT; ++i) {
                 Result<Integer> result = bean.increment();
                 results.set(i, result.getNode());
-                Thread.sleep(INVOCATION_WAIT);
+                Thread.sleep(INVOCATION_WAIT); //NOPMD
             }
 
             Assert.assertEquals(0, Collections.frequency(results, NODE_1));
@@ -145,12 +145,12 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             deploy(DEPLOYMENT_1);
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT); //NOPMD
 
             for (int i = 0; i < COUNT; ++i) {
                 Result<Integer> result = bean.increment();
                 results.set(i, result.getNode());
-                Thread.sleep(INVOCATION_WAIT);
+                Thread.sleep(INVOCATION_WAIT); //NOPMD
             }
 
             for (String node: NODES) {
@@ -163,7 +163,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             for (int i = 0; i < COUNT; ++i) {
                 Result<Integer> result = bean.increment();
                 results.set(i, result.getNode());
-                Thread.sleep(INVOCATION_WAIT);
+                Thread.sleep(INVOCATION_WAIT); //NOPMD
             }
 
             Assert.assertEquals(COUNT, Collections.frequency(results, NODE_1));
@@ -172,12 +172,12 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             start(CONTAINER_2);
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT); //NOPMD
 
             for (int i = 0; i < COUNT; ++i) {
                 Result<Integer> result = bean.increment();
                 results.set(i, result.getNode());
-                Thread.sleep(INVOCATION_WAIT);
+                Thread.sleep(INVOCATION_WAIT); //NOPMD
             }
 
             for (String node: NODES) {
@@ -222,7 +222,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             deploy(this.findDeployment(target));
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT); //NOPMD
 
             result = bean.increment();
             String failbackTarget = result.getNode();
@@ -255,7 +255,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             start(this.findContainer(target));
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT); //NOPMD
 
             result = bean.increment();
             failbackTarget = result.getNode();
@@ -290,7 +290,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             AtomicInteger count = new AtomicInteger();
 
             // Allow sufficient time for client to receive full topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT); //NOPMD
 
             String target = bean.increment().getNode();
             count.incrementAndGet();

@@ -73,7 +73,7 @@ public class SimpleServlet extends HttpServlet {
         if (req.getParameter(REQUEST_DURATION_PARAM) != null) {
             int duration = Integer.valueOf(req.getParameter(REQUEST_DURATION_PARAM));
             try {
-                Thread.sleep(duration);
+                Thread.sleep(duration); //NOPMD
             } catch (InterruptedException ex) {
             }
         }

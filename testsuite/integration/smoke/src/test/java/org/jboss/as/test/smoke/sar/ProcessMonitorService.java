@@ -57,7 +57,7 @@ public class ProcessMonitorService implements ProcessMonitorServiceMBean {
 
                     log.info(config.getExampleName() + "-Montitor: System using " + usedmemory + " Mb of " + totalmemory + " Mb after " + seconds + " seconds");
                     try {
-                        Thread.sleep(config.getIntervalSeconds() * 1000);
+                        Thread.sleep(config.getIntervalSeconds() * 1000); //NOPMD
                     } catch (InterruptedException e) {
                         stop.set(true);
                     }

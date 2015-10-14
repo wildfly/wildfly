@@ -65,7 +65,7 @@ public abstract class RequestDumpingHandlerTestImpl {
 
     /**
      * Constructor that immediately executes test body.
-     * 
+     *
      * @param uri testing URI to connect to
      * @param logFilePath path to log file in which are logged request dumps
      * @param requestDumperOn whether request dumping feature is enabled at all
@@ -78,7 +78,7 @@ public abstract class RequestDumpingHandlerTestImpl {
     /***
      * Abstract method which implements way of performing request to the server. It should be implemented depending on what type
      * of request we want to perform (HTTP, HTTPS, etc.).
-     * 
+     *
      * @param uri testing URI to connect to
      * @return 2dimensional array - request (as a first member) and response (as a second member) headers arrays; in case that
      *         there is no simple way how to obtain request and response headers then returns null
@@ -122,7 +122,7 @@ public abstract class RequestDumpingHandlerTestImpl {
 
     /**
      * Reads content of the file into a string variable.
-     * 
+     *
      * @param logFilePath
      * @param skipBytes number of bytes from the beginning of the file that should be skipped
      * @return content of the file as a string
@@ -151,7 +151,7 @@ public abstract class RequestDumpingHandlerTestImpl {
     /**
      * Searching log for request dump of request to particular path. If no such request dump is found there is sanity loop to
      * ensure that system has had enough time to write data to the disk.
-     * 
+     *
      * @param logFilePath path to log file
      * @param path URI path searched for in log file
      * @param skipBytes number of bytes from the beginning of the file that should be skipped
@@ -178,7 +178,7 @@ public abstract class RequestDumpingHandlerTestImpl {
                 hasFound = true;
                 break;
             }
-            Thread.sleep(SLEEP_TIMEOUT);
+            Thread.sleep(SLEEP_TIMEOUT); //NOPMD
         } while (currTime - startTime < TOTAL_DELAY);
 
         log.info("I have read following content of the file '" + logFilePath + "':\n" + content + "\n---END-OF-FILE-OUTPUT---");
@@ -294,7 +294,7 @@ public abstract class RequestDumpingHandlerTestImpl {
 
     /**
      * Counts number of occurrences of given string in given content.
-     * 
+     *
      * @param content in this content will be searching for given pattern
      * @param regExp given pattern to search in content
      * @return number of occurrences in given content
@@ -313,7 +313,7 @@ public abstract class RequestDumpingHandlerTestImpl {
 
     /**
      * Testing class which implements HTTPS requests on server.
-     * 
+     *
      * @author <a href="mailto:jstourac@redhat.com">Jan Stourac</a>
      *
      */
@@ -400,7 +400,7 @@ public abstract class RequestDumpingHandlerTestImpl {
 
     /**
      * Testing class that implements standard HTTP requests.
-     * 
+     *
      * @author <a href="mailto:jstourac@redhat.com">Jan Stourac</a>
      *
      */
@@ -444,7 +444,7 @@ public abstract class RequestDumpingHandlerTestImpl {
 
     /**
      * Testing class that implements standard websocket requests via http upgrade.
-     * 
+     *
      * @author <a href="mailto:jstourac@redhat.com">Jan Stourac</a>
      *
      */

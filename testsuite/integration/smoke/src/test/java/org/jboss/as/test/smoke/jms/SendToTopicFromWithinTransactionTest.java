@@ -85,7 +85,7 @@ public class SendToTopicFromWithinTransactionTest {
     public void sendSuccessfully() throws Exception {
         try {
             sender.sendToTopicSuccessfully();
-            Thread.sleep(2000);
+            Thread.sleep(2000); //NOPMD
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -96,7 +96,7 @@ public class SendToTopicFromWithinTransactionTest {
     public void sendAndRollback() {
         try {
             sender2.sendToTopicAndRollback();
-            Thread.sleep(2000);
+            Thread.sleep(2000); // NOPMD
         } catch (Exception ex) {
             ex.printStackTrace();
         }

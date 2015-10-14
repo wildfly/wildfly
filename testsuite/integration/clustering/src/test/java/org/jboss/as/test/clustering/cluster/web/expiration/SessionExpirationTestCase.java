@@ -374,7 +374,7 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
             }
 
             // Trigger timeout of sessionId
-            Thread.sleep(2000);
+            Thread.sleep(2000); //NOPMD
 
             // Timeout should trigger session destroyed event and valueUnbound binding event
             response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL2, "a")));
