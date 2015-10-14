@@ -563,6 +563,8 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ConnectionFactoryAttributes.Pooled.PASSWORD,
                                                         ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
+                                                        ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
+                                                        ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
                                                         ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS)))
