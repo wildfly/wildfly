@@ -408,6 +408,22 @@
                    <artifactId>maven-install-plugin</artifactId>
                    <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
                </plugin>
+
+               <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.5</version>
+                <configuration>
+                    <rulesets>
+                        <ruleset>https://raw.githubusercontent.com/wildfly/wildfly/master/testsuite/shared/src/main/config/pmd.xml</ruleset>
+                    </rulesets>
+                    <linkXref>true</linkXref>
+                    <sourceEncoding>utf-8</sourceEncoding>
+                    <failOnViolation>true</failOnViolation>
+                    <includeTests>true</includeTests>
+                </configuration>
+	        </plugin>
+
             </plugins>
         </pluginManagement>
     </build>
@@ -1325,4 +1341,15 @@
         </profile>
 
     </profiles>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.5</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
 </project>
