@@ -396,7 +396,7 @@ public class MigrateOperation implements OperationStepHandler {
                             migratePooledConnectionFactory(newAddOp);
                             break;
                         case CLUSTER_CONNECTION:
-                            migrateClusterConnection(newAddOp);
+                            migrateClusterConnection(newAddOp, warnings);
                             break;
                         case BRIDGE:
                             migrateBridge(newAddOp);
@@ -518,10 +518,21 @@ public class MigrateOperation implements OperationStepHandler {
         migrateDiscoveryGroupNameAttribute(addOperation);
     }
 
-    private void migrateClusterConnection(ModelNode addOperation) {
+    private void migrateClusterConnection(ModelNode addOperation, List<String> warnings) {
         // connector-ref attribute has been renamed to connector-name
         addOperation.get("connector-name").set(addOperation.get(CONNECTOR_REF_STRING));
         addOperation.remove(CONNECTOR_REF_STRING);
+
+        ModelNode forwardWhenNoConsumers = addOperation.get(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName());
+        if (forwardWhenNoConsumers.getType() == EXPRESSION) {
+            warnings.add(ROOT_LOGGER.couldNotMigrateResourceAttributeWithExpression(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName(), pathAddress(addOperation.get(OP_ADDR))));
+        } else {
+            boolean value = forwardWhenNoConsumers.asBoolean(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getDefaultValue().asBoolean());
+            String messageLoadBalancingType = value ? "STRICT" : "ON_DEMAND";
+            addOperation.get("message-load-balancing-type").set(messageLoadBalancingType);
+        }
+        addOperation.remove(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName());
+
         migrateDiscoveryGroupNameAttribute(addOperation);
     }
 
