@@ -26,24 +26,28 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 
 /**
  * IGNORE until  https://issues.apache.org/jira/browse/ARTEMIS-103 is fixed.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-@Ignore
 public class ReplicatedFailoverTestCase extends FailoverTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        thisTestIsFailingIntermittently("WFLY-5531");
+    }
 
     @Override
     protected void setUpServer1(ModelControllerClient client) throws Exception {
