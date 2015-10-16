@@ -232,6 +232,7 @@
             <cluster-connection name="cc2">
                 <address>cc2-address</address>
                 <connector-ref>netty</connector-ref>
+                <forward-when-no-consumers>true</forward-when-no-consumers>
                 <static-connectors allow-direct-connections-only="true">
                     <connector-ref>in-vm</connector-ref>
                     <connector-ref>netty</connector-ref>
@@ -240,6 +241,7 @@
             <cluster-connection name="cc3">
                 <address>cc3-address</address>
                 <connector-ref>netty</connector-ref>
+                <forward-when-no-consumers>false</forward-when-no-consumers>
                 <discovery-group-ref discovery-group-name="groupC"/>
             </cluster-connection>
             <cluster-connection name="cc4">

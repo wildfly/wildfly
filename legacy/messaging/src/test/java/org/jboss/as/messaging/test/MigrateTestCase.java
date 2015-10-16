@@ -159,7 +159,8 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         // 5 warnings about discovery-group attributes that can not be migrated.
         // 2 warnings about interceptors that can not be migrated.
         // 1 warning about HA migration (attributes have expressions)
-        int expectedNumberOfWarnings = 6 + 5 + 2 + 1;
+        // 1 warning about cluster-connection forward-when-no-consumers attribute having an expresion.
+        int expectedNumberOfWarnings = 6 + 5 + 2 + 1 + 1;
         // 1 warning if add-legacy-entries is true because an in-vm connector can not be used in a legacy-connection-factory
         if (addLegacyEntries) {
             expectedNumberOfWarnings += 1;
@@ -176,6 +177,9 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         ModelNode newServer = newSubsystem.get("server", "default");
         assertNotNull(newServer);
         assertTrue(newServer.isDefined());
+
+        assertEquals("STRICT", newServer.get("cluster-connection", "cc2", "message-load-balancing-type").asString());
+        assertEquals("ON_DEMAND", newServer.get("cluster-connection", "cc3", "message-load-balancing-type").asString());
 
         if (addLegacyEntries) {
             // check that legacy entries were added to JMS resources
