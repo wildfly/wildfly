@@ -387,7 +387,7 @@ public class MigrateOperation implements OperationStepHandler {
                                     final ModelNode addLegacyConnectionFactoryOp = legacyAddOp.clone();
                                     addLegacyConnectionFactoryOp.get(OP_ADDR).set(legacyConnectionFactoryAddress.toModelNode());
                                     migrateConnectionFactory(addLegacyConnectionFactoryOp, "");
-                                    newAddOperations.put(pathAddress(addLegacyConnectionFactoryOp.get(OP_ADDR)), addLegacyConnectionFactoryOp);
+                                    newAddOperations.put(legacyConnectionFactoryAddress, addLegacyConnectionFactoryOp);
                                 }
                             }
                             migrateConnectionFactory(newAddOp, addLegacyEntries ? NEW_ENTRY_SUFFIX : "");
@@ -442,8 +442,10 @@ public class MigrateOperation implements OperationStepHandler {
         ModelNode connector = connectionFactoryAddOp.get(CONNECTOR);
         if (connector.isDefined()) {
 
-            PathAddress legacyServerAddress = pathAddress(connectionFactoryAddOp.get(OP_ADDR)).getParent();
-            Resource serverResource = context.readResourceFromRoot(legacyServerAddress, false);
+            PathAddress connectionFactoryAddress = pathAddress(connectionFactoryAddOp.get(OP_ADDR));
+            PathElement relativeLegacyServerAddress = connectionFactoryAddress.getParent().getLastElement();
+            // read the server resource related to the context current address (which is the messaging subsystem address).
+            Resource serverResource = context.readResource(pathAddress(relativeLegacyServerAddress), false);
             Set<String> definedInVMConnectors = serverResource.getChildrenNames("in-vm-connector");
 
             // legacy connector is a property list where the name is the connector and the value is undefined
