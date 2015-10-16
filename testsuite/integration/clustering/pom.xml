@@ -257,8 +257,7 @@
                                 </configuration>
                             </execution>
 
-
-                            <!-- Multinode UDP clustering tests with manual containers with unmanaged deployment. -->
+                            <!-- Multinode clustering tests with custom containers with unmanaged deployments -->
                             <!-- Tests which are placed in clustering module but they're not run by default -->
                             <execution>
                                 <id>ts.surefire.clustering.multinode-manual-tcp-sync-extended</id>
@@ -500,7 +499,6 @@
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-xsite</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <stack>udp</stack>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

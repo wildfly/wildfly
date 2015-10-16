@@ -149,9 +149,6 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
             waitForReplication(GRACE_TIME_TO_REPLICATE);
 
             // Now check on the 2nd server
-
-            // Note that this DOES rely on the fact that both servers are running on the "same" domain,
-            // which is '127.0.0.0'. Otherwise you will have to spoof cookies. @Rado
             response = client.execute(new HttpGet(url2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
