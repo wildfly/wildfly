@@ -141,19 +141,19 @@ final class WSEndpointMetrics implements OperationStepHandler {
         final ModelNode result = new ModelNode();
         final EndpointMetrics endpointMetrics = endpoint.getEndpointMetrics();
         if (MIN_PROCESSING_TIME.getName().equals(metricName)) {
-            result.set(String.valueOf(endpointMetrics.getMinProcessingTime()));
+            result.set(endpointMetrics.getMinProcessingTime());
         } else if (MAX_PROCESSING_TIME.getName().equals(metricName)) {
-            result.set(String.valueOf(endpointMetrics.getMaxProcessingTime()));
+            result.set(endpointMetrics.getMaxProcessingTime());
         } else if (AVERAGE_PROCESSING_TIME.getName().equals(metricName)) {
-            result.set(String.valueOf(endpointMetrics.getAverageProcessingTime()));
+            result.set(endpointMetrics.getAverageProcessingTime());
         } else if (TOTAL_PROCESSING_TIME.getName().equals(metricName)) {
-            result.set(String.valueOf(endpointMetrics.getTotalProcessingTime()));
+            result.set(endpointMetrics.getTotalProcessingTime());
         } else if (REQUEST_COUNT.getName().equals(metricName)) {
-            result.set(String.valueOf(endpointMetrics.getRequestCount()));
+            result.set(endpointMetrics.getRequestCount());
         } else if (RESPONSE_COUNT.getName().equals(metricName)) {
-            result.set(String.valueOf(endpointMetrics.getResponseCount()));
+            result.set(endpointMetrics.getResponseCount());
         } else if (FAULT_COUNT.getName().equals(metricName)) {
-            result.set(String.valueOf(endpointMetrics.getFaultCount()));
+            result.set(endpointMetrics.getFaultCount());
         }
         return result;
     }
