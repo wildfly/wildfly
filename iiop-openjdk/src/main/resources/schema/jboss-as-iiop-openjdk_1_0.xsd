@@ -222,12 +222,12 @@
              ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="integrity" type="iorTransportEnum" use="optional"/>
-        <xs:attribute name="confidentiality" type="iorTransportEnum" use="optional"/>
-        <xs:attribute name="trust-in-target" type="iorTransportEnum" use="optional"/>
-        <xs:attribute name="trust-in-client" type="iorTransportEnum" use="optional"/>
-        <xs:attribute name="detect-replay" type="iorTransportEnum" use="optional"/>
-        <xs:attribute name="detect-misordering" type="iorTransportEnum" use="optional"/>
+        <xs:attribute name="integrity" type="iorTransportEnum" use="optional" default="none"/>
+        <xs:attribute name="confidentiality" type="iorTransportEnum" use="optional" default="none"/>
+        <xs:attribute name="trust-in-target" type="iorTransportEnum" use="optional" default="none"/>
+        <xs:attribute name="trust-in-client" type="iorTransportEnum" use="optional" default="none"/>
+        <xs:attribute name="detect-replay" type="iorTransportEnum" use="optional" default="none"/>
+        <xs:attribute name="detect-misordering" type="iorTransportEnum" use="optional" default="none"/>
     </xs:complexType>
 
     <xs:simpleType name="authMethodEnum">
@@ -254,9 +254,9 @@
              ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="auth-method" type="authMethodEnum" use="optional"/>
+        <xs:attribute name="auth-method" type="authMethodEnum" use="optional" default="username_password"/>
         <xs:attribute name="realm" type="xs:string" use="optional"/>
-        <xs:attribute name="required" type="xs:boolean" use="optional"/>
+        <xs:attribute name="required" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:simpleType name="callerPropagationEnum">
@@ -282,7 +282,7 @@
              ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="caller-propagation" type="callerPropagationEnum" use="optional"/>
+        <xs:attribute name="caller-propagation" type="callerPropagationEnum" use="optional" default="none"/>
     </xs:complexType>
 
     <xs:simpleType name="trueFalseType">
