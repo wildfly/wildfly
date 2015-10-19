@@ -22,8 +22,6 @@
 
 package org.jboss.as.security.logging;
 
-import static org.jboss.logging.annotations.Message.NONE;
-
 import java.lang.reflect.Method;
 import javax.naming.InvalidNameException;
 import javax.naming.OperationNotSupportedException;
@@ -452,7 +450,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter directory to store encrypted files:")
+    @Message(id = 50, value = "Enter directory to store encrypted files:")
     String enterEncryptionDirectory();
 
     /**
@@ -460,7 +458,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter Keystore URL:")
+    @Message(id = 51, value = "Enter Keystore URL:")
     String enterKeyStoreURL();
 
     /**
@@ -468,7 +466,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter Keystore password:")
+    @Message(id = 52, value = "Enter Keystore password:")
     String enterKeyStorePassword();
 
     /**
@@ -476,7 +474,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter 8 character salt:")
+    @Message(id = 53, value = "Enter 8 character salt:")
     String enterSalt();
 
     /**
@@ -484,7 +482,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter iteration count as a number (e.g.: 44):")
+    @Message(id = 54, value = "Enter iteration count as a number (e.g.: 44):")
     String enterIterationCount();
 
     /**
@@ -492,7 +490,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter Keystore Alias:")
+    @Message(id = 55, value = "Enter Keystore Alias:")
     String enterKeyStoreAlias();
 
     /**
@@ -532,7 +530,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter your password:")
+    @Message(id = 60, value = "Enter your password:")
     String enterYourPassword();
 
     /**
@@ -551,7 +549,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Values entered don't match")
+    @Message(id = 62, value = "Values entered don't match")
     String passwordsDoNotMatch();
 
     /**
@@ -559,7 +557,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Values match")
+    @Message(id = 63, value = "Values match")
     String passwordsMatch();
 
     /**
@@ -567,7 +565,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Problem occurred:")
+    @Message(id = 64, value = "Problem occurred:")
     String problemOcurred();
 
     /**
@@ -575,7 +573,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Please enter a Digit::   0: Start Interactive Session   1: Remove Interactive Session  2: Exit")
+    @Message(id = 65, value = "Please enter a Digit::   0: Start Interactive Session   1: Remove Interactive Session  2: Exit")
     String interactiveCommandString();
 
     /**
@@ -583,7 +581,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Starting an interactive session")
+    @Message(id = 66, value = "Starting an interactive session")
     String startingInteractiveSession();
 
     /**
@@ -591,7 +589,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Removing the current interactive session")
+    @Message(id = 67, value = "Removing the current interactive session")
     String removingInteractiveSession();
 
     /**
@@ -607,7 +605,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Keystore URL")
+    @Message(id = 69, value = "Keystore URL")
     String cmdLineKeyStoreURL();
 
     /**
@@ -615,7 +613,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Keystore password")
+    @Message(id = 70, value = "Keystore password")
     String cmdLineKeyStorePassword();
 
     /**
@@ -623,7 +621,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Directory containing encrypted files")
+    @Message(id = 71, value = "Directory containing encrypted files")
     String cmdLineEncryptionDirectory();
 
     /**
@@ -631,7 +629,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "8 character salt")
+    @Message(id = 72, value = "8 character salt")
     String cmdLineSalt();
 
     /**
@@ -639,7 +637,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Iteration count")
+    @Message(id = 73, value = "Iteration count")
     String cmdLineIterationCount();
 
     /**
@@ -647,7 +645,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Vault keystore alias")
+    @Message(id = 74, value = "Vault keystore alias")
     String cmdLineVaultKeyStoreAlias();
 
     /**
@@ -655,7 +653,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Vault block")
+    @Message(id = 75, value = "Vault block")
     String cmdLineVaultBlock();
 
     /**
@@ -663,7 +661,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Attribute name")
+    @Message(id = 76, value = "Attribute name")
     String cmdLineAttributeName();
 
     /**
@@ -671,7 +669,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Secured attribute value (such as password) to store")
+    @Message(id = 77, value = "Secured attribute value (such as password) to store")
     String cmdLineSecuredAttribute();
 
     /**
@@ -679,7 +677,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Check whether the secured attribute already exists in the Vault")
+    @Message(id = 78, value = "Check whether the secured attribute already exists in the Vault")
     String cmdLineCheckAttribute();
 
     /**
@@ -687,7 +685,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Help")
+    @Message(id = 79, value = "Help")
     String cmdLineHelp();
 
     /**
@@ -711,7 +709,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter your password again:")
+    @Message(id = 82, value = "Enter your password again:")
     String enterYourPasswordAgain();
 
     /**
@@ -719,7 +717,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter Keystore password again:")
+    @Message(id = 83, value = "Enter Keystore password again:")
     String enterKeyStorePasswordAgain();
 
     /**
@@ -735,7 +733,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Remove secured attribute from the Vault")
+    @Message(id = 85, value = "Remove secured attribute from the Vault")
     String cmdLineRemoveSecuredAttribute();
 
     /**
@@ -743,7 +741,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Automatically create keystore when it doesn't exist")
+    @Message(id = 86, value = "Automatically create keystore when it doesn't exist")
     String cmdLineAutomaticallyCreateKeystore();
 
     /**
@@ -751,7 +749,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Secured attribute %s has been successfuly removed from vault")
+    @Message(id = 87, value = "Secured attribute %s has been successfuly removed from vault")
     String messageAttributeRemovedSuccessfuly(String displayFormattedAttribute);
 
     /**
@@ -759,7 +757,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Secured attribute %s was not removed from vault, check whether it exist")
+    @Message(id = 88, value = "Secured attribute %s was not removed from vault, check whether it exist")
     String messageAttributeNotRemoved(String displayFormattedAttribute);
 
     /**
@@ -767,7 +765,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Please enter a Digit::  0: Store a secured attribute  1: Check whether a secured attribute exists  2: Remove secured attribute  3: Exit")
+    @Message(id = 89, value = "Please enter a Digit::  0: Store a secured attribute  1: Check whether a secured attribute exists  2: Remove secured attribute  3: Exit")
     String interactionCommandOptions();
 
     /**
@@ -775,7 +773,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Task: Store a secured attribute")
+    @Message(id = 90, value = "Task: Store a secured attribute")
     String taskStoreSecuredAttribute();
 
     /**
@@ -783,7 +781,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Please enter secured attribute value (such as password)")
+    @Message(id = 91, value = "Please enter secured attribute value (such as password)")
     String interactivePromptSecureAttributeValue();
 
     /**
@@ -791,7 +789,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Please enter secured attribute value again")
+    @Message(id = 92, value = "Please enter secured attribute value again")
     String interactivePromptSecureAttributeValueAgain();
 
     /**
@@ -799,7 +797,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter Vault Block:")
+    @Message(id = 93, value = "Enter Vault Block:")
     String interactivePromptVaultBlock();
 
     /**
@@ -807,7 +805,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Enter Attribute Name:")
+    @Message(id = 94, value = "Enter Attribute Name:")
     String interactivePromptAttributeName();
 
     /**
@@ -815,7 +813,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Task: Verify whether a secured attribute exists")
+    @Message(id = 95, value = "Task: Verify whether a secured attribute exists")
     String taskVerifySecuredAttributeExists();
 
     /**
@@ -823,7 +821,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "No value has been stored for %s")
+    @Message(id = 96, value = "No value has been stored for %s")
     String interactiveMessageNoValueStored(String displayFormattedAttribute);
 
     /**
@@ -831,7 +829,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "A value exists for %s")
+    @Message(id = 97, value = "A value exists for %s")
     String interactiveMessageValueStored(String displayFormattedAttribute);
 
     /**
@@ -839,7 +837,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Task: Remove secured attribute")
+    @Message(id = 98, value = "Task: Remove secured attribute")
     String taskRemoveSecuredAttribute();
 
     /**
@@ -847,7 +845,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "Action not specified")
+    @Message(id = 99, value = "Action not specified")
     String actionNotSpecified();
 
 }
