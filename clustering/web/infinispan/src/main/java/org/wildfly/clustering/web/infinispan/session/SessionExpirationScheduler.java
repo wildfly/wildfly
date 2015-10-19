@@ -97,9 +97,10 @@ public class SessionExpirationScheduler implements Scheduler {
             Duration delay = Duration.between(Instant.now(), lastAccessed.plus(maxInactiveInterval));
             String id = session.getId();
             Runnable task = new ExpirationTask(id);
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d sec", id, maxInactiveInterval.getSeconds());
+            long seconds = !delay.isNegative() ? delay.getSeconds() + 1 : 0;
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d sec", id, seconds);
             synchronized (task) {
-                this.expirationFutures.put(id, this.executor.schedule(task, !delay.isNegative() ? delay.getSeconds() : 0, TimeUnit.SECONDS));
+                this.expirationFutures.put(id, this.executor.schedule(task, seconds, TimeUnit.SECONDS));
             }
         }
     }

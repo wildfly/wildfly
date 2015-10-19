@@ -21,17 +21,22 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import io.undertow.UndertowLogger;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.api.Deployment;
-import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.ThreadSetupAction;
+import javax.servlet.ServletContext;
+
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.session.SessionContext;
+import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
+
+import io.undertow.server.session.SessionListeners;
+import io.undertow.servlet.api.Deployment;
+import io.undertow.servlet.api.DeploymentInfo;
 
 /**
  * Factory for creating a {@link DistributableSessionManager}.
@@ -46,31 +51,42 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
     }
 
     @Override
-    public io.undertow.server.session.SessionManager createSessionManager(Deployment deployment) {
-        boolean statisticsEnabled = deployment.getDeploymentInfo().getMetricsCollector() != null;
-        RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
-        SessionContext context = new UndertowSessionContext(deployment);
-        IdentifierFactory<String> factory = new IdentifierFactoryAdapter(deployment.getDeploymentInfo().getSessionIdGenerator());
-        final SessionManager<LocalSessionContext, Batch> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory(), inactiveSessionStatistics);
+    public io.undertow.server.session.SessionManager createSessionManager(final Deployment deployment) {
         DeploymentInfo info = deployment.getDeploymentInfo();
-        ThreadSetupAction action = new ThreadSetupAction() {
+        boolean statisticsEnabled = info.getMetricsCollector() != null;
+        RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
+        IdentifierFactory<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
+        LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
+        SessionListeners listeners = new SessionListeners();
+        SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, listeners);
+        SessionManagerConfiguration<LocalSessionContext> configuration = new SessionManagerConfiguration<LocalSessionContext>() {
             @Override
-            public Handle setup(HttpServerExchange exchange) {
-                return new Handle() {
-                    @Override
-                    public void tearDown() {
-                        // If the session was closed from an async context, the session batch may still be associated with the initial request thread
-                        // We suspend the active batch, if present, otherwise the transaction associated with this thread may leak into a subsequent request.
-                        Batch batch = manager.getBatcher().suspendBatch();
-                        if (batch != null) {
-                            UndertowLogger.REQUEST_LOGGER.tracef("Suspending residual active batch: %s", batch);
-                        }
-                    }
-                };
+            public ServletContext getServletContext() {
+                return deployment.getServletContext();
+            }
+
+            @Override
+            public IdentifierFactory<String> getIdentifierFactory() {
+                return factory;
+            }
+
+            @Override
+            public SessionExpirationListener getExpirationListener() {
+                return expirationListener;
+            }
+
+            @Override
+            public LocalContextFactory<LocalSessionContext> getLocalContextFactory() {
+                return localContextFactory;
+            }
+
+            @Override
+            public Recordable<ImmutableSession> getInactiveSessionRecorder() {
+                return inactiveSessionStatistics;
             }
         };
-        info.addThreadSetupAction(action);
+        SessionManager<LocalSessionContext, Batch> manager = this.factory.createSessionManager(configuration);
         RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics) : null;
-        return new DistributableSessionManager(info.getDeploymentName(), manager, statistics);
+        return new DistributableSessionManager(info.getDeploymentName(), manager, listeners, statistics);
     }
 }

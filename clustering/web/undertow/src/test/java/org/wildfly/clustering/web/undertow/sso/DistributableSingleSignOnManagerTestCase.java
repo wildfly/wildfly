@@ -37,6 +37,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
+import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
 
 /**
  * Unit test for {@link DistributableSingleSignOnManager}
@@ -47,7 +48,7 @@ public class DistributableSingleSignOnManagerTestCase {
     private final SSOManager<AuthenticatedSession, String, Void, Batch> manager = mock(SSOManager.class);
     private final SessionManagerRegistry registry = mock(SessionManagerRegistry.class);
 
-    private final DistributableSingleSignOnManager subject = new DistributableSingleSignOnManager(this.manager, this.registry);
+    private final SingleSignOnManager subject = new DistributableSingleSignOnManager(this.manager, this.registry);
 
     @Test
     public void createSingleSignOn() {
@@ -106,26 +107,10 @@ public class DistributableSingleSignOnManagerTestCase {
 
     @Test
     public void removeSingleSignOn() {
-        String id = "sso";
-        Batcher<Batch> batcher = mock(Batcher.class);
-        Batch batch = mock(Batch.class);
+        InvalidatableSingleSignOn sso = mock(InvalidatableSingleSignOn.class);
 
-        when(this.manager.getBatcher()).thenReturn(batcher);
-        when(batcher.createBatch()).thenReturn(batch);
-        when(this.manager.findSSO(id)).thenReturn(null);
-
-        this.subject.removeSingleSignOn(id);
-
-        verify(batch).discard();
-        reset(batch);
-
-        SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
-
-        when(this.manager.findSSO(id)).thenReturn(sso);
-
-        this.subject.removeSingleSignOn(id);
+        this.subject.removeSingleSignOn(sso);
 
         verify(sso).invalidate();
-        verify(batch).close();
     }
 }
