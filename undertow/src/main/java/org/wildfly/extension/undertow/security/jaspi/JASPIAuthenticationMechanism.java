@@ -28,6 +28,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.util.AttachmentKey;
 
+import io.undertow.util.StatusCodes;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.message.GenericMessageInfo;
@@ -44,6 +45,9 @@ import java.util.Set;
 import org.jboss.security.auth.callback.JASPICallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
+import org.wildfly.extension.undertow.security.UndertowSecurityAttachments;
+
+import javax.security.auth.message.AuthException;
 
 import javax.security.auth.Subject;
 
@@ -64,6 +68,8 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
     public static final AttachmentKey<HttpServerExchange> HTTP_SERVER_EXCHANGE_ATTACHMENT_KEY = AttachmentKey.create(HttpServerExchange.class);
     public static final AttachmentKey<SecurityContext> SECURITY_CONTEXT_ATTACHMENT_KEY = AttachmentKey.create(SecurityContext.class);
+
+    public static final int DEFAULT_ERROR_CODE = StatusCodes.UNAUTHORIZED;
 
     private final String configuredAuthMethod;
     private final String securityDomain;
@@ -116,6 +122,11 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         } else {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
             sc.authenticationFailed("JASPIC authentication failed.", authType);
+
+            // make sure we don't return status OK if the AuthException was thrown
+            if (wasAuthExceptionThrown(exchange) && !statusIndicatesError(exchange)) {
+                exchange.setResponseCode(DEFAULT_ERROR_CODE);
+            }
         }
 
         return outcome;
@@ -177,5 +188,13 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
      */
     private Boolean isMandatory(final ServletRequestContext attachment) {
         return attachment.getExchange().getSecurityContext() != null && attachment.getExchange().getSecurityContext().isAuthenticationRequired();
+    }
+
+    private boolean wasAuthExceptionThrown(HttpServerExchange exchange) {
+        return exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT).getData().get(AuthException.class.getName()) != null;
+    }
+
+    private boolean statusIndicatesError(HttpServerExchange exchange) {
+        return exchange.getResponseCode() != StatusCodes.OK;
     }
 }
