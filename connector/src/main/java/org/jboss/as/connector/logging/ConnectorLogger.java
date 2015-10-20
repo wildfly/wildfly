@@ -836,6 +836,14 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 95, value = "At least one driver should be defined in a profile named 'default' activated on server where deploying *-ds.xml")
     IllegalStateException noDriverDefinedInDefaultProfile();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 96, value = "Error during recovery shutdown")
+    void errorDuringRecoveryShutdown(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 97, value = "Exception while stopping resource adapter")
+    void errorStoppingRA(@Cause Throwable cause);
 }
 
 
