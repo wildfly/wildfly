@@ -42,6 +42,7 @@ import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 
@@ -58,20 +59,20 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
 
         new ProtocolDefaultsBuilder().build(target).install();
 
-        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
+        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model), GroupServiceNameFactory.DEFAULT_GROUP);
 
-        if (!defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
+        if (!defaultChannel.equals(GroupServiceNameFactory.DEFAULT_GROUP)) {
             for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
                 new AliasServiceBuilder<>(factory.getServiceName(), factory.getServiceName(defaultChannel), Object.class).build(target).install();
             }
-            new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL), ChannelServiceName.CHANNEL.getServiceName(defaultChannel), Channel.class).build(target).install();
+            new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(GroupServiceNameFactory.DEFAULT_GROUP), ChannelServiceName.CHANNEL.getServiceName(defaultChannel), Channel.class).build(target).install();
 
-            new AliasServiceBuilder<>(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(ChannelServiceNameFactory.DEFAULT_CHANNEL), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
-            new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
+            new AliasServiceBuilder<>(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(GroupServiceNameFactory.DEFAULT_GROUP), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
+            new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(GroupServiceNameFactory.DEFAULT_GROUP), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(defaultChannel), ChannelFactory.class).build(target).install();
 
             for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
                 Iterator<Builder<?>> groupBuilders = provider.getBuilders(defaultChannel, null).iterator();
-                for (Builder<?> groupBuilder : provider.getBuilders(ChannelServiceNameFactory.DEFAULT_CHANNEL, null)) {
+                for (Builder<?> groupBuilder : provider.getBuilders(GroupServiceNameFactory.DEFAULT_GROUP, null)) {
                     new AliasServiceBuilder<>(groupBuilder.getServiceName(), groupBuilders.next().getServiceName(), Object.class).build(target).install();
                 }
             }
@@ -83,20 +84,20 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
         // remove the ProtocolDefaultsService
         context.removeService(new ProtocolDefaultsBuilder().getServiceName());
 
-        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model), ChannelServiceNameFactory.DEFAULT_CHANNEL);
+        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model), GroupServiceNameFactory.DEFAULT_GROUP);
 
-        if ((defaultChannel != null) && !defaultChannel.equals(ChannelServiceNameFactory.DEFAULT_CHANNEL)) {
+        if ((defaultChannel != null) && !defaultChannel.equals(GroupServiceNameFactory.DEFAULT_GROUP)) {
 
             for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(ChannelServiceNameFactory.DEFAULT_CHANNEL, null)) {
+                for (Builder<?> builder : provider.getBuilders(GroupServiceNameFactory.DEFAULT_GROUP, null)) {
                     context.removeService(builder.getServiceName());
                 }
             }
 
-            context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL).getBinderServiceName());
-            context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(ChannelServiceNameFactory.DEFAULT_CHANNEL));
+            context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(GroupServiceNameFactory.DEFAULT_GROUP).getBinderServiceName());
+            context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(GroupServiceNameFactory.DEFAULT_GROUP));
 
-            context.removeService(JGroupsBindingFactory.createChannelBinding(ChannelServiceNameFactory.DEFAULT_CHANNEL).getBinderServiceName());
+            context.removeService(JGroupsBindingFactory.createChannelBinding(GroupServiceNameFactory.DEFAULT_GROUP).getBinderServiceName());
 
             for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
                 context.removeService(factory.getServiceName());

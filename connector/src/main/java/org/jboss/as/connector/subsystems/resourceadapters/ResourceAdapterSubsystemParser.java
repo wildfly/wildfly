@@ -52,8 +52,10 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
@@ -279,6 +281,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         USE_CCM.marshallAsAttribute(conDef, streamWriter);
         SHARABLE.marshallAsAttribute(conDef, streamWriter);
         ENLISTMENT.marshallAsAttribute(conDef, streamWriter);
+        MCP.marshallAsAttribute(conDef, streamWriter);
+        ENLISTMENT_TRACE.marshallAsAttribute(conDef, streamWriter);
 
         writeNewConfigProperties(streamWriter, conDef);
 
@@ -435,7 +439,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 case RESOURCEADAPTERS_1_0:
                 case RESOURCEADAPTERS_1_1:
                 case RESOURCEADAPTERS_2_0:
-                case RESOURCEADAPTERS_3_0:{
+                case RESOURCEADAPTERS_3_0:
+                case RESOURCEADAPTERS_4_0:{
                     localName = reader.getLocalName();
                     final Element element = Element.forName(reader.getLocalName());
                     SUBSYSTEM_RA_LOGGER.tracef("%s -> %s", localName, element);

@@ -1,0 +1,104 @@
+<subsystem xmlns="urn:jboss:domain:resource-adapters:4.0">
+  <!--Optional:-->
+  <resource-adapters>
+    <!--1 or more repetitions:-->
+    <resource-adapter id="myRA" statistics-enabled="true">
+      <!--Optional:-->
+      <module id="moduleID" slot="main"/>
+      <!--Optional:-->
+      <bootstrap-context>bootstrapContext</bootstrap-context>
+      <bean-validation-groups>
+        <!--1 or more repetitions:-->
+        <bean-validation-group>group</bean-validation-group>
+      </bean-validation-groups>
+      <!--Optional:-->
+      <transaction-support>NoTransaction</transaction-support>
+        <workmanager>
+            <security>
+                <mapping-required>true</mapping-required>
+                <domain>group</domain>
+            </security>
+        </workmanager>
+        <!--Zero or more repetitions:-->
+      <config-property name="config1">value</config-property>
+      <!--Optional:-->
+      <connection-definitions>
+        <!--1 or more repetitions:-->
+        <connection-definition use-ccm="true" sharable="false" enlistment="true" class-name="token" jndi-name="java:jboss/cf/PoolName"
+                               enabled="true" use-java-context="true" pool-name="poolName" connectable="true" tracking="true"
+                               enlistment-trace="true" mcp="org.ironjacamar.myClass">
+          <!--Zero or more repetitions:-->
+          <config-property name="config2">value</config-property>
+          <!--You have a CHOICE of the next 2 items at this level-->
+          <!--Optional:-->
+          <pool>
+            <!--Optional:-->
+            <min-pool-size>200</min-pool-size>
+            <!--Optional:-->
+            <initial-pool-size>200</initial-pool-size>
+            <!--Optional:-->
+            <max-pool-size>200</max-pool-size>
+            <!--Optional:-->
+            <prefill>true</prefill>
+            <!--Optional:-->
+            <use-strict-min>true</use-strict-min>
+            <!--Optional:-->
+            <flush-strategy>FailingConnectionOnly</flush-strategy>
+          </pool>
+          <!--Optional:-->
+          <security>
+            <!--You have a CHOICE of the next 3 items at this level-->
+            <!--Optional:-->
+            <application/>
+          </security>
+          <!--Optional:-->
+          <timeout>
+            <!--Optional:-->
+            <blocking-timeout-millis>200</blocking-timeout-millis>
+            <!--Optional:-->
+            <idle-timeout-minutes>200</idle-timeout-minutes>
+            <!--Optional:-->
+            <allocation-retry>200</allocation-retry>
+            <!--Optional:-->
+            <allocation-retry-wait-millis>200</allocation-retry-wait-millis>
+            <!--Optional:-->
+            <xa-resource-timeout>200</xa-resource-timeout>
+          </timeout>
+          <!--Optional:-->
+          <validation>
+            <!--Optional:-->
+            <background-validation>false</background-validation>
+            <!--Optional:-->
+            <background-validation-millis>200</background-validation-millis>
+            <!--Optional:-->
+            <use-fast-fail>false</use-fast-fail>
+          </validation>
+          <!--Optional:-->
+          <recovery no-recovery="false">
+            <!--Optional:-->
+            <recover-credential>
+              <!--Optional:-->
+              <user-name>userName</user-name>
+              <!--Optional:-->
+              <password>pwd</password>
+              <!--Optional:-->
+              <security-domain>token</security-domain>
+            </recover-credential>
+            <!--Optional:-->
+            <recover-plugin class-name="aClass">
+              <config-property name="config3">value</config-property>
+            </recover-plugin>
+          </recovery>
+        </connection-definition>
+      </connection-definitions>
+      <!--Optional:-->
+      <admin-objects>
+        <!--1 or more repetitions:-->
+        <admin-object class-name="aClass" jndi-name="java:jboss/ao/anotherPool" enabled="true" use-java-context="true" pool-name="anotherPool">
+          <!--Zero or more repetitions:-->
+          <config-property name="config4">value</config-property>
+        </admin-object>
+      </admin-objects>
+    </resource-adapter>
+  </resource-adapters>
+</subsystem>

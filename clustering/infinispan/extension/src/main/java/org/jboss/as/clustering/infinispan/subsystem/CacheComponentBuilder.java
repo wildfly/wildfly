@@ -26,7 +26,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
  * Abstract builder for the configuration of a cache component.
  * @author Paul Ferraro
  */
-public abstract class CacheComponentBuilder<C> extends ComponentConfigurationBuilder<C> {
+public abstract class CacheComponentBuilder<C> extends ComponentBuilder<C> {
 
     CacheComponentBuilder(CacheComponent component, String containerName, String cacheName) {
         super(new CacheComponentServiceNameProvider(component, containerName, cacheName));

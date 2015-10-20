@@ -218,7 +218,7 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
 
             org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition cd = new org.jboss.jca.common.metadata.resourceadapter.ConnectionDefinitionImpl(mcfConfigProperties, mcfClass, jndiName, poolName(cfInterface),
                     Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Defaults.CONNECTABLE, Defaults.TRACKING,
-                    pool, null, null, security, null, isXA);
+                    Defaults.MCP, Defaults.ENLISTMENT_TRACE, pool, null, null, security, null, isXA);
 
             Activation activation = new ActivationImpl(null, null, transactionSupportValue, Collections.singletonList(cd), Collections.<AdminObject>emptyList(), raConfigProperties, Collections.<String>emptyList(), null, null);
 

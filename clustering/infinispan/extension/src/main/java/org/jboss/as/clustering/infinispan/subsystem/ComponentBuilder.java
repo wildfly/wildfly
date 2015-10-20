@@ -35,11 +35,11 @@ import org.wildfly.clustering.service.ServiceNameProvider;
  * Builds a service that provides the configuration of a component.
  * @author Paul Ferraro
  */
-public abstract class ComponentConfigurationBuilder<C> implements Builder<C>, Value<C> {
+public abstract class ComponentBuilder<C> implements Builder<C>, Value<C> {
 
     private final ServiceNameProvider provider;
 
-    ComponentConfigurationBuilder(ServiceNameProvider provider) {
+    ComponentBuilder(ServiceNameProvider provider) {
         this.provider = provider;
     }
 

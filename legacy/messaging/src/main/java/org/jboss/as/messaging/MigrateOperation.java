@@ -387,7 +387,7 @@ public class MigrateOperation implements OperationStepHandler {
                                     final ModelNode addLegacyConnectionFactoryOp = legacyAddOp.clone();
                                     addLegacyConnectionFactoryOp.get(OP_ADDR).set(legacyConnectionFactoryAddress.toModelNode());
                                     migrateConnectionFactory(addLegacyConnectionFactoryOp, "");
-                                    newAddOperations.put(pathAddress(addLegacyConnectionFactoryOp.get(OP_ADDR)), addLegacyConnectionFactoryOp);
+                                    newAddOperations.put(legacyConnectionFactoryAddress, addLegacyConnectionFactoryOp);
                                 }
                             }
                             migrateConnectionFactory(newAddOp, addLegacyEntries ? NEW_ENTRY_SUFFIX : "");
@@ -396,7 +396,7 @@ public class MigrateOperation implements OperationStepHandler {
                             migratePooledConnectionFactory(newAddOp);
                             break;
                         case CLUSTER_CONNECTION:
-                            migrateClusterConnection(newAddOp);
+                            migrateClusterConnection(newAddOp, warnings);
                             break;
                         case BRIDGE:
                             migrateBridge(newAddOp);
@@ -442,8 +442,10 @@ public class MigrateOperation implements OperationStepHandler {
         ModelNode connector = connectionFactoryAddOp.get(CONNECTOR);
         if (connector.isDefined()) {
 
-            PathAddress legacyServerAddress = pathAddress(connectionFactoryAddOp.get(OP_ADDR)).getParent();
-            Resource serverResource = context.readResourceFromRoot(legacyServerAddress, false);
+            PathAddress connectionFactoryAddress = pathAddress(connectionFactoryAddOp.get(OP_ADDR));
+            PathElement relativeLegacyServerAddress = connectionFactoryAddress.getParent().getLastElement();
+            // read the server resource related to the context current address (which is the messaging subsystem address).
+            Resource serverResource = context.readResource(pathAddress(relativeLegacyServerAddress), false);
             Set<String> definedInVMConnectors = serverResource.getChildrenNames("in-vm-connector");
 
             // legacy connector is a property list where the name is the connector and the value is undefined
@@ -518,10 +520,21 @@ public class MigrateOperation implements OperationStepHandler {
         migrateDiscoveryGroupNameAttribute(addOperation);
     }
 
-    private void migrateClusterConnection(ModelNode addOperation) {
+    private void migrateClusterConnection(ModelNode addOperation, List<String> warnings) {
         // connector-ref attribute has been renamed to connector-name
         addOperation.get("connector-name").set(addOperation.get(CONNECTOR_REF_STRING));
         addOperation.remove(CONNECTOR_REF_STRING);
+
+        ModelNode forwardWhenNoConsumers = addOperation.get(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName());
+        if (forwardWhenNoConsumers.getType() == EXPRESSION) {
+            warnings.add(ROOT_LOGGER.couldNotMigrateResourceAttributeWithExpression(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName(), pathAddress(addOperation.get(OP_ADDR))));
+        } else {
+            boolean value = forwardWhenNoConsumers.asBoolean(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getDefaultValue().asBoolean());
+            String messageLoadBalancingType = value ? "STRICT" : "ON_DEMAND";
+            addOperation.get("message-load-balancing-type").set(messageLoadBalancingType);
+        }
+        addOperation.remove(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName());
+
         migrateDiscoveryGroupNameAttribute(addOperation);
     }
 

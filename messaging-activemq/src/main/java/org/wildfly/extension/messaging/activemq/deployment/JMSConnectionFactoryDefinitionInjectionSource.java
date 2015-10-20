@@ -30,6 +30,8 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.POOLED_C
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.XA_TX;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DISCOVERY_GROUP;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE;
 
@@ -185,6 +187,11 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         if (jgroupsChannelName != null) {
             model.get(JGROUPS_CHANNEL.getName()).set(jgroupsChannelName);
         }
+        final String managedConnectionPoolClassName = properties.containsKey(MANAGED_CONNECTION_POOL.getName()) ? properties.get(MANAGED_CONNECTION_POOL.getName()) : null;
+        if (managedConnectionPoolClassName != null) {
+            model.get(MANAGED_CONNECTION_POOL.getName()).set(managedConnectionPoolClassName);
+        }
+        final Boolean enlistmentTrace = properties.containsKey(ENLISTMENT_TRACE.getName()) ? Boolean.valueOf(properties.get(ENLISTMENT_TRACE.getName())) : null;
 
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(model);
         String txSupport = transactional ? XA_TX : NO_TX;
@@ -194,7 +201,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         PooledConnectionFactoryService.installService(serviceTarget, pcfName, getActiveMQServerName(), connectors,
                 discoveryGroupName, jgroupsChannelName, adapterParams,
                 bindInfo,
-                txSupport, minPoolSize, maxPoolSize, true);
+                txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, true);
 
         final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
                 .append(bindInfo.getBinderServiceName());

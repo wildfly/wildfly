@@ -183,9 +183,9 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             // Get the expose-all-logs parameter value
             final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
             final boolean exposeAllLogs = LogStoreConstants.EXPOSE_ALL_LOGS.resolveModelAttribute(context, subModel).asBoolean();
+            final Resource storeModel = probeTransactions(mbs, exposeAllLogs);
             // Replace the current model with an updated one
             context.acquireControllerLock();
-            final Resource storeModel = probeTransactions(mbs, exposeAllLogs);
             // WFLY-3020 -- don't drop the root model
             storeModel.writeModel(logStore.getModel());
             logStore.update(storeModel);

@@ -77,7 +77,7 @@ public class ScheduledThreadPoolBuilder extends CacheContainerComponentBuilder<T
     }
 
     @Override
-    public ThreadPoolConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
+    public ThreadPoolConfiguration getValue() {
         return this.builder.create();
     }
 }

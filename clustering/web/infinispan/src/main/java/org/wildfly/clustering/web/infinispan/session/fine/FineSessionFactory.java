@@ -75,9 +75,10 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionEntry<L>
     private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller;
     private final LocalContextFactory<L> localContextFactory;
     private final Predicate<Map.Entry<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>>> invalidAttribute;
+    private final boolean requireMarshallable;
 
     @SuppressWarnings("unchecked")
-    public FineSessionFactory(Cache<? extends Key<String>, ?> cache, SessionContext context, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead) {
+    public FineSessionFactory(Cache<? extends Key<String>, ?> cache, SessionContext context, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead, boolean requireMarshallable) {
         this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
         this.findCreationMetaDataCache = lockOnRead ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
         this.accessMetaDataCache = (Cache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
@@ -85,6 +86,7 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionEntry<L>
         this.context = context;
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
+        this.requireMarshallable = requireMarshallable;
         this.invalidAttribute = entry -> {
             try {
                 this.marshaller.read(entry.getValue());
@@ -105,7 +107,7 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionEntry<L>
         SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(accessMetaDataEntry.getValue(), accessMetaDataEntry.getMutator());
         SessionMetaData metaData = new SimpleSessionMetaData(creationMetaData, accessMetaData);
 
-        SessionAttributes attributes = new FineSessionAttributes<>(id, this.attributeCache, this.marshaller);
+        SessionAttributes attributes = new FineSessionAttributes<>(id, this.attributeCache, this.marshaller, this.requireMarshallable);
         return new InfinispanSession<>(id, metaData, attributes, entry.getLocalContext(), this.localContextFactory, this.context, this);
     }
 

@@ -148,8 +148,7 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization())
-                .enableTransformerAttachmentGrabber();
+        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, model)
