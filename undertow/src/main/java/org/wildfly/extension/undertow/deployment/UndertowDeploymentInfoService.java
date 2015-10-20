@@ -151,7 +151,6 @@ import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
-import org.wildfly.extension.undertow.security.jaspi.JASPICInitialHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
@@ -467,15 +466,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (applicationPolicy != null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
             String authMethod = null;
             LoginConfig loginConfig = deploymentInfo.getLoginConfig();
-            if (loginConfig != null && loginConfig.getAuthMethods().size() > 0)
+            if (loginConfig != null && loginConfig.getAuthMethods().size() > 0) {
                 authMethod = loginConfig.getAuthMethods().get(0).getName();
-            deploymentInfo.addSecurityWrapper(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(HttpHandler handler) {
-                    return new JASPICInitialHandler(securityDomain, handler);
-                }
-            });
-            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(authMethod, securityDomain));
+            }
+            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(securityDomain, authMethod));
             deploymentInfo.setSecurityContextFactory(new JASPICSecurityContextFactory(this.securityDomain));
         }
     }

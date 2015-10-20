@@ -120,7 +120,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     protected static final AttributeDefinition PROACTIVE_AUTHENTICATION =
             new SimpleAttributeDefinitionBuilder(Constants.PROACTIVE_AUTHENTICATION, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
 
