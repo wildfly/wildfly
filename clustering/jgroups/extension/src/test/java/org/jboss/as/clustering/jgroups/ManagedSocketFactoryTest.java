@@ -113,7 +113,7 @@ public class ManagedSocketFactoryTest {
     }
 
     @Test
-    public void createDatagram() throws IOException {
+    public void createDatagramSocket() throws IOException {
 
         DatagramSocket socket1 = mock(DatagramSocket.class);
         DatagramSocket socket2 = mock(DatagramSocket.class);
@@ -122,10 +122,10 @@ public class ManagedSocketFactoryTest {
         InetAddress localhost = InetAddress.getLocalHost();
         SocketAddress socketAddress = new InetSocketAddress(localhost, 2);
 
-        when(this.manager.createDatagramSocket("test", new InetSocketAddress(0))).thenReturn(socket1);
-        when(this.manager.createDatagramSocket("test", new InetSocketAddress(1))).thenReturn(socket2);
-        when(this.manager.createDatagramSocket("test", socketAddress)).thenReturn(socket3);
-        when(this.manager.createDatagramSocket("test", new InetSocketAddress(localhost, 1))).thenReturn(socket4);
+        when(this.manager.createDatagramSocket(new InetSocketAddress(0))).thenReturn(socket1);
+        when(this.manager.createDatagramSocket(new InetSocketAddress(1))).thenReturn(socket2);
+        when(this.manager.createDatagramSocket(socketAddress)).thenReturn(socket3);
+        when(this.manager.createDatagramSocket(new InetSocketAddress(localhost, 1))).thenReturn(socket4);
 
         DatagramSocket result1 = this.subject.createDatagramSocket("test");
         DatagramSocket result2 = this.subject.createDatagramSocket("test", 1);
