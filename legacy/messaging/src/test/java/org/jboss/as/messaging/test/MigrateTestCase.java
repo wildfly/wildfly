@@ -116,12 +116,14 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         ModelNode haPolicyForReplicationMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-master", "ha-policy", "replication-master");
         assertTrue(haPolicyForReplicationMasterServer.isDefined());
         assertEquals("${check.for.live.server:true}", haPolicyForReplicationMasterServer.get("check-for-live-server").asString());
+        assertEquals("${replication.master.group.name:mygroup}", haPolicyForReplicationMasterServer.get("group-name").asString());
 
         ModelNode haPolicyForReplicationSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-slave", "ha-policy", "replication-slave");
         assertTrue(haPolicyForReplicationSlaveServer.isDefined());
         assertEquals("${allow.failback.2:false}", haPolicyForReplicationSlaveServer.get("allow-failback").asString());
         assertEquals("${failback.delay.2:1234}", haPolicyForReplicationSlaveServer.get("failback-delay").asString());
         assertEquals("${max.saved.replicated.journal.size:2}", haPolicyForReplicationSlaveServer.get("max-saved-replicated-journal-size").asString());
+        assertEquals("${replication.master.group.name:mygroup2}", haPolicyForReplicationSlaveServer.get("group-name").asString());
     }
 
     @Test
