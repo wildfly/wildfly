@@ -61,7 +61,7 @@ public class XaDataSourceService extends AbstractDataSourceService {
                     try {
                         recovery.shutdown();
                     } catch (Exception e) {
-                        ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER.error("Error during recovery shutdown", e);
+                        ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER.errorDuringRecoveryShutdown(e);
                     } finally {
                         rr.removeXAResourceRecovery(recovery);
                     }

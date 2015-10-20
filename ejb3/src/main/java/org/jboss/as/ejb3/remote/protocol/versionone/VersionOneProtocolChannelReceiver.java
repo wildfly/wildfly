@@ -315,7 +315,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
                 this.sendClusterRemovedMessage(registry);
             }
         } catch (IOException ioe) {
-            EjbLogger.REMOTE_LOGGER.warn("Could not send a cluster removal message for cluster: " + registry.getGroup() + " to the client on channel " + channelAssociation.getChannel(), ioe);
+            EjbLogger.REMOTE_LOGGER.couldNotSendClusterRemovalMessage(ioe, registry.getGroup(), channelAssociation.getChannel());
         }
     }
 
