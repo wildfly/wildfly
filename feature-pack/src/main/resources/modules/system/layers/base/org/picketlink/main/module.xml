@@ -33,6 +33,7 @@
 
     <dependencies>
         <module name="org.picketlink.federation" export="true" />
-        <module name="org.picketlink.federation.bindings" export="true" />
+        <module name="org.picketlink.federation.bindings" export="true" services="export" />
     </dependencies>
 </module>
+
