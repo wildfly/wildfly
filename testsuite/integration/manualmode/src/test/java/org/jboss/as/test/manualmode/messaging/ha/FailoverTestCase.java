@@ -30,7 +30,6 @@ import javax.naming.InitialContext;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
