@@ -39,7 +39,9 @@ import org.wildfly.security.auth.server.SecurityRealm;
 import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.authz.MapAttributes;
-import org.wildfly.security.password.interfaces.ClearPassword;
+import org.wildfly.security.credential.Credential;
+import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.PasswordGuessEvidence;
 
 /**
  * <p>
@@ -109,20 +111,20 @@ public class DomainContextRealm implements SecurityRealm {
         }
 
         @Override
-        public <C> C getCredential(final String credentialName, final Class<C> credentialType) throws RealmUnavailableException {
+        public <C extends Credential> C getCredential(String credentialName, Class<C> credentialType) throws RealmUnavailableException {
             return null;
         }
 
         @Override
-        public boolean verifyCredential(final String credentialName, final Object credential) throws RealmUnavailableException {
+        public boolean verifyEvidence(String credentialName, Evidence evidence) throws RealmUnavailableException {
             if (domainContext == null || domainContext.getAuthenticationManager() == null) {
                 throw new RealmUnavailableException();
             }
             else {
                 jaasSubject = new Subject();
-                Object jaasCredential = credential;
-                if (credential instanceof ClearPassword) {
-                    jaasCredential = ((ClearPassword) credential).getPassword();
+                Object jaasCredential = evidence;
+                if (evidence instanceof PasswordGuessEvidence) {
+                    jaasCredential = ((PasswordGuessEvidence) evidence).getGuess();
                 }
                 return domainContext.getAuthenticationManager().isValid(new NamePrincipal(identityName), jaasCredential, jaasSubject);
             }
