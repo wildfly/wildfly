@@ -22,56 +22,68 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentWriteAttributeHandler;
+import org.jboss.as.controller.RestartParentResourceRemoveHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author Pedro Silva
  */
-public class IDMConfigWriteAttributeHandler extends RestartParentWriteAttributeHandler {
+public class IdentityStoreRemoveStepHandler extends RestartParentResourceRemoveHandler {
 
-    IDMConfigWriteAttributeHandler(final AttributeDefinition... attributes) {
-        super(ModelElement.PARTITION_MANAGER.getName(), attributes);
+    static final IdentityStoreRemoveStepHandler INSTANCE = new IdentityStoreRemoveStepHandler();
+
+    private IdentityStoreRemoveStepHandler() {
+        super(ModelElement.PARTITION_MANAGER.getName());
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+        checkIfLastIdentityStore(context);
+
+        super.updateModel(context, operation);
+
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
-                Resource resource = context.readResourceFromRoot(address);
-                final ModelNode parentModel = Resource.Tools.readModel(resource);
+                PathAddress address = context.getCurrentAddress();
+                String configurationName = address.getElement(address.size() - 2).getValue();
+                String partitionManagerName = address.getElement(address.size() - 3).getValue();
+                String identityStoreName = address.getLastElement().getValue();
 
-                PartitionManagerAddHandler.INSTANCE.validateModel(context, address.getLastElement().getValue(), parentModel);
-
-                context.stepCompleted();
+                context.removeService(PartitionManagerService.createIdentityStoreServiceName(partitionManagerName, configurationName, identityStoreName));
+                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
             }
-        }, OperationContext.Stage.MODEL);
-        super.execute(context, operation);
+        }, OperationContext.Stage.RUNTIME);
     }
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        final String federationName = parentAddress.getLastElement().getValue();
-        PartitionManagerRemoveHandler.INSTANCE.removeIdentityStoreServices(context, parentModel, federationName);
-        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement().getValue(), parentModel, false);
-
+        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement()
+            .getValue(), parentModel, false);
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         return PartitionManagerService.createServiceName(parentAddress.getLastElement().getValue());
+    }
+
+    private void checkIfLastIdentityStore(OperationContext context) throws OperationFailedException {
+        PathAddress parentAddress = Util.getParentAddressByKey(context.getCurrentAddress(), ModelElement.IDENTITY_CONFIGURATION.getName());
+        Resource resource = context.readResourceFromRoot(parentAddress);
+
+        if (resource.getChildTypes().size() == 1) {
+            throw ROOT_LOGGER.idmNoIdentityStoreProvided(parentAddress.getLastElement().getValue());
+        }
     }
 }
