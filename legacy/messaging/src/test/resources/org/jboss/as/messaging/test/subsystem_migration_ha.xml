@@ -31,6 +31,7 @@
         <backup>false</backup>
         <check-for-live-server>${check.for.live.server:true}</check-for-live-server>
         <shared-store>false</shared-store>
+        <backup-group-name>${replication.master.group.name:mygroup}</backup-group-name>
     </hornetq-server>
 
     <hornetq-server name="replication-slave">
@@ -39,5 +40,6 @@
         <failback-delay>${failback.delay.2:1234}</failback-delay>
         <max-saved-replicated-journal-size>${max.saved.replicated.journal.size:2}</max-saved-replicated-journal-size>
         <shared-store>false</shared-store>
+        <backup-group-name>${replication.master.group.name:mygroup2}</backup-group-name>
     </hornetq-server>
 </subsystem>
