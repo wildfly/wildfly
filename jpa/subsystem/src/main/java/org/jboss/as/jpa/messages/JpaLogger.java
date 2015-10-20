@@ -506,14 +506,12 @@ public interface JpaLogger extends BasicLogger {
     IllegalArgumentException invalidPersistenceUnitName(String persistenceUnitName, char c);
 
     /**
-     * Creates an exception indicating the scoped persistence name is invalid.
+     * Creates an exception indicating the (custom) scoped persistence unit name is invalid.
      *
-     * @param validName the valid scope name.
-     * @param name      the scope name that was supplied.
      * @return a {@link RuntimeException} for the error.
      */
-    //@Message(id = 44, value = "Scoped persistence name should be \"%s\" but was %s")
-    //RuntimeException invalidScopeName(String validName, String name);
+    @Message(id = 44, value = "jboss.as.jpa.scopedname hint (%s) contains illegal '%s' character")
+    IllegalArgumentException invalidScopedName(String persistenceUnitName, char c);
 
     /**
      * Creates an exception indicating the inability to integrate the module, represented by the {@code integrationName}
