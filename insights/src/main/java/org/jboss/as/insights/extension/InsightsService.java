@@ -68,17 +68,27 @@ public class InsightsService implements Service<InsightsScheduler> {
     public static final String DEFAULT_SYSTEM_ENDPOINT = "/r/insights/v1/systems/";
     public static final String DEFAULT_USER_AGENT = "redhat-support-lib-java";
 
+    /**
+     * Scheduler used for sending JDR to Insights every set time interval
+     */
     private InsightsJdrScheduler scheduler;
-    private boolean enabled = true;
-    private ScheduledExecutorService executor;
+    private boolean enabled = false;
 
+    /**
+     * Properties used for initializing InsightsJdrScheduler
+     */
+    private ScheduledExecutorService executor;
     private InjectedValue<JdrReportCollector> jdrCollector = new InjectedValue<>();
+    private InsightsConfiguration insightsConfiguration;
 
     /**
      * {@inheritDoc}
      */
     @Override
     public synchronized void start(StartContext context) throws StartException {
+        if(insightsConfiguration != null) {
+            this.scheduler = new InsightsJdrScheduler(executor, insightsConfiguration, jdrCollector);
+        }
         try {
             if (enabled) {
                 scheduler.startScheduler();
@@ -100,9 +110,10 @@ public class InsightsService implements Service<InsightsScheduler> {
     }
 
     private InsightsService(ScheduledExecutorService executor, boolean enabled, InsightsConfiguration config) {
+        this.insightsConfiguration = config;
+        this.jdrCollector = jdrCollector;
         this.executor = executor;
         this.enabled = enabled;
-        this.scheduler = new InsightsJdrScheduler(executor, config, jdrCollector);
     }
 
     public static  ServiceController<InsightsScheduler> addService(ServiceTarget serviceTarget, ScheduledExecutorService executor, boolean enabled,
@@ -123,12 +134,7 @@ public class InsightsService implements Service<InsightsScheduler> {
         this.enabled = enabled;
         if (enabled) {
             ROOT_LOGGER.insightsEnabled();
-            try {
-                start(null);
-            } catch (StartException e) {
-                ROOT_LOGGER.couldNotStartThread(e);
-            }
-        } else if (!enabled) {
+        } else {
             ROOT_LOGGER.insightsDisabled();
         }
     }

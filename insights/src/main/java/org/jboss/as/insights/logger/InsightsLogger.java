@@ -75,7 +75,7 @@ public interface InsightsLogger extends BasicLogger {
     void insightsEnabled();
 
     /**
-     * System was enabled
+     * System was disabled
      */
     @LogMessage(level = INFO)
     @Message(id = 5, value = "Insights Subsystem Disabled")

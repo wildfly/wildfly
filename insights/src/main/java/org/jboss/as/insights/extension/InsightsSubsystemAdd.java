@@ -77,11 +77,6 @@ class InsightsSubsystemAdd extends AbstractAddStepHandler {
         return null;
     }
 
-    @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return true;
-    }
-
     static ScheduledExecutorService createUploaderExecutorService() {
         final ThreadFactory threadFactory = doPrivileged(
                 (PrivilegedAction<ThreadFactory>) () -> new JBossThreadFactory(

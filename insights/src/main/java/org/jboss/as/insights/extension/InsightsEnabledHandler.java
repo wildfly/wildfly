@@ -26,6 +26,7 @@ import static org.jboss.as.insights.extension.InsightsService.SERVICE_NAME;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,6 +44,15 @@ public class InsightsEnabledHandler extends AbstractWriteAttributeHandler<Void> 
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
             ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         ((InsightsService) context.getServiceRegistry(true).getRequiredService(SERVICE_NAME).getValue()).setEnabled(resolvedValue.asBoolean());
+        context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    InsightsJdrScheduler scheduler = (InsightsJdrScheduler) context.getServiceRegistry(true)
+                            .getRequiredService(SERVICE_NAME).getValue();
+                    scheduler.stopScheduler();
+                    context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+                }
+            }, OperationContext.Stage.RUNTIME);
         return false;
     }
 

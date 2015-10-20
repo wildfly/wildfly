@@ -122,7 +122,7 @@ class InsightsJdrScheduler implements InsightsScheduler {
         }
         this.scheduleInterval = scheduleInterval;
         this.enabled = enabled;
-        startSchedule();
+        startScheduler();
     }
 
     @Override
@@ -140,6 +140,7 @@ class InsightsJdrScheduler implements InsightsScheduler {
     @Override
     public void stopScheduler() {
         this.enabled = false;
+        ROOT_LOGGER.insightsDisabled();
         cancelSchedule();
     }
 
@@ -151,12 +152,10 @@ class InsightsJdrScheduler implements InsightsScheduler {
     }
 
     private synchronized void startSchedule() {
-        if (enabled) {
-            if (scheduleInterval <= 0) {
-                scheduleInterval = InsightsService.DEFAULT_SCHEDULE_INTERVAL;
-            }
-            insightsTask = scheduledExecutor.scheduleWithFixedDelay(insightsRunnable, 0, scheduleInterval, TimeUnit.DAYS);
+        if (scheduleInterval <= 0) {
+            scheduleInterval = InsightsService.DEFAULT_SCHEDULE_INTERVAL;
         }
+        insightsTask = scheduledExecutor.scheduleWithFixedDelay(insightsRunnable, 0, scheduleInterval, TimeUnit.DAYS);
     }
 
     protected void sendJdr() throws OperationFailedException {
