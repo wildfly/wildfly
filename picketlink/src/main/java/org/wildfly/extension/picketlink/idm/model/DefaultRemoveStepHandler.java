@@ -24,10 +24,8 @@ package org.wildfly.extension.picketlink.idm.model;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
@@ -42,11 +40,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  *
  * @author Pedro Silva
  */
-public class IDMConfigRemoveStepHandler extends RestartParentResourceRemoveHandler {
+public class DefaultRemoveStepHandler extends RestartParentResourceRemoveHandler {
 
-    static final IDMConfigRemoveStepHandler INSTANCE = new IDMConfigRemoveStepHandler();
+    static final DefaultRemoveStepHandler INSTANCE = new DefaultRemoveStepHandler();
 
-    private IDMConfigRemoveStepHandler() {
+    private DefaultRemoveStepHandler() {
         super(ModelElement.PARTITION_MANAGER.getName());
     }
 
@@ -54,33 +52,17 @@ public class IDMConfigRemoveStepHandler extends RestartParentResourceRemoveHandl
     protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
         super.updateModel(context, operation);
 
-        final PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
-        Resource resource = context.readResourceFromRoot(address);
-        final ModelNode parentModel = Resource.Tools.readModel(resource);
+        PathAddress partitionManagerAddress = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
+        Resource partitionManagerResource = context.readResourceFromRoot(partitionManagerAddress);
+        ModelNode parentModel = Resource.Tools.readModel(partitionManagerResource);
 
-        PartitionManagerAddHandler.INSTANCE.validateModel(context, address.getLastElement().getValue(), parentModel);
-
-        // removes the store services considering the parent model before the current child resource is removed.
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                PartitionManagerRemoveHandler.INSTANCE
-                    .removeIdentityStoreServices(context, parentModel, address.getLastElement().getValue());
-
-                context.completeStep(new OperationContext.RollbackHandler() {
-                    @Override
-                    public void handleRollback(OperationContext context, ModelNode operation) {
-                        context.completeStep(NOOP_ROLLBACK_HANDLER);
-                    }
-                });
-            }
-        }, OperationContext.Stage.RUNTIME);
+        PartitionManagerAddHandler.INSTANCE.validateModel(context, partitionManagerAddress.getLastElement().getValue(), parentModel);
     }
 
     @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
         PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement()
-            .getValue(), parentModel, verificationHandler, null, false);
+            .getValue(), parentModel, false);
     }
 
     @Override
