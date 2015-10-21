@@ -50,7 +50,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -214,7 +213,6 @@ public class WildcardReadsTestCase {
     }
 
     @Test
-    @Ignore("WFCORE-948")
     public void testAllHostsAllServersReadInterfaceDescription() {
         ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_WILD, SERVER_WILD, INTERFACE_PUBLIC));
         ModelNode resp = executeForResult(op);
@@ -231,7 +229,6 @@ public class WildcardReadsTestCase {
     }
 
     @Test
-    @Ignore("WFCORE-948")
     public void testSlaveAllServersReadInterfaceDescription() {
         ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD, INTERFACE_PUBLIC));
         ModelNode resp = executeForResult(op);
@@ -248,7 +245,6 @@ public class WildcardReadsTestCase {
     }
 
     @Test
-    @Ignore("WFCORE-948")
     public void testAllHostsAllServersReadRootDescription() {
         ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_WILD, SERVER_WILD));
         ModelNode resp = executeForResult(op);
@@ -265,7 +261,6 @@ public class WildcardReadsTestCase {
     }
 
     @Test
-    @Ignore("WFCORE-948")
     public void testSlaveAllServersReadRootDescription() {
         ModelNode op = Util.createEmptyOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.pathAddress(HOST_SLAVE, SERVER_WILD));
         ModelNode resp = executeForResult(op);
