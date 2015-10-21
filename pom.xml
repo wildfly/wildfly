@@ -236,8 +236,8 @@
 
         <!-- Surefire args -->
         <surefire.jpda.args/>
-        <surefire.system.args>-da ${surefire.jpda.args}</surefire.system.args>
-
+        <surefire.extra.args/>
+        <surefire.system.args>-Duser.region=US -Duser.language=en ${surefire.jpda.args} ${surefire.extra.args}</surefire.system.args>
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
@@ -384,7 +384,7 @@
                                   <value>${test.level}</value>
                               </property>
                           </systemProperties>
-                          <argLine>-Duser.region=US -Duser.language=en</argLine>
+                          <argLine>${surefire.system.args}</argLine>
                     </configuration>
 
                 </plugin>
