@@ -10,4 +10,7 @@
    </subsystem>
    <socket-binding name="jacorb" interface="unsecure" port="3528"/>
    <socket-binding name="jacorb-ssl" interface="unsecure" port="3529"/>
+   <interface name="unsecure">
+       <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+   </interface>
 </config>
