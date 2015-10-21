@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,6 +72,7 @@ import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableHttpSessionAdapter;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionContext;
@@ -82,11 +84,11 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(primaryOnly = true)
-public class InfinispanSessionManager<V, L> implements SessionManager<L, TransactionBatch> {
+public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, TransactionBatch> {
     private final SessionContext context;
     private final Batcher<TransactionBatch> batcher;
     private final Cache<? extends Key<String>, ?> cache;
-    private final SessionFactory<V, L> factory;
+    private final SessionFactory<MV, AV, L> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final CommandDispatcherFactory dispatcherFactory;
     private final NodeFactory<Address> nodeFactory;
@@ -101,7 +103,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     private volatile Scheduler scheduler;
     private volatile ServiceExecutor executor;
 
-    public InfinispanSessionManager(SessionFactory<V, L> factory, InfinispanSessionManagerConfiguration configuration) {
+    public InfinispanSessionManager(SessionFactory<MV, AV, L> factory, InfinispanSessionManagerConfiguration configuration) {
         this.factory = factory;
         this.cache = configuration.getCache();
         this.context = configuration.getSessionContext();
@@ -126,14 +128,14 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         }
         this.identifierFactory.start();
         final List<Scheduler> schedulers = new ArrayList<>(2);
-        schedulers.add(new SessionExpirationScheduler(this.batcher, new ExpiredSessionRemover<>(this.factory)));
+        schedulers.add(new SessionExpirationScheduler(this.batcher, new ExpiredSessionRemover<>(this.factory.getMetaDataFactory(), this.factory)));
         if (this.maxActiveSessions >= 0) {
             schedulers.add(new SessionEvictionScheduler(this.cache.getName() + ".eviction", this.factory, this.dispatcherFactory, this.maxActiveSessions));
         }
         this.scheduler = new Scheduler() {
             @Override
-            public void schedule(ImmutableSession session) {
-                schedulers.forEach(scheduler -> scheduler.schedule(session));
+            public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
+                schedulers.forEach(scheduler -> scheduler.schedule(sessionId, metaData));
             }
 
             @Override
@@ -170,33 +172,33 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         return this.persistent;
     }
 
-    private void cancel(ImmutableSession session) {
+    private void cancel(String sessionId) {
         try {
-            this.executeOnPrimaryOwner(session, new CancelSchedulerCommand(session.getId()));
+            this.executeOnPrimaryOwner(sessionId, new CancelSchedulerCommand(sessionId));
         } catch (Exception e) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToCancelSession(e, session.getId());
+            InfinispanWebLogger.ROOT_LOGGER.failedToCancelSession(e, sessionId);
         }
     }
 
-    void schedule(ImmutableSession session) {
+    void schedule(String sessionId, ImmutableSessionMetaData metaData) {
         try {
-            this.executeOnPrimaryOwner(session, new ScheduleSchedulerCommand(session));
+            this.executeOnPrimaryOwner(sessionId, new ScheduleSchedulerCommand(sessionId, metaData));
         } catch (Exception e) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToScheduleSession(e, session.getId());
+            InfinispanWebLogger.ROOT_LOGGER.failedToScheduleSession(e, sessionId);
         }
     }
 
-    private void executeOnPrimaryOwner(final ImmutableSession session, final Command<Void, Scheduler> command) throws Exception {
+    private void executeOnPrimaryOwner(final String sessionId, final Command<Void, Scheduler> command) throws Exception {
         this.invoker.invoke(() -> {
             // This should only go remote following a failover
-            Node node = this.locatePrimaryOwner(session);
+            Node node = this.locatePrimaryOwner(sessionId);
             return this.dispatcher.executeOnNode(command, node);
         }).get();
     }
 
-    private Node locatePrimaryOwner(ImmutableSession session) {
+    private Node locatePrimaryOwner(String sessionId) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        Address address = (dist != null) ? dist.getPrimaryLocation(new Key<>(session.getId())) : null;
+        Address address = (dist != null) ? dist.getPrimaryLocation(new Key<>(sessionId)) : null;
         return (address != null) ? this.nodeFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalNode();
     }
 
@@ -227,23 +229,22 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
     @Override
     public Session<L> findSession(String id) {
-        V value = this.factory.findValue(id);
+        Map.Entry<MV, AV> value = this.factory.findValue(id);
         if (value == null) {
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s not found", id);
             return null;
         }
-        Session<L> session = this.factory.createSession(id, value);
+        ImmutableSession session = this.factory.createImmutableSession(id, value);
         if (session.getMetaData().isExpired()) {
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was found, but has expired", id);
-            session.invalidate();
+            this.factory.remove(id);
             return null;
         }
-        ImmutableSession immutableSession = this.persistent ? this.factory.createImmutableSession(id, value) : session;
-        this.cancel(immutableSession);
+        this.cancel(id);
         if (this.persistent) {
-            triggerPostActivationEvents(immutableSession);
+            triggerPostActivationEvents(session);
         }
-        return new SchedulableSession(session, immutableSession);
+        return new SchedulableSession(this.factory.createSession(id, value), session);
     }
 
     @Override
@@ -255,7 +256,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
 
     @Override
     public ImmutableSession viewSession(String id) {
-        V value = this.factory.findValue(id);
+        Map.Entry<MV, AV> value = this.factory.findValue(id);
         return (value != null) ? new SimpleImmutableSession(this.factory.createImmutableSession(id, value)) : null;
     }
 
@@ -293,7 +294,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
             this.executor.execute(() -> {
                 String id = event.getKey().getValue();
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
-                V value = this.factory.findValue(id);
+                Map.Entry<MV, AV> value = this.factory.findValue(id);
                 if (value != null) {
                     ImmutableSession session = this.factory.createImmutableSession(id, value);
                     triggerPostActivationEvents(session);
@@ -308,7 +309,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
             this.executor.execute(() -> {
                 String id = event.getKey().getValue();
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-                V value = this.factory.findValue(id);
+                Map.Entry<MV, AV> value = this.factory.findValue(id);
                 if (value != null) {
                     ImmutableSession session = this.factory.createImmutableSession(id, value);
                     triggerPrePassivationEvents(session);
@@ -323,7 +324,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
             this.executor.execute(() -> {
                 String id = event.getKey().getValue();
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-                V value = this.factory.findValue(id);
+                Map.Entry<MV, AV> value = this.factory.findValue(id);
                 if (value != null) {
                     ImmutableSession session = this.factory.createImmutableSession(id, value);
                     ImmutableSessionAttributes attributes = session.getAttributes();
@@ -366,6 +367,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
     }
 
     private void schedule(Cache<? extends Key<String>, ?> cache, Locality oldLocality, Locality newLocality) {
+        SessionMetaDataFactory<MV, L> metaDataFactory = this.factory.getMetaDataFactory();
         // Iterate over sessions in memory
         try (Stream<? extends Key<String>> keys = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
             // If we are the new primary owner of this session then schedule expiration of this session locally
@@ -373,9 +375,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
                 Batch batch = this.batcher.createBatch();
                 try {
                     // We need to lookup the session to obtain its meta data
-                    V value = this.factory.tryValue(id);
+                    MV value = metaDataFactory.tryValue(id);
                     if (value != null) {
-                        this.scheduler.schedule(this.factory.createImmutableSession(id, value));
+                        this.scheduler.schedule(id, metaDataFactory.createImmutableSessionMetaData(id, value));
                     }
                 } finally {
                     batch.discard();
@@ -457,7 +459,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
                 triggerPrePassivationEvents(this.immutableSession);
             }
             this.session.close();
-            InfinispanSessionManager.this.schedule(this.immutableSession);
+            InfinispanSessionManager.this.schedule(this.immutableSession.getId(), this.immutableSession.getMetaData());
         }
 
         @Override

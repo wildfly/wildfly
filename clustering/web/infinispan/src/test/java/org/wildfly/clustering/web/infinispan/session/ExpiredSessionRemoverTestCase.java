@@ -21,59 +21,46 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.wildfly.clustering.ee.infinispan.Remover;
-import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionMetaData;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
+/**
+ * Unit test for {@link ExpiredSessionRemover}.
+ * @author Paul Ferraro
+ */
 public class ExpiredSessionRemoverTestCase {
     @Test
     public void test() {
-        SessionFactory<Object, Object> factory = mock(SessionFactory.class);
-        Remover<String> remover = new ExpiredSessionRemover<>(factory);
-        Session<Object> validSession = mock(Session.class);
-        Session<Object> expiredSession = mock(Session.class);
-        Session<Object> invalidSession = mock(Session.class);
-        SessionMetaData validMetaData = mock(SessionMetaData.class);
-        SessionMetaData expiredMetaData = mock(SessionMetaData.class);
+        SessionMetaDataFactory<Object, Object> factory = mock(SessionMetaDataFactory.class);
+        Remover<String> remover = mock(Remover.class);
+        ImmutableSessionMetaData validMetaData = mock(ImmutableSessionMetaData.class);
+        ImmutableSessionMetaData expiredMetaData = mock(ImmutableSessionMetaData.class);
         String missingSessionId = "missing";
         String expiredSessionId = "expired";
         String validSessionId = "valid";
-        String invalidSessionId = "invalid";
         Object expiredValue = new Object();
         Object validValue = new Object();
-        Object invalidValue = new Object();
-        
+
+        Remover<String> subject = new ExpiredSessionRemover<>(factory, remover);
+
         when(factory.tryValue(missingSessionId)).thenReturn(null);
         when(factory.tryValue(expiredSessionId)).thenReturn(expiredValue);
         when(factory.tryValue(validSessionId)).thenReturn(validValue);
-        when(factory.tryValue(invalidSessionId)).thenReturn(invalidValue);
         
-        when(factory.createSession(expiredSessionId, expiredValue)).thenReturn(expiredSession);
-        when(factory.createSession(validSessionId, validValue)).thenReturn(validSession);
-        when(factory.createSession(invalidSessionId, invalidValue)).thenReturn(invalidSession);
-        
-        when(expiredSession.isValid()).thenReturn(true);
-        when(validSession.isValid()).thenReturn(true);
-        when(invalidSession.isValid()).thenReturn(false);
-        
-        when(expiredSession.getMetaData()).thenReturn(expiredMetaData);
-        when(validSession.getMetaData()).thenReturn(validMetaData);
-        when(invalidSession.getMetaData()).thenReturn(validMetaData);
-        
+        when(factory.createImmutableSessionMetaData(expiredSessionId, expiredValue)).thenReturn(expiredMetaData);
+        when(factory.createImmutableSessionMetaData(validSessionId, validValue)).thenReturn(validMetaData);
+
         when(expiredMetaData.isExpired()).thenReturn(true);
         when(validMetaData.isExpired()).thenReturn(false);
-        
-        remover.remove(missingSessionId);
-        remover.remove(expiredSessionId);
-        remover.remove(validSessionId);
-        
-        verify(expiredSession).invalidate();
-        verify(validSession, never()).invalidate();
+
+        subject.remove(missingSessionId);
+        subject.remove(expiredSessionId);
+        subject.remove(validSessionId);
+
+        verify(remover).remove(expiredSessionId);
+        verify(remover, never()).remove(validSessionId);
     }
 }
