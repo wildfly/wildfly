@@ -98,6 +98,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Util.createAddOperation(getTransportAddress(stackName, protocol));
     }
 
+    protected static ModelNode getLegacyTransportAddOperation(String stackName, String protocol) {
+        ModelNode op = Util.createAddOperation(getLegacyTransportAddress(stackName));
+        op.get("type").set(protocol);
+        return op;
+    }
+
     protected static ModelNode getTransportAddOperationWithProperties(String stackName, String type) {
         ModelNode[] operations = new ModelNode[] {
                 getTransportAddOperation(stackName, type),
@@ -109,6 +115,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getTransportRemoveOperation(String stackName, String type) {
         return Util.createRemoveOperation(getTransportAddress(stackName, type));
+    }
+
+    protected static ModelNode getLegacyTransportRemoveOperation(String stackName) {
+        return Util.createRemoveOperation(getLegacyTransportAddress(stackName));
     }
 
     protected static ModelNode getTransportReadOperation(String stackName, String type, Attribute attribute) {
@@ -165,6 +175,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
      */
     protected static ModelNode getTransportSetPropertiesOperation(String stackName, String type, ModelNode values) {
         return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, values);
+    }
+
+    protected static ModelNode getLegacyThreadPoolAddOperation(String stackName, String threadPoolName) {
+        return Util.createAddOperation(getLegacyTransportAddress(stackName).append("thread-pool", threadPoolName));
     }
 
     // Protocol operations
@@ -248,6 +262,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static PathAddress getTransportAddress(String stackName, String type) {
         return getProtocolStackAddress(stackName).append(TransportResourceDefinition.pathElement(type));
+    }
+
+    protected static PathAddress getLegacyTransportAddress(String stackName) {
+        return getProtocolStackAddress(stackName).append(TransportResourceDefinition.LEGACY_PATH);
     }
 
     protected static PathAddress getTransportPropertyAddress(String stackName, String type, String propertyName) {

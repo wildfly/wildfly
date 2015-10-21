@@ -200,6 +200,10 @@ public final class Operations {
         return Util.createOperation(ModelDescriptionConstants.DESCRIBE, address);
     }
 
+    public static ModelNode createReadResourceOperation(PathAddress address) {
+        return Util.createOperation(ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+    }
+
     public static ModelNode createListAddOperation(PathAddress address, Attribute attribute, String value) {
         return createListElementOperation(ListOperations.LIST_ADD_DEFINITION, address, attribute, value);
     }
