@@ -144,6 +144,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
+    @Deprecated
     public static final AttributeDefinition ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.SECURITY)
@@ -153,6 +154,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
+    @Deprecated
     public static final AttributeDefinition CLIENT_SUPPORTS = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_CLIENT_SUPPORTS, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
@@ -173,6 +175,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
+    @Deprecated
     public static final AttributeDefinition SERVER_SUPPORTS = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SERVER_SUPPORTS, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
@@ -183,6 +186,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
+    @Deprecated
     public static final AttributeDefinition SERVER_REQUIRES = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SERVER_REQUIRES, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
