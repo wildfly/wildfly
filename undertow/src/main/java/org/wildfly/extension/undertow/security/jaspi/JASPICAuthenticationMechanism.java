@@ -25,12 +25,10 @@ import io.undertow.security.api.AuthenticatedSessionManager;
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.SecurityContext;
 import io.undertow.security.idm.Account;
-import io.undertow.server.ConduitWrapper;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.util.AttachmentKey;
 
-import io.undertow.util.ConduitFactory;
 import io.undertow.util.StatusCodes;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
@@ -55,7 +53,6 @@ import org.jboss.security.auth.callback.JASPICallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
 import org.wildfly.extension.undertow.security.UndertowSecurityAttachments;
-import org.xnio.conduits.StreamSinkConduit;
 
 /**
  * <p>
@@ -65,24 +62,24 @@ import org.xnio.conduits.StreamSinkConduit;
  * @author Pedro Igor
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
+public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
 
 
-    private static final String JASPI_HTTP_SERVLET_LAYER = "HttpServlet";
+    static final String JASPI_HTTP_SERVLET_LAYER = "HttpServlet";
     private static final String MECHANISM_NAME = "JASPIC";
     private static final String JASPI_AUTH_TYPE = "javax.servlet.http.authType";
     private static final String JASPI_REGISTER_SESSION = "javax.servlet.http.registerSession";
 
     public static final AttachmentKey<HttpServerExchange> HTTP_SERVER_EXCHANGE_ATTACHMENT_KEY = AttachmentKey.create(HttpServerExchange.class);
     public static final AttachmentKey<SecurityContext> SECURITY_CONTEXT_ATTACHMENT_KEY = AttachmentKey.create(SecurityContext.class);
-    private static final AttachmentKey<Boolean> ALREADY_WRAPPED = AttachmentKey.create(Boolean.class);
+
     public static final AttachmentKey<Boolean> AUTH_RUN = AttachmentKey.create(Boolean.class);
     public static final int DEFAULT_ERROR_CODE = StatusCodes.UNAUTHORIZED;
 
     private final String securityDomain;
     private final String configuredAuthMethod;
 
-    public JASPIAuthenticationMechanism(final String securityDomain, final String configuredAuthMethod) {
+    public JASPICAuthenticationMechanism(final String securityDomain, final String configuredAuthMethod) {
         this.securityDomain = securityDomain;
         this.configuredAuthMethod = configuredAuthMethod;
     }
@@ -95,7 +92,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         final GenericMessageInfo messageInfo = createMessageInfo(exchange, sc);
         final String applicationIdentifier = buildApplicationIdentifier(requestContext);
         final JASPICallbackHandler cbh = new JASPICallbackHandler();
-
+        exchange.putAttachment(JASPICContext.ATTACHMENT_KEY, new JASPICContext(messageInfo, sam, cbh));
         UndertowLogger.ROOT_LOGGER.debugf("validateRequest for layer [%s] and applicationContextIdentifier [%s]", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
 
         Account cachedAccount = null;
@@ -157,8 +154,6 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         servletRequestContext.setServletRequest((HttpServletRequest) messageInfo.getRequestMessage());
         servletRequestContext.setServletResponse((HttpServletResponse) messageInfo.getResponseMessage());
 
-        secureResponse(exchange, sam, messageInfo, cbh);
-
         return outcome;
 
     }
@@ -168,15 +163,11 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         return new ChallengeResult(true);
     }
 
-    private boolean wasAuthExceptionThrown(HttpServerExchange exchange) {
-        return exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT).getData().get(AuthException.class.getName()) != null;
-    }
-
     private JASPIServerAuthenticationManager createJASPIAuthenticationManager() {
         return new JASPIServerAuthenticationManager(this.securityDomain, new JBossCallbackHandler());
     }
 
-    private String buildApplicationIdentifier(final ServletRequestContext attachment) {
+    static String buildApplicationIdentifier(final ServletRequestContext attachment) {
         ServletRequest servletRequest = attachment.getServletRequest();
         return servletRequest.getServletContext().getVirtualServerName() + " " + servletRequest.getServletContext().getContextPath();
     }
@@ -236,32 +227,6 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         return new AccountImpl(userPrincipal, stringRoles, credential, original);
     }
 
-    private void secureResponse(final HttpServerExchange exchange, final JASPIServerAuthenticationManager sam, final GenericMessageInfo messageInfo, final JASPICallbackHandler cbh) {
-        if(exchange.getAttachment(ALREADY_WRAPPED) != null || exchange.isResponseStarted()) {
-            return;
-        }
-        exchange.putAttachment(ALREADY_WRAPPED, true);
-        // we add a response wrapper to properly invoke the secureResponse, after processing the destination
-        exchange.addResponseWrapper(new ConduitWrapper<StreamSinkConduit>() {
-            @Override
-            public StreamSinkConduit wrap(final ConduitFactory<StreamSinkConduit> factory, final HttpServerExchange exchange) {
-                ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
-                String applicationIdentifier = buildApplicationIdentifier(requestContext);
-
-                if (!wasAuthExceptionThrown(exchange)) {
-                    UndertowLogger.ROOT_LOGGER.debugf("secureResponse for layer [%s] and applicationContextIdentifier [%s].", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
-                    sam.secureResponse(messageInfo, new Subject(), JASPI_HTTP_SERVLET_LAYER, applicationIdentifier, cbh);
-
-                    // A SAM can unwrap the HTTP request/response objects - update the servlet request context with the values found in the message info.
-                    ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
-                    servletRequestContext.setServletRequest((HttpServletRequest) messageInfo.getRequestMessage());
-                    servletRequestContext.setServletResponse((HttpServletResponse) messageInfo.getResponseMessage());
-                }
-                return factory.create();
-            }
-        });
-    }
-
     /**
      * <p>The authentication is mandatory if the servlet has http constraints (eg.: {@link
      * javax.servlet.annotation.HttpConstraint}).</p>
@@ -275,5 +240,10 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
     private boolean statusIndicatesError(HttpServerExchange exchange) {
         return exchange.getResponseCode() != StatusCodes.OK;
+    }
+
+
+    static boolean wasAuthExceptionThrown(HttpServerExchange exchange) {
+        return exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT).getData().get(AuthException.class.getName()) != null;
     }
 }
