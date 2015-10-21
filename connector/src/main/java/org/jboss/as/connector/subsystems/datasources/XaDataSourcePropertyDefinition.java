@@ -27,6 +27,7 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -47,7 +48,7 @@ public class XaDataSourcePropertyDefinition extends SimpleResourceDefinition {
         super(PATH_PROPERTIES,
                 DataSourcesExtension.getResourceDescriptionResolver("xa-data-source", "xa-datasource-properties"),
                 deployed ? null : XaDataSourcePropertyAdd.INSTANCE,
-                deployed ? null : XaDataSourcePropertyRemove.INSTANCE);
+                deployed ? null : ReloadRequiredRemoveStepHandler.INSTANCE);
         this.deployed = deployed;
 
     }

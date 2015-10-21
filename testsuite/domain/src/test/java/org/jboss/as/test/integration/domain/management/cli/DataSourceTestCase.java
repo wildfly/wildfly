@@ -74,8 +74,8 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     @Test
     public void testDataSource() throws Exception {
         testAddDataSource("h2");
-        testModifyDataSource();
-        testRemoveDataSource();
+        testModifyDataSource("h2");
+        testRemoveDataSource("h2");
     }
 
     @Test
@@ -89,8 +89,8 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     public void testDataSourcewithHotDeployedJar() throws Exception {
         cli.sendLine("deploy --all-server-groups " + createDriverJarFile().getAbsolutePath());
         testAddDataSource("foodriver.jar");
-        testModifyDataSource();
-        testRemoveDataSource();
+        testModifyDataSource("foodriver.jar");
+        testRemoveDataSource("foodriver.jar");
 
     }
 
@@ -106,34 +106,34 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testAddDataSource(String driverName) throws Exception {
 
         // add data source
-        cli.sendLine("data-source add --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestDS --name=java:jboss/datasources/TestDS --driver-name=" + driverName + " --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        cli.sendLine("data-source add --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestDS_" + driverName +" --name=java:jboss/datasources/TestDS_" + driverName + " --driver-name=" + driverName + " --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
 
         // check the data source is listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/data-source");
         cli.sendLine("ls");
         String ls = cli.readOutput();
-        assertTrue("Datasource not found: " + ls, ls.contains("java:jboss/datasources/TestDS"));
+        assertTrue("Datasource not found: " + ls, ls.contains("java:jboss/datasources/TestDS_" + driverName));
 
         // check that it is available through JNDI
         // TODO implement when @ArquillianResource InitialContext is done
 
     }
 
-    private void testRemoveDataSource() throws Exception {
+    private void testRemoveDataSource(String driverName) throws Exception {
 
         // remove data source
-        cli.sendLine("data-source remove --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestDS");
+        cli.sendLine("data-source remove --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestDS_" + driverName);
 
         //check the data source is not listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/data-source");
         cli.sendLine("ls");
         String ls = cli.readOutput();
-        assertFalse(ls.contains("java:jboss/datasources/TestDS"));
+        assertFalse(ls.contains("java:jboss/datasources/TestDS_" + driverName));
 
     }
 
-    private void testModifyDataSource() throws Exception {
-        StringBuilder cmd = new StringBuilder("data-source --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestDS");
+    private void testModifyDataSource(String jndiName) throws Exception {
+        StringBuilder cmd = new StringBuilder("data-source --profile=" + profileNames[0] + " --name=java:jboss/datasources/TestDS_" + jndiName);
         for (String[] props : DS_PROPS) {
             cmd.append(" --");
             cmd.append(props[0]);
@@ -143,7 +143,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         cli.sendLine(cmd.toString());
 
         // check that datasource was modified
-        cli.sendLine("/profile=" + profileNames[0] + "/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS:read-resource(recursive=true)");
+        cli.sendLine("/profile=" + profileNames[0] + "/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/TestDS_" + jndiName + ":read-resource(recursive=true)");
         CLIOpResult result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
         assertTrue(result.getResult() instanceof Map);
