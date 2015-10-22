@@ -31,6 +31,7 @@ import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.util.AttachmentKey;
 
 import io.undertow.util.ConduitFactory;
+import io.undertow.util.StatusCodes;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.message.GenericMessageInfo;
@@ -76,6 +77,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
     public static final AttachmentKey<SecurityContext> SECURITY_CONTEXT_ATTACHMENT_KEY = AttachmentKey.create(SecurityContext.class);
     private static final AttachmentKey<Boolean> ALREADY_WRAPPED = AttachmentKey.create(Boolean.class);
     public static final AttachmentKey<Boolean> AUTH_RUN = AttachmentKey.create(Boolean.class);
+    public static final int DEFAULT_ERROR_CODE = StatusCodes.UNAUTHORIZED;
 
     private final String securityDomain;
     private final String configuredAuthMethod;
@@ -143,6 +145,11 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         } else {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
             sc.authenticationFailed("JASPIC authentication failed.", authType);
+
+            // make sure we don't return status OK if the AuthException was thrown
+            if (wasAuthExceptionThrown(exchange) && !statusIndicatesError(exchange)) {
+                exchange.setResponseCode(DEFAULT_ERROR_CODE);
+            }
         }
 
         // A SAM can wrap the HTTP request/response objects - update the servlet request context with the values found in the message info.
@@ -264,5 +271,9 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
      */
     private Boolean isMandatory(final ServletRequestContext attachment) {
         return attachment.getExchange().getSecurityContext() != null && attachment.getExchange().getSecurityContext().isAuthenticationRequired();
+    }
+
+    private boolean statusIndicatesError(HttpServerExchange exchange) {
+        return exchange.getResponseCode() != StatusCodes.OK;
     }
 }
