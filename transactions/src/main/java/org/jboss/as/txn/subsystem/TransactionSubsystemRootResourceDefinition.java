@@ -180,7 +180,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition USE_JOURNAL_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JOURNAL_STORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
-            .setAlternatives(CommonAttributes.USE_JDBC_STORE)
             .setAllowExpression(false).build();
     public static final SimpleAttributeDefinition JOURNAL_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.JOURNAL_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
@@ -192,13 +191,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition USE_JDBC_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JDBC_STORE, ModelType.BOOLEAN, true)
                 .setDefaultValue(new ModelNode(false))
                 .setFlags(AttributeAccess.Flag.RESTART_JVM)
-                .setAlternatives(CommonAttributes.USE_JOURNAL_STORE)
                 .setAllowExpression(false).build();
     public static final SimpleAttributeDefinition JDBC_STORE_DATASOURCE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STORE_DATASOURCE, ModelType.STRING, true)
                 .setFlags(AttributeAccess.Flag.RESTART_JVM)
                 .setXmlName(Attribute.DATASOURCE_JNDI_NAME.getLocalName())
-                .setAllowExpression(true)
-                .setRequires(CommonAttributes.USE_JDBC_STORE).build();
+                .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_TABLE_PREFIX =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_TABLE_PREFIX, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
@@ -277,6 +274,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(USE_JOURNAL_STORE);
         attributesWithoutMutuals.remove(USE_JDBC_STORE);
 
+        attributesWithoutMutuals.remove(JDBC_STORE_DATASOURCE); // Remove this as it also needs special write handler
+
         attributesWithoutMutuals.remove(PROCESS_ID_UUID);
         attributesWithoutMutuals.remove(PROCESS_ID_SOCKET_BINDING);
         attributesWithoutMutuals.remove(PROCESS_ID_SOCKET_MAX_PORTS);
@@ -291,6 +290,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         OperationStepHandler mutualWriteHandler = new ObjectStoreMutualWriteHandler(USE_JOURNAL_STORE, USE_JDBC_STORE);
         resourceRegistration.registerReadWriteAttribute(USE_JOURNAL_STORE, null, mutualWriteHandler);
         resourceRegistration.registerReadWriteAttribute(USE_JDBC_STORE, null, mutualWriteHandler);
+
+        // Register jdbc-store-datasource attribute
+        resourceRegistration.registerReadWriteAttribute(JDBC_STORE_DATASOURCE, null, new JdbcStoreDatasourceWriteHandler(JDBC_STORE_DATASOURCE));
 
         // Register mutual object store attributes
         OperationStepHandler mutualProcessIdWriteHandler = new ProcessIdWriteHandler(PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING, PROCESS_ID_SOCKET_MAX_PORTS);
@@ -344,18 +346,47 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
             assert !USE_JOURNAL_STORE.isAllowExpression() && !USE_JDBC_STORE.isAllowExpression() : "rework this before enabling expression";
 
-            if (attributeName.equals(USE_JOURNAL_STORE.getName()) || attributeName.equals(USE_JDBC_STORE.getName())) {
-                if (newValue.asBoolean() == true) {
-                    // check the value of the mutual attribute and disable it if it is set to true
-                    final String mutualAttributeName = attributeName.equals(USE_JDBC_STORE.getName())
-                            ? USE_JOURNAL_STORE.getName()
-                            : USE_JDBC_STORE.getName();
-
-                    ModelNode resourceModel = model.getModel();
-                    if (resourceModel.hasDefined(mutualAttributeName) && resourceModel.get(mutualAttributeName).asBoolean()) {
-                        resourceModel.get(mutualAttributeName).set(new ModelNode(false));
-                    }
+            context.addStep((operationContext, modelNode) -> {
+                ModelNode node = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                if (node.hasDefined(USE_JDBC_STORE.getName()) && node.get(USE_JDBC_STORE.getName()).asBoolean()
+                        && node.hasDefined(USE_JOURNAL_STORE.getName()) && node.get(USE_JOURNAL_STORE.getName()).asBoolean()) {
+                    throw TransactionLogger.ROOT_LOGGER.onlyOneCanBeTrue(USE_JDBC_STORE.getName(), USE_JOURNAL_STORE.getName());
                 }
+            }, OperationContext.Stage.MODEL);
+
+            context.addStep(JdbcStoreValidationStep.INSTANCE, OperationContext.Stage.MODEL);
+        }
+    }
+
+    private static class JdbcStoreDatasourceWriteHandler extends ReloadRequiredWriteAttributeHandler {
+
+        public JdbcStoreDatasourceWriteHandler(AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+            super.validateUpdatedModel(context, model);
+            context.addStep(JdbcStoreValidationStep.INSTANCE, OperationContext.Stage.MODEL);
+        }
+    }
+
+    /**
+     * Validates that if use-jdbc-store is set, jdbc-store-datasource must be also set.
+     *
+     * Must be added to both use-jdbc-store and jdbc-store-datasource fields.
+     */
+    private static class JdbcStoreValidationStep implements OperationStepHandler {
+
+        private static JdbcStoreValidationStep INSTANCE = new JdbcStoreValidationStep();
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode modelNode = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+            if (modelNode.hasDefined(USE_JDBC_STORE.getName()) && modelNode.get(USE_JDBC_STORE.getName()).asBoolean()
+                    && !modelNode.hasDefined(JDBC_STORE_DATASOURCE.getName())) {
+                throw new OperationFailedException(String.format("%s must be defined if %s is 'true'.",
+                        JDBC_STORE_DATASOURCE.getName(), USE_JDBC_STORE.getName()));
             }
         }
     }
