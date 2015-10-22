@@ -24,18 +24,22 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.websockets.jsr.JsrWebSocketLogger;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
+import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import javax.websocket.ClientEndpoint;
@@ -156,7 +160,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
             WebSocketDeploymentInfo webSocketDeploymentInfo = new WebSocketDeploymentInfo();
 
-            doDeployment(webSocketDeploymentInfo, annotatedEndpoints, config, endpoints);
+            doDeployment(deploymentUnit, webSocketDeploymentInfo, annotatedEndpoints, config, endpoints);
 
             installWebsockets(phaseContext, webSocketDeploymentInfo);
 
@@ -171,7 +175,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
         deploymentUnit.putAttachment(UndertowAttachments.WEB_SOCKET_DEPLOYMENT_INFO, webSocketDeploymentInfo);
     }
 
-    private void doDeployment(final WebSocketDeploymentInfo container, final Set<Class<?>> annotatedEndpoints, final Set<Class<? extends ServerApplicationConfig>> serverApplicationConfigClasses, final Set<Class<? extends Endpoint>> endpoints) throws DeploymentUnitProcessingException {
+    private void doDeployment(DeploymentUnit deploymentUnit, final WebSocketDeploymentInfo container, final Set<Class<?>> annotatedEndpoints, final Set<Class<? extends ServerApplicationConfig>> serverApplicationConfigClasses, final Set<Class<? extends Endpoint>> endpoints) throws DeploymentUnitProcessingException {
 
         Set<Class<? extends Endpoint>> allScannedEndpointImplementations = new HashSet<>(endpoints);
         Set<Class<?>> allScannedAnnotatedEndpoints = new HashSet<>(annotatedEndpoints);
@@ -205,11 +209,33 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
         //annotated endpoints first
         for (Class<?> endpoint : newAnnotatatedEndpoints) {
-            container.addEndpoint(endpoint);
+            if(endpoint != null ) {
+                container.addEndpoint(endpoint);
+                ServerEndpoint annotation = endpoint.getAnnotation(ServerEndpoint.class);
+                if (annotation != null) {
+                    String path = annotation.value();
+                    addManagementWebsocket(deploymentUnit, endpoint, path);
+                }
+            }
         }
 
         for (final ServerEndpointConfig endpoint : serverEndpointConfigurations) {
-            container.addEndpoint(endpoint);
+            if(endpoint != null) {
+                container.addEndpoint(endpoint);
+                addManagementWebsocket(deploymentUnit, endpoint.getEndpointClass(), endpoint.getPath());
+            }
+        }
+    }
+
+    void addManagementWebsocket(final DeploymentUnit unit, Class endpoint, String path) {
+        try {
+            final DeploymentResourceSupport deploymentResourceSupport = unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+            //websockets don't have the concept of a name, however the path much be unique
+            final ModelNode node = deploymentResourceSupport.getDeploymentSubModel(UndertowExtension.SUBSYSTEM_NAME, PathElement.pathElement("websocket", path));
+            node.get("endpoint-class").set(endpoint.getName());
+            node.get("path").set(path);
+        } catch (Exception e) {
+            UndertowLogger.ROOT_LOGGER.failedToRegisterWebsocket(endpoint, path, e);
         }
     }
 

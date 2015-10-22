@@ -100,7 +100,7 @@ public class UndertowExtension implements Extension {
 
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(DeploymentDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
-
+        deployments.registerSubModel(DeploymentWebSocketDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(UndertowSubsystemParser_3_0.INSTANCE);
     }
 
