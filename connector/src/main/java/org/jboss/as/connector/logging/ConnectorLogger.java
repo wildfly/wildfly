@@ -828,8 +828,9 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 92, value = "Indexed child resources can only be registered if the parent resource supports ordered children. The parent of '%s' is not indexed")
     IllegalStateException indexedChildResourceRegistrationNotAvailable(PathElement address);
 
-    @Message(id = 93, value = "This operation is no longer supported. Only for use on legacy hosts in a domain ")
-    OperationFailedException legacyOperation();
+    @LogMessage(level = INFO)
+    @Message(id = 93, value = "The '%s' operation is deprecated. Use of the 'add' or 'remove' operations is preferred, or if required the 'write-attribute' operation can used to set the deprecated 'enabled' attribute")
+    void legacyDisableEnableOperation(String name);
 
     @Message(id = 94, value = "Driver %s should be defined in a profile named 'default' activated on server where deploying *-ds.xml")
     IllegalStateException driverNotDefinedInDefaultProfile(String driverName);

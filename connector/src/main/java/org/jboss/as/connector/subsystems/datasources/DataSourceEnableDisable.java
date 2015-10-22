@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.operations.common.Util.getWriteAttributeOperation;
 
@@ -51,9 +52,8 @@ public class DataSourceEnableDisable implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        if (context.getProcessType().isServer()) {
-            throw ConnectorLogger.ROOT_LOGGER.legacyOperation();
-        }
+        // Log that this is deprecated
+        ConnectorLogger.ROOT_LOGGER.legacyDisableEnableOperation(operation.get(OP).asString());
 
         // Just delegate to write-attribute.
         ModelNode writeAttributeOp = getWriteAttributeOperation(context.getCurrentAddress(), Constants.ENABLED.getName(), enabled);
