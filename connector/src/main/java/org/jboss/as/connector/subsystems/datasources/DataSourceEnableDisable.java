@@ -22,40 +22,44 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.operations.common.Util.getWriteAttributeOperation;
+
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Operation handler responsible for enabling an existing data-source.
+ * Operation handler responsible for the legacy 'enable' and 'disable' ops used to enable or
+ * disable an existing data-source.
  *
- * @author Stefano Maestri
+ * @author John Bailey
  */
-public class DataSourceEnable implements OperationStepHandler {
-    static final DataSourceEnable LOCAL_INSTANCE = new DataSourceEnable(false);
-    static final DataSourceEnable XA_INSTANCE = new DataSourceEnable(true);
+public class DataSourceEnableDisable implements OperationStepHandler {
 
-    private final boolean xa;
+    static final DataSourceEnableDisable ENABLE = new DataSourceEnableDisable(true);
+    static final DataSourceEnableDisable DISABLE = new DataSourceEnableDisable(false);
 
-    public DataSourceEnable(boolean xa) {
-        super();
-        this.xa = xa;
+    private final boolean enabled;
+
+    private DataSourceEnableDisable(final boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        if (context.isNormalServer()) {
+        if (context.getProcessType().isServer()) {
             throw ConnectorLogger.ROOT_LOGGER.legacyOperation();
         }
 
+        // Just delegate to write-attribute.
+        ModelNode writeAttributeOp = getWriteAttributeOperation(context.getCurrentAddress(), Constants.ENABLED.getName(), enabled);
+        OperationStepHandler writeHandler = context.getResourceRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, WRITE_ATTRIBUTE_OPERATION);
+        // set the addFirst param to 'true' so the write-attribute runs before any other steps already registered;
+        // i.e. in the logically equivalent spot in the sequence to this step
+        context.addStep(writeAttributeOp, writeHandler, OperationContext.Stage.MODEL, true);
     }
-
-
-    public boolean isXa() {
-        return xa;
-    }
-
-
 }

@@ -101,9 +101,9 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
 
         if (!deployed) {
-            resourceRegistration.registerOperationHandler(DATASOURCE_ENABLE, DataSourceEnable.LOCAL_INSTANCE);
+            resourceRegistration.registerOperationHandler(DATASOURCE_ENABLE, DataSourceEnableDisable.ENABLE);
 
-            resourceRegistration.registerOperationHandler(DATASOURCE_DISABLE, DataSourceDisable.INSTANCE);
+            resourceRegistration.registerOperationHandler(DATASOURCE_DISABLE, DataSourceEnableDisable.DISABLE);
         }
         if (registerRuntimeOnly) {
             resourceRegistration.registerOperationHandler(FLUSH_IDLE_CONNECTION, PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE);
