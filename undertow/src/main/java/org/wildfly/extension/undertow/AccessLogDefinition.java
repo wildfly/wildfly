@@ -55,12 +55,12 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("default"))
             .build();
     protected static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(Constants.PREFIX, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode("access_log"))
+            .setDefaultValue(new ModelNode("access_log."))
             .setValidator(new StringLengthValidator(1, true))
             .setAllowExpression(true)
             .build();
     protected static final SimpleAttributeDefinition SUFFIX = new SimpleAttributeDefinitionBuilder(Constants.SUFFIX, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode(".log"))
+            .setDefaultValue(new ModelNode("log"))
             .setAllowExpression(true)
             .build();
     protected static final SimpleAttributeDefinition ROTATE = new SimpleAttributeDefinitionBuilder(Constants.ROTATE, ModelType.BOOLEAN, true)
