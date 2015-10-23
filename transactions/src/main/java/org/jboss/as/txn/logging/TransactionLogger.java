@@ -224,4 +224,7 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 31, value = "The attribute '%s' is no longer supported")
     XMLStreamException unsupportedAttribute(String attribute, @Param Location location);
+
+    @Message(id = 32, value = "Only one of [%s, %s] can be 'true'.")
+    OperationFailedException onlyOneCanBeTrue(String first, String second);
 }

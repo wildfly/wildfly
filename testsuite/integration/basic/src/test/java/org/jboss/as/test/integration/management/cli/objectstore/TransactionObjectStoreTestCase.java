@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.management.cli.objectstore;
 
+import java.io.IOException;
+
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.arjuna.state.OutputObjectState;
 import com.arjuna.ats.arjuna.tools.osb.api.proxy.RecoveryStoreProxy;
@@ -31,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -40,6 +43,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -72,6 +76,11 @@ public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
 
     @AfterClass
     public static void after() throws Exception {
+        // reset to default values in case a test failed
+        cli.sendLine("/subsystem=transactions:undefine-attribute(name=use-jdbc-store)");
+        cli.sendLine("/subsystem=transactions:undefine-attribute(name=use-journal-store)");
+        cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource)");
+
         AbstractCliTestBase.closeCLI();
     }
 
@@ -129,6 +138,98 @@ public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
         } finally {
             StoreManagerProxy.releaseProxy(serviceUrl);
         }
+    }
+
+    @Test
+    public void testUseJdbcStoreWithoutDatasource() throws IOException {
+        // check that use-jdbc-store is initially false
+        cli.sendLine("/subsystem=transactions:read-attribute(name=use-jdbc-store)");
+        CLIOpResult result = cli.readAllAsOpResult();
+        assertEquals("false", result.getResult());
+
+        // try to undefine use-jdbc-store
+        cli.sendLine("/subsystem=transactions:undefine-attribute(name=use-jdbc-store)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to undefine use-jdbc-store.", result.isIsOutcomeSuccess());
+
+        // try to set use-jdbc-store to false without defining datasource
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=false)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to set use-jdbc-store to false.", result.isIsOutcomeSuccess());
+
+        // try to set use-jdbc-store to true without defining datasource
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)", true);
+        result = cli.readAllAsOpResult();
+        assertFalse("Expected failure when jdbc-store-datasource is not set.", result.isIsOutcomeSuccess());
+
+        // correctly set jdbc-store-datasource first and then use-jdbc-store to true
+        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=test)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to set jdbc-store-datasource.", result.isIsOutcomeSuccess());
+
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to set use-jdbc-store.", result.isIsOutcomeSuccess());
+
+        // try to undefine jdbc-store-datasource when use-jdbc-store is set to true
+        cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource)", true);
+        result = cli.readAllAsOpResult();
+        assertFalse("Expected failure when un-defining jdbc-store-datasource when use-jdbc-store is true.", result.isIsOutcomeSuccess());
+
+        // setting use-jdbc-store to false
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=false)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to set use-jdbc-store to false.", result.isIsOutcomeSuccess());
+
+        // undefine jdbc-store-datasource
+        cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to undefine jdbc-store-datasource.", result.isIsOutcomeSuccess());
+    }
+
+    @Test
+    public void testEitherJdbcOrJournalStore() throws IOException {
+        // check that both attributes are undefined
+        cli.sendLine("/subsystem=transactions:read-attribute(name=use-jdbc-store)");
+        CLIOpResult result = cli.readAllAsOpResult();
+        assertEquals("false", result.getResult());
+
+        cli.sendLine("/subsystem=transactions:read-attribute(name=use-journal-store)");
+        result = cli.readAllAsOpResult();
+        assertEquals("false", result.getResult());
+
+        // check jdbc-store-datasource se that use-jdbc-store can be set to true
+        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=test)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to set jdbc-store-datasource.", result.isIsOutcomeSuccess());
+
+        // try set both attributes to true
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to set use-jdbc-store to true.", result.isIsOutcomeSuccess());
+
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=true)", true);
+        result = cli.readAllAsOpResult();
+        assertFalse("Expected failure when setting both journal and jdbc stores.", result.isIsOutcomeSuccess());
+
+        // undefine jdbc and set journal store
+        cli.sendLine("/subsystem=transactions:undefine-attribute(name=use-jdbc-store)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to undefine use-jdbc-store.", result.isIsOutcomeSuccess());
+
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=true)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to set use-journal-store to true.", result.isIsOutcomeSuccess());
+
+        // try to set jdbc store again
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)", true);
+        result = cli.readAllAsOpResult();
+        assertFalse("Expected failure when setting both journal and jdbc stores.", result.isIsOutcomeSuccess());
+
+        // undefine journal store
+        cli.sendLine("/subsystem=transactions:undefine-attribute(name=use-journal-store)");
+        result = cli.readAllAsOpResult();
+        assertTrue("Failed to undefine use-jdbc-store.", result.isIsOutcomeSuccess());
     }
 
     private String escapeColons(String colons) {
