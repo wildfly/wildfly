@@ -58,7 +58,7 @@
         <!-- required to allow Artemis client to connect to HornetQ servers -->
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-hornetq-protocol</artifactId>
+            <artifactId>artemis-hqclient-protocol</artifactId>
         </dependency>
 
         <dependency>

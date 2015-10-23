@@ -31,6 +31,7 @@
         <artifact name="${org.apache.activemq:artemis-cli}"/>
         <artifact name="${org.apache.activemq:artemis-commons}"/>
         <artifact name="${org.apache.activemq:artemis-dto}"/>
+        <artifact name="${org.apache.activemq:artemis-hqclient-protocol}"/>
         <artifact name="${org.apache.activemq:artemis-journal}"/>
         <artifact name="${org.apache.activemq:artemis-jms-client}"/>
         <artifact name="${org.apache.activemq:artemis-jms-server}"/>
