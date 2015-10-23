@@ -85,6 +85,10 @@
                             </includes>
                             <runOrder>alphabetical</runOrder>
 
+							<environmentVariables>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                            </environmentVariables>
+
                             <!-- Parameters to test cases. -->
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>manual-mode</arquillian.launch>
