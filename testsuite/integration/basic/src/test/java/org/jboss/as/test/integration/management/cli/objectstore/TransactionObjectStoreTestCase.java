@@ -58,9 +58,10 @@ public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, TransactionObjectStoreTestCase.class.getSimpleName() + ".jar");
-        jar.addClass(ObjectStoreBrowserService.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jts\n"), "MANIFEST.MF");
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, TransactionObjectStoreTestCase.class.getSimpleName() + ".jar")
+                .addClass(ObjectStoreBrowserService.class)
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.jts\n"), "MANIFEST.MF")
+                .addAsManifestResource(TransactionObjectStoreTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
         return jar;
     }
 
