@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ee.injection.resource.ejblocalref;
+package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
 import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -41,17 +41,16 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class EjbLocalRefInjectionTestCase {
+public class EnvEntryInjectionServletTestCase {
 
     @ArquillianResource
     private ManagementClient managementClient;
 
-
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
-        war.addClasses(EjbLocalRefInjectionServlet.class, NamedSLSB.class, SimpleSLSB.class, Hello.class);
-        war.addAsWebInfResource(EjbLocalRefInjectionTestCase.class.getPackage(), "web.xml", "web.xml");
+        war.addClasses(EnvEntryInjectionServlet.class, EnvEntryManagedBean.class);
+        war.addAsWebInfResource(EnvEntryInjectionServletTestCase.class.getPackage(), "EnvEntryInjectionTestCase-web.xml", "web.xml");
         return war;
     }
 
@@ -60,14 +59,8 @@ public class EjbLocalRefInjectionTestCase {
     }
 
     @Test
-    public void testLookup() throws Exception {
-        String result = performCall("ejbLocalRef?type=simple");
-        assertEquals("Simple Hello", result);
-    }
-
-    @Test
-    public void testEjbLink() throws Exception {
-        String result = performCall("ejbLocalRef?type=named");
-        assertEquals("Named Hello", result);
+    public void testEnvEntryInjectionIntoServlet() throws Exception {
+        String result = performCall("envEntry");
+        assertEquals("injection!", result);
     }
 }
