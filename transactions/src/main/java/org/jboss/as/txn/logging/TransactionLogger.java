@@ -224,4 +224,10 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 31, value = "The attribute '%s' is no longer supported")
     XMLStreamException unsupportedAttribute(String attribute, @Param Location location);
+
+    @Message(id = 32, value = "%s must be defined if %s is 'true'.")
+    OperationFailedException mustBeDefinedIfTrue(String attrOne, String attrTwo);
+
+    @Message(id = 33, value = "Only one of %s and %s can be 'true'.")
+    OperationFailedException onlyOneCanBeTrue(String attrOne, String attrTwo);
 }
