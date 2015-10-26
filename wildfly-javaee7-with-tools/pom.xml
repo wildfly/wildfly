@@ -27,7 +27,7 @@
     <parent>
         <groupId>org.wildfly.bom</groupId>
         <artifactId>wildfly-javaee7</artifactId>
-        <version>10.0.0.CR4</version>
+        <version>10.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-javaee7-with-tools</artifactId>
