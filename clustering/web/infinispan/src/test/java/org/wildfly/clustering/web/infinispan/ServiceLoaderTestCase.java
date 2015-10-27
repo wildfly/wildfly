@@ -26,6 +26,9 @@ import java.util.ServiceLoader;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
@@ -42,6 +45,9 @@ public class ServiceLoaderTestCase {
         load(RouteLocatorBuilderProvider.class);
         load(SessionManagerFactoryBuilderProvider.class);
         load(SSOManagerFactoryBuilderProvider.class);
+        load(DistributedCacheGroupBuilderProvider.class);
+        load(LocalCacheGroupBuilderProvider.class);
+        load(CacheGroupAliasBuilderProvider.class);
     }
 
     private static <T> void load(Class<T> targetClass) {

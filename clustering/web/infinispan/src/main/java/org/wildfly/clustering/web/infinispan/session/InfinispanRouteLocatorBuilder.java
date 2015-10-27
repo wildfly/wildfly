@@ -33,7 +33,6 @@ import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
 import org.wildfly.clustering.web.session.RouteLocator;
 
 /**
@@ -48,6 +47,14 @@ public class InfinispanRouteLocatorBuilder implements Builder<RouteLocator>, Val
 
     public static ServiceName getCacheServiceAlias(String deploymentName) {
         return getServiceName(deploymentName).append("cache");
+    }
+
+    public static ServiceName getNodeFactoryServiceAlias(String deploymentName) {
+        return getServiceName(deploymentName).append("nodes");
+    }
+
+    public static ServiceName getRegistryServiceAlias(String deploymentName) {
+        return getServiceName(deploymentName).append("registry");
     }
 
     private final String deploymentName;
@@ -71,8 +78,8 @@ public class InfinispanRouteLocatorBuilder implements Builder<RouteLocator>, Val
     @Override
     public ServiceBuilder<RouteLocator> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER), NodeFactory.class, this.factory)
-                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER), Registry.class, this.registry)
+                .addDependency(getNodeFactoryServiceAlias(this.deploymentName), NodeFactory.class, this.factory)
+                .addDependency(getRegistryServiceAlias(this.deploymentName), Registry.class, this.registry)
                 .addDependency(getCacheServiceAlias(this.deploymentName), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;

@@ -38,6 +38,8 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
@@ -87,6 +89,9 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
         new CacheBuilder<>(containerName, cacheName).build(target)
                 .addAliases(InfinispanRouteLocatorBuilder.getCacheServiceAlias(cacheName))
                 .install();
+
+        new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getNodeFactoryServiceAlias(cacheName), CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName, RouteCacheGroupBuilderProvider.CACHE_NAME), NodeFactory.class).build(target).install();
+        new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getRegistryServiceAlias(cacheName), CacheGroupServiceName.REGISTRY.getServiceName(containerName, RouteCacheGroupBuilderProvider.CACHE_NAME), Registry.class).build(target).install();
 
         return target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
