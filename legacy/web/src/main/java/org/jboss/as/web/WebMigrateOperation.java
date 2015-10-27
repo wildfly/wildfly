@@ -172,7 +172,6 @@ public class WebMigrateOperation implements OperationStepHandler {
         // node containing the description (list of add operations) of the legacy subsystem
         final ModelNode legacyModelAddOps = new ModelNode();
         //we don't preserve order, instead we sort by address length
-        //TODO: is this ok in every case?
         final Map<PathAddress, ModelNode> sortedMigrationOperations = new TreeMap<>(new Comparator<PathAddress>() {
             @Override
             public int compare(PathAddress o1, PathAddress o2) {
@@ -791,11 +790,11 @@ public class WebMigrateOperation implements OperationStepHandler {
         addConnector.get(Constants.MAX_CONNECTIONS).set(newAddOp.get(WebConnectorDefinition.MAX_CONNECTIONS.getName()));
         addConnector.get(Constants.MAX_BUFFERED_REQUEST_SIZE).set(newAddOp.get(WebConnectorDefinition.MAX_SAVE_POST_SIZE.getName()));
         if(newAddOp.hasDefined(WebConnectorDefinition.REDIRECT_PORT.getName())) {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.PROXY_BINDING.getName(), pathAddress(newAddOp.get(ADDRESS))));
+        }
+        if(newAddOp.hasDefined(WebConnectorDefinition.PROXY_BINDING.getName())) {
             warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.REDIRECT_PORT.getName(), pathAddress(newAddOp.get(ADDRESS))));
         }
-        //TODO: secure
-        //TODO: max save post size
-        //TODO: proxy binding
         if (newAddOp.hasDefined(WebConnectorDefinition.EXECUTOR.getName())) {
             //TODO: migrate executor to worker
             warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.EXECUTOR.getName(), pathAddress(newAddOp.get(ADDRESS))));
