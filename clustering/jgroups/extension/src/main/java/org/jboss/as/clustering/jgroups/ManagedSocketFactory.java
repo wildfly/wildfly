@@ -99,8 +99,7 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public DatagramSocket createDatagramSocket(String name, SocketAddress address) throws SocketException {
-        // Creating the socket using the name throws an ISE, See WFCORE-1063
-        return this.manager.createDatagramSocket(address);
+        return this.manager.createDatagramSocket(name, address);
     }
 
     @Override
