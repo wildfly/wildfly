@@ -43,7 +43,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jgroups.Channel;
 import org.jgroups.Event;
-import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.annotations.Property;
@@ -214,10 +213,6 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         TransportConfiguration transport = this.configuration.getTransport();
         org.jgroups.conf.ProtocolConfiguration protocol = createProtocol(this.configuration, transport);
         Map<String, String> properties = protocol.getProperties();
-
-        if (transport.isShared()) {
-            properties.put(Global.SINGLETON_NAME, this.configuration.getName());
-        }
 
         Introspector introspector = new Introspector(protocol);
 
