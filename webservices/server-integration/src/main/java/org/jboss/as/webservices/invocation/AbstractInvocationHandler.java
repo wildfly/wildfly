@@ -105,10 +105,8 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
          // prepare invocation data
          final ComponentView componentView = getComponentView();
          Component component = componentView.getComponent();
-         //for spring integration and @FactoryType is annotated we don't need to go into ee's interceptors
-         if(wsInvocation.getInvocationContext().getTargetBean() != null
-                 && (endpoint.getProperty("SpringBus") != null)
-                 || wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null) {
+         //in case of @FactoryType annotation we don't need to go into EE interceptors
+         if(wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null) {
              this.reference = new ManagedReference() {
                  public void release() {
                  }
