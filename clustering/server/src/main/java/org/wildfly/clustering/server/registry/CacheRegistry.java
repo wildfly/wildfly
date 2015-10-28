@@ -184,7 +184,10 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     public void event(CacheEntryEvent<Node, Map.Entry<K, V>> event) {
         if (event.isOriginLocal() || event.isPre()) return;
         if (!this.listeners.isEmpty()) {
-            this.notifyListeners(event.getType(), event.getValue());
+            Map.Entry<K, V> entry = event.getValue();
+            if (entry != null) {
+                this.notifyListeners(event.getType(), entry);
+            }
         }
     }
 
@@ -192,7 +195,11 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     public void removed(CacheEntryRemovedEvent<Node, Map.Entry<K, V>> event) {
         if (event.isOriginLocal() || event.isPre()) return;
         if (!this.listeners.isEmpty()) {
-            this.notifyListeners(event.getType(), event.getOldValue());
+            Map.Entry<K, V> entry = event.getOldValue();
+            // WFLY-4938 For some reason, the old value can be null
+            if (entry != null) {
+                this.notifyListeners(event.getType(), entry);
+            }
         }
     }
 
