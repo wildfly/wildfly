@@ -32,10 +32,10 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.wildfly.security.auth.principal.NamePrincipal;
-import org.wildfly.security.auth.server.CredentialSupport;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityRealm;
+import org.wildfly.security.auth.server.SupportLevel;
 import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.authz.MapAttributes;
@@ -88,11 +88,11 @@ public class DomainContextRealm implements SecurityRealm {
     }
 
     @Override
-    public CredentialSupport getCredentialSupport(final String credentialName) throws RealmUnavailableException {
+    public SupportLevel getCredentialAcquireSupport(final String credentialName) throws RealmUnavailableException {
         //if (char[].class.isAssignableFrom(credentialType) || String.class.isAssignableFrom(credentialType) || ClearPassword.class.isAssignableFrom(credentialType)) {
         //    return CredentialSupport.VERIFIABLE_ONLY;
         //}
-        return CredentialSupport.POSSIBLY_VERIFIABLE;
+        return SupportLevel.POSSIBLY_SUPPORTED;
     }
 
     private class PicketBoxBasedIdentity implements RealmIdentity {
@@ -106,12 +106,12 @@ public class DomainContextRealm implements SecurityRealm {
         }
 
         @Override
-        public CredentialSupport getCredentialSupport(final String credentialName) throws RealmUnavailableException {
-            return DomainContextRealm.this.getCredentialSupport(credentialName);
+        public SupportLevel getCredentialAcquireSupport(final String credentialName) throws RealmUnavailableException {
+            return DomainContextRealm.this.getCredentialAcquireSupport(credentialName);
         }
 
         @Override
-        public <C extends Credential> C getCredential(String credentialName, Class<C> credentialType) throws RealmUnavailableException {
+        public Credential getCredential(String credentialName) throws RealmUnavailableException {
             return null;
         }
 
