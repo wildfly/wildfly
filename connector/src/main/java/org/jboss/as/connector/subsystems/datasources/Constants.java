@@ -235,9 +235,11 @@ public class Constants {
             .setAllowNull(true)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition PROFILE = SimpleAttributeDefinitionBuilder.create("profile", ModelType.STRING)
                 .setAllowNull(true)
-                .build();
+                .setDeprecated(ModelVersion.create(4, 0, 0))
+            .build();
 
     public static final String STATISTICS = "statistics";
 
