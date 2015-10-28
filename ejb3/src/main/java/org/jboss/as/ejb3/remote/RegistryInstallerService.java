@@ -28,6 +28,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 
@@ -48,7 +49,7 @@ public class RegistryInstallerService implements Service<Void> {
     public ServiceBuilder<Void> build(ServiceTarget target) {
         return target.addService(SERVICE_NAME, this)
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, this.collector)
-                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(this.clientMappingsClusterName), Registry.class, this.registry)
+                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(this.clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
         ;
     }
 

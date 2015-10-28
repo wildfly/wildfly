@@ -20,18 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.ServiceLoader;
 
 import org.junit.Test;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactoryProvider;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
 import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
 import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
-import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 
 /**
  * Validates loading of services.
@@ -42,9 +40,7 @@ public class ServiceLoaderTestCase {
     @Test
     public void load() {
         load(Externalizer.class);
-        load(RouteLocatorBuilderProvider.class);
-        load(SessionManagerFactoryBuilderProvider.class);
-        load(SSOManagerFactoryBuilderProvider.class);
+        load(BeanManagerFactoryBuilderFactoryProvider.class);
         load(DistributedCacheGroupBuilderProvider.class);
         load(LocalCacheGroupBuilderProvider.class);
         load(CacheGroupAliasBuilderProvider.class);

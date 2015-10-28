@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
+
+package org.wildfly.clustering.ejb.infinispan;
+
+import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
 
 /**
- * Configuration of a bean manager factory builder.
  * @author Paul Ferraro
  */
-public interface BeanManagerFactoryBuilderConfiguration extends BeanPassivationConfiguration {
-    String DEFAULT_CONTAINER_NAME = "ejb";
-    String CLIENT_MAPPINGS_CACHE_NAME = "client-mappings";
+public class DistributedClientMappingsCacheBuilderProvider extends ClientMappingsCacheBuilderProvider implements DistributedCacheGroupBuilderProvider {
 
-    String getContainerName();
-    String getCacheName();
+    public DistributedClientMappingsCacheBuilderProvider() {
+        super(DistributedCacheGroupBuilderProvider.class);
+    }
 }
