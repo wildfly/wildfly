@@ -36,7 +36,7 @@ public class IdentityConfigurationResourceDefinition extends AbstractIDMResource
     public static final IdentityConfigurationResourceDefinition INSTANCE = new IdentityConfigurationResourceDefinition();
 
     private IdentityConfigurationResourceDefinition() {
-        super(ModelElement.IDENTITY_CONFIGURATION, new IDMConfigAddStepHandler(getModelValidators()));
+        super(ModelElement.IDENTITY_CONFIGURATION, new IDMConfigAddStepHandler(getModelValidators()), IdentityConfigurationRemoveStepHandler.INSTANCE);
     }
 
     @Override

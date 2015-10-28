@@ -19,10 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.undertow;
 
 import io.undertow.server.ListenerRegistry;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -44,16 +44,18 @@ public class HttpsListenerAdd extends ListenerAdd {
     @Override
     ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         OptionMap.Builder builder = OptionMap.builder().addAll(socketOptions);
-        HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model,builder);
-        HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveOption(context, model, builder);
+        HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model, builder);
+        ModelNode value = HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveModelAttribute(context, model);
+        String cipherSuites = value.isDefined() ? value.asString() : null;
+
         HttpsListenerResourceDefinition.ENABLED_PROTOCOLS.resolveOption(context, model, builder);
         HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE.resolveOption(context, model, builder);
         HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT.resolveOption(context, model, builder);
 
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
-        HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model,listenerBuilder);
-        HttpsListenerResourceDefinition.ENABLE_SPDY.resolveOption(context, model,listenerBuilder);
-        return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), builder.getMap());
+        HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model, listenerBuilder);
+        HttpsListenerResourceDefinition.ENABLE_SPDY.resolveOption(context, model, listenerBuilder);
+        return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), cipherSuites, builder.getMap());
     }
 
     @Override

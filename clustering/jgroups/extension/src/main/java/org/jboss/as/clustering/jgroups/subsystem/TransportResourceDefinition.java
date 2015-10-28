@@ -22,9 +22,11 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,7 +39,6 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.transform.ImplicitlyAddedResourceDynamicDiscardPolicy;
@@ -66,6 +67,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.MapOperations;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -241,7 +243,50 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+        parentRegistration.registerAlias(LEGACY_PATH, new AliasEntry(registration) {
+            @Override
+            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
+                PathAddress target = this.getTargetAddress();
+                List<PathElement> result = new ArrayList<>(aliasAddress.size());
+                for (int i = 0; i < aliasAddress.size(); ++i) {
+                    PathElement element = aliasAddress.getElement(i);
+                    if (i == target.size() - 1) {
+                        final ModelNode operation = aliasContext.getOperation();
+                        final String stackName;
+
+                        if (ModelDescriptionConstants.ADD.equals(Operations.getName(operation)) && operation.hasDefined("type")) {
+                            stackName = operation.get("type").asString();
+                        } else {
+                            Resource root = null;
+                            try {
+                                root = aliasContext.readResourceFromRoot(PathAddress.pathAddress(result));
+                            } catch (Resource.NoSuchResourceException ignored) {
+                            }
+                            if (root == null) {
+                                stackName = "*";
+                            } else {
+                                Set<String> names = root.getChildrenNames("transport");
+                                if (names.size() > 1) {
+                                    throw new AssertionError("There should be at most one child");
+                                } else if (names.size() == 0) {
+                                    stackName = "*";
+                                } else {
+                                    stackName = names.iterator().next();
+                                }
+                            }
+                        }
+
+                        result.add(PathElement.pathElement("transport", stackName));
+                    } else if (i < target.size()) {
+                        PathElement targetElement = target.getElement(i);
+                        result.add(targetElement.isWildcard() ? PathElement.pathElement(targetElement.getKey(), element.getValue()) : targetElement);
+                    } else {
+                        result.add(element);
+                    }
+                }
+                return PathAddress.pathAddress(result);
+            }
+        });
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -257,7 +302,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
             protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
                 super.populateModel(operation, model);
                 // Add deprecated threading attributes to the model for now
-                for (ThreadingAttribute attribute :  EnumSet.allOf(ThreadingAttribute.class)) {
+                for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
                     attribute.getDefinition().validateAndSet(operation, model);
                 }
             }

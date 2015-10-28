@@ -45,7 +45,7 @@
            </security-domain>
            <security-domain name="sp" cache-type="default">
                <authentication>
-                   <login-module code="org.picketlink.identity.federation.bindings.wildfly.SAML2LoginModule" flag="required"/>
+                   <login-module code="org.picketlink.identity.federation.bindings.jboss.auth.SAML2LoginModule" flag="required"/>
                </authentication>
            </security-domain>
        </replacement>

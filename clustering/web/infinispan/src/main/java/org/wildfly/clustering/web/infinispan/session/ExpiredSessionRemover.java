@@ -23,7 +23,7 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
-import org.wildfly.clustering.web.session.Session;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * Session remover that removes a session if and only if it is expired.
@@ -31,20 +31,22 @@ import org.wildfly.clustering.web.session.Session;
  */
 public class ExpiredSessionRemover<V, L> implements Remover<String> {
 
-    private final SessionFactory<V, L> factory;
+    private final SessionMetaDataFactory<V, L> factory;
+    private final Remover<String> remover;
 
-    public ExpiredSessionRemover(SessionFactory<V, L> factory) {
+    public ExpiredSessionRemover(SessionMetaDataFactory<V, L> factory, Remover<String> remover) {
         this.factory = factory;
+        this.remover = remover;
     }
 
     @Override
     public void remove(String id) {
         V value = this.factory.tryValue(id);
         if (value != null) {
-            Session<L> session = this.factory.createSession(id, value);
-            if (session.isValid() && session.getMetaData().isExpired()) {
+            ImmutableSessionMetaData metaData = this.factory.createImmutableSessionMetaData(id, value);
+            if (metaData.isExpired()) {
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s has expired.", id);
-                session.invalidate();
+                this.remover.remove(id);
             }
         }
     }

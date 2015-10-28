@@ -328,4 +328,11 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 76, value = "Cannot remove resource of type %s")
     IllegalArgumentException cannotRemoveResourceOfType(String type);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 78, value = "Failed to register management view for websocket %s at %s")
+    void failedToRegisterWebsocket(Class endpoint, String path, @Cause Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 77, value = "Error invoking secure response")
+    void errorInvokingSecureResponse(@Cause Exception e);
 }

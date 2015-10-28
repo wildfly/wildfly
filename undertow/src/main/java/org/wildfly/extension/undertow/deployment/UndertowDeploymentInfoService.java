@@ -150,7 +150,8 @@ import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
-import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
+import org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechanism;
+import org.wildfly.extension.undertow.security.jaspi.JASPICSecureResponseHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
@@ -452,7 +453,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     /**
-     * <p>Adds to the deployment the {@link JASPIAuthenticationMechanism}, if necessary. The handler will be added if the security domain
+     * <p>Adds to the deployment the {@link org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechanism}, if necessary. The handler will be added if the security domain
      * is configured with JASPI authentication.</p>
      *
      * @param deploymentInfo
@@ -469,8 +470,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (loginConfig != null && loginConfig.getAuthMethods().size() > 0) {
                 authMethod = loginConfig.getAuthMethods().get(0).getName();
             }
-            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(securityDomain, authMethod));
+            deploymentInfo.setJaspiAuthenticationMechanism(new JASPICAuthenticationMechanism(securityDomain, authMethod));
             deploymentInfo.setSecurityContextFactory(new JASPICSecurityContextFactory(this.securityDomain));
+            deploymentInfo.addOuterHandlerChainWrapper(next -> new JASPICSecureResponseHandler(next));
         }
     }
 
