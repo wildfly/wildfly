@@ -175,6 +175,17 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         String sslSocketBinding = props.getProperty(Constants.ORB_SSL_SOCKET_BINDING);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,
                 orbService.getIIOPSSLSocketBindingInjector());
+
+        // create the IOR security config metadata service.
+        final IORSecurityConfigMetaData securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
+                model);
+        final IORSecConfigMetaDataService securityConfigMetaDataService = new IORSecConfigMetaDataService(securityConfigMetaData);
+        context.getServiceTarget()
+                .addService(IORSecConfigMetaDataService.SERVICE_NAME, securityConfigMetaDataService)
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+        builder.addDependency(IORSecConfigMetaDataService.SERVICE_NAME);
+
         // set the initial mode and install the service.
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
@@ -209,14 +220,6 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingService.getRootPOAInjector())
                 .addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
                         namingService.getNamingPOAInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-        // create the IOR security config metadata service.
-        final IORSecurityConfigMetaData securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
-                model);
-
-        context.getServiceTarget()
-                .addService(IORSecConfigMetaDataService.SERVICE_NAME, new IORSecConfigMetaDataService(securityConfigMetaData))
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         configureClientSecurity(props);
