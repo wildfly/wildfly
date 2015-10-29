@@ -35,6 +35,7 @@ import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 
 /**
  * Creates routing services.
@@ -66,7 +67,7 @@ public class RouteCacheGroupBuilderProvider implements CacheGroupBuilderProvider
             });
             builders.add(new CacheBuilder<>(containerName, CACHE_NAME));
             for (CacheGroupBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-                System.out.println(String.format("RoutingCacheGroupBuilderProvider.getBuilders(%s, %s), provider = %s", containerName, cacheName, provider.getClass().getName()));
+                InfinispanWebLogger.ROOT_LOGGER.debugf("RoutingCacheGroupBuilderProvider.getBuilders(%s, %s), provider = %s", containerName, cacheName, provider.getClass().getName());
                 builders.addAll(provider.getBuilders(containerName, CACHE_NAME));
             }
         }
