@@ -36,6 +36,7 @@ import org.wildfly.clustering.web.session.Session;
  */
 public interface SessionFactory<MV, AV, L> extends Creator<String, Map.Entry<MV, AV>, Void>, Locator<String, Map.Entry<MV, AV>>, Remover<String>, Evictor<String> {
     SessionMetaDataFactory<MV, L> getMetaDataFactory();
+    SessionAttributesFactory<AV> getAttributesFactory();
 
     Session<L> createSession(String id, Map.Entry<MV, AV> value);
     ImmutableSession createImmutableSession(String id, Map.Entry<MV, AV> value);

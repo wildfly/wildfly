@@ -168,11 +168,12 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                                 removed.put(old.getKey(), old.getValue());
                             }
                         }
-                        if (!removed.isEmpty()) {
-                            this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
-                        }
                     } catch (CacheException e) {
                         ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, this.containerName, event.getCache().getName(), nodes);
+                    }
+                    // Invoke listeners outside above tx context
+                    if (!removed.isEmpty()) {
+                        this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
                     }
                 }
             }

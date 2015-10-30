@@ -158,7 +158,7 @@ public class InfinispanBatcherTestCase {
             reset(this.tm);
         }
 
-        verifyZeroInteractions(this.tm);
+        verify(this.tm).suspend();
     }
 
     @Test
@@ -175,6 +175,7 @@ public class InfinispanBatcherTestCase {
             reset(this.tm);
         }
 
+        verify(this.tm).suspend();
         verify(this.tm).resume(otherTx);
     }
 

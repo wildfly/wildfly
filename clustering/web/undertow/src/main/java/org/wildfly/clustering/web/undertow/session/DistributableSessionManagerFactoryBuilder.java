@@ -38,7 +38,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.web.session.SessionManagerConfiguration;
+import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
 
@@ -48,10 +48,10 @@ import org.wildfly.extension.undertow.session.DistributableSessionManagerConfigu
  */
 public class DistributableSessionManagerFactoryBuilder implements org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder, Value<SessionManagerFactory> {
 
-    static final Map<ReplicationGranularity, SessionManagerConfiguration.SessionAttributePersistenceStrategy> strategies = new EnumMap<>(ReplicationGranularity.class);
+    static final Map<ReplicationGranularity, SessionManagerFactoryConfiguration.SessionAttributePersistenceStrategy> strategies = new EnumMap<>(ReplicationGranularity.class);
     static {
-        strategies.put(ReplicationGranularity.SESSION, SessionManagerConfiguration.SessionAttributePersistenceStrategy.COARSE);
-        strategies.put(ReplicationGranularity.ATTRIBUTE, SessionManagerConfiguration.SessionAttributePersistenceStrategy.FINE);
+        strategies.put(ReplicationGranularity.SESSION, SessionManagerFactoryConfiguration.SessionAttributePersistenceStrategy.COARSE);
+        strategies.put(ReplicationGranularity.ATTRIBUTE, SessionManagerFactoryConfiguration.SessionAttributePersistenceStrategy.FINE);
     }
 
     private static SessionManagerFactoryBuilderProvider<Batch> load() {
@@ -75,7 +75,7 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
 
     @Override
     public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, final DistributableSessionManagerConfiguration config) {
-        SessionManagerConfiguration configuration = new SessionManagerConfiguration() {
+        SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
             @Override
             public int getMaxActiveSessions() {
                 return config.getMaxActiveSessions();
