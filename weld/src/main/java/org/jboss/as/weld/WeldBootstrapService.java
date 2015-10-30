@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.enterprise.inject.spi.BeanManager;
 
@@ -41,6 +43,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.Container;
+import org.jboss.weld.ContainerState;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
@@ -71,6 +74,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
     private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<WeldSecurityServices>();
     private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<WeldTransactionServices>();
     private final InjectedValue<ExecutorServices> executorServices = new InjectedValue<ExecutorServices>();
+    private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<ExecutorService>();
 
     private volatile boolean started;
 
@@ -129,9 +133,37 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
     }
 
     /**
-     * This is a no-op, the actual shutdown is performed in {@link WeldStartService#stop(org.jboss.msc.service.StopContext)}
+     * This is a no-op if {@link WeldStartService#start(StartContext)} completes normally and the shutdown is performed in
+     * {@link WeldStartService#stop(org.jboss.msc.service.StopContext)}.
      */
     public synchronized void stop(final StopContext context) {
+        if (started) {
+            // WeldStartService#stop() not completed - attempt to perform the container cleanup
+            final Container container = Container.instance(deploymentName);
+            if (container != null && !ContainerState.SHUTDOWN.equals(container.getState())) {
+                final ExecutorService executorService = serverExecutor.getValue();
+                final Runnable task = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            WeldLogger.DEPLOYMENT_LOGGER.debugf("Attempting to perform weld container cleanup for deployment %s",
+                                    deploymentName);
+                            container.setState(ContainerState.SHUTDOWN);
+                            container.cleanup();
+                        } finally {
+                            context.complete();
+                        }
+                    }
+                };
+                try {
+                    executorService.execute(task);
+                } catch (RejectedExecutionException e) {
+                    task.run();
+                } finally {
+                    context.asynchronous();
+                }
+            }
+        }
     }
 
     /**
@@ -213,5 +245,9 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
 
     public InjectedValue<ExecutorServices> getExecutorServices() {
         return executorServices;
+    }
+
+    public InjectedValue<ExecutorService> getServerExecutor() {
+        return serverExecutor;
     }
 }
