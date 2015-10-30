@@ -25,23 +25,16 @@ package org.jboss.as.clustering.controller;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Generic {@link org.jboss.as.controller.OperationStepHandler} for runtime metrics.
  * @author Paul Ferraro
  */
-public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements Registration<ManagementResourceRegistration> {
+public class MetricHandler<C> extends ExecutionHandler<C, Metric<C>> implements Registration<ManagementResourceRegistration> {
 
-    private final Map<String, Metric<C>> metrics = new HashMap<>();
-    private final MetricExecutor<C> executor;
+    private final Collection<? extends Metric<C>> metrics;
 
     public <M extends Enum<M> & Metric<C>> MetricHandler(MetricExecutor<C> executor, Class<M> metricClass) {
         this(executor, EnumSet.allOf(metricClass));
@@ -52,26 +45,12 @@ public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements Regi
     }
 
     public MetricHandler(MetricExecutor<C> executor, Collection<? extends Metric<C>> metrics) {
-        this.executor = executor;
-        metrics.forEach(metric -> this.metrics.put(metric.getDefinition().getName(), metric));
+        super(executor, metrics, metric -> metric.getDefinition().getName());
+        this.metrics = metrics;
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        this.metrics.values().forEach(metric -> registration.registerReadOnlyAttribute(metric.getDefinition(), this));
-    }
-
-    @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
-        String name = Operations.getAttributeName(operation);
-        try {
-            ModelNode result = this.executor.execute(context, this.metrics.get(name));
-            if (result != null) {
-                context.getResult().set(result);
-            }
-        } catch (OperationFailedException e) {
-            context.getFailureDescription().set(e.getLocalizedMessage());
-        }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        this.metrics.forEach(metric -> registration.registerReadOnlyAttribute(metric.getDefinition(), this));
     }
 }
