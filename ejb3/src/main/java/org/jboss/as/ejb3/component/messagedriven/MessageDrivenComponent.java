@@ -68,7 +68,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final ActivationSpec activationSpec;
     private final MessageEndpointFactory endpointFactory;
     private final ClassLoader classLoader;
-    private volatile boolean deliveryActive;
+    private boolean started;
+    private boolean deliveryActive;
     private final ServiceName deliveryControllerName;
     private Endpoint endpoint;
     private String activationName;
@@ -85,8 +86,10 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final ServerActivity serverActivity = new ServerActivity() {
         @Override
         public void preSuspend(ServerActivityCallback listener) {
-            if(deliveryActive) {
-                deactivate();
+            synchronized (MessageDrivenComponent.this) {
+                if (deliveryActive) {
+                    deactivate();
+                }
             }
             listener.done();
         }
@@ -97,8 +100,10 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
         @Override
         public void resume() {
-            if(deliveryActive) {
-                activate();
+            synchronized (MessageDrivenComponent.this) {
+                if (deliveryActive) {
+                    activate();
+                }
             }
         }
     };
@@ -179,6 +184,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             }
         };
         this.endpointFactory = new JBossMessageEndpointFactory(componentClassLoader, service, (Class<Object>) getComponentClass(), messageListenerInterface);
+        this.started = false;
         this.deliveryActive = deliveryActive;
         this.deliveryControllerName = deliveryControllerName;
     }
@@ -210,8 +216,11 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
         super.start();
 
-        if (deliveryActive) {
-            activate();
+        synchronized (this) {
+            this.started = true;
+            if (this.deliveryActive) {
+                this.activate();
+            }
         }
 
         if (this.pool != null) {
@@ -223,8 +232,12 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
     @Override
     public void done() {
-
-        deactivate();
+        synchronized (this) {
+            if (this.deliveryActive) {
+                this.deactivate();
+            }
+            this.started = false;
+        }
 
         if (this.pool != null) {
             this.pool.stop();
@@ -260,22 +273,30 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     }
 
     public void startDelivery() {
-        if (!this.deliveryActive) {
-            this.deliveryActive = true;
-            activate();
-            ROOT_LOGGER.mdbDeliveryStarted(getApplicationName(), getComponentName());
+        synchronized (this) {
+            if (!this.deliveryActive) {
+                this.deliveryActive = true;
+                if (this.started) {
+                    this.activate();
+                    ROOT_LOGGER.mdbDeliveryStarted(getApplicationName(), getComponentName());
+                }
+            }
         }
     }
 
     public void stopDelivery() {
-        if (this.deliveryActive) {
-            this.deactivate();
-            this.deliveryActive = false;
-            ROOT_LOGGER.mdbDeliveryStopped(getApplicationName(), getComponentName());
+        synchronized (this) {
+            if (this.deliveryActive) {
+                if (this.started) {
+                    this.deactivate();
+                    ROOT_LOGGER.mdbDeliveryStopped(getApplicationName(), getComponentName());
+                }
+                this.deliveryActive = false;
+            }
         }
     }
 
-    public boolean isDeliveryActive() {
+    public synchronized boolean isDeliveryActive() {
         return deliveryActive;
     }
 
