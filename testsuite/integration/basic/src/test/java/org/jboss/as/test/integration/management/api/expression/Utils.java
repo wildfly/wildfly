@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOLVE_EXPRESSIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -85,10 +86,12 @@ public class Utils {
     public static String getProperty(String name, ModelControllerClient client) {
         ModelNode modelNode = createOpNode("system-property=" + name, READ_ATTRIBUTE_OPERATION);
         modelNode.get(NAME).set(VALUE);
+        modelNode.get(RESOLVE_EXPRESSIONS).set(true);
 
         ModelNode result = executeOp(modelNode, client);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        ModelNode resolvedResult = result.resolve();
+
+        ModelNode resolvedResult = result;//resolved by read operation already
         log.debugf("Resolved property %s with result: %s", name, resolvedResult);
         Assert.assertEquals(SUCCESS, resolvedResult.get(OUTCOME).asString());
         return resolvedResult.get("result").asString();

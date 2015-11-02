@@ -22,9 +22,10 @@
 
 package org.jboss.as.test.integration.management.api.expression;
 
-import javax.ejb.EJB;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import org.junit.Assert;
+import java.util.PropertyPermission;
+import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -32,18 +33,16 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.ModelUtil;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.PropertyPermission;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import org.wildfly.test.api.Authentication;
 
 /**
  * Validation of the system property substitution for expressions handling. Test for AS7-6120.
@@ -51,9 +50,6 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
  * <p>
  * The expression substitution test runs the evaluation of expressions in bean deployed in container.
  * The managementClient injected by arquillian is taken via remote interface.
- * We need to operate directly with management client controller residing in container.
- * It's provided by management service hack - {@link ExpressionTestManagementService}
- * Maybe there will be an api for this in future: AS7-4657
  *
  * @author <a href="ochaloup@jboss.com">Ondrej Chaloupka</a>
  */
@@ -70,8 +66,8 @@ public class ExpressionSubstitutionInContainerTestCase {
     private static final String INNER_PROP_NAME = "qa.test.inner.property";
     private static final String INNER_PROP_DEFAULT_VALUE = "inner.value";
 
-    @EJB(mappedName = "java:global/expression-substitution-test/StatelessBean")
-    private IStatelessBean bean;
+    @EJB
+    private StatelessBean bean;
 
     @ArquillianResource
     private ManagementClient managementClient;
@@ -79,15 +75,13 @@ public class ExpressionSubstitutionInContainerTestCase {
     @Deployment
     public static Archive<?> deploy() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(ExpressionTestManagementService.class, Utils.class, ModelUtil.class,
-                IStatelessBean.class, StatelessBean.class);
+        jar.addPackage(ExpressionSubstitutionInContainerTestCase.class.getPackage());
+        jar.addClasses(ModelUtil.class, TestSuiteEnvironment.class, Authentication.class);
 
-        jar.addAsManifestResource(new StringAsset(ExpressionTestManagementService.class.getName()),
-                "services/org.jboss.msc.service.ServiceActivator");
         jar.addAsManifestResource(new StringAsset(
                         "Manifest-Version: 1.0\n" +
                                 "Class-Path: \n" +  // there has to be a spacer - otherwise you meet "java.io.IOException: invalid header field"
-                                "Dependencies: org.jboss.msc,org.jboss.as.controller-client,org.jboss.as.controller,org.jboss.as.server, org.jboss.dmr\n"),
+                                "Dependencies: org.jboss.as.controller-client,org.jboss.as.controller,org.jboss.dmr\n"),
                 "MANIFEST.MF");
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 // Needed by the StatelessBean#addSystemProperty()
@@ -117,13 +111,13 @@ public class ExpressionSubstitutionInContainerTestCase {
         }
     }
 
-    /**
-     * <system-properties>
-     * <property name="qa.test.property" value="${qa.test.exp:defaultValue}"/>
-     * <property name="qa.test.exp" value="expression.value"/>
-     * </system-properties>
+    /*
+       *  <system-properties>
+       *    <property name="qa.test.property" value="${qa.test.exp:defaultValue}"/>
+       *    <property name="qa.test.exp" value="expression.value"/>
+       * </system-properties>
      */
-    @Ignore("AS7-6431")
+    /*@Ignore("AS7-6431")
     @Test
     @InSequence(2)
     public void testExpressionDefinedFirst() {
@@ -136,7 +130,7 @@ public class ExpressionSubstitutionInContainerTestCase {
             Utils.removeProperty(EXPRESSION_PROP_NAME, managementClient.getControllerClient());
             Utils.removeProperty(PROP_NAME, managementClient.getControllerClient());
         }
-    }
+    }*/
 
     /**
      * <system-properties>
@@ -237,7 +231,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      * <p>
      * Write attribute set:
      * <property name="qa.test.exp" value="expression.value"/>
-     */
+     *//*
     @Ignore("AS7-6431")  // for this test works there will be :reload after redefinition
     @Test
     @InSequence(6)
@@ -253,8 +247,7 @@ public class ExpressionSubstitutionInContainerTestCase {
             Utils.removeProperty(EXPRESSION_PROP_NAME, managementClient.getControllerClient());
             Utils.removeProperty(PROP_NAME, managementClient.getControllerClient());
         }
-    }
-
+    }*/
     private void expresionEvaluation() {
         String result = bean.getJBossProperty(EXPRESSION_PROP_NAME);
         log.infof("expressionEvaluation: JBoss property %s was resolved to %s", EXPRESSION_PROP_NAME, result);
