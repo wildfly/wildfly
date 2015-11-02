@@ -40,6 +40,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+//todo move to wildfly-core
 public class SimpleSubsystemsTestCase extends ContainerResourceMgmtTestBase {
 
     @Test
