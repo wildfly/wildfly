@@ -82,6 +82,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writeThreadPoolElements(XMLElement.STATE_TRANSFER_THREAD_POOL, ThreadPoolResourceDefinition.STATE_TRANSFER, writer, container);
                         writeThreadPoolElements(XMLElement.TRANSPORT_THREAD_POOL, ThreadPoolResourceDefinition.TRANSPORT, writer, container);
                         writeScheduledThreadPoolElements(XMLElement.EXPIRATION_THREAD_POOL, ScheduledThreadPoolResourceDefinition.EXPIRATION, writer, container);
+                        writeScheduledThreadPoolElements(XMLElement.REPLICATION_QUEUE_THREAD_POOL, ScheduledThreadPoolResourceDefinition.REPLICATION_QUEUE, writer, container);
                     }
 
                     // write any existent cache types

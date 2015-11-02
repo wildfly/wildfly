@@ -86,6 +86,11 @@
                     <xs:documentation>Defines a thread pool used for expiration.</xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="replication-queue-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Defines the scheduled executor used by the asynchronous replication queue.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:choice maxOccurs="unbounded">
                 <xs:element name="local-cache" type="tns:local-cache">
                     <xs:annotation>
