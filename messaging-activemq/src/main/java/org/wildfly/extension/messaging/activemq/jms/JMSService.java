@@ -28,14 +28,17 @@ import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 import static org.jboss.msc.service.ServiceController.State.REMOVED;
 import static org.jboss.msc.service.ServiceController.State.STOPPING;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.activemq.artemis.core.security.ActiveMQPrincipal;
 import org.apache.activemq.artemis.core.server.ActivateCallback;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.apache.activemq.artemis.jms.server.impl.JMSServerManagerImpl;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -164,7 +167,25 @@ public class JMSService implements Service<JMSServerManager> {
                     // and *not* during AS7 service container shutdown or reload (AS7-6840 / AS7-6881)
                     if (activeMQActivationController != null) {
                         if (!activeMQActivationController.getState().in(STOPPING, REMOVED)) {
+                            // [WFLY-4597] When Artemis is deactivated during failover, we block until its
+                            // activation controller is REMOVED before giving back control to Artemis.
+                            // This allow to properly stop any service depending on the activation controller
+                            // and avoid spurious warning messages because the resources used by the services
+                            // are stopped outside the control of the services.
+                            final CountDownLatch latch = new CountDownLatch(1);
                             activeMQActivationController.compareAndSetMode(ACTIVE, REMOVE);
+                            activeMQActivationController.addListener(new AbstractServiceListener<Void>() {
+                                @Override
+                                public void transition(ServiceController<? extends Void> controller, ServiceController.Transition transition) {
+                                    if (transition.enters(REMOVED)) {
+                                        latch.countDown();
+                                    }
+                                }
+                            });
+                            try {
+                                latch.await(5, TimeUnit.SECONDS);
+                            } catch (InterruptedException e) {
+                            }
                             activeMQActivationController = null;
                         }
                     }
