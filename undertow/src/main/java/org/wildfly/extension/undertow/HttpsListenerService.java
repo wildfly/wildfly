@@ -112,6 +112,11 @@ public class HttpsListenerService extends HttpListenerService {
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
 
         SSLContext sslContext = securityRealm.getValue().getSSLContext();
+
+        if(sslContext == null) {
+            throw UndertowLogger.ROOT_LOGGER.noSslContextInSecurityRealm();
+        }
+
         Builder builder = OptionMap.builder().addAll(commonOptions);
         builder.addAll(socketOptions);
         builder.set(Options.USE_DIRECT_BUFFERS, true);
