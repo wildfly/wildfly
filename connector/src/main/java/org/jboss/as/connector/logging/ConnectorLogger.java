@@ -845,6 +845,9 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 97, value = "Exception while stopping resource adapter")
     void errorStoppingRA(@Cause Throwable cause);
+
+    @Message(id = 98, value = "Failed to load class: %s")
+    OperationFailedException failedToLoadClass(String clsName);
 }
 
 
