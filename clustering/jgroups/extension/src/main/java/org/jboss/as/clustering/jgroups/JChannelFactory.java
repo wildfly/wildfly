@@ -138,8 +138,9 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                     }
                 }
             }
-            Configurator.resolveAndAssignFields(relay, relayConfig.getProperties());
-            Configurator.resolveAndInvokePropertyMethods(relay, relayConfig.getProperties());
+            Map<String, String> relayProperties = new HashMap<>(relayConfig.getProperties());
+            Configurator.resolveAndAssignFields(relay, relayProperties);
+            Configurator.resolveAndInvokePropertyMethods(relay, relayProperties);
             stack.addProtocol(relay);
             relay.init();
         }

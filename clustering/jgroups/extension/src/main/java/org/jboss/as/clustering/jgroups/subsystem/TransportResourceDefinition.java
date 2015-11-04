@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -39,7 +40,6 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.transform.ImplicitlyAddedResourceDynamicDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
@@ -296,7 +296,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                 .addCapabilities(Capability.class)
                 .addCapabilities(ProtocolResourceDefinition.Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
+        ResourceServiceHandler handler = new ParentResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
         new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
             @Override
             protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
