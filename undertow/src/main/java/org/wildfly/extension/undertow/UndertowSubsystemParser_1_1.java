@@ -35,7 +35,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
-import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
+import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.filters.GzipFilter;
@@ -210,8 +210,9 @@ public class UndertowSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                 .addAttributes(BasicAuthHandler.SECURITY_DOMAIN)
                                 )
                                 .addChild(
-                                        builder(ConnectionLimitHandler.INSTANCE)
-                                                .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS, ConnectionLimitHandler.QUEUE_SIZE)
+                                        builder(RequestLimitHandler.INSTANCE)
+                                                .setXmlElementName("connection-limit")
+                                                .addAttributes(RequestLimitHandler.MAX_CONCURRENT_REQUESTS, RequestLimitHandler.QUEUE_SIZE)
                                 ).addChild(
                                 builder(ResponseHeaderFilter.INSTANCE)
                                         .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)

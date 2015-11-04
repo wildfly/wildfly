@@ -106,7 +106,7 @@
     </handlers>
     <filters>
         <!--<basic-auth name="security-other" security-domain="other"/>-->
-        <connection-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
+        <request-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
         <gzip name="static-gzip"/>
         <error-page name="404-handler" code="404" path="/opt/data/404.html"/>

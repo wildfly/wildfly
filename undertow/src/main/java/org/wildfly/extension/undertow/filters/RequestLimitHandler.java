@@ -34,9 +34,9 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ConnectionLimitHandler extends Filter {
+public class RequestLimitHandler extends Filter {
 
-    public static final ConnectionLimitHandler INSTANCE = new ConnectionLimitHandler();
+    public static final RequestLimitHandler INSTANCE = new RequestLimitHandler();
 
     public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)
             .setAllowExpression(true)
@@ -54,8 +54,8 @@ public class ConnectionLimitHandler extends Filter {
     <connection-limit max-concurrent-requests="100" />
      */
 
-    private ConnectionLimitHandler() {
-        super("connection-limit");
+    private RequestLimitHandler() {
+        super("request-limit");
     }
 
     @Override
