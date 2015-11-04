@@ -133,6 +133,14 @@ You can easily query the same information through the CLI:
     "outcome" => "success",
     "result" => [{
         "driver-name" => "h2",
+        "datasource-class-info" => [{"org.h2.jdbcx.JdbcDataSource" => {
+            "URL" => "java.lang.String",
+            "description" => "java.lang.String",
+            "loginTimeout" => "int",
+            "password" => "java.lang.String",
+            "url" => "java.lang.String",
+            "user" => "java.lang.String"
+        }}],
         "deployment-name" => undefined,
         "driver-module-name" => "com.h2database.h2",
         "module-slot" => "main",
@@ -144,6 +152,10 @@ You can easily query the same information through the CLI:
     }]
 }
 ----
+
+[NOTE]
+
+`datasource-class-info` shows connection properties defined in the `(xa-)datasource-class`.
 
 [TIP]
 
