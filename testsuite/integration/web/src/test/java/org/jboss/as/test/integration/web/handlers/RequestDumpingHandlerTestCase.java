@@ -141,12 +141,13 @@ public class RequestDumpingHandlerTestCase {
             operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
             Utils.applyUpdate(operation, managementClient.getControllerClient());
 
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+
             operation = createOpNode(HTTPS_LISTENER_PATH, ModelDescriptionConstants.ADD);
             operation.get("socket-binding").set(HTTPS);
             operation.get("security-realm").set(HTTPS_REALM);
             Utils.applyUpdate(operation, managementClient.getControllerClient());
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
 
         @Override
