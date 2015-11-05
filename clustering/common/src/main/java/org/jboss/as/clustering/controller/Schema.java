@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,44 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.Schema;
+package org.jboss.as.clustering.controller;
 
 /**
- * Enumeration of the supported subsystem xml schemas.
+ * Defines an XML schema version.
  * @author Paul Ferraro
  */
-public enum JGroupsSchema implements Schema<JGroupsSchema> {
+public interface Schema<S extends Schema<S>> {
+    int major();
+    int minor();
 
-    VERSION_1_0(1, 0),
-    VERSION_1_1(1, 1),
-    VERSION_2_0(2, 0),
-    VERSION_3_0(3, 0),
-    VERSION_4_0(4, 0),
-    ;
-    public static final JGroupsSchema CURRENT = VERSION_4_0;
+    /**
+     * Get the namespace URI of this schema.
+     * @return the namespace URI
+     */
+    String getNamespaceUri();
 
-    private final int major;
-    private final int minor;
-
-    JGroupsSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
-    }
-
-    @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getNamespaceUri() {
-        return String.format("urn:jboss:domain:jgroups:%d.%d", this.major, this.minor);
+    /**
+     * Indicates whether this version of the schema is greater than or equal to the version of the specified schema.
+     * @param schema a schema version with which to compare
+     * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
+     */
+    default boolean since(S schema) {
+        return (this.major() > schema.major()) || ((this.major() == schema.major()) && (this.minor() >= schema.minor()));
     }
 }
