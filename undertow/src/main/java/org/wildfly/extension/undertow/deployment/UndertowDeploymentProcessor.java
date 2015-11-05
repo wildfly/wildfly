@@ -67,7 +67,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.io.IOServices;
@@ -104,9 +103,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     private final String defaultServer;
     private final String defaultHost;
     private final String defaultContainer;
+    private final String defaultSecurityDomain;
 
-    public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer) {
+    public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, String defaultSecurityDomain) {
         this.defaultHost = defaultHost;
+        this.defaultSecurityDomain = defaultSecurityDomain;
         if (defaultHost == null) {
             throw UndertowLogger.ROOT_LOGGER.nullDefaultHost();
         }
@@ -224,7 +225,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final String securityDomain;
         if(securityEnabled) {
-            securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
+            securityDomain = metaDataSecurityDomain == null ? defaultSecurityDomain : SecurityUtil
                     .unprefixSecurityDomain(metaDataSecurityDomain);
         } else {
             securityDomain = null;
