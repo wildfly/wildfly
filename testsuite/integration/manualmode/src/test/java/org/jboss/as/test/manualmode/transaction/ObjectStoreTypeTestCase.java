@@ -81,7 +81,9 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
             cli.sendLine("reload");
 
             objectStoreType = readObjectStoreType();
-            assertEquals("default", objectStoreType); // use-hornetq-store was deprecated, should have no effect
+
+            // use-hornetq-store should have the same effect of use-journal-store even if it was deprecated
+            assertEquals("journal", objectStoreType);
 
         } finally {
             setDefaultObjectStore();
