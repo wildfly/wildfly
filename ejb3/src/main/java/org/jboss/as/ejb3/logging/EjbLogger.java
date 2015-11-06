@@ -146,6 +146,11 @@ public interface EjbLogger extends BasicLogger {
     EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.invocation");
 
     /**
+     * logger use to log EJB timer messages
+     */
+    EjbLogger EJB3_TIMER_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.timer");
+
+    /**
      * Logs an error message indicating an exception occurred while removing an inactive bean.
      *
      * @param id the session id that could not be removed

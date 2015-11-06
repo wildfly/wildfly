@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
@@ -70,7 +69,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.security.AccessController.doPrivileged;
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
 /**
  * File based persistent timer store.
@@ -137,14 +136,14 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         if (!baseDir.exists()) {
             if (createIfNotExists) {
                 if (!baseDir.mkdirs()) {
-                    throw EjbLogger.ROOT_LOGGER.failToCreateTimerFileStoreDir(baseDir);
+                    throw EJB3_TIMER_LOGGER.failToCreateTimerFileStoreDir(baseDir);
                 }
             } else {
-                throw EjbLogger.ROOT_LOGGER.timerFileStoreDirNotExist(baseDir);
+                throw EJB3_TIMER_LOGGER.timerFileStoreDirNotExist(baseDir);
             }
         }
         if (!baseDir.isDirectory()) {
-            throw EjbLogger.ROOT_LOGGER.invalidTimerFileStoreDir(baseDir);
+            throw EJB3_TIMER_LOGGER.invalidTimerFileStoreDir(baseDir);
         }
     }
 
@@ -348,7 +347,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             //no timers exist yet
             return timers;
         } else if (!file.isDirectory()) {
-            ROOT_LOGGER.failToRestoreTimers(file);
+            EJB3_TIMER_LOGGER.failToRestoreTimers(file);
             return timers;
         }
 
@@ -377,13 +376,13 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                 }
 
             } catch (Exception e) {
-                ROOT_LOGGER.failToRestoreTimersFromFile(timerFile, e);
+                EJB3_TIMER_LOGGER.failToRestoreTimersFromFile(timerFile, e);
             } finally {
                 if (in != null) {
                     try {
                         in.close();
                     } catch (IOException e) {
-                        ROOT_LOGGER.failToCloseFile(e);
+                        EJB3_TIMER_LOGGER.failToCloseFile(e);
                     }
                 }
             }
@@ -415,7 +414,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             File file = new File(dirName);
             if (!file.exists()) {
                 if (!file.mkdirs()) {
-                    ROOT_LOGGER.failToCreateDirectoryForPersistTimers(file);
+                    EJB3_TIMER_LOGGER.failToCreateDirectoryForPersistTimers(file);
                 }
             }
             directories.put(timedObjectId, dirName);

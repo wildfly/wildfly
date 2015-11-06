@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
 /**
  * Contains the code needed to load timers from the legacy persistent format.
@@ -44,7 +44,7 @@ public class LegacyFileStore {
                 //no timers exist yet
                 return timers;
             } else if (!file.isDirectory()) {
-                ROOT_LOGGER.failToRestoreTimers(file);
+                EJB3_TIMER_LOGGER.failToRestoreTimers(file);
                 return timers;
             }
             File marker = new File(file, MIGRATION_MARKER);
@@ -98,13 +98,13 @@ public class LegacyFileStore {
                     timers.put(entity.getId(), builder.build(timerService));
                     unmarshaller.finish();
                 } catch (Exception e) {
-                    ROOT_LOGGER.failToRestoreTimersFromFile(timerFile, e);
+                    EJB3_TIMER_LOGGER.failToRestoreTimersFromFile(timerFile, e);
                 } finally {
                     if (in != null) {
                         try {
                             in.close();
                         } catch (IOException e) {
-                            ROOT_LOGGER.failToCloseFile(e);
+                            EJB3_TIMER_LOGGER.failToCloseFile(e);
                         }
                     }
                 }
@@ -119,7 +119,7 @@ public class LegacyFileStore {
                 }
             }
         } catch (Exception e) {
-            ROOT_LOGGER.failToRestoreTimersForObjectId(timedObjectId, e);
+            EJB3_TIMER_LOGGER.failToRestoreTimersForObjectId(timedObjectId, e);
         }
         return timers;
     }
