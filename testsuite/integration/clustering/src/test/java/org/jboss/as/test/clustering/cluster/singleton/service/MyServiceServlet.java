@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 @WebServlet(urlPatterns = { MyServiceServlet.SERVLET_PATH })
@@ -41,22 +42,47 @@ public class MyServiceServlet extends HttpServlet {
     private static final String SERVLET_NAME = "service";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
     private static final String SERVICE = "service";
+    private static final String EXPECTED = "expected";
+    private static final int RETRIES = 10;
 
     public static URI createURI(URL baseURL, ServiceName serviceName) throws URISyntaxException {
-        return baseURL.toURI().resolve(new StringBuilder(SERVLET_NAME).append('?').append(SERVICE).append('=').append(serviceName.getCanonicalName()).toString());
+        return baseURL.toURI().resolve(buildQuery(serviceName).toString());
+    }
+
+    public static URI createURI(URL baseURL, ServiceName serviceName, String expected) throws URISyntaxException {
+        return baseURL.toURI().resolve(buildQuery(serviceName).append('&').append(EXPECTED).append('=').append(expected).toString());
+    }
+
+    private static StringBuilder buildQuery(ServiceName serviceName) {
+        return new StringBuilder(SERVLET_NAME).append('?').append(SERVICE).append('=').append(serviceName.getCanonicalName());
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String service = req.getParameter(SERVICE);
-        if (service == null) {
-            throw new ServletException(String.format("No %s specified", SERVICE));
+        String serviceName = getRequiredParameter(req, SERVICE);
+        String expected = req.getParameter(EXPECTED);
+        this.log(String.format("Received request for %s, expecting %s", serviceName, expected));
+        @SuppressWarnings("unchecked")
+        ServiceController<Environment> service = (ServiceController<Environment>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(serviceName));
+        Environment env = service.getValue();
+        if (expected != null) {
+            for (int i = 0; i < RETRIES; ++i) {
+                if ((env != null) && expected.equals(env.getNodeName())) break;
+                Thread.yield();
+                env = service.getValue();
+            }
         }
-        this.log(String.format("Received request for %s", service));
-        Environment env = (Environment) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(service)).getValue();
         if (env != null) {
             resp.setHeader("node", env.getNodeName());
         }
         resp.getWriter().write("Success");
+    }
+
+    private static String getRequiredParameter(HttpServletRequest req, String name) throws ServletException {
+        String value = req.getParameter(name);
+        if (value == null) {
+            throw new ServletException(String.format("No %s specified", name));
+        }
+        return value;
     }
 }
