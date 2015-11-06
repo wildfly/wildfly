@@ -53,5 +53,10 @@
         <module name="org.apache.ws.xmlschema" />
         <module name="org.codehaus.woodstox" />
         <module name="org.apache.xml-resolver" />
+        <module name="org.springframework.spring" optional="true">
+            <imports>
+                <include path="META-INF"/>
+            </imports>
+        </module>
     </dependencies>
 </module>

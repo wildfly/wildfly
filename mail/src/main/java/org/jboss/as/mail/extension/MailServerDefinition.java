@@ -148,6 +148,12 @@ class MailServerDefinition extends PersistentResourceDefinition {
         }
 
         @Override
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            context.readResource(PathAddress.EMPTY_ADDRESS, false); //to make sure resource we are removing exists! it will throw exception.
+            super.updateModel(context, operation);
+        }
+
+        @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
             MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel);
         }

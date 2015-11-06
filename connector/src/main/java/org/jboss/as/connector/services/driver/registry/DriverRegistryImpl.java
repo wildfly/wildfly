@@ -22,7 +22,6 @@
 package org.jboss.as.connector.services.driver.registry;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,13 +35,11 @@ import org.jboss.as.connector.services.driver.InstalledDriver;
 /**
  * Standard {@link DriverRegistry} implementation.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class DriverRegistryImpl implements DriverRegistry {
 
-    private final Map<String ,HashMap<String, InstalledDriver>> drivers = new HashMap<>();
-
-    //default profile is used for standalone and for hot deployed driver in domain mode
-    private static final String DEFAULT_PROFILE = "default";
+    private final Map<String, InstalledDriver> drivers = Collections.synchronizedMap(new HashMap<>());
 
     @Override
     public void registerInstalledDriver(InstalledDriver driver) throws IllegalArgumentException {
@@ -50,19 +47,7 @@ public class DriverRegistryImpl implements DriverRegistry {
             throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("driver"));
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Adding driver: %s", driver);
-        String profile = driver.getProfile() != null ? driver.getProfile() : DEFAULT_PROFILE;
-        synchronized (drivers) {
-            final HashMap<String,InstalledDriver> driversInProfile;
-            if (drivers.get(profile) == null) {
-                driversInProfile = new HashMap<String,InstalledDriver>();
-
-            } else {
-                driversInProfile = drivers.get(profile);
-            }
-
-            driversInProfile.put(driver.getDriverName(), driver);
-            drivers.put(profile, driversInProfile);
-        }
+        drivers.put(driver.getDriverName(), driver);
 
     }
 
@@ -72,57 +57,18 @@ public class DriverRegistryImpl implements DriverRegistry {
             throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("driver"));
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Removing deployment: %s", driver);
-        String profile = driver.getProfile() != null ? driver.getProfile() : DEFAULT_PROFILE;
-
-        synchronized (drivers) {
-            final HashMap<String,InstalledDriver> driversInProfile = drivers.get(profile);
-            if (driversInProfile != null ) {
-                driversInProfile.remove(driver.getDriverName());
-            }
-        }
-
+        drivers.remove(driver.getDriverName());
     }
 
     @Override
-    public Set<InstalledDriver> getInstalledDrivers(String profileName) {
-        Set<InstalledDriver> installedDrivers = new HashSet<>();
+    public Set<InstalledDriver> getInstalledDrivers() {
         synchronized (drivers) {
-            if (profileName != null) {
-                if (drivers.get(profileName) != null) {
-                    installedDrivers.addAll(drivers.get(profileName).values());
-                }
-            } else {
-                if (drivers.get(DEFAULT_PROFILE) == null) {
-                    throw ROOT_LOGGER.noDriverDefinedInDefaultProfile();
-                }
-            }
-
-            if (drivers.get(DEFAULT_PROFILE) != null) {
-                installedDrivers.addAll(drivers.get(DEFAULT_PROFILE).values());
-            }
+            return Collections.unmodifiableSet(new HashSet<>(drivers.values()));
         }
-
-        return Collections.unmodifiableSet(installedDrivers);
     }
 
     @Override
-    public InstalledDriver getInstalledDriver(String name, String profileName) throws IllegalStateException {
-        InstalledDriver returnValue = null;
-        synchronized (drivers) {
-            if (profileName != null) {
-                if (drivers.get(profileName) != null) {
-                    returnValue = drivers.get(profileName).get(name);
-                }
-            } else {
-                if (drivers.get(DEFAULT_PROFILE) == null) {
-                    throw ROOT_LOGGER.driverNotDefinedInDefaultProfile(name);
-                }
-            }
-
-            if (returnValue == null) {
-                returnValue = drivers.get(DEFAULT_PROFILE).get(name);
-            }
-        }
-        return returnValue;
+    public InstalledDriver getInstalledDriver(String name) throws IllegalStateException {
+        return drivers.get(name);
     }
 }

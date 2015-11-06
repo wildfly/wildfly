@@ -40,6 +40,7 @@ import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
+import static org.jboss.as.messaging.CommonAttributes.BACKUP_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
@@ -387,7 +388,7 @@ public class MigrateOperation implements OperationStepHandler {
                                     final ModelNode addLegacyConnectionFactoryOp = legacyAddOp.clone();
                                     addLegacyConnectionFactoryOp.get(OP_ADDR).set(legacyConnectionFactoryAddress.toModelNode());
                                     migrateConnectionFactory(addLegacyConnectionFactoryOp, "");
-                                    newAddOperations.put(pathAddress(addLegacyConnectionFactoryOp.get(OP_ADDR)), addLegacyConnectionFactoryOp);
+                                    newAddOperations.put(legacyConnectionFactoryAddress, addLegacyConnectionFactoryOp);
                                 }
                             }
                             migrateConnectionFactory(newAddOp, addLegacyEntries ? NEW_ENTRY_SUFFIX : "");
@@ -396,7 +397,7 @@ public class MigrateOperation implements OperationStepHandler {
                             migratePooledConnectionFactory(newAddOp);
                             break;
                         case CLUSTER_CONNECTION:
-                            migrateClusterConnection(newAddOp);
+                            migrateClusterConnection(newAddOp, warnings);
                             break;
                         case BRIDGE:
                             migrateBridge(newAddOp);
@@ -442,8 +443,10 @@ public class MigrateOperation implements OperationStepHandler {
         ModelNode connector = connectionFactoryAddOp.get(CONNECTOR);
         if (connector.isDefined()) {
 
-            PathAddress legacyServerAddress = pathAddress(connectionFactoryAddOp.get(OP_ADDR)).getParent();
-            Resource serverResource = context.readResourceFromRoot(legacyServerAddress, false);
+            PathAddress connectionFactoryAddress = pathAddress(connectionFactoryAddOp.get(OP_ADDR));
+            PathElement relativeLegacyServerAddress = connectionFactoryAddress.getParent().getLastElement();
+            // read the server resource related to the context current address (which is the messaging subsystem address).
+            Resource serverResource = context.readResource(pathAddress(relativeLegacyServerAddress), false);
             Set<String> definedInVMConnectors = serverResource.getChildrenNames("in-vm-connector");
 
             // legacy connector is a property list where the name is the connector and the value is undefined
@@ -518,10 +521,21 @@ public class MigrateOperation implements OperationStepHandler {
         migrateDiscoveryGroupNameAttribute(addOperation);
     }
 
-    private void migrateClusterConnection(ModelNode addOperation) {
+    private void migrateClusterConnection(ModelNode addOperation, List<String> warnings) {
         // connector-ref attribute has been renamed to connector-name
         addOperation.get("connector-name").set(addOperation.get(CONNECTOR_REF_STRING));
         addOperation.remove(CONNECTOR_REF_STRING);
+
+        ModelNode forwardWhenNoConsumers = addOperation.get(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName());
+        if (forwardWhenNoConsumers.getType() == EXPRESSION) {
+            warnings.add(ROOT_LOGGER.couldNotMigrateResourceAttributeWithExpression(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName(), pathAddress(addOperation.get(OP_ADDR))));
+        } else {
+            boolean value = forwardWhenNoConsumers.asBoolean(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getDefaultValue().asBoolean());
+            String messageLoadBalancingType = value ? "STRICT" : "ON_DEMAND";
+            addOperation.get("message-load-balancing-type").set(messageLoadBalancingType);
+        }
+        addOperation.remove(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName());
+
         migrateDiscoveryGroupNameAttribute(addOperation);
     }
 
@@ -614,10 +628,11 @@ public class MigrateOperation implements OperationStepHandler {
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, MAX_SAVED_REPLICATED_JOURNAL_SIZE, "max-saved-replicated-journal-size");
-
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, BACKUP_GROUP_NAME, "group-name");
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "replication-master");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, CHECK_FOR_LIVE_SERVER, "check-for-live-server");
+                setAndDiscard(haPolicyAddOperation, serverAddOperation, BACKUP_GROUP_NAME, "group-name");
             }
         }
         haPolicyAddOperation.get(OP_ADDR).set(haPolicyAddress.toModelNode());

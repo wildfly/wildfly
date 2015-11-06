@@ -820,4 +820,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 85, value = "Could not create a legacy-connection-factory based on connection-factory %s. It used a HornetQ in-vm connector that is not compatible with Artemis in-vm connector ")
     String couldNotCreateLegacyConnectionFactoryUsingInVMConnector(PathAddress address);
+
+    @Message(id = 86, value = "Could not migrate attribute %s from resource %s. The attribute uses an expression that can be resolved differently depending on system properties. To be able to migrate this property, replace the expression by an actual value.")
+    String couldNotMigrateResourceAttributeWithExpression(String attribute, PathAddress address);
 }

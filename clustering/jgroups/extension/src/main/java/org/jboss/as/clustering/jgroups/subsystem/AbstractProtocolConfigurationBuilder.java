@@ -108,7 +108,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
 
     @Override
     public Map<String, String> getProperties() {
-        return new HashMap<>(this.properties);
+        return this.properties;
     }
 
     @Override

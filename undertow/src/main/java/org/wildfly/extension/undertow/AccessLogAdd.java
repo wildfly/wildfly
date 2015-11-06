@@ -46,6 +46,8 @@ class AccessLogAdd extends AbstractAddStepHandler {
         super(AccessLogDefinition.ATTRIBUTES);
     }
 
+    static final AccessLogAdd INSTANCE = new AccessLogAdd();
+
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 

@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 
 import java.io.File;
 
@@ -36,17 +37,21 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 
 /**
  * IGNORE until https://issues.apache.org/jira/browse/ARTEMIS-138 is fixed.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-@Ignore
 public class SharedStoreFailoverTestCase extends FailoverTestCase {
 
     private static final File SHARED_STORE_DIR = new File(System.getProperty("java.io.tmpdir"), "activemq");
+
+    @BeforeClass
+    public static void beforeClass() {
+        thisTestIsFailingIntermittently("WFLY-5531");
+    }
 
     @Before
     @Override

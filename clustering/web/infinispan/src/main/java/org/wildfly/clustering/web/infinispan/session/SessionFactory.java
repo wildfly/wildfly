@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.Map;
+
 import org.wildfly.clustering.ee.infinispan.Creator;
 import org.wildfly.clustering.ee.infinispan.Evictor;
 import org.wildfly.clustering.ee.infinispan.Locator;
@@ -32,7 +34,10 @@ import org.wildfly.clustering.web.session.Session;
  * Factory for creating sessions.  This represents the cache mapping strategy for sessions.
  * @author Paul Ferraro
  */
-public interface SessionFactory<V, L> extends Creator<String, V, Void>, Locator<String, V>, Remover<String>, Evictor<String> {
-    Session<L> createSession(String id, V value);
-    ImmutableSession createImmutableSession(String id, V value);
+public interface SessionFactory<MV, AV, L> extends Creator<String, Map.Entry<MV, AV>, Void>, Locator<String, Map.Entry<MV, AV>>, Remover<String>, Evictor<String> {
+    SessionMetaDataFactory<MV, L> getMetaDataFactory();
+    SessionAttributesFactory<AV> getAttributesFactory();
+
+    Session<L> createSession(String id, Map.Entry<MV, AV> value);
+    ImmutableSession createImmutableSession(String id, Map.Entry<MV, AV> value);
 }

@@ -107,6 +107,10 @@ public class Constants {
 
     private static final String ENLISTMENT_NAME = "enlistment";
 
+    private static final String ENLISTMENT_TRACE_NAME = "enlistment-trace";
+
+    private static final String MCP_NAME = "mcp";
+
     private static final String CONFIG_PROPERTIES_NAME = "config-properties";
 
     private static final String CONFIG_PROPERTY_VALUE_NAME = "value";
@@ -428,6 +432,19 @@ public class Constants {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(Defaults.ENLISTMENT))
             .setXmlName(ConnectionDefinition.Attribute.ENLISTMENT.getLocalName())
+            .build();
+
+
+    static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setXmlName(ConnectionDefinition.Attribute.ENLISTMENT_TRACE.getLocalName())
+            .build();
+
+    static SimpleAttributeDefinition MCP = new SimpleAttributeDefinitionBuilder(MCP_NAME, ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setXmlName(ConnectionDefinition.Attribute.MCP.getLocalName())
             .build();
 
 

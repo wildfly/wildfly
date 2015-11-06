@@ -114,10 +114,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
+import org.wildfly.clustering.group.Group;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.Logger.Level.DEBUG;
 
 /**
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
@@ -455,7 +457,7 @@ public interface EjbLogger extends BasicLogger {
      * @param channel The channel for which the {@link Channel.Receiver#handleEnd(org.jboss.remoting3.Channel)} notification
      *                was received
      */
-    @LogMessage(level = ERROR)
+    @LogMessage(level = DEBUG)
     @Message(id = 41, value = "Channel end notification received, closing channel %s")
     void closingChannelOnChannelEnd(Channel channel);
 
@@ -3105,4 +3107,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 483, value = "Attributes are mutually exclusive: %s, %s")
     XMLStreamException mutuallyExclusiveAttributes(@Param Location location, String attribute1, String attribute2);
+
+    @LogMessage(level = WARN)
+    @Message(id = 484, value = "Could not send a cluster removal message for cluster: (%s) to the client on channel %s")
+    void couldNotSendClusterRemovalMessage(@Cause Throwable cause, Group group, Channel channel);
 }

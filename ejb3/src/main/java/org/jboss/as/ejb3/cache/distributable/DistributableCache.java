@@ -142,9 +142,11 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void remove(K id) {
-        Bean<UUID, K, V> bean = this.manager.findBean(id);
-        if (bean != null) {
-            bean.remove(this.listener);
+        try (Batch batch = this.manager.getBatcher().createBatch()) {
+            Bean<UUID, K, V> bean = this.manager.findBean(id);
+            if (bean != null) {
+                bean.remove(this.listener);
+            }
         }
     }
 

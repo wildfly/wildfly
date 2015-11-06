@@ -35,7 +35,7 @@ import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.logging.Logger;
 import org.junit.Test;
-import org.picketlink.identity.federation.bindings.wildfly.SAML2LoginModule;
+import org.picketlink.identity.federation.bindings.jboss.auth.SAML2LoginModule;
 
 import java.io.File;
 import java.io.IOException;

@@ -21,24 +21,15 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
-import java.util.concurrent.TimeUnit;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * A test for injection via env-entry in web.xml
@@ -48,31 +39,18 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 public class EnvEntryInjectionTestCase {
 
-    @ArquillianResource
-    private ManagementClient managementClient;
-
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
-        war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(
                 EnvEntryInjectionServlet.class,
                 EnvEntryManagedBean.class,
                 EnvEntryInjectionTestCase.class
         );
-        war.addAsWebInfResource(getWebXml(), "web.xml");
+        war.addAsWebInfResource(EnvEntryInjectionTestCase.class.getPackage(), "EnvEntryInjectionTestCase-web.xml", "web.xml");
         return war;
     }
 
-    private String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get(managementClient.getWebUri() + "/war-example/" + urlPattern, 5, TimeUnit.SECONDS);
-    }
-
-    @Test
-    public void testEnvEntryInjectionIntoServlet() throws Exception {
-        String result = performCall("envEntry");
-        assertEquals("injection!", result);
-    }
 
     @Test
     public void testEnvEntryInjectionIntoManagedBean() throws NamingException {
@@ -104,43 +82,5 @@ public class EnvEntryInjectionTestCase {
         final InitialContext initialContext = new InitialContext();
         final EnvEntryManagedBean bean = (EnvEntryManagedBean) initialContext.lookup("java:module/" + EnvEntryManagedBean.class.getName());
         Assert.assertEquals(10, bean.getByteField());
-    }
-
-    private static StringAsset getWebXml() {
-        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "\n" +
-                "<web-app version=\"3.0\"\n" +
-                "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
-                "         metadata-complete=\"false\">\n" +
-                "\n" +
-                "    <env-entry>\n" +
-                "        <env-entry-name>foo</env-entry-name>\n" +
-                "        <env-entry-value>injection!</env-entry-value>\n" +
-                "        <injection-target>" +
-                "           <injection-target-class>" + EnvEntryInjectionServlet.class.getName() + "</injection-target-class>" +
-                "           <injection-target-name>field</injection-target-name>" +
-                "        </injection-target>\n" +
-                "    </env-entry>\n" +
-                "\n" +
-                "    <env-entry>\n" +
-                "        <env-entry-name>" + EnvEntryManagedBean.class.getName() + "/existingString</env-entry-name>\n" +
-                "        <env-entry-value>bye</env-entry-value>\n" +
-                "        <env-entry-type>java.lang.String</env-entry-type>\n" +
-                "    </env-entry>\n" +
-                "\n" +
-                "\n" +
-                "    <env-entry>\n" +
-                "        <env-entry-name>otherByte</env-entry-name>\n" +
-                "        <env-entry-value>10</env-entry-value>\n" +
-                "        <env-entry-type>java.lang.Byte</env-entry-type>\n" +
-                "        <injection-target>" +
-                "           <injection-target-class>" + EnvEntryManagedBean.class.getName() + "</injection-target-class>" +
-                "           <injection-target-name>byteField</injection-target-name>" +
-                "        </injection-target>\n" +
-                "    </env-entry>\n" +
-                "\n" +
-                "</web-app>");
     }
 }

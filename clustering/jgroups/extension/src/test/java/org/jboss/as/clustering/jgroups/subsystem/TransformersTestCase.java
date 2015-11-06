@@ -122,8 +122,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem-jgroups-transform.xml")
-                .enableTransformerAttachmentGrabber();
+                .setSubsystemXmlResource("subsystem-jgroups-transform.xml");
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, version).addMavenResourceURL(mavenResourceURLs).skipReverseControllerCheck();
@@ -412,8 +411,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = model.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization())
-                .enableTransformerAttachmentGrabber();
+        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, version)

@@ -164,6 +164,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         config.setHostCommandLineProperties(hostProps + "\n-Djboss.unsupported.fail-boot-on-runtime-failure=true");
 
         domainMasterLifecycleUtil = new DomainLifecycleUtil(config);
+//        domainMasterLifecycleUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
         domainMasterLifecycleUtil.start(); // Start
 
         conflicts = noSimple = noSimpleCollection = noComplexList = noComplexProperty = noObject = noComplexProperty =

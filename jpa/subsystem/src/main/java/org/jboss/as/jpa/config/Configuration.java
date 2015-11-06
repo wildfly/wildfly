@@ -156,6 +156,12 @@ public class Configuration {
     private static final String JPA_DEFER_DETACH = "jboss.as.jpa.deferdetach";
 
     /**
+     * unique name for the persistence unit that is unique across all deployments (
+     * defaults to include the application name prepended to the persistence unit name)
+     */
+    private static final String JPA_SCOPED_PERSISTENCE_UNIT_NAME = "jboss.as.jpa.scopedname";
+
+    /**
      * name of the persistence provider adapter class
      */
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
@@ -287,4 +293,12 @@ public class Configuration {
         return result;
     }
 
+    public static String getScopedPersistenceUnitName(PersistenceUnitMetadata pu) {
+
+        Object name = pu.getProperties().get(JPA_SCOPED_PERSISTENCE_UNIT_NAME);
+        if (name instanceof String) {
+            return (String)name;
+        }
+        return null;
+    }
 }

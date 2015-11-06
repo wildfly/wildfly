@@ -375,7 +375,12 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
     }
 
     private void testAddComplexDs(boolean userName) throws Exception {
-        final String complexDs = "complexDs";
+        final String complexDs;
+        if (userName) {
+            complexDs = "complexDsWithUserName";
+        } else {
+            complexDs = "complexDs";
+        }
         final String complexDsJndi = "java:jboss/datasources/" + complexDs;
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -439,7 +444,12 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
     }
 
     private void testAddComplexXaDs(boolean userName) throws Exception {
-        final String complexXaDs = "complexXaDs";
+        final String complexXaDs;
+        if (userName) {
+           complexXaDs = "complexXaDsWithUserName";
+        } else {
+            complexXaDs = "complexXaDs";
+        }
         final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
 
         final ModelNode address = new ModelNode();
@@ -490,7 +500,6 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         Assert.assertNotNull("xa-datasource-properties not propagated ", findNodeWithProperty(newList, "value", "jdbc:h2:mem:test"));
     }
-
 
 
 }

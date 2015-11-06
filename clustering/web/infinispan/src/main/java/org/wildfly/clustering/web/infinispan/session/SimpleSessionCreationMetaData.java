@@ -31,7 +31,7 @@ import java.time.Instant;
 public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
 
     private final Instant creationTime;
-    private volatile Duration maxInactiveInterval;
+    private volatile Duration maxInactiveInterval = Duration.ZERO;
 
     public SimpleSessionCreationMetaData() {
         this(Instant.now());

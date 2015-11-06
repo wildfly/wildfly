@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -56,12 +55,12 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("default"))
             .build();
     protected static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(Constants.PREFIX, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode("access_log"))
+            .setDefaultValue(new ModelNode("access_log."))
             .setValidator(new StringLengthValidator(1, true))
             .setAllowExpression(true)
             .build();
     protected static final SimpleAttributeDefinition SUFFIX = new SimpleAttributeDefinitionBuilder(Constants.SUFFIX, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode(".log"))
+            .setDefaultValue(new ModelNode("log"))
             .setAllowExpression(true)
             .build();
     protected static final SimpleAttributeDefinition ROTATE = new SimpleAttributeDefinitionBuilder(Constants.ROTATE, ModelType.BOOLEAN, true)
@@ -114,7 +113,7 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
 
 
     private AccessLogDefinition() {
-        super(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG), new AccessLogAdd(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG), AccessLogAdd.INSTANCE, AccessLogRemove.INSTANCE);
         SensitivityClassification sc = new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }

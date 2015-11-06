@@ -47,6 +47,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
@@ -811,4 +812,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 85, value = "Unable to load class %s from module %s")
     OperationFailedException unableToLoadClassFromModule(String className, String moduleName);
+
+    @Message(id = 86, value = "Unable to load module %s")
+    OperationFailedException unableToLoadModule(String moduleName, @Cause ModuleLoadException cause);
 }

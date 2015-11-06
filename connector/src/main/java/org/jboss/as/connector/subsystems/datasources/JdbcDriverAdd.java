@@ -47,7 +47,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -88,10 +87,6 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         final String dataSourceClassName = model.hasDefined(DRIVER_DATASOURCE_CLASS_NAME.getName()) ? DRIVER_DATASOURCE_CLASS_NAME.resolveModelAttribute(context, model).asString() : null;
         final String xaDataSourceClassName = model.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()) ? DRIVER_XA_DATASOURCE_CLASS_NAME.resolveModelAttribute(context, model).asString() : null;
 
-        Resource rootNode = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
-        ModelNode rootModel = rootNode.getModel();
-        String profile = rootModel.hasDefined("profile-name") ? rootModel.get("profile-name").asString() : null;
-
         final ServiceTarget target = context.getServiceTarget();
 
         final ModuleIdentifier moduleId;
@@ -110,7 +105,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             boolean driverLoaded = false;
             if (serviceLoader != null) {
                 for (Driver driver : serviceLoader) {
-                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, profile);
+                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
                     driverLoaded = true;
                     //just consider first definition and create service for this. User can use different implementation only
                     // w/ explicit declaration of driver-class attribute
@@ -125,7 +120,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                         .asSubclass(Driver.class);
                 final Constructor<? extends Driver> constructor = driverClass.getConstructor();
                 final Driver driver = constructor.newInstance();
-                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, profile);
+                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
             } catch (Exception e) {
                 SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
                 throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.cannotInstantiateDriverClass(driverClassName));
@@ -134,8 +129,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
     }
 
     public static void startDriverServices(final ServiceTarget target, final ModuleIdentifier moduleId, Driver driver, final String driverName, final Integer majorVersion,
-                                           final Integer minorVersion, final String dataSourceClassName, final String xaDataSourceClassName,
-                                           final String profile) throws IllegalStateException {
+                                           final Integer minorVersion, final String dataSourceClassName, final String xaDataSourceClassName) throws IllegalStateException {
         final int majorVer = driver.getMajorVersion();
         final int minorVer = driver.getMinorVersion();
         if ((majorVersion != null && majorVersion != majorVer)
@@ -150,7 +144,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             SUBSYSTEM_DATASOURCES_LOGGER.deployingNonCompliantJdbcDriver(driver.getClass(), majorVer, minorVer);
         }
         InstalledDriver driverMetadata = new InstalledDriver(driverName, moduleId, driver.getClass().getName(),
-                dataSourceClassName, xaDataSourceClassName, majorVer, minorVer, compliant, profile);
+                dataSourceClassName, xaDataSourceClassName, majorVer, minorVer, compliant);
         DriverService driverService = new DriverService(driverMetadata, driver);
         final ServiceBuilder<Driver> builder = target.addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_")), driverService)
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,

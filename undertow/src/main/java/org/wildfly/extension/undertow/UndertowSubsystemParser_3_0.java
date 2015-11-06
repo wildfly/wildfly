@@ -55,7 +55,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
 
     static {
         xmlDescription = builder(UndertowRootDefinition.INSTANCE, Namespace.UNDERTOW_3_0.getUriString())
-                .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID)
+                .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID, UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN)
                 .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
                         builder(BufferCacheDefinition.INSTANCE)

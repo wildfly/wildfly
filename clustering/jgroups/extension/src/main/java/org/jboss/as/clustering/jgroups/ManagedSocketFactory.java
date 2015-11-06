@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -40,140 +41,115 @@ import org.jgroups.util.SocketFactory;
  */
 public class ManagedSocketFactory implements SocketFactory {
 
-    private final SocketFactory factory;
     private final SocketBindingManager manager;
 
-    public ManagedSocketFactory(SocketFactory factory, SocketBindingManager manager) {
-        this.factory = factory;
+    public ManagedSocketFactory(SocketBindingManager manager) {
         this.manager = manager;
     }
 
     @Override
     public Socket createSocket(String name) throws IOException {
-        return this.register(this.factory.createSocket(name));
+        return this.manager.getSocketFactory().createSocket(name);
     }
 
     @Override
     public Socket createSocket(String name, String host, int port) throws IOException {
-        return this.register(this.factory.createSocket(name, host, port));
+        return this.manager.getSocketFactory().createSocket(name, host, port);
     }
 
     @Override
     public Socket createSocket(String name, InetAddress address, int port) throws IOException {
-        return this.register(this.factory.createSocket(name, address, port));
+        return this.manager.getSocketFactory().createSocket(name, address, port);
     }
 
     @Override
-    public Socket createSocket(String name, String host, int port, InetAddress localAddress, int localPort) throws IOException {
-        return this.register(this.factory.createSocket(name, host, port, localAddress, localPort));
+    public Socket createSocket(String name, String host, int port, InetAddress localHost, int localPort) throws IOException {
+        return this.manager.getSocketFactory().createSocket(name, host, port, localHost, localPort);
     }
 
     @Override
     public Socket createSocket(String name, InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
-        return this.register(this.factory.createSocket(name, address, port, localAddress, localPort));
-    }
-
-    private Socket register(final Socket socket) {
-        this.manager.getUnnamedRegistry().registerSocket(socket);
-        return socket;
+        return this.manager.getSocketFactory().createSocket(name, address, port, localAddress, localPort);
     }
 
     @Override
     public ServerSocket createServerSocket(String name) throws IOException {
-        return this.register(this.factory.createServerSocket(name));
+        return this.manager.getServerSocketFactory().createServerSocket(name);
     }
 
     @Override
     public ServerSocket createServerSocket(String name, int port) throws IOException {
-        return this.register(this.factory.createServerSocket(name, port));
+        return this.manager.getServerSocketFactory().createServerSocket(name, port);
     }
 
     @Override
     public ServerSocket createServerSocket(String name, int port, int backlog) throws IOException {
-        return this.register(this.factory.createServerSocket(name, port, backlog));
+        return this.manager.getServerSocketFactory().createServerSocket(name, port, backlog);
     }
 
     @Override
-    public ServerSocket createServerSocket(String name, int port, int backlog, InetAddress bindAddr) throws IOException {
-        return this.register(this.factory.createServerSocket(name, port, backlog, bindAddr));
-    }
-
-    private ServerSocket register(final ServerSocket socket) {
-        this.manager.getUnnamedRegistry().registerSocket(socket);
-        return socket;
+    public ServerSocket createServerSocket(String name, int port, int backlog, InetAddress ifAddress) throws IOException {
+        return this.manager.getServerSocketFactory().createServerSocket(name, port, backlog, ifAddress);
     }
 
     @Override
     public DatagramSocket createDatagramSocket(String name) throws SocketException {
-        return this.register(this.factory.createDatagramSocket(name));
+        return this.createDatagramSocket(name, 0);
     }
 
     @Override
-    public DatagramSocket createDatagramSocket(String name, SocketAddress bindAddress) throws SocketException {
-        return this.register(this.factory.createDatagramSocket(name, bindAddress));
+    public DatagramSocket createDatagramSocket(String name, SocketAddress address) throws SocketException {
+        return this.manager.createDatagramSocket(name, address);
     }
 
     @Override
     public DatagramSocket createDatagramSocket(String name, int port) throws SocketException {
-        return this.register(this.factory.createDatagramSocket(name, port));
+        return this.createDatagramSocket(name, new InetSocketAddress(port));
     }
 
     @Override
-    public DatagramSocket createDatagramSocket(String name, int port, InetAddress localAddress) throws SocketException {
-        return this.register(this.factory.createDatagramSocket(name, port, localAddress));
-    }
-
-    private DatagramSocket register(final DatagramSocket socket) {
-        this.manager.getUnnamedRegistry().registerSocket(socket);
-        return socket;
+    public DatagramSocket createDatagramSocket(String name, int port, InetAddress address) throws SocketException {
+        return this.createDatagramSocket(name, new InetSocketAddress(address, port));
     }
 
     @Override
     public MulticastSocket createMulticastSocket(String name) throws IOException {
-        return this.register(this.factory.createMulticastSocket(name));
+        return this.createMulticastSocket(name, 0);
     }
 
     @Override
     public MulticastSocket createMulticastSocket(String name, int port) throws IOException {
-        return this.register(this.factory.createMulticastSocket(name, port));
+        return this.createMulticastSocket(name, new InetSocketAddress(port));
     }
 
     @Override
-    public MulticastSocket createMulticastSocket(String name, SocketAddress bindAddress) throws IOException {
-        return this.register(this.factory.createMulticastSocket(name, bindAddress));
-    }
-
-    private MulticastSocket register(final MulticastSocket socket) {
-        this.manager.getUnnamedRegistry().registerSocket(socket);
-        return socket;
+    public MulticastSocket createMulticastSocket(String name, SocketAddress address) throws IOException {
+        return this.manager.createMulticastSocket(name, address);
     }
 
     @Override
     public void close(Socket socket) throws IOException {
         if (socket != null) {
-            this.manager.getUnnamedRegistry().unregisterSocket(socket);
-            this.factory.close(socket);
+            socket.close();
         }
     }
 
     @Override
     public void close(ServerSocket socket) throws IOException {
         if (socket != null) {
-            this.manager.getUnnamedRegistry().unregisterSocket(socket);
-            this.factory.close(socket);
+            socket.close();
         }
     }
 
     @Override
     public void close(DatagramSocket socket) {
         if (socket != null) {
-            this.manager.getUnnamedRegistry().unregisterSocket(socket);
-            this.factory.close(socket);
+            socket.close();
         }
     }
 
     @Override
     public Map<Object, String> getSockets() {
-        return this.factory.getSockets();
+        return null;
     }
 }

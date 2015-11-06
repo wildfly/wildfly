@@ -30,10 +30,15 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SessionCreationMetaDataEntry<L> {
 
     private final SessionCreationMetaData metaData;
-    private final AtomicReference<L> localContext = new AtomicReference<>();
+    private final AtomicReference<L> localContext;
 
     public SessionCreationMetaDataEntry(SessionCreationMetaData metaData) {
+        this(metaData, new AtomicReference<>());
+    }
+
+    public SessionCreationMetaDataEntry(SessionCreationMetaData metaData, AtomicReference<L> localContext) {
         this.metaData = metaData;
+        this.localContext = localContext;
     }
 
     public SessionCreationMetaData getMetaData() {

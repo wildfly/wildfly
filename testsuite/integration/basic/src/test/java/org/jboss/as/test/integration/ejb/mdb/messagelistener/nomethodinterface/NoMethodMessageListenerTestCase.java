@@ -61,22 +61,23 @@ public class NoMethodMessageListenerTestCase {
 
     @Deployment
     public static Archive createDeployment() {
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_NAME + ".ear");
+        final Package currentPackage = NoMethodMessageListenerTestCase.class.getPackage();
 
-        final JavaArchive rar = ShrinkWrap.create(JavaArchive.class, RAR_NAME + ".rar");
-        rar.addAsManifestResource(NoMethodMessageListenerTestCase.class.getPackage(), "ra.xml", "ra.xml");
+        final JavaArchive rar = ShrinkWrap.create(JavaArchive.class, RAR_NAME + ".rar")
+                .addAsManifestResource(currentPackage, "ra.xml", "ra.xml");
 
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, EJB_JAR_NAME + ".jar");
-        ejbJar.addClasses(SimpleMessageDrivenBean.class, NoMethodMessageListenerTestCase.class,
-                ReceivedMessageTracker.class);
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, EJB_JAR_NAME + ".jar")
+                .addClasses(SimpleMessageDrivenBean.class, NoMethodMessageListenerTestCase.class, ReceivedMessageTracker.class);
 
-        final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, LIB_JAR_NAME + ".jar");
-        libJar.addClasses(SimpleActivationSpec.class, SimpleResourceAdapter.class,
-                NoMethodMessageListener.class, TimeoutUtil.class);
+        final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, LIB_JAR_NAME + ".jar")
+                .addClasses(SimpleActivationSpec.class, SimpleResourceAdapter.class)
+                .addClasses(NoMethodMessageListener.class, TimeoutUtil.class);
 
-        ear.addAsModule(rar);
-        ear.addAsModule(ejbJar);
-        ear.addAsLibrary(libJar);
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_NAME + ".ear")
+                .addAsModule(rar)
+                .addAsModule(ejbJar)
+                .addAsLibrary(libJar)
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml");
 
         return ear;
     }

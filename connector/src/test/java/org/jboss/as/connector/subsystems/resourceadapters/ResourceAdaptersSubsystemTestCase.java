@@ -49,6 +49,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,7 +70,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-resource-adapters_3_0.xsd";
+        return "schema/wildfly-resource-adapters_4_0.xsd";
     }
 
     @Override
@@ -112,6 +113,12 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         standardSubsystemTest("resource-adapters-xapool-expression.xml", "resource-adapters-xapool.xml", true);
     }
 
+
+    @Test
+    public void testRejectinMcpEnlistmentTrace() throws Exception {
+        testRejectingTransformer300("resource-adapters-pool-20.xml", ModelTestControllerVersion.WILDFLY_8_1_0_FINAL, ModelVersion.create(3, 0, 0));
+    }
+
     @Test
     public void testTransformerEAP62() throws Exception {
         testRejectingTransformer("resource-adapters-pool-20.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
@@ -121,7 +128,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     public void testExpressionsEAP62() throws Exception {
         //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
         // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testTransformer("resource-adapters-xapool-expression.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
+        testTransformer("resource-adapters-xapool-expression2.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
     }
 
     /**
@@ -171,20 +178,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         org.junit.Assert.assertNotNull(legacyServices);
 
 
-        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
-
-            @Override
-            public ModelNode fixModel(ModelNode modelNode) {
-                //Replace the value used in the xml
-                if (modelNode.get(Constants.RESOURCEADAPTER_NAME).get("myRA").get(Constants.CONNECTIONDEFINITIONS_NAME).get("poolName").isDefined()) {
-                    if (!modelNode.get(Constants.RESOURCEADAPTER_NAME).get("myRA").get(Constants.CONNECTIONDEFINITIONS_NAME).get("poolName").hasDefined(Constants.APPLICATION.getName())) {
-                        modelNode.get(Constants.RESOURCEADAPTER_NAME).get("myRA").get(Constants.CONNECTIONDEFINITIONS_NAME).get("poolName").get(Constants.APPLICATION.getName()).set(false);
-                    }
-                }
-                return modelNode;
-
-            }
-        });
+        checkSubsystemModelTransformation(mainServices, modelVersion, null, false);
 
     }
 
@@ -283,6 +277,38 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                                     }
                                 }).build()));
     }
+
+
+    private void testRejectingTransformer300(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        //.setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
+                .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
+                .addOperationValidationResolve("add", PathAddress.pathAddress(
+                        PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                        PathElement.pathElement("resource-adapter", "*"),
+                        PathElement.pathElement("connection-definitions", "*")))
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class)).skipReverseControllerCheck();
+
+        KernelServices mainServices = builder.build();
+        org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        org.junit.Assert.assertNotNull(legacyServices);
+
+        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(ResourceAdaptersExtension.SUBSYSTEM_PATH);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME), ConnectionDefinitionResourceDefinition.PATH),
+                        FailedOperationTransformationConfig.REJECTED_RESOURCE));
+    }
+
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;

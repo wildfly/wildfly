@@ -29,6 +29,7 @@ public interface Remover<K> {
     /**
      * Removes the specified entry from the cache.
      * @param id the cache entry identifier.
+     * @return true, if the entry was removed.
      */
-    void remove(K id);
+    boolean remove(K id);
 }

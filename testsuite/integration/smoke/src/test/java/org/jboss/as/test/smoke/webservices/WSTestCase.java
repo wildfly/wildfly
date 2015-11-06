@@ -115,7 +115,7 @@ public class WSTestCase {
             assertThat(endpoint.hasDefined("wsdl-url"), is(true));
             assertThat(endpoint.get("wsdl-url").asString().endsWith("?wsdl"), is(true));
             assertThat(endpoint.hasDefined("request-count"), is(true));
-            assertThat(endpoint.get("request-count").asString(), containsString("No metrics available"));
+            assertThat(endpoint.get("request-count").asString(), is("0"));
         }
     }
 
@@ -155,7 +155,7 @@ public class WSTestCase {
         for (final ModelNode endpointResult : endpoints) {
             final ModelNode endpoint = endpointResult.get("result");
             assertThat(endpoint.hasDefined("request-count"), is(true));
-            assertThat(endpoint.get("request-count").asString(), containsString("No metrics available"));
+            assertThat(endpoint.get("request-count").asString(), is("1"));
         }
     }
 

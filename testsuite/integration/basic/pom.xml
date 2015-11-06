@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>10.0.0.CR3-SNAPSHOT</version>
+        <version>10.0.0.CR5-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -378,32 +378,35 @@
                 </property>
             </activation>
             <build>
-                <pluginManagement>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>basic-integration-default-full.surefire</id>
-                                <phase>test</phase>
-                            </execution>
-                            <execution>
-                                <id>basic-integration-default-web.surefire</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>basic-integration-2nd.surefire</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>basic-integration-ldap.surefire</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-                </pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>basic-integration-default-full.surefire</id>
+                                    <phase>test</phase>
+                                    <configuration>
+                                        <includes>
+                                            <include>**</include>
+                                        </includes>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>basic-integration-default-web.surefire</id>
+                                    <phase>none</phase>
+                                </execution>
+                                <execution>
+                                    <id>basic-integration-2nd.surefire</id>
+                                    <phase>none</phase>
+                                </execution>
+                                <execution>
+                                    <id>basic-integration-ldap.surefire</id>
+                                    <phase>none</phase>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
             </build>
         </profile>
 
