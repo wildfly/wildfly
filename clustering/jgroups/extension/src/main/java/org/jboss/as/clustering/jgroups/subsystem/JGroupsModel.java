@@ -21,13 +21,14 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
 
 /**
  * Enumerates the supported model versions.
  * @author Paul Ferraro
  */
-public enum JGroupsModel {
+public enum JGroupsModel implements Model {
 
     VERSION_1_2_0(1, 2, 0),
     VERSION_1_3_0(1, 3, 0),
@@ -43,16 +44,8 @@ public enum JGroupsModel {
         this.version = ModelVersion.create(major, minor, micro);
     }
 
+    @Override
     public ModelVersion getVersion() {
         return this.version;
-    }
-
-    /**
-     * Indicates whether this model is more recent than the specified version and thus requires transformation
-     * @param version a model version
-     * @return true this this model is more recent than the specified version, false otherwise
-     */
-    public boolean requiresTransformation(ModelVersion version) {
-        return ModelVersion.compare(this.version, version) < 0;
     }
 }

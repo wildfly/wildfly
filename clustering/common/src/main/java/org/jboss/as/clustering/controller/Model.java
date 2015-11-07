@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,44 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.Schema;
+package org.jboss.as.clustering.controller;
+
+import org.jboss.as.controller.ModelVersion;
 
 /**
- * Enumeration of the supported subsystem xml schemas.
+ * Defines a management model version.
  * @author Paul Ferraro
  */
-public enum JGroupsSchema implements Schema<JGroupsSchema> {
+public interface Model {
+    /**
+     * Returns the version of this model.
+     * @return a model version
+     */
+    ModelVersion getVersion();
 
-    VERSION_1_0(1, 0),
-    VERSION_1_1(1, 1),
-    VERSION_2_0(2, 0),
-    VERSION_3_0(3, 0),
-    VERSION_4_0(4, 0),
-    ;
-    public static final JGroupsSchema CURRENT = VERSION_4_0;
-
-    private final int major;
-    private final int minor;
-
-    JGroupsSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
-    }
-
-    @Override
-    public int major() {
-        return this.major;
-    }
-
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getNamespaceUri() {
-        return String.format("urn:jboss:domain:jgroups:%d.%d", this.major, this.minor);
+    /**
+     * Indicates whether this model is more recent than the specified version and thus requires transformation
+     * @param version a model version
+     * @return true this this model is more recent than the specified version, false otherwise
+     */
+    default boolean requiresTransformation(ModelVersion version) {
+        return ModelVersion.compare(this.getVersion(), version) < 0;
     }
 }
