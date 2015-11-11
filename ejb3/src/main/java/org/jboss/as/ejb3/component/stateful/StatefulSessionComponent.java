@@ -235,6 +235,10 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     public SessionID createSession() {
+        // check to see that StatefulSessionComponent.stop() has not been called concurrent with the request; this can happen on undeploy (see WFLY-5178)
+        if (getCache() == null)
+            throw EjbLogger.ROOT_LOGGER.componentIsShuttingDown();
+
         return this.cache.create().getId();
     }
 
