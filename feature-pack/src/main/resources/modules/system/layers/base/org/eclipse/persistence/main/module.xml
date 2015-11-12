@@ -42,7 +42,6 @@
         <module name="javax.validation.api"/>
         <module name="javax.xml.bind.api"/>
         <module name="org.antlr"/>
-        <module name="org.apache.commons.collections"/>
         <module name="org.dom4j"/>
         <module name="org.javassist"/>
         <module name="org.jboss.as.jpa.spi"/>
