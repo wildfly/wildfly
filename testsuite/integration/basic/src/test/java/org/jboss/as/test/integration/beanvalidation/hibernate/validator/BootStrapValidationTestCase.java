@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -56,6 +57,8 @@ public class BootStrapValidationTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testbootstrapvalidation.war");
         war.addPackage(BootStrapValidationTestCase.class.getPackage());
+        // Hibernate Validator needs the following runtime permission
+        war.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("accessDeclaredMembers")), "permissions.xml");
         return war;
     }
 

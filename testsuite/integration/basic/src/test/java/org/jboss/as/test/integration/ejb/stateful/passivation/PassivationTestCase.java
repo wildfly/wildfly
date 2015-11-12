@@ -38,6 +38,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests various scenarios for stateful bean passivation
@@ -64,6 +67,7 @@ public class PassivationTestCase {
                 "MANIFEST.MF");
         jar.addAsManifestResource(PassivationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsManifestResource(PassivationTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }
