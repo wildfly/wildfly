@@ -42,7 +42,7 @@ public class WarChildFirstClassLoadingTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addClasses(WarChildFirstClassLoadingTestCase.class, Stateless.class);
-        war.addAsWebInfResource(createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
         return war;
     }
 
