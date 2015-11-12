@@ -26,6 +26,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.LockingConfiguration;
+import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.transaction.LockingMode;
@@ -41,6 +42,7 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
 
     private final InjectedValue<TransactionConfiguration> transaction = new InjectedValue<>();
     private final InjectedValue<LockingConfiguration> locking = new InjectedValue<>();
+    private final InjectedValue<PersistenceConfiguration> persistence = new InjectedValue<>();
 
     private final String containerName;
     private final String cacheName;
@@ -56,6 +58,7 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
         return super.build(target)
                 .addDependency(CacheComponent.TRANSACTION.getServiceName(this.containerName, this.cacheName), TransactionConfiguration.class, this.transaction)
                 .addDependency(CacheComponent.LOCKING.getServiceName(this.containerName, this.cacheName), LockingConfiguration.class, this.locking)
+                .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.containerName, this.cacheName), PersistenceConfiguration.class, this.persistence)
         ;
     }
 
@@ -64,7 +67,14 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
         ConfigurationBuilder builder = super.createConfigurationBuilder();
         builder.clustering().cacheMode(CacheMode.LOCAL);
 
-        if ((this.transaction.getValue().lockingMode() == LockingMode.OPTIMISTIC) && (this.locking.getValue().isolationLevel() == IsolationLevel.REPEATABLE_READ)) {
+        TransactionConfiguration transaction = this.transaction.getValue();
+        LockingConfiguration locking = this.locking.getValue();
+        PersistenceConfiguration persistence = this.persistence.getValue();
+
+        // Auto-enable simple cache optimization if cache is non-transactional and non-persistent
+        builder.simpleCache(!transaction.transactionMode().isTransactional() && !persistence.usingStores());
+
+        if ((transaction.lockingMode() == LockingMode.OPTIMISTIC) && (locking.isolationLevel() == IsolationLevel.REPEATABLE_READ)) {
             builder.locking().writeSkewCheck(true);
             builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
         }
