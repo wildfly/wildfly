@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import static java.util.Arrays.asList;
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -60,6 +61,8 @@ import static org.jboss.as.messaging.CommonAttributes.GROUP_PORT;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.HTTP_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.HTTP_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_CHANNEL;
+import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_ADDRESS;
@@ -74,7 +77,6 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.EXPRESSION;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -464,26 +466,38 @@ public class MigrateOperation implements OperationStepHandler {
     private void migrateDiscoveryGroup(ModelNode newAddOp, List<String> warnings) {
         // These attributes are not present in the messaging-activemq subsystem.
         // Instead a socket-binding must be used to configure the broadcast-group.
-        final Collection<String> unmigratedProperties = Arrays.asList(LOCAL_BIND_ADDRESS.getName(),
-                GROUP_ADDRESS.getName(),
-                GROUP_PORT.getName());
-        for (Property property : newAddOp.asPropertyList()) {
-            if (unmigratedProperties.contains(property.getName())) {
-                warnings.add(ROOT_LOGGER.couldNotMigrateDiscoveryGroupAttribute(property.getName(), pathAddress(newAddOp.get(OP_ADDR))));
+        for (String property : asList(LOCAL_BIND_ADDRESS.getName(), GROUP_ADDRESS.getName(), GROUP_PORT.getName())) {
+            if (newAddOp.has(property)) {
+                newAddOp.remove(property);
+                warnings.add(ROOT_LOGGER.couldNotMigrateDiscoveryGroupAttribute(property, pathAddress(newAddOp.get(OP_ADDR))));
             }
         }
+        // These attributes no longer accept expressions in the messaging-activemq subsystem.
+        removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
     }
 
     private void migrateBroadcastGroup(ModelNode newAddOp, List<String> warnings) {
         // These attributes are not present in the messaging-activemq subsystem.
         // Instead a socket-binding must be used to configure the broadcast-group.
-        final Collection<String> unmigratedProperties = Arrays.asList(LOCAL_BIND_ADDRESS.getName(),
+        final Collection<String> unmigratedProperties = asList(LOCAL_BIND_ADDRESS.getName(),
                 LOCAL_BIND_PORT.getName(),
                 GROUP_ADDRESS.getName(),
                 GROUP_PORT.getName());
         for (Property property : newAddOp.asPropertyList()) {
             if (unmigratedProperties.contains(property.getName())) {
                 warnings.add(ROOT_LOGGER.couldNotMigrateBroadcastGroupAttribute(property.getName(), pathAddress(newAddOp.get(OP_ADDR))));
+            }
+        }
+        // These attributes no longer accept expressions in the messaging-activemq subsystem.
+        removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
+    }
+
+
+    private void removePropertiesWithExpression(ModelNode newAddOp, List<String> warnings, String... properties) {
+        for (String property : properties) {
+            if (newAddOp.hasDefined(property) && newAddOp.get(property).getType() == EXPRESSION) {
+                newAddOp.remove(property);
+                warnings.add(ROOT_LOGGER.couldNotMigrateResourceAttributeWithExpression(property, pathAddress(newAddOp.get(OP_ADDR))));
             }
         }
     }
