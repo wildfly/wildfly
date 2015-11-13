@@ -20,7 +20,7 @@
 
     <xs:complexType name="singleton-policies">
         <xs:sequence>
-            <xs:element name="singleton-policy" type="tns:singleton-policy">
+            <xs:element name="singleton-policy" type="tns:singleton-policy" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation>Defines a singleton policy</xs:documentation>
                 </xs:annotation>
