@@ -343,11 +343,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
-            PathAddress poolAddress = address.append(pool.getPathElement());
-            operations.put(poolAddress, Util.createAddOperation(poolAddress));
-        }
-
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
@@ -442,7 +437,8 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
     private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
-        ModelNode operation = operations.get(address);
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));

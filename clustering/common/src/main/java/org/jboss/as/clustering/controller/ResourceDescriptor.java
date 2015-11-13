@@ -24,11 +24,16 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 
 /**
@@ -39,10 +44,17 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
  */
 public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
+    private static final Comparator<PathElement> PATH_COMPARATOR = (PathElement path1, PathElement path2) -> {
+        int result = path1.getKey().compareTo(path2.getKey());
+        return (result == 0) ? path1.getValue().compareTo(path2.getValue()) : result;
+    };
+
     private final ResourceDescriptionResolver resolver;
     private final List<Capability> capabilities = new LinkedList<>();
     private final List<AttributeDefinition> attributes = new LinkedList<>();
     private final List<AttributeDefinition> parameters = new LinkedList<>();
+    private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
+    private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
 
     public ResourceDescriptor(ResourceDescriptionResolver resolver) {
         this.resolver = resolver;
@@ -66,6 +78,16 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     @Override
     public Collection<AttributeDefinition> getExtraParameters() {
         return this.parameters;
+    }
+
+    @Override
+    public Set<PathElement> getRequiredChildren() {
+        return this.requiredChildren;
+    }
+
+    @Override
+    public Set<PathElement> getRequiredSingletonChildren() {
+        return this.requiredSingletonChildren;
     }
 
     public <E extends Enum<E> & Attribute> ResourceDescriptor addAttributes(Class<E> enumClass) {
@@ -109,6 +131,26 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     public ResourceDescriptor addCapabilities(Collection<? extends Capability> capabilities) {
         this.capabilities.addAll(capabilities);
+        return this;
+    }
+
+    public <E extends Enum<E> & ResourceDefinition> ResourceDescriptor addRequiredChildren(Class<E> enumClass) {
+        EnumSet.allOf(enumClass).forEach(definition -> this.requiredChildren.add(definition.getPathElement()));
+        return this;
+    }
+
+    public ResourceDescriptor addRequiredChildren(PathElement... paths) {
+        this.requiredChildren.addAll(Arrays.asList(paths));
+        return this;
+    }
+
+    public <E extends Enum<E> & ResourceDefinition> ResourceDescriptor addRequiredSingletonChildren(Class<E> enumClass) {
+        EnumSet.allOf(enumClass).forEach(definition -> this.requiredSingletonChildren.add(definition.getPathElement()));
+        return this;
+    }
+
+    public ResourceDescriptor addRequiredSingletonChildren(PathElement... paths) {
+        this.requiredSingletonChildren.addAll(Arrays.asList(paths));
         return this;
     }
 }

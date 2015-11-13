@@ -22,15 +22,21 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.Collection;
+import java.util.Optional;
+import java.util.function.BiPredicate;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -40,7 +46,7 @@ import org.jboss.dmr.ModelNode;
  * Generic add operation step handler that delegates service installation/rollback to a {@link ResourceServiceHandler}.
  * @author Paul Ferraro
  */
-public class AddStepHandler extends AbstractAddStepHandler implements Registration<ManagementResourceRegistration> {
+public class AddStepHandler extends AbstractAddStepHandler implements Registration<ManagementResourceRegistration>, DescribedAddStepHandler {
 
     private final AddStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
@@ -62,11 +68,61 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    public AddStepHandlerDescriptor getDescriptor() {
+        return this.descriptor;
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        PathAddress parentAddress = address.getParent();
+        PathElement path = address.getLastElement();
+
+        OperationStepHandler parentHandler = context.getRootResourceRegistration().getOperationHandler(parentAddress, ModelDescriptionConstants.ADD);
+        if (parentHandler instanceof DescribedAddStepHandler) {
+            AddStepHandlerDescriptor parentDescriptor = ((DescribedAddStepHandler) parentHandler).getDescriptor();
+
+            if (parentDescriptor.getRequiredChildren().contains(path)) {
+                if (context.readResourceFromRoot(parentAddress, false).hasChild(path)) {
+                    // If we are a required child resource of our parent, we need to remove the auto-created resource first
+                    context.addStep(Util.createRemoveOperation(address), context.getRootResourceRegistration().getOperationHandler(address, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
+                    context.addStep(operation, this, OperationContext.Stage.MODEL);
+                    return;
+                }
+            } else {
+                Optional<PathElement> singletonPathResult = parentDescriptor.getRequiredSingletonChildren().stream().filter((PathElement requiredPath) -> requiredPath.getKey().equals(path.getKey()) && !requiredPath.getValue().equals(path.getValue())).findFirst();
+                if (singletonPathResult.isPresent()) {
+                    PathElement singletonPath = singletonPathResult.get();
+                    if (context.readResourceFromRoot(parentAddress, false).hasChild(singletonPath)) {
+                        // If there is a required singleton sibling resource, we need to remove it first
+                        PathAddress singletonAddress = parentAddress.append(singletonPath);
+                        context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
+                        context.addStep(operation, this, OperationContext.Stage.MODEL);
+                        return;
+                    }
+                }
+            }
+        }
+
+        super.execute(context, operation);
+    }
+
+    @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
             definition.validateOperation(operation);
         }
-        super.populateModel(operation, model);
+        super.populateModel(context, operation, resource);
+
+        // Auto-create required child resources as necessary
+        addRequiredChildren(context, this.descriptor.getRequiredChildren(), (Resource parent, PathElement path) -> parent.hasChild(path));
+        addRequiredChildren(context, this.descriptor.getRequiredSingletonChildren(), (Resource parent, PathElement path) -> parent.hasChildren(path.getKey()));
+    }
+
+    private static void addRequiredChildren(OperationContext context, Collection<PathElement> paths, BiPredicate<Resource, PathElement> present) {
+        for (PathElement path : paths) {
+            context.addStep(Util.createAddOperation(context.getCurrentAddress().append(path)), new AddIfAbsentStepHandler(present), OperationContext.Stage.MODEL);
+        }
     }
 
     @Override

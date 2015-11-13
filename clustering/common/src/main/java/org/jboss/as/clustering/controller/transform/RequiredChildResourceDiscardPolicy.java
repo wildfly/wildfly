@@ -30,14 +30,13 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Implementation of a generic {@link DynamicDiscardPolicy} that discards children resources which have all their
- * attributes undefined; rejects otherwise. It is to be used for all implicitly added resources in
- * {@link org.jboss.staxmapper.XMLElementReader} implementations.
+ * Implementation of a generic {@link DynamicDiscardPolicy} that discards child resources which have all their
+ * attributes undefined; rejects otherwise. It is to be used for required child resources that are auto-created.
  *
  * @author Radoslav Husar
  * @version Sep 2015
  */
-public class ImplicitlyAddedResourceDynamicDiscardPolicy implements DynamicDiscardPolicy {
+public class RequiredChildResourceDiscardPolicy implements DynamicDiscardPolicy {
 
     /**
      * @return {@link DiscardPolicy#REJECT_AND_WARN} if any of the attributes are defined; {@link DiscardPolicy#SILENT} otherwise

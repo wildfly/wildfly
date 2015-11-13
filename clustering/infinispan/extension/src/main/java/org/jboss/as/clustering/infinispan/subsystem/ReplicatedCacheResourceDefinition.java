@@ -64,6 +64,9 @@ public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceD
                 .addAttributes(ClusteredCacheResourceDefinition.DeprecatedAttribute.class)
                 .addAttributes(CacheResourceDefinition.Attribute.class)
                 .addAttributes(CacheResourceDefinition.DeprecatedAttribute.class)
+                .addRequiredChildren(EvictionResourceDefinition.PATH, ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
+                .addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH)
+                .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new ReplicatedCacheServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
