@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:ejb3:4.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:5.0">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
