@@ -57,6 +57,7 @@
                         minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-distinct-name" type="default-distinct-nameType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-security-domain" type="default-security-domainType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="security-domains" type="securityDomainsType" minOccurs="0" maxOccurs="1" />
             <xs:element name="default-missing-method-permissions-deny-access" type="default-missing-method-permissions-deny-accessType" minOccurs="0" maxOccurs="1" />
             <xs:element name="disable-default-ejb-permissions" type="disable-default-ejb-permissionsType" minOccurs="0" maxOccurs="1" />
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
@@ -399,6 +400,38 @@
 
     <xs:complexType name="statisticsType">
         <xs:attribute name="enabled" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="securityDomainsType">
+        <xs:sequence>
+            <xs:element name="security-domain" type="securityDomainRefType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="default" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The default Elytron security domain that will be used for EJBs in the absence of any explicitly configured
+                    security domain name for the bean.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="securityDomainRefType">
+        <xs:annotation>
+            <xs:documentation>
+                A reference to an Elytron security domain.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="alias" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Defines an alias for this Elytron security domain.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="channel-creation-optionsType">

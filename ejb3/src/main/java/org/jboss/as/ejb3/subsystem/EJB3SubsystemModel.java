@@ -43,6 +43,8 @@ public interface EJB3SubsystemModel {
     String DATASOURCE_JNDI_NAME = "datasource-jndi-name";
     String DEFAULT_DISTINCT_NAME = "default-distinct-name";
     String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
+    String SECURITY_DOMAIN = "security-domain";
+    String SECURITY_DOMAINS = "security-domains";
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
     String DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS = "default-missing-method-permissions-deny-access";
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";

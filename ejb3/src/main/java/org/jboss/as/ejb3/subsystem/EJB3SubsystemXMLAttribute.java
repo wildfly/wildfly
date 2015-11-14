@@ -31,6 +31,7 @@ import java.util.Map;
 public enum EJB3SubsystemXMLAttribute {
     UNKNOWN(null),
 
+    ALIAS("alias"),
     ALIASES("aliases"),
     ALLOW_EXECUTION("allow-execution"),
 
@@ -45,6 +46,7 @@ public enum EJB3SubsystemXMLAttribute {
     CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),
 
+    DEFAULT("default"),
     DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
     DEFAULT_DATA_STORE("default-data-store"),
     DATABASE("database"),

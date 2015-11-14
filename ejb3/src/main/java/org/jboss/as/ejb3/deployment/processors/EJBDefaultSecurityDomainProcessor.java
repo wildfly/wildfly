@@ -44,6 +44,7 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcessor {
 
     private volatile String defaultSecurityDomainName;
+    private volatile boolean securityDomainsConfigured;
 
     public EJBDefaultSecurityDomainProcessor(final String defaultSecurityDomainName) {
         this.defaultSecurityDomainName = defaultSecurityDomainName;
@@ -70,6 +71,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription instanceof EJBComponentDescription) {
                 ((EJBComponentDescription) componentDescription).setDefaultSecurityDomain(defaultSecurityDomain);
+                ((EJBComponentDescription) componentDescription).setSecurityDomainsConfigured(securityDomainsConfigured);
             }
         }
     }
@@ -86,5 +88,14 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
      */
     public void setDefaultSecurityDomainName(final String securityDomainName) {
         this.defaultSecurityDomainName = securityDomainName;
+    }
+
+    /**
+     * Sets whether or not security domains are explicitly configured in the EJB3 subsystem.
+     *
+     * @param securityDomainsConfigured whether or not security domains are explicitly configured in the EJB3 subsystem
+     */
+    public void setSecurityDomainsConfigured(final boolean securityDomainsConfigured) {
+        this.securityDomainsConfigured = securityDomainsConfigured;
     }
 }
