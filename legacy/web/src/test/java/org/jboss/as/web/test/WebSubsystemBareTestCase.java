@@ -60,6 +60,11 @@ public class WebSubsystemBareTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //This susbsystem does not have a template, so make this test a no-op
+    }
+
+    @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled, true);
     }

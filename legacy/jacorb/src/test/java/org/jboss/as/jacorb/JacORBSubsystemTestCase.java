@@ -57,13 +57,6 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/jacorb.xml"
-        };
-    }
-
-    @Override
     protected String getSubsystemXml(String configId) throws IOException {
         return readResource(configId);
     }

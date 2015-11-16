@@ -30,9 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -66,6 +63,10 @@ import org.xnio.Options;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
+import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.PathHandler;
+
 /**
  * This is the barebone test example that tests subsystem
  *
@@ -80,13 +81,6 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("undertow-3.0.xml");
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/undertow.xml"
-        };
     }
 
     @Override

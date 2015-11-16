@@ -61,13 +61,6 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem_2_0.xml");
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/mail.xml"
-        };
-    }
-
     @Test
     public void testExpressions() throws Exception {
         standardSubsystemTest("subsystem_1_1_expressions.xml", false);

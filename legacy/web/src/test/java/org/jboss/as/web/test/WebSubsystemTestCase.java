@@ -125,6 +125,12 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         //going to attempt to fix it for now.
     }
 
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //This susbsystem does not have a template, so make this test a no-op
+    }
+
     @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();

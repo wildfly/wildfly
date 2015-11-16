@@ -82,6 +82,11 @@ public class CmpKeyGeneratorSubsystem10TestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //This subsystem does not have a subsystem template, so make this test a no-op
+    }
+
+    @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization() {
 

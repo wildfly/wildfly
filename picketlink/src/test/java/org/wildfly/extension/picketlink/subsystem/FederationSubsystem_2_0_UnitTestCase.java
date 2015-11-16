@@ -49,13 +49,6 @@ public class FederationSubsystem_2_0_UnitTestCase extends AbstractSubsystemBaseT
         return readResource("federation-subsystem-2.0.xml");
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/picketlink-federation.xml"
-        };
-    }
-
     @Test
     public void testRuntime() throws Exception {
         System.setProperty("jboss.server.data.dir", System.getProperty("java.io.tmpdir"));

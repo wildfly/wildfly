@@ -88,13 +88,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/transactions.xml"
-        };
-    }
-
-    @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         String transformed = ModelTestUtils.normalizeXML(
                 original.replace("enable-statistics", "statistics-enabled")

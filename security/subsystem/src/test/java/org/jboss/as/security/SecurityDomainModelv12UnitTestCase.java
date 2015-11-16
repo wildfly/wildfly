@@ -111,13 +111,6 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/security.xml"
-        };
-    }
-
-    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("jboss.server.config.dir", System.getProperty("java.io.tmpdir"));

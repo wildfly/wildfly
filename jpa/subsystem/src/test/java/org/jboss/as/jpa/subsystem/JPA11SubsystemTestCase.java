@@ -59,13 +59,6 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem-1.1.xml");
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/jpa.xml"
-        };
-    }
-
     @Test
     public void testTransformers7_1_2() throws Exception {
         testTransformers_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);

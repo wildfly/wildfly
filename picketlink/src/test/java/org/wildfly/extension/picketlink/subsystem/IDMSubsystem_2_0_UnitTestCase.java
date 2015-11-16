@@ -52,13 +52,6 @@ public class IDMSubsystem_2_0_UnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/picketlink-identity-management.xml"
-        };
-    }
-
-    @Override
     protected String getSubsystemXsdPath() throws Exception {
         //picketlink-identity-management has a schema file which does not follow the usual naming pattern
         //so it cannot be determined automatically by the parent method

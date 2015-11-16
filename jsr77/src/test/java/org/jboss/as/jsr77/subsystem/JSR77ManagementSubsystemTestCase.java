@@ -54,13 +54,6 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
         return ADDITIONAL_INITIALIZATION;
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/jsr77.xml"
-        };
-    }
-
     @Test
     public void testTransformersAS712() throws Exception {
         testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);

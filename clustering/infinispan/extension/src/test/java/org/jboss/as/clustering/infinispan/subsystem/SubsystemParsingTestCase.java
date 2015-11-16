@@ -89,6 +89,15 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //Only invoke this test for the latest version of the schema
+        //Don't invoke it for the older versions, since the subsystem template is for the latest version
+        if (schema == InfinispanSchema.CURRENT) {
+            super.testSchemaOfSubsystemTemplates();
+        }
+    }
+
+    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("java.io.tmpdir", Paths.get(".").toAbsolutePath().normalize().toString());

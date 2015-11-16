@@ -60,13 +60,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/ejb3.xml"
-        };
-    }
-
     @Test
     public void test15() throws Exception {
         standardSubsystemTest("subsystem15.xml", false);

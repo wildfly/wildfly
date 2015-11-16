@@ -38,11 +38,4 @@ public class JSFSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return "<subsystem xmlns=\"urn:jboss:domain:jsf:1.0\" />";
     }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/jsf.xml"
-        };
-    }
 }

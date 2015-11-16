@@ -72,13 +72,6 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("expressions-1.0.xml");
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/iiop-openjdk.xml"
-        };
-    }
-
     @Test
     public void testParseEmptySubsystem() throws Exception {
         // parse the subsystem xml into operations.

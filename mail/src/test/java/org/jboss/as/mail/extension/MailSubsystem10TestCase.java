@@ -79,6 +79,12 @@ public class MailSubsystem10TestCase extends AbstractSubsystemBaseTest {
         return "schema/jboss-as-mail_1_0.xsd";
     }
 
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //The old xsd used by this test is not compatible with the template using the latest schema.
+    }
+
+
     protected AdditionalInitialization createAdditionalInitialization() {
         return new Initializer();
     }

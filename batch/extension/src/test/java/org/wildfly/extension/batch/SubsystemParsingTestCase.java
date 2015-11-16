@@ -40,13 +40,6 @@ public class SubsystemParsingTestCase extends AbstractBatchTestCase {
         return readResource("/default-subsystem.xml");
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-            "/subsystem-templates/batch.xml"
-        };
-    }
-
     @Test
     public void testMinimalSubsystem() throws Exception {
         standardSubsystemTest("/minimal-subsystem.xml");

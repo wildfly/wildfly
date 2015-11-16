@@ -55,13 +55,6 @@ public class SarSubsystemTestCase extends AbstractSubsystemBaseTest {
         return "<subsystem xmlns=\"urn:jboss:domain:sar:1.0\"/>";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-               "/subsystem-templates/sar.xml"
-        };
-    }
-
     @Test
     public void testTransformersAS712() throws Exception {
         testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "1.0.0.Final");

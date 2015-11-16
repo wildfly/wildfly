@@ -80,6 +80,7 @@ public class ModClusterSubsystemParsingTestCase extends AbstractSubsystemBaseTes
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
+        //The template has a different name from the subsystem
         return new String[] {
                 "/subsystem-templates/mod_cluster.xml"
         };

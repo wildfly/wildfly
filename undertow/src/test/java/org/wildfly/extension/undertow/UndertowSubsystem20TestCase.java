@@ -70,6 +70,10 @@ public class UndertowSubsystem20TestCase extends AbstractSubsystemBaseTest {
         return readResource("undertow-2.0.xml");
     }
 
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //The xsd used for this test is not compatible with the subsystem template, so make this test a no-op
+    }
 
     @Override
     protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
