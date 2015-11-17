@@ -245,10 +245,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     static final AttributeDefinition[] attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
-            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE, USE_JOURNAL_STORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
+            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_JOURNAL_STORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
-            JOURNAL_STORE_ENABLE_ASYNC_IO, HORNETQ_STORE_ENABLE_ASYNC_IO
+            JOURNAL_STORE_ENABLE_ASYNC_IO
     };
 
     static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_0 = new AttributeDefinition[] {
@@ -299,8 +299,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_BINDING, null, mutualProcessIdWriteHandler);
         resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_MAX_PORTS, null, mutualProcessIdWriteHandler);
 
-        EnableStatisticsHandler esh = new EnableStatisticsHandler();
+        AliasedHandler esh = new AliasedHandler(STATISTICS_ENABLED.getName());
         resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, esh, esh);
+
+        AliasedHandler hsh = new AliasedHandler(USE_JOURNAL_STORE.getName());
+        resourceRegistration.registerReadWriteAttribute(USE_HORNETQ_STORE, hsh, hsh);
+
+        AliasedHandler hseh = new AliasedHandler(JOURNAL_STORE_ENABLE_ASYNC_IO.getName());
+        resourceRegistration.registerReadWriteAttribute(HORNETQ_STORE_ENABLE_ASYNC_IO, hseh, hseh);
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
@@ -312,7 +318,12 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerCapability(TRANSACTION_CAPABILITY);
     }
 
-    private static class EnableStatisticsHandler implements OperationStepHandler {
+    private static class AliasedHandler implements OperationStepHandler {
+        private String aliasedName;
+
+        public AliasedHandler(String aliasedName) {
+            this.aliasedName = aliasedName;
+        }
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -321,9 +332,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             context.stepCompleted();
         }
 
-        private static ModelNode getAliasedOperation(ModelNode operation) {
+        private ModelNode getAliasedOperation(ModelNode operation) {
             ModelNode aliased = operation.clone();
-            aliased.get(ModelDescriptionConstants.NAME).set(STATISTICS_ENABLED.getName());
+            aliased.get(ModelDescriptionConstants.NAME).set(aliasedName);
             return aliased;
         }
 
