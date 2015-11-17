@@ -47,7 +47,7 @@ public class EjbSuspendInterceptor extends AbstractEJBInterceptor {
         ControlPoint entryPoint = component.getControlPoint();
         RunResult result = entryPoint.beginRequest();
         if (result == RunResult.REJECTED) {
-            throw EjbLogger.ROOT_LOGGER.containerSuspended();
+            EjbLogger.ROOT_LOGGER.containerAlreadySuspended();
         }
         try {
             return context.proceed();

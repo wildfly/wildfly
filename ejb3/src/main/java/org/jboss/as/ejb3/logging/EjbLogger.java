@@ -3111,4 +3111,10 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 484, value = "Could not send a cluster removal message for cluster: (%s) to the client on channel %s")
     void couldNotSendClusterRemovalMessage(@Cause Throwable cause, Group group, Channel channel);
+
+    @LogMessage(level = WARN)
+    @Message(id = 485, value = "The request was rejected as the container is already suspended")
+    void containerAlreadySuspended();
+
+
 }
