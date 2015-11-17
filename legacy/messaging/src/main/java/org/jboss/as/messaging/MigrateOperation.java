@@ -428,7 +428,11 @@ public class MigrateOperation implements OperationStepHandler {
                                 if (name.equals("http-upgrade-endpoint") && address.getParent().getLastElement().getKey().equals("http-connector")) {
                                     parentAddOp.get("endpoint").set(value);
                                 } else {
-                                    parentAddOp.get("params").add(new Property(name, value));
+                                    if (parameterIsAllowed(name, resourceType)) {
+                                        parentAddOp.get("params").add(new Property(name, value));
+                                    } else {
+                                        warnings.add(ROOT_LOGGER.couldNotMigrateIgnoredParameter(name, address.getParent()));
+                                    }
                                 }
                                 continue;
                             }
@@ -438,6 +442,28 @@ public class MigrateOperation implements OperationStepHandler {
             }
 
             newAddOperations.put(address, newAddOp);
+        }
+    }
+
+    /**
+     * Check if the name of the parameter is allowed for the given resourceType.
+     */
+    private boolean parameterIsAllowed(String name, String resourceType) {
+        switch (resourceType) {
+            case REMOTE_ACCEPTOR:
+            case HTTP_ACCEPTOR:
+            case REMOTE_CONNECTOR:
+            case HTTP_CONNECTOR:
+                // WFLY-5667 - for now remove only use-nio. Revisit this code when Artemis offers an API
+                // to know which parameters are ignored.
+                if ("use-nio".equals(name)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            default:
+                // accept any parameter for other resources.
+                return true;
         }
     }
 
