@@ -32,6 +32,7 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
@@ -105,8 +106,8 @@ public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServ
 
     @Override
     public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
-        boolean clustered = cache.getCacheConfiguration().clustering().cacheMode().isClustered();
-        return clustered ? new KeyAffinityServiceImpl<>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
+        CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
+        return mode.isDistributed() || mode.isReplicated() ? new KeyAffinityServiceImpl<>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
     }
 
     private static class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {

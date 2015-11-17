@@ -38,11 +38,13 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 import org.wildfly.clustering.spi.GroupServiceName;
-import org.wildfly.clustering.web.session.SessionManagerConfiguration;
+import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 
 public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionManagerFactory<TransactionBatch>>, Value<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration {
@@ -57,7 +59,7 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
         return (serviceName.length() < 4) ? serviceName.append(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP) : serviceName;
     }
 
-    private final SessionManagerConfiguration configuration;
+    private final SessionManagerFactoryConfiguration configuration;
 
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
@@ -66,7 +68,7 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
     @SuppressWarnings("rawtypes")
     private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
 
-    public InfinispanSessionManagerFactoryBuilder(SessionManagerConfiguration configuration) {
+    public InfinispanSessionManagerFactoryBuilder(SessionManagerFactoryConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -88,11 +90,14 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
                 .addAliases(InfinispanRouteLocatorBuilder.getCacheServiceAlias(cacheName))
                 .install();
 
+        new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getNodeFactoryServiceAlias(cacheName), CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName, RouteCacheGroupBuilderProvider.CACHE_NAME), NodeFactory.class).build(target).install();
+        new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getRegistryServiceAlias(cacheName), CacheGroupServiceName.REGISTRY.getServiceName(containerName, RouteCacheGroupBuilderProvider.CACHE_NAME), Registry.class).build(target).install();
+
         return target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
                 .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
-                .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName), NodeFactory.class, this.nodeFactory)
+                .addDependency(InfinispanRouteLocatorBuilder.getNodeFactoryServiceAlias(cacheName), NodeFactory.class, this.nodeFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
     }
@@ -103,7 +108,7 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
     }
 
     @Override
-    public SessionManagerConfiguration getSessionManagerConfiguration() {
+    public SessionManagerFactoryConfiguration getSessionManagerFactoryConfiguration() {
         return this.configuration;
     }
 

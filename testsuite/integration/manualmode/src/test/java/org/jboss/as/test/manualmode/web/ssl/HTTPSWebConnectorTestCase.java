@@ -163,9 +163,6 @@ public class HTTPSWebConnectorTestCase {
         LOGGER.info("*** will configure server now");
         serverSetup(managementClient);
 
-        LOGGER.info("*** restarting server");
-        containerController.stop(CONTAINER);
-        containerController.start(CONTAINER);
         deployer.deploy(APP_CONTEXT);
     }
 
@@ -417,6 +414,10 @@ public class HTTPSWebConnectorTestCase {
         // operation.get("alias").set("management");
         Utils.applyUpdate(operation, client);
 
+        LOGGER.info("*** restarting server");
+        containerController.stop(CONTAINER);
+        containerController.start(CONTAINER);
+        
         operation = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS, ModelDescriptionConstants.ADD);
         operation.get("socket-binding").set(HTTPS);
         operation.get("security-realm").set(HTTPS_REALM);

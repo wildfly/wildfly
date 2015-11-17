@@ -62,7 +62,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     private final JGroupsSchema schema;
 
     public SubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema.format("subsystem-jgroups-%d_%d.xml"));
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), String.format("subsystem-jgroups-%d_%d.xml", schema.major(), schema.minor()));
         this.expectedOperationCount = expectedOperationCount;
         this.schema = schema;
     }

@@ -134,4 +134,17 @@ public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
         SSOTestBase.executeNoAuthSingleSignOnTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
     }
 
+    /**
+     * Test single sign-on is destroyed after session timeout
+     *
+     * Testing https://issues.jboss.org/browse/WFLY-5422
+     */
+    @Test
+    public void testSessionTimeoutDestroysSSO(
+            @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
+        log.info("+++ testSessionTimeoutDestroysSSO");
+        SSOTestBase.executeFormAuthSSOTimeoutTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
+    }
+
 }

@@ -93,7 +93,6 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
 
     private final boolean allowRuntimeOnlyRegistration;
 
-    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(StoreWriteThroughResourceDefinition.PATH);

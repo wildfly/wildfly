@@ -32,7 +32,6 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
-import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
@@ -40,15 +39,13 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  */
 public class InfinispanSessionFactory<V, L> implements SessionFactory<InfinispanSessionMetaData<L>, V, L> {
 
-    private final SessionContext context;
     private final SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory;
     private final SessionAttributesFactory<V> attributesFactory;
     private final LocalContextFactory<L> localContextFactory;
 
-    public InfinispanSessionFactory(SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory, SessionAttributesFactory<V> attributesFactory, SessionContext context, LocalContextFactory<L> localContextFactory) {
+    public InfinispanSessionFactory(SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory, SessionAttributesFactory<V> attributesFactory, LocalContextFactory<L> localContextFactory) {
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
-        this.context = context;
         this.localContextFactory = localContextFactory;
     }
 
@@ -88,9 +85,12 @@ public class InfinispanSessionFactory<V, L> implements SessionFactory<Infinispan
     }
 
     @Override
-    public void remove(String id) {
-        this.metaDataFactory.remove(id);
-        this.attributesFactory.remove(id);
+    public boolean remove(String id) {
+        if (this.metaDataFactory.remove(id)) {
+            this.attributesFactory.remove(id);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -109,17 +109,22 @@ public class InfinispanSessionFactory<V, L> implements SessionFactory<Infinispan
     }
 
     @Override
+    public SessionAttributesFactory<V> getAttributesFactory() {
+        return this.attributesFactory;
+    }
+
+    @Override
     public Session<L> createSession(String id, Map.Entry<InfinispanSessionMetaData<L>, V> entry) {
         InfinispanSessionMetaData<L> key = entry.getKey();
         SessionMetaData metaData = this.metaDataFactory.createSessionMetaData(id, key);
         SessionAttributes attributes = this.attributesFactory.createSessionAttributes(id, entry.getValue());
-        return new InfinispanSession<>(id, metaData, attributes, key.getLocalContext(), this.localContextFactory, this.context, this);
+        return new InfinispanSession<>(id, metaData, attributes, key.getLocalContext(), this.localContextFactory, this);
     }
 
     @Override
     public ImmutableSession createImmutableSession(String id, Map.Entry<InfinispanSessionMetaData<L>, V> entry) {
         ImmutableSessionMetaData metaData = this.metaDataFactory.createImmutableSessionMetaData(id, entry.getKey());
         ImmutableSessionAttributes attributes = this.attributesFactory.createImmutableSessionAttributes(id, entry.getValue());
-        return new InfinispanImmutableSession(id, metaData, attributes, this.context);
+        return new InfinispanImmutableSession(id, metaData, attributes);
     }
 }

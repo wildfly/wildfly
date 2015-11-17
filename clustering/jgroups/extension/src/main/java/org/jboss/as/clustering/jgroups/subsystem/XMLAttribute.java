@@ -46,7 +46,7 @@ public enum XMLAttribute {
     @Deprecated OOB_EXECUTOR(TransportResourceDefinition.ThreadingAttribute.OOB_EXECUTOR),
     QUEUE_LENGTH(ThreadPoolResourceDefinition.DEFAULT.getQueueLength()),
     RACK(TransportResourceDefinition.Attribute.RACK),
-    SHARED(TransportResourceDefinition.Attribute.SHARED),
+    @Deprecated SHARED(TransportResourceDefinition.Attribute.SHARED),
     SITE(TransportResourceDefinition.Attribute.SITE),
     SOCKET_BINDING(ProtocolResourceDefinition.Attribute.SOCKET_BINDING),
     STACK(RemoteSiteResourceDefinition.DeprecatedAttribute.STACK),

@@ -51,10 +51,4 @@ public interface ImmutableSession {
      * @throws IllegalStateException if this session is invalid
      */
     ImmutableSessionAttributes getAttributes();
-
-    /**
-     * Returns the application context of this session.
-     * @return the session's context
-     */
-    SessionContext getContext();
 }

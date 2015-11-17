@@ -27,6 +27,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.test.clustering.cluster.singleton.servlet.TraceServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
@@ -53,9 +54,11 @@ public class SingletonDeploymentDescriptorTestCase extends SingletonDeploymentTe
     }
 
     private static Archive<?> createDeployment() {
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, DEPLOYMENT_NAME + ".ear");
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war");
         war.addPackage(TraceServlet.class.getPackage());
-        war.addAsManifestResource(SingletonDeploymentDescriptorTestCase.class.getPackage(), "singleton-deployment.xml", "singleton-deployment.xml");
-        return war;
+        ear.addAsModule(war);
+        ear.addAsManifestResource(SingletonDeploymentDescriptorTestCase.class.getPackage(), "singleton-deployment.xml", "singleton-deployment.xml");
+        return ear;
     }
 }

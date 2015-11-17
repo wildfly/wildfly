@@ -117,7 +117,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(Capabilities.DATA_SOURCE_CAPABILITY);
+        if (!deployed)
+            resourceRegistration.registerCapability(Capabilities.DATA_SOURCE_CAPABILITY);
     }
 
     @Override

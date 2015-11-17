@@ -24,11 +24,13 @@ package org.wildfly.extension.clustering.singleton.deployment;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.as.clustering.controller.Schema;
+
 /**
  * Enumerates the singleton deployment configuration schemas.
  * @author Paul Ferraro
  */
-public enum SingletonDeploymentSchema {
+public enum SingletonDeploymentSchema implements Schema<SingletonDeploymentSchema> {
 
     VERSION_1_0("singleton-deployment", 1, 0),
     ;
@@ -45,16 +47,22 @@ public enum SingletonDeploymentSchema {
         this.minor = minor;
     }
 
-    /**
-     * Indicates whether this version of the schema is greater than or equal to the version of the specified schema.
-     * @param schema a schema
-     * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
-     */
-    public boolean since(SingletonDeploymentSchema schema) {
-        return (this.major > schema.major) || ((this.major == schema.major) && (this.minor >= schema.minor));
+    @Override
+    public int major() {
+        return this.major;
+    }
+
+    @Override
+    public int minor() {
+        return this.minor;
+    }
+
+    @Override
+    public String getNamespaceUri() {
+        return String.format(NAMESPACE_URI_PATTERN, this.root, this.major, this.minor);
     }
 
     public QName getRoot() {
-        return new QName(String.format(NAMESPACE_URI_PATTERN, this.root, this.major, this.minor), this.root);
+        return new QName(this.getNamespaceUri(), this.root);
     }
 }

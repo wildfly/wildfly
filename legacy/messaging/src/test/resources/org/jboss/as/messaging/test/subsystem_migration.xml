@@ -121,8 +121,8 @@
                 <socket-binding>group-s-binding</socket-binding>
             </broadcast-group>
             <broadcast-group name="groupT">
-                <jgroups-stack>udp</jgroups-stack>
-                <jgroups-channel>hq-cluster</jgroups-channel>
+                <jgroups-stack>${jgroups.stack:udp}</jgroups-stack>
+                <jgroups-channel>${jgroups.channel:hq-cluster}</jgroups-channel>
             </broadcast-group>
         </broadcast-groups>
         <discovery-groups>
@@ -141,8 +141,8 @@
                 <socket-binding>group-t-binding</socket-binding>
             </discovery-group>
             <discovery-group name="groupU">
-                <jgroups-stack>udp</jgroups-stack>
-                <jgroups-channel>hq-cluster</jgroups-channel>
+                <jgroups-stack>${jgroups.stack:udp}</jgroups-stack>
+                <jgroups-channel>${jgroups.channel:hq-cluster}</jgroups-channel>
             </discovery-group>
         </discovery-groups>
         <diverts>

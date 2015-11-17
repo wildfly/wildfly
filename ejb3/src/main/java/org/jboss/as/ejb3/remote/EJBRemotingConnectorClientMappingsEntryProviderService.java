@@ -36,6 +36,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 
@@ -49,7 +50,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService extends Abst
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfo = new InjectedValue<>();
 
     public ServiceBuilder<RegistryEntryProvider<String, List<ClientMapping>>> build(ServiceTarget target, String clientMappingsClusterName, ServiceName remotingServerInfoServiceName) {
-        return target.addService(CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(clientMappingsClusterName), this)
+        return target.addService(CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), this)
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.serverEnvironment)
                 .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, this.remotingConnectorInfo)
         ;

@@ -43,7 +43,8 @@ public class SingletonDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         SingletonPolicy policy = context.getAttachment(POLICY_KEY);
         if (policy != null) {
-            DeploymentUnitPhaseBuilder builder = new SingletonDeploymentUnitPhaseBuilder(policy);
+            DeploymentUnit parent = context.getDeploymentUnit().getParent();
+            DeploymentUnitPhaseBuilder builder = (parent == null) ? new SingletonDeploymentUnitPhaseBuilder(policy) : new SingletonSubDeploymentUnitPhaseBuilder(parent, context.getPhase().next());
             context.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_BUILDER, builder);
         }
     }

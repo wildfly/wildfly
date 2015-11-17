@@ -68,12 +68,12 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
  */
 public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registration<ManagementResourceRegistration>, ThreadPoolDefinition {
 
-    ASYNC_OPERATIONS("async-operations", 25, 25, 1000, 60000),
-    LISTENER("listener", 1, 1, 100000, 60000),
-    PERSISTENCE("persistence", 1, 4, 0, 60000),
-    REMOTE_COMMAND("remote-command", 1, 200, 0, 60000),
-    STATE_TRANSFER("state-transfer", 1, 60, 0, 60000),
-    TRANSPORT("transport", 25, 25, 100000, 60000),
+    ASYNC_OPERATIONS("async-operations", 25, 25, 1000, 60000L),
+    LISTENER("listener", 1, 1, 100000, 60000L),
+    PERSISTENCE("persistence", 1, 4, 0, 60000L),
+    REMOTE_COMMAND("remote-command", 1, 200, 0, 60000L),
+    STATE_TRANSFER("state-transfer", 1, 60, 0, 60000L),
+    TRANSPORT("transport", 25, 25, 100000, 60000L),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);

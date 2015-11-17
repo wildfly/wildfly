@@ -168,11 +168,12 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                                 removed.put(old.getKey(), old.getValue());
                             }
                         }
-                        if (!removed.isEmpty()) {
-                            this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
-                        }
                     } catch (CacheException e) {
                         ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, this.containerName, event.getCache().getName(), nodes);
+                    }
+                    // Invoke listeners outside above tx context
+                    if (!removed.isEmpty()) {
+                        this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
                     }
                 }
             }
@@ -184,7 +185,10 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     public void event(CacheEntryEvent<Node, Map.Entry<K, V>> event) {
         if (event.isOriginLocal() || event.isPre()) return;
         if (!this.listeners.isEmpty()) {
-            this.notifyListeners(event.getType(), event.getValue());
+            Map.Entry<K, V> entry = event.getValue();
+            if (entry != null) {
+                this.notifyListeners(event.getType(), entry);
+            }
         }
     }
 
@@ -192,7 +196,11 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     public void removed(CacheEntryRemovedEvent<Node, Map.Entry<K, V>> event) {
         if (event.isOriginLocal() || event.isPre()) return;
         if (!this.listeners.isEmpty()) {
-            this.notifyListeners(event.getType(), event.getOldValue());
+            Map.Entry<K, V> entry = event.getOldValue();
+            // WFLY-4938 For some reason, the old value can be null
+            if (entry != null) {
+                this.notifyListeners(event.getType(), entry);
+            }
         }
     }
 
