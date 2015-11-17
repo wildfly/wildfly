@@ -78,11 +78,4 @@
             </jvm-options>
        </jvm>
  	</jvms>
-
-    <servers>
-        <server name="server-one" group="other-server-group">
-            <socket-bindings port-offset="100"/>
-        </server>
-        <server name="server-two" group="other-server-group" auto-start="false"/>
-    </servers>
 </host>
