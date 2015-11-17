@@ -79,11 +79,6 @@ public class ModClusterSubsystemParsingTestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-mod-cluster_2_0.xsd";
-    }
-
-    @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
                 "/subsystem-templates/mod_cluster.xml"

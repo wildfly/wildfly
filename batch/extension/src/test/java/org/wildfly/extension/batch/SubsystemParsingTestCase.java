@@ -41,11 +41,6 @@ public class SubsystemParsingTestCase extends AbstractBatchTestCase {
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-batch_1_0.xsd";
-    }
-
-    @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
             "/subsystem-templates/batch.xml"

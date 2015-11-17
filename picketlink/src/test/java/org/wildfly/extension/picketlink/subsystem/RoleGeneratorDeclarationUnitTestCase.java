@@ -22,6 +22,10 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
+import static org.junit.Assert.assertFalse;
+
+import java.io.IOException;
+
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -30,10 +34,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertFalse;
 
 /**
  * @author Pedro Igor
@@ -47,6 +47,12 @@ public class RoleGeneratorDeclarationUnitTestCase extends AbstractSubsystemBaseT
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("federation-subsystem-invalid-role-generator.xml");
+    }
+
+    @Override
+    public void testSchema() {
+        //This test is testing a non-working configuration, so override this test with an empty implementation
+        //The schema is tested elsewhere
     }
 
     @Test

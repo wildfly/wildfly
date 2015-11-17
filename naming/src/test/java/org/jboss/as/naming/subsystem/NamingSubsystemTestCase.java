@@ -50,11 +50,6 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws IOException {
-        return "schema/jboss-as-naming_2_0.xsd";
-    }
-
-    @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
                 "/subsystem-templates/naming.xml"

@@ -49,7 +49,6 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -66,11 +65,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("empty-resourceadapters.xml");
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-resource-adapters_4_0.xsd";
     }
 
     @Override

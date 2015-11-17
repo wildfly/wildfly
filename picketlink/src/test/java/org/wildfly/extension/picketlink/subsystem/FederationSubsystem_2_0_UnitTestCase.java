@@ -22,6 +22,10 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -30,10 +34,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Pedro Igor
@@ -47,11 +47,6 @@ public class FederationSubsystem_2_0_UnitTestCase extends AbstractSubsystemBaseT
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("federation-subsystem-2.0.xml");
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-picketlink-federation_2_0.xsd";
     }
 
     @Override

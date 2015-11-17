@@ -58,11 +58,6 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_4_0.xsd";
-    }
-
-    @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
                 "/subsystem-templates/ejb3.xml"

@@ -24,17 +24,16 @@
 package org.jboss.as.ee.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.NAME;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SLOT;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
 import static org.jboss.as.ee.subsystem.EESubsystemModel.ANNOTATION_PROPERTY_REPLACEMENT;
 import static org.jboss.as.ee.subsystem.EESubsystemModel.EAR_SUBDEPLOYMENTS_ISOLATED;
 import static org.jboss.as.ee.subsystem.EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT;
 import static org.jboss.as.ee.subsystem.EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT;
-
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.NAME;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SLOT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -131,4 +130,8 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource(resource);
     }
 
+    @Override
+    public void testSchema() throws Exception {
+        //This test is testing the legacy schemas, for which this test is not relevant.
+    }
 }

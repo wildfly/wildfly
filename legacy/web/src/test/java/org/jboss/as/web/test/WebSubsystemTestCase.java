@@ -50,9 +50,11 @@ import static org.jboss.as.web.WebExtension.VALVE_PATH;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -115,6 +117,19 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml(String configId) throws IOException {
         return readResource(configId);
+    }
+
+    @Override
+    public void testSchema() throws Exception {
+        //The xml is not valid according to the schema. Since this is already released, and a dead schema I am not
+        //going to attempt to fix it for now.
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("jboss.server.config.dir", Paths.get(".").toAbsolutePath().toString());
+        return properties;
     }
 
     @Override

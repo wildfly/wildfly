@@ -24,10 +24,10 @@
 
 package org.wildfly.extension.undertow;
 
+import java.io.IOException;
+
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-
-import java.io.IOException;
 
 /**
  * This is the barebone test example that tests subsystem
@@ -53,5 +53,10 @@ public class UndertowDefaultConfigUpgradeTestCase extends AbstractSubsystemBaseT
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return UndertowSubsystemTestCase.DEFAULT;
+    }
+
+    @Override
+    public void testSchema() throws Exception {
+        //This test case is using an xml referencing a legacy schemas, and so this test is not relevant
     }
 }

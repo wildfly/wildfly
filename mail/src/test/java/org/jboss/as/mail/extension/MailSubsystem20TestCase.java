@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.io.IOException;
 import java.util.Properties;
+
 import javax.mail.Session;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -58,11 +59,6 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem_2_0.xml");
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-mail_2_0.xsd";
     }
 
     @Override

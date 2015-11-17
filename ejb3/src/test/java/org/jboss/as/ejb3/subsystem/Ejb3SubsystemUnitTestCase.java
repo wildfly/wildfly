@@ -23,24 +23,9 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.ModelFixer;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 
@@ -73,11 +58,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_4_0.xsd";
     }
 
     @Override

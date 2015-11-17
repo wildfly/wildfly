@@ -55,11 +55,6 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-jsr77_1_0.xsd";
-    }
-
-    @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
                 "/subsystem-templates/jsr77.xml"

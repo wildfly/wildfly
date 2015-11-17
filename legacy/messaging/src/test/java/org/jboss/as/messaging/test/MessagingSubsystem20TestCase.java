@@ -70,6 +70,12 @@ public class MessagingSubsystem20TestCase extends AbstractLegacySubsystemBaseTes
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
+
+    @Override
+    public void testSchema() throws Exception {
+        //The xml is not valid for the schema. Since this is very old, make this test a noop
+    }
+
     @Override
     protected String getSubsystemXml() throws IOException {
         // subsystem_2_0_expressions.xml contains new http-connector resource

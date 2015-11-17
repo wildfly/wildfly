@@ -111,11 +111,6 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-security_1_2.xsd";
-    }
-
-    @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
                 "/subsystem-templates/security.xml"

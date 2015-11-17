@@ -21,9 +21,9 @@
 */
 package org.jboss.as.jsf.subsystem;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-
 import java.io.IOException;
+
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
  *
@@ -37,11 +37,6 @@ public class JSFSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return "<subsystem xmlns=\"urn:jboss:domain:jsf:1.0\" />";
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-jsf_1_0.xsd";
     }
 
     @Override

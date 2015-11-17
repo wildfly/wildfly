@@ -78,6 +78,15 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         return Arrays.asList(data);
     }
 
+    @Override
+    public void testSchema() throws Exception {
+        //Only invoke this test for the latest version of the schema
+        //Don't invoke it for the older versions, there is little we can do about that now
+        if (schema == JGroupsSchema.CURRENT) {
+            super.testSchema();
+        }
+    }
+
     private KernelServices buildKernelServices() throws Exception {
         return this.buildKernelServices(this.getSubsystemXml());
     }

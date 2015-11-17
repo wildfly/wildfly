@@ -61,11 +61,6 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-webservices_2_0.xsd";
-    }
-
-    @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
                 "/subsystem-templates/webservices.xml"
