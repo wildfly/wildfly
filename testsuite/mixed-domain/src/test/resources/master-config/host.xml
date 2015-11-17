@@ -80,7 +80,7 @@
  	</jvms>
 
     <servers>
-        <server name="server-one" group="other-server-group">
+        <server name="server-one" group="other-server-group" auto-start="false">
             <socket-bindings port-offset="100"/>
         </server>
         <server name="server-two" group="other-server-group" auto-start="false"/>
