@@ -27,6 +27,7 @@ import io.undertow.security.impl.SingleSignOn;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionManager;
 
 import java.util.ArrayList;
@@ -50,12 +51,14 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
     private final SessionManagerRegistry registry;
     private final Batcher<Batch> batcher;
     private final Batch batch;
+    private final SessionListener listener;
 
     public DistributableSingleSignOn(SSO<AuthenticatedSession, String, Void> sso, SessionManagerRegistry registry, Batcher<Batch> batcher, Batch batch) {
         this.sso = sso;
         this.registry = registry;
         this.batcher = batcher;
         this.batch = batch;
+        this.listener = new SessionIdChangeListener(sso, batcher, batch);
     }
 
     @Override
@@ -108,6 +111,7 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
             this.sso.getSessions().addSession(session.getSessionManager().getDeploymentName(), session.getId());
         }
+        session.getSessionManager().registerSessionListener(this.listener);
     }
 
     @Override
@@ -115,6 +119,7 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
             this.sso.getSessions().removeSession(session.getSessionManager().getDeploymentName());
         }
+        session.getSessionManager().removeSessionListener(this.listener);
     }
 
     @Override
@@ -137,13 +142,9 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
     @Override
     public void invalidate() {
         // The batch associated with this SSO might not be valid (e.g. in the case of logout).
-        if (this.batch.isActive()) {
-            try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
-                this.sso.invalidate();
-                this.batch.close();
-            }
-        } else {
-            try (Batch batch = this.batcher.createBatch()) {
+        boolean active = this.batch.isActive();
+        try (BatchContext context = active ? this.batcher.resumeBatch(this.batch) : null) {
+            try (Batch batch = active ? this.batch : this.batcher.createBatch()) {
                 this.sso.invalidate();
             }
         }
@@ -257,6 +258,52 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         @Override
         public String rewriteUrl(String originalUrl, String sessionId) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class SessionIdChangeListener implements SessionListener {
+        private final SSO<AuthenticatedSession, String, Void> sso;
+        private final Batcher<Batch> batcher;
+        private final Batch batch;
+
+        SessionIdChangeListener(SSO<AuthenticatedSession, String, Void> sso, Batcher<Batch> batcher, Batch batch) {
+            this.sso = sso;
+            this.batcher = batcher;
+            this.batch = batch;
+        }
+
+        @Override
+        public void sessionIdChanged(Session session, String oldSessionId) {
+            // The batch associated with this SSO might not be valid.
+            boolean active = this.batch.isActive();
+            try (BatchContext context = active ? this.batcher.resumeBatch(this.batch) : null) {
+                try (Batch batch = active ? this.batch : this.batcher.createBatch()) {
+                    String deployment = session.getSessionManager().getDeploymentName();
+                    Sessions<String> sessions = this.sso.getSessions();
+                    sessions.removeSession(deployment);
+                    sessions.addSession(deployment, session.getId());
+                }
+            }
+        }
+
+        @Override
+        public void attributeAdded(Session session, String name, Object value) {
+        }
+
+        @Override
+        public void attributeRemoved(Session session, String name, Object value) {
+        }
+
+        @Override
+        public void attributeUpdated(Session session, String name, Object newValue, Object oldValue) {
+        }
+
+        @Override
+        public void sessionCreated(Session session, HttpServerExchange exchange) {
+        }
+
+        @Override
+        public void sessionDestroyed(Session session, HttpServerExchange exchange, SessionDestroyedReason reason) {
         }
     }
 }
