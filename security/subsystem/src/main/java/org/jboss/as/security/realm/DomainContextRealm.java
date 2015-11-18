@@ -83,16 +83,21 @@ public class DomainContextRealm implements SecurityRealm {
     }
 
     @Override
-    public RealmIdentity createRealmIdentity(final String name) throws RealmUnavailableException {
+    public RealmIdentity getRealmIdentity(String name) throws RealmUnavailableException {
         return new PicketBoxBasedIdentity(name);
     }
 
     @Override
-    public SupportLevel getCredentialAcquireSupport(final String credentialName) throws RealmUnavailableException {
-        //if (char[].class.isAssignableFrom(credentialType) || String.class.isAssignableFrom(credentialType) || ClearPassword.class.isAssignableFrom(credentialType)) {
-        //    return CredentialSupport.VERIFIABLE_ONLY;
-        //}
-        return SupportLevel.POSSIBLY_SUPPORTED;
+    public SupportLevel getCredentialAcquireSupport(Class<? extends Credential> credentialType, String algorithmName) throws RealmUnavailableException {
+        return SupportLevel.UNSUPPORTED;
+    }
+
+    @Override
+    public SupportLevel getEvidenceVerifySupport(Class<? extends Evidence> evidenceType, String algorithmName) throws RealmUnavailableException {
+        if (PasswordGuessEvidence.class.isAssignableFrom(evidenceType)) {
+            return SupportLevel.SUPPORTED;
+        }
+        return SupportLevel.UNSUPPORTED;
     }
 
     private class PicketBoxBasedIdentity implements RealmIdentity {
@@ -106,17 +111,22 @@ public class DomainContextRealm implements SecurityRealm {
         }
 
         @Override
-        public SupportLevel getCredentialAcquireSupport(final String credentialName) throws RealmUnavailableException {
-            return DomainContextRealm.this.getCredentialAcquireSupport(credentialName);
+        public SupportLevel getCredentialAcquireSupport(Class<? extends Credential> credentialType, String algorithmName) throws RealmUnavailableException {
+            return DomainContextRealm.this.getCredentialAcquireSupport(credentialType, algorithmName);
         }
 
         @Override
-        public Credential getCredential(String credentialName) throws RealmUnavailableException {
+        public <C extends Credential> C getCredential(Class<C> credentialType) throws RealmUnavailableException {
             return null;
         }
 
         @Override
-        public boolean verifyEvidence(String credentialName, Evidence evidence) throws RealmUnavailableException {
+        public SupportLevel getEvidenceVerifySupport(Class<? extends Evidence> evidenceType, String algorithmName) throws RealmUnavailableException {
+            return DomainContextRealm.this.getEvidenceVerifySupport(evidenceType, algorithmName);
+        }
+
+        @Override
+        public boolean verifyEvidence(Evidence evidence) throws RealmUnavailableException {
             if (domainContext == null || domainContext.getAuthenticationManager() == null) {
                 throw new RealmUnavailableException();
             }
