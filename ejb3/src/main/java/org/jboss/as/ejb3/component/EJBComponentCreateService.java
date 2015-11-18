@@ -59,6 +59,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
  * @author Jaikiran Pai
@@ -102,6 +103,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
+    private final InjectedValue<Map<String, SecurityDomain>> securityDomainsByName = new InjectedValue<>();
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
@@ -382,6 +384,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public AtomicBoolean getExceptionLoggingEnabled() {
         return exceptionLoggingEnabled.getValue();
+    }
+
+    InjectedValue<Map<String, SecurityDomain>> getSecurityDomainsByNameInjector() {
+        return securityDomainsByName;
+    }
+
+    public Map<String, SecurityDomain> getSecurityDomainsByName() {
+        return securityDomainsByName.getValue();
     }
 
     public ShutDownInterceptorFactory getShutDownInterceptorFactory() {

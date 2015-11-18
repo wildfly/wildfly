@@ -176,7 +176,8 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
-                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS,
+                            EJB3SubsystemRootResourceDefinition.SECURITY_DOMAINS))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
@@ -218,7 +219,8 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
-                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS,
+                            EJB3SubsystemRootResourceDefinition.SECURITY_DOMAINS))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 

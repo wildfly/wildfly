@@ -70,6 +70,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -117,6 +118,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             return serverSecurityManager.getCallerPrincipal();
         }
     };
+
+    private final Map<String, SecurityDomain> securityDomainsByName;
 
     /**
      * Construct a new instance.
@@ -168,6 +171,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.serverSecurityManager = ejbComponentCreateService.getServerSecurityManager();
         this.controlPoint = ejbComponentCreateService.getControlPoint();
         this.exceptionLoggingEnabled = ejbComponentCreateService.getExceptionLoggingEnabled();
+
+        this.securityDomainsByName = ejbComponentCreateService.getSecurityDomainsByName();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -533,6 +538,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public ControlPoint getControlPoint() {
         return this.controlPoint;
+    }
+
+    public Map<String, SecurityDomain> getSecurityDomainsByName() {
+        return securityDomainsByName;
     }
 
     @Override

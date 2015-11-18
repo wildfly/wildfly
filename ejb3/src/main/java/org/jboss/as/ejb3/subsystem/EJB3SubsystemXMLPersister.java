@@ -225,8 +225,16 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
 
-        // default-security-domain element
-        if (model.hasDefined(DEFAULT_SECURITY_DOMAIN)) {
+        if (model.hasDefined(SECURITY_DOMAINS)) {
+            // security-domains element
+            writer.writeStartElement(EJB3SubsystemXMLElement.SECURITY_DOMAINS.getLocalName());
+            if (model.hasDefined(DEFAULT_SECURITY_DOMAIN)) {
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.DEFAULT.getLocalName(), model.get(DEFAULT_SECURITY_DOMAIN).asString());
+            }
+            writeSecurityDomains(writer, model);
+            writer.writeEndElement();
+        } else if (model.hasDefined(DEFAULT_SECURITY_DOMAIN)) {
+            // default-security-domain element
             writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_SECURITY_DOMAIN.getLocalName());
             writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(DEFAULT_SECURITY_DOMAIN).asString());
             writer.writeEndElement();
@@ -586,6 +594,20 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             }
             writer.writeEndElement();
         }
+    }
+
+    private void writeSecurityDomains(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        List<ModelNode> securityDomains = model.get(SECURITY_DOMAINS).asList();
+        for (ModelNode current : securityDomains) {
+            writeSecurityDomain(writer, current);
+        }
+    }
+
+    private void writeSecurityDomain(final XMLExtendedStreamWriter writer, final ModelNode securityDomain) throws XMLStreamException {
+        writer.writeStartElement(SECURITY_DOMAIN);
+        EJB3SubsystemRootResourceDefinition.SECURITY_DOMAIN_NAME.marshallAsAttribute(securityDomain, writer);
+        EJB3SubsystemRootResourceDefinition.SECURITY_DOMAIN_ALIAS.marshallAsAttribute(securityDomain, writer);
+        writer.writeEndElement();
     }
 
     private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {

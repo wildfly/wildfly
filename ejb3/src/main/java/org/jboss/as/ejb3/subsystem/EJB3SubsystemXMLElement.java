@@ -80,6 +80,8 @@ public enum EJB3SubsystemXMLElement {
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
     RESOURCE_ADAPTER_REF("resource-adapter-ref"),
 
+    SECURITY_DOMAIN("security-domain"),
+    SECURITY_DOMAINS("security-domains"),
     SESSION_BEAN("session-bean"),
     SINGLETON("singleton"),
     STATEFUL("stateful"),
