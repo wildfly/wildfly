@@ -20,14 +20,15 @@
         <replication-master
                 cluster-name="${replication-master.cluster-name:mycluster}"
                 group-name="${replication-master.cluster-name:mygroup}"
-                check-for-live-server="${replication-master.check-for-live-server:false}" />
+                check-for-live-server="${replication-master.check-for-live-server:false}"
+                initial-replication-sync-timeout="${replication-master.initial-replication-sync-timeout:1234}"/>
     </server>
     <server name="ha-policy-replication-slave">
         <replication-slave
                 cluster-name="${replication-slave.cluster-name:mycluster}"
                 group-name="${replication-slave.cluster-name:mygroup}"
                 allow-failback="${replication-slave.allow-failback:true}"
-                failback-delay="${replication-slave.failback-delay:53500}"
+                initial-replication-sync-timeout="${replication-master.initial-replication-sync-timeout:1234}"
                 restart-backup="${replication-slave.restart-backup:true}"
                 max-saved-replicated-journal-size="${replication-slave.max-saved-replicated-journal-size:24}">
             <scale-down enabled="${replication-slave-scale-down.enabled:true}"
@@ -49,7 +50,7 @@
             <slave cluster-name="${replication-colocated-slave.cluster-name:mycluster}"
                    group-name="${replication-colocated-slave.cluster-name:mygroup}"
                    allow-failback="${replication-colocated-slave.allow-failback:true}"
-                   failback-delay="${replication-colocated-slave.failback-delay:53500}"
+                   initial-replication-sync-timeout="${replication-colocated-slave.initial-replication-sync-timeout:1234}"
                    restart-backup="${replication-colocated-slave.restart-backup:true}"
                    max-saved-replicated-journal-size="${replication-colocated-slave.max-saved-replicated-journal-size:24}">
                 <scale-down enabled="${replication-colocated-slave-scale-down.enabled:true}"
@@ -60,12 +61,10 @@
         </replication-colocated>
     </server>
     <server name="ha-policy-shared-store-master">
-        <shared-store-master failback-delay="${shared-store-master.failback-delay:567}"
-                             failover-on-server-shutdown="${shared-store-master.failover-on-server-shutdown:true}" />
+        <shared-store-master failover-on-server-shutdown="${shared-store-master.failover-on-server-shutdown:true}" />
     </server>
     <server name="ha-policy-shared-store-slave">
         <shared-store-slave allow-failback="${shared-store-slave.allow-failback:false}"
-                            failback-delay="${shared-store-slave.failback-delay:567}"
                             failover-on-server-shutdown="${shared-store-slave.failover-on-server-shutdown:true}"
                             restart-backup="${shared-store-slave.restart-backup:false}">
             <scale-down enabled="${shared-store-slave-scale-down.enabled:true}"
@@ -80,10 +79,8 @@
                                 backup-request-retry-interval="${shared-store-colocated.backup-request-retry-interval:5098}"
                                 max-backups="${shared-store-colocated.max-backups:5}"
                                 backup-port-offset="${shared-store-colocated.backup-port-offset:500}">
-            <master failback-delay="${shared-store-colocated-master.failback-delay:567}"
-                    failover-on-server-shutdown="${shared-store-colocated-master.failover-on-server-shutdown:true}" />
+            <master failover-on-server-shutdown="${shared-store-colocated-master.failover-on-server-shutdown:true}" />
             <slave allow-failback="${shared-store-colocated-slave.allow-failback:false}"
-                   failback-delay="${shared-store-colocated-slave.failback-delay:567}"
                    failover-on-server-shutdown="${shared-store-colocated-slave.failover-on-server-shutdown:true}"
                    restart-backup="${shared-store-colocated-slave.restart-backup:false}">
                 <scale-down enabled="${shared-store-colocated-slave-scale-down.enabled:true}"

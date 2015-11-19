@@ -616,6 +616,7 @@
         <xs:attribute name="cluster-name" type="xs:string" use="optional" />
         <xs:attribute name="group-name" type="xs:string" use="optional" />
         <xs:attribute name="check-for-live-server" type="xs:boolean" use="optional" />
+        <xs:attribute name="initial-replication-sync-timeout" type="xs:long" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="replication-slaveType">
@@ -626,13 +627,12 @@
         <xs:attribute name="cluster-name" type="xs:string" use="optional" />
         <xs:attribute name="group-name" type="xs:string" use="optional" />
         <xs:attribute name="allow-failback" type="xs:boolean" use="optional" />
-        <xs:attribute name="failback-delay" type="xs:long" use="optional" />
+        <xs:attribute name="initial-replication-sync-timeout" type="xs:long" use="optional" />
         <xs:attribute name="restart-backup" type="xs:boolean" use="optional" />
         <xs:attribute name="max-saved-replicated-journal-size" type="xs:int" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="shared-store-masterType">
-        <xs:attribute name="failback-delay" type="xs:long" use="optional" />
         <xs:attribute name="failover-on-server-shutdown" type="xs:boolean" use="optional" />
     </xs:complexType>
 
@@ -642,7 +642,6 @@
         </xs:sequence>
 
         <xs:attribute name="allow-failback" type="xs:boolean" use="optional" />
-        <xs:attribute name="failback-delay" type="xs:long" use="optional" />
         <xs:attribute name="failover-on-server-shutdown" type="xs:boolean" use="optional" />
         <xs:attribute name="restart-backup" type="xs:boolean" use="optional" />
     </xs:complexType>

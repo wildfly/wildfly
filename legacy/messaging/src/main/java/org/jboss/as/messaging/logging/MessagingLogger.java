@@ -824,6 +824,6 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 86, value = "Could not migrate attribute %s from resource %s. The attribute uses an expression that can be resolved differently depending on system properties. To be able to migrate this property, replace the expression by an actual value.")
     String couldNotMigrateResourceAttributeWithExpression(String attribute, PathAddress address);
 
-    @Message(id = 87, value = "Could not migrate parameter %s from resource %s. This parameter is ignored in the new messaging-activemq subsystem.")
-    String couldNotMigrateIgnoredParameter(String attribute, PathAddress address);
+    @Message(id = 87, value = "Could not migrate attribute %s from resource %s. This attribute is no longer supported by the new messaging-activemq subsystem.")
+    String couldNotMigrateUnsupportedAttribute(String attribute, PathAddress address);
 }
