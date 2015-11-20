@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.web.context;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -41,6 +42,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
@@ -79,6 +81,9 @@ public class InvalidateConversationTestCase extends ClusterAbstractTestCase {
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.addClasses(ConversationServlet.class, ConversationBean.class, LogoutServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new ServerPermission("getCurrentServiceContainer")
+        ), "permissions.xml");
         return war;
     }
 
