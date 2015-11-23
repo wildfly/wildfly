@@ -48,7 +48,15 @@ public class SecureServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+        String sessionId = "";
         HttpSession session = request.getSession(false);
-        response.setHeader(SESSION_ID_HEADER, (session != null) ? session.getId() : "");
+        if (session != null) {
+            sessionId = (String) session.getAttribute(SESSION_ID_HEADER);
+            if (sessionId == null) {
+                sessionId = session.getId();
+                session.setAttribute(SESSION_ID_HEADER, sessionId);
+            }
+        }
+        response.setHeader(SESSION_ID_HEADER, sessionId);
     }
 }
