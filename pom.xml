@@ -94,7 +94,7 @@
         <version.commons-beanutils>1.9.2</version.commons-beanutils>
         <version.commons-cli>1.2</version.commons-cli>
         <version.commons-codec>1.10</version.commons-codec>
-        <version.commons-collections>3.2.1</version.commons-collections>
+        <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-digester>1.8</version.commons-digester>
         <version.commons-pool>1.6</version.commons-pool>
         <version.dom4j>1.6.1</version.dom4j>
