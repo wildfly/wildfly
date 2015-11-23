@@ -40,6 +40,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.xnio.IoUtils;
 import org.xnio.XnioWorker;
 
 import java.io.IOException;
@@ -140,6 +141,10 @@ class AccessLogService implements Service<AccessLogService> {
             callbackHandle.remove();
             callbackHandle = null;
         }
+        if( logReceiver instanceof DefaultAccessLogReceiver ) {
+            IoUtils.safeClose((DefaultAccessLogReceiver) logReceiver);
+        }
+        logReceiver = null;
     }
 
     @Override
