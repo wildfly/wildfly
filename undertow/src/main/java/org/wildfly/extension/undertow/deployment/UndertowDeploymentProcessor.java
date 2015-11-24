@@ -25,7 +25,6 @@ package org.wildfly.extension.undertow.deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.core.InMemorySessionManagerFactory;
-
 import org.apache.jasper.Constants;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -79,8 +78,8 @@ import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
@@ -97,6 +96,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -109,10 +109,17 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     private final String defaultContainer;
     private final String defaultSecurityDomain;
     private final Predicate<String> knownSecurityDomain;
+    /**
+        default module mappings, where we have key as name of default deployment,
+        for value we have Map.Entry which has key as server-name where deployment is bound to,
+        value is host name where deployment is bound to.
+     */
+    private final DefaultDeploymentMappingProvider defaultModuleMappingProvider;
 
     public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, String defaultSecurityDomain, Predicate<String> knownSecurityDomain) {
         this.defaultHost = defaultHost;
         this.defaultSecurityDomain = defaultSecurityDomain;
+        this.defaultModuleMappingProvider = DefaultDeploymentMappingProvider.instance();
         if (defaultHost == null) {
             throw UndertowLogger.ROOT_LOGGER.nullDefaultHost();
         }
@@ -135,12 +142,31 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         if (warMetaData == null) {
             return;
         }
-        String hostName = hostNameOfDeployment(warMetaData, defaultHost);
-        processDeployment(warMetaData, deploymentUnit, phaseContext.getServiceTarget(), hostName);
+        String deploymentName;
+        if (deploymentUnit.getParent() == null) {
+            deploymentName = deploymentUnit.getName();
+        } else {
+            deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
+        }
+
+        final Map.Entry<String,String> severHost = defaultModuleMappingProvider.getMapping(deploymentName);
+        String defaultHostForDeployment;
+        String defaultServerForDeployment;
+        if (severHost != null) {
+            defaultServerForDeployment = severHost.getKey();
+            defaultHostForDeployment = severHost.getValue();
+        } else {
+            defaultServerForDeployment = this.defaultServer;
+            defaultHostForDeployment = this.defaultHost;
+        }
+
+        String serverInstanceName = warMetaData.getMergedJBossWebMetaData().getServerInstanceName() == null ? defaultServerForDeployment : warMetaData.getMergedJBossWebMetaData().getServerInstanceName();
+        String hostName = hostNameOfDeployment(warMetaData, defaultHostForDeployment);
+        processDeployment(warMetaData, deploymentUnit, phaseContext.getServiceTarget(), deploymentName, hostName, serverInstanceName);
     }
 
 
-    static String hostNameOfDeployment(final WarMetaData metaData, final String defaultHost) {
+    private String hostNameOfDeployment(final WarMetaData metaData, String defaultHost) {
         Collection<String> hostNames = null;
         if (metaData.getMergedJBossWebMetaData() != null) {
             hostNames = metaData.getMergedJBossWebMetaData().getVirtualHosts();
@@ -157,11 +183,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-        //AbstractSecurityDeployer<?> deployer = new WarJACCDeployer();
-        //deployer.undeploy(context);
+
     }
 
-    private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, String hostName)
+    private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget,
+                                   final String deploymentName, final String hostName, final String serverInstanceName)
             throws DeploymentUnitProcessingException {
         ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
@@ -210,13 +236,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             jaccContextId = deploymentUnit.getParent().getName() + "!" + jaccContextId;
         }
 
-        String deploymentName;
-        if (deploymentUnit.getParent() == null) {
-            deploymentName = deploymentUnit.getName();
-        } else {
-            deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
-        }
-
         final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
 
         boolean securityEnabled = deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED);
@@ -236,9 +255,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         } else {
             securityDomain = null;
         }
-
-        String serverInstanceName = metaData.getServerInstanceName() == null ? defaultServer : metaData.getServerInstanceName();
-        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
 
         final Set<ServiceName> additionalDependencies = new HashSet<>();
         for (final SetupAction setupAction : setupActions) {
@@ -262,6 +278,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
 
         final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
+        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                 .setAttributes(deploymentUnit.getAttachmentList(ServletContextAttribute.ATTACHMENT_KEY))

@@ -53,6 +53,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+//todo this test could probably be done in manual mode test with wildfly runner, also could be merged into VirtualHostTestCase
 public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
 
     @ArquillianResource
@@ -127,6 +128,7 @@ public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
     private void addVirtualServer() throws IOException, MgmtOperationException {
         ModelNode addOp = createOpNode("subsystem=undertow/server=default-server/host=test", "add");
         addOp.get("alias").add(virtualHost);
+        addOp.get("default-web-module").set("some-test.war");
 
         ModelNode rewrite = new ModelNode();
         rewrite.get("condition").setEmptyList();

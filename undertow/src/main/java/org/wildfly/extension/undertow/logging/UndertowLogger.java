@@ -151,12 +151,12 @@ public interface UndertowLogger extends BasicLogger {
 
 
     @LogMessage(level = INFO)
-    @Message(id = 21, value = "Registered web context: %s")
-    void registerWebapp(String webappPath);
+    @Message(id = 21, value = "Registered web context: '%s' for server '%s'")
+    void registerWebapp(String webappPath, String serverName);
 
     @LogMessage(level = INFO)
-    @Message(id = 22, value = "Unregistered web context: %s")
-    void unregisterWebapp(String webappPath);
+    @Message(id = 22, value = "Unregistered web context: '%s' from server '%s'")
+    void unregisterWebapp(String webappPath, String serverName);
 
     @LogMessage(level = INFO)
     @Message(id = 23, value = "Skipped SCI for jar: %s.")
@@ -362,4 +362,6 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 86, value = "No authentication mechanisms have been selected.")
     IllegalStateException noMechanismsSelected();
 
+    @Message(id = 87, value = "Duplicate default web module '%s' configured on server '%s', host '%s'")
+    IllegalArgumentException duplicateDefaultWebModuleMapping(String defaultDeploymentName, String serverName, String hostName);
 }
