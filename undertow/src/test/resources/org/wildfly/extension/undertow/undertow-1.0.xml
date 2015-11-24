@@ -43,7 +43,7 @@
             <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access"/>
             <single-sign-on domain="${prop.domain:myDomain}"/>
         </host>
-        <host name="other-host" alias="www.mysite.com" default-web-module="something.war">
+        <host name="other-host" alias="www.mysite.com" default-web-module="something-else.war">
             <location name="/" handler="welcome-content">
                 <filter-ref name="limit-connections"/>
                 <filter-ref name="headers"/>

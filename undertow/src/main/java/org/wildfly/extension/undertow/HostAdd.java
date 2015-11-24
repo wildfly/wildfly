@@ -40,6 +40,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -57,8 +58,8 @@ class HostAdd extends AbstractAddStepHandler {
         final PathAddress address = context.getCurrentAddress();
         final PathAddress serverAddress = address.getParent();
         final PathAddress subsystemAddress = serverAddress.getParent();
-        final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(subsystemAddress, false), 1);
-        final ModelNode serverModel = Resource.Tools.readModel(context.readResourceFromRoot(serverAddress, false), 1);
+        final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(subsystemAddress, false), 0);
+        final ModelNode serverModel = Resource.Tools.readModel(context.readResourceFromRoot(serverAddress, false), 0);
 
         final String name = address.getLastElement().getValue();
         final List<String> aliases = HostDefinition.ALIAS.unwrap(context, model);
@@ -69,6 +70,7 @@ class HostAdd extends AbstractAddStepHandler {
         final boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
         final int defaultResponseCode = HostDefinition.DEFAULT_RESPONSE_CODE.resolveModelAttribute(context, model).asInt();
         final boolean enableConsoleRedirect = !HostDefinition.DISABLE_CONSOLE_REDIRECT.resolveModelAttribute(context, model).asBoolean();
+        DefaultDeploymentMappingProvider.instance().addMapping(defaultWebModule, serverName, name);
 
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
 
