@@ -54,7 +54,6 @@ public class WriteEnableWelcomeRoot extends ModelOnlyWriteAttributeHandler {
                     // That is not supported.
                     throw new OperationFailedException(MESSAGES.noWelcomeWebappWithDefaultWebModule());
                 }
-                context.stepCompleted();
             }
         }, OperationContext.Stage.MODEL);
     }

@@ -33,10 +33,7 @@ public class MimeMappingRemove implements OperationStepHandler {
     static final MimeMappingRemove INSTANCE = new MimeMappingRemove();
 
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation)throws OperationFailedException {
 
-
-        context.stepCompleted();
     }
 }
