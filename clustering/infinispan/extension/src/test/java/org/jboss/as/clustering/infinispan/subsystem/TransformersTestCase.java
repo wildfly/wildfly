@@ -27,9 +27,16 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
+import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistryType;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -75,7 +82,22 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     @Override
     AdditionalInitialization createAdditionalInitialization() {
-        return new JGroupsSubsystemInitialization()
+        return new JGroupsSubsystemInitialization() {
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry registry, Resource root, ManagementResourceRegistration registration, RuntimeCapabilityRegistry capabilityRegistry) {
+                // Needed to test org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE conversion
+                new DataSourcesExtension().initialize(registry.getExtensionContext("datasources", registration, ExtensionRegistryType.MASTER));
+                Resource subsystem = Resource.Factory.create();
+                PathElement path = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME);
+                root.registerChild(path, subsystem);
+
+                Resource dataSource = Resource.Factory.create();
+                dataSource.getModel().get("jndi-name").set("java:jboss/jdbc/store");
+                subsystem.registerChild(PathElement.pathElement("data-source", "ExampleDS"), dataSource);
+
+                super.initializeExtraSubystemsAndModel(registry, root, registration, capabilityRegistry);
+            }
+        }
                 .require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
                 .require(RequiredCapability.DATA_SOURCE, "ExampleDS")
                 ;
