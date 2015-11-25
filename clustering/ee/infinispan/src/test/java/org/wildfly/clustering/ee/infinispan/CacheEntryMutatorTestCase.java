@@ -49,19 +49,19 @@ public class CacheEntryMutatorTestCase {
         Mutator mutator = new CacheEntryMutator<>(cache, id, value);
         
         when(cache.getAdvancedCache()).thenReturn(cache);
-        when(cache.withFlags(Flag.IGNORE_RETURN_VALUES)).thenReturn(cache);
+        when(cache.withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY)).thenReturn(cache);
         
         mutator.mutate();
         
-        verify(cache).replace(same(id), same(value));
+        verify(cache).put(same(id), same(value));
         
         mutator.mutate();
         
-        verify(cache, times(1)).replace(same(id), same(value));
+        verify(cache, times(1)).put(same(id), same(value));
         
         mutator.mutate();
         
-        verify(cache, times(1)).replace(same(id), same(value));
+        verify(cache, times(1)).put(same(id), same(value));
     }
 
     @Test
@@ -76,18 +76,18 @@ public class CacheEntryMutatorTestCase {
         Mutator mutator = new CacheEntryMutator<>(cache, id, value);
         
         when(cache.getAdvancedCache()).thenReturn(cache);
-        when(cache.withFlags(Flag.IGNORE_RETURN_VALUES)).thenReturn(cache);
+        when(cache.withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY)).thenReturn(cache);
         
         mutator.mutate();
         
-        verify(cache).replace(same(id), same(value));
+        verify(cache).put(same(id), same(value));
         
         mutator.mutate();
         
-        verify(cache, times(2)).replace(same(id), same(value));
+        verify(cache, times(2)).put(same(id), same(value));
         
         mutator.mutate();
         
-        verify(cache, times(3)).replace(same(id), same(value));
+        verify(cache, times(3)).put(same(id), same(value));
     }
 }
