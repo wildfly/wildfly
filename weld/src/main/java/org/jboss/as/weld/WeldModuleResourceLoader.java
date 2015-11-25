@@ -68,13 +68,9 @@ public class WeldModuleResourceLoader implements ResourceLoader {
             final Class<?> clazz = module.getClassLoader().loadClass(name);
             classes.put(name, clazz);
             return clazz;
-        } catch (NoClassDefFoundError e) {
+        } catch (NoClassDefFoundError | ClassNotFoundException | LinkageError e) {
             throw new ResourceLoadingException(e);
-        } catch (ClassNotFoundException e) {
-            throw new ResourceLoadingException(e);
-        } catch (LinkageError e) {
-            throw new ResourceLoadingException(e);
-        }
+        } 
     }
 
     public void addAdditionalClass(Class<?> clazz) {
