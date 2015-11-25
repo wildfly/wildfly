@@ -115,6 +115,7 @@ public class EeExtension implements Extension {
 
     private void registerTransformers(SubsystemRegistration subsystem) {
         final ModelVersion v1_0_0 = ModelVersion.create(1, 0, 0);
+        final ModelVersion v1_1_0 = ModelVersion.create(1, 1, 0);
         final ModelVersion v3_0_0 = ModelVersion.create(3, 0, 0);
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
         ResourceTransformationDescriptionBuilder builder_3_0 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), v3_0_0);
@@ -122,10 +123,18 @@ public class EeExtension implements Extension {
         ManagedExecutorServiceResourceDefinition.INSTANCE.registerTransformers_4_0(builder_3_0);
         ManagedScheduledExecutorServiceResourceDefinition.INSTANCE.registerTransformers_4_0(builder_3_0);
 
-        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(v3_0_0, v1_0_0);
 
+        // 3.0.0 --> 1.1.0
+        ResourceTransformationDescriptionBuilder builder11 = chainedBuilder.createBuilder(v3_0_0, v1_1_0);
+        builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
+        builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
+        builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
+        builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
+        builder11.discardChildResource(EESubsystemModel.DEFAULT_BINDINGS_PATH);
+
+        // 1.1.0 --> 1.0.0
+        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(v1_1_0, v1_0_0);
         GlobalModulesRejecterConverter globalModulesRejecterConverter = new GlobalModulesRejecterConverter();
-
         builder.getAttributeBuilder()
                 // Deal with https://issues.jboss.org/browse/AS7-4892 on 7.1.2
                 .addRejectCheck(new JBossDescriptorPropertyReplacementRejectChecker(),
@@ -136,14 +145,11 @@ public class EeExtension implements Extension {
                 // Deal with new attribute annotation-property-replacement
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT);
-        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
-        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
-        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
-        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
-        builder.discardChildResource(EESubsystemModel.DEFAULT_BINDINGS_PATH);
+
 
         chainedBuilder.buildAndRegister(subsystem, new ModelVersion[] {
                 v1_0_0,
+                v1_1_0,
                 v3_0_0
         });
     }
