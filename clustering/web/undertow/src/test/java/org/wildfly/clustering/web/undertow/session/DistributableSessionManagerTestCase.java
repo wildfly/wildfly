@@ -186,12 +186,19 @@ public class DistributableSessionManagerTestCase {
     public void getSessionNoSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
         when(config.findSessionId(exchange)).thenReturn(null);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         
         assertNull(sessionAdapter);
+        
+        verify(batch).discard();
+        verify(batcher, never()).suspendBatch();
     }
 
     @Test

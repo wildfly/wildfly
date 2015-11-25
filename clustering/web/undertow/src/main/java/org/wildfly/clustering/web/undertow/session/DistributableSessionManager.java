@@ -87,23 +87,23 @@ public class DistributableSessionManager implements UndertowSessionManager {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
         }
 
-        String id = config.findSessionId(exchange);
-
-        if (id == null) {
-            int attempts = 0;
-            do {
-                if (++attempts > MAX_SESSION_ID_GENERATION_ATTEMPTS) {
-                    throw UndertowMessages.MESSAGES.couldNotGenerateUniqueSessionId();
-                }
-                id = this.manager.createIdentifier();
-            } while (this.manager.containsSession(id));
-
-            config.setSessionId(exchange, id);
-        }
-
         Batcher<Batch> batcher = this.manager.getBatcher();
         Batch batch = batcher.createBatch();
         try {
+            String id = config.findSessionId(exchange);
+
+            if (id == null) {
+                int attempts = 0;
+                do {
+                    if (++attempts > MAX_SESSION_ID_GENERATION_ATTEMPTS) {
+                        throw UndertowMessages.MESSAGES.couldNotGenerateUniqueSessionId();
+                    }
+                    id = this.manager.createIdentifier();
+                } while (this.manager.containsSession(id));
+
+                config.setSessionId(exchange, id);
+            }
+
             Session<LocalSessionContext> session = this.manager.createSession(id);
             io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batch);
             this.listeners.sessionCreated(adapter, exchange);
@@ -124,12 +124,19 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public io.undertow.server.session.Session getSession(HttpServerExchange exchange, SessionConfig config) {
-        String id = config.findSessionId(exchange);
-        if (id == null) return null;
+        if (config == null) {
+            throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
+        }
 
         Batcher<Batch> batcher = this.manager.getBatcher();
         Batch batch = batcher.createBatch();
         try {
+            String id = config.findSessionId(exchange);
+            if (id == null) {
+                batch.discard();
+                return null;
+            }
+
             Session<LocalSessionContext> session = this.manager.findSession(id);
             if (session == null) {
                 batch.discard();
