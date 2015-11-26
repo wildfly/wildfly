@@ -167,23 +167,24 @@ public class ModClusterService extends FilterService {
         //to specify the next handler. To get around this we invoke the mod_proxy handler
         //and then if it has not dispatched or handled the request then we know that we can
         //just pass it on to the next handler
-        final HttpHandler mcmp = managementAccessPredicate != null  ? Handlers.predicate(managementAccessPredicate, config.create(modCluster, next), next)  :  config.create(modCluster, next);
         final HttpHandler proxyHandler = modCluster.getProxyHandler();
-        HttpHandler theHandler = new HttpHandler() {
+        final HttpHandler realNext = new HttpHandler() {
             @Override
             public void handleRequest(HttpServerExchange exchange) throws Exception {
                 proxyHandler.handleRequest(exchange);
                 if(!exchange.isDispatched() && !exchange.isComplete()) {
-                    exchange.setResponseCode(200);
-                    mcmp.handleRequest(exchange);
+                    exchange.setStatusCode(200);
+                    next.handleRequest(exchange);
                 }
             }
         };
+        final HttpHandler mcmp = managementAccessPredicate != null  ? Handlers.predicate(managementAccessPredicate, config.create(modCluster, realNext), next)  :  config.create(modCluster, realNext);
+
         UndertowLogger.ROOT_LOGGER.debug("HttpHandler for mod_cluster MCMP created.");
         if (predicate != null) {
-            return new PredicateHandler(predicate, theHandler, next);
+            return new PredicateHandler(predicate, mcmp, next);
         } else {
-            return theHandler;
+            return mcmp;
         }
     }
 
