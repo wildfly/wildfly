@@ -70,7 +70,9 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.security.auth.principal.AnonymousPrincipal;
 import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -120,6 +122,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     };
 
     private final Map<String, SecurityDomain> securityDomainsByName;
+    private final boolean isSecurityDomainsConfigured;
+    private final SecurityDomain securityDomain;
 
     /**
      * Construct a new instance.
@@ -173,6 +177,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.exceptionLoggingEnabled = ejbComponentCreateService.getExceptionLoggingEnabled();
 
         this.securityDomainsByName = ejbComponentCreateService.getSecurityDomainsByName();
+        this.isSecurityDomainsConfigured = (securityDomainsByName != null) && (! securityDomainsByName.isEmpty());
+        this.securityDomain = isSecurityDomainsConfigured ? securityDomainsByName.get(securityMetaData.getSecurityDomain()) : null;
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -256,7 +262,9 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     public Principal getCallerPrincipal() {
-        if(WildFlySecurityManager.isChecking()) {
+        if (isSecurityDomainsConfigured) {
+            return (securityDomain != null) ? securityDomain.getCurrentSecurityIdentity().getPrincipal() : AnonymousPrincipal.getInstance();
+        } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(getCaller);
         } else {
             return this.serverSecurityManager.getCallerPrincipal();
@@ -277,7 +285,11 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(ejbHomeViewServiceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = earApplicationName == null ? "" : earApplicationName;
-        return EJBClient.createProxy(new EJBHomeLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), locatorAppName, moduleName, getComponentName(), distinctName));
+        return EJBClient.createProxy(createHomeLocator(view.getViewClass().asSubclass(EJBHome.class), locatorAppName, moduleName, getComponentName(), distinctName));
+    }
+
+    private static <T extends EJBHome> EJBHomeLocator<T> createHomeLocator(Class<T> viewClass, String appName, String moduleName, String beanName, String distinctName) {
+        return new EJBHomeLocator<T>(viewClass, appName, moduleName, beanName, distinctName);
     }
 
     public Class<?> getEjbObjectType() {
@@ -395,7 +407,13 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
-        if (WildFlySecurityManager.isChecking()) {
+        if (isSecurityDomainsConfigured) {
+            if (securityDomain == null) {
+                return false;
+            }
+            final SecurityIdentity identity = securityDomain.getCurrentSecurityIdentity();
+            return "**".equals(roleName) ? ! (identity.getPrincipal() instanceof AnonymousPrincipal) : identity.getRoles("ejb").contains(roleName);
+        } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
                 public Boolean run() {
                     return serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
@@ -542,6 +560,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public Map<String, SecurityDomain> getSecurityDomainsByName() {
         return securityDomainsByName;
+    }
+
+    public boolean isSecurityDomainsConfigured() {
+        return this.isSecurityDomainsConfigured;
     }
 
     @Override

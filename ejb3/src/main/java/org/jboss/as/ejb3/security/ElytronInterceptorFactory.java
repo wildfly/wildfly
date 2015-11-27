@@ -44,13 +44,11 @@ import org.wildfly.security.authz.RoleMapper;
  */
 public class ElytronInterceptorFactory extends ComponentInterceptorFactory {
 
-    private static final String DEFAULT_DOMAIN = "other";
+    private static final String DEFAULT_DOMAIN = "ApplicationDomain";
 
-    private final Map<String, SecurityDomain> securityDomainMap;
     private final String policyContextID;
 
-    public ElytronInterceptorFactory(final Map<String, SecurityDomain> securityDomainMap, final String policyContextID) {
-        this.securityDomainMap = securityDomainMap;
+    public ElytronInterceptorFactory(final String policyContextID) {
         this.policyContextID = policyContextID;
     }
 
@@ -70,7 +68,8 @@ public class ElytronInterceptorFactory extends ComponentInterceptorFactory {
         if (securityDomainName == null) {
             securityDomainName = DEFAULT_DOMAIN;
         }
-        final SecurityDomain securityDomain = securityDomainMap.get(securityDomainName);
+        final Map<String, SecurityDomain> securityDomainsByName = ejbComponent.getSecurityDomainsByName();
+        final SecurityDomain securityDomain = securityDomainsByName.get(securityDomainName);
         if (securityDomain == null) {
             throw EjbLogger.ROOT_LOGGER.invalidSecurityForDomainSet(ejbComponent.getComponentName());
         }

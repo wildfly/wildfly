@@ -84,6 +84,7 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
+import org.jboss.as.ejb3.security.ElytronInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
@@ -307,12 +308,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
-                policyContextID = SecurityContextInterceptorFactory.contextIdForDeployment(context.getDeploymentUnit());
+                final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+                String contextID = deploymentUnit.getName();
+                if (deploymentUnit.getParent() != null) {
+                    contextID = deploymentUnit.getParent().getName() + "!" + contextID;
+                }
+                policyContextID = contextID;
                 //make sure java:comp/env is always available, even if nothing is bound there
                 if (description.getNamingMode() == ComponentNamingMode.CREATE) {
                     description.getBindingConfigurations().add(new BindingConfiguration("java:comp/env", new ContextInjectionSource("env", "java:comp/env")));
                 }
-                final List<SetupAction> ejbSetupActions = context.getDeploymentUnit().getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
+                final List<SetupAction> ejbSetupActions = deploymentUnit.getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
 
                 if (description.isTimerServiceRequired()) {
 
@@ -327,7 +333,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
-                    if(context.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
+                    if (((EJBComponentDescription) description).isSecurityDomainsConfigured()) {
+                        configuration.addTimeoutViewInterceptor(new ElytronInterceptorFactory(policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                    } else if (deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
                         configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
                     final Set<Method> classMethods = configuration.getClassIndex().getClassMethods();
@@ -569,12 +577,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
-                componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
-                    @Override
-                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
-                    }
-                });
+                if (! ((EJBComponentDescription) description).isSecurityDomainsConfigured()) {
+                    componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                        @Override
+                        public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
+                            serviceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
+                        }
+                    });
+                }
             }
         });
     }
@@ -879,19 +889,20 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         @Override
         public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-            configuration.getCreateDependencies().add(new DependencyConfigurator<Service<Component>>() {
-                @Override
-                public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
-                    if (! SecurityDomainDependencyConfigurator.this.ejbComponentDescription.isSecurityDomainsConfigured()) {
+            if (! SecurityDomainDependencyConfigurator.this.ejbComponentDescription.isSecurityDomainsConfigured()) {
+                configuration.getCreateDependencies().add(new DependencyConfigurator<Service<Component>>() {
+                    @Override
+                    public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
                         final String securityDomainName = SecurityDomainDependencyConfigurator.this.ejbComponentDescription.getSecurityDomain();
                         if (securityDomainName != null && !securityDomainName.isEmpty()) {
                             final ServiceName securityDomainServiceName = SecurityDomainService.SERVICE_NAME.append(securityDomainName);
                             serviceBuilder.addDependency(securityDomainServiceName);
                         }
                         serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(SecurityConstants.DEFAULT_EJB_APPLICATION_POLICY));
+
                     }
-                }
-            });
+                });
+            }
         }
     }
 
