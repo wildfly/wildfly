@@ -51,6 +51,7 @@ import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -75,6 +76,7 @@ public class RemoteNamingEjbTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(Remote.class, BinderRemote.class, Bean.class, Singleton.class, StatefulBean.class);
         jar.addAsResource(createPermissionsXmlAsset(new JndiPermission("java:jboss/exported/-", "all")), "META-INF/jboss-permissions.xml");
+        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.naming\n"), "MANIFEST.MF");
         return jar;
     }
 

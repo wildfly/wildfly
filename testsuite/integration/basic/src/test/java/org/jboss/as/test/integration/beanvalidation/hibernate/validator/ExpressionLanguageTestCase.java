@@ -36,6 +36,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -49,7 +50,9 @@ public class ExpressionLanguageTestCase {
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "expression-language-validation.war").addClass(
-                ExpressionLanguageTestCase.class);
+                ExpressionLanguageTestCase.class)
+                // Hibernate Validator needs the following runtime permission
+                .addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("accessDeclaredMembers")), "permissions.xml");
     }
 
     @Test

@@ -17,6 +17,7 @@
 package org.jboss.as.test.integration.ejb.pool.lifecycle;
 
 import java.io.InputStream;
+import java.util.PropertyPermission;
 
 import javax.ejb.EJB;
 import javax.jms.Connection;
@@ -53,6 +54,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -96,6 +98,7 @@ public class PooledEJBLifecycleTestCase {
         archive.addClass(TimeoutUtil.class);
         archive.addClass(PointlesMathInterface.class);
         archive.addClass(Constants.class);
+        archive.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
         log.info(archive.toString(true));
         return archive;
     }
