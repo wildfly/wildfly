@@ -96,6 +96,12 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
         addValueTypeDescription(node, resolver, locale, bundle);
     }
 
+    protected void addOperationReplyValueTypeDescription(final ModelNode node, final String operationName,
+                                                                      final ResourceDescriptionResolver resolver,
+                                                                      final Locale locale, final ResourceBundle bundle) {
+         addValueTypeDescription(node, resolver, locale, bundle);
+    }
+
     @Override
     public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         throw EjbLogger.ROOT_LOGGER.runtimeAttributeNotMarshallable(getName());
