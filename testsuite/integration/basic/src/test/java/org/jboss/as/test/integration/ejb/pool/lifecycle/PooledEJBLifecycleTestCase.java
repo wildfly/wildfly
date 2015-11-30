@@ -225,12 +225,13 @@ public class PooledEJBLifecycleTestCase {
             message.setJMSReplyTo(replyDestination);
             final Destination destination = (Destination) ctx.lookup(Constants.QUEUE_JNDI_NAME);
             final MessageProducer producer = session.createProducer(destination);
+            // create receiver
+            final QueueReceiver receiver = session.createReceiver(replyDestination);
             producer.send(message);
             producer.close();
 
-            // wait for a reply
-            final QueueReceiver receiver = session.createReceiver(replyDestination);
-            final Message reply = receiver.receive(TimeoutUtil.adjust(1000));
+            //wait for reply
+            final Message reply = receiver.receive(TimeoutUtil.adjust(5000));
             assertNotNull("Did not receive a reply on the reply queue. Perhaps the original (request) message didn't make it to the MDB?", reply);
             final String result = ((TextMessage) reply).getText();
             assertEquals("Unexpected reply messsage", Constants.REPLY_MESSAGE_PREFIX + requestMessage, result);
