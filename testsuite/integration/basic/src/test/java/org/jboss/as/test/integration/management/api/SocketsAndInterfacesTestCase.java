@@ -38,14 +38,15 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.as.test.shared.RetryTaskExecutor;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,7 +68,6 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("ARQ-791")
 public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase {
 
     private static final Logger logger = Logger.getLogger(SocketsAndInterfacesTestCase.class);
@@ -75,6 +75,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
     @ArquillianResource
     URL url;
     private NetworkInterface testNic;
+    private  String testHost;
     private static final int TEST_PORT = 9091;
 
     @Deployment
@@ -87,6 +88,31 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
     @Before
     public void before() throws IOException {
         testNic = getNonDefaultNic();
+        // test the connector
+        testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostName());
+    }
+
+    @After
+    public void after() throws Exception{
+     // remove connector
+        ModelNode op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", REMOVE);
+        ModelNode result = executeOperation(op);
+
+        try {
+            // check that the connector is down
+            Assert.assertFalse("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
+                    "http", testHost, TEST_PORT, "/").toString()));
+        } finally {
+            // remove socket binding
+            op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-binding", REMOVE);
+            result = executeOperation(op);
+
+            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
+            // remove interface
+            op = createOpNode("interface=test-interface", REMOVE);
+            result = executeOperation(op);
+            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
+        }
     }
 
     @Test
@@ -114,8 +140,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         op.get("socket-binding").set("test-binding");
         result = executeOperation(op);
 
-        // test the connector
-        String testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostName());
+
         Assert.assertTrue("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
                 "http", testHost, TEST_PORT, "/").toString()));
 
@@ -129,9 +154,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
 
         logger.info("Restarting server.");
 
-        // reload server
-        op = createOpNode(null, "reload");
-        result = executeOperation(op);
+        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
 
         // wait until the connector is available on the new port
         final String testUrl = new URL("http", testHost, TEST_PORT + 1, "/").toString();
@@ -160,21 +183,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         result = executeOperation(op, false);
         Assert.assertFalse("Removed socked binding with connector still using it.", SUCCESS.equals(result.get(OUTCOME).asString()));
 
-        // remove connector
-        op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", REMOVE);
-        result = executeOperation(op);
 
-        // check that the connector is down
-        Assert.assertFalse("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
-                "http", testHost, TEST_PORT, "/").toString()));
-
-        // remove socket binding
-        op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-binding", REMOVE);
-        result = executeOperation(op);
-
-        // remove interface
-        op = createOpNode("interface=test-interface", REMOVE);
-        result = executeOperation(op);
 
     }
 
