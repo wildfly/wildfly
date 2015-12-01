@@ -745,15 +745,17 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void parseAuthModule(List<ModelNode> list, XMLExtendedStreamReader reader, PathAddress parentAddress) throws XMLStreamException {
         Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
         EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
-        EnumSet<Attribute> notAllowed;
+        final EnumSet<Attribute> notAllowed;
         // in version 1.2 of the schema the optional flag attribute has been included.
-        if (schemaVer == Namespace.SECURITY_1_2) {
-            notAllowed = EnumSet.of(Attribute.TYPE);
+        switch (schemaVer) {
+            case SECURITY_1_0:
+            case SECURITY_1_1:
+                notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
+                break;
+            default:
+                notAllowed = EnumSet.of(Attribute.TYPE);
         }
-        // in earlier versions of the schema, the flag attribute was missing (not allowed).
-        else {
-            notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
-        }
+
         parseCommonModule(reader, parentAddress, AUTH_MODULE, required, notAllowed, list);
     }
 
