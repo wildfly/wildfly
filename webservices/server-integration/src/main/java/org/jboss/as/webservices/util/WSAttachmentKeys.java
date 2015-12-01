@@ -54,7 +54,6 @@ public final class WSAttachmentKeys {
     public static final AttachmentKey<WSEndpointHandlersMapping> WS_ENDPOINT_HANDLERS_MAPPING_KEY = AttachmentKey.create(WSEndpointHandlersMapping.class);
     public static final AttachmentKey<WSEndpointConfigMapping> WS_ENDPOINT_CONFIG_MAPPING_KEY = AttachmentKey.create(WSEndpointConfigMapping.class);
     public static final AttachmentKey<ServerConfig> SERVER_CONFIG_KEY = AttachmentKey.create(ServerConfig.class);
-    public static final AttachmentKey<Boolean> WEB_SERVICES_DEPLOYMENT = AttachmentKey.create(Boolean.class);
 
     private WSAttachmentKeys() {
         // forbidden inheritance

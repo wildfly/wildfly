@@ -31,10 +31,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorServiceService;
+import org.jboss.as.ee.logging.EeLogger;
+import org.jboss.as.ee.subsystem.ManagedExecutorServiceResourceDefinition.ExecutorQueueValidationStepHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.wildfly.common.cpu.ProcessorInfo;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
@@ -42,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author Eduardo Martins
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
 
@@ -52,18 +57,53 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+        // Add a new step to validate the core-threads, max-threads and queue-length values
+        context.addStep(ExecutorQueueValidationStepHandler.MODEL_VALIDATION_INSTANCE, OperationContext.Stage.MODEL);
+        super.populateModel(context, operation, resource);
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
         final String jndiName = ManagedExecutorServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
         final long hungTaskThreshold = ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.resolveModelAttribute(context, model).asLong();
         final boolean longRunningTasks = ManagedExecutorServiceResourceDefinition.LONG_RUNNING_TASKS_AD.resolveModelAttribute(context, model).asBoolean();
-        final int coreThreads = ManagedExecutorServiceResourceDefinition.CORE_THREADS_AD.resolveModelAttribute(context, model).asInt();
-        final int maxThreads = ManagedExecutorServiceResourceDefinition.MAX_THREADS_AD.resolveModelAttribute(context, model).asInt();
+
+        final int coreThreads;
+        final ModelNode coreThreadsModel = ManagedExecutorServiceResourceDefinition.CORE_THREADS_AD.resolveModelAttribute(context, model);
+        if (coreThreadsModel.isDefined()) {
+            coreThreads = coreThreadsModel.asInt();
+        } else {
+            coreThreads = (ProcessorInfo.availableProcessors() * 2);
+        }
+
+        final int maxThreads;
+        final ModelNode maxThreadsModel = ManagedExecutorServiceResourceDefinition.MAX_THREADS_AD.resolveModelAttribute(context, model);
+        if (maxThreadsModel.isDefined()) {
+            maxThreads = maxThreadsModel.asInt();
+        } else {
+            maxThreads = coreThreads;
+        }
+
+        // Note that this must be done in the runtime stage since the core-threads value may be calculated
+        if (maxThreads < coreThreads) {
+            throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads, coreThreads);
+        }
+
         final long keepAliveTime = ManagedExecutorServiceResourceDefinition.KEEPALIVE_TIME_AD.resolveModelAttribute(context, model).asLong();
         final TimeUnit keepAliveTimeUnit = TimeUnit.MILLISECONDS;
         final long threadLifeTime = 0L;
-        final int queueLength = ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH_AD.resolveModelAttribute(context, model).asInt();
+
+        final int queueLength;
+        final ModelNode queueLengthModel = ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH_AD.resolveModelAttribute(context, model);
+        if (queueLengthModel.isDefined()) {
+            queueLength = queueLengthModel.asInt();
+        } else {
+            queueLength = Integer.MAX_VALUE;
+        }
+
         final AbstractManagedExecutorService.RejectPolicy rejectPolicy = AbstractManagedExecutorService.RejectPolicy.valueOf(ManagedExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
 
         final ManagedExecutorServiceService service = new ManagedExecutorServiceService(name, jndiName, hungTaskThreshold, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy);

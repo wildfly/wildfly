@@ -24,14 +24,10 @@ package org.jboss.as.test.xts.annotation.client;
 import com.arjuna.mw.wst11.UserBusinessActivity;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.xts.annotation.service.CompensatableService;
 import org.jboss.as.test.xts.annotation.service.CompensatableServiceImpl;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,23 +41,25 @@ public class CompensatableTestCase {
 
     private static final String DEPLOYMENT_NAME = "compensatable-test";
 
-    @ArquillianResource
-    private ManagementClient managementClient;
+    private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":"
+            + TestSuiteEnvironment.getHttpPort();
+
+    private static final String DEPLOYMENT_URL = "http://" + SERVER_HOST_PORT + "/" + DEPLOYMENT_NAME;
 
     @Deployment
     public static WebArchive getDeployment() {
-        final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war")
+        final WebArchive webArchive = DeploymentHelper.getInstance().getWebArchiveWithPermissions(DEPLOYMENT_NAME)
                 .addClass(CompensatableClient.class)
                 .addClass(CompensatableService.class)
                 .addClass(CompensatableServiceImpl.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
+                .addClass(TestSuiteEnvironment.class);
 
         return webArchive;
     }
 
     @Test
     public void testNoTransaction() throws Exception {
-        final String deploymentUrl = getDeploymentUrl();
+        final String deploymentUrl = DEPLOYMENT_URL;
         final CompensatableService compensatableService = CompensatableClient.newInstance(deploymentUrl);
 
         final boolean isTransactionActive = compensatableService.isTransactionActive();
@@ -71,7 +69,7 @@ public class CompensatableTestCase {
 
     @Test
     public void testActiveTransaction() throws Exception {
-        final String deploymentUrl = getDeploymentUrl();
+        final String deploymentUrl = DEPLOYMENT_URL;
         final CompensatableService compensatableService = CompensatableClient.newInstance(deploymentUrl);
 
         final UserBusinessActivity userBusinessActivity = UserBusinessActivity.getUserBusinessActivity();
@@ -81,12 +79,6 @@ public class CompensatableTestCase {
         userBusinessActivity.close();
 
         Assert.assertEquals(true, isTransactionActive);
-    }
-
-    private String getDeploymentUrl() {
-        final String baseUrl = managementClient.getWebUri().toString();
-
-        return baseUrl + "/" + DEPLOYMENT_NAME;
     }
 
 }

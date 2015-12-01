@@ -62,6 +62,9 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
     private static final ResourceDescriptionResolver RESOLVER = ResourceAdaptersExtension.getResourceDescriptionResolver(RESOURCEADAPTER_NAME);
     private static final OperationDefinition ACTIVATE_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.ACTIVATE, RESOLVER).build();
 
+    // The ManagedConnectionPool implementation used by default by versions < 4.0.0 (WildFly 10)
+
+
     private final boolean readOnly;
     private final boolean runtimeOnlyRegistrationValid;
     private final List<AccessConstraintDefinition> accessConstraints;
@@ -105,6 +108,11 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
     }
 
 
+    static void registerTransformers300(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME));
+        ConnectionDefinitionResourceDefinition.registerTransformer300(builder);
+    }
+
     static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
@@ -126,6 +134,7 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
                         WM_SECURITY_MAPPING_GROUPS, WM_SECURITY_MAPPING_USERS, WM_SECURITY_DEFAULT_GROUP,
                         WM_SECURITY_DEFAULT_GROUPS, WM_SECURITY_DEFAULT_PRINCIPAL, WM_SECURITY_MAPPING_REQUIRED,
                         WM_SECURITY_DOMAIN, STATISTICS_ENABLED)
+
                 .end();
 
         ConnectionDefinitionResourceDefinition.registerTransformer130(builder);

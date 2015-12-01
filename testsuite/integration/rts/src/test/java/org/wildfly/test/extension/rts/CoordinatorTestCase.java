@@ -24,12 +24,15 @@ package org.wildfly.test.extension.rts;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.SocketPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.jbossts.star.util.TxMediaType;
 import org.jboss.jbossts.star.util.TxStatusMediaType;
 import org.jboss.jbossts.star.util.TxSupport;
@@ -54,6 +57,9 @@ public final class CoordinatorTestCase extends AbstractTestCase {
 
     private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts\n";
 
+    private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":"
+            + TestSuiteEnvironment.getHttpPort();
+
     @ArquillianResource
     private ManagementClient managementClient;
 
@@ -62,7 +68,11 @@ public final class CoordinatorTestCase extends AbstractTestCase {
         return AbstractTestCase.getDeployment()
                 .addClasses(WorkRestATResource.class, Work.class)
                 .addAsWebInfResource(new File("../test-classes", "web.xml"), "web.xml")
-                .addAsManifestResource(new StringAsset(DEPENDENCIES), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset(DEPENDENCIES), "MANIFEST.MF")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        // Permissions required to access SERVER_HOST_PORT
+                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve")
+                ), "permissions.xml");
     }
 
     @Before

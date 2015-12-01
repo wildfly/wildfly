@@ -136,8 +136,7 @@ public class AnnotationImpl implements Annotation {
                 return clazz.getAnnotation(annotationClass);
             }
         } catch (Exception e) {
-           System.out.println(e.getMessage());
-           e.printStackTrace(System.out);
+            ConnectorLogger.ROOT_LOGGER.debug(e.getMessage(), e);
         }
 
         return null;

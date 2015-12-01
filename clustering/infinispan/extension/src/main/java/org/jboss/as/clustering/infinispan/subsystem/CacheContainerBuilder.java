@@ -88,10 +88,8 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
         ServiceBuilder<CacheContainer> builder = target.addService(this.getServiceName(), this)
                 .addDependency(CacheContainerServiceName.CONFIGURATION.getServiceName(this.name), GlobalConfiguration.class, this.configuration)
         ;
-        for (String alias : this.aliases) {
-            builder.addAliases(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(alias));
-        }
-        return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        this.aliases.forEach(alias -> builder.addAliases(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(alias)));
+        return builder.setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
     CacheContainerBuilder setDefaultCache(String defaultCache) {
@@ -112,6 +110,8 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
         this.manager.start();
         this.container = new DefaultCacheContainer(this.name, this.manager, this.defaultCache);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
+        // Ensure global components of this cache container start eagerly
+        this.container.getGlobalComponentRegistry().start();
     }
 
     @Override

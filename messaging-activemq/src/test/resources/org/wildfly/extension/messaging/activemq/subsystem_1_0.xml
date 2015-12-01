@@ -162,8 +162,8 @@
         </acceptor>
 
         <broadcast-group name="groupT"
-                         jgroups-stack="${jgroups.stack:udp}"
-                         jgroups-channel="${jgroups.channel:activemq-cluster}"
+                         jgroups-stack="udp"
+                         jgroups-channel="activemq-cluster"
                          broadcast-period="${broadcast.group.period:1234}"
                          connectors="http netty"/>
         <broadcast-group name="groupS"
@@ -172,8 +172,8 @@
         <discovery-group name="groupT"
                          socket-binding="group-t-binding"/>
         <discovery-group name="groupU"
-                         jgroups-stack="${jgroups.stack:udp}"
-                         jgroups-channel="${jgroups.channel:activemq-cluster}"
+                         jgroups-stack="udp"
+                         jgroups-channel="activemq-cluster"
                          refresh-timeout="${discovery.group.refresh.timeout:2345}"
                          initial-wait-timeout="${discovery.group.initial.wait.timeout:2345}"/>
 
@@ -292,6 +292,7 @@
                             confirmation-window-size="${confirmation.window.size:-1}"
                             producer-window-size="${producer.window.size:-1}"
                             producer-max-rate="${producer.max.rate:1024}"
+                            protocol-manager-factory="com.foo.bar.ProtocolManagerFactory"
                             compress-large-messages="${compress.large.messages:true}"
                             cache-large-message-client="${cache.large.message.client:false}"
                             min-large-message-size="${min.large.message.size:2048}"
@@ -372,6 +373,8 @@
                                    password="${password:alicepassword}"
                                    min-pool-size="${min.pool.size:42}"
                                    max-pool-size="${max.pool.size:242}"
+                                   managed-connection-pool="${managed.connection.pool:org.foo.bar.ConnectionPool}"
+                                   enlistment-trace="${enlistment.trace:false}"
                                    initial-message-packet-size="${initial.message.packet.size:9876}"
                                    initial-connect-attempts="${initial.connect.attempts:5432}"
                                    connectors="in-vm netty"
@@ -386,6 +389,7 @@
                                    confirmation-window-size="${confirmation.window.size:-1}"
                                    producer-window-size="${producer.window.size:-1}"
                                    producer-max-rate="${producer.max.rate:1024}"
+                                   protocol-manager-factory="com.foo.bar.ProtocolManagerFactory"
                                    compress-large-messages="${compress.large.messages:true}"
                                    cache-large-message-client="${cache.large.message.client:false}"
                                    min-large-message-size="${min.large.message.size:2048}"

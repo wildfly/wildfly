@@ -107,7 +107,7 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
                 .addDependency(ChannelServiceName.CONNECTOR.getServiceName(this.group), Channel.class, this.channel)
                 .addDependency(ChannelServiceName.FACTORY.getServiceName(this.group), ChannelFactory.class, this.channelFactory)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
     }
 

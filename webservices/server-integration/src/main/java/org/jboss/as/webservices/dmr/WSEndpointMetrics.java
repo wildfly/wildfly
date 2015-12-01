@@ -36,7 +36,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.webservices.logging.WSLogger;
-import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -58,25 +57,32 @@ final class WSEndpointMetrics implements OperationStepHandler {
     static final WSEndpointMetrics INSTANCE = new WSEndpointMetrics();
 
 
-    static final AttributeDefinition MIN_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("min-processing-time", ModelType.INT, true)
+    static final AttributeDefinition MIN_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("min-processing-time", ModelType.INT, false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition MAX_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.INT, true)
+    static final AttributeDefinition MAX_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.INT, false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition AVERAGE_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("average-processing-time", ModelType.INT, true)
+    static final AttributeDefinition AVERAGE_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("average-processing-time", ModelType.INT, false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition TOTAL_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("total-processing-time", ModelType.INT, true)
+    static final AttributeDefinition TOTAL_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("total-processing-time", ModelType.INT, false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.INT, true)
+    static final AttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.INT, false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition RESPONSE_COUNT = new SimpleAttributeDefinitionBuilder("response-count", ModelType.INT, true)
+    static final AttributeDefinition RESPONSE_COUNT = new SimpleAttributeDefinitionBuilder("response-count", ModelType.INT, false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition FAULT_COUNT = new SimpleAttributeDefinitionBuilder("fault-count", ModelType.INT, true)
+    static final AttributeDefinition FAULT_COUNT = new SimpleAttributeDefinitionBuilder("fault-count", ModelType.INT, false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setStorageRuntime()
             .build();
 
@@ -128,28 +134,26 @@ final class WSEndpointMetrics implements OperationStepHandler {
         final String endpointName = endpointId.substring(endpointId.indexOf(":") + 1);
         ServiceName endpointServiceName = WSServices.ENDPOINT_SERVICE.append("context="+webContext).append(endpointName);
         ServiceController<Endpoint> service = (ServiceController<Endpoint>) currentServiceContainer().getService(endpointServiceName);
-        ServerConfigService serverConfigService = (ServerConfigService)currentServiceContainer().getService(WSServices.CONFIG_SERVICE).getService();
         Endpoint endpoint= service.getValue();
+        if (endpoint == null) {
+            throw new OperationFailedException(WSLogger.ROOT_LOGGER.noMetricsAvailable());
+        }
         final ModelNode result = new ModelNode();
-        if (endpoint != null && serverConfigService.getValue().isStatisticsEnabled()) {
-            final EndpointMetrics endpointMetrics = endpoint.getEndpointMetrics();
-            if (MIN_PROCESSING_TIME.getName().equals(metricName)) {
-                result.set(String.valueOf(endpointMetrics.getMinProcessingTime()));
-            } else if (MAX_PROCESSING_TIME.getName().equals(metricName)) {
-                result.set(String.valueOf(endpointMetrics.getMaxProcessingTime()));
-            } else if (AVERAGE_PROCESSING_TIME.getName().equals(metricName)) {
-                result.set(String.valueOf(endpointMetrics.getAverageProcessingTime()));
-            } else if (TOTAL_PROCESSING_TIME.getName().equals(metricName)) {
-                result.set(String.valueOf(endpointMetrics.getTotalProcessingTime()));
-            } else if (REQUEST_COUNT.getName().equals(metricName)) {
-                result.set(String.valueOf(endpointMetrics.getRequestCount()));
-            } else if (RESPONSE_COUNT.getName().equals(metricName)) {
-                result.set(String.valueOf(endpointMetrics.getResponseCount()));
-            } else if (FAULT_COUNT.getName().equals(metricName)) {
-                result.set(String.valueOf(endpointMetrics.getFaultCount()));
-            }
-        } else {
-            result.set(getFallbackMessage());
+        final EndpointMetrics endpointMetrics = endpoint.getEndpointMetrics();
+        if (MIN_PROCESSING_TIME.getName().equals(metricName)) {
+            result.set(endpointMetrics.getMinProcessingTime());
+        } else if (MAX_PROCESSING_TIME.getName().equals(metricName)) {
+            result.set(endpointMetrics.getMaxProcessingTime());
+        } else if (AVERAGE_PROCESSING_TIME.getName().equals(metricName)) {
+            result.set(endpointMetrics.getAverageProcessingTime());
+        } else if (TOTAL_PROCESSING_TIME.getName().equals(metricName)) {
+            result.set(endpointMetrics.getTotalProcessingTime());
+        } else if (REQUEST_COUNT.getName().equals(metricName)) {
+            result.set(endpointMetrics.getRequestCount());
+        } else if (RESPONSE_COUNT.getName().equals(metricName)) {
+            result.set(endpointMetrics.getResponseCount());
+        } else if (FAULT_COUNT.getName().equals(metricName)) {
+            result.set(endpointMetrics.getFaultCount());
         }
         return result;
     }

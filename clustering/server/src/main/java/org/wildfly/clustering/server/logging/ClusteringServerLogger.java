@@ -54,11 +54,11 @@ public interface ClusteringServerLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "This node will now operate as the singleton provider of the %s service")
-    void electedMaster(String service);
+    void startSingleton(String service);
 
     @LogMessage(level = INFO)
     @Message(id = 2, value = "This node will no longer operate as the singleton provider of the %s service")
-    void electedSlave(String service);
+    void stopSingleton(String service);
 
     @LogMessage(level = INFO)
     @Message(id = 3, value = "%s elected as the singleton provider of the %s service")

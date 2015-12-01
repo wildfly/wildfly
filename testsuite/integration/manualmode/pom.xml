@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>10.0.0.CR2-SNAPSHOT</version>
+        <version>10.0.0.CR5-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -84,6 +84,10 @@
                                 <include>org/jboss/as/test/manualmode/**/*TestCase.java</include>
                             </includes>
                             <runOrder>alphabetical</runOrder>
+
+							<environmentVariables>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                            </environmentVariables>
 
                             <!-- Parameters to test cases. -->
                             <systemPropertyVariables combine.children="append">

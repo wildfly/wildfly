@@ -4,11 +4,14 @@
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.clustering.jgroups"/>
+        <extension module="org.jboss.as.cmp"/>
+        <extension module="org.jboss.as.configadmin"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
-        <!--<extension module="org.jboss.as.jacorb"/>-->
+        <extension module="org.jboss.as.jacorb"/>
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
@@ -23,7 +26,9 @@
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
+        <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
+        <extension module="org.jboss.as.web"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.jboss.as.weld"/>
     </extensions>
@@ -93,6 +98,8 @@
                 </handlers>
             </root-logger>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.1">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
@@ -182,7 +189,7 @@
                 </replicated-cache>
                 <!--
                   ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                  ~                 the socketbinding referenced by the EJB remoting connector
+                  ~                 the socketbinding referenced by the EJB remoting connector 
                   -->
                 <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                 <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
@@ -208,11 +215,14 @@
                 </replicated-cache>
             </cache-container>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:jacorb:1.2">
+        <subsystem xmlns="urn:jboss:domain:jacorb:1.2">
             <orb socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
                 <initializers transactions="spec" security="on"/>
             </orb>
-        </subsystem>-->
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jaxr:1.1">
+            <connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory"/>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -414,6 +424,7 @@
                 </security-domain>
             </security-domains>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.2">
             <core-environment>
                 <process-id>
@@ -422,6 +433,14 @@
             </core-environment>
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <coordinator-environment default-timeout="300"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:web:1.2" default-virtual-server="default-host" native="false">
+            <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
+            <connector name="ajp" protocol="AJP/1.3" scheme="http" socket-binding="ajp"/>
+            <virtual-server name="default-host" enable-welcome-root="true">
+                <alias name="localhost"/>
+                <alias name="example.com"/>
+            </virtual-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.1">
             <modify-wsdl-address>true</modify-wsdl-address>
@@ -446,7 +465,7 @@
         <interface name="unsecure">
             <!--
               ~  Used for IIOP sockets in the standard configuration.
-              ~                  To secure JacORB you need to setup SSL
+              ~                  To secure JacORB you need to setup SSL 
               -->
             <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
         </interface>
@@ -454,7 +473,7 @@
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
         <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
-        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>
         <socket-binding name="ajp" port="8009"/>
         <socket-binding name="http" port="8080"/>
         <socket-binding name="https" port="8443"/>

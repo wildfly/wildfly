@@ -548,7 +548,11 @@ public class DistributableSessionTestCase {
         SessionMetaData newMetaData = mock(SessionMetaData.class);
         LocalSessionContext oldContext = mock(LocalSessionContext.class);
         LocalSessionContext newContext = mock(LocalSessionContext.class);
-        String sessionId = "session";
+        SessionListener listener = mock(SessionListener.class);
+        SessionListeners listeners = new SessionListeners();
+        listeners.addSessionListener(listener);
+        String oldSessionId = "old";
+        String newSessionId = "new";
         String name = "name";
         Object value = new Object();
         Instant now = Instant.now();
@@ -558,8 +562,8 @@ public class DistributableSessionTestCase {
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
-        when(manager.createIdentifier()).thenReturn(sessionId);
-        when(manager.createSession(sessionId)).thenReturn(session);
+        when(manager.createIdentifier()).thenReturn(newSessionId);
+        when(manager.createSession(newSessionId)).thenReturn(session);
         when(this.session.getAttributes()).thenReturn(oldAttributes);
         when(this.session.getMetaData()).thenReturn(oldMetaData);
         when(session.getAttributes()).thenReturn(newAttributes);
@@ -569,19 +573,22 @@ public class DistributableSessionTestCase {
         when(newAttributes.setAttribute(name, value)).thenReturn(null);
         when(oldMetaData.getLastAccessedTime()).thenReturn(now);
         when(oldMetaData.getMaxInactiveInterval()).thenReturn(interval);
-        when(session.getId()).thenReturn(sessionId);
+        when(this.session.getId()).thenReturn(oldSessionId);
+        when(session.getId()).thenReturn(newSessionId);
         when(this.session.getLocalContext()).thenReturn(oldContext);
         when(session.getLocalContext()).thenReturn(newContext);
         when(oldContext.getAuthenticatedSession()).thenReturn(authenticatedSession);
+        when(this.manager.getSessionListeners()).thenReturn(listeners);
         
         String result = this.adapter.changeSessionId(exchange, config);
         
-        assertSame(sessionId, result);
+        assertSame(newSessionId, result);
         
         verify(newMetaData).setLastAccessedTime(now);
         verify(newMetaData).setMaxInactiveInterval(interval);
-        verify(config).setSessionId(exchange, sessionId);
+        verify(config).setSessionId(exchange, newSessionId);
         verify(newContext).setAuthenticatedSession(same(authenticatedSession));
+        verify(listener).sessionIdChanged(this.adapter, oldSessionId);
         verify(context).close();
     }
 }

@@ -25,7 +25,6 @@
 package org.wildfly.extension.undertow;
 
 import io.undertow.attribute.ExchangeAttribute;
-import io.undertow.attribute.ExchangeAttributes;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
@@ -41,6 +40,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.xnio.IoUtils;
 import org.xnio.XnioWorker;
 
 import java.io.IOException;
@@ -69,7 +69,7 @@ class AccessLogService implements Service<AccessLogService> {
     private PathManager.Callback.Handle callbackHandle;
 
     private Path directory;
-    private ExchangeAttribute realPattern;
+    private ExchangeAttribute extendedPattern;
 
     private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
 
@@ -122,9 +122,9 @@ class AccessLogService implements Service<AccessLogService> {
                         .setRotate(rotate);
                 if(extended) {
                     builder.setLogFileHeaderGenerator(new ExtendedAccessLogParser.ExtendedAccessLogHeaderGenerator(pattern));
-                    realPattern = new ExtendedAccessLogParser(getClass().getClassLoader()).parse(pattern);
+                    extendedPattern = new ExtendedAccessLogParser(getClass().getClassLoader()).parse(pattern);
                 } else {
-                    realPattern = ExchangeAttributes.parser(getClass().getClassLoader()).parse(pattern);
+                    extendedPattern = null;
                 }
                 logReceiver = builder.build();
             } catch (IllegalStateException e) {
@@ -141,6 +141,10 @@ class AccessLogService implements Service<AccessLogService> {
             callbackHandle.remove();
             callbackHandle = null;
         }
+        if( logReceiver instanceof DefaultAccessLogReceiver ) {
+            IoUtils.safeClose((DefaultAccessLogReceiver) logReceiver);
+        }
+        logReceiver = null;
     }
 
     @Override
@@ -157,7 +161,11 @@ class AccessLogService implements Service<AccessLogService> {
     }
 
     protected AccessLogHandler configureAccessLogHandler(HttpHandler handler) {
-        return new AccessLogHandler(handler, logReceiver, pattern, realPattern, predicate);
+        if(extendedPattern != null) {
+            return new AccessLogHandler(handler, logReceiver, pattern, extendedPattern, predicate);
+        } else {
+            return new AccessLogHandler(handler, logReceiver, pattern, getClass().getClassLoader(), predicate);
+        }
     }
 
     public InjectedValue<Host> getHost() {

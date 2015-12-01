@@ -56,6 +56,8 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
+import org.wildfly.clustering.service.concurrent.ServiceExecutor;
+import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 
 /**
  * {@link MessageDispatcher} based {@link CommandDispatcherFactory}.
@@ -68,6 +70,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     final Map<Object, AtomicReference<Object>> contexts = new ConcurrentHashMap<>();
     final MarshallingContext marshallingContext;
 
+    private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final AtomicReference<View> view = new AtomicReference<>();
     private final MessageDispatcher dispatcher;
@@ -91,13 +94,16 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         this.dispatcher.setChannel(channel);
         this.dispatcher.setRequestHandler(this);
         this.dispatcher.setMembershipListener(this);
-        this.dispatcher.start();
+        this.dispatcher.asyncDispatching(true).start();
         this.view.compareAndSet(null, channel.getView());
     }
 
     @Override
     public void close() {
-        this.dispatcher.stop();
+        this.executor.close(() -> {
+            this.dispatcher.stop();
+            this.dispatcher.getChannel().setUpHandler(null);
+        });
     }
 
     @Override
@@ -107,10 +113,10 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
-                @SuppressWarnings("unchecked")
-                Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 AtomicReference<Object> context = this.contexts.get(clientId);
                 if (context == null) return NoSuchService.INSTANCE;
+                @SuppressWarnings("unchecked")
+                Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 return command.execute(context.get());
             }
         }
@@ -215,9 +221,11 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 this.nodeFactory.invalidate(leftMembers);
             }
 
-            for (Listener listener: this.listeners) {
-                listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
-            }
+            this.executor.execute(() -> {
+                for (Listener listener: this.listeners) {
+                    listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
+                }
+            });
         }
     }
 

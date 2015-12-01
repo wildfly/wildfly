@@ -73,7 +73,7 @@ public class DistributableImmutableSession implements Session {
 
     @Override
     public void requestDone(HttpServerExchange serverExchange) {
-        throw new UnsupportedOperationException();
+        // Do nothing
     }
 
     @Override
@@ -108,21 +108,21 @@ public class DistributableImmutableSession implements Session {
 
     @Override
     public Object setAttribute(String name, Object value) {
-        throw new UnsupportedOperationException();
+        return value;
     }
 
     @Override
     public Object removeAttribute(String name) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public void invalidate(HttpServerExchange exchange) {
-        throw new UnsupportedOperationException();
+        // Do nothing
     }
 
     @Override
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }

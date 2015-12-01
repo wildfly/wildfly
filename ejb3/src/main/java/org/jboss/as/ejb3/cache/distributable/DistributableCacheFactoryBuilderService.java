@@ -65,11 +65,6 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
         for (BeanManagerFactoryBuilderFactoryProvider<Batch> provider: ServiceLoader.load(BeanManagerFactoryBuilderFactoryProvider.class, BeanManagerFactoryBuilderFactoryProvider.class.getClassLoader())) {
             return provider;
         }
-        try {
-            BeanManagerFactoryBuilderFactoryProvider.class.getClassLoader().loadClass("org.wildfly.clustering.ejb.infinispan.InfinispanBeanManagerFactoryBuilderFactoryProvider").newInstance();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
         return null;
     }
 

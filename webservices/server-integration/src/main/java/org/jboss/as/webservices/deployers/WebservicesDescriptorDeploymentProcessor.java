@@ -56,7 +56,6 @@ public final class WebservicesDescriptorDeploymentProcessor implements Deploymen
                     webservicesDescriptorURL, JBossDescriptorPropertyReplacement.propertyReplacer(unit));
             final WebservicesMetaData webservicesMD = webservicesFactory.load(webservicesDescriptorURL);
             unit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, webservicesMD);
-            unit.putAttachment(WSAttachmentKeys.WEB_SERVICES_DEPLOYMENT, true);
             if (hasJaxRpcMapping(webservicesMD)) {
                 throw WSLogger.ROOT_LOGGER.jaxRpcNotSupported();
             }

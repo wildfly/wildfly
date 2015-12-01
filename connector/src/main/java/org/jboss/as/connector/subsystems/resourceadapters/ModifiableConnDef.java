@@ -75,6 +75,10 @@ public class ModifiableConnDef implements ConnectionDefinition {
 
     private final Boolean tracking;
 
+    private final Boolean enlistmentTrace;
+
+    private final String mcp;
+
 
     /**
      * Create a new ConnectionDefinition.
@@ -95,7 +99,7 @@ public class ModifiableConnDef implements ConnectionDefinition {
     public ModifiableConnDef(Map<String, String> configProperties, String className, String jndiName,
                              String poolName, Boolean enabled, Boolean useJavaContext, Boolean useCcm, Pool pool, TimeOut timeOut,
                              Validation validation, Security security, Recovery recovery, Boolean sharable, Boolean enlistment,
-                             final Boolean connectable, final Boolean tracking) throws ValidateException {
+                             final Boolean connectable, final Boolean tracking, final String mcp, Boolean enlistmentTrace) throws ValidateException {
         super();
         if (configProperties != null) {
             this.configProperties = new ConcurrentHashMap<String, String>(configProperties.size());
@@ -118,6 +122,8 @@ public class ModifiableConnDef implements ConnectionDefinition {
         this.enlistment = enlistment;
         this.connectable = connectable;
         this.tracking = tracking;
+        this.mcp = mcp;
+        this.enlistmentTrace = enlistmentTrace;
 
     }
 
@@ -240,6 +246,46 @@ public class ModifiableConnDef implements ConnectionDefinition {
         return (pool instanceof XaPool);
     }
 
+    /**
+     * Get the recovery.
+     *
+     * @return the recovery.
+     */
+    @Override
+    public final Recovery getRecovery() {
+        return recovery;
+    }
+
+    @Override
+    public Boolean isSharable() {
+        return sharable;
+    }
+
+    @Override
+    public Boolean isEnlistment() {
+        return enlistment;
+    }
+
+    @Override
+    public Boolean isConnectable() {
+        return connectable;
+    }
+
+    @Override
+    public Boolean isTracking() {
+        return tracking;
+    }
+
+    @Override
+    public String getMcp() {
+        return mcp;
+    }
+
+    @Override
+    public Boolean isEnlistmentTrace() {
+        return enlistmentTrace;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -256,6 +302,17 @@ public class ModifiableConnDef implements ConnectionDefinition {
         result = prime * result + ((useJavaContext == null) ? 0 : useJavaContext.hashCode());
         result = prime * result + ((useCcm == null) ? 0 : useCcm.hashCode());
         result = prime * result + ((validation == null) ? 0 : validation.hashCode());
+        result = prime * result + ((isXa() == null) ? 0 : isXa().hashCode());
+
+        result = prime * result + ((sharable == null) ? 0 : sharable.hashCode());
+        result = prime * result + ((enlistment == null) ? 0 : enlistment.hashCode());
+
+        result = prime * result + ((connectable == null) ? 0 : connectable.hashCode());
+        result = prime * result + ((tracking == null) ? 0 : tracking.hashCode());
+
+        result = prime * result + ((mcp == null) ? 0 : mcp.hashCode());
+        result = prime * result + ((enlistmentTrace == null) ? 0 : enlistmentTrace.hashCode());
+
         return result;
     }
 
@@ -267,6 +324,7 @@ public class ModifiableConnDef implements ConnectionDefinition {
             return false;
         if (!(obj instanceof ModifiableConnDef))
             return false;
+
         ModifiableConnDef other = (ModifiableConnDef) obj;
         if (className == null) {
             if (other.className != null)
@@ -328,6 +386,44 @@ public class ModifiableConnDef implements ConnectionDefinition {
                 return false;
         } else if (!validation.equals(other.validation))
             return false;
+        if (isXa() == null) {
+            if (other.isXa() != null)
+                return false;
+        } else if (!isXa().equals(other.isXa()))
+            return false;
+
+        if (sharable == null) {
+            if (other.sharable != null)
+                return false;
+        } else if (!sharable.equals(other.sharable))
+            return false;
+        if (enlistment == null) {
+            if (other.enlistment != null)
+                return false;
+        } else if (!enlistment.equals(other.enlistment))
+            return false;
+
+        if (connectable == null) {
+            if (other.connectable != null)
+                return false;
+        } else if (!connectable.equals(other.connectable))
+            return false;
+        if (tracking == null) {
+            if (other.tracking != null)
+                return false;
+        } else if (!tracking.equals(other.tracking))
+            return false;
+        if (mcp == null) {
+            if (other.mcp != null)
+                return false;
+        } else if (!mcp.equals(other.mcp))
+            return false;
+        if (enlistmentTrace == null) {
+            if (other.enlistmentTrace != null)
+                return false;
+        } else if (!enlistmentTrace.equals(other.enlistmentTrace))
+            return false;
+
         return true;
     }
 
@@ -357,6 +453,26 @@ public class ModifiableConnDef implements ConnectionDefinition {
         if (useCcm != null)
             sb.append(" ").append(ConnectionDefinition.Attribute.USE_CCM).append("=\"").append(useCcm).append("\"");
 
+        if (sharable != null)
+            sb.append(" ").append(ConnectionDefinition.Attribute.SHARABLE).append("=\"").append(sharable).append("\"");
+
+        if (enlistment != null)
+            sb.append(" ").append(ConnectionDefinition.Attribute.ENLISTMENT).append("=\"").append(enlistment).append("\"");
+
+        if (connectable != null)
+            sb.append(" ").append(ConnectionDefinition.Attribute.CONNECTABLE).append("=\"").
+                    append(connectable).append("\"");
+
+        if (tracking != null)
+            sb.append(" ").append(ConnectionDefinition.Attribute.TRACKING).append("=\"").append(tracking).append("\"");
+
+        if (mcp != null)
+            sb.append(" ").append(ConnectionDefinition.Attribute.MCP).append("=\"").append(mcp).append("\"");
+
+        if (enlistmentTrace != null)
+            sb.append(" ").append(ConnectionDefinition.Attribute.ENLISTMENT_TRACE).append("=\"")
+                    .append(enlistmentTrace).append("\"");
+
         sb.append(">");
 
         if (configProperties != null && configProperties.size() > 0) {
@@ -374,7 +490,6 @@ public class ModifiableConnDef implements ConnectionDefinition {
         if (pool != null)
             sb.append(pool);
 
-
         if (security != null)
             sb.append(security);
 
@@ -390,35 +505,5 @@ public class ModifiableConnDef implements ConnectionDefinition {
         sb.append("</connection-definition>");
 
         return sb.toString();
-    }
-
-    /**
-     * Get the recovery.
-     *
-     * @return the recovery.
-     */
-    @Override
-    public final Recovery getRecovery() {
-        return recovery;
-    }
-
-    @Override
-    public Boolean isSharable() {
-        return sharable;
-    }
-
-    @Override
-    public Boolean isEnlistment() {
-        return enlistment;
-    }
-
-    @Override
-    public Boolean isConnectable() {
-        return connectable;
-    }
-
-    @Override
-    public Boolean isTracking() {
-        return tracking;
     }
 }

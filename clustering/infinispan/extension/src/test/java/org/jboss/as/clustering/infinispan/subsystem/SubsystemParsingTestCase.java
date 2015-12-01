@@ -56,7 +56,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     private final int operations;
 
     public SubsystemParsingTestCase(InfinispanSchema schema, int operations) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema.format("subsystem-infinispan-%d_%d.xml"));
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), String.format("subsystem-infinispan-%d_%d.xml", schema.major(), schema.minor()));
         this.schema = schema;
         this.operations = operations;
     }

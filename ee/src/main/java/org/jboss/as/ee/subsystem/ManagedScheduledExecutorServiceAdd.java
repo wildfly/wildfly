@@ -37,6 +37,7 @@ import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ManagedScheduledExecutorServiceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.wildfly.common.cpu.ProcessorInfo;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
@@ -61,7 +62,15 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         final String jndiName = ManagedExecutorServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
         final long hungTaskThreshold = ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.resolveModelAttribute(context, model).asLong();
         final boolean longRunningTasks = ManagedScheduledExecutorServiceResourceDefinition.LONG_RUNNING_TASKS_AD.resolveModelAttribute(context, model).asBoolean();
-        final int coreThreads = ManagedScheduledExecutorServiceResourceDefinition.CORE_THREADS_AD.resolveModelAttribute(context, model).asInt();
+
+        final int coreThreads;
+        final ModelNode coreThreadsModel = ManagedScheduledExecutorServiceResourceDefinition.CORE_THREADS_AD.resolveModelAttribute(context, model);
+        if (coreThreadsModel.isDefined()) {
+            coreThreads = coreThreadsModel.asInt();
+        } else {
+            coreThreads = (ProcessorInfo.availableProcessors() * 2);
+        }
+
         final long keepAliveTime = ManagedScheduledExecutorServiceResourceDefinition.KEEPALIVE_TIME_AD.resolveModelAttribute(context, model).asLong();
         final TimeUnit keepAliveTimeUnit = TimeUnit.MILLISECONDS;
         final long threadLifeTime = 0L;

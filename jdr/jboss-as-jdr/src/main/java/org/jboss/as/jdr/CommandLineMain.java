@@ -51,7 +51,7 @@ public class CommandLineMain {
     private static final CommandLineParser parser = new GnuParser();
     private static final Options options = new Options();
     private static final HelpFormatter formatter = new HelpFormatter();
-    private static final String usage = "jdr.{sh,bat} [options]";
+    private static final String usage = "jdr.{sh,bat,ps1} [options]";
 
     static {
         options.addOption("h", "help", false, JdrLogger.ROOT_LOGGER.jdrHelpMessage());

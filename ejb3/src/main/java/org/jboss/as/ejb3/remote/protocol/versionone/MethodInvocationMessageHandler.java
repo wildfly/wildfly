@@ -54,7 +54,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectStreamException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -217,12 +216,6 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                             EjbLogger.REMOTE_LOGGER.errorInvokingMethod(throwable, invokedMethod, beanName, appName, moduleName, distinctName);
                             // now log why we couldn't send back the method invocation failure message
                             EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
-                            // close the channel unless this is a NotSerializableException
-                            //as this does not represent a problem with the channel there is no
-                            //need to close it (see AS7-3402)
-                            if (!(ioe instanceof ObjectStreamException)) {
-                                IoUtils.safeClose(channelAssociation.getChannel());
-                            }
                         }
                         return;
                     } finally {
@@ -247,12 +240,6 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                         boolean isAsyncVoid = componentView.isAsynchronous(invokedMethod) && invokedMethod.getReturnType().equals(Void.TYPE);
                         if (!isAsyncVoid)
                             EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
-                        // close the channel unless this is a NotSerializableException
-                        //as this does not represent a problem with the channel there is no
-                        //need to close it (see AS7-3402)
-                        if (!(ioe instanceof ObjectStreamException)) {
-                            IoUtils.safeClose(channelAssociation.getChannel());
-                        }
                         return;
                     }
                 }

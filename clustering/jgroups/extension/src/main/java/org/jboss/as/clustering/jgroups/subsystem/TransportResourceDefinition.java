@@ -22,11 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
+import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +32,7 @@ import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -42,10 +40,12 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.transform.ImplicitlyAddedResourceDynamicDiscardPolicy;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -66,8 +66,8 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -118,7 +118,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        SHARED("shared", ModelType.BOOLEAN, new ModelNode(false)),
+        @Deprecated SHARED("shared", ModelType.BOOLEAN, new ModelNode(false), JGroupsModel.VERSION_4_0_0),
         DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(RequiredCapability.SOCKET_BINDING, Capability.DIAGNOSTICS_SOCKET_BINDING)),
         SITE("site", ModelType.STRING),
         RACK("rack", ModelType.STRING),
@@ -130,8 +130,8 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
             this.definition = createBuilder(name, type).build();
         }
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type).setDefaultValue(defaultValue).build();
+        Attribute(String name, ModelType type, ModelNode defaultValue, JGroupsModel deprecation) {
+            this.definition = createBuilder(name, type).setDefaultValue(defaultValue).setDeprecated(deprecation.getVersion()).build();
         }
 
         Attribute(String name, ModelType type, AccessConstraintDefinition constraint, CapabilityReferenceRecorder reference) {
@@ -188,48 +188,34 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
             builder.setCustomResourceTransformer(new ResourceTransformer() {
                 @Override
                 public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    PropertyResourceDefinition.PROPERTIES_RESOURCE_TRANSFORMER.transformResource(context, LEGACY_ADDRESS_TRANSFORMER.transform(address), resource);
+                    new LegacyPropertyResourceTransformer().transformResource(context, LEGACY_ADDRESS_TRANSFORMER.transform(address), resource);
                 }
             });
             builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleOperationTransformer(new org.jboss.as.clustering.controller.transform.OperationTransformer() {
                 @Override
                 public ModelNode transformOperation(final ModelNode operation) {
                     operation.get(ModelDescriptionConstants.OP_ADDR).set(LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation)).toModelNode());
-                    return PropertyResourceDefinition.PROPERTIES_ADD_OP_TRANSFORMER.transformOperation(operation);
+                    return new LegacyPropertyAddOperationTransformer().transformOperation(operation);
                 }
             })).inheritResourceAttributeDefinitions();
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleRemoveOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleReadAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
             builder.addOperationTransformationOverride(ModelDescriptionConstants.DESCRIBE).setCustomOperationTransformer(new SimpleDescribeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
 
-            org.jboss.as.clustering.controller.transform.OperationTransformer getPropertyTransformer = new org.jboss.as.clustering.controller.transform.OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(ProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition().getName())) {
-                        String key = operation.get("key").asString();
-                        PathAddress address = TransportResourceDefinition.LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation));
-                        ModelNode transformedOperation = Util.createOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address.append(PropertyResourceDefinition.pathElement(key)));
-                        transformedOperation.get(ModelDescriptionConstants.NAME).set(PropertyResourceDefinition.VALUE.getName());
-                        return transformedOperation;
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(getPropertyTransformer));
+            List<OperationTransformer> getOpTransformerChain = new LinkedList<>();
+            getOpTransformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            getOpTransformerChain.add(new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
+            ChainedOperationTransformer getOpChainedTransformer = new ChainedOperationTransformer(getOpTransformerChain, false);
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), getOpChainedTransformer);
 
-            List<OperationTransformer> transformerChain = new LinkedList<>();
-            transformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            transformerChain.add(PropertyResourceDefinition.PROPERTIES_OP_TRANSFORMER);
-            ChainedOperationTransformer chainedTransformer = new ChainedOperationTransformer(transformerChain, false);
-
-            Set<String> writeAttributeOperations = new HashSet(MapOperations.MAP_OPERATION_NAMES);
-            writeAttributeOperations.remove(MapOperations.MAP_GET_DEFINITION.getName());
-            writeAttributeOperations.add(WRITE_ATTRIBUTE_OPERATION);
-            writeAttributeOperations.add(UNDEFINE_ATTRIBUTE_OPERATION);
-            for (String opName : writeAttributeOperations) {
+            List<OperationTransformer> writeOpTransformerChain = new LinkedList<>();
+            writeOpTransformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            writeOpTransformerChain.add(new LegacyPropertyWriteOperationTransformer());
+            ChainedOperationTransformer writeOpChainedTransformer = new ChainedOperationTransformer(writeOpTransformerChain, false);
+            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
                 builder.addOperationTransformationOverride(opName)
                         .inheritResourceAttributeDefinitions()
-                        .setCustomOperationTransformer(chainedTransformer);
+                        .setCustomOperationTransformer(writeOpChainedTransformer);
             }
 
             // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
@@ -257,7 +243,50 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+        parentRegistration.registerAlias(LEGACY_PATH, new AliasEntry(registration) {
+            @Override
+            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
+                PathAddress target = this.getTargetAddress();
+                List<PathElement> result = new ArrayList<>(aliasAddress.size());
+                for (int i = 0; i < aliasAddress.size(); ++i) {
+                    PathElement element = aliasAddress.getElement(i);
+                    if (i == target.size() - 1) {
+                        final ModelNode operation = aliasContext.getOperation();
+                        final String stackName;
+
+                        if (ModelDescriptionConstants.ADD.equals(Operations.getName(operation)) && operation.hasDefined("type")) {
+                            stackName = operation.get("type").asString();
+                        } else {
+                            Resource root = null;
+                            try {
+                                root = aliasContext.readResourceFromRoot(PathAddress.pathAddress(result));
+                            } catch (Resource.NoSuchResourceException ignored) {
+                            }
+                            if (root == null) {
+                                stackName = "*";
+                            } else {
+                                Set<String> names = root.getChildrenNames("transport");
+                                if (names.size() > 1) {
+                                    throw new AssertionError("There should be at most one child");
+                                } else if (names.size() == 0) {
+                                    stackName = "*";
+                                } else {
+                                    stackName = names.iterator().next();
+                                }
+                            }
+                        }
+
+                        result.add(PathElement.pathElement("transport", stackName));
+                    } else if (i < target.size()) {
+                        PathElement targetElement = target.getElement(i);
+                        result.add(targetElement.isWildcard() ? PathElement.pathElement(targetElement.getKey(), element.getValue()) : targetElement);
+                    } else {
+                        result.add(element);
+                    }
+                }
+                return PathAddress.pathAddress(result);
+            }
+        });
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -267,13 +296,13 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                 .addCapabilities(Capability.class)
                 .addCapabilities(ProtocolResourceDefinition.Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
+        ResourceServiceHandler handler = new ParentResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
         new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
             @Override
             protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
                 super.populateModel(operation, model);
                 // Add deprecated threading attributes to the model for now
-                for (ThreadingAttribute attribute :  EnumSet.allOf(ThreadingAttribute.class)) {
+                for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
                     attribute.getDefinition().validateAndSet(operation, model);
                 }
             }

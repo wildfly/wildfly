@@ -116,12 +116,14 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         ModelNode haPolicyForReplicationMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-master", "ha-policy", "replication-master");
         assertTrue(haPolicyForReplicationMasterServer.isDefined());
         assertEquals("${check.for.live.server:true}", haPolicyForReplicationMasterServer.get("check-for-live-server").asString());
+        assertEquals("${replication.master.group.name:mygroup}", haPolicyForReplicationMasterServer.get("group-name").asString());
 
         ModelNode haPolicyForReplicationSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-slave", "ha-policy", "replication-slave");
         assertTrue(haPolicyForReplicationSlaveServer.isDefined());
         assertEquals("${allow.failback.2:false}", haPolicyForReplicationSlaveServer.get("allow-failback").asString());
         assertEquals("${failback.delay.2:1234}", haPolicyForReplicationSlaveServer.get("failback-delay").asString());
         assertEquals("${max.saved.replicated.journal.size:2}", haPolicyForReplicationSlaveServer.get("max-saved-replicated-journal-size").asString());
+        assertEquals("${replication.master.group.name:mygroup2}", haPolicyForReplicationSlaveServer.get("group-name").asString());
     }
 
     @Test
@@ -156,10 +158,14 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode warnings = response.get(RESULT, "migration-warnings");
         // 6 warnings about broadcast-group attributes that can not be migrated.
+        // 2 warnings about broadcast-group attributes not migrated because they have an expression.
         // 5 warnings about discovery-group attributes that can not be migrated.
+        // 2 warnings about discovery-group attributes not migrated because they have an expression.
         // 2 warnings about interceptors that can not be migrated.
         // 1 warning about HA migration (attributes have expressions)
-        int expectedNumberOfWarnings = 6 + 5 + 2 + 1;
+        // 1 warning about cluster-connection forward-when-no-consumers attribute having an expression.
+        // 1 warning about use-nio being ignored for netty-throughput remote-connector resource.
+        int expectedNumberOfWarnings = 6 + 2 + 5 + 2 + 2 + 1 + 1 + 1;
         // 1 warning if add-legacy-entries is true because an in-vm connector can not be used in a legacy-connection-factory
         if (addLegacyEntries) {
             expectedNumberOfWarnings += 1;
@@ -176,6 +182,9 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         ModelNode newServer = newSubsystem.get("server", "default");
         assertNotNull(newServer);
         assertTrue(newServer.isDefined());
+
+        assertEquals("STRICT", newServer.get("cluster-connection", "cc2", "message-load-balancing-type").asString());
+        assertEquals("ON_DEMAND", newServer.get("cluster-connection", "cc3", "message-load-balancing-type").asString());
 
         if (addLegacyEntries) {
             // check that legacy entries were added to JMS resources

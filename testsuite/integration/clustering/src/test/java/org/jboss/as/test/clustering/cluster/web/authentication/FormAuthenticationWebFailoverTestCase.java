@@ -97,7 +97,6 @@ public class FormAuthenticationWebFailoverTestCase extends ClusterAbstractTestCa
         URI uri2 = SecureServlet.createURI(baseURL2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            System.out.println(uri1);
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());

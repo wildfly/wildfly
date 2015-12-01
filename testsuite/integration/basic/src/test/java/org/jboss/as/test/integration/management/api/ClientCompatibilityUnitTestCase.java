@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.management.api;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.security.SecureRandom;
@@ -112,7 +113,7 @@ public class ClientCompatibilityUnitTestCase {
     private static final String CONTROLLER_ADDRESS = System.getProperty("node0", "localhost");
 
     private static final String WF_CLIENT = "org.wildfly:wildfly-controller-client";
-    private static final String WF9_CLIENT = "org.wildfly.core:wildfly-controller-client";
+    private static final String WFCORE_CLIENT = "org.wildfly.core:wildfly-controller-client";
     private static final String AS7_CLIENT = "org.jboss.as:jboss-as-controller-client";
 
     private static final String[] excludes = new String[]{"org.jboss.threads:jboss-threads", "org.jboss:jboss-dmr", "org.jboss.logging:jboss-logging"};
@@ -142,7 +143,66 @@ public class ClientCompatibilityUnitTestCase {
 
     @Test
     public void test800Final() throws Exception {
-        testWF("8.0.0.Final");
+        test(createClient(WF_CLIENT, "8.0.0.Final", CONTROLLER_ADDRESS, 9999));
+    }
+
+    @Ignore("http upgrade compat issue")
+    @Test
+    public void test800FinalHttp() throws Exception {
+        test(createClient(WF_CLIENT, "8.0.0.Final", CONTROLLER_ADDRESS, 9990));
+    }
+
+    @Test
+    public void test810Final() throws Exception {
+        test(createClient(WF_CLIENT, "8.1.0.Final", CONTROLLER_ADDRESS, 9999));
+    }
+
+    @Ignore("http upgrade compat issue")
+    @Test
+    public void test810FinalHttp() throws Exception {
+        test(createClient(WF_CLIENT, "8.1.0.Final", CONTROLLER_ADDRESS, 9990));
+    }
+
+    @Test
+    public void test820Final() throws Exception {
+        test(createClient(WF_CLIENT, "8.2.0.Final", CONTROLLER_ADDRESS, 9999));
+    }
+
+    @Ignore("http upgrade compat issue")
+    @Test
+    public void test820FinalHttp() throws Exception {
+        test(createClient(WF_CLIENT, "8.2.0.Final", CONTROLLER_ADDRESS, 9990));
+    }
+
+    @Test
+    public void test821Final() throws Exception {
+        test(createClient(WF_CLIENT, "8.2.1.Final", CONTROLLER_ADDRESS, 9999));
+    }
+
+    @Ignore("http upgrade compat issue")
+    @Test
+    public void test821FinalHttp() throws Exception {
+        test(createClient(WF_CLIENT, "8.2.1.Final", CONTROLLER_ADDRESS, 9990));
+    }
+
+    @Test
+    public void testCore100Final() throws Exception {
+        testWF("1.0.0.Final", 9999);
+    }
+
+    @Test
+    public void testCore100FinalHttp() throws Exception {
+        testWF("1.0.0.Final", 9990);
+    }
+
+    @Test
+    public void testCore101Final() throws Exception {
+        testWF("1.0.1.Final", 9999);
+    }
+
+    @Test
+    public void testCore101FinalHttp() throws Exception {
+        testWF("1.0.1.Final", 9990);
     }
 
     @Test
@@ -150,15 +210,20 @@ public class ClientCompatibilityUnitTestCase {
         test(ModelControllerClient.Factory.create(CONTROLLER_ADDRESS, 9999));
     }
 
-    protected void testAS7(final String version) throws Exception {
+    @Test
+    public void testCurrentHttp() throws Exception {
+        test(ModelControllerClient.Factory.create(CONTROLLER_ADDRESS, 9990));
+    }
+
+    private void testAS7(final String version) throws Exception {
         test(createClient(AS7_CLIENT, version, CONTROLLER_ADDRESS, 9999));
     }
 
-    protected void testWF(final String version) throws Exception {
-        test(createClient(WF_CLIENT, version, CONTROLLER_ADDRESS, 9999));
+    private void testWF(final String version, int port) throws Exception {
+        test(createClient(WFCORE_CLIENT, version, CONTROLLER_ADDRESS, port));
     }
 
-    protected void test(final ModelControllerClient client) throws Exception {
+    private void test(final ModelControllerClient client) throws Exception {
         try {
             final ModelNode operation = new ModelNode();
             operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
@@ -208,20 +273,29 @@ public class ClientCompatibilityUnitTestCase {
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.ModelControllerClient");
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.OperationMessageHandler");
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.Operation");
+        classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.OperationResponse*");
 
         final ClassLoader classLoader = classLoaderBuilder.build();
         final Class<?> factoryClass = classLoader.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory");
         final Method factory = factoryClass.getMethod("create", String.class, int.class);
-        final Object client = factory.invoke(null, host, port);
+        try {
+            final Object client = factory.invoke(null, host, port);
 
-        final InvocationHandler invocationHandler = new InvocationHandler() {
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                return method.invoke(client, args);
+            final InvocationHandler invocationHandler = new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    return method.invoke(client, args);
+                }
+            };
+            final Class<?>[] interfaces = new Class<?>[]{ModelControllerClient.class};
+            return (ModelControllerClient) Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
+        } catch (InvocationTargetException e) {
+            Throwable t = e.getCause();
+            if (t == null) {
+                throw e;
             }
-        };
-        final Class<?>[] interfaces = new Class<?>[]{ModelControllerClient.class};
-        return (ModelControllerClient) Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
+            throw t instanceof Exception ? (Exception) t : new RuntimeException(t);
+        }
     }
 
 }

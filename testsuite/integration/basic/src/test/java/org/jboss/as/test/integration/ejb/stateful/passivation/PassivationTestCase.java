@@ -190,6 +190,47 @@ public class PassivationTestCase {
         // make sure bean's passivation and activation callbacks weren't invoked
         Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", passivationOverrideBean.wasPassivated());
         Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", passivationOverrideBean.wasActivated());
+    }
 
+    /**
+     * Tests passivation of bean that throws exception during serialization.
+     */
+    @Test
+    public void testPassivationFailure() throws Exception {
+        PassivationInterceptor.reset();
+
+        // create first bean
+        TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/"
+                + BeanWithSerializationIssue.class.getSimpleName());
+        // make an invocation
+        Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                remote1.returnTrueString());
+
+        // create second bean, this should force the first bean to passivate
+        TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/"
+                + BeanWithSerializationIssue.class.getSimpleName());
+        // make an invocation
+        Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                remote2.returnTrueString());
+
+        // passivation happens asynchronously, so give it a sec
+        Thread.sleep(PASSIVATION_WAIT);
+
+        // verify that remote1 was prePassivated
+        Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof BeanWithSerializationIssue);
+        Assert.assertTrue(((BeanWithSerializationIssue) PassivationInterceptor.getPrePassivateTarget())
+                .hasBeenPassivated());
+        // verify that remote1 was not postActivated yet
+        Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() == null);
+
+        // make another invocation on the first bean
+        Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                remote1.returnTrueString());
+
+        // check again that activation happened
+        Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() instanceof BeanWithSerializationIssue);
+        Assert.assertTrue(((BeanWithSerializationIssue) PassivationInterceptor.getPostActivateTarget())
+                .hasBeenActivated());
+        Assert.assertTrue("@PostActivate not called", remote1.hasBeenActivated());
     }
 }

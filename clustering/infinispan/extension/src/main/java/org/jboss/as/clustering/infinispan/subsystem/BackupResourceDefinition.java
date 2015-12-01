@@ -65,11 +65,11 @@ public class BackupResourceDefinition extends ChildResourceDefinition {
         ;
         private final AttributeDefinition definition;
 
-        private Attribute(String name, ModelType type, ModelNode defaultValue) {
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = createBuilder(name, type, defaultValue).build();
         }
 
-        private Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
             SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
             this.definition = builder.setValidator(validator.configure(builder).build()).build();
         }
@@ -86,7 +86,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition {
         ;
         private final AttributeDefinition definition;
 
-        private TakeOfflineAttribute(String name, ModelType type, ModelNode defaultValue) {
+        TakeOfflineAttribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = createBuilder(name, type, defaultValue).build();
         }
 

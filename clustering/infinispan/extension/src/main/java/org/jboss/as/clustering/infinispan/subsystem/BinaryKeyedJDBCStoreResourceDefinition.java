@@ -27,9 +27,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -46,6 +46,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -92,11 +94,28 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildResource(PATH) : parent.addChildRedirection(PATH, LEGACY_PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        JDBCStoreResourceDefinition.buildTransformation(version, builder);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    final ModelNode model = resource.getModel();
+
+                    final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
+                    if (binaryTableModel != null && binaryTableModel.isDefined()) {
+                        model.get(DeprecatedAttribute.TABLE.getDefinition().getName()).set(binaryTableModel);
+                    }
+
+                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                    context.processChildren(resource);
+                }
+            });
+        }
 
         BinaryTableResourceDefinition.buildTransformation(version, builder);
+
+        JDBCStoreResourceDefinition.buildTransformation(version, builder);
     }
 
     BinaryKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {

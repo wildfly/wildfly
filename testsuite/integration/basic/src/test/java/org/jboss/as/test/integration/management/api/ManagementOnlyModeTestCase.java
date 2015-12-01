@@ -21,38 +21,38 @@
  */
 package org.jboss.as.test.integration.management.api;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADMIN_ONLY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import java.net.URL;
 import java.util.concurrent.Callable;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.util.WebUtil;
+import org.jboss.as.test.shared.RetryTaskExecutor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.Assert;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADMIN_ONLY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.WebUtil;
-import org.jboss.as.test.shared.RetryTaskExecutor;
-import org.junit.Ignore;
 
 /**
- *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("ARQ-791")
+@Ignore("WFLY-5606")
 public class ManagementOnlyModeTestCase extends ContainerResourceMgmtTestBase {
 
     @ArquillianResource
@@ -75,20 +75,20 @@ public class ManagementOnlyModeTestCase extends ContainerResourceMgmtTestBase {
         ModelNode result = executeOperation(op);
 
         // wait until the server is admin-only mode
-        RetryTaskExecutor rte = new RetryTaskExecutor();
+        RetryTaskExecutor<ModelNode> rte = new RetryTaskExecutor<>();
         rte.retryTask(new Callable<ModelNode>() {
 
             public ModelNode call() throws Exception {
                 ModelNode rop = createOpNode(null, READ_ATTRIBUTE_OPERATION);
                 rop.get(NAME).set("running-mode");
                 ModelNode mode = executeOperation(rop);
-                if (! mode.asString().equals("ADMIN_ONLY")) throw new Exception ("Wrong mode.");
+                if (!mode.asString().equals("ADMIN_ONLY")) { throw new Exception("Wrong mode."); }
                 return mode;
             }
         });
 
         // check that the server is unreachable
-        Assert.assertFalse("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
+        Assert.assertFalse("Could not connect to created connector.", WebUtil.testHttpURL(new URL(
                 "http", url.getHost(), url.getPort(), "/").toString()));
 
         // update the model in admin-only mode - add a web connector
@@ -97,7 +97,7 @@ public class ManagementOnlyModeTestCase extends ContainerResourceMgmtTestBase {
         op.get("port").set(TEST_PORT);
         result = executeOperation(op);
 
-        op = createOpNode("subsystem=undertow/listener=test", ADD);
+        op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", ADD);
         op.get("socket-binding").set("test-binding");
         result = executeOperation(op);
 
@@ -107,28 +107,26 @@ public class ManagementOnlyModeTestCase extends ContainerResourceMgmtTestBase {
         result = executeOperation(op);
 
         // wait until the server is in normal mode
-        rte = new RetryTaskExecutor();
-        rte.retryTask(new Callable<ModelNode>() {
-            public ModelNode call() throws Exception {
-                ModelNode rop = createOpNode(null, READ_ATTRIBUTE_OPERATION);
-                rop.get(NAME).set("running-mode");
-                ModelNode mode = executeOperation(rop);
-                if (! mode.asString().equals("NORMAL")) throw new Exception ("Wrong mode.");
-                return mode;
-            }
+        rte = new RetryTaskExecutor<>();
+        rte.retryTask(() -> {
+            ModelNode rop = createOpNode(null, READ_ATTRIBUTE_OPERATION);
+            rop.get(NAME).set("running-mode");
+            ModelNode mode = executeOperation(rop);
+            if (!mode.asString().equals("NORMAL")) { throw new Exception("Wrong mode."); }
+            return mode;
         });
 
 
         // check that the server is up
-        Assert.assertTrue("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
+        Assert.assertTrue("Could not connect to created connector.", WebUtil.testHttpURL(new URL(
                 "http", url.getHost(), url.getPort(), "/").toString()));
 
         // check that the changes made in admin-only mode have been applied - test the connector
-        Assert.assertTrue("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
+        Assert.assertTrue("Could not connect to created connector.", WebUtil.testHttpURL(new URL(
                 "http", url.getHost(), TEST_PORT, "/").toString()));
 
         // remove the conector
-        op = createOpNode("subsystem=undertow/listener=test", REMOVE);
+        op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", REMOVE);
         result = executeOperation(op);
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-binding", REMOVE);
         result = executeOperation(op);

@@ -35,8 +35,12 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
+/**
+ * Unit test for {@link SessionEvictionScheduler}.
+ * @author Paul Ferraro
+ */
 public class SessionEvictionSchedulerTestCase {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
@@ -44,8 +48,8 @@ public class SessionEvictionSchedulerTestCase {
         String name = "cache";
         String evictedSessionId = "evicted";
         String activeSessionId = "active";
-        ImmutableSession evictedSession = mock(ImmutableSession.class);
-        ImmutableSession activeSession = mock(ImmutableSession.class);
+        ImmutableSessionMetaData evictedSessionMetaData = mock(ImmutableSessionMetaData.class);
+        ImmutableSessionMetaData activeSessionMetaData = mock(ImmutableSessionMetaData.class);
         CommandDispatcherFactory dispatcherFactory = mock(CommandDispatcherFactory.class);
         CommandDispatcher<SessionEvictionContext> dispatcher = mock(CommandDispatcher.class);
         Evictor<String> evictor = mock(Evictor.class);
@@ -59,14 +63,11 @@ public class SessionEvictionSchedulerTestCase {
             
             assertSame(scheduler, context);
             
-            when(evictedSession.getId()).thenReturn(evictedSessionId);
-            when(activeSession.getId()).thenReturn(activeSessionId);
-            
-            scheduler.schedule(evictedSession);
+            scheduler.schedule(evictedSessionId, evictedSessionMetaData);
 
             verifyZeroInteractions(dispatcher);
 
-            scheduler.schedule(activeSession);
+            scheduler.schedule(activeSessionId, activeSessionMetaData);
 
             verify(dispatcher).submitOnCluster(capturedCommand.capture());
             

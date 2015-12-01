@@ -100,8 +100,9 @@ public class CoarseSSOFactory<A, D, L> implements SSOFactory<CoarseSSOEntry<A, D
     }
 
     @Override
-    public void remove(String id) {
+    public boolean remove(String id) {
         this.authenticationCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new AuthenticationKey(id));
         this.sessionsCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new CoarseSessionsKey(id));
+        return true;
     }
 }

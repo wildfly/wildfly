@@ -26,16 +26,15 @@ import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.transform.OperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -94,7 +93,6 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
 
     private final boolean allowRuntimeOnlyRegistration;
 
-    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(StoreWriteThroughResourceDefinition.PATH);
@@ -103,36 +101,14 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            OperationTransformer putPropertyTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    String attributeName = Operations.getAttributeName(operation);
-                    if (Attribute.PROPERTIES.getDefinition().getName().equals(attributeName)) {
-                        String key = operation.get("key").asString();
-                        ModelNode value = Operations.getAttributeValue(operation);
-                        PathAddress address = Operations.getPathAddress(operation);
-                        ModelNode transformedOperation = Util.createAddOperation(address.append(StorePropertyResourceDefinition.pathElement(key)));
-                        transformedOperation.get(StorePropertyResourceDefinition.VALUE.getName()).set(value);
-                        return transformedOperation;
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(putPropertyTransformer));
 
-            OperationTransformer removePropertyTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    String attributeName = Operations.getAttributeName(operation);
-                    if (Attribute.PROPERTIES.getDefinition().getName().equals(attributeName)) {
-                        String key = operation.get("key").asString();
-                        PathAddress address = Operations.getPathAddress(operation);
-                        return Util.createRemoveOperation(address.append(StorePropertyResourceDefinition.pathElement(key)));
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
+
+            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
+                builder.addOperationTransformationOverride(opName)
+                        .inheritResourceAttributeDefinitions()
+                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer());
+            }
         }
 
         StoreWriteBehindResourceDefinition.buildTransformation(version, builder);

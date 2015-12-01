@@ -44,14 +44,14 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="default-job-repository" type="namedType" minOccurs="0" maxOccurs="1">
+            <xs:element name="default-job-repository" type="namedType" minOccurs="1" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         Defines the default job-repository for the batch environment.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="default-thread-pool" type="namedType" minOccurs="0" maxOccurs="1">
+            <xs:element name="default-thread-pool" type="namedType" minOccurs="1" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         Defines the default thread-pool for the batch environment.

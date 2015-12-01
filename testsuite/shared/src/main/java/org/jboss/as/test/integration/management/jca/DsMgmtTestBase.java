@@ -27,6 +27,7 @@ import java.util.List;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.DataSourceSubsystemParser;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -46,9 +47,19 @@ public class DsMgmtTestBase extends ContainerResourceMgmtTestBase {
         baseAddress.protect();
     }
 
+    /**
+     * Provide reload operation on server
+     *
+     * @throws Exception
+     */
+    public void reload() throws Exception {
+        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient(), 50000);
+    }
+
     //@After - called after each test
     protected void removeDs() throws Exception {
         remove(baseAddress);
+        reload();
     }
 
 

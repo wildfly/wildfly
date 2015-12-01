@@ -34,7 +34,7 @@ public interface ClusteringTestConstants {
     /**
      * Test configuration.
      */
-    String TEST_CACHE_MODE = System.getProperty("stack");
+    String TEST_CACHE_MODE = System.getProperty("cacheMode");
 
     /**
      * Manual container with unmanaged deployments names.
@@ -73,7 +73,7 @@ public interface ClusteringTestConstants {
     /**
      * Timeouts.
      */
-    int GRACE_TIME_TO_REPLICATE = 3000;
+    int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);
 
     /**
      * TODO: This will be removed.

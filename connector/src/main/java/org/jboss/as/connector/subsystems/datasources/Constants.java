@@ -235,9 +235,11 @@ public class Constants {
             .setAllowNull(true)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition PROFILE = SimpleAttributeDefinitionBuilder.create("profile", ModelType.STRING)
                 .setAllowNull(true)
-                .build();
+                .setDeprecated(ModelVersion.create(4, 0, 0))
+            .build();
 
     public static final String STATISTICS = "statistics";
 
@@ -327,7 +329,7 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
             .setAllowNull(true)
-            .setDeprecated(ModelVersion.create(3))
+            .setDeprecated(ModelVersion.create(3), false)
             .build();
 
     static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
