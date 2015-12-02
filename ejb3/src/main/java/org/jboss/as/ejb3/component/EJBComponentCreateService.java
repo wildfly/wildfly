@@ -359,7 +359,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     }
 
     ServerSecurityManager getServerSecurityManager() {
-        return this.serverSecurityManagerInjectedValue.getValue();
+        return this.serverSecurityManagerInjectedValue.getOptionalValue();
     }
 
     Injector<ServerSecurityManager> getServerSecurityManagerInjector() {

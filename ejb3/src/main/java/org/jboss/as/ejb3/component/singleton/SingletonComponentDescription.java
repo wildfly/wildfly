@@ -52,11 +52,13 @@ import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.security.ElytronInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -112,8 +114,16 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             getConfigurators().add(new ComponentConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                        configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(isExplicitSecurityDomainConfigured(), false,
-                                SecurityContextInterceptorFactory.contextIdForDeployment(context.getDeploymentUnit())), InterceptorOrder.View.SECURITY_CONTEXT);
+                        final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+                        String contextID = deploymentUnit.getName();
+                        if (deploymentUnit.getParent() != null) {
+                            contextID = deploymentUnit.getParent().getName() + "!" + contextID;
+                        }
+                        if (isSecurityDomainsConfigured()) {
+                            configuration.addPostConstructInterceptor(new ElytronInterceptorFactory(contextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                        } else {
+                            configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(isExplicitSecurityDomainConfigured(), false, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                        }
                     }
                 });
         }

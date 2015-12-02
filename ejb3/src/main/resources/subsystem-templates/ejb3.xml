@@ -39,11 +39,16 @@
            </thread-pool>
        </thread-pools>
        <?IIOP?>
-       <default-security-domain value="other"/>
+       <?SECURITY?>
        <default-missing-method-permissions-deny-access value="true" />
        <log-system-exceptions value="true" />
    </subsystem>
-   <supplement name="default">
+   <supplement name="no-elytron">
+      <replacement placeholder="SECURITY">
+          <default-security-domain value="other"/>
+      </replacement>
+   </supplement>
+   <supplement name="default" includes="no-elytron">
       <replacement placeholder="STATEFUL-BEAN">
          <stateful default-access-timeout="5000" cache-ref="simple" passivation-disabled-cache-ref="simple"/>
       </replacement>
@@ -59,10 +64,20 @@
          </mdb>
       </replacement>
    </supplement>
-   <supplement name="ha">
+   <supplement name="ha" includes="no-elytron">
       <replacement placeholder="STATEFUL-BEAN">
          <stateful default-access-timeout="5000" cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
       </replacement>
    </supplement>
    <supplement name="full-ha" includes="full ha"/>
+   <supplement name="elytron" includes="default">
+      <replacement placeholder="SECURITY">
+         <security-domains default="ApplicationDomain">
+             <security-domain name="ApplicationDomain"/>
+         </security-domains>
+       </replacement>
+   </supplement>
+   <supplement name="full-elytron" includes="full elytron"/>
+   <supplement name="ha-elytron" includes="ha elytron"/>
+   <supplement name="full-ha-elytron" includes="full-ha elytron"/>
 </config>
