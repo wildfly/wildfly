@@ -93,8 +93,10 @@ public class UndertowHost implements Host {
 
     @Override
     public Context findContext(String path) {
+        String findPath = "".equals(path) ? "/" : path;
+
         for (Deployment deployment : this.host.getDeployments()) {
-            if (deployment.getDeploymentInfo().getContextPath().equals(path)) {
+            if (deployment.getDeploymentInfo().getContextPath().equals(findPath)) {
                 return new UndertowContext(deployment, this);
             }
         }
