@@ -133,7 +133,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
             Converter converter = new Converter() {
                 @Override
                 public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
-                    if (!value.isDefined()) {
+                    if (value.isDefined()) {
                         PathAddress rootAddress = address.subAddress(0, address.size() - 4);
                         PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));
                         Resource subsystem = context.readResourceFromRoot(subsystemAddress);
