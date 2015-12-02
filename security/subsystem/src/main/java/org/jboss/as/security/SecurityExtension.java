@@ -81,7 +81,7 @@ import org.jboss.msc.service.ServiceName;
 
     private static final String RESOURCE_NAME = SecurityExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
@@ -152,7 +152,7 @@ import org.jboss.msc.service.ServiceName;
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), PARSER);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_2_0.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_3_0.getUriString(), PARSER);
     }
 
     private void registerTransformers(SubsystemRegistration subsystemRegistration) {
@@ -265,7 +265,7 @@ import org.jboss.msc.service.ServiceName;
     }
 
     private void registerTransformers_1_3_0(SubsystemRegistration subsystemRegistration) {
-        // earlier versions of the model didn't have the export-elytron-realm attribute, but the subsystem behavior is
+        // earlier versions of the model didn't have the export-Elytron-realm attribute, but the subsystem behaviour is
         // fully compatible if this attribute is left undefined or if its set to false.
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);

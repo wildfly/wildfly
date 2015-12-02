@@ -454,8 +454,8 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 }
                 case EXPORT_ELYTRON_REALM: {
                     Namespace schemaVersion = Namespace.forUri(reader.getNamespaceURI());
-                    // the export-elytron-realm attribute was added in version 1.3 of the schema.
-                    if (schemaVersion.compareTo(Namespace.SECURITY_2_0) < 0) {
+                    // the export-elytron-realm attribute was added in version 3.0 of the schema.
+                    if (schemaVersion.compareTo(Namespace.SECURITY_3_0) < 0) {
                         throw unexpectedAttribute(reader, i);
                     }
                     SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.parseAndSetParameter(value, op, reader);
@@ -757,15 +757,17 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void parseAuthModule(List<ModelNode> list, XMLExtendedStreamReader reader, PathAddress parentAddress) throws XMLStreamException {
         Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
         EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
-        EnumSet<Attribute> notAllowed;
-        // in earlier versions of the schema, the flag attribute was missing (not allowed).
-        if (schemaVer.compareTo(Namespace.SECURITY_1_2) < 0) {
-            notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
-        }
+        final EnumSet<Attribute> notAllowed;
         // in version 1.2 of the schema the optional flag attribute has been included.
-        else {
-            notAllowed = EnumSet.of(Attribute.TYPE);
+        switch (schemaVer) {
+            case SECURITY_1_0:
+            case SECURITY_1_1:
+                notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
+                break;
+            default:
+                notAllowed = EnumSet.of(Attribute.TYPE);
         }
+
         parseCommonModule(reader, parentAddress, AUTH_MODULE, required, notAllowed, list);
     }
 
