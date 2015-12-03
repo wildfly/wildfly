@@ -59,8 +59,10 @@
         <artifact name="${org.apache.cxf.services.sts:cxf-services-sts-core}"/>
         <artifact name="${org.apache.cxf.services.ws-discovery:cxf-services-ws-discovery-api}"/>
         <artifact name="${org.apache.cxf.xjcplugins:cxf-xjc-boolean}"/>
+        <artifact name="${org.apache.cxf.xjcplugins:cxf-xjc-bug986}"/>
         <artifact name="${org.apache.cxf.xjcplugins:cxf-xjc-dv}"/>
         <artifact name="${org.apache.cxf.xjcplugins:cxf-xjc-ts}"/>
+        <artifact name="${org.apache.cxf.xjc-utils:cxf-xjc-runtime}"/>
     </resources>
 
     <dependencies>

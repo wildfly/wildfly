@@ -118,7 +118,7 @@
         <version.org.apache.activemq.artemis>1.1.0.wildfly-008</version.org.apache.activemq.artemis>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>3.1.4</version.org.apache.cxf>
-        <version.org.apache.cxf.xjcplugins>3.0.3</version.org.apache.cxf.xjcplugins>
+        <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
@@ -3269,6 +3269,18 @@
                     <exclusion>
                         <groupId>javax.xml.bind</groupId>
                         <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf.xjcplugins</groupId>
+                <artifactId>cxf-xjc-bug986</artifactId>
+                <version>${version.org.apache.cxf.xjcplugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-lang</groupId>
+                        <artifactId>commons-lang</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
