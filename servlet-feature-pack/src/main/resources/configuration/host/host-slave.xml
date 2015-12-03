@@ -72,6 +72,10 @@
         <interface name="public">
             <inet-address value="${jboss.bind.address:127.0.0.1}"/>
         </interface>
+        <interface name="private">
+            <!-- Used for JGroups sockets in the standard configuration. -->
+            <inet-address value="${jboss.bind.address.private:127.0.0.1}"/>
+        </interface>
         <interface name="unsecure">
             <!-- Used for IIOP sockets in the standard configuration.
                  To secure JacORB you need to setup SSL -->
@@ -97,7 +101,7 @@
             <socket-bindings port-offset="150"/>
         </server>
     </servers>
-    
+
     <profile>
         <?SUBSYSTEMS socket-binding-group="standard-sockets"?>
     </profile>
