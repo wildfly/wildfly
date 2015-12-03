@@ -23,9 +23,6 @@
 package org.jboss.as.naming.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CACHE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -42,11 +39,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.naming.management.JndiViewOperation;
 
 /**
@@ -69,10 +61,6 @@ public class NamingExtension implements Extension {
 
     static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
-
-    public static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
-    public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);
-    public static final ModelVersion VERSION_1_3_0 = ModelVersion.create(1, 3, 0);
 
     static final SensitiveTargetAccessConstraintDefinition JNDI_VIEW_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SUBSYSTEM_NAME, "jndi-view", false, true, true));
@@ -107,35 +95,7 @@ public class NamingExtension implements Extension {
         }
 
         subsystem.registerXMLElementWriter(NamingSubsystemXMLPersister.INSTANCE);
-
-        if (context.isRegisterTransformers()) {
-            //Note that the 'cache' attribute introduced post 1.2.0 to binding=* is only usable if binding-type=external-context which is not allowed in <=1.2.0
-
-            // register 1.1.0 transformer
-            ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-            builder.addChildResource(NamingSubsystemModel.BINDING_PATH)
-                    .getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, ENVIRONMENT)
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, ENVIRONMENT, CACHE)
-                        //Since we need to check the binding-type, we cannot have expressions
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, BINDING_TYPE)
-                        .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
-                        .addRejectCheck(new BindingType12RejectChecker(), BINDING_TYPE)
-                        .end();
-            TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_1_0);
-
-            // register 1.2.0 and 1.3.0 transformer
-            builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-            builder.addChildResource(NamingSubsystemModel.BINDING_PATH)
-                    .getAttributeBuilder()
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, CACHE)
-                        //Since we need to check the binding-type, we cannot have expressions
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, BINDING_TYPE)
-                        .addRejectCheck(new BindingType12RejectChecker(), BINDING_TYPE)
-                        .end();
-            TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_2_0);
-            TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_3_0);
-        }
+        //no need to register transformers as EAP 6.2 is already on model 1.3.0 == current
     }
 
     /**
