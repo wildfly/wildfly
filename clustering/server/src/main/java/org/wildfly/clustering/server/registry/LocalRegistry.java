@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,14 +39,12 @@ import org.wildfly.clustering.registry.RegistryEntryProvider;
  */
 public class LocalRegistry<K, V> implements Registry<K, V> {
 
-    private final AtomicReference<Map.Entry<K, V>> entryRef = new AtomicReference<>();
-    private final RegistryEntryProvider<K, V> provider;
+    private final AtomicReference<Map.Entry<K, V>> entryRef;
     private final Group group;
 
     public LocalRegistry(Group group, RegistryEntryProvider<K, V> provider) {
         this.group = group;
-        this.provider = provider;
-        this.getLocalEntry();
+        this.entryRef = new AtomicReference<>(new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue()));
     }
 
     @Override
@@ -67,24 +65,12 @@ public class LocalRegistry<K, V> implements Registry<K, V> {
     @Override
     public Map<K, V> getEntries() {
         Map.Entry<K, V> entry = this.entryRef.get();
-        return (entry != null) ? Collections.singletonMap(entry.getKey(), entry.getValue()) : Collections.<K, V>emptyMap();
+        return (entry != null) ? Collections.singletonMap(entry.getKey(), entry.getValue()) : Collections.emptyMap();
     }
 
     @Override
     public Map.Entry<K, V> getEntry(Node node) {
-        return (node.equals(this.group.getLocalNode())) ? this.entryRef.get() : null;
-    }
-
-    @Override
-    public Map.Entry<K, V> getLocalEntry() {
-        Map.Entry<K, V> entry = this.entryRef.get();
-        if (entry == null) {
-            entry = new SimpleImmutableEntry<>(this.provider.getKey(), this.provider.getValue());
-            if (!this.entryRef.compareAndSet(null, entry)) {
-                entry = this.entryRef.get();
-            }
-        }
-        return entry;
+        return this.entryRef.get();
     }
 
     @Override
