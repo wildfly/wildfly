@@ -52,7 +52,7 @@ public class ClientMappingsCacheBuilderProvider implements CacheGroupBuilderProv
     @Override
     public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
         List<Builder<?>> builders = new LinkedList<>();
-        if (containerName.equals(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME) && cacheName.equals(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) {
+        if (cacheName.equals(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) {
             builders.add(new TemplateConfigurationBuilder(containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME, cacheName) {
                 @Override
                 public ConfigurationBuilder createConfigurationBuilder() {
