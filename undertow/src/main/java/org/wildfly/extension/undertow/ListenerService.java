@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -139,7 +140,15 @@ public abstract class ListenerService<T> implements Service<T> {
             registerBinding();
         } catch (IOException e) {
             cleanFailedStart();
-            throw new StartException("Could not start http listener", e);
+            if (e instanceof BindException) {
+                final StringBuilder sb = new StringBuilder().append(e.getMessage());
+                final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
+                if (socketAddress != null)
+                    sb.append(" ").append(socketAddress);
+                throw new StartException(sb.toString());
+            } else {
+                throw new StartException("Could not start http listener", e);
+            }
         }
     }
 
