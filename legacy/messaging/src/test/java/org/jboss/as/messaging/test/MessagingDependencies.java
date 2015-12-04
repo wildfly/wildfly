@@ -47,51 +47,6 @@ public class MessagingDependencies {
         // 8.1.0.Final has the same HornetQ versiopn than 8.0.0.Final
         map.put(ModelTestControllerVersion.WILDFLY_8_1_0_FINAL, map.get(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL));
 
-        map.put(ModelTestControllerVersion.V7_1_2_FINAL, new String[] {
-                "org.hornetq:hornetq-core:2.2.16.Final",
-                "org.hornetq:hornetq-jms:2.2.16.Final",
-                "org.hornetq:hornetq-ra:2.2.16.Final"});
-
-        map.put(ModelTestControllerVersion.V7_1_3_FINAL, new String[] {
-                "org.hornetq:hornetq-core:2.2.21.Final",
-                "org.hornetq:hornetq-jms:2.2.21.Final",
-                "org.hornetq:hornetq-ra:2.2.21.Final"});
-
-        map.put(ModelTestControllerVersion.V7_2_0_FINAL, new String[] {
-                "org.hornetq:hornetq-server:2.3.0.CR1",
-                "org.hornetq:hornetq-jms-server:2.3.0.CR1",
-                "org.hornetq:hornetq-core-client:2.3.0.CR1",
-                "org.hornetq:hornetq-jms-client:2.3.0.CR1",
-                "org.hornetq:hornetq-ra:2.3.0.CR1"});
-
-        map.put(ModelTestControllerVersion.EAP_6_0_0, new String[] {
-                "org.hornetq:hornetq-core:2.2.16.Final-redhat-1",
-                "org.hornetq:hornetq-jms:2.2.16.Final-redhat-1",
-                "org.hornetq:hornetq-ra:2.2.16.Final-redhat-1"});
-
-        map.put(ModelTestControllerVersion.EAP_6_0_1, new String[] {
-                "org.hornetq:hornetq-core:2.2.23.Final-redhat-1",
-                "org.hornetq:hornetq-jms:2.2.23.Final-redhat-1",
-                "org.hornetq:hornetq-ra:2.2.23.Final-redhat-1"});
-
-        map.put(ModelTestControllerVersion.EAP_6_1_0, new String[] {
-                "org.hornetq:hornetq-commons:2.3.1.Final-redhat-1",
-                "org.hornetq:hornetq-journal:2.3.1.Final-redhat-1",
-                "org.hornetq:hornetq-server:2.3.1.Final-redhat-1",
-                "org.hornetq:hornetq-jms-server:2.3.1.Final-redhat-1",
-                "org.hornetq:hornetq-core-client:2.3.1.Final-redhat-1",
-                "org.hornetq:hornetq-jms-client:2.3.1.Final-redhat-1",
-                "org.hornetq:hornetq-ra:2.3.1.Final-redhat-1"});
-
-        map.put(ModelTestControllerVersion.EAP_6_1_1, new String[] {
-                "org.hornetq:hornetq-commons:2.3.5.Final-redhat-2",
-                "org.hornetq:hornetq-journal:2.3.5.Final-redhat-2",
-                "org.hornetq:hornetq-server:2.3.5.Final-redhat-2",
-                "org.hornetq:hornetq-jms-server:2.3.5.Final-redhat-2",
-                "org.hornetq:hornetq-core-client:2.3.5.Final-redhat-2",
-                "org.hornetq:hornetq-jms-client:2.3.5.Final-redhat-2",
-                "org.hornetq:hornetq-ra:2.3.5.Final-redhat-2"});
-
         map.put(ModelTestControllerVersion.EAP_6_2_0, new String[] {
                 "org.hornetq:hornetq-commons:2.3.12.Final-redhat-1",
                 "org.hornetq:hornetq-journal:2.3.12.Final-redhat-1",
@@ -112,6 +67,16 @@ public class MessagingDependencies {
                 "org.hornetq:hornetq-ra:2.3.20.Final-redhat-1",
         });
 
+        map.put(ModelTestControllerVersion.EAP_6_4_0, new String[]{
+                "org.hornetq:hornetq-commons:2.3.25.Final-redhat-1",
+                "org.hornetq:hornetq-journal:2.3.25.Final-redhat-1",
+                "org.hornetq:hornetq-server:2.3.25.Final-redhat-1",
+                "org.hornetq:hornetq-jms-server:2.3.25.Final-redhat-1",
+                "org.hornetq:hornetq-core-client:2.3.25.Final-redhat-1",
+                "org.hornetq:hornetq-jms-client:2.3.25.Final-redhat-1",
+                "org.hornetq:hornetq-ra:2.3.25.Final-redhat-1",
+        });
+
         HORNETQ_DEPENDENCIES = Collections.unmodifiableMap(map);
     }
 
@@ -119,7 +84,7 @@ public class MessagingDependencies {
         return HORNETQ_DEPENDENCIES.get(controllerVersion);
     }
 
-    static final String getMessagingGAV(ModelTestControllerVersion version) {
+    static String getMessagingGAV(ModelTestControllerVersion version) {
         final String groupAndArtifactID;
         switch (version) {
             case WILDFLY_8_0_0_FINAL:

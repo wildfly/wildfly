@@ -23,17 +23,11 @@
 package org.jboss.as.jdr;
 
 import java.io.IOException;
-
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.junit.Assert;
 import org.junit.Test;
 
 
@@ -74,44 +68,24 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-          "/subsystem-templates/jdr.xml"
+        return new String[]{
+                "/subsystem-templates/jdr.xml"
         };
     }
-
-    @Test
-    public void testTransformersAS712() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 0, 0));
+    //todo not sure how much sense does it make to test this as model version is exactly the same as in current version
+    /*@Test
+    public void testTransformersEAP620() throws Exception {
+        testJdrTransformers(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 2, 0));
     }
 
     @Test
-    public void testTransformersAS713() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 0, 0));
+    public void testTransformersEAP630() throws Exception {
+        testJdrTransformers(ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 2, 0));
     }
 
     @Test
-    public void testTransformersAS720() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 0));
-    }
-
-    @Test
-    public void testTransformersEAP600() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.EAP_6_0_0, ModelVersion.create(1, 1, 0));
-    }
-
-    @Test
-    public void testTransformersEAP601() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.EAP_6_0_1, ModelVersion.create(1, 1, 0));
-    }
-
-    @Test
-    public void testTransformersEAP610() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.EAP_6_1_0, ModelVersion.create(1, 1, 0));
-    }
-
-    @Test
-    public void testTransformersEAP611() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.EAP_6_1_1, ModelVersion.create(1, 1, 0));
+    public void testTransformersEAP640() throws Exception {
+        testJdrTransformers(ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 2, 0));
     }
 
     private void testJdrTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
@@ -129,15 +103,15 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(mainServices);
         Assert.assertNotNull(legacyServices);
         checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
+    }*/
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-         return new AdditionalInitialization(){
-             @Override
-             protected RunningMode getRunningMode() {
-                 return RunningMode.NORMAL;
-             }
-         };
+        return new AdditionalInitialization() {
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.NORMAL;
+            }
+        };
     }
 }
