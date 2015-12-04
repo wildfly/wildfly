@@ -37,7 +37,6 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.as.weld.util.Utils;
-import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
@@ -49,7 +48,7 @@ import org.jboss.modules.Module;
  * Deployment processor that initializes Weld Probe if the development mode has been enabled.
  *
  * @author Jozef Hartinger
- *
+ * @author Tomas Remes
  */
 public class DevelopmentModeProcessor implements DeploymentUnitProcessor {
 
@@ -76,37 +75,67 @@ public class DevelopmentModeProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
-        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-            return; // Skip non web deployments
-        }
         if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return; // skip non weld deployments
         }
 
-        if (deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY) == null) {
-            return;
-        }
-        final JBossWebMetaData webMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
-        if (webMetaData == null) {
-            return;
-        }
-
-        if (webMetaData.getContextParams() == null) {
-            webMetaData.setContextParams(new ArrayList<ParamValueMetaData>());
-        }
-
-        final WeldConfiguration configuration = Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY);
-        final boolean devModeContextParam = webMetaData.getContextParams().stream()
-                .anyMatch(param -> CONTEXT_PARAM_DEV_MODE.equals(param.getParamName()) && Boolean.valueOf(param.getParamValue()));
-
-        // development mode is available when enabled in web.xml, jboss-all.xml or domain mode
-        // and the optional probe module is available
-        if (!configuration.isDevelopmentMode() && !devModeContextParam) {
-            return;
-        }
+        // probe module is available
         if (!Reflections.isAccessible(PROBE_FILTER_CLASS_NAME, module.getClassLoader())) {
             return;
         }
+
+        final WeldConfiguration configuration = Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY);
+
+        // if development mode disabled then check war CONTEXT_PARAM_DEV_MODE and if available then register ProbeFilter and ProbeExtension
+        if (!configuration.isDevelopmentMode()) {
+
+            if (deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY) == null) {
+                return;
+            }
+
+            if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+                final JBossWebMetaData webMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
+                if (webMetaData == null) {
+                    return;
+                }
+
+                if (webMetaData.getContextParams() == null) {
+                    return;
+                }
+
+                final boolean devModeContextParam = webMetaData.getContextParams().stream()
+                        .anyMatch(param -> CONTEXT_PARAM_DEV_MODE.equals(param.getParamName()) && Boolean.valueOf(param.getParamValue()));
+
+                if (!devModeContextParam) {
+                    return;
+                }
+                registerProbeFilter(deploymentUnit, webMetaData);
+                WeldPortableExtensions.getPortableExtensions(deploymentUnit)
+                        .tryRegisterExtension(loadClass(PROBE_EXTENSION_CLASS_NAME, module.getClassLoader()),
+                                deploymentUnit);
+            }
+            // if development mode enabled then for WAR register ProbeFilter and register ProbeExtension for every deployment
+        } else {
+            if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+
+                if (deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY) == null) {
+                    return;
+                }
+
+                final JBossWebMetaData webMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
+                if (webMetaData == null) {
+                    return;
+                }
+
+                registerProbeFilter(deploymentUnit, webMetaData);
+            }
+            WeldPortableExtensions.getPortableExtensions(deploymentUnit).tryRegisterExtension(loadClass(PROBE_EXTENSION_CLASS_NAME, module.getClassLoader()),
+                    deploymentUnit);
+        }
+
+    }
+
+    private void registerProbeFilter(DeploymentUnit deploymentUnit, JBossWebMetaData webMetaData) throws DeploymentUnitProcessingException {
 
         if (webMetaData.getFilters() == null) {
             webMetaData.setFilters(new FiltersMetaData());
@@ -120,9 +149,6 @@ public class DevelopmentModeProcessor implements DeploymentUnitProcessor {
         // probe filter mapping
         webMetaData.getFilterMappings().add(0, PROBE_FILTER_MAPPING);
         Utils.registerAsComponent(PROBE_FILTER_CLASS_NAME, deploymentUnit);
-
-        WeldPortableExtensions.getPortableExtensions(deploymentUnit).tryRegisterExtension(loadClass(PROBE_EXTENSION_CLASS_NAME, module.getClassLoader()),
-                deploymentUnit);
     }
 
     @Override
