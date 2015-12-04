@@ -22,15 +22,20 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.Collection;
+import java.util.function.BiPredicate;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -40,7 +45,7 @@ import org.jboss.dmr.ModelNode;
  * Generic boot-time add step handler that delegates service installation/rollback to a {@link ResourceServiceHandler}.
  * @author Paul Ferraro
  */
-public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler implements Registration<ManagementResourceRegistration> {
+public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler implements Registration<ManagementResourceRegistration>, DescribedAddStepHandler {
 
     private final AddStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
@@ -52,11 +57,26 @@ public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler imple
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    public AddStepHandlerDescriptor getDescriptor() {
+        return this.descriptor;
+    }
+
+    @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
             definition.validateOperation(operation);
         }
-        super.populateModel(operation, model);
+        super.populateModel(context, operation, resource);
+
+        // Auto-create required child resources as necessary
+        addRequiredChildren(context, this.descriptor.getRequiredChildren(), (Resource r, PathElement path) -> r.hasChild(path));
+        addRequiredChildren(context, this.descriptor.getRequiredSingletonChildren(), (Resource r, PathElement path) -> r.hasChildren(path.getKey()));
+    }
+
+    private static void addRequiredChildren(OperationContext context, Collection<PathElement> paths, BiPredicate<Resource, PathElement> present) {
+        for (PathElement path : paths) {
+            context.addStep(Util.createAddOperation(context.getCurrentAddress().append(path)), new AddIfAbsentStepHandler(present), OperationContext.Stage.MODEL);
+        }
     }
 
     @Override

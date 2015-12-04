@@ -95,6 +95,7 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new CustomStoreBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
