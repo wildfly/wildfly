@@ -33,7 +33,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -150,75 +149,19 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
         assertEquals("my-handlers2", postHandlers.get(0).getName());
     }
 
-    private FailedOperationTransformationConfig getConfig() {
-        PathAddress subsystemAddress = PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH);
-        PathAddress endpoint = subsystemAddress.append(WSExtension.ENDPOINT_CONFIG_PATH);
-        return new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.SUBSYSTEM_ATTRIBUTES))
-                .addFailedAttribute(endpoint.append(WSExtension.PRE_HANDLER_CHAIN_PATH),new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.PROTOCOL_BINDINGS))
-                .addFailedAttribute(endpoint.append(WSExtension.POST_HANDLER_CHAIN_PATH),new FailedOperationTransformationConfig.RejectExpressionsConfig(Attributes.PROTOCOL_BINDINGS))
-                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.PRE_HANDLER_CHAIN_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.PRE_HANDLER_CHAIN_PATH).append(WSExtension.HANDLER_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.POST_HANDLER_CHAIN_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                .addFailedAttribute(subsystemAddress.append(WSExtension.CLIENT_CONFIG_PATH).append(WSExtension.POST_HANDLER_CHAIN_PATH).append(WSExtension.HANDLER_PATH),FailedOperationTransformationConfig.REJECTED_RESOURCE);
-    }
-
-
-   private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        // create builder for legacy subsystem version
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:" + controllerVersion.getMavenGavVersion());
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
-
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        List<ModelNode> xmlOps = builder.parseXmlResource("ws-subsystem12.xml");
-
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, getConfig());
+    @Test
+    public void testTransformersEAP620() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
-    public void testTransformersAS712() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
-    public void testTransformersEAP600() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
-    }
-
-    @Test
-    public void testTransformersEAP601() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
-    }
-
-    @Test
-    public void testTransformersAS720() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
-    @Test
-    public void testTransformersEAP610() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    public void testTransformersEAP630() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_3_0);
     }
     
     @Test
-    public void testTransformersEAP611() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    public void testTransformersEAP640() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_4_0);
     }
 
     private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
