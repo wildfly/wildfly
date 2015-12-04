@@ -83,12 +83,4 @@ public class ServiceProviderRegistrationFactoryAdapter<T> implements ServiceProv
     public Set<T> getServices() {
         return this.registry.getServices();
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceProviderRegistration<T> createRegistration(T service, Listener listener) {
-        return this.registry.register(service, listener);
-    }
 }

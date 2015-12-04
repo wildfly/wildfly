@@ -67,7 +67,6 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     private final String containerName;
     private final List<Registry.Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
-    private final RegistryEntryProvider<K, V> provider;
     private final Cache<Node, Map.Entry<K, V>> cache;
     private final Batcher<? extends Batch> batcher;
     private final Group group;
@@ -81,8 +80,9 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
         this.factory = config.getNodeFactory();
-        this.provider = provider;
-        this.getLocalEntry();
+        try (Batch batch = this.batcher.createBatch()) {
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalNode(), new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue()));
+        }
         this.cache.addListener(this, this.filter);
     }
 
@@ -98,7 +98,8 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
             this.listeners.clear();
             final Node node = this.getGroup().getLocalNode();
             try (Batch batch = this.batcher.createBatch()) {
-                this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(node);
+                // If this remove fails, the entry will be auto-removed on topology change by the new primary owner
+                this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(node);
             }
         });
     }
@@ -127,18 +128,6 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     @Override
     public Map.Entry<K, V> getEntry(Node node) {
         return this.cache.get(node);
-    }
-
-    @Override
-    public Map.Entry<K, V> getLocalEntry() {
-        K key = this.provider.getKey();
-        if (key == null) return null;
-        final Map.Entry<K, V> entry = new AbstractMap.SimpleImmutableEntry<>(key, this.provider.getValue());
-        final Node node = this.getGroup().getLocalNode();
-        try (Batch batch = this.batcher.createBatch()) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(node, entry);
-        }
-        return entry;
     }
 
     @TopologyChanged
