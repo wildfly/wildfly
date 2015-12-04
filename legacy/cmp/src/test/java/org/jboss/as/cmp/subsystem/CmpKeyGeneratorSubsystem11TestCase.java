@@ -77,6 +77,11 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
         return super.standardSubsystemTest(configId, true);
     }
 
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //This subsystem does not have a subsystem template, so make this test a no-op
+    }
+
     @Test
     public void testParseSubsystem() throws Exception {
         final List<ModelNode> operations = super.parse(getSubsystemXml("subsystem-cmp-key-generators_1_1.xml"));

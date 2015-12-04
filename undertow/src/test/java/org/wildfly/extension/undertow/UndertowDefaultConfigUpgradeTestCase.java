@@ -24,10 +24,10 @@
 
 package org.wildfly.extension.undertow;
 
+import java.io.IOException;
+
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-
-import java.io.IOException;
 
 /**
  * This is the barebone test example that tests subsystem
@@ -45,6 +45,7 @@ public class UndertowDefaultConfigUpgradeTestCase extends AbstractSubsystemBaseT
         return readResource("undertow-default-8.0.0.xml");
     }
 
+
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, marshalled, readResource("undertow-default.xml"));
@@ -54,4 +55,16 @@ public class UndertowDefaultConfigUpgradeTestCase extends AbstractSubsystemBaseT
     protected AdditionalInitialization createAdditionalInitialization() {
         return UndertowSubsystemTestCase.DEFAULT;
     }
+
+    @Override
+    public void testSchema() throws Exception {
+        //This test case is using an xml referencing a legacy schemas, and so this test is not relevant
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //This test fails without resolving the properties, so make this a no-op since it is tested in the main
+        //subsystem test
+    }
+
 }

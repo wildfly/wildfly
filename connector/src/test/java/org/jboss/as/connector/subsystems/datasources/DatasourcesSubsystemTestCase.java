@@ -57,18 +57,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("datasources-minimal.xml");
     }
 
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_4_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/datasources.xml"
-        };
-    }
-
     @Test
     public void testFullConfig() throws Exception {
         standardSubsystemTest("datasources-full.xml");

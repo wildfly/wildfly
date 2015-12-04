@@ -21,9 +21,11 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RequiredCapability;
@@ -75,6 +77,31 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
             { InfinispanSchema.VERSION_4_0, 66 },
         };
         return Arrays.asList(data);
+    }
+
+    @Override
+    public void testSchema() throws Exception {
+        //Only invoke this test for the latest version of the schema
+        //Don't invoke it for the older versions, there is little we can do about that now
+        if (schema == InfinispanSchema.CURRENT) {
+            super.testSchema();
+        }
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //Only invoke this test for the latest version of the schema
+        //Don't invoke it for the older versions, since the subsystem template is for the latest version
+        if (schema == InfinispanSchema.CURRENT) {
+            super.testSchemaOfSubsystemTemplates();
+        }
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("java.io.tmpdir", Paths.get(".").toAbsolutePath().normalize().toString());
+        return properties;
     }
 
     @Override

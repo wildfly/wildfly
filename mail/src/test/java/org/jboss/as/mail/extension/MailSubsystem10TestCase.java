@@ -73,6 +73,18 @@ public class MailSubsystem10TestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem_1_0.xml");
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        //This is an old version so overide the automatic search for the latest
+        return "schema/jboss-as-mail_1_0.xsd";
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //The old xsd used by this test is not compatible with the template using the latest schema.
+    }
+
+
     protected AdditionalInitialization createAdditionalInitialization() {
         return new Initializer();
     }

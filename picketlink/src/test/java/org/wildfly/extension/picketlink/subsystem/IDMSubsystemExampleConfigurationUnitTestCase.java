@@ -22,6 +22,11 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Set;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -31,11 +36,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
-
-import java.io.IOException;
-import java.util.Set;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Pedro Igor
@@ -49,6 +49,13 @@ public class IDMSubsystemExampleConfigurationUnitTestCase extends AbstractSubsys
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("identity-management-subsystem-example-2.0.xml");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        //picketlink-identity-management has a schema file which does not follow the usual naming pattern
+        //so it cannot be determined automatically by the parent method
+        return "schema/wildfly-picketlink-idm_2_0.xsd";
     }
 
     @Test

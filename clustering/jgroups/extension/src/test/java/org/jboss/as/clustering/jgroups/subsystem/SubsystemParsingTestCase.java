@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -76,6 +77,35 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                 { JGroupsSchema.VERSION_4_0, 33 },
         };
         return Arrays.asList(data);
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("jboss.jgroups.s3_ping.access_key", "access-key");
+        properties.put("jboss.jgroups.s3_ping.secret_access_key", "secret-access-key");
+        properties.put("jboss.jgroups.s3_ping.bucket", "bucket");
+        properties.put("jboss.jgroups.gossip.initial_hosts", "initial_hosts");
+        properties.put("jboss.jgroups.gossip.num_initial_members", "num_initial_members");
+        return properties;
+    }
+
+    @Override
+    public void testSchema() throws Exception {
+        //Only invoke this test for the latest version of the schema
+        //Don't invoke it for the older versions, there is little we can do about that now
+        if (schema == JGroupsSchema.CURRENT) {
+            super.testSchema();
+        }
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //Only invoke this test for the latest version of the schema
+        //Don't invoke it for the older versions, since the subsystem template is for the latest version
+        if (schema == JGroupsSchema.CURRENT) {
+            super.testSchemaOfSubsystemTemplates();
+        }
     }
 
     private KernelServices buildKernelServices() throws Exception {

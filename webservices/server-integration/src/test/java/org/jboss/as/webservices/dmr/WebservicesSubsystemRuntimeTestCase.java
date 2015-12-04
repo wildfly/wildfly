@@ -62,6 +62,12 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
         return readResource("ws-subsystem20-rt.xml");
     }
 
+    @Override
+    public void testSchema() throws Exception {
+        //This test case is using an xml referencing a legacy schemas, and so this test is not relevant
+        //It is already tested in the main subsystem test
+    }
+
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization() {
             @Override

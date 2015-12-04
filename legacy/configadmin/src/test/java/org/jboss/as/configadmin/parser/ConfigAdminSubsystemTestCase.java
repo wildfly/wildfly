@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -73,6 +72,16 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public ConfigAdminSubsystemTestCase() {
         super(ConfigAdminExtension.SUBSYSTEM_NAME, new ConfigAdminExtension());
+    }
+
+    @Override
+    public void testSchema() throws Exception {
+        //There is no xsd any longer for this legacy subsystem, so have this test be a no-op
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //There is no xsd any longer for this legacy subsystem, so have this test be a no-op
     }
 
     @Override

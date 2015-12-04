@@ -41,8 +41,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.iiop.openjdk.IIOPExtension;
-import org.wildfly.iiop.openjdk.Namespace;
 
 /**
  * <ṕ>
@@ -72,18 +70,6 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testExpressions() throws Exception {
         standardSubsystemTest("expressions-1.0.xml");
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-iiop-openjdk_1_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/iiop-openjdk.xml"
-        };
     }
 
     @Test

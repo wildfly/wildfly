@@ -25,9 +25,6 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.util.Properties;
 
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -39,6 +36,10 @@ import org.junit.Test;
 import org.wildfly.extension.undertow.filters.FilterRef;
 import org.wildfly.extension.undertow.filters.FilterService;
 
+import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.PathHandler;
+
 /**
  * This is the barebone test example that tests subsystem
  *
@@ -48,11 +49,6 @@ public class UndertowSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
     public UndertowSubsystem20TestCase() {
         super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-2.0.xml");
     }
 
     @Override
@@ -70,10 +66,19 @@ public class UndertowSubsystem20TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("undertow-2.0.xml");
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //The xsd used for this test is not compatible with the subsystem template, so make this test a no-op
+    }
+
+    @Override
     protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
         return super.standardSubsystemTest(configId, false);
     }
-
 
     @Test
     public void testRuntime() throws Exception {

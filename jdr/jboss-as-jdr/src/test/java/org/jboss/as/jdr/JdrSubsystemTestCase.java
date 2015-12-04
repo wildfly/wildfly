@@ -67,18 +67,6 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
     }
 
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-jdr_1_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-          "/subsystem-templates/jdr.xml"
-        };
-    }
-
     @Test
     public void testTransformersAS712() throws Exception {
         testJdrTransformers(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 0, 0));

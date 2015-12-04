@@ -27,9 +27,6 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.util.Properties;
 
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -40,6 +37,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.extension.undertow.filters.FilterRef;
 import org.wildfly.extension.undertow.filters.FilterService;
+
+import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.PathHandler;
 
 /**
  * This is the barebone test example that tests subsystem
@@ -69,6 +70,11 @@ public class UndertowSubsystem10TestCase extends AbstractSubsystemBaseTest {
         properties.put("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
         properties.put("server.data.dir", System.getProperty("java.io.tmpdir"));
         return properties;
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //The xsd used for this test is not compatible with the subsystem template, so make this test a no-op
     }
 
     @Override

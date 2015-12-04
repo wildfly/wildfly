@@ -23,8 +23,6 @@
 package org.wildfly.extension.batch.jberet;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collection;
 
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.Test;
@@ -41,18 +39,6 @@ public class SubsystemParsingTestCase extends AbstractBatchTestCase {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("/default-subsystem.xml");
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-batch-jberet_1_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-            "/subsystem-templates/batch-jberet.xml"
-        };
     }
 
     @Test

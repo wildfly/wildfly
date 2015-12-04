@@ -43,18 +43,6 @@ public class MessagingActiveMQSubsystem_1_0_TestCase extends AbstractSubsystemBa
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_1_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/messaging-activemq.xml"
-        };
-    }
-
-    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("messaging.cluster.user.name", "myClusterUser");

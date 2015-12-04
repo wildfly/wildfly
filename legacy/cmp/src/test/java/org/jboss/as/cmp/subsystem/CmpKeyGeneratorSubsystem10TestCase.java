@@ -76,6 +76,17 @@ public class CmpKeyGeneratorSubsystem10TestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
+    public void testSchema() throws Exception {
+        //This test case is using an xml referencing a legacy schema, and so this test is not relevant
+        //It is already tested in the main subsystem test
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //This subsystem does not have a subsystem template, so make this test a no-op
+    }
+
+    @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization() {
 

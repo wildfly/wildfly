@@ -64,11 +64,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
     }
 
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-ee_4_0.xsd";
-    }
-
     @Test
     public void testTransformers800() throws Exception {
         final ModelVersion legacyModelVersion = ModelVersion.create(3, 0, 0);

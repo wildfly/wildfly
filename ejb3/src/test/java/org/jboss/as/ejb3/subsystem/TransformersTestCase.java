@@ -57,18 +57,6 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
     }
 
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_4_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/ejb3.xml"
-        };
-    }
-
     @Test
     public void testTransformerEAP620() throws Exception {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_2_0;

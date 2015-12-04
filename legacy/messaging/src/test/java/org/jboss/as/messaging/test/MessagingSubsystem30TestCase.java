@@ -117,11 +117,6 @@ public class MessagingSubsystem30TestCase extends AbstractLegacySubsystemBaseTes
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-messaging_3_0.xsd";
-    }
-
-    @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
             "/subsystem-templates/messaging.xml",

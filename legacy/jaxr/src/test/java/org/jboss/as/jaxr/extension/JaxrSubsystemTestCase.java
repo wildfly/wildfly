@@ -65,6 +65,11 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("xsd1_0.xml", false);
     }
 
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //This subsystem does not have a subsystem template, so make this test a no-op
+    }
+
     /**
      * Tests transformation of model from 1.2.0 version into 1.1.0 version.
      *
