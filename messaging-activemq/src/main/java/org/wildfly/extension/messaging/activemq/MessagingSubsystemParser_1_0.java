@@ -145,14 +145,15 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
                                                         HAAttributes.GROUP_NAME,
-                                                        HAAttributes.CHECK_FOR_LIVE_SERVER))
+                                                        HAAttributes.CHECK_FOR_LIVE_SERVER,
+                                                        HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT))
                                 .addChild(
                                         builder(ReplicationSlaveDefinition.INSTANCE)
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
                                                         HAAttributes.GROUP_NAME,
                                                         HAAttributes.ALLOW_FAILBACK,
-                                                        HAAttributes.FAILBACK_DELAY,
+                                                        HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT,
                                                         HAAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE,
                                                         HAAttributes.RESTART_BACKUP,
                                                         ScaleDownAttributes.SCALE_DOWN,
@@ -174,14 +175,15 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                                 .addAttributes(
                                                                         HAAttributes.CLUSTER_NAME,
                                                                         HAAttributes.GROUP_NAME,
-                                                                        HAAttributes.CHECK_FOR_LIVE_SERVER))
+                                                                        HAAttributes.CHECK_FOR_LIVE_SERVER,
+                                                                        HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT))
                                                 .addChild(
                                                         builder(ReplicationSlaveDefinition.CONFIGURATION_INSTANCE)
                                                                 .addAttributes(
                                                                         HAAttributes.CLUSTER_NAME,
                                                                         HAAttributes.GROUP_NAME,
                                                                         HAAttributes.ALLOW_FAILBACK,
-                                                                        HAAttributes.FAILBACK_DELAY,
+                                                                        HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT,
                                                                         HAAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE,
                                                                         HAAttributes.RESTART_BACKUP,
                                                                         ScaleDownAttributes.SCALE_DOWN,
@@ -192,13 +194,11 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                 .addChild(
                                         builder(SharedStoreMasterDefinition.INSTANCE)
                                                 .addAttributes(
-                                                        HAAttributes.FAILBACK_DELAY,
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
                                 .addChild(
                                         builder(SharedStoreSlaveDefinition.INSTANCE)
                                                 .addAttributes(
                                                         HAAttributes.ALLOW_FAILBACK,
-                                                        HAAttributes.FAILBACK_DELAY,
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
                                                         HAAttributes.RESTART_BACKUP,
                                                         ScaleDownAttributes.SCALE_DOWN,
@@ -217,13 +217,11 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                 .addChild(
                                                         builder(SharedStoreMasterDefinition.CONFIGURATION_INSTANCE)
                                                                 .addAttributes(
-                                                                        HAAttributes.FAILBACK_DELAY,
                                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
                                                 .addChild(
                                                         builder(SharedStoreSlaveDefinition.CONFIGURATION_INSTANCE)
                                                                 .addAttributes(
                                                                         HAAttributes.ALLOW_FAILBACK,
-                                                                        HAAttributes.FAILBACK_DELAY,
                                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
                                                                         HAAttributes.RESTART_BACKUP,
                                                                         ScaleDownAttributes.SCALE_DOWN,

@@ -98,19 +98,18 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode haPolicyForDefaultServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "default", "ha-policy", "shared-store-master");
         assertTrue(haPolicyForDefaultServer.isDefined());
-        // default values
-        assertEquals(5000, haPolicyForDefaultServer.get("failback-delay").asLong());
+        assertFalse(haPolicyForDefaultServer.get("failback-delay").isDefined());
         assertEquals(false, haPolicyForDefaultServer.get("failover-on-server-shutdown").asBoolean());
 
         ModelNode haPolicyForSharedStoreMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "shared-store-master", "ha-policy", "shared-store-master");
         assertTrue(haPolicyForSharedStoreMasterServer.isDefined());
-        assertEquals("${failback.delay:9876}", haPolicyForSharedStoreMasterServer.get("failback-delay").asString());
+        assertFalse(haPolicyForSharedStoreMasterServer.get("failback-delay").isDefined());
         assertEquals("${failover.on.shutdown:true}", haPolicyForSharedStoreMasterServer.get("failover-on-server-shutdown").asString());
 
         ModelNode haPolicyForSharedStoreSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "shared-store-slave", "ha-policy", "shared-store-slave");
         assertTrue(haPolicyForSharedStoreSlaveServer.isDefined());
         assertEquals("${allow.failback.1:false}", haPolicyForSharedStoreSlaveServer.get("allow-failback").asString());
-        assertEquals("${failback.delay.1:1234}", haPolicyForSharedStoreSlaveServer.get("failback-delay").asString());
+        assertFalse(haPolicyForSharedStoreSlaveServer.get("failback-delay").isDefined());
         assertEquals("${failover.on.shutdown.1:true}", haPolicyForSharedStoreSlaveServer.get("failover-on-server-shutdown").asString());
 
         ModelNode haPolicyForReplicationMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-master", "ha-policy", "replication-master");
@@ -121,7 +120,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         ModelNode haPolicyForReplicationSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-slave", "ha-policy", "replication-slave");
         assertTrue(haPolicyForReplicationSlaveServer.isDefined());
         assertEquals("${allow.failback.2:false}", haPolicyForReplicationSlaveServer.get("allow-failback").asString());
-        assertEquals("${failback.delay.2:1234}", haPolicyForReplicationSlaveServer.get("failback-delay").asString());
+        assertFalse(haPolicyForReplicationSlaveServer.get("failback-delay").isDefined());
         assertEquals("${max.saved.replicated.journal.size:2}", haPolicyForReplicationSlaveServer.get("max-saved-replicated-journal-size").asString());
         assertEquals("${replication.master.group.name:mygroup2}", haPolicyForReplicationSlaveServer.get("group-name").asString());
     }

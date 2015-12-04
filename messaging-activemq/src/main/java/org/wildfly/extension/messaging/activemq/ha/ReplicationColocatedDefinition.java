@@ -114,16 +114,12 @@ public class ReplicationColocatedDefinition extends PersistentResourceDefinition
         }
 
         ModelNode masterConfigurationModel = model.get(CONFIGURATION, MASTER);
-        if (masterConfigurationModel.isDefined()) {
-            HAPolicyConfiguration masterConfiguration = ReplicationMasterDefinition.buildConfiguration(context, masterConfigurationModel);
-            haPolicyConfiguration.setLiveConfig(masterConfiguration);
-        }
+        HAPolicyConfiguration masterConfiguration = ReplicationMasterDefinition.buildConfiguration(context, masterConfigurationModel);
+        haPolicyConfiguration.setLiveConfig(masterConfiguration);
 
         ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SLAVE);
-        if (slaveConfigurationModel.isDefined()) {
-            HAPolicyConfiguration slaveConfiguration = ReplicationSlaveDefinition.buildConfiguration(context, slaveConfigurationModel);
-            haPolicyConfiguration.setBackupConfig(slaveConfiguration);
-        }
+        HAPolicyConfiguration slaveConfiguration = ReplicationSlaveDefinition.buildConfiguration(context, slaveConfigurationModel);
+        haPolicyConfiguration.setBackupConfig(slaveConfiguration);
 
         return haPolicyConfiguration;
     }
