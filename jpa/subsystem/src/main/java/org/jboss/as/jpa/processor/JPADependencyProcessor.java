@@ -92,8 +92,16 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         if (!JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             return; // Skip if there are no persistence use in the deployment
         }
-        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID, JAVASSIST_ID);
+        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID);
+        addJavassist(moduleSpecification, moduleLoader, deploymentUnit);
         addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
+    }
+
+    private void addJavassist(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+                              DeploymentUnit deploymentUnit) {
+
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVASSIST_ID, false, false, false, false));
+        ROOT_LOGGER.debugf("added %s dependency to %s", JAVASSIST_ID, deploymentUnit.getName());
     }
 
 
