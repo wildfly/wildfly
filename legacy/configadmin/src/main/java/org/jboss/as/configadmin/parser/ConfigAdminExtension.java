@@ -21,18 +21,13 @@
  */
 package org.jboss.as.configadmin.parser;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.Collections;
+import java.util.Set;
 
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -40,17 +35,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
-
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Domain extension used to initialize the ConfigAdmin subsystem.
@@ -64,9 +48,7 @@ public class ConfigAdminExtension extends AbstractLegacyExtension {
     public static final String SUBSYSTEM_NAME = "configadmin";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final ModelVersion MANAGEMENT_API_VERSION = ModelVersion.create(1, 1, 0);
 
     private static final String RESOURCE_NAME = ConfigAdminExtension.class.getPackage().getName() + ".LocalDescriptions";
     public static final String EXTENSION_NAME = "org.jboss.as.configadmin";
@@ -87,47 +69,12 @@ public class ConfigAdminExtension extends AbstractLegacyExtension {
     @Override
     public Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_VERSION);
         ManagementResourceRegistration subsystemRoot = subsystem.registerSubsystemModel(new ConfigAdminRootResource());
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers_1_0_0(subsystem);
-        }
+        //no need to register transformers as whole extension was deprecated in EAP 6.1 and hasn't changed since, so 1.1.0 in 6.2+ is same as current
 
         subsystem.registerXMLElementWriter(ConfigAdminParser.INSTANCE);
         return Collections.singleton(subsystemRoot);
-    }
-
-    private void registerTransformers_1_0_0(final SubsystemRegistration subsystemRegistration) {
-        final ModelVersion version = ModelVersion.create(1, 0, 0);
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.addChildResource(PathElement.pathElement(ModelConstants.CONFIGURATION))
-            .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ConfigurationResource.ENTRIES)
-                .end()
-            .addOperationTransformationOverride(ModelConstants.UPDATE)
-                .setCustomOperationTransformer(new OperationTransformer() {
-                    @Override
-                    public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
-                            throws OperationFailedException {
-                        ModelNode remove = operation.clone();
-                        remove.get(OP).set(REMOVE);
-                        remove.remove(ModelConstants.ENTRIES);
-
-                        ModelNode add = operation.clone();
-                        add.get(OP).set(ADD);
-
-                        ModelNode composite = new ModelNode();
-                        composite.get(OP).set(COMPOSITE);
-                        composite.get(OP_ADDR).setEmptyList();
-                        composite.get(STEPS).add(remove);
-                        composite.get(STEPS).add(add);
-
-                        return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
-                    }
-                });
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, version);
     }
 }
