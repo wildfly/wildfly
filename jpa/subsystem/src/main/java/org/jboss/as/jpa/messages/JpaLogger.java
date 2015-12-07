@@ -26,7 +26,6 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
-import java.net.URLConnection;
 
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
@@ -41,7 +40,6 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -191,8 +189,8 @@ public interface JpaLogger extends BasicLogger {
      * @param name  the name of the integration.
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 13, value = "Could not add %s integration module to deployment")
-    RuntimeException cannotAddIntegration(@Cause Throwable cause, String name);
+    //@Message(id = 13, value = "Could not add %s integration module to deployment")
+    // RuntimeException cannotAddIntegration(@Cause Throwable cause, String name);
 
     /**
      * Creates an exception indicating the input stream reference cannot be changed.
@@ -325,8 +323,8 @@ public interface JpaLogger extends BasicLogger {
      * @param name     the name of the adapter.
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 26, value = "Could not load module %s to add %s adapter to deployment")
-    RuntimeException cannotLoadModule(@Cause Throwable cause, ModuleIdentifier moduleId, String name);
+    //@Message(id = 26, value = "Could not load module %s to add %s adapter to deployment")
+    //RuntimeException cannotLoadModule(@Cause Throwable cause, ModuleIdentifier moduleId, String name);
 
     /**
      * Creates an exception indicating the persistence provider module, represented by the
@@ -345,8 +343,8 @@ public interface JpaLogger extends BasicLogger {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 28, value = "Internal error: Cannot replace top of stack as stack is null (same as being empty).")
-    RuntimeException cannotReplaceStack();
+    //@Message(id = 28, value = "Internal error: Cannot replace top of stack as stack is null (same as being empty).")
+    //RuntimeException cannotReplaceStack();
 
     /**
      * Creates an exception indicating that both {@code key1} and {@code key2} cannot be specified for the object.
@@ -521,8 +519,8 @@ public interface JpaLogger extends BasicLogger {
      * @param connection      the invalid connection.
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 45, value = "Could not add %s integration module to deployment, did not get expected JarUrlConnection, got %s")
-    RuntimeException invalidUrlConnection(String integrationName, URLConnection connection);
+    //@Message(id = 45, value = "Could not add %s integration module to deployment, did not get expected JarUrlConnection, got %s")
+    //RuntimeException invalidUrlConnection(String integrationName, URLConnection connection);
 
     //@Message(id = 46, value = "Could not load %s")
     //XMLStreamException errorLoadingJBossJPAFile(@Cause Throwable cause, String path);
