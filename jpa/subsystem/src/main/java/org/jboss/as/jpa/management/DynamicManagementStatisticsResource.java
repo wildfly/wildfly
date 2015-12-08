@@ -243,7 +243,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
 
     @Override
     public boolean isRuntime() {
-        return false;
+        return true;
     }
 
     @Override
