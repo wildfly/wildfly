@@ -423,6 +423,7 @@
                         <failsOnError>true</failsOnError>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <excludes>**/*$logger.java,**/*$bundle.java</excludes>
+                        <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
                         <useFile/>
                     </configuration>
                     <dependencies>
