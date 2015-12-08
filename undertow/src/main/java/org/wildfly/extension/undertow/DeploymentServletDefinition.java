@@ -141,10 +141,8 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
                         }
                         context.getResult().set(response);
                     }
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
-            context.stepCompleted();
         }
     }
 
