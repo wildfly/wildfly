@@ -123,4 +123,7 @@
         <rewrite name="redirects" target="'/foo/'" redirect="true" />
     </filters>
 
+    <application-security-domains>
+        <application-security-domain security-domain="other" http-authentication-factory="elytron-factory" override-deployment-config="true" />
+    </application-security-domains>
 </subsystem>

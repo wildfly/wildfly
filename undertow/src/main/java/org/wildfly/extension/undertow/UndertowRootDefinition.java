@@ -76,13 +76,15 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .build();
 
 
-    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN};
+    static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
+    static final AttributeDefinition[] ATTRIBUTES = { DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN };
     static final PersistentResourceDefinition[] CHILDREN = {
             BufferCacheDefinition.INSTANCE,
             ServerDefinition.INSTANCE,
             ServletContainerDefinition.INSTANCE,
             HandlerDefinitions.INSTANCE,
-            FilterDefinitions.INSTANCE
+            FilterDefinitions.INSTANCE,
+            APPLICATION_SECURITY_DOMAIN
     };
 
     public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
@@ -90,7 +92,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     private UndertowRootDefinition() {
         super(UndertowExtension.SUBSYSTEM_PATH,
                 UndertowExtension.getResolver(),
-                UndertowSubsystemAdd.INSTANCE,
+                new UndertowSubsystemAdd(APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate()),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

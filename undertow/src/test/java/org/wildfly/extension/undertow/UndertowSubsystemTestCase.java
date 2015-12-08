@@ -30,9 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -61,10 +58,15 @@ import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
 import org.wildfly.extension.undertow.filters.FilterRef;
 import org.wildfly.extension.undertow.filters.FilterService;
+import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
+
+import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.PathHandler;
 
 /**
  * This is the barebone test example that tests subsystem
@@ -222,6 +224,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
             for (String entry : sockets.keySet()) {
                 capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.SOCKET_CAPABILITY, entry), SocketBinding.class);
             }
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.http-server-authentication", "elytron-factory"), HttpAuthenticationFactory.class);
             registerServiceCapabilities(capabilityRegistry, capabilities);
 
         }
