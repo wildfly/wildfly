@@ -180,9 +180,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         for (SimpleAttributeDefinition attr : EJB3SubsystemRootResourceDefinition.ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
-        if (context.getProcessType().isServer()) {
-            context.addStep(new ValidateClusteredCacheRefHandler(), OperationContext.Stage.MODEL);
-        }
     }
 
     @Override

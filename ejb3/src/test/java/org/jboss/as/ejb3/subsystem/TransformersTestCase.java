@@ -172,9 +172,8 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // create a chained config to apply multiple transformation configs to each one of a collection of attributes
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
-                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
-                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
+                    EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
+                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
@@ -214,9 +213,8 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // create a chained config to apply multiple transformation configs to each one of a collection of attributes
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
-                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
-                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
+                    EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
+                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 

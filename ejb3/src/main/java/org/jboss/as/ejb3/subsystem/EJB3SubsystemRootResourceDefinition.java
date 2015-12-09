@@ -101,19 +101,13 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     static final SimpleAttributeDefinition DEFAULT_SFSB_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SFSB_CACHE, ModelType.STRING, true)
                     .setAllowExpression(true)
+                    .addAlternatives(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE)
                     .build();
     static final SimpleAttributeDefinition DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATION_DISABLED_CACHE_REF.getLocalName())
                     .setAllowExpression(true)
                     .build();
-    static final SimpleAttributeDefinition DEFAULT_CLUSTERED_SFSB_CACHE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE, ModelType.STRING, true)
-                    .setAllowExpression(true)
-                    .setAllowNull(true)
-                    .setDeprecated(ModelVersion.create(2))
-                    .build();
-
     static final SimpleAttributeDefinition ENABLE_STATISTICS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
@@ -182,7 +176,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     }
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            DEFAULT_CLUSTERED_SFSB_CACHE,
             DEFAULT_ENTITY_BEAN_INSTANCE_POOL,
             DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING,
             DEFAULT_MDB_INSTANCE_POOL,
@@ -205,7 +198,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_CLUSTERED_SFSB_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.CLUSTERED_SFSB_CACHE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.MDB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_ENTITY_BEAN_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.ENTITY_BEAN_POOL);
@@ -291,10 +283,15 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         registerTransformers1_2_1_and_1_3_0(subsystemRegistration, VERSION_1_3_0);
     }
 
+    @SuppressWarnings("deprecation")
     private static void registerTransformers1_2_1_and_1_3_0(SubsystemRegistration subsystemRegistration, ModelVersion version) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
-        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
+
+        builder.getAttributeBuilder()
+                .addRename(DEFAULT_SFSB_CACHE, EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE)
+                .addRename(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemModel.DEFAULT_SFSB_CACHE)
+        ;
+
         //This used to behave as 'true' and it is now defaulting as 'true'
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);

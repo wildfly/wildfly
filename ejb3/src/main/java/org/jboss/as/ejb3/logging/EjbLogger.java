@@ -2977,7 +2977,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 448, value = "Transaction '%s' is in unexpected state (%s)")
     EJBException transactionInUnexpectedState(Transaction tx, String txStatus);
 
-    @Message(id = 449, value = "Timerservice API is not allowed on stateful session bean %s")
+    @Message(id = 449, value = "TimerService API is not allowed on stateful session bean %s")
     String timerServiceMethodNotAllowedForSFSB(final String ejbComponent);
 
     @Message(id = 450, value = "CMP Entity Beans are not supported")
