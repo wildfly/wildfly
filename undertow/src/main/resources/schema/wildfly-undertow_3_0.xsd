@@ -72,7 +72,7 @@
     <xs:complexType name="socket-options-type">
         <xs:attribute name="receive-buffer" type="xs:int"/>
         <xs:attribute name="send-buffer" type="xs:int"/>
-        <xs:attribute name="tcp-backlog" type="xs:int"/>
+        <xs:attribute name="tcp-backlog" type="xs:int" default="10000"/>
         <xs:attribute name="tcp-keep-alive" type="xs:boolean"/>
         <xs:attribute name="read-timeout" type="xs:long"/>
         <xs:attribute name="write-timeout" type="xs:long"/>
