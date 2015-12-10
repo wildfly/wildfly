@@ -28,7 +28,7 @@
       <subsystem>elytron.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
-      <subsystem>undertow.xml</subsystem>
+      <subsystem supplement="elytron">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
       <subsystem>weld.xml</subsystem>
    </subsystems>
