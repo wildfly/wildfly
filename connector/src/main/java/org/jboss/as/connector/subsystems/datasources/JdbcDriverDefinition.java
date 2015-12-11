@@ -24,6 +24,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS_INFO;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 
 import java.util.List;
@@ -44,16 +45,21 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class JdbcDriverDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_DRIVER = PathElement.pathElement(JDBC_DRIVER_NAME);
-    static final JdbcDriverDefinition INSTANCE = new JdbcDriverDefinition();
 
+    private final boolean runtimeOnly;
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
-    private JdbcDriverDefinition() {
+    static JdbcDriverDefinition createInstance(final boolean runtimeOnly) {
+        return new JdbcDriverDefinition(runtimeOnly);
+    }
+
+    private JdbcDriverDefinition(final boolean runtimeOnly) {
         super(PATH_DRIVER,
                 DataSourcesExtension.getResourceDescriptionResolver(JDBC_DRIVER_NAME),
                 JdbcDriverAdd.INSTANCE,
                 JdbcDriverRemove.INSTANCE);
+        this.runtimeOnly = runtimeOnly;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(DataSourcesExtension.SUBSYSTEM_NAME, JDBC_DRIVER_NAME);
         accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
@@ -62,6 +68,9 @@ public class JdbcDriverDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attribute : Constants.JDBC_DRIVER_ATTRIBUTES) {
             resourceRegistration.registerReadOnlyAttribute(attribute, null);
+        }
+        if (runtimeOnly) {
+            resourceRegistration.registerMetric(DATASOURCE_CLASS_INFO, GetDataSourceClassInfoOperationHandler.INSTANCE);
         }
     }
 
