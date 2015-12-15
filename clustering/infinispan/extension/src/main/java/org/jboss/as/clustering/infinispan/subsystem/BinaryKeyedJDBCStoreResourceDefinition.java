@@ -157,18 +157,14 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addExtraParameters(JDBCStoreResourceDefinition.DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
+                .addRequiredChildren(BinaryTableResourceDefinition.PATH)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryKeyedJDBCStoreBuilderFactory());
         new AddStepHandler(descriptor, handler) {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                 translateAddOperation(context, operation);
-                super.populateModel(context, operation, resource);
-            }
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                super.execute(context, operation);
                 if (operation.hasDefined(DeprecatedAttribute.TABLE.getDefinition().getName())) {
                     // Translate deprecated TABLE attribute into separate add table operation
                     ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH));
@@ -178,6 +174,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                     }
                     context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), ModelDescriptionConstants.ADD), context.getCurrentStage());
                 }
+                super.populateModel(context, operation, resource);
             }
         }.register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

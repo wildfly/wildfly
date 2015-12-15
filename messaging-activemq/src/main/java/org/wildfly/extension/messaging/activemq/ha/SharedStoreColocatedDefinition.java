@@ -106,16 +106,12 @@ public class SharedStoreColocatedDefinition extends PersistentResourceDefinition
                 .setBackupPortOffset(BACKUP_PORT_OFFSET.resolveModelAttribute(context, model).asInt());
 
         ModelNode masterConfigurationModel = model.get(CONFIGURATION, MASTER);
-        if (masterConfigurationModel.isDefined()) {
-            HAPolicyConfiguration masterConfiguration = ReplicationMasterDefinition.buildConfiguration(context, masterConfigurationModel);
-            haPolicyConfiguration.setLiveConfig(masterConfiguration);
-        }
+        HAPolicyConfiguration masterConfiguration = SharedStoreMasterDefinition.buildConfiguration(context, masterConfigurationModel);
+        haPolicyConfiguration.setLiveConfig(masterConfiguration);
 
         ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SLAVE);
-        if (slaveConfigurationModel.isDefined()) {
-            HAPolicyConfiguration slaveConfiguration = ReplicationSlaveDefinition.buildConfiguration(context, slaveConfigurationModel);
-            haPolicyConfiguration.setBackupConfig(slaveConfiguration);
-        }
+        HAPolicyConfiguration slaveConfiguration = SharedStoreSlaveDefinition.buildConfiguration(context, slaveConfigurationModel);
+        haPolicyConfiguration.setBackupConfig(slaveConfiguration);
 
         return haPolicyConfiguration;
     }

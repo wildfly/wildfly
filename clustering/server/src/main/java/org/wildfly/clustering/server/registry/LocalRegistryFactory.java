@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.server.registry;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
@@ -34,6 +36,8 @@ import org.wildfly.clustering.registry.RegistryFactory;
  */
 public class LocalRegistryFactory<K, V> implements RegistryFactory<K, V> {
 
+    final AtomicReference<RegistryEntryProvider<K, V>> provider = new AtomicReference<>();
+
     private final Group group;
 
     public LocalRegistryFactory(Group group) {
@@ -42,6 +46,16 @@ public class LocalRegistryFactory<K, V> implements RegistryFactory<K, V> {
 
     @Override
     public Registry<K, V> createRegistry(RegistryEntryProvider<K, V> provider) {
-        return new LocalRegistry<>(this.group, provider);
+        // Ensure only one registry is created at a time
+        if (!this.provider.compareAndSet(null, provider)) {
+            throw new IllegalStateException();
+        }
+        return new LocalRegistry<K, V>(this.group, provider) {
+            @Override
+            public void close() {
+                super.close();
+                LocalRegistryFactory.this.provider.set(null);
+            }
+        };
     }
 }

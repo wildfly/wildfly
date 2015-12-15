@@ -28,6 +28,7 @@
         <artifact name="${org.hibernate:hibernate-core}"/>
         <artifact name="${org.hibernate:hibernate-envers}"/>
         <artifact name="${org.hibernate:hibernate-entitymanager}"/>
+        <artifact name="${org.hibernate:hibernate-java8}"/>
     </resources>
 
     <dependencies>

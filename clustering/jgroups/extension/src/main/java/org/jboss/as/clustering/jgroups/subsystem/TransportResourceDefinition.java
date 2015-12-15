@@ -28,7 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.Operations;
@@ -41,7 +40,7 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
-import org.jboss.as.clustering.controller.transform.ImplicitlyAddedResourceDynamicDiscardPolicy;
+import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
@@ -219,9 +218,9 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
             }
 
             // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
-            builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, new ImplicitlyAddedResourceDynamicDiscardPolicy());
+            builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, new RequiredChildResourceDiscardPolicy());
         } else {
-            Stream.of(ThreadPoolResourceDefinition.values()).forEach(p -> p.buildTransformation(version, parent));
+            EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.buildTransformation(version, parent));
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
@@ -295,6 +294,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                 .addExtraParameters(ProtocolResourceDefinition.DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(ProtocolResourceDefinition.Capability.class)
+                .addRequiredChildren(ThreadPoolResourceDefinition.class)
                 ;
         ResourceServiceHandler handler = new ParentResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
         new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {

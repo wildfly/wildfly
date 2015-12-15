@@ -37,6 +37,7 @@
 
     <dependencies>
         <module name="javax.servlet.api"/>
+        <module name="javax.transaction.api"/>
 
         <module name="net.jcip"/>
         <module name="org.infinispan"/>

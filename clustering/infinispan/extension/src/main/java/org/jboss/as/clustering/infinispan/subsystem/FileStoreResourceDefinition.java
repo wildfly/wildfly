@@ -104,6 +104,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new FileStoreBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);

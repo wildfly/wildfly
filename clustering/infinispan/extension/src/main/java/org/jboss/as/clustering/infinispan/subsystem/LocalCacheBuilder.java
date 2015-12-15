@@ -72,8 +72,7 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
         PersistenceConfiguration persistence = this.persistence.getValue();
 
         // Auto-enable simple cache optimization if cache is non-transactional and non-persistent
-        // ISPN-5957 workaround - this doesn't work when statistics are enabled
-        builder.simpleCache(!transaction.transactionMode().isTransactional() && !persistence.usingStores() && !builder.jmxStatistics().create().available());
+        builder.simpleCache(!transaction.transactionMode().isTransactional() && !persistence.usingStores());
 
         if ((transaction.lockingMode() == LockingMode.OPTIMISTIC) && (locking.isolationLevel() == IsolationLevel.REPEATABLE_READ)) {
             builder.locking().writeSkewCheck(true);

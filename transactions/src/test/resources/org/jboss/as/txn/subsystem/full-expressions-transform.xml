@@ -6,15 +6,18 @@
     </core-environment>
     <recovery-environment socket-binding="${test.recovery.socket-binding:txn-recovery-environment" status-socket-binding="${test.recovery.status-socketbinding:txn-status-manager}"
                           recovery-listener="${test.recovery.listener:false}"/>
-    <coordinator-environment enable-statistics="${test.statistics.enabled:true}" enable-tsm-status="${test.enable.tsm.status:true}"
+    <coordinator-environment enable-tsm-status="${test.enable.tsm.status:true}" statistics-enabled="${test.statistics.enabled:true}"
                              default-timeout="${test.default.timeout:300}"/>
     <object-store path="${test.store.path:tx-object-store}" relative-to="${test.store.relative-to:jboss.server.data.dir}"/>
     <jts/>
-    <use-journal-store enable-async-io="${test.enable.async.io:false}"/>
+    <!-- Can't use expressions here since the transformer checks -->
+    <use-journal-store enable-async-io="true"/>
+    <!-- Rejected in the older model
     <commit-markable-resources>
-        <commit-markable-resource jndi-name="java:/foo">
+        <commit-markable-resource jndi-name="${test.jndi.name:java:/foo}">
             <xid-location name="${test.table:fooTable}" batch-size="${test.batch:10}" immediate-cleanup="${test.immediate:false}"/>
         </commit-markable-resource>
     </commit-markable-resources>
+     -->
     
 </subsystem>
