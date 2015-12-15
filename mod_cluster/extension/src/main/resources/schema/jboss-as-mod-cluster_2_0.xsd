@@ -26,7 +26,7 @@
            xmlns="urn:jboss:domain:modcluster:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.0">
+           version="2.0">
 
     <xs:element name="subsystem" type="subsystemType"/>
 
