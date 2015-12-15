@@ -74,7 +74,9 @@ import org.wildfly.security.http.HttpServerAuthenticationMechanism;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.BlockingHandler;
+import io.undertow.servlet.api.AuthMethodConfig;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.LoginConfig;
 
 /**
  * A {@link ResourceDefinition} to define the mapping from a security domain as specified in a web application
@@ -269,7 +271,9 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             if (overrideDeploymentConfig) {
                 return new ArrayList<>(httpAuthenticationFactory.getMechanismNames());
             } else {
-                return deploymentInfo.getLoginConfig().getAuthMethods().stream().map(c -> c.getName())
+                final LoginConfig loginConfig = deploymentInfo.getLoginConfig();
+                final List<AuthMethodConfig> authMethods = loginConfig == null ? Collections.<AuthMethodConfig>emptyList() : loginConfig.getAuthMethods();
+                return authMethods.stream().map(c -> c.getName())
                         .collect(Collectors.toList());
             }
         }
