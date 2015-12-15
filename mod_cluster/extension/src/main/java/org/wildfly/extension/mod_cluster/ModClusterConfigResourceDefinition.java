@@ -40,6 +40,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -129,7 +130,6 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     // TODO: WFLY-3583 Convert into an xs:list of host:context
     static final SimpleAttributeDefinition EXCLUDED_CONTEXTS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.EXCLUDED_CONTEXTS, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode("ROOT,invoker,jbossws,juddi,console"))
             .setRestartAllServices()
             .build();
 
@@ -298,6 +298,12 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+
+        if (ModClusterModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(EXCLUDED_CONTEXTS), EXCLUDED_CONTEXTS)
+                    .end();
+        }
 
         if (ModClusterModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
