@@ -216,4 +216,13 @@ public interface Constants {
     String EXTENDED = "extended";
     String MAX_BUFFERED_REQUEST_SIZE = "max-buffered-request-size";
     String MAX_SESSIONS = "max-sessions";
+
+    // Elytron Integration
+    String APPLICATION_SECURITY_DOMAIN = "application-security-domain";
+    String APPLICATION_SECURITY_DOMAINS = "application-security-domains";
+    String HTTP_AUTHENITCATION_FACTORY = "http-authentication-factory";
+    String OVERRIDE_DEPLOYMENT_CONFIG = "override-deployment-config";
+    String REFERENCING_DEPLOYMENTS = "referencing-deployments";
+    String SECURITY_DOMAIN = "security-domain";
+
 }

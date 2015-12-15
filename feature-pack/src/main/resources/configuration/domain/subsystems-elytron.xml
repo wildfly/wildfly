@@ -28,7 +28,7 @@
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
-      <subsystem>undertow.xml</subsystem>
+      <subsystem supplement="elytron">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
       <subsystem>weld.xml</subsystem>
    </subsystems>
@@ -61,7 +61,7 @@
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
-      <subsystem supplement="ha">undertow.xml</subsystem>
+      <subsystem supplement="ha-elytron">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
       <subsystem>weld.xml</subsystem>
    </subsystems>
@@ -95,7 +95,7 @@
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
-      <subsystem>undertow.xml</subsystem>
+      <subsystem supplement="elytron">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
       <subsystem>weld.xml</subsystem>
    </subsystems>
@@ -131,7 +131,7 @@
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
-      <subsystem supplement="ha">undertow.xml</subsystem>
+      <subsystem supplement="ha-elytron">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
       <subsystem>weld.xml</subsystem>
    </subsystems>

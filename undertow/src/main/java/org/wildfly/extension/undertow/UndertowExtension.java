@@ -73,6 +73,7 @@ public class UndertowExtension implements Extension {
     static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
                     new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
+    static final ModelVersion MODEL_VERSION_3_0_0 = ModelVersion.create(3);
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
@@ -104,7 +105,10 @@ public class UndertowExtension implements Extension {
         deployments.registerSubModel(DeploymentWebSocketDefinition.INSTANCE);
 
         subsystem.registerXMLElementWriter(UndertowSubsystemParser_4_0.INSTANCE);
-    }
 
+        if (context.isRegisterTransformers()) {
+            UndertowRootDefinition.registerTransformers(subsystem);
+        }
+    }
 
 }
