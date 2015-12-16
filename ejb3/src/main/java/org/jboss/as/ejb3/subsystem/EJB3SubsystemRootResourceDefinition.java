@@ -47,7 +47,6 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.ejb3.clustering.ClusteredSingletonService;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.MissingMethodPermissionsDenyAccessMergingProcessor;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -159,7 +158,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .build();
 
     public static final RuntimeCapability<Void> CLUSTERED_SINGLETON_CAPABILITY =  RuntimeCapability.Builder.of(
-            "org.wildfly.ejb3.clustered.singleton", ClusteredSingletonService.class).build();
+            "org.wildfly.ejb3.clustered.singleton", Void.class).build();
 
     private static final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor = new EJBDefaultSecurityDomainProcessor(null);
     private static final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor = new MissingMethodPermissionsDenyAccessMergingProcessor();
