@@ -16,6 +16,7 @@
  */
 package org.jboss.as.jpa.hibernate5.scan;
 
+import org.hibernate.bytecode.enhance.spi.EnhancementContext;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
 
@@ -120,6 +121,8 @@ public class PersistenceUnitDescriptorAdapter implements PersistenceUnitDescript
 	}
 
 	@Override
-	public void pushClassTransformer(Collection<String> entityClassNames) {
+	public void pushClassTransformer(EnhancementContext enhancementContext) {
+
 	}
+
 }
