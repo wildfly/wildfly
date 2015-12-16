@@ -187,6 +187,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                 MimeMappingDefinition.VALUE
                                         ))
                                 .addChild(builder(WelcomeFileDefinition.INSTANCE).setXmlWrapperElement("welcome-files"))
+                                .addChild(builder(CrawlerSessionManagementDefinition.INSTANCE)
+                                        .addAttributes(CrawlerSessionManagementDefinition.USER_AGENTS, CrawlerSessionManagementDefinition.SESSION_TIMEOUT))
                 )
                 .addChild(
                         builder(HandlerDefinitions.INSTANCE)

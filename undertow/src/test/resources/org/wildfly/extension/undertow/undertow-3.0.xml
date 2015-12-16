@@ -94,6 +94,7 @@
         <welcome-files>
             <welcome-file name="index.seam" />
         </welcome-files>
+        <crawler-session-management session-timeout="2" user-agents=".*googlebot.*"/>
     </servlet-container>
 
     <handlers>

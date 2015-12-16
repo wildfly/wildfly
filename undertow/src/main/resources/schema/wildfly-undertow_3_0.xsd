@@ -194,6 +194,7 @@
             <xs:element name="websockets" type="websocketsType" maxOccurs="1" minOccurs="0" />
             <xs:element name="mime-mappings" type="mime-mappingsType" maxOccurs="1" minOccurs="0" />
             <xs:element name="welcome-files" type="welcome-filesType" maxOccurs="1" minOccurs="0" />
+            <xs:element name="crawler-session-management" type="crawler-session-managementType" maxOccurs="1" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
@@ -256,6 +257,11 @@
         <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="dispatch-to-worker" use="optional" type="xs:boolean" default="true"/>
+    </xs:complexType>
+
+    <xs:complexType name="crawler-session-managementType">
+        <xs:attribute name="user-agents" use="optional" type="xs:string"/>
+        <xs:attribute name="session-timeout" use="optional" type="xs:integer"/>
     </xs:complexType>
 
     <xs:complexType name="jsp-configurationType">

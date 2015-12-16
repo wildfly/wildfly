@@ -1059,6 +1059,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else if (servletContainer.getDefaultEncoding() != null) {
                 d.setDefaultEncoding(servletContainer.getDefaultEncoding());
             }
+            d.setCrawlerSessionManagerConfig(servletContainer.getCrawlerSessionManagerConfig());
 
             return d;
         } catch (ClassNotFoundException e) {
