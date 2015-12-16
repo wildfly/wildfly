@@ -73,35 +73,41 @@ public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterpris
     @Override
     public ScheduledFuture<?> schedule(Runnable command, Trigger trigger) {
         final CancellableTrigger ctrigger = new CancellableTrigger(trigger);
-        ctrigger.future = super.schedule(doScheduledWrap(command, controlPoint), ctrigger);
+        ctrigger.future = super.schedule(doScheduledWrap(command, controlPoint, this), ctrigger);
         return ctrigger.future;
     }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, Trigger trigger) {
         final CancellableTrigger ctrigger = new CancellableTrigger(trigger);
-        ctrigger.future = super.schedule(doScheduledWrap(callable, controlPoint), ctrigger);
+        ScheduledCallableFuture<V> future = new ScheduledCallableFuture<>(callable);
+        ScheduledFuture<?> underlying = super.schedule(doScheduledWrap(future.getTask(), controlPoint, this), ctrigger);
+        future.setUnderlying(underlying);
+        ctrigger.future = future;
         return ctrigger.future;
     }
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-        return super.schedule(doScheduledWrap(command, controlPoint), delay, unit);
+        return super.schedule(doScheduledWrap(command, controlPoint, this), delay, unit);
     }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-        return super.schedule(doScheduledWrap(callable, controlPoint), delay, unit);
+        ScheduledCallableFuture<V> future = new ScheduledCallableFuture<>(callable);
+        ScheduledFuture<?> underlying = super.schedule(doScheduledWrap(future.getTask(), controlPoint, this), delay, unit);
+        future.setUnderlying(underlying);
+        return future;
     }
 
     @Override
     public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
-        return super.scheduleAtFixedRate(doScheduledWrap(command, controlPoint), initialDelay, period, unit);
+        return super.scheduleAtFixedRate(doScheduledWrap(command, controlPoint, this), initialDelay, period, unit);
     }
 
     @Override
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
-        return super.scheduleWithFixedDelay(doScheduledWrap(command, controlPoint), initialDelay, delay, unit);
+        return super.scheduleWithFixedDelay(doScheduledWrap(command, controlPoint, this), initialDelay, delay, unit);
     }
 
     /**
