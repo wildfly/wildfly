@@ -30,11 +30,13 @@ import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -94,7 +96,11 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 serviceBuilder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestControllerInjector());
             }
 
-            serviceBuilder.install();
+            // Add the executor service for async context processing and install the service
+            Services.addServerExecutorDependency(
+                    serviceBuilder.addDependency(SuspendController.SERVICE_NAME, SuspendController.class, service.getSuspendControllerInjector()),
+                    service.getExecutorServiceInjector(), false)
+                    .install();
         }
     }
 

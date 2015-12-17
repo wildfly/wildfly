@@ -142,4 +142,27 @@ public interface BatchLogger extends BasicLogger {
     @Message(id = 13, value = "Only one job repository can be defined in the jboss-all.xml deployment descriptor. The first job repository will be used.")
     void multipleJobRepositoriesFound();
 
+    /**
+     * Logs a warning message indicating a job is stopping.
+     *
+     * @param executionId    the execution id of the job
+     * @param jobName        the name of the job
+     * @param deploymentName the name of the deployment stopping the job
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 14, value = "Stopping execution %d of %s for deployment %s")
+    void stoppingJob(long executionId, String jobName, String deploymentName);
+
+
+    /**
+     * Logs an error message indicating a job is stopping.
+     *
+     * @param cause          the cause of the error
+     * @param executionId    the execution id of the job
+     * @param jobName        the name of the job
+     * @param deploymentName the name of the deployment
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 15, value = "Failed to stop execution %d for job %s on deployment %s")
+    void stoppingJobFailed(@Cause Throwable cause, long executionId, String jobName, String deploymentName);
 }
