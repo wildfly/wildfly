@@ -627,7 +627,6 @@ public class Constants {
             EXCEPTION_SORTER_PROPERTIES,
             STALE_CONNECTION_CHECKER_PROPERTIES,
             VALID_CONNECTION_CHECKER_PROPERTIES, CONNECTION_LISTENER_PROPERTIES,
-            CONNECTION_PROPERTIES,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
 
     };
