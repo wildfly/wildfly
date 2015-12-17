@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.cache.DirectBufferCache;
+import io.undertow.servlet.api.CrawlerSessionManagerConfig;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
 
@@ -70,6 +71,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS), 2);
 
         final SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        final CrawlerSessionManagerConfig crawlerSessionManagerConfig = CrawlerSessionManagementDefinition.INSTANCE.getConfig(context, fullModel.get(CrawlerSessionManagementDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
         final boolean proactiveAuth = ServletContainerDefinition.PROACTIVE_AUTHENTICATION.resolveModelAttribute(context, model).asBoolean();
@@ -130,7 +132,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 sessionTimeout,
                 disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker(),
                 mimeMappings,
-                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions);
+                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig);
 
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);

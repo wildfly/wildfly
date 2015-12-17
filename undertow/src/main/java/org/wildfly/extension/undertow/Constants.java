@@ -216,4 +216,7 @@ public interface Constants {
     String EXTENDED = "extended";
     String MAX_BUFFERED_REQUEST_SIZE = "max-buffered-request-size";
     String MAX_SESSIONS = "max-sessions";
+    String USER_AGENTS = "user-agents";
+    String SESSION_TIMEOUT = "session-timeout";
+    String CRAWLER_SESSION_MANAGEMENT = "crawler-session-management";
 }
