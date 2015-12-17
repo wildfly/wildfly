@@ -536,5 +536,6 @@
         <xs:attribute name="request-queue-size" type="xs:int" use="optional" />
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
         <xs:attribute name="use-alias" type="xs:string" use="optional" default="false" />
+        <xs:attribute name="enable-http2" type="xs:string" use="optional" default="false" />
     </xs:complexType>
 </xs:schema>
