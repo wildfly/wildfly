@@ -154,7 +154,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         this.setupInitializers(props);
 
         // setup the SSL socket factories, if necessary.
-        this.setupSSLFactories(props);
+        final boolean sslConfigured = this.setupSSLFactories(props);
 
         // create the service that initializes and starts the CORBA ORB.
 
@@ -178,7 +178,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
 
         // create the IOR security config metadata service.
         final IORSecurityConfigMetaData securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
-                model);
+                model, sslConfigured);
         final IORSecConfigMetaDataService securityConfigMetaDataService = new IORSecConfigMetaDataService(securityConfigMetaData);
         context.getServiceTarget()
                 .addService(IORSecConfigMetaDataService.SERVICE_NAME, securityConfigMetaDataService)
@@ -320,10 +320,11 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
      * </p>
      *
      * @param props the subsystem configuration properties.
+     * @return true if ssl has been configured
      * @throws OperationFailedException if the SSL setup has not been done correctly (SSL support has been turned on but no
      *         security domain has been specified).
      */
-    private void setupSSLFactories(final Properties props) throws OperationFailedException {
+    private boolean setupSSLFactories(final Properties props) throws OperationFailedException {
         boolean supportSSL = "true".equalsIgnoreCase(props.getProperty(Constants.SECURITY_SUPPORT_SSL));
 
         if (supportSSL) {
@@ -335,10 +336,14 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
             // add the domain socket factories.
             SocketFactory.setSecurityDomain(securityDomain);
             props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, SocketFactory.class.getName());
+
+            return true;
         }
+
+        return false;
     }
 
-    private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode resourceModel)
+    private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured)
             throws OperationFailedException {
         final IORSecurityConfigMetaData securityConfigMetaData = new IORSecurityConfigMetaData();
 
@@ -362,6 +367,14 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         transportConfigMetaData.setDetectMisordering(IIOPRootDefinition.DETECT_MISORDERING.resolveModelAttribute(context, resourceModel).asString());
         transportConfigMetaData.setDetectReplay(IIOPRootDefinition.DETECT_REPLAY.resolveModelAttribute(context, resourceModel).asString());
         securityConfigMetaData.setTransportConfig(transportConfigMetaData);
+
+        final boolean sslRequired = IORTransportConfigMetaData.INTEGRITY_REQUIRED.equals(transportConfigMetaData.getIntegrity())
+                || IORTransportConfigMetaData.CONFIDENTIALITY_REQUIRED.equals(transportConfigMetaData.getConfidentiality())
+                || IORTransportConfigMetaData.ESTABLISH_TRUST_IN_CLIENT_REQUIRED.equals(transportConfigMetaData.getEstablishTrustInClient());
+
+        if (sslRequired && !sslConfigured) {
+            throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
+        }
 
         return securityConfigMetaData;
     }
