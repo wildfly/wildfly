@@ -22,7 +22,16 @@
 
 package org.wildfly.extension.batch.jberet.impl;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import javax.batch.operations.JobOperator;
+import javax.batch.runtime.BatchRuntime;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
@@ -32,6 +41,9 @@ import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
+import org.jboss.as.server.suspend.OperationListener;
+import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -58,12 +70,16 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
     private final InjectedValue<RequestController> requestControllerInjector = new InjectedValue<>();
     private final InjectedValue<JobRepository> jobRepositoryInjector = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
+    private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
 
     private final ClassLoader classLoader;
     private final JobXmlResolver jobXmlResolver;
     private final String deploymentName;
+    private final AtomicBoolean jobsStopped = new AtomicBoolean(false);
     private BatchEnvironment batchEnvironment = null;
     private ControlPoint controlPoint;
+    private OperationListener listener;
 
     public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName) {
         this.classLoader = classLoader;
@@ -74,6 +90,8 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         BatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
+        listener = new BatchSuspendOperationListener();
+        suspendControllerInjector.getValue().addListener(listener);
         final RequestController requestController = requestControllerInjector.getOptionalValue();
         if (requestController != null) {
             // Create the entry point
@@ -92,10 +110,27 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     @Override
     public synchronized void stop(final StopContext context) {
         BatchLogger.LOGGER.debugf("Removing batch environment; %s", classLoader);
-        BatchEnvironmentFactory.getInstance().remove(classLoader);
-        batchEnvironment = null;
-        if (controlPoint != null) {
-            requestControllerInjector.getValue().removeControlPoint(controlPoint);
+        final ExecutorService service = executorInjector.getValue();
+        // Remove the listener to use an asynchronous stop
+        suspendControllerInjector.getValue().removeListener(listener);
+
+        final Runnable task = () -> {
+            // Stop all running jobs
+            stopRunningJobs();
+            // Remove this instance from the factory
+            BatchEnvironmentFactory.getInstance().remove(classLoader);
+            batchEnvironment = null;
+            if (controlPoint != null) {
+                requestControllerInjector.getValue().removeControlPoint(controlPoint);
+            }
+            context.complete();
+        };
+        try {
+            service.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
         }
     }
 
@@ -122,6 +157,52 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     public InjectedValue<JobRepository> getJobRepositoryInjector() {
         return jobRepositoryInjector;
+    }
+
+    public Injector<ExecutorService> getExecutorServiceInjector() {
+        return executorInjector;
+    }
+
+    public InjectedValue<SuspendController> getSuspendControllerInjector() {
+        return suspendControllerInjector;
+    }
+
+    private void stopRunningJobs() {
+        if (jobsStopped.compareAndSet(false, true)) {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                // Use the deployment's class loader to stop jobs
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                final JobOperator jobOperator = BatchRuntime.getJobOperator();
+                final Collection<String> jobNames = getJobNames(jobOperator);
+                // Look for running jobs and attempt to stop each one
+                for (String jobName : jobNames) {
+                    final List<Long> runningJobs = jobOperator.getRunningExecutions(jobName);
+                    for (Long id : runningJobs) {
+                        try {
+                            BatchLogger.LOGGER.stoppingJob(id, jobName, deploymentName);
+                            jobOperator.stop(id);
+                        } catch (Exception e) {
+                            BatchLogger.LOGGER.stoppingJobFailed(e, id, jobName, deploymentName);
+                        }
+                    }
+                }
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+                // Reset the stopped state
+                jobsStopped.set(false);
+            }
+        }
+    }
+
+    private Collection<String> getJobNames(final JobOperator jobOperator) {
+        final Set<String> knownJobNames = jobOperator.getJobNames();
+        return jobXmlResolver.getJobXmlNames(classLoader).stream()
+                // Get the job name from the XML file
+                .map(xmlName -> jobXmlResolver.resolveJobName(xmlName, classLoader))
+                // Remove job names that aren't currently known to the batch runtime
+                .filter(knownJobNames::contains)
+                .collect(Collectors.toSet());
     }
 
     private class WildFlyBatchEnvironment implements BatchEnvironment {
@@ -210,6 +291,25 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
             final ClassLoaderContextHandle classLoaderContextHandle = (tccl == null ? new ClassLoaderContextHandle(classLoader) : new ClassLoaderContextHandle(tccl));
             // Class loader handle must be first so the TCCL is set before the other handles execute
             return new ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(), new SecurityContextHandle());
+        }
+    }
+
+    private class BatchSuspendOperationListener implements OperationListener {
+        @Override
+        public void suspendStarted() {
+            stopRunningJobs();
+        }
+
+        @Override
+        public void complete() {
+        }
+
+        @Override
+        public void cancelled() {
+        }
+
+        @Override
+        public void timeout() {
         }
     }
 }
