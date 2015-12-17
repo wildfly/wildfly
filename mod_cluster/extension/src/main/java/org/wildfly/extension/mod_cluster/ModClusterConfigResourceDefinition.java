@@ -26,6 +26,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -301,7 +303,16 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
         if (ModClusterModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(EXCLUDED_CONTEXTS), EXCLUDED_CONTEXTS)
+                    .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                        @Override
+                        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                            if (!attributeValue.isDefined()) {
+                                // Workaround legacy slaves not accepting null/empty values
+                                // JBAS014704: '' is an invalid value for parameter excluded-contexts. Values must have a minimum length of 1 characters
+                                attributeValue.set(" ");
+                            }
+                        }
+                    }, EXCLUDED_CONTEXTS)
                     .end();
         }
 
