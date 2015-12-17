@@ -227,17 +227,19 @@ public class Constants {
             .build();
 
     static final SimpleAttributeDefinition MODULE_SLOT = SimpleAttributeDefinitionBuilder.create("module-slot", ModelType.STRING)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setAllowNull(true)
             .build();
 
     static final SimpleAttributeDefinition JDBC_COMPLIANT = SimpleAttributeDefinitionBuilder.create("jdbc-compliant", ModelType.BOOLEAN)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     @Deprecated
     static final SimpleAttributeDefinition PROFILE = SimpleAttributeDefinitionBuilder.create("profile", ModelType.STRING)
                 .setAllowNull(true)
+                .setAllowExpression(true)
                 .setDeprecated(ModelVersion.create(4, 0, 0))
             .build();
 
@@ -437,7 +439,7 @@ public class Constants {
     static SimpleAttributeDefinition ALLOW_MULTIPLE_USERS = new SimpleAttributeDefinitionBuilder(ALLOW_MULTIPLE_USERS_NAME, ModelType.BOOLEAN, true)
             .setXmlName(DsPool.Tag.ALLOW_MULTIPLE_USERS.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.ALLOW_MULTIPLE_USERS))
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition CONNECTION_LISTENER_CLASS = new SimpleAttributeDefinitionBuilder(CONNECTION_LISTENER_CLASS_NAME, ModelType.STRING)
@@ -727,7 +729,7 @@ public class Constants {
 
     static final SimpleAttributeDefinition DRIVER_MODULE_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_MODULE_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Attribute.MODULE.getLocalName())
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition DRIVER_MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(DRIVER_MAJOR_VERSION_NAME, ModelType.INT)
@@ -745,7 +747,7 @@ public class Constants {
     static final SimpleAttributeDefinition DRIVER_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_CLASS_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Tag.DRIVER_CLASS.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition DRIVER_DATASOURCE_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_DATASOURCE_CLASS_NAME_NAME, ModelType.STRING)
@@ -758,7 +760,7 @@ public class Constants {
     static final SimpleAttributeDefinition DRIVER_XA_DATASOURCE_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_XA_DATASOURCE_CLASS_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Tag.XA_DATASOURCE_CLASS.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition[] JDBC_DRIVER_ATTRIBUTES = {
