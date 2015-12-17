@@ -193,7 +193,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices(controller, version, dependencies);
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(services, version, createModelFixer(version), false);
+        checkSubsystemModelTransformation(services, version, null, false);
 
         ModelNode transformed = services.readTransformedModel(version);
 
@@ -207,19 +207,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 Assert.assertEquals(TransactionMode.NONE.name(), transaction.get(TransactionResourceDefinition.Attribute.MODE.getDefinition().getName()).asString());
             }
         }
-    }
-
-    private static ModelFixer createModelFixer(ModelVersion version) {
-        return (ModelNode model) -> {
-            if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-                ModelNode cache = model.get("cache-container", "minimal", "local-cache", "local");
-                // Workaround for WFCORE-1162
-                // Boot operations for auto-created children are not present on legacy nodes - these resource should have been discarded
-                cache.get("locking", "LOCKING", "isolation").set("READ_COMMITTED");
-                cache.get("transaction", "TRANSACTION", "stop-timeout").set(10000L);
-            }
-            return model;
-        };
     }
 
     @Test

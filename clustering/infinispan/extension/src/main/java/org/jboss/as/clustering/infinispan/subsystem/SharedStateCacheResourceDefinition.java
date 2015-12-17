@@ -42,16 +42,16 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         StateTransferResourceDefinition.buildTransformation(version, builder);
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.addChildResource(PartitionHandlingResourceDefinition.PATH, new RequiredChildResourceDiscardPolicy());
+            builder.addChildResource(PartitionHandlingResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
         } else {
             PartitionHandlingResourceDefinition.buildTransformation(version, builder);
         }
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
-            final ResourceTransformationDescriptionBuilder backupsBuilder = builder.addChildResource(BackupsResourceDefinition.PATH, new RequiredChildResourceDiscardPolicy());
+            final ResourceTransformationDescriptionBuilder backupsBuilder = builder.addChildResource(BackupsResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
             backupsBuilder.rejectChildResource(BackupResourceDefinition.WILDCARD_PATH);
 
-            builder.addChildResource(BackupForResourceDefinition.PATH, new RequiredChildResourceDiscardPolicy());
+            builder.addChildResource(BackupForResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
         } else {
             BackupsResourceDefinition.buildTransformation(version, builder);
             BackupForResourceDefinition.buildTransformation(version, builder);
