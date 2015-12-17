@@ -46,18 +46,14 @@ public class OverlayEJB implements OverlayableInterface {
     }
     
     protected String fetch(final String res) throws Exception {
-        final InputStream is = this.getClass().getClassLoader().getResourceAsStream(res);
-
-        if (is == null) {
-            return null;
-        }
-        final InputStreamReader isr = new InputStreamReader(is);
-        final BufferedReader br = new BufferedReader(isr);
-        try {
-            final String line = br.readLine();
-            return line;
-        } finally {
-            br.close();
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(res)) {
+            if (is == null) {
+                return null;
+            }
+            try (InputStreamReader isr = new InputStreamReader(is);
+                 BufferedReader br = new BufferedReader(isr);) {
+                return br.readLine();
+            }
         }
     }
 }
