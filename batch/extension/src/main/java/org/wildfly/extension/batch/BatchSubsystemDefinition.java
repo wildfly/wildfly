@@ -57,6 +57,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch._private.Capabilities;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
+import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProcessor;
 import org.wildfly.extension.batch.jberet.impl.JobExecutorService;
@@ -165,7 +166,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 
         private BatchSubsystemAdd() {
-            super(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY);
+            super(Capabilities.BATCH_CONFIGURATION_CAPABILITY);
         }
 
         @Override
@@ -194,7 +195,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
             final ServiceTarget target = context.getServiceTarget();
             final JobExecutorService service = new JobExecutorService();
-            target.addService(context.getCapabilityServiceName(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY.getName(), JobExecutor.class), service)
+            target.addService(BatchServiceNames.BATCH_JOB_EXECUTOR_NAME, service)
                     .addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME,
                             ManagedJBossThreadPoolExecutorService.class,
                             service.getThreadPoolInjector()
@@ -204,6 +205,12 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             // Determine the repository type
             final String repositoryType = JOB_REPOSITORY_TYPE.resolveModelAttribute(context, model).asString();
             JobRepositoryFactory.getInstance().setJobRepositoryType(repositoryType);
+
+            final DefaultConfigurationService configurationService = new DefaultConfigurationService();
+            target.addService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class), configurationService)
+                    .addDependency(BatchServiceNames.BATCH_JOB_EXECUTOR_NAME, JobExecutor.class, configurationService.getJobExecutorInjector())
+                    .install();
+
         }
     }
 }
