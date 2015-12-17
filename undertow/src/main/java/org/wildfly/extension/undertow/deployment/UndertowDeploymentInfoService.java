@@ -582,7 +582,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     //should be make this configurable or something?
                     List<ResourceManager> delegates = new ArrayList<>();
                     for(File resource : externalResources) {
-                        delegates.add(new FileResourceManager(resource, 1024, true, mergedMetaData.isSymbolicLinkingEnabled(), "/"));
+                        delegates.add(new FileResourceManager(resource.getCanonicalFile(), 1024, true, mergedMetaData.isSymbolicLinkingEnabled(), "/"));
                     }
                     delegates.add(resourceManager);
                     resourceManager = new DelegatingResourceManager(delegates);
