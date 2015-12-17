@@ -272,37 +272,24 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
                 case STATIC_EJB_DISCOVERY:
                     parseStaticEjbDiscoveryType(reader, staticURLs);
                     break;
+                case STATIC_CLUSTER_DISCOVERY:
+                    parseStaticClusterDiscoveryType(reader, staticURLs);
+                    break;
                 default: {
                     throw unexpectedElement(reader);
                 }
             }
-            if (staticURLs != null) {
-                final ModelNode operation = Util.createAddOperation();
-                final PathAddress address = SUBSYSTEM_PATH.append(EJB3SubsystemModel.REMOTING_PROFILE, profileName).append(EJB3SubsystemModel.DISCOVERY, EJB3SubsystemModel.STATIC);
-                operation.get(OP_ADDR).set(address.toModelNode());
-                operation.get(DiscoveryResourceDefinition.STATIC_URLS.getName()).set(staticURLs);
-                operations.add(operation);
-            }
+        }
+        if (staticURLs != null) {
+            final ModelNode operation = Util.createAddOperation();
+            final PathAddress address = SUBSYSTEM_PATH.append(EJB3SubsystemModel.REMOTING_PROFILE, profileName).append(EJB3SubsystemModel.DISCOVERY, EJB3SubsystemModel.STATIC);
+            operation.get(OP_ADDR).set(address.toModelNode());
+            operation.get(DiscoveryResourceDefinition.STATIC_URLS.getName()).set(staticURLs);
+            operations.add(operation);
         }
     }
 
-    private URI parseConnectTo(final XMLExtendedStreamReader streamReader) throws XMLStreamException {
-        final int attributeCount = streamReader.getAttributeCount();
-        URI uri = null;
-        for (int i = 0; i < attributeCount; i ++) {
-            if (streamReader.getAttributeNamespace(i) != null || ! streamReader.getAttributeLocalName(i).equals("uri")) {
-                throw unexpectedAttribute(streamReader, i);
-            }
-            uri = getURIAttributeValue(streamReader, i);
-        }
-        if (uri == null) {
-            throw missingRequired(streamReader, "uri");
-        }
-        if (streamReader.nextTag() != END_ELEMENT) {
-            throw unexpectedElement(streamReader);
-        }
-        return uri;
-    }
+
 
     private void parseStaticEjbDiscoveryType(final XMLExtendedStreamReader reader, final List<ModelNode> staticURLs) throws XMLStreamException {
         final int attributeCount = reader.getAttributeCount();
@@ -359,6 +346,64 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         if (reader.nextTag() != END_ELEMENT) {
             throw unexpectedElement(reader);
         }
+    }
+
+    private void parseStaticClusterDiscoveryType(final XMLExtendedStreamReader reader, final List<ModelNode> staticURLs) throws XMLStreamException {
+        final int attributeCount = reader.getAttributeCount();
+        String clusterName = null;
+        for (int i = 0; i < attributeCount; i ++) {
+            requireNoNamespaceAttribute(reader, i);
+            if (reader.getAttributeLocalName(i).equals("cluster-name")) {
+                clusterName = reader.getAttributeValue(i);
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (clusterName == null) {
+            throw missingRequired(reader, "cluster-name");
+        }
+
+        final List<String> connectUris = new ArrayList<>();
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case CONNECT_TO:
+                    connectUris.add(parseConnectTo(reader));
+                    break;
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        if (connectUris != null) for (String connectUri : connectUris) {
+            final ModelNode urlNode = new ModelNode();
+            final ModelNode attributesNode = new ModelNode();
+            attributesNode.get("cluster-name").set(clusterName);
+            attributesNode.get("uri").set(connectUri);
+            urlNode.get(DiscoveryResourceDefinition.URL_ATTRIBUTES.getName()).set(attributesNode);
+            urlNode.get(DiscoveryResourceDefinition.ABSTRACT_TYPE.getName()).set("ejb");
+            urlNode.get(DiscoveryResourceDefinition.ABSTRACT_TYPE_AUTHORITY.getName()).set("jboss");
+            staticURLs.add(urlNode);
+        }
+    }
+
+    private String parseConnectTo(final XMLExtendedStreamReader streamReader) throws XMLStreamException {
+        final int attributeCount = streamReader.getAttributeCount();
+        String uri = null;
+        for (int i = 0; i < attributeCount; i ++) {
+            requireNoNamespaceAttribute(streamReader, i);
+            if (!streamReader.getAttributeLocalName(i).equals("uri")) {
+                throw unexpectedAttribute(streamReader, i);
+            }
+            uri = streamReader.getAttributeValue(i);
+        }
+        if (uri == null) {
+            throw missingRequired(streamReader, "uri");
+        }
+        if (streamReader.nextTag() != END_ELEMENT) {
+            throw unexpectedElement(streamReader);
+        }
+        return uri;
     }
 
     private void parseInterceptorsType(final XMLExtendedStreamReader streamReader, final EJBClientContext.Builder builder) throws XMLStreamException {

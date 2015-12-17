@@ -104,7 +104,9 @@ public enum EJB3SubsystemXMLElement {
     IDENTITY("identity"),
 
     DISCOVERY("discovery"),
-    STATIC_EJB_DISCOVERY("static-ejb-discovery")
+    STATIC_EJB_DISCOVERY("static-ejb-discovery"),
+    STATIC_CLUSTER_DISCOVERY("static-cluster-discovery"),
+    CONNECT_TO("connect-to"),
     ;
 
     private final String name;
