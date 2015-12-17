@@ -482,7 +482,7 @@ class ServerAdd extends AbstractAddStepHandler {
         for (Class clazz : unwrapClasses(interceptors)) {
             try {
                 Interceptor interceptor = Interceptor.class.cast(clazz.newInstance());
-                serverService.getIncomingInterceptors().add(interceptor);
+                serverService.getOutgoingInterceptors().add(interceptor);
             } catch (Exception e) {
                 throw new OperationFailedException(e);
             }
