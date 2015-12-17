@@ -70,7 +70,7 @@
                         ssl-protocol="${prop.ssl-protocol:RFC4279}"
                       />
             </connector>
-            <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
+            <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" secure="true" >
                 <virtual-server name="vs1" />
                 <virtual-server name="vs2" />
             </connector>

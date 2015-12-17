@@ -104,6 +104,7 @@
                 <xs:attribute name="no-request-timeout" type="xs:int"/>
                 <xs:attribute name="request-parse-timeout" type="xs:int"/>
                 <xs:attribute name="disallowed-methods" type="stringList"/>
+                <xs:attribute name="secure" type="xs:boolean" default="false"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
