@@ -47,6 +47,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 
 /**
  * Infinispan {@link Cache} based {@link ServiceProviderRegistrationFactory}.
@@ -180,7 +181,11 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         this.executor.execute(() -> {
             Listener listener = this.listeners.get(event.getKey());
             if (listener != null) {
-                listener.providersChanged(event.getValue());
+                try {
+                    listener.providersChanged(event.getValue());
+                } catch (Throwable e) {
+                    ClusteringServerLogger.ROOT_LOGGER.serviceProviderRegistrationListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), this.cache.getName(), event.getValue());
+                }
             }
         });
     }

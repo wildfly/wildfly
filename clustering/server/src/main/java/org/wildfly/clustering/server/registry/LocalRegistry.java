@@ -24,7 +24,6 @@ package org.wildfly.clustering.server.registry;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
@@ -39,12 +38,12 @@ import org.wildfly.clustering.registry.RegistryEntryProvider;
  */
 public class LocalRegistry<K, V> implements Registry<K, V> {
 
-    private final AtomicReference<Map.Entry<K, V>> entryRef;
     private final Group group;
+    private volatile Map.Entry<K, V> entry;
 
     public LocalRegistry(Group group, RegistryEntryProvider<K, V> provider) {
         this.group = group;
-        this.entryRef = new AtomicReference<>(new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue()));
+        this.entry = new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue());
     }
 
     @Override
@@ -64,17 +63,17 @@ public class LocalRegistry<K, V> implements Registry<K, V> {
 
     @Override
     public Map<K, V> getEntries() {
-        Map.Entry<K, V> entry = this.entryRef.get();
+        Map.Entry<K, V> entry = this.entry;
         return (entry != null) ? Collections.singletonMap(entry.getKey(), entry.getValue()) : Collections.emptyMap();
     }
 
     @Override
     public Map.Entry<K, V> getEntry(Node node) {
-        return this.entryRef.get();
+        return this.entry;
     }
 
     @Override
     public void close() {
-        this.entryRef.set(null);
+        this.entry = null;
     }
 }
