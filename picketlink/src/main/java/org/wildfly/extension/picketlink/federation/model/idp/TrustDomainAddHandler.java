@@ -32,6 +32,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 import org.wildfly.extension.picketlink.federation.service.TrustDomainService;
 
@@ -48,12 +49,17 @@ public class TrustDomainAddHandler extends AbstractAddStepHandler {
     static final TrustDomainAddHandler INSTANCE = new TrustDomainAddHandler();
 
     static void launchServices(OperationContext context, PathAddress pathAddress, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        String identityProviderAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
+        String identityProviderName = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
         String domainName = pathAddress.getLastElement().getValue();
-        TrustDomainService service = new TrustDomainService(domainName);
-        ServiceBuilder<TrustDomainService> serviceBuilder = context.getServiceTarget().addService(TrustDomainService.createServiceName(identityProviderAlias, domainName), service);
+        launchServices(context, identityProviderName, domainName, verificationHandler, newControllers);
+    }
 
-        serviceBuilder.addDependency(IdentityProviderService.createServiceName(identityProviderAlias), IdentityProviderService.class, service.getIdentityProviderService());
+    static void launchServices(OperationContext context, String identityProviderName, String domainName, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        TrustDomainService service = new TrustDomainService(domainName);
+        ServiceName serviceName = TrustDomainService.createServiceName(identityProviderName, domainName);
+        ServiceBuilder<TrustDomainService> serviceBuilder = context.getServiceTarget().addService(serviceName, service);
+
+        serviceBuilder.addDependency(IdentityProviderService.createServiceName(identityProviderName), IdentityProviderService.class, service.getIdentityProviderService());
 
         if (verificationHandler != null) {
             serviceBuilder.addListener(verificationHandler);
@@ -64,6 +70,14 @@ public class TrustDomainAddHandler extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(controller);
         }
+    }
+
+    static void restartServices(OperationContext context, String identityProviderName, String domainName) {
+        ServiceName serviceName = TrustDomainService.createServiceName(identityProviderName, domainName);
+
+        context.removeService(serviceName);
+
+        launchServices(context, identityProviderName, domainName, null, null);
     }
 
     @Override
@@ -81,12 +95,5 @@ public class TrustDomainAddHandler extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                      ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
-    }
-
-    @Override protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-        try {
-            TrustDomainRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
-        } catch (OperationFailedException ignore) {
-        }
     }
 }
