@@ -68,7 +68,6 @@
         </xs:annotation>
         <xs:choice minOccurs="1" maxOccurs="1">
             <xs:element name="in-memory" type="in-memoryType"/>
-            <xs:element name="jdbc" type="jdbcType"/>
             <xs:element name="named" type="namedType">
                 <xs:annotation>
                     <xs:documentation>
@@ -89,24 +88,5 @@
                 ]]>
             </xs:documentation>
         </xs:annotation>
-    </xs:complexType>
-
-    <xs:complexType name="jdbcType">
-        <xs:annotation>
-            <xs:documentation>
-                <![CDATA[
-                        Used to describe how the job repository should connect to a database.
-                ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="jndi-name" type="xs:token" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    <![CDATA[
-                    The JNDI name of a data-source to use for the JDBC repository.
-                    ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 </xs:schema>
