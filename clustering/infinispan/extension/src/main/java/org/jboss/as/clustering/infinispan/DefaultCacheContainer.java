@@ -116,22 +116,9 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, String configurationName) {
-        Cache<K, V> cache;
-        if (System.getSecurityManager() == null) {
-            cache = this.getCacheInternal(cacheName, configurationName);
-        } else {
-            cache = AccessController.doPrivileged(new PrivilegedAction<Cache<K, V>>() {
-                @Override
-                public Cache<K, V> run() {
-                    return getCacheInternal(cacheName, configurationName);
-                }
-            });
-        }
+        PrivilegedAction<Cache<K, V>> action = () -> this.cm.<K, V>getCache(this.getCacheName(cacheName), this.getCacheName(configurationName));
+        Cache<K, V> cache = (System.getSecurityManager() == null) ? action.run() : AccessController.doPrivileged(action);
         return (cache != null) ? new DefaultCache<>(this, this.batcherFactory, cache.getAdvancedCache()) : null;
-    }
-
-    private <K, V> Cache<K, V> getCacheInternal(String cacheName, String configurationName) {
-        return cm.<K, V>getCache(this.getCacheName(cacheName), this.getCacheName(configurationName));
     }
 
     @Override
