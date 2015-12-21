@@ -100,6 +100,7 @@
                     <xs:attribute name="log-write-rate" type="xs:boolean" />
                     <xs:attribute name="file-size" type="xs:long" />
                     <xs:attribute name="min-files" type="xs:int" />
+                    <xs:attribute name="pool-files" type="xs:int" />
                     <xs:attribute name="compact-percentage" type="xs:int" />
                     <xs:attribute name="compact-min-files" type="xs:int" />
                     <xs:attribute name="max-io" type="xs:int" />

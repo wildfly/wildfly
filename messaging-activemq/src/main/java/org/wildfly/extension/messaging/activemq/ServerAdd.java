@@ -58,6 +58,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_FILE_SIZE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MAX_IO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MIN_FILES;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_POOL_FILES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SYNC_NON_TRANSACTIONAL;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SYNC_TRANSACTIONAL;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_TYPE;
@@ -364,6 +365,7 @@ class ServerAdd extends AbstractAddStepHandler {
         configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());
         configuration.setJournalFileSize(JOURNAL_FILE_SIZE.resolveModelAttribute(context, model).asInt());
         configuration.setJournalMinFiles(JOURNAL_MIN_FILES.resolveModelAttribute(context, model).asInt());
+        configuration.setJournalPoolFiles(JOURNAL_POOL_FILES.resolveModelAttribute(context, model).asInt());
         configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
         configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
         configuration.setLogJournalWriteRate(LOG_JOURNAL_WRITE_RATE.resolveModelAttribute(context, model).asBoolean());
