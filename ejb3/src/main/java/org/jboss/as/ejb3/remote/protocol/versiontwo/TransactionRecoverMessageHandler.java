@@ -69,7 +69,12 @@ class TransactionRecoverMessageHandler extends AbstractMessageHandler {
         final short invocationId = input.readShort();
         final String txParentNodeName = input.readUTF();
         final int recoveryFlags = input.readInt();
-        executorService.submit(new TxRecoveryTask(channelAssociation, invocationId, txParentNodeName, recoveryFlags));
+        TxRecoveryTask task = new TxRecoveryTask(channelAssociation, invocationId, txParentNodeName, recoveryFlags);
+        if(executorService != null) {
+            executorService.submit(task);
+        } else {
+            task.run();
+        }
     }
 
     private final class TxRecoveryTask implements Runnable {

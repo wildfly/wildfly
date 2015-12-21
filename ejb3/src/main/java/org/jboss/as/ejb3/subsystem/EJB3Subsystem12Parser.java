@@ -191,6 +191,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        operation.get(EJB3SubsystemModel.EXECUTE_IN_WORKER).set(new ModelNode(false));
         requireNoContent(reader);
         operations.add(operation);
     }

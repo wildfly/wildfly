@@ -257,14 +257,14 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                     case 0x01:
                         final VersionOneProtocolChannelReceiver versionOneProtocolHandler = new VersionOneProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getValue(), asyncInvocationCancelStatus, suspendController);
+                                marshallerFactory, executorService.getOptionalValue(), asyncInvocationCancelStatus, suspendController);
                         // trigger the receiving
                         versionOneProtocolHandler.startReceiving();
                         break;
                     case 0x02:
                         final VersionTwoProtocolChannelReceiver versionTwoProtocolHandler = new VersionTwoProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
                                 EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getValue(), asyncInvocationCancelStatus, suspendController);
+                                marshallerFactory, executorService.getOptionalValue(), asyncInvocationCancelStatus, suspendController);
                         // trigger the receiving
                         versionTwoProtocolHandler.startReceiving();
                         break;

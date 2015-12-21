@@ -69,6 +69,12 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
+    static final SimpleAttributeDefinition EXECUTE_IN_WORKER =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.EXECUTE_IN_WORKER, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(true))
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
 
     private static final Map<String, AttributeDefinition> ATTRIBUTES;
 
@@ -77,6 +83,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         map.put(CLIENT_MAPPINGS_CLUSTER_NAME.getName(), CLIENT_MAPPINGS_CLUSTER_NAME);
         map.put(CONNECTOR_REF.getName(), CONNECTOR_REF);
         map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
+        map.put(EXECUTE_IN_WORKER.getName(), EXECUTE_IN_WORKER);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }
@@ -114,6 +121,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         remoteService.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME)),CLIENT_MAPPINGS_CLUSTER_NAME)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_MAPPINGS_CLUSTER_NAME)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, EXECUTE_IN_WORKER) //as this does not affect functionality we just discard
                 .end();
     }
 
@@ -122,6 +130,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         remoteService.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME)),CLIENT_MAPPINGS_CLUSTER_NAME)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_MAPPINGS_CLUSTER_NAME)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, EXECUTE_IN_WORKER) //as this does not affect functionality we just discard
                 .end();
     }
 

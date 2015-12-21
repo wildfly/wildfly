@@ -154,9 +154,9 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     @Override
     public void handleMessage(Channel channel, MessageInputStream messageInputStream) {
         try {
-            this.processMessage(channel, messageInputStream);
             // enroll for next message (whenever it's available)
             channel.receiveMessage(this);
+            this.processMessage(channel, messageInputStream);
 
         } catch (Throwable e) {
             // log it
