@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -31,9 +30,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.clustering.msc.DelegatingServiceBuilder;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.as.clustering.msc.ServiceControllerFactory;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -42,7 +39,6 @@ import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -103,9 +99,8 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        final ServiceBuilder<T> serviceBuilder = target.addService(this.targetServiceName, this.service).setInitialMode(ServiceController.Mode.NEVER);
         // Remove target service when this service is removed
-        final ServiceListener<T> listener = new AbstractServiceListener<T>() {
+        ServiceListener<T> listener = new AbstractServiceListener<T>() {
             @Override
             public void serviceRemoveRequested(ServiceController<? extends T> controller) {
                 ServiceController<?> service = controller.getServiceContainer().getService(CacheSingletonServiceBuilder.this.targetServiceName);
@@ -115,62 +110,13 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
                 }
             }
         };
-        final ServiceBuilder<T> singletonBuilder = new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
+        target.addService(this.targetServiceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
+        return new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
                 .addAliases(this.singletonServiceName.append("singleton"))
                 .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(this.containerName, this.cacheName), ServiceProviderRegistry.class, this.registry)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(this.containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addListener(listener)
         ;
-        // Add dependencies to the target service builder, but install should return the installed singleton controller
-        return new DelegatingServiceBuilder<T>(serviceBuilder, ServiceControllerFactory.SIMPLE) {
-            @Override
-            public ServiceBuilder<T> addAliases(ServiceName... aliases) {
-                singletonBuilder.addAliases(aliases);
-                return this;
-            }
-
-            @Override
-            public ServiceBuilder<T> setInitialMode(ServiceController.Mode mode) {
-                singletonBuilder.setInitialMode(mode);
-                return this;
-            }
-
-            @Override
-            public ServiceBuilder<T> addMonitor(StabilityMonitor monitor) {
-                singletonBuilder.addMonitor(monitor);
-                return this;
-            }
-
-            @Override
-            public ServiceBuilder<T> addMonitors(StabilityMonitor... monitors) {
-                singletonBuilder.addMonitors(monitors);
-                return this;
-            }
-
-            @Override
-            public ServiceBuilder<T> addListener(ServiceListener<? super T> listener) {
-                singletonBuilder.addListener(listener);
-                return this;
-            }
-
-            @Override
-            public ServiceBuilder<T> addListener(@SuppressWarnings("unchecked") ServiceListener<? super T>... listeners) {
-                singletonBuilder.addListener(listeners);
-                return this;
-            }
-
-            @Override
-            public ServiceBuilder<T> addListener(Collection<? extends ServiceListener<? super T>> listeners) {
-                singletonBuilder.addListener(listeners);
-                return this;
-            }
-
-            @Override
-            public ServiceController<T> install() {
-                super.install();
-                return singletonBuilder.install();
-            }
-        };
     }
 
     @Override
