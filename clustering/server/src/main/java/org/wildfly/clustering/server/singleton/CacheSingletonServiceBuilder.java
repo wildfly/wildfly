@@ -274,7 +274,9 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     @Override
     public T getValue() {
-        if (!this.started) throw new IllegalStateException();
+        if (!this.started) {
+            throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.singletonServiceName.getCanonicalName());
+        }
         // Save ourselves a remote call if we can
         AtomicReference<T> ref = this.getValueRef();
         if (ref == null) {
@@ -285,17 +287,22 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     @Override
     public AtomicReference<T> getValueRef() {
-        return this.master.get() ? new AtomicReference<>(this.service.getValue()) : null;
+        try {
+            return this.master.get() ? new AtomicReference<>(this.service.getValue()) : null;
+        } catch (IllegalStateException e) {
+            // This might happen if master has not yet started, or if node is no longer master
+            return null;
+        }
     }
 
     private AtomicReference<T> getRemoteValueRef() {
         try {
             Map<Node, CommandResponse<AtomicReference<T>>> results = Collections.emptyMap();
             while (results.isEmpty()) {
-                if (!CacheSingletonServiceBuilder.this.started) {
-                    throw ClusteringServerLogger.ROOT_LOGGER.notStarted(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName());
+                if (!this.started) {
+                    throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.singletonServiceName.getCanonicalName());
                 }
-                results = CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new SingletonValueCommand<T>());
+                results = this.dispatcher.executeOnCluster(new SingletonValueCommand<T>());
                 Iterator<CommandResponse<AtomicReference<T>>> responses = results.values().iterator();
                 while (responses.hasNext()) {
                     if (responses.next().get() == null) {
@@ -307,13 +314,13 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
                 int count = results.size();
                 if (count > 1) {
                     // This would mean there are multiple masters!
-                    throw ClusteringServerLogger.ROOT_LOGGER.unexpectedResponseCount(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName(), count);
+                    throw ClusteringServerLogger.ROOT_LOGGER.unexpectedResponseCount(this.singletonServiceName.getCanonicalName(), count);
                 }
                 if (count == 0) {
-                    ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(CacheSingletonServiceBuilder.this.singletonServiceName.getCanonicalName());
+                    ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(this.singletonServiceName.getCanonicalName());
                     // Verify whether there is no master because a quorum was not reached during the last election
-                    if (CacheSingletonServiceBuilder.this.registration.getProviders().size() < CacheSingletonServiceBuilder.this.quorum) {
-                        return new AtomicReference<>();
+                    if (this.registration.getProviders().size() < this.quorum) {
+                        throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.targetServiceName.getCanonicalName());
                     }
                     if (Thread.currentThread().isInterrupted()) {
                         throw new InterruptedException();
