@@ -31,7 +31,6 @@ import java.util.Map;
 public enum Attribute {
 
     UNKNOWN(null),
-    JNDI_NAME("jndi-name"),
     DATA_SOURCE("data-source"),
     NAME("name");
 
