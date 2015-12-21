@@ -82,7 +82,6 @@
     <jvms>
         <jvm name="default">
             <heap size="64m" max-size="256m"/>
-            <permgen size="256m" max-size="256m"/>
             <jvm-options>
                 <option value="-server"/>
             </jvm-options>
