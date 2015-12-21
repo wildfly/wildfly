@@ -248,7 +248,11 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
         }
         // invoke the method and write out the response on a separate thread
-        executorService.submit(runnable);
+        if(executorService != null) {
+            executorService.submit( runnable );
+        } else {
+            runnable.run();
+        }
     }
 
     private Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
