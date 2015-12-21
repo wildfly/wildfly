@@ -37,6 +37,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 @RunWith(Arquillian.class)
 public class WarInEarChildFirstClassLoadingTestCase {
 
@@ -51,6 +53,7 @@ public class WarInEarChildFirstClassLoadingTestCase {
         earLib.addAsManifestResource(new StringAsset("Dependencies: \n"), "MANIFEST.MF"); //AS7-5547, make sure an empty dependencies entry is fine
         earLib.addClasses(TestBB.class, WebInfLibClass.class);
         ear.addAsLibrary(earLib);
+        ear.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
         return ear;
     }
 
