@@ -1,3 +1,4 @@
+org.wildfly.clustering.marshalling.jboss.AtomicReferenceExternalizer
 org.wildfly.clustering.marshalling.jboss.CollectionExternalizer$ArrayDequeExternalizer
 org.wildfly.clustering.marshalling.jboss.CollectionExternalizer$ArrayListExternalizer
 org.wildfly.clustering.marshalling.jboss.CollectionExternalizer$ConcurrentLinkedDequeExternalizer
