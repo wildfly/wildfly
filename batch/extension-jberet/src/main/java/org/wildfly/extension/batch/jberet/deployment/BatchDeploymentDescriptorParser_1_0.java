@@ -53,6 +53,7 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
         JobRepository jobRepository = null;
         String jobRepositoryName = null;
         String jobExecutorName = null;
+        Boolean restartJobsOnResume = null;
         boolean empty = true;
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -89,6 +90,9 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
                 // Only thread-pool's defined on the subsystem are allowed to be referenced
                 jobExecutorName = readRequiredAttribute(reader, Attribute.NAME);
                 ParseUtils.requireNoContent(reader);
+            } else if (element == Element.RESTART_JOBS_ON_RESUME) {
+                restartJobsOnResume = Boolean.valueOf(readRequiredAttribute(reader, Attribute.VALUE));
+                ParseUtils.requireNoContent(reader);
             } else {
                 throw ParseUtils.unexpectedElement(reader);
             }
@@ -99,7 +103,7 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
             BatchLogger.LOGGER.debugf("An empty batch element in the deployment descriptor was found for %s.", deploymentUnit.getName());
             return null;
         }
-        return new BatchEnvironmentMetaData(jobRepository, jobRepositoryName, jobExecutorName);
+        return new BatchEnvironmentMetaData(jobRepository, jobRepositoryName, jobExecutorName, restartJobsOnResume);
     }
 
     private static String readRequiredAttribute(final XMLExtendedStreamReader reader, final Attribute attribute) throws XMLStreamException {

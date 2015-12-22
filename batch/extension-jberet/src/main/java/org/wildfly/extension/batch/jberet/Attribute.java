@@ -32,7 +32,8 @@ public enum Attribute {
 
     UNKNOWN(null),
     DATA_SOURCE("data-source"),
-    NAME("name");
+    NAME("name"),
+    VALUE("value");
 
     private final String name;
 
