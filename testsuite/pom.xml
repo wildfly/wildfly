@@ -144,7 +144,7 @@
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
-        <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
+        <surefire.system.args> -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
         <surefire.forked.process.timeout>1500</surefire.forked.process.timeout>
 
         <!-- If servers should be killed before the test suite is run-->
