@@ -2767,7 +2767,7 @@
                                 <goals>
                                     <goal>download-licenses</goal>
                                 </goals>
-                                <phase>package</phase>
+                                <phase>prepare-package</phase>
                                 <configuration>
                                     <licensesOutputDirectory>
                                         ${project.build.directory}/${project.build.finalName}/content/docs/licenses
