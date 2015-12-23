@@ -31,7 +31,7 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
-    <version>10.0.0.CR5-SNAPSHOT</version>
+    <version>10.0.0.Final-SNAPSHOT</version>
 
     <name>WildFly: Parent Aggregator</name>
     <description>WildFly: Parent Aggregator</description>
@@ -168,7 +168,7 @@
         <version.org.jboss.openjdk-orb>8.0.5.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.remote-naming>2.0.4.Final</version.org.jboss.remote-naming>
-        <version.org.jboss.resteasy>3.0.13.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.14.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.0.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
@@ -204,7 +204,7 @@
         <version.org.jboss.ws.spi>3.1.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>3.1.1.Final</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.2.2.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>5.1.1.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.cxf>5.1.2.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jgroups>3.6.6.Final</version.org.jgroups>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
@@ -216,7 +216,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.0.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.4.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>2.0.5.CR1</version.org.wildfly.core>
+        <version.org.wildfly.core>2.0.5.Final</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
