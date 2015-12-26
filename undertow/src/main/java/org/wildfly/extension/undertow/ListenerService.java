@@ -40,6 +40,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import org.wildfly.extension.undertow.logging.UndertowLogger;
+
 import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
 import org.xnio.OptionMap;
@@ -141,13 +144,13 @@ public abstract class ListenerService<T> implements Service<T> {
         } catch (IOException e) {
             cleanFailedStart();
             if (e instanceof BindException) {
-                final StringBuilder sb = new StringBuilder().append(e.getMessage());
+                final StringBuilder sb = new StringBuilder().append(e.getLocalizedMessage());
                 final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
                 if (socketAddress != null)
                     sb.append(" ").append(socketAddress);
                 throw new StartException(sb.toString());
             } else {
-                throw new StartException("Could not start http listener", e);
+                throw UndertowLogger.ROOT_LOGGER.couldNotStartListener(name, e);
             }
         }
     }
