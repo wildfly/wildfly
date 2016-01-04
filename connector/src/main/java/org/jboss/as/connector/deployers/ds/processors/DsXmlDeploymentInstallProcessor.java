@@ -142,7 +142,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, false);
                             installManagementModel(ds, deploymentUnit, addr);
                             startDataSource(lds, jndiName, ds.getDriver(), serviceTarget,
-                                    getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, securityEnabled);
+                                    getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, securityEnabled, ds.isJTA());
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
@@ -164,7 +164,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, true);
                             installManagementModel(xads, deploymentUnit, addr);
                             startDataSource(xds, jndiName, xads.getDriver(), serviceTarget,
-                                    getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, securityEnabled);
+                                    getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, securityEnabled, true);
 
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, xads.getJndiName());
@@ -280,7 +280,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final ServiceTarget serviceTarget,
                                  final ManagementResourceRegistration registration,
                                  final Resource resource,
-                                 final String managementName, boolean securityEnabled) {
+                                 final String managementName, boolean securityEnabled,
+                                 final boolean isTransactional) {
 
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
@@ -342,11 +343,19 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                     public void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
+                                if (isTransactional) {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
+                                } else {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.boundNonJTADataSource(jndiName);
+                                }
                                 break;
                             }
                             case START_REQUESTED_to_DOWN: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
+                                if (isTransactional) {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
+                                } else {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.unBoundNonJTADataSource(jndiName);
+                                }
                                 break;
                             }
                             case REMOVING_to_REMOVED: {
