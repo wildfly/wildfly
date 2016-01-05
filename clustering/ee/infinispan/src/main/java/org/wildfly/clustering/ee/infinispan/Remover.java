@@ -32,4 +32,13 @@ public interface Remover<K> {
      * @return true, if the entry was removed.
      */
     boolean remove(K id);
+
+    /**
+     * Like {@link #remove(Object)}, but does not notify listeners.
+     * @param id the cache entry identifier.
+     * @return true, if the entry was removed.
+     */
+    default boolean purge(K id) {
+        return this.remove(id);
+    }
 }
