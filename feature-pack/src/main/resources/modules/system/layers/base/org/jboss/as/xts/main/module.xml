@@ -70,5 +70,6 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.narayana.compensations" />
+        <module name="org.omg.api"/>
     </dependencies>
 </module>
