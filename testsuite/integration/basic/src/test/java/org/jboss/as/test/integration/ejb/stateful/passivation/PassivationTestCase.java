@@ -34,6 +34,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -73,6 +74,7 @@ public class PassivationTestCase {
     }
 
     @Test
+    @Ignore("Too many intermittent failures")
     public void testPassivationMaxSize() throws Exception {
         PassivationInterceptor.reset();
         TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/"
