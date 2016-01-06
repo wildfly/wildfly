@@ -41,6 +41,7 @@ import java.util.Map;
 public enum Namespace {
 
     PICKETLINK_FEDERATION_1_0(1, 0, 0, new FederationSubsystemReader_1_0(), FederationSubsystemWriter.INSTANCE),
+    PICKETLINK_FEDERATION_1_1(1, 1, 0, new FederationSubsystemReader_2_0(), FederationSubsystemWriter.INSTANCE),
     PICKETLINK_FEDERATION_2_0(2, 0, 0, new FederationSubsystemReader_2_0(), FederationSubsystemWriter.INSTANCE);
 
     public static final Namespace CURRENT = PICKETLINK_FEDERATION_2_0;

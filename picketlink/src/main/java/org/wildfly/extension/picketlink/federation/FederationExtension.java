@@ -23,6 +23,7 @@
 package org.wildfly.extension.picketlink.federation;
 
 import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
+import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_1;
 import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_0;
 
 import org.jboss.as.controller.Extension;
@@ -87,6 +88,7 @@ public class FederationExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, CURRENT.getUri(), CURRENT.getXMLReader());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_FEDERATION_1_1.getUri(), PICKETLINK_FEDERATION_1_1.getXMLReader());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_FEDERATION_1_0.getUri(), PICKETLINK_FEDERATION_1_0.getXMLReader());
     }
 }
