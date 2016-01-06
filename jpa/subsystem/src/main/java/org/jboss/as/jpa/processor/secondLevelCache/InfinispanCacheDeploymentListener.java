@@ -55,7 +55,9 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     public static final String CONTAINER = "container";
     public static final String COLLECTION = "collection";
     public static final String ENTITY = "entity";
+    public static final String IMMUTABLE_ENTITY = "immutable-entity";
     public static final String NAME = "name";
+    public static final String NATURAL_ID = "natural-id";
     public static final String QUERY = "query";
     public static final String TIMESTAMPS = "timestamps";
 
@@ -102,11 +104,15 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     public void addCacheDependencies(Classification classification, Properties properties) {
         String container = properties.getProperty(CONTAINER);
         String entity = properties.getProperty(ENTITY);
+        String immutableEntity = properties.getProperty(IMMUTABLE_ENTITY);
+        String naturalId = properties.getProperty(NATURAL_ID);
         String collection = properties.getProperty(COLLECTION);
         String query = properties.getProperty(QUERY);
         String timestamps  = properties.getProperty(TIMESTAMPS);
         CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, entity));
+        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, immutableEntity));
         CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, collection));
+        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, naturalId));
         if (query != null) {
             CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, timestamps));
             CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, query));
