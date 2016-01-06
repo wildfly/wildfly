@@ -119,7 +119,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                         if (deploymentUnit.getParent() != null) {
                             contextID = deploymentUnit.getParent().getName() + "!" + contextID;
                         }
-                        if (isSecurityDomainsConfigured()) {
+                        if (isSecurityDomainKnown()) {
                             configuration.addPostConstructInterceptor(new ElytronInterceptorFactory(contextID), InterceptorOrder.View.SECURITY_CONTEXT);
                         } else {
                             configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(isExplicitSecurityDomainConfigured(), false, contextID), InterceptorOrder.View.SECURITY_CONTEXT);

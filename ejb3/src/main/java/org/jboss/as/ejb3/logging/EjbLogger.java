@@ -3104,9 +3104,6 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 484, value = "Could not send a cluster removal message for cluster: (%s) to the client on channel %s")
     void couldNotSendClusterRemovalMessage(@Cause Throwable cause, Group group, Channel channel);
 
-    @Message(id = 485, value = "The default security domain '%s' is not in the list of referenced security domains.")
-    OperationFailedException defaultSecurityDomainNotReferenced(String defaultSecurityDomain);
-
-    @Message(id = 486, value = "Unauthenticated (anonymous) access to this EJB method is not authorized")
+    @Message(id = 485, value = "Unauthenticated (anonymous) access to this EJB method is not authorized")
     SecurityException ejbAuthenticationRequired();
 }

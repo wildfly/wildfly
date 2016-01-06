@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponentCreateService;
@@ -50,6 +51,8 @@ import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescripti
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
+import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.Registration;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -57,6 +60,9 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -103,9 +109,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
-    private final InjectedValue<Map<String, SecurityDomain>> securityDomainsByName = new InjectedValue<>();
+    private final InjectedValue<ApplicationSecurityDomain> applicationSecurityDomain = new InjectedValue<>();
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
+
+    private Registration registration;
 
     /**
      * Construct a new instance.
@@ -205,6 +213,26 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.moduleName = componentConfiguration.getModuleName();
         this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
         this.shutDownInterceptorFactory = ejbComponentDescription.getShutDownInterceptorFactory();
+    }
+
+    @Override
+    public synchronized void start(final StartContext context) throws StartException {
+        super.start(context);
+        ApplicationSecurityDomain applicationSecurityDomain = getApplicationSecurityDomain();
+        Function<String, Registration> securityFunction = applicationSecurityDomain != null ? applicationSecurityDomain.getSecurityFunction() : null;
+        if (securityFunction != null) {
+            final DeploymentUnit deploymentUnit = getDeploymentUnitInjector().getValue();
+            final String deploymentName = deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
+            registration = securityFunction.apply(deploymentName);
+        }
+    }
+
+    @Override
+    public synchronized void stop(final StopContext context) {
+        super.stop(context);
+        if (registration != null) {
+            registration.cancel();
+        }
     }
 
     @Override
@@ -386,12 +414,17 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return exceptionLoggingEnabled.getValue();
     }
 
-    InjectedValue<Map<String, SecurityDomain>> getSecurityDomainsByNameInjector() {
-        return securityDomainsByName;
+    Injector<ApplicationSecurityDomain> getApplicationSecurityDomainInjector() {
+        return applicationSecurityDomain;
     }
 
-    public Map<String, SecurityDomain> getSecurityDomainsByName() {
-        return securityDomainsByName.getValue();
+    public ApplicationSecurityDomain getApplicationSecurityDomain() {
+        return applicationSecurityDomain.getOptionalValue();
+    }
+
+    public SecurityDomain getSecurityDomain() {
+        ApplicationSecurityDomain applicationSecurityDomain = getApplicationSecurityDomain();
+        return applicationSecurityDomain != null ? applicationSecurityDomain.getSecurityDomain() : null;
     }
 
     public ShutDownInterceptorFactory getShutDownInterceptorFactory() {

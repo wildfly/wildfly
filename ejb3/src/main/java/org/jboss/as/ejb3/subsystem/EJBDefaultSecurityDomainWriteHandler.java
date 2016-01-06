@@ -52,7 +52,7 @@ class EJBDefaultSecurityDomainWriteHandler extends AbstractWriteAttributeHandler
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         updateDefaultSecurityDomainDeploymentProcessor(context, model);
 
-        return model.hasDefined(EJB3SubsystemModel.SECURITY_DOMAINS);
+        return false;
     }
 
     @Override

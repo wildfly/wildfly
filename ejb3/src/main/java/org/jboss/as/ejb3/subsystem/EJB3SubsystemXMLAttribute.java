@@ -46,7 +46,6 @@ public enum EJB3SubsystemXMLAttribute {
     CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),
 
-    DEFAULT("default"),
     DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
     DEFAULT_DATA_STORE("default-data-store"),
     DATABASE("database"),
@@ -100,7 +99,10 @@ public enum EJB3SubsystemXMLAttribute {
 
     ACTIVE("active"),
 
-    EXECUTE_IN_WORKER("execute-in-worker")
+    EXECUTE_IN_WORKER("execute-in-worker"),
+
+    // Elytron integration
+    SECURITY_DOMAIN("security-domain")
     ;
 
     private final String name;

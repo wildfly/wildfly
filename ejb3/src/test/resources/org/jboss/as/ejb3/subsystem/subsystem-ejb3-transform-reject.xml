@@ -76,10 +76,11 @@
     <!-- Disable pass-by-value for in-vm remote interface invocations on EJBs -->
     <in-vm-remote-interface-invocation pass-by-value="false"/>
     <default-distinct-name value="myname"/>
+    <default-security-domain value="domain"/>
     <!-- should be rejected -->
-    <security-domains default="domain">
-        <security-domain name="domain"/>
-    </security-domains>
+    <application-security-domains>
+        <application-security-domain name="domain" security-domain="ApplicationDomain"/>
+    </application-security-domains>
     <default-missing-method-permissions-deny-access value="true" />
     <disable-default-ejb-permissions value="true"/>
     <statistics enabled="${ejb.enable-statistics:true}" />

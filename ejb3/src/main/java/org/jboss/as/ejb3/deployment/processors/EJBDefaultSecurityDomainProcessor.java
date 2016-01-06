@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 
@@ -44,10 +45,11 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcessor {
 
     private volatile String defaultSecurityDomainName;
-    private volatile boolean securityDomainsConfigured;
+    private volatile Predicate<String> knownSecurityDomain;
 
-    public EJBDefaultSecurityDomainProcessor(final String defaultSecurityDomainName) {
+    public EJBDefaultSecurityDomainProcessor(final String defaultSecurityDomainName, final Predicate<String> knownSecurityDomain) {
         this.defaultSecurityDomainName = defaultSecurityDomainName;
+        this.knownSecurityDomain = knownSecurityDomain;
     }
 
     @Override
@@ -71,7 +73,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription instanceof EJBComponentDescription) {
                 ((EJBComponentDescription) componentDescription).setDefaultSecurityDomain(defaultSecurityDomain);
-                ((EJBComponentDescription) componentDescription).setSecurityDomainsConfigured(securityDomainsConfigured);
+                ((EJBComponentDescription) componentDescription).setKnownSecurityDomainPredicate(knownSecurityDomain);
             }
         }
     }
@@ -88,14 +90,5 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
      */
     public void setDefaultSecurityDomainName(final String securityDomainName) {
         this.defaultSecurityDomainName = securityDomainName;
-    }
-
-    /**
-     * Sets whether or not security domains are explicitly configured in the EJB3 subsystem.
-     *
-     * @param securityDomainsConfigured whether or not security domains are explicitly configured in the EJB3 subsystem
-     */
-    public void setSecurityDomainsConfigured(final boolean securityDomainsConfigured) {
-        this.securityDomainsConfigured = securityDomainsConfigured;
     }
 }

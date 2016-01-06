@@ -68,7 +68,7 @@ public class EJB3Subsystem14Parser extends EJB3Subsystem13Parser {
         return EJB3SubsystemNamespace.EJB3_1_4;
     }
 
-    protected void parseDefaultSecurityDomain(final XMLExtendedStreamReader reader, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+    private void parseDefaultSecurityDomain(final XMLExtendedStreamReader reader, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.VALUE);
         for (int i = 0; i < count; i++) {

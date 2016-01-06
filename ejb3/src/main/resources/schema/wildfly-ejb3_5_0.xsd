@@ -57,7 +57,7 @@
                         minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-distinct-name" type="default-distinct-nameType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-security-domain" type="default-security-domainType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="security-domains" type="securityDomainsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="application-security-domains" type="applicationSecurityDomainsType" minOccurs="0" maxOccurs="1" />
             <xs:element name="default-missing-method-permissions-deny-access" type="default-missing-method-permissions-deny-accessType" minOccurs="0" maxOccurs="1" />
             <xs:element name="disable-default-ejb-permissions" type="disable-default-ejb-permissionsType" minOccurs="0" maxOccurs="1" />
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
@@ -403,33 +403,30 @@
         <xs:attribute name="enabled" type="xs:string"/>
     </xs:complexType>
 
-    <xs:complexType name="securityDomainsType">
+    <xs:complexType name="applicationSecurityDomainsType">
+        <xs:annotation>
+            <xs:documentation>
+                Listing of security domains from applications that should be mapped to an Elytron
+                security domain.
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
-            <xs:element name="security-domain" type="securityDomainRefType" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="application-security-domain" type="applicationSecurityDomainType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
-        <xs:attribute name="default" type="xs:string" use="optional">
+    </xs:complexType>
+
+    <xs:complexType name="applicationSecurityDomainType">
+        <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    <![CDATA[
-                    The default Elytron security domain that will be used for EJBs in the absence of any explicitly configured
-                    security domain name for the bean.
-                ]]>
+                    The name of the security domain as specified in deployments.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="securityDomainRefType">
-        <xs:annotation>
-            <xs:documentation>
-                A reference to an Elytron security domain.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="name" type="xs:string" use="required" />
-        <xs:attribute name="alias" type="xs:string" use="optional">
+        <xs:attribute name="security-domain" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    Defines an alias for this Elytron security domain.
+                    Reference to the Elytron security domain that should be used.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

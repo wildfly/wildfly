@@ -1,5 +1,6 @@
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -146,7 +147,7 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
+        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization().withCapabilities(buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain")));
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, model)
@@ -174,8 +175,7 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
-                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS,
-                            EJB3SubsystemRootResourceDefinition.SECURITY_DOMAINS))
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
@@ -209,6 +209,10 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // reject the attribute 'cluster' from resource /subsystem=ejb3/service=remote
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME));
+
+            // reject the resource /subsystem=ejb3/application-security-domain=domain
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, "domain")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
         }
 
         if (EJB3Model.VERSION_1_3_0.matches(version)) {
@@ -217,8 +221,7 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
-                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS,
-                            EJB3SubsystemRootResourceDefinition.SECURITY_DOMAINS))
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
@@ -243,6 +246,9 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // reject the attribute 'cluster' from resource /subsystem=ejb3/service=remote
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME));
+
+            // reject the resource /subsystem=ejb3/application-security-domain=domain
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, "domain")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
         return config;
