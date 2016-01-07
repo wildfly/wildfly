@@ -142,8 +142,10 @@ public class LegacyJMSTestCase {
                 JMSContext producerContext = cf.createContext("guest", "guest");
                 JMSContext consumerContext = cf.createContext("guest", "guest")
         ) {
-            final CountDownLatch latch = new CountDownLatch(10);
+            final CountDownLatch latch = new CountDownLatch(1);
             final List<String> result = new ArrayList<String>();
+
+            final int num = 10;
 
             JMSConsumer consumer = consumerContext.createConsumer(destination);
             consumer.setMessageListener(new MessageListener() {
@@ -151,8 +153,11 @@ public class LegacyJMSTestCase {
                 public void onMessage(Message message) {
                     TextMessage msg = (TextMessage) message;
                     try {
+                        System.err.println("<<< Receiving " + msg.getText());
                         result.add(msg.getText());
-                        latch.countDown();
+                        if (result.size() == num) {
+                            latch.countDown();
+                        }
                     } catch (JMSException e) {
                         e.printStackTrace();
                     }
@@ -160,15 +165,16 @@ public class LegacyJMSTestCase {
             });
 
             JMSProducer producer = producerContext.createProducer();
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < num; i++) {
                 String text = "Test" + i;
+                System.err.println(">>> Sending " + text);
                 producer.send(destination, text);
             }
 
             assertTrue(latch.await(3, SECONDS));
-            assertEquals(10, result.size());
+            assertEquals(num, result.size());
             for (int i = 0; i < result.size(); i++) {
-                assertEquals("Test" + i, result.get(i));
+                assertEquals("Messages received : " + result, "Test" + i, result.get(i));
             }
         }
     }
