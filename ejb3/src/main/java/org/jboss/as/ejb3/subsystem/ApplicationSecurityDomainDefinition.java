@@ -33,6 +33,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -49,9 +51,13 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
@@ -77,6 +83,10 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, APPLICATION_SECURITY_DOMAIN_CAPABILITY, true)
             .build();
 
+    private static StringListAttributeDefinition REFERENCING_DEPLOYMENTS = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.REFERENCING_DEPLOYMENTS)
+            .setStorageRuntime()
+            .build();
+
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SECURITY_DOMAIN };
 
     static final ApplicationSecurityDomainDefinition INSTANCE = new ApplicationSecurityDomainDefinition();
@@ -98,6 +108,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         for (AttributeDefinition attribute: ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
         }
+        resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
     }
 
     private static class AddHandler extends AbstractAddStepHandler {
@@ -145,6 +156,28 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         protected ServiceName serviceName(String name) {
             RuntimeCapability<?> dynamicCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(name);
             return dynamicCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
+        }
+    }
+
+    private static class ReferencingDeploymentsHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
+            ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
+            ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+            ServiceController<?> controller = serviceRegistry.getRequiredService(serviceName);
+
+            ModelNode deploymentList = new ModelNode();
+            if (controller.getState() == State.UP) {
+                Service service = controller.getService();
+                if (service instanceof ApplicationSecurityDomainService) {
+                    for (String current : ((ApplicationSecurityDomainService) service).getDeployments()) {
+                        deploymentList.add(current);
+                    }
+                }
+            }
+            context.getResult().set(deploymentList);
         }
     }
 

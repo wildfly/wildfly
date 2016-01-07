@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.subsystem;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -63,6 +64,13 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
 
     Injector<SecurityDomain> getSecurityDomainInjector() {
         return securityDomainInjector;
+    }
+
+    public String[] getDeployments() {
+        synchronized(registrations) {
+            Set<String> deploymentNames = registrations.stream().map(r -> r.deploymentName).collect(Collectors.toSet());
+            return deploymentNames.toArray(new String[deploymentNames.size()]);
+        }
     }
 
     private class RegistrationImpl implements Registration {
