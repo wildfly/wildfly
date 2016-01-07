@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.processor.secondLevelCache;
 
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+
 import java.security.AccessController;
 import java.util.Properties;
 import java.util.UUID;
@@ -60,6 +62,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     public static final String NATURAL_ID = "natural-id";
     public static final String QUERY = "query";
     public static final String TIMESTAMPS = "timestamps";
+    public static final String PENDING_PUTS = "pending-puts";
 
     public static final String DEFAULT_CACHE_CONTAINER = "hibernate";
 
@@ -109,14 +112,25 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String collection = properties.getProperty(COLLECTION);
         String query = properties.getProperty(QUERY);
         String timestamps  = properties.getProperty(TIMESTAMPS);
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, entity));
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, immutableEntity));
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, collection));
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, naturalId));
-        if (query != null) {
-            CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, timestamps));
-            CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, query));
+        String pendingPuts = properties.getProperty(PENDING_PUTS);
+        addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, entity));
+        addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, immutableEntity));
+        addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, collection));
+        addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, naturalId));
+        if (pendingPuts != null) {
+            addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, pendingPuts));
         }
+        if (query != null) {
+            addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, timestamps));
+            addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, query));
+        }
+    }
+
+    private void addDependency(ServiceName dependency) {
+        if(ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.tracef("add second level cache dependency on service '%s'", dependency.getCanonicalName());
+        }
+        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(dependency);
     }
 
     @Override
@@ -124,7 +138,13 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         if (!ignoreStop) {
             // Remove the service created in createCacheManager(...)
             CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
+            if(ROOT_LOGGER.isTraceEnabled()) {
+                ROOT_LOGGER.tracef("stop second level cache by removing dependency on service '%s'", cacheWrapper.serviceName.getCanonicalName());
+            }
             ServiceContainerHelper.remove(currentServiceContainer().getRequiredService(cacheWrapper.serviceName));
+        } else if(ROOT_LOGGER.isTraceEnabled()){
+            CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
+            ROOT_LOGGER.tracef("skipping stop of second level cache, will keep dependency on service '%s'", cacheWrapper.serviceName.getCanonicalName());
         }
     }
 
