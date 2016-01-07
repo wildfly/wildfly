@@ -22,6 +22,10 @@
 
 package org.jboss.as.jpa.processor.secondLevelCache;
 
+
+
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -73,11 +77,17 @@ public class CacheDeploymentListener implements EventListener {
 
     @Override
     public Wrapper startCache(Classification classification, Properties properties) throws Exception {
+        if(ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.tracef("start second level cache with properties '%s'", properties.toString());
+        }
         return delegates.get(classification.getLocalName()).startCache(classification, properties);
     }
 
     @Override
     public void addCacheDependencies(Classification classification, Properties properties) {
+        if(ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.tracef("add second level cache dependencies with properties '%s'", properties.toString());
+        }
         delegates.get(classification.getLocalName()).addCacheDependencies(classification, properties);
     }
 
