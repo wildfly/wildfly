@@ -21,7 +21,6 @@ package org.jboss.as.jpa.hibernate5.management;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
@@ -80,17 +79,23 @@ public class HibernateQueryCacheStatistics extends HibernateAbstractStatistics {
 
     @Override
     public Collection<String> getDynamicChildrenNames(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress) {
-        Set<String> result = new HashSet<String>();
-        String[] queries = getBaseStatistics(entityManagerFactoryLookup.entityManagerFactory(pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL))).getQueries();
-        if (queries != null) {
-            for (String query : queries) {
-                result.add(QueryName.queryName(query).getDisplayName());
+        Set<String> result = new HashSet<>();
+        org.hibernate.stat.Statistics stats = getBaseStatistics(entityManagerFactoryLookup.entityManagerFactory(pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL)));
+        if (stats != null) {
+            String[] queries = stats.getQueries();
+            if (queries != null) {
+                for (String query : queries) {
+                    result.add(QueryName.queryName(query).getDisplayName());
+                }
             }
         }
         return result;
     }
 
     private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
         SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
             return sessionFactory.getStatistics();
@@ -99,6 +104,9 @@ public class HibernateQueryCacheStatistics extends HibernateAbstractStatistics {
     }
 
     private org.hibernate.stat.QueryStatistics getStatistics(EntityManagerFactory entityManagerFactory, String displayQueryName) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
         SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         // convert displayed (transformed by QueryNames) query name to original query name to look up query statistics
         if (sessionFactory != null) {

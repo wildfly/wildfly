@@ -218,6 +218,9 @@ public class HibernateStatistics extends HibernateAbstractStatistics {
     }
 
     static final org.hibernate.stat.Statistics getStatistics(final EntityManagerFactory entityManagerFactory) {
+        if (entityManagerFactory == null){
+            return null;
+        }
         HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
         if (sessionFactory != null) {
