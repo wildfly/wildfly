@@ -26,8 +26,9 @@
     <resources>
         <artifact name="${org.jboss.spec.javax.management.j2ee:jboss-j2eemgmt-api_1.1_spec}"/>
     </resources>
-    
+
     <dependencies>
+        <module name="javax.api"/>
         <module name="javax.ejb.api"/>
         <module name="org.jboss.ejb-client"/>
     </dependencies>
