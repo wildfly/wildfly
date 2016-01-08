@@ -54,6 +54,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final ModuleIdentifier EJB_IIOP_CLIENT = ModuleIdentifier.create("org.jboss.iiop-client");
     private static final ModuleIdentifier IIOP_OPENJDK = ModuleIdentifier.create("org.wildfly.iiop-openjdk");
     private static final ModuleIdentifier EJB_API = ModuleIdentifier.create("javax.ejb.api");
+    private static final ModuleIdentifier JAX_RPC_API = ModuleIdentifier.create("javax.xml.rpc.api");
 
 
     /**
@@ -75,6 +76,8 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         //always add EE API
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_API, false, false, true, false));
+        // previously exported by EJB_API prior to WFLY-5922 TODO WFLY-5967 look into moving this to WS subsystem
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAX_RPC_API, false, false, true, false));
         //we always give them the EJB client
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_IIOP_CLIENT, false, false, false, false));
