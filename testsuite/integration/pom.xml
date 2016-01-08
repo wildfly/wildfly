@@ -63,6 +63,7 @@
                 <module>manualmode</module>
                 <module>picketlink</module>
                 <module>secman</module>
+                <module>legacy</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -83,6 +84,7 @@
                 <module>manualmode</module>
                 <module>picketlink</module>
                 <module>secman</module>
+                <module>legacy</module>
             </modules>
         </profile>
 
@@ -193,6 +195,15 @@
             <activation><property><name>ts.secman</name></property></activation>
             <modules>
                 <module>secman</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.legacy -->
+        <profile>
+            <id>ts.integ.group.legacy</id>
+            <activation><property><name>ts.legacy</name></property></activation>
+            <modules>
+                <module>legacy</module>
             </modules>
         </profile>
     </profiles>
