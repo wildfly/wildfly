@@ -98,4 +98,8 @@
                <param param-name="param-name1" param-value="${prop.valve-param:some-value}"/>
                <param param-name="param-name2" param-value="${prop.valve-param:some-value}"/>
             </valve>
+            <valve name="request-dumper" module="org.jboss.as.web" class-name="org.apache.catalina.valves.RequestDumperValve"/>
+            <valve name="remote-addr" module="org.jboss.as.web" class-name="org.apache.catalina.valves.RemoteAddrValve">
+                <param param-name="allow" param-value="127.0.0.1,127.0.0.2" />
+            </valve>
         </subsystem>
