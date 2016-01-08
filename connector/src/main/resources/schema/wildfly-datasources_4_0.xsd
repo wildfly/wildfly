@@ -754,6 +754,16 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="fair" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              Defines if pool should use be fair
+              Default true
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="use-strict-min" type="xs:boolean" minOccurs="0" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>

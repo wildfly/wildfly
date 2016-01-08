@@ -33,6 +33,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -135,6 +136,7 @@ public class CommonAttributes {
             WRAP_XA_RESOURCE,
             SAME_RM_OVERRIDE,
             PAD_XID,
+            POOL_FAIR,
             POOL_PREFILL,
             INTERLEAVING,
             NOTXSEPARATEPOOL,
