@@ -44,7 +44,7 @@ import org.junit.Test;
  */
 public class ParseAndMarshalModelsTestCase {
 
-    private static final String[] EAP_VERSIONS = {"6-0-0", "6-1-0", "6-2-0", "6-3-0"};
+    private static final String[] EAP_VERSIONS = {"6-0-0", "6-1-0", "6-2-0", "6-3-0", "6-4-0"};
     private static final String[] AS_VERSIONS = {"7-1-3", "7-2-0"};
 
     private static final File JBOSS_HOME = new File(".." + File.separatorChar + "jbossas-parse-marshal");
@@ -208,6 +208,24 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testEAPStandalonePicketLinkXml() throws Exception {
+        for (String version : EAP_VERSIONS) {
+            switch (version) {
+                case "6-0-0":
+                case "6-1-0":
+                case "6-2-0":
+                    // didn't exist yet
+                    break;
+                case "6-3-0":
+                    // incompatible; the tech preview 6.3 API was abandoned
+                    break;
+                default:
+                    standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + "-picketlink.xml"));
+            }
+        }
+    }
+
+    @Test
     public void testEAPStandaloneXtsXml() throws Exception {
         for (String version : EAP_VERSIONS) {
             ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-" + version + "-xts.xml"));
@@ -276,7 +294,7 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue(model.hasDefined(PROFILE));
         for (Property prop : model.get(PROFILE).asPropertyList()) {
             validateWebSubsystem(prop.getValue(), version);
-            validateJsfSubsystem(prop.getValue(), version); 
+            validateJsfSubsystem(prop.getValue(), version);
             validateThreadsSubsystem(prop.getValue(), version);
         }
     }

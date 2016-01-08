@@ -48,7 +48,7 @@ public class TrustDomainResourceDefinition extends AbstractFederationResourceDef
 
     public static final SimpleAttributeDefinition CERT_ALIAS = new SimpleAttributeDefinitionBuilder(ModelElement.IDENTITY_PROVIDER_TRUST_DOMAIN_CERT_ALIAS.getName(), ModelType.STRING, true)
         .setAllowExpression(true)
-        .setDeprecated(Namespace.PICKETLINK_FEDERATION_2_0.getModelVersion())
+        .setDeprecated(Namespace.PICKETLINK_FEDERATION_1_1.getModelVersion())
         .build();
 
     public static final TrustDomainResourceDefinition INSTANCE = new TrustDomainResourceDefinition();
