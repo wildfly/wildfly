@@ -36,6 +36,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
@@ -66,7 +67,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        this.builderFactory.createBuilder(cacheAddress).configure(context, model).build(target).install();
+        this.builderFactory.createBuilder(cacheAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         new CacheBuilder<>(containerName, cacheName).build(target).install();
         new XAResourceRecoveryBuilder(containerName, cacheName).build(target).install();
