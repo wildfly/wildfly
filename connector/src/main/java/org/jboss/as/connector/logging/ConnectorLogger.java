@@ -853,4 +853,7 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 99, value = "Unbound non-transactional data source: %s")
     void unBoundNonJTADataSource(String jndiName);
+
+    @Message(id = 100, value = "Operation %s is not supported")
+    UnsupportedOperationException noSupportedOperation(String operation);
 }
