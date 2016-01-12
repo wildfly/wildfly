@@ -34,6 +34,10 @@
         send_buf_size="640k"
         sock_conn_timeout="300"
     />
+    <TCP_NIO2
+        send_buf_size="640k"
+        sock_conn_timeout="300"
+    />
     <MPING ip_ttl="2"/>
     <MERGE3
         min_interval="10000"

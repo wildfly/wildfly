@@ -161,11 +161,11 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             private Object handle(Message message) {
                 Header header = (Header) message.getHeader(this.id);
                 // If this is a request expecting a response, don't leave the requester hanging - send an identifiable response on which it can filter
-                if ((header != null) && (header.type == Header.REQ) && header.rsp_expected) {
+                if ((header != null) && (header.type == Header.REQ) && header.rspExpected()) {
                     Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.SCOPED);
 
                     response.putHeader(FORK.ID, message.getHeader(FORK.ID));
-                    response.putHeader(this.id, new Header(Header.RSP, header.id, false, this.id));
+                    response.putHeader(this.id, new Header(Header.RSP, 0, header.corrId));
                     response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
 
                     channel.down(new Event(Event.MSG, response));
