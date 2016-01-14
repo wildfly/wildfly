@@ -1,5 +1,6 @@
 package org.jboss.as.test.clustering.cluster.dispatcher;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -46,6 +47,10 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ClusterTopologyRetriever.class.getPackage());
+        ejbJar.addAsManifestResource(createPermissionsXmlAsset(
+                new RuntimePermission("getClassLoader"),
+                new RuntimePermission("modifyThread")
+        ), "permissions.xml");
         log.info(ejbJar.toString(true));
         return ejbJar;
     }

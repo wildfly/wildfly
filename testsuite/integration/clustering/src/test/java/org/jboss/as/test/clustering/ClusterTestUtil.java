@@ -49,6 +49,15 @@ public class ClusterTestUtil {
         }
     }
 
+    /**
+     * <em>Note you need to manually add required permissions for this utility to work with security manager:</em>
+     *
+     * <pre>{@code
+     * war.addAsManifestResource(createPermissionsXmlAsset(
+     *     new ServerPermission("getCurrentServiceContainer")
+     * ), "permissions.xml");
+     * }</pre>
+     */
     public static <A extends Archive<A> & ClassContainer<A> & ManifestContainer<A>> A addTopologyListenerDependencies(A archive) {
         archive.addClasses(TopologyChangeListener.class, TopologyChangeListenerBean.class, TopologyChangeListenerServlet.class);
         archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.jboss.as.server, org.infinispan\n"));

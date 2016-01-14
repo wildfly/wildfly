@@ -141,9 +141,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             // Now check on the 2nd server
 
-            // Note that this DOES rely on the fact that both servers are running on the "same" domain,
-            // which is '127.0.0.0'. Otherwise you will have to spoof cookies. @Rado
-
             response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -198,9 +195,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             // Now check on the 2nd server
 
-            // Note that this DOES rely on the fact that both servers are running on the "same" domain,
-            // which is '127.0.0.0'. Otherwise you will have to spoof cookies. @Rado
-
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -230,7 +224,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("Session failed to replicate after container 1 was brough up.", 9, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals("Session failed to replicate after container 1 was brought up.", 9, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 Assert.assertNull(entry);
             } finally {

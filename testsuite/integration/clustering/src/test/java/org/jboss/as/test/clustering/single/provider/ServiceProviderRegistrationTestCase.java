@@ -21,14 +21,17 @@
  */
 package org.jboss.as.test.clustering.single.provider;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.*;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 import java.util.Collection;
+import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriever;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
@@ -58,6 +61,10 @@ public class ServiceProviderRegistrationTestCase {
     public static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ServiceProviderRetriever.class.getPackage());
+        ejbJar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission("jboss.node.name", "read"),
+                new ServerPermission("useServiceRegistry")
+        ), "permissions.xml");
         log.info(ejbJar.toString(true));
         return ejbJar;
     }

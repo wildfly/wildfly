@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering.tunnel.singleton;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,25 +35,21 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
-import org.jboss.as.test.clustering.TopologyChangeListener;
-import org.jboss.as.test.clustering.TopologyChangeListenerBean;
-import org.jboss.as.test.clustering.TopologyChangeListenerServlet;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceServlet;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jgroups.stack.GossipRouter;
 import org.junit.Assert;
@@ -95,6 +93,9 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
         war.addClass(SingletonServiceActivator.class);
         war.addAsServiceProvider(ServiceActivator.class, SingletonServiceActivator.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new ServerPermission("getCurrentServiceContainer")
+        ), "permissions.xml");
         return war;
     }
 
