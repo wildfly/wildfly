@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.security;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +51,7 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
@@ -140,7 +142,8 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         final boolean securityRequired = beanHasMethodLevelSecurityMetadata || ejbComponentDescription.hasBeanLevelSecurityMetadata();
         // setup the security context interceptor
         if (isSecurityDomainKnown) {
-            viewConfiguration.addViewInterceptor(new ElytronInterceptorFactory(contextID), InterceptorOrder.View.SECURITY_CONTEXT);
+            final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = ejbComponentDescription.getElytronInterceptorFactories(contextID);
+            elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> viewConfiguration.addViewInterceptor(elytronInterceptorFactory, priority));
         } else {
             viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, true, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
         }

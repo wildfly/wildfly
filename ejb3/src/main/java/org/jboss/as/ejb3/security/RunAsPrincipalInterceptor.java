@@ -31,16 +31,16 @@ import org.wildfly.security.auth.server.SecurityIdentity;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-class RunAsPrincipalInterceptor implements Interceptor {
+public class RunAsPrincipalInterceptor implements Interceptor {
     private final String runAsPrincipal;
 
-    RunAsPrincipalInterceptor(final String runAsPrincipal) {
+    public RunAsPrincipalInterceptor(final String runAsPrincipal) {
         this.runAsPrincipal = runAsPrincipal;
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final SecurityDomain securityDomain = context.getPrivateData(SecurityDomain.class);
-        Assert.assertNotNull(securityDomain);
+        Assert.checkNotNullParam("securityDomain", securityDomain);
         final SecurityIdentity newIdentity = securityDomain.getCurrentSecurityIdentity().createRunAsIdentity(runAsPrincipal);
         return newIdentity.runAs(context);
     }

@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.ejb.ConcurrencyManagementType;
@@ -52,7 +53,6 @@ import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.security.ElytronInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
@@ -62,6 +62,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
@@ -120,7 +121,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                             contextID = deploymentUnit.getParent().getName() + "!" + contextID;
                         }
                         if (isSecurityDomainKnown()) {
-                            configuration.addPostConstructInterceptor(new ElytronInterceptorFactory(contextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                            final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(contextID);
+                            elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addPostConstructInterceptor(elytronInterceptorFactory, priority));
                         } else {
                             configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(isExplicitSecurityDomainConfigured(), false, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
                         }

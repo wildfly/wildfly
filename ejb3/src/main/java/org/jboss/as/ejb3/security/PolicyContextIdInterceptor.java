@@ -32,10 +32,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-class PolicyContextIdInterceptor implements Interceptor {
+public class PolicyContextIdInterceptor implements Interceptor {
     private final String policyContextID;
 
-    PolicyContextIdInterceptor(final String policyContextID) {
+    public PolicyContextIdInterceptor(final String policyContextID) {
         this.policyContextID = policyContextID;
     }
 

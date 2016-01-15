@@ -46,7 +46,7 @@ class ForbidAnonymousInterceptor implements Interceptor {
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final SecurityDomain securityDomain = context.getPrivateData(SecurityDomain.class);
-        Assert.assertNotNull(securityDomain);
+        Assert.checkNotNullParam("securityDomain", securityDomain);
         if (securityDomain.getCurrentSecurityIdentity().getPrincipal() instanceof AnonymousPrincipal) {
             throw EjbLogger.EJB3_INVOCATION_LOGGER.ejbAuthenticationRequired();
         } else {

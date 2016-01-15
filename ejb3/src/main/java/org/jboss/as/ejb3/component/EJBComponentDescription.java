@@ -84,8 +84,11 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
-import org.jboss.as.ejb3.security.ElytronInterceptorFactory;
+import org.jboss.as.ejb3.security.PolicyContextIdInterceptor;
+import org.jboss.as.ejb3.security.RoleAddingInterceptor;
+import org.jboss.as.ejb3.security.RunAsPrincipalInterceptor;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
+import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
@@ -103,6 +106,7 @@ import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.PrivilegedWithCombinerInterceptor;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
@@ -111,6 +115,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.security.SecurityConstants;
+import org.wildfly.security.authz.RoleMapper;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -335,7 +340,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
                     if (((EJBComponentDescription) description).isSecurityDomainKnown()) {
-                        configuration.addTimeoutViewInterceptor(new ElytronInterceptorFactory(policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID);
+                        elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addTimeoutViewInterceptor(elytronInterceptorFactory, priority));
                     } else if (deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
                         configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
@@ -1086,5 +1092,37 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return getClass().getName() + "{" +
                 "serviceName=" + getServiceName() +
                 '}' + "@" + Integer.toHexString(hashCode());
+    }
+
+    public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(final String policyContextID) {
+        final HashMap<Integer, InterceptorFactory> interceptorFactories = new HashMap<>(2);
+
+        // First interceptor: security domain association
+        interceptorFactories.put(InterceptorOrder.View.SECURITY_CONTEXT, SecurityDomainInterceptorFactory.INSTANCE);
+
+        // Next interceptor: policy context ID
+        interceptorFactories.put(InterceptorOrder.View.POLICY_CONTEXT, new ImmediateInterceptorFactory(new PolicyContextIdInterceptor(policyContextID)));
+
+        // Next interceptor: run-as-principal
+        // Switch users if there's a run-as principal
+        if (runAsPrincipal != null) {
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(runAsPrincipal)));
+
+            // Next interceptor: extra principal roles
+            final Set<String> extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
+            if (! extraRoles.isEmpty()) {
+                interceptorFactories.put(InterceptorOrder.View.EXTRA_PRINCIPAL_ROLES, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(extraRoles))));
+            }
+        }
+
+        // Next interceptor: run-as-role
+        if (runAsRole != null) {
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_ROLE, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Collections.singleton(runAsRole)))));
+        }
+
+        // Ignoring declared roles
+        RoleMapper.constant(getDeclaredRoles());
+
+        return interceptorFactories;
     }
 }
