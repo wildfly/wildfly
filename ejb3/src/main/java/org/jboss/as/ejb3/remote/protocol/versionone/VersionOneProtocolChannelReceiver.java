@@ -311,7 +311,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
                 EjbLogger.REMOTE_LOGGER.debugf("Received cluster removal notification for cluster %s", registry.getGroup());
             }
             // when the membership of the cluster being left is 1, we are the last node
-            if (registry.getEntries().keySet().size() == 1) {
+            if (registry.getGroup().getNodes().size() == 1) {
                 this.sendClusterRemovedMessage(registry);
             }
         } catch (IOException ioe) {
