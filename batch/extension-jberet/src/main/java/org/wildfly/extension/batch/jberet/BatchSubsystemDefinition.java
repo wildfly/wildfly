@@ -139,7 +139,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
             private void setValue(final OperationContext context, final ModelNode value) {
                 final BatchConfigurationService service = (BatchConfigurationService) context.getServiceRegistry(true)
-                        .getService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class));
+                        .getService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class)).getService();
                 service.setRestartOnResume(value.asBoolean());
             }
         });
