@@ -68,7 +68,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-3532")
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(RemoteFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-failover-test";
@@ -280,9 +279,9 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         }
     }
 
-    // @Ignore("re-enable when WFLY-3532 resoolved")
     @InSequence(3)
     @Test
+    @Ignore("WFLY-3532")
     public void testConcurrentFailover() throws Exception {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
