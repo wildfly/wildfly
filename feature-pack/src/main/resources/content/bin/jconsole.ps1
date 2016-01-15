@@ -3,7 +3,8 @@
 #    JConsole script for Windows                                ##
 #                                                               ##
 ##################################################################
-. ".\common.ps1"
+$scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
+. $scripts'\common.ps1'
 
 if (!$JAVA_HOME){
   Write-Warning JAVA_HOME is not set. Unable to locate the jars needed to run jconsole.

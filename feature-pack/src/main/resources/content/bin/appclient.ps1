@@ -4,11 +4,12 @@
 #                                                                          ##
 #############################################################################
 
-. ".\common.ps1"
+$scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
+. $scripts'\common.ps1'
 $SERVER_OPTS = Process-Script-Parameters -Params $ARGS
 
 # Read an optional running configuration file
-$APPCLIENT_CONF_FILE = '.\appclient.conf.ps1'
+$APPCLIENT_CONF_FILE = $scripts + '.\appclient.conf.ps1'
 $APPCLIENT_CONF_FILE = Get-Env RUN_CONF $APPCLIENT_CONF_FILE
 . $APPCLIENT_CONF_FILE
 

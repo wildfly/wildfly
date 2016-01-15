@@ -3,7 +3,8 @@
 #    wsprovide tool script for Windows                              ##
 #                                                               ##
 ##################################################################
-. ".\common.ps1"
+$scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
+. $scripts'\common.ps1'
 
 $JAVA_OPTS = @()
 
