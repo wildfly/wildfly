@@ -69,45 +69,25 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_1_2_FINAL);
+    public void testTransformersASEAP620() throws Exception {
+        testTransformers10(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL);
+    public void testTransformersASEAP630() throws Exception {
+        testTransformers10(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
-    public void testTransformersAS720() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
-    @Test
-    public void testTransformersEAP600() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_0_0);
-    }
-
-    @Test
-    public void testTransformersEAP601() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_0_1);
-    }
-
-    @Test
-    public void testTransformersEAP610() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_1_0);
-    }
-
-    @Test
-    public void testTransformersEAP611() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_1_1);
+    public void testTransformersASEAP640() throws Exception {
+        testTransformers10(ModelTestControllerVersion.EAP_6_4_0);
     }
 
 
     private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem.xml");
+                .setSubsystemXmlResource("subsystem-transformers.xml");
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
@@ -115,8 +95,8 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
@@ -124,38 +104,18 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersRejectionAS712() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.V7_1_2_FINAL);
+    public void testTransformersRejectionASEAP620() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
-    public void testTransformersRejectionAS713() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.V7_1_3_FINAL);
+    public void testTransformersRejectionASEAP630() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
-    public void testTransformersRejectionAS720() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
-    @Test
-    public void testTransformersRejectionEAP600() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.EAP_6_0_0);
-    }
-
-    @Test
-    public void testTransformersRejectionEAP601() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.EAP_6_0_1);
-    }
-
-    @Test
-    public void testTransformersRejectionEAP610() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.EAP_6_1_0);
-    }
-
-    @Test
-    public void testTransformersRejectionEAP611() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.EAP_6_1_1);
+    public void testTransformersRejectionASEAP640() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.EAP_6_4_0);
     }
 
     private void testRejectTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {

@@ -21,35 +21,55 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
-import java.util.Map;
+import java.io.Externalizable;
+import java.io.Serializable;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.context.Flag;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractService;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.marshalling.MarshalledValueFactory;
-import org.wildfly.clustering.marshalling.MarshalledValueMarshaller;
-import org.wildfly.clustering.marshalling.Marshaller;
-import org.wildfly.clustering.marshalling.MarshallingContext;
-import org.wildfly.clustering.marshalling.SimpleMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.SimpleMarshallingContextFactory;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValueMarshaller;
+import org.wildfly.clustering.marshalling.jboss.Marshaller;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
-import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseAuthenticationEntry;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSSOEntry;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSSOFactory;
-import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKey;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
 public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManagerFactory<A, D, TransactionBatch>> implements SSOManagerFactory<A, D, TransactionBatch> {
+
+    enum MarshallingVersion implements Function<ModuleLoader, MarshallingConfiguration> {
+        VERSION_1() {
+            @Override
+            public MarshallingConfiguration apply(ModuleLoader loader) {
+                MarshallingConfiguration config = new MarshallingConfiguration();
+                config.setClassResolver(ModularClassResolver.getInstance(loader));
+                config.setClassTable(new SimpleClassTable(IndexExternalizer.UNSIGNED_BYTE, Serializable.class, Externalizable.class));
+                return config;
+            }
+        },
+        ;
+        static final MarshallingVersion CURRENT = VERSION_1;
+    }
 
     private final InfinispanSSOManagerFactoryConfiguration configuration;
 
@@ -59,16 +79,15 @@ public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManage
 
     @Override
     public <L> SSOManager<A, D, L, TransactionBatch> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
-        MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new AuthenticationMarshallingContext(this.configuration.getModuleLoader()), null);
+        MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this.configuration.getModuleLoader()), null);
         MarshalledValueFactory<MarshallingContext> marshalledValueFactory = new SimpleMarshalledValueFactory(marshallingContext);
-        Marshaller<A, MarshalledValue<A, MarshallingContext>> marshaller = new MarshalledValueMarshaller<>(marshalledValueFactory, marshallingContext);
-        Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache = this.configuration.getCache();
-        Configuration config = authenticationCache.getCacheConfiguration();
+        Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(marshalledValueFactory, marshallingContext);
+        Cache<Key<String>, ?> cache = this.configuration.getCache();
+        Configuration config = cache.getCacheConfiguration();
         boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
-        Cache<CoarseSessionsKey, Map<D, String>> sessionsCache = this.configuration.getCache();
-        SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(lockOnRead ? authenticationCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : authenticationCache, sessionsCache, marshaller, localContextFactory);
-        IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, authenticationCache, this.configuration.getKeyAffinityServiceFactory());
-        Batcher<TransactionBatch> batcher = new InfinispanBatcher(authenticationCache);
+        SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(cache, marshaller, localContextFactory, lockOnRead);
+        IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, cache, this.configuration.getKeyAffinityServiceFactory());
+        Batcher<TransactionBatch> batcher = new InfinispanBatcher(cache);
         return new InfinispanSSOManager<>(factory, idFactory, batcher);
     }
 }

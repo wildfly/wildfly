@@ -21,68 +21,53 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
- * Basic session meta data implementation.
+ * Composite view of the meta data of a session, combining volatile and static aspects.
  * @author Paul Ferraro
  */
-public class SimpleSessionMetaData implements SessionMetaData {
+public class SimpleSessionMetaData extends AbstractImmutableSessionMetaData implements SessionMetaData {
 
-    private final Date creationTime;
-    private volatile Date lastAccessedTime;
-    private volatile Time maxInactiveInterval;
+    private final SessionCreationMetaData creationMetaData;
+    private final SessionAccessMetaData accessMetaData;
 
-    public SimpleSessionMetaData() {
-        Date now = new Date();
-        this.creationTime = now;
-        this.lastAccessedTime = now;
-        this.maxInactiveInterval = new Time(0, TimeUnit.MILLISECONDS);
-    }
-
-    public SimpleSessionMetaData(Date creationTime, Date lastAccessedTime, Time maxInactiveInterval) {
-        this.creationTime = creationTime;
-        this.lastAccessedTime = lastAccessedTime;
-        this.maxInactiveInterval = maxInactiveInterval;
-    }
-
-    @Override
-    public boolean isExpired() {
-        long maxInactiveInterval = this.getMaxInactiveInterval(TimeUnit.MILLISECONDS);
-        return (maxInactiveInterval > 0) ? (System.currentTimeMillis() - this.lastAccessedTime.getTime()) >= maxInactiveInterval : false;
+    public SimpleSessionMetaData(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData) {
+        this.creationMetaData = creationMetaData;
+        this.accessMetaData = accessMetaData;
     }
 
     @Override
     public boolean isNew() {
-        // Identity comparison is intentional
-        return this.lastAccessedTime == this.creationTime;
+        // We can implement this more efficiently than the super implementation
+        return this.accessMetaData.getLastAccessedDuration().isZero();
     }
 
     @Override
-    public Date getCreationTime() {
-        return this.creationTime;
+    public Instant getCreationTime() {
+        return this.creationMetaData.getCreationTime();
     }
 
     @Override
-    public Date getLastAccessedTime() {
-        return this.lastAccessedTime;
+    public Instant getLastAccessedTime() {
+        return this.getCreationTime().plus(this.accessMetaData.getLastAccessedDuration());
     }
 
     @Override
-    public void setLastAccessedTime(Date date) {
-        this.lastAccessedTime = date;
+    public Duration getMaxInactiveInterval() {
+        return this.creationMetaData.getMaxInactiveInterval();
     }
 
     @Override
-    public long getMaxInactiveInterval(TimeUnit unit) {
-        return this.maxInactiveInterval.convert(unit);
+    public void setLastAccessedTime(Instant instant) {
+        this.accessMetaData.setLastAccessedDuration(Duration.between(this.creationMetaData.getCreationTime(), instant));
     }
 
     @Override
-    public void setMaxInactiveInterval(long interval, TimeUnit unit) {
-        this.maxInactiveInterval = new Time(interval, unit);
+    public void setMaxInactiveInterval(Duration duration) {
+        this.creationMetaData.setMaxInactiveInterval(duration.isNegative() ? Duration.ZERO : duration);
     }
 }

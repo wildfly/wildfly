@@ -34,6 +34,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -47,8 +48,10 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
@@ -201,7 +204,179 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     break;
                 }
                 default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+        }
+        if (poolName == null || poolName.trim().equals("")) {
+            if (jndiName != null && jndiName.trim().length() != 0) {
+                if (jndiName.contains("/")) {
+                    poolName = jndiName.substring(jndiName.lastIndexOf("/") + 1);
+                } else {
+                    poolName = jndiName.substring(jndiName.lastIndexOf(":") + 1);
+                }
+            } else {
+                throw ParseUtils.missingRequired(reader, EnumSet.of(ConnectionDefinition.Attribute.JNDI_NAME));
+            }
+        }
+
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (Activation.Tag.forName(reader.getLocalName()) == Activation.Tag.CONNECTION_DEFINITION) {
+
+                        map.put(poolName, connectionDefinitionNode);
+                        return;
+                    } else {
+                        if (ConnectionDefinition.Tag.forName(reader.getLocalName()) == ConnectionDefinition.Tag.UNKNOWN) {
+                            throw ParseUtils.unexpectedEndElement(reader);
+                        }
+                    }
                     break;
+                }
+                case START_ELEMENT: {
+                    switch (ConnectionDefinition.Tag.forName(reader.getLocalName())) {
+                        case CONFIG_PROPERTY: {
+                            if (!configMap.containsKey(poolName)) {
+                                configMap.put(poolName, new HashMap<String, ModelNode>(0));
+                            }
+                            parseConfigProperties(reader, configMap.get(poolName));
+                            break;
+                        }
+                        case SECURITY: {
+                            parseSecuritySettings(reader, connectionDefinitionNode);
+                            break;
+                        }
+                        case TIMEOUT: {
+                            parseTimeOut(reader, isXa, connectionDefinitionNode);
+                            break;
+                        }
+                        case VALIDATION: {
+                            parseValidation(reader, connectionDefinitionNode);
+                            break;
+                        }
+                        case XA_POOL: {
+                            if (!isXa) {
+                                throw ParseUtils.unexpectedElement(reader);
+                            }
+                            if (poolDefined) {
+                                throw new ParserException(bundle.multiplePools());
+                            }
+                            parseXaPool(reader, connectionDefinitionNode);
+                            poolDefined = true;
+                            break;
+                        }
+                        case POOL: {
+                            if (isXa) {
+                                throw ParseUtils.unexpectedElement(reader);
+                            }
+                            if (poolDefined) {
+                                throw new ParserException(bundle.multiplePools());
+                            }
+                            parsePool(reader, connectionDefinitionNode);
+                            poolDefined = true;
+                            break;
+                        }
+                        case RECOVERY: {
+                            parseRecovery(reader, connectionDefinitionNode);
+                            break;
+                        }
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
+                    }
+                    break;
+                }
+            }
+        }
+        throw ParseUtils.unexpectedEndElement(reader);
+
+    }
+
+    /**
+     * parse a single connection-definition tag
+     *
+     * @param reader the reader
+     * @throws javax.xml.stream.XMLStreamException
+     *                         XMLStreamException
+     * @throws ParserException ParserException
+     * @throws org.jboss.jca.common.api.validator.ValidateException
+     *                         ValidateException
+     */
+    protected void parseConnectionDefinitions_4_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
+                                                  final Map<String, HashMap<String, ModelNode>> configMap, final boolean isXa)
+            throws XMLStreamException, ParserException, ValidateException {
+
+
+        final ModelNode connectionDefinitionNode = new ModelNode();
+        connectionDefinitionNode.get(OP).set(ADD);
+
+        String poolName = null;
+        String jndiName = null;
+        int attributeSize = reader.getAttributeCount();
+        boolean poolDefined = Boolean.FALSE;
+
+        for (int i = 0; i < attributeSize; i++) {
+            ConnectionDefinition.Attribute attribute = ConnectionDefinition.Attribute.forName(reader.getAttributeLocalName(i));
+            String value = reader.getAttributeValue(i);
+            switch (attribute) {
+                case ENABLED: {
+                    ENABLED.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+                case CONNECTABLE: {
+                    CONNECTABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+                case TRACKING: {
+                    TRACKING.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+                case JNDI_NAME: {
+                    jndiName = value;
+                    JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
+                    break;
+                }
+                case POOL_NAME: {
+                    poolName = value;
+                    break;
+                }
+                case USE_JAVA_CONTEXT: {
+                    USE_JAVA_CONTEXT.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+
+                case USE_CCM: {
+                    USE_CCM.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+
+                case SHARABLE: {
+                    SHARABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+
+                case ENLISTMENT: {
+                    ENLISTMENT.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+
+                case CLASS_NAME: {
+                    CLASS_NAME.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+                case MCP: {
+                    MCP.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+                case ENLISTMENT_TRACE:
+                    ENLISTMENT_TRACE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         if (poolName == null || poolName.trim().equals("")) {
@@ -687,6 +862,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             POOL_PREFILL.parseAndSetParameter(value, node, reader);
                             break;
                         }
+                        case FAIR: {
+                            String value = rawElementText(reader);
+                            POOL_FAIR.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
                         case USE_STRICT_MIN: {
                             String value = rawElementText(reader);
                             POOL_USE_STRICT_MIN.parseAndSetParameter(value, node, reader);
@@ -779,6 +959,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         case PREFILL: {
                             String value = rawElementText(reader);
                             POOL_PREFILL.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        case FAIR: {
+                            String value = rawElementText(reader);
+                            POOL_FAIR.parseAndSetParameter( value, node, reader );
                             break;
                         }
                         case USE_STRICT_MIN: {

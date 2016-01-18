@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.filters;
 
 import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
+import io.undertow.server.handlers.proxy.mod_cluster.ModClusterController;
 import io.undertow.server.handlers.proxy.mod_cluster.ModClusterStatus;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -133,7 +134,14 @@ public class ModClusterResource implements Resource {
                 return Collections.emptySet();
             }
             ModCluster modCluster = service.getModCluster();
-            ModClusterStatus status = modCluster.getController().getStatus();
+            if(modCluster == null) {
+                return Collections.emptySet();
+            }
+            ModClusterController controller = modCluster.getController();
+            if(controller == null) {
+                return Collections.emptySet();
+            }
+            ModClusterStatus status = controller.getStatus();
             final Set<String> result = new LinkedHashSet<>();
             for (ModClusterStatus.LoadBalancer balancer : status.getLoadBalancers()) {
                 result.add(balancer.getName());

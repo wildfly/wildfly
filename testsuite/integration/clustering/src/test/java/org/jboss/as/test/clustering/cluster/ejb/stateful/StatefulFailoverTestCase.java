@@ -34,7 +34,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -44,15 +44,16 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
+import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.IncrementorDDInterceptor;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.JDBCResourceManagerConnectionFactoryIncrementorBean;
+import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.JMSResourceManagerConnectionFactoryIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.NestedIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.PassivationIncapableIncrementorBean;
-import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.JMSResourceManagerConnectionFactoryIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.PersistenceIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.SimpleIncrementorBean;
-import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.IncrementorDDInterceptor;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.StatefulServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -94,7 +95,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
                 "<decorators><class>" + CounterDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
         war.addAsResource(PersistenceIncrementorBean.class.getPackage(), "persistence.xml", "/META-INF/persistence.xml");
-        log.info(war.toString(true));
         return war;
     }
 
@@ -106,12 +106,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
-        HttpClient client = HttpClients.createDefault();
-
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, PassivationIncapableIncrementorBean.class.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, PassivationIncapableIncrementorBean.class.getSimpleName());
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             assertEquals(1, queryCount(client, uri1));
             assertEquals(2, queryCount(client, uri1));
 
@@ -137,8 +135,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             deploy(DEPLOYMENT_1);
 
             assertEquals(0, queryCount(client, uri1));
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -186,12 +182,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
     private void failover(Class<?> beanClass, URL baseURL1, URL baseURL2) throws Exception {
 
-        HttpClient client = HttpClients.createDefault();
-
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, beanClass.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, beanClass.getSimpleName());
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             assertEquals(1, queryCount(client, uri1));
             assertEquals(2, queryCount(client, uri1));
 
@@ -223,8 +217,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
             assertEquals(15, queryCount(client, uri2));
             assertEquals(16, queryCount(client, uri2));
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -236,12 +228,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
-        HttpClient client = HttpClients.createDefault();
-
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, SimpleIncrementorBean.class.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, SimpleIncrementorBean.class.getSimpleName());
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             assertEquals(1, queryCount(client, uri1));
             assertEquals(2, queryCount(client, uri1));
 
@@ -273,8 +263,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
             assertEquals(15, queryCount(client, uri2));
             assertEquals(16, queryCount(client, uri2));
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -287,12 +275,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
-        HttpClient client = HttpClients.createDefault();
-
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, NestedIncrementorBean.class.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, NestedIncrementorBean.class.getSimpleName());
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             assertEquals(20010101, queryCount(client, uri1));
             assertEquals(20020202, queryCount(client, uri1));
 
@@ -324,8 +310,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
             assertEquals(20151515, queryCount(client, uri2));
             assertEquals(20161616, queryCount(client, uri2));
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 

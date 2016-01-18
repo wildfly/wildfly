@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.batch.jberet.BatchResourceDescriptionResolver;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
@@ -46,6 +47,11 @@ public class InMemoryJobRepositoryDefinition extends SimpleResourceDefinition {
     public InMemoryJobRepositoryDefinition() {
         super(PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME), new InMemoryAddHandler(),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(Capabilities.JOB_REPOSITORY_CAPABILITY);
     }
 
     private static class InMemoryAddHandler extends AbstractAddStepHandler {

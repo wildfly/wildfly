@@ -334,11 +334,8 @@
                         <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
                     </security-setting>
                     <address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10"/>
-                    <http-connector name="http-connector" socket-binding="http">
-                        <param name="http-upgrade-endpoint" value="http-acceptor"/>
-                    </http-connector>
-                    <http-connector name="http-connector-throughput" socket-binding="http">
-                        <param name="http-upgrade-endpoint" value="http-acceptor-throughput"/>
+                    <http-connector name="http-connector" socket-binding="http" endpoint="http-acceptor" />
+                    <http-connector name="http-connector-throughput" socket-binding="http" endpoint="http-acceptor-throughput">
                         <param name="batch-delay" value="50"/>
                     </http-connector>
                     <in-vm-connector name="in-vm" server-id="0"/>
@@ -598,11 +595,8 @@
                         <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
                     </security-setting>
                     <address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10"/>
-                    <http-connector name="http-connector" socket-binding="http">
-                        <param name="http-upgrade-endpoint" value="http-acceptor"/>
-                    </http-connector>
-                    <http-connector name="http-connector-throughput" socket-binding="http">
-                        <param name="http-upgrade-endpoint" value="http-acceptor-throughput"/>
+                    <http-connector name="http-connector" socket-binding="http" endpoint="http-acceptor" />
+                    <http-connector name="http-connector-throughput" socket-binding="http" endpoint="http-acceptor-throughput">
                         <param name="batch-delay" value="50"/>
                     </http-connector>
                     <in-vm-connector name="in-vm" server-id="0"/>
@@ -730,7 +724,7 @@
     <server-groups>
         <server-group name="main-server-group" profile="default">
             <jvm name="default">
-                <heap size="64m" max-size="512m"/>
+                <heap size="64m" max-size="100m"/>
                 <environment-variables>
                     <variable name="DOMAIN_TEST_MAIN_GROUP" value="main_group"/>
                 </environment-variables>
@@ -740,7 +734,7 @@
 
         <server-group name="other-server-group" profile="other">
             <jvm name="default">
-                <heap size="64m" max-size="512m"/>
+                <heap size="64m" max-size="100m"/>
             </jvm>
             <socket-binding-group ref="other-sockets"/>
         </server-group>

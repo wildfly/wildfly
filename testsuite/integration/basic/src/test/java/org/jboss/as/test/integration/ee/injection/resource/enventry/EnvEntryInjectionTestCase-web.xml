@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="3.0"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         metadata-complete="false">
+
+    <env-entry>
+        <env-entry-name>foo</env-entry-name>
+        <env-entry-value>injection!</env-entry-value>
+        <injection-target>
+            <injection-target-class>org.jboss.as.test.integration.ee.injection.resource.enventry.EnvEntryInjectionServlet</injection-target-class>
+            <injection-target-name>field</injection-target-name>
+        </injection-target>
+    </env-entry>
+
+    <env-entry>
+        <env-entry-name>org.jboss.as.test.integration.ee.injection.resource.enventry.EnvEntryManagedBean/existingString</env-entry-name>
+        <env-entry-value>bye</env-entry-value>
+        <env-entry-type>java.lang.String</env-entry-type>
+    </env-entry>
+
+
+    <env-entry>
+        <env-entry-name>otherByte</env-entry-name>
+        <env-entry-value>10</env-entry-value>
+        <env-entry-type>java.lang.Byte</env-entry-type>
+        <injection-target>
+            <injection-target-class>org.jboss.as.test.integration.ee.injection.resource.enventry.EnvEntryManagedBean</injection-target-class>
+            <injection-target-name>byteField</injection-target-name>
+        </injection-target>
+    </env-entry>
+
+</web-app>

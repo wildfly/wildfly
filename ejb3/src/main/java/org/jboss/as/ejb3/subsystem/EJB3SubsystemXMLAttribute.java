@@ -38,6 +38,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     CACHE_CONTAINER("cache-container"),
     CACHE_REF("cache-ref"),
+    CLIENT_MAPPINGS_CLUSTER_NAME("cluster"),
     @Deprecated CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
     @Deprecated CLUSTERED_CACHE_REF("clustered-cache-ref"),
     CONNECT_TIMEOUT("connect-timeout"),
@@ -66,6 +67,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     MAX_POOL_SIZE("max-pool-size"),
     MAX_SIZE("max-size"),
+    DERIVE_SIZE("derive-size"),
     MAX_THREADS("max-threads"),
 
     NAME("name"),
@@ -93,6 +95,10 @@ public enum EJB3SubsystemXMLAttribute {
     USE_QUALIFIED_NAME("use-qualified-name"),
 
     VALUE("value"),
+
+    ACTIVE("active"),
+
+    EXECUTE_IN_WORKER("execute-in-worker")
     ;
 
     private final String name;

@@ -158,7 +158,6 @@ public class WebXACMLAuthorizationModuleTestCase {
                 .addAsResource(WebXACMLAuthorizationModuleTestCase.class.getPackage(),
                         XACMLTestUtils.TESTOBJECTS_POLICIES + "/web-xacml-policy.xml", "xacml-policy.xml");
         XACMLTestUtils.addJBossDeploymentStructureToArchive(war);
-        LOGGER.info(war.toString(true));
         return war;
     }
 

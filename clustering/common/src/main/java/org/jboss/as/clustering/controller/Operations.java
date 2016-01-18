@@ -23,8 +23,10 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -55,7 +57,7 @@ public final class Operations {
     /**
      * Sets the address of the specified operation.
      * @param operation an operation
-     * @param a path address
+     * @param address a path address
      */
     public static void setPathAddress(ModelNode operation, PathAddress address) {
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
@@ -90,7 +92,7 @@ public final class Operations {
 
     /**
      * Creates a composite operation using the specified operation steps.
-     * @param operation steps
+     * @param operations steps
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(List<ModelNode> operations) {
@@ -104,7 +106,7 @@ public final class Operations {
 
     /**
      * Creates a composite operation using the specified operation steps.
-     * @param operation steps
+     * @param operations steps
      * @return a composite operation
      */
     public static ModelNode createCompositeOperation(ModelNode... operations) {
@@ -126,9 +128,9 @@ public final class Operations {
     }
 
     /**
-     * Creates an indexed add operation using the specified address and parameters
+     * Creates an indexed add operation using the specified address and index
      * @param address a path address
-     * @param parameters a map of values per attribute
+     * @param index
      * @return an add operation
      */
     public static ModelNode createAddOperation(PathAddress address, int index) {
@@ -161,7 +163,7 @@ public final class Operations {
     }
 
     /**
-     * Creates a write-attribute operation using the specified address, namem and value.
+     * Creates a write-attribute operation using the specified address, name and value.
      * @param address a resource path
      * @param attribute an attribute
      * @param value an attribute value
@@ -196,6 +198,10 @@ public final class Operations {
      */
     public static ModelNode createDescribeOperation(PathAddress address) {
         return Util.createOperation(ModelDescriptionConstants.DESCRIBE, address);
+    }
+
+    public static ModelNode createReadResourceOperation(PathAddress address) {
+        return Util.createOperation(ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
     }
 
     public static ModelNode createListAddOperation(PathAddress address, Attribute attribute, String value) {
@@ -240,10 +246,28 @@ public final class Operations {
         return createMapEntryOperation(MapOperations.MAP_REMOVE_DEFINITION, address, attribute, key);
     }
 
+    public static ModelNode createMapClearOperation(PathAddress address, Attribute attribute) {
+        ModelNode operation = Util.createOperation(MapOperations.MAP_CLEAR_DEFINITION, address);
+        operation.get(ModelDescriptionConstants.NAME).set(attribute.getDefinition().getName());
+        return operation;
+    }
+
     private static ModelNode createMapEntryOperation(OperationDefinition definition, PathAddress address, Attribute attribute, String key) {
         ModelNode operation = createAttributeOperation(definition.getName(), address, attribute);
         operation.get(KEY).set(key);
         return operation;
+    }
+
+    /**
+     * @return set of all operations that are or do result in a write
+     */
+    public static Set<String> getAllWriteAttributeOperationNames() {
+        Set<String> writeAttributeOperations = new HashSet<>();
+        writeAttributeOperations.addAll(MapOperations.MAP_OPERATION_NAMES);
+        writeAttributeOperations.remove(MapOperations.MAP_GET_DEFINITION.getName());
+        writeAttributeOperations.add(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        writeAttributeOperations.add(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION);
+        return writeAttributeOperations;
     }
 
     private Operations() {

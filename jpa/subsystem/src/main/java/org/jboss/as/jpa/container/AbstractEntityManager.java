@@ -709,7 +709,8 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createNamedStoredProcedureQuery(name);
+            EntityManager entityManager = getEntityManager();
+            return detachStoredProcedureQueryNonTxInvocation(entityManager, entityManager.createNamedStoredProcedureQuery(name));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -723,7 +724,8 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createStoredProcedureQuery(procedureName);
+            EntityManager entityManager = getEntityManager();
+            return detachStoredProcedureQueryNonTxInvocation(entityManager, entityManager.createStoredProcedureQuery(procedureName));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -737,7 +739,8 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createStoredProcedureQuery(procedureName, resultClasses);
+            EntityManager entityManager = getEntityManager();
+            return detachStoredProcedureQueryNonTxInvocation(entityManager, entityManager.createStoredProcedureQuery(procedureName, resultClasses));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -751,7 +754,8 @@ public abstract class AbstractEntityManager implements EntityManager {
         if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
-            return getEntityManager().createStoredProcedureQuery(procedureName, resultSetMappings);
+            EntityManager entityManager = getEntityManager();
+            return detachStoredProcedureQueryNonTxInvocation(entityManager, entityManager.createStoredProcedureQuery(procedureName, resultSetMappings));
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
@@ -856,6 +860,13 @@ public abstract class AbstractEntityManager implements EntityManager {
             return new TypedQueryNonTxInvocationDetacher<>(underlyingEntityManager, underLyingQuery);
         }
         return underLyingQuery;
+    }
+
+    private StoredProcedureQuery detachStoredProcedureQueryNonTxInvocation(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingStoredProcedureQuery) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
+            return new StoredProcedureQueryNonTxInvocationDetacher(underlyingEntityManager, underlyingStoredProcedureQuery);
+        }
+        return underlyingStoredProcedureQuery;
     }
 
 

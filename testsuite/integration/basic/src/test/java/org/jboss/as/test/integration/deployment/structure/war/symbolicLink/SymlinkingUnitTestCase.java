@@ -92,7 +92,7 @@ public class SymlinkingUnitTestCase {
         steps.add(removeOperation);
         steps.add(removeSystemProperty);
 
-        logger.infof("Composite operation: %s", compositeOperation.toString());
+        //logger.infof("Composite operation: %s", compositeOperation.toString());
         ModelNode compositeResult = controllerClient.execute(compositeOperation);
 
         Assert.assertEquals(ModelDescriptionConstants.SUCCESS, compositeResult.get(ModelDescriptionConstants.OUTCOME).asString());
@@ -101,7 +101,7 @@ public class SymlinkingUnitTestCase {
 
     @Test
     public void testEnabled() {
-        logger.infof("Testing enabled bit");
+        //logger.infof("Testing enabled bit");
         // By default we should not be able to browse to the symlinked page.
         Assert.assertTrue(getURLcode("symbolic") == 404);
         try {

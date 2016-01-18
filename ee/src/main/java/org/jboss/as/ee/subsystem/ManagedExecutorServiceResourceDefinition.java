@@ -23,7 +23,10 @@ package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -36,6 +39,10 @@ import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -92,9 +99,9 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .build();
 
     public static final SimpleAttributeDefinition CORE_THREADS_AD =
-            new SimpleAttributeDefinitionBuilder(CORE_THREADS, ModelType.INT, false)
+            new SimpleAttributeDefinitionBuilder(CORE_THREADS, ModelType.INT, true)
                     .setAllowExpression(true)
-                    .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true))
+                    .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
@@ -103,7 +110,6 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode(Integer.MAX_VALUE))
                     .build();
 
     public static final SimpleAttributeDefinition KEEPALIVE_TIME_AD =
@@ -120,7 +126,6 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode(0))
                     .build();
 
     public static final SimpleAttributeDefinition REJECT_POLICY_AD =
@@ -142,9 +147,92 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        OperationStepHandler writeHandler = new ValidatingWriteHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        }
+    }
+
+    void registerTransformers_4_0(final ResourceTransformationDescriptionBuilder builder) {
+        final PathElement pathElement = getPathElement();
+        final ResourceTransformationDescriptionBuilder resourceBuilder = builder.addChildResource(pathElement);
+        resourceBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CORE_THREADS_AD)
+                .end();
+    }
+
+    static class ValidatingWriteHandler extends ReloadRequiredWriteAttributeHandler {
+        public ValidatingWriteHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
+            context.addStep(ExecutorQueueValidationStepHandler.MODEL_VALIDATION_INSTANCE, OperationContext.Stage.MODEL);
+            super.validateUpdatedModel(context, model);
+        }
+    }
+
+    static class ExecutorQueueValidationStepHandler implements OperationStepHandler {
+        static final ExecutorQueueValidationStepHandler MODEL_VALIDATION_INSTANCE = new ExecutorQueueValidationStepHandler(false);
+        private final boolean isRuntimeStage;
+
+        private ExecutorQueueValidationStepHandler(final boolean isRuntimeStage) {
+            this.isRuntimeStage = isRuntimeStage;
+        }
+
+        @Override
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+
+            final ModelNode coreThreads;
+            final ModelNode maxThreads;
+            final ModelNode queueLength;
+
+            if (isRuntimeStage) {
+                coreThreads = CORE_THREADS_AD.resolveModelAttribute(context, model);
+                maxThreads = MAX_THREADS_AD.resolveModelAttribute(context, model);
+                queueLength = QUEUE_LENGTH_AD.resolveModelAttribute(context, model);
+            } else {
+                coreThreads = model.get(CORE_THREADS);
+                maxThreads = model.get(MAX_THREADS);
+                queueLength = model.get(QUEUE_LENGTH);
+            }
+
+            if (coreThreads.getType() == ModelType.EXPRESSION || maxThreads.getType() == ModelType.EXPRESSION ||
+                    queueLength.getType() == ModelType.EXPRESSION) {
+                context.addStep(new ExecutorQueueValidationStepHandler(true), OperationContext.Stage.RUNTIME, true);
+                return;
+            }
+
+            // Validate an unbounded queue
+            if (!queueLength.isDefined() || queueLength.asInt() == Integer.MAX_VALUE) {
+                if (coreThreads.isDefined() && coreThreads.asInt() <= 0) {
+                    throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(coreThreads.asString());
+                }
+
+            }
+
+            // Validate a hand-off queue
+            if (queueLength.isDefined() && queueLength.asInt() == 0) {
+                if (coreThreads.isDefined() && coreThreads.asInt() <= 0) {
+                    throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(coreThreads.asString());
+                }
+            }
+
+            // max-threads must be defined and greater than 0 if core-threads is 0
+            if (coreThreads.isDefined() && coreThreads.asInt() == 0) {
+                if (!maxThreads.isDefined() || maxThreads.asInt() <= 0) {
+                    throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads.isDefined() ? maxThreads.asInt() : 0, coreThreads.asInt());
+                }
+            }
+
+            // max-threads must be greater than or equal to core-threads
+            if (coreThreads.isDefined() && maxThreads.isDefined()) {
+                if (maxThreads.asInt() < coreThreads.asInt()) {
+                    throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads.asInt(), coreThreads.asInt());
+                }
+            }
         }
     }
 }

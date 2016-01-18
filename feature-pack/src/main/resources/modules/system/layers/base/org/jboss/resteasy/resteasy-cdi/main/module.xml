@@ -40,5 +40,6 @@
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

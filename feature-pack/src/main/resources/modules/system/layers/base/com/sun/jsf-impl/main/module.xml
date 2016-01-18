@@ -35,6 +35,13 @@
         <module name="org.apache.xalan" services="import"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
+
+        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
+             Prior to WFLY-5922 they were exported by javax.ejb.api and
+             reexported by javaee.api. -->
+        <module name="javax.xml.rpc.api"/>
+        <module name="javax.rmi.api"/>
+        <module name="org.omg.api"/>
     </dependencies>
 
     <resources>

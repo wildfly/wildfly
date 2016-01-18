@@ -57,17 +57,17 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition EXECUTION_TIME = new SimpleAttributeDefinitionBuilder("execution-time", ModelType.LONG)
-            .setAllowNull(false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
     private static final AttributeDefinition INVOCATIONS = new SimpleAttributeDefinitionBuilder("invocations", ModelType.LONG)
-            .setAllowNull(false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
     private static final AttributeDefinition PEAK_CONCURRENT_INVOCATIONS = new SimpleAttributeDefinitionBuilder("peak-concurrent-invocations", ModelType.LONG)
-            .setAllowNull(false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
@@ -76,12 +76,12 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition WAIT_TIME = new SimpleAttributeDefinitionBuilder("wait-time", ModelType.LONG)
-            .setAllowNull(false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
     private static final AttributeDefinition METHODS = ObjectTypeAttributeDefinition.Builder.of("methods", EXECUTION_TIME, INVOCATIONS, WAIT_TIME)
-            .setAllowNull(false)
+            .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
@@ -97,17 +97,18 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition CACHE_SIZE = new SimpleAttributeDefinitionBuilder("cache-size", ModelType.LONG)
-            .setAllowNull(false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
     private static final AttributeDefinition PASSIVATED_SIZE = new SimpleAttributeDefinitionBuilder("passivated-count",
-            ModelType.LONG).setAllowNull(false)
+            ModelType.LONG)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
     private static final AttributeDefinition TOTAL_SIZE = new SimpleAttributeDefinitionBuilder("total-size", ModelType.LONG)
-            .setAllowNull(false)
+            .setUndefinedMetricValue(new ModelNode(0))
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 

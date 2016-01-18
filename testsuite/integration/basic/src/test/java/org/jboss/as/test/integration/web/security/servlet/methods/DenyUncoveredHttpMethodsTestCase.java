@@ -162,7 +162,6 @@ public class DenyUncoveredHttpMethodsTestCase {
 
         war.setWebXML(warPackage, "web.xml");
 
-        Logger.getLogger(DenyUncoveredHttpMethodsTestCase.class).debug(war.toString(true));
         return war;
     }
 }

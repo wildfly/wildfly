@@ -48,13 +48,18 @@ public class InfinispanBatchContext implements BatchContext {
 
     @Override
     public void close() {
-        // Restore previous transaction context, if necessary
-        if ((this.existingTx != null) && !this.existingTx.equals(this.tx)) {
-            try {
-                this.tm.resume(this.existingTx);
-            } catch (InvalidTransactionException | SystemException e) {
-                throw new CacheException(e);
+        try {
+            // Restore previous transaction context
+            this.tm.suspend();
+            if (this.existingTx != null) {
+                try {
+                    this.tm.resume(this.existingTx);
+                } catch (InvalidTransactionException e) {
+                    throw new CacheException(e);
+                }
             }
+        } catch (SystemException e) {
+            throw new CacheException(e);
         }
     }
 }

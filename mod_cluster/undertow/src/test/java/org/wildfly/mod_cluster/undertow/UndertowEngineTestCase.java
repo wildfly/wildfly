@@ -42,7 +42,7 @@ public class UndertowEngineTestCase {
     private final String serverName = "name";
     private final String hostName = "host";
     private final Host host = new Host(this.hostName, Collections.<String>emptyList(), "ROOT.war") {};
-    private final HttpsListenerService listener = new HttpsListenerService("default", "https",OptionMap.EMPTY, OptionMap.EMPTY);
+    private final HttpsListenerService listener = new HttpsListenerService("default", "https",OptionMap.EMPTY, null, OptionMap.EMPTY);
     private final Server server = new TestServer(this.serverName, this.defaultHost, this.host, this.listener);
     private final UndertowService service = new TestUndertowService("default-container", "default-server", "default-virtual-host", "instance-id", this.server);
     private final Connector connector = mock(Connector.class);
@@ -52,7 +52,7 @@ public class UndertowEngineTestCase {
     public void getName() {
         assertSame(this.serverName, this.engine.getName());
     }
-    
+
     @Test
     public void getHosts() {
         Iterator<org.jboss.modcluster.container.Host> results = this.engine.getHosts().iterator();
@@ -62,13 +62,13 @@ public class UndertowEngineTestCase {
         assertSame(this.engine, host.getEngine());
         assertFalse(results.hasNext());
     }
-    
+
     @Test
     public void getConnectors() {
         Iterator<org.jboss.modcluster.container.Connector> results = this.engine.getConnectors().iterator();
         assertTrue(results.hasNext());
         org.jboss.modcluster.container.Connector connector = results.next();
-        
+
         String listenerName = "default";
         assertSame(listenerName, connector.toString());
         assertFalse(results.hasNext());
@@ -86,25 +86,25 @@ public class UndertowEngineTestCase {
         assertSame(this.engine, result.getEngine());
         assertNull(this.engine.findHost("no-such-host"));
     }
-    
+
     @Test
     public void getJvmRoute() {
         String expected = "node0";
-        
+
         this.service.setInstanceId("node0");
-        
+
         assertSame(expected, this.engine.getJvmRoute());
     }
-    
+
     @Test
     public void setJvmRoute() {
         String expected = "node1";
-        
+
         this.engine.setJvmRoute(expected);
-        
+
         assertSame(expected, this.service.getInstanceId());
     }
-    
+
     @Test
     public void getProxyConnector() {
         assertSame(this.connector, this.engine.getProxyConnector());

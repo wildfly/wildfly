@@ -53,14 +53,18 @@ public class JaasConfigurationService implements Service<Configuration> {
         SecurityLogger.ROOT_LOGGER.debug("Starting JaasConfigurationService");
 
         // set new configuration
-        Configuration.setConfiguration(configuration);
+        synchronized(Configuration.class) {
+            Configuration.setConfiguration(configuration);
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public void stop(StopContext context) {
-        // restore configuration to null
-        Configuration.setConfiguration(null);
+        // Trigger a reload of configuration if anything else uses it.
+        synchronized(Configuration.class) {
+            Configuration.setConfiguration(null);
+        }
     }
 
     /** {@inheritDoc} */
@@ -68,5 +72,4 @@ public class JaasConfigurationService implements Service<Configuration> {
     public Configuration getValue() throws IllegalStateException, IllegalArgumentException {
         return configuration;
     }
-
 }

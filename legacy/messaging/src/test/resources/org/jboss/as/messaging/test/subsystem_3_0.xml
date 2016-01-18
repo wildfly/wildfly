@@ -32,6 +32,14 @@
                 <class-name>foo.bar</class-name>
                 <class-name>bar.foo</class-name>
             </remoting-interceptors>
+            <remoting-incoming-interceptors>
+                <class-name>incoming.foo.Interceptor</class-name>
+                <class-name>incoming.bar.Interceptor</class-name>
+            </remoting-incoming-interceptors>
+            <remoting-outgoing-interceptors>
+                <class-name>outgoing.foo.Interceptor</class-name>
+                <class-name>outgoing.bar.Interceptor</class-name>
+            </remoting-outgoing-interceptors>
             <backup>false</backup>
             <allow-failback>false</allow-failback>
             <failback-delay>9876</failback-delay>

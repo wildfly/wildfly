@@ -28,6 +28,7 @@ import java.util.List;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -49,7 +50,7 @@ public class SubsystemDescriptionsUnitTestCase extends AbstractSubsystemTest {
     public void testSubsystemDescriptions() throws Exception {
 
         List<ModelNode> empty = Collections.emptyList();
-        KernelServices servicesA = createKernelServicesBuilder(null).setBootOperations(empty).build();
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC).setBootOperations(empty).build();
 
         final ModelNode operation = createReadResourceDescriptionOperation();
         final ModelNode result = servicesA.executeOperation(operation);

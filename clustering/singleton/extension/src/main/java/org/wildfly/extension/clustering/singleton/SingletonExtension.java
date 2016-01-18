@@ -28,7 +28,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 
 /**
- * Extension point for singleton deployer subsystem.
+ * Extension point for singleton subsystem.
  * @author Paul Ferraro
  */
 public class SingletonExtension implements Extension {
@@ -38,7 +38,8 @@ public class SingletonExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, SingletonModel.CURRENT.getVersion());
-        registration.registerSubsystemModel(new SingletonResourceDefinition());
+
+        new SingletonResourceDefinition().register(registration);
         registration.registerXMLElementWriter(new SingletonXMLWriter());
     }
 

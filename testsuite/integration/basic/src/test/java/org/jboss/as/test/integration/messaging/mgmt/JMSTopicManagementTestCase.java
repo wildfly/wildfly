@@ -27,6 +27,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.VALUE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
+import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -53,7 +54,6 @@ import org.jboss.dmr.ModelType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -198,7 +198,7 @@ public class JMSTopicManagementTestCase {
 
         ModelNode result = execute(getTopicOperation("list-all-subscriptions"), true);
         final ModelNode subscriber = result.asList().get(0);
-        System.out.println(result);
+        //System.out.println(result);
 
 
         ModelNode operation = getTopicOperation("list-messages-for-subscription");
@@ -398,8 +398,10 @@ public class JMSTopicManagementTestCase {
     }
 
     @Test
-    @Ignore("WFLY-5019")
     public void removeJMSTopicRemovesAllMessages() throws Exception {
+
+        thisTestIsFailingIntermittently("WFLY-5019");
+
         // create a durable subscriber
         final String subscriptionName = "removeJMSTopicRemovesAllMessages";
         // stop the consumer connection to prevent eager consumption of messages

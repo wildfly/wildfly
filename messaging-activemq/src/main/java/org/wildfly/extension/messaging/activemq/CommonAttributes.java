@@ -38,6 +38,8 @@ import org.apache.activemq.artemis.core.config.impl.FileConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -55,6 +57,8 @@ public interface CommonAttributes {
 
     String DISCOVERY_GROUP_NAME = "discovery-group-name";
     String ENTRIES = "entries";
+    String MODULE = "module";
+    String NAME = "name";
 
     AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
             .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_CALL_TIMEOUT))
@@ -85,6 +89,7 @@ public interface CommonAttributes {
 
     AttributeDefinition CONSUMER_COUNT = create("consumer-count", INT)
             .setStorageRuntime()
+            .setAllowNull(true)
             .build();
 
     SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = create("confirmation-window-size", INT)
@@ -110,6 +115,7 @@ public interface CommonAttributes {
 
     AttributeDefinition DELIVERING_COUNT = create("delivering-count", INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     StringListAttributeDefinition DESTINATION_ENTRIES = new StringListAttributeDefinition.Builder(ENTRIES)
@@ -169,7 +175,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition JGROUPS_STACK = create("jgroups-stack", ModelType.STRING)
             .setAllowNull(true)
-            .setAllowExpression(true)
+            // do not allow expression as this may reference another resource
+            .setAllowExpression(false)
             .setAlternatives("socket-binding",
                     "group-address", "group-port",
                     "local-bind-address", "local-bind-port")
@@ -178,7 +185,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
             .setAllowNull(true)
-            .setAllowExpression(true)
+            // do not allow expression as this may reference another resource
+            .setAllowExpression(false)
             .setAlternatives("socket-binding",
                     "group-address", "group-port",
                     "local-bind-address", "local-bind-port")
@@ -195,10 +203,12 @@ public interface CommonAttributes {
 
     AttributeDefinition MESSAGE_COUNT = create("message-count", LONG)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     AttributeDefinition MESSAGES_ADDED = create("messages-added", LONG)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     AttributeDefinition MIN_LARGE_MESSAGE_SIZE = create("min-large-message-size", INT)
@@ -213,29 +223,27 @@ public interface CommonAttributes {
             .setStorageRuntime()
             .build();
 
-    StringListAttributeDefinition REMOTING_INCOMING_INTERCEPTORS = new StringListAttributeDefinition.Builder("remoting-incoming-interceptors")
-            .setAttributeGroup("remoting-interceptors")
-            .setXmlName("incoming")
-            .setAllowNull(true)
-            .setAllowExpression(false)
-            .setMinSize(1)
-            .setMaxSize(Integer.MAX_VALUE)
-            .setRestartAllServices()
-            .setElementValidator(new StringLengthValidator(1, false, true))
-            .setAttributeParser(AttributeParser.STRING_LIST)
-            .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+    ObjectTypeAttributeDefinition CLASS = ObjectTypeAttributeDefinition.Builder.of("class",
+            create(NAME, ModelType.STRING, false)
+                    .setAllowExpression(false)
+                    .build(),
+            create(MODULE, ModelType.STRING, false)
+                    .setAllowExpression(false)
+                    .build())
             .build();
 
-    StringListAttributeDefinition REMOTING_OUTGOING_INTERCEPTORS = new StringListAttributeDefinition.Builder("remoting-outgoing-interceptors")
-            .setAttributeGroup("remoting-interceptors")
-            .setXmlName("outgoing")
+    ObjectListAttributeDefinition INCOMING_INTERCEPTORS = ObjectListAttributeDefinition.Builder.of("incoming-interceptors", CommonAttributes.CLASS)
             .setAllowNull(true)
             .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
-            .setRestartAllServices()
-            .setElementValidator(new StringLengthValidator(1, false, true))
-            .setAttributeParser(AttributeParser.STRING_LIST)
+            .build();
+
+    ObjectListAttributeDefinition OUTGOING_INTERCEPTORS = ObjectListAttributeDefinition.Builder.of("outgoing-interceptors", CommonAttributes.CLASS)
+            .setAllowNull(true)
+            .setAllowExpression(false)
+            .setMinSize(1)
+            .setMaxSize(Integer.MAX_VALUE)
             .build();
 
     AttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
@@ -255,6 +263,7 @@ public interface CommonAttributes {
 
     AttributeDefinition SCHEDULED_COUNT = create("scheduled-count", LONG)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)
@@ -362,7 +371,6 @@ public interface CommonAttributes {
     String MATCH = "match";
     String MESSAGE_ID = "message-id";
     String MODE = "mode";
-    String NAME = "name";
     String NETTY_ACCEPTOR = "netty-acceptor";
     String NETTY_CONNECTOR = "netty-connector";
     String NONE = "none";
@@ -381,9 +389,6 @@ public interface CommonAttributes {
     String QUEUE_NAMES = "queue-names";
     String REMOTE_ACCEPTOR = "remote-acceptor";
     String REMOTE_CONNECTOR = "remote-connector";
-    String REMOTING_INTERCEPTOR = "remoting-interceptor";
-    String REMOTING_INCOMING_INTERCEPTOR = "remoting-incoming-interceptor";
-    String REMOTING_OUTGOING_INTERCEPTOR = "remoting-outgoing-interceptor";
     String REPLICATION = "replication";
     String REPLICATION_COLOCATED = "replication-colocated";
     String REPLICATION_MASTER = "replication-master";

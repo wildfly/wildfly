@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.handlers;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -106,7 +107,13 @@ public class FileHandler extends Handler {
         final String[] paths = safePaths.toArray(new String[safePaths.size()]);
 
         UndertowLogger.ROOT_LOGGER.creatingFileHandler(path, directoryListing, followSymlink, caseSensitive, safePaths);
-        FileResourceManager resourceManager = new FileResourceManager(new File(path), cacheBufferSize * cacheBuffers, caseSensitive, followSymlink, paths);
+        File base = null;
+        try {
+            base = new File(path).getCanonicalFile();
+        } catch (IOException e) {
+            throw new OperationFailedException(e);
+        }
+        FileResourceManager resourceManager = new FileResourceManager(base, cacheBufferSize * cacheBuffers, caseSensitive, followSymlink, paths);
         ResourceHandler handler = new ResourceHandler(resourceManager);
         handler.setDirectoryListingEnabled(directoryListing);
         return handler;

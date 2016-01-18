@@ -22,17 +22,15 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-
 /**
- * Implemented by a resource artifact that can register itself.
- * This allows a resource to encapsulates specific registration details (e.g. resource aliases) from the parent resource.
+ * Implemented by a management artifact that can register itself.
+ * This allows a management object to encapsulates specific registration details (e.g. resource aliases) from the parent resource.
  * @author Paul Ferraro
  */
-public interface Registration {
+public interface Registration<R> {
     /**
      * Registers this object with a resource.
      * @param registration a registration for a management resource
      */
-    void register(ManagementResourceRegistration registration);
+    void register(R registration);
 }

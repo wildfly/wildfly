@@ -36,6 +36,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
@@ -73,22 +74,27 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
 
     static final AttributeDefinition DURABLE_MESSAGE_COUNT = create(CommonAttributes.DURABLE_MESSAGE_COUNT, INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static final AttributeDefinition NON_DURABLE_MESSAGE_COUNT = create(CommonAttributes.NON_DURABLE_MESSAGE_COUNT, INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static final AttributeDefinition SUBSCRIPTION_COUNT = create(CommonAttributes.SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static final AttributeDefinition DURABLE_SUBSCRIPTION_COUNT = create(CommonAttributes.DURABLE_SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static final AttributeDefinition NON_DURABLE_SUBSCRIPTION_COUNT = create(CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static final AttributeDefinition[] METRICS = { CommonAttributes.DELIVERING_COUNT,

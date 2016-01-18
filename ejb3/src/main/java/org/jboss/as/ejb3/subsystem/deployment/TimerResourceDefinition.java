@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.subsystem.deployment;
 
 import java.util.Date;
 
+import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.TimerHandle;
 
@@ -221,8 +222,15 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
-                final long time = timer.getTimeRemaining();
-                toSet.set(time);
+                try {
+                    final long time = timer.getTimeRemaining();
+                    toSet.set(time);
+                } catch(NoMoreTimeoutsException nmte) {
+                    // leave undefined
+                    // the same will occur for next-timeout attribute, but let's log it only once
+                    if(EjbLogger.ROOT_LOGGER.isDebugEnabled())
+                        EjbLogger.ROOT_LOGGER.debug("No more timeouts for timer " + timer);
+                }
             }
 
         });
@@ -230,9 +238,13 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
-                final Date d = timer.getNextTimeout();
-                if (d != null) {
-                    toSet.set(d.getTime());
+                try {
+                    final Date d = timer.getNextTimeout();
+                    if (d != null) {
+                        toSet.set(d.getTime());
+                    }
+                } catch(NoMoreTimeoutsException ignored) {
+                    // leave undefined
                 }
             }
 

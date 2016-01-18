@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,7 +33,6 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
@@ -59,12 +59,12 @@ import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
  * @author Paul Ferraro
  * @version Aug 2014
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registration {
+public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registration<ManagementResourceRegistration> {
 
-    DEFAULT("default", "thread_pool", 20, 300, 100, 60L),
-    OOB("oob", "oob_thread_pool", 20, 300, 0, 60L),
-    INTERNAL("internal", "internal_thread_pool", 2, 4, 100, 60L),
-    TIMER("timer", "timer", 2, 4, 500, 5L),
+    DEFAULT("default", "thread_pool", 20, 300, 100, 60000L),
+    OOB("oob", "oob_thread_pool", 20, 300, 0, 60000L),
+    INTERNAL("internal", "internal_thread_pool", 2, 4, 100, 60000L),
+    TIMER("timer", "timer", 2, 4, 500, 5000L),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -81,7 +81,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
     private final Attribute queueLength;
     private final Attribute keepAliveTime;
 
-    private ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
+    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
         this.name = name;
         this.prefix = prefix;
         this.descriptionResolver = new JGroupsResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE));
@@ -99,7 +99,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
                 .setValidator(validatorBuilder.allowExpression(true).allowUndefined(true).build())
-        ;
+                ;
     }
 
     @Override
@@ -113,7 +113,9 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.descriptionResolver).addAttributes(this.getAttributes());
         ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = new TransportConfigurationBuilderFactory();
         new RestartParentResourceAddStepHandler<>(transportBuilderFactory, descriptor).register(registration);
@@ -122,7 +124,6 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-        new RestartParentResourceWriteAttributeHandler<>(new TransportConfigurationBuilderFactory(), this.getAttributes()).register(registration);
     }
 
     @Override
@@ -131,6 +132,10 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
     }
 
     @Override
@@ -144,11 +149,11 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
     }
 
     @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
+    public boolean isOrderedChild() {
+        return false;
     }
 
-    Iterable<Attribute> getAttributes() {
+    Collection<Attribute> getAttributes() {
         return Arrays.asList(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime);
     }
 
@@ -174,10 +179,5 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
 
     void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         // Nothing to transform yet
-    }
-
-    @Override
-    public boolean isOrderedChild() {
-        return false;
     }
 }

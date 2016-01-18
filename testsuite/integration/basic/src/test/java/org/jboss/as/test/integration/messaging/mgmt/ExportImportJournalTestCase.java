@@ -105,9 +105,9 @@ public class ExportImportJournalTestCase {
     }
 
     protected static ModelNode execute(ModelControllerClient client, ModelNode operation) throws Exception {
-        System.out.println("operation = " + operation);
+        //System.out.println("operation = " + operation);
         ModelNode response = client.execute(operation);
-        System.out.println("response = " + response);
+        //System.out.println("response = " + response);
         boolean success = SUCCESS.equals(response.get(OUTCOME).asString());
         if (success) {
             return response.get(RESULT);
@@ -179,7 +179,7 @@ public class ExportImportJournalTestCase {
         exportJournalOp.get(OP_ADDR).add("server", "default");
         exportJournalOp.get(OP).set("export-journal");
         ModelNode result = execute(managementClient.getControllerClient(), exportJournalOp);
-        System.out.println("result = " + result);
+        //System.out.println("result = " + result);
         String dumpFilePath = result.asString();
         return dumpFilePath;
     }

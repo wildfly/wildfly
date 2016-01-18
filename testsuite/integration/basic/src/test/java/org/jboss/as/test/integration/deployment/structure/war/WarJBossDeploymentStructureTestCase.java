@@ -17,6 +17,7 @@ import javax.ejb.EJB;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 
@@ -54,7 +55,11 @@ public class WarJBossDeploymentStructureTestCase {
 
         war.addAsWebResource(new StringAsset("Root file"), "root-file.txt");
 
-        logger.info(war.toString(true));
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new RuntimePermission("getClassLoader"),
+                new RuntimePermission("getProtectionDomain")),
+                "permissions.xml");
+
         return war;
     }
 

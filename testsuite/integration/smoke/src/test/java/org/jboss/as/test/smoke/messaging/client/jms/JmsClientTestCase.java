@@ -134,7 +134,7 @@ public class JmsClientTestCase {
             for (int i = 0 ; i < 10 ; i++) {
                 String s = "Test" + i;
                 TextMessage msg = producerSession.createTextMessage(s);
-                System.out.println("sending " + s);
+                //System.out.println("sending " + s);
                 producer.send(msg);
             }
 

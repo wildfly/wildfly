@@ -63,24 +63,26 @@ public class MissingMethodPermissionsTestCase {
 
     @Deployment
     public static Archive createDeployment() {
-        final JavaArchive ejbJarOne = ShrinkWrap.create(JavaArchive.class, MODULE_ONE_NAME + ".jar");
-        ejbJarOne.addClasses(SecuredBeanOne.class);
-        ejbJarOne.addAsManifestResource(SecuredBeanOne.class.getPackage(), "one-jboss-ejb3.xml", "jboss-ejb3.xml");
+        final Package currentPackage = MissingMethodPermissionsTestCase.class.getPackage();
 
-        final JavaArchive ejbJarTwo = ShrinkWrap.create(JavaArchive.class, MODULE_TWO_NAME + ".jar");
-        ejbJarTwo.addClass(SecuredBeanTwo.class);
-        ejbJarTwo.addAsManifestResource(SecuredBeanTwo.class.getPackage(), "two-jboss-ejb3.xml", "jboss-ejb3.xml");
+        final JavaArchive ejbJarOne = ShrinkWrap.create(JavaArchive.class, MODULE_ONE_NAME + ".jar")
+                .addClasses(SecuredBeanOne.class)
+                .addAsManifestResource(currentPackage, "one-jboss-ejb3.xml", "jboss-ejb3.xml");
 
+        final JavaArchive ejbJarTwo = ShrinkWrap.create(JavaArchive.class, MODULE_TWO_NAME + ".jar")
+                .addClass(SecuredBeanTwo.class)
+                .addAsManifestResource(currentPackage, "two-jboss-ejb3.xml", "jboss-ejb3.xml");
 
-        final JavaArchive ejbJarThree = ShrinkWrap.create(JavaArchive.class, MODULE_THREE_NAME + ".jar");
-        ejbJarThree.addClass(SecuredBeanThree.class);
+        final JavaArchive ejbJarThree = ShrinkWrap.create(JavaArchive.class, MODULE_THREE_NAME + ".jar")
+                .addClass(SecuredBeanThree.class);
 
-        final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, "bean-interfaces.jar");
-        libJar.addClasses(SecurityTestRemoteView.class, Util.class, MissingMethodPermissionsTestCase.class);
+        final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, "bean-interfaces.jar")
+                .addClasses(SecurityTestRemoteView.class, Util.class, MissingMethodPermissionsTestCase.class);
 
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
-        ear.addAsModules(ejbJarOne, ejbJarTwo, ejbJarThree);
-        ear.addAsLibrary(libJar);
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear")
+                .addAsModules(ejbJarOne, ejbJarTwo, ejbJarThree)
+                .addAsLibrary(libJar)
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml");
 
         return ear;
     }

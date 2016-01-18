@@ -97,7 +97,10 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
-        this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(STATISTICS_ENABLED.getDefinition().resolveModelAttribute(context, model).asBoolean()).create();
+
+        boolean enabled = STATISTICS_ENABLED.getDefinition().resolveModelAttribute(context, model).asBoolean();
+        this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(enabled).available(enabled).create();
+
         return this;
     }
 

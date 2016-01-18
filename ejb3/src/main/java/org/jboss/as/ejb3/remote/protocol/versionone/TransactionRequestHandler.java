@@ -103,7 +103,11 @@ class TransactionRequestHandler extends AbstractMessageHandler {
                     throw EjbLogger.ROOT_LOGGER.unknownTransactionRequestType(this.txRequestType.name());
             }
             // submit to a separate thread for processing the request
-            this.executorService.submit(userTransactionManagementTask);
+            if(this.executorService != null) {
+                this.executorService.submit(userTransactionManagementTask);
+            } else {
+                userTransactionManagementTask.run();
+            }
 
         } else if (transactionID instanceof XidTransactionID) {
             // handle XidTransactionID
@@ -129,7 +133,11 @@ class TransactionRequestHandler extends AbstractMessageHandler {
                     throw EjbLogger.ROOT_LOGGER.unknownTransactionRequestType(this.txRequestType.name());
             }
             // submit to a separate thread for processing the request
-            this.executorService.submit(xidTransactionManagementTask);
+            if(this.executorService != null) {
+                this.executorService.submit(xidTransactionManagementTask);
+            } else {
+                xidTransactionManagementTask.run();
+            }
         }
     }
 

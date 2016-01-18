@@ -21,8 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.jgroups.LogFactory;
@@ -32,7 +30,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jgroups.Global;
 
 /**
  * Registers the JGroups subsystem.
@@ -47,16 +44,7 @@ public class JGroupsExtension implements Extension {
     // Workaround for JGRP-1475
     // Configure JGroups to use jboss-logging.
     static {
-        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                if (System.getProperty(Global.CUSTOM_LOG_FACTORY) == null) {
-                    System.setProperty(Global.CUSTOM_LOG_FACTORY, LogFactory.class.getName());
-                }
-                return null;
-            }
-        };
-        AccessController.doPrivileged(action);
+        org.jgroups.logging.LogFactory.setCustomLogFactory(new LogFactory());
     }
 
     /**
@@ -67,7 +55,7 @@ public class JGroupsExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
 
-        registration.registerSubsystemModel(new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
+        new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()).register(registration);
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
         if (context.isRegisterTransformers()) {

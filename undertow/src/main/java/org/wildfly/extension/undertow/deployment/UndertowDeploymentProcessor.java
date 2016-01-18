@@ -45,6 +45,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ExplodedDeploymentMarker;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WarMetaData;
@@ -66,7 +67,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.io.IOServices;
@@ -103,9 +103,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     private final String defaultServer;
     private final String defaultHost;
     private final String defaultContainer;
+    private final String defaultSecurityDomain;
 
-    public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer) {
+    public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, String defaultSecurityDomain) {
         this.defaultHost = defaultHost;
+        this.defaultSecurityDomain = defaultSecurityDomain;
         if (defaultHost == null) {
             throw UndertowLogger.ROOT_LOGGER.nullDefaultHost();
         }
@@ -163,7 +165,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
-        metaData.resolveRunAs();
 
         ScisMetaData scisMetaData = deploymentUnit.getAttachment(ScisMetaData.ATTACHMENT_KEY);
 
@@ -177,6 +178,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             if (!failed.contains(component)) {
                 dependentComponents.add(component);
             }
+        }
+        String servletContainerName = metaData.getServletContainerName();
+        if(servletContainerName == null) {
+            servletContainerName = defaultContainer;
         }
 
         boolean componentRegistryExists = true;
@@ -220,7 +225,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final String securityDomain;
         if(securityEnabled) {
-            securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
+            securityDomain = metaDataSecurityDomain == null ? defaultSecurityDomain : SecurityUtil
                     .unprefixSecurityDomain(metaDataSecurityDomain);
         } else {
             securityDomain = null;
@@ -283,10 +288,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
         ServiceBuilder<DeploymentInfo> infoBuilder = serviceTarget.addService(deploymentInfoServiceName, undertowDeploymentInfoService)
-                .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, undertowDeploymentInfoService.getContainer())
+                .addDependency(UndertowService.SERVLET_CONTAINER.append(servletContainerName), ServletContainerService.class, undertowDeploymentInfoService.getContainer())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue())
                 .addDependencies(additionalDependencies);
         if(securityDomain != null) {
             infoBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue());
@@ -329,7 +335,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
         } else {
-            ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, deploymentName, module, metaData);
+            ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, deploymentName, module, metaData, deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE));
             infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
 
             ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, deploymentName, metaData);
@@ -392,12 +398,17 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         processManagement(deploymentUnit, metaData);
     }
 
-    private static ServiceName installSessionManagerFactory(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, Module module, JBossWebMetaData metaData) {
+    private static ServiceName installSessionManagerFactory(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, Module module, JBossWebMetaData metaData, ServletContainerService servletContainerService) {
+
+        Integer maxActiveSessions = metaData.getMaxActiveSessions();
+        if(maxActiveSessions == null && servletContainerService != null) {
+            maxActiveSessions = servletContainerService.getMaxSessions();
+        }
         ServiceName name = deploymentServiceName.append("session");
         if (metaData.getDistributable() != null) {
             DistributableSessionManagerFactoryBuilder sessionManagerFactoryBuilder = new DistributableSessionManagerFactoryBuilderValue().getValue();
             if (sessionManagerFactoryBuilder != null) {
-                sessionManagerFactoryBuilder.build(target, name, new SimpleDistributableSessionManagerConfiguration(metaData, deploymentName, module))
+                sessionManagerFactoryBuilder.build(target, name, new SimpleDistributableSessionManagerConfiguration(maxActiveSessions, metaData.getReplicationConfig(), deploymentName, module))
                         .setInitialMode(Mode.ON_DEMAND)
                         .install()
                 ;
@@ -406,8 +417,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             // Fallback to local session manager if server does not support clustering
             UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
         }
-        Integer maxActiveSessions = metaData.getMaxActiveSessions();
-        InMemorySessionManagerFactory factory = (maxActiveSessions != null) ? new InMemorySessionManagerFactory(maxActiveSessions.intValue()) : new InMemorySessionManagerFactory();
+        InMemorySessionManagerFactory factory = (maxActiveSessions != null) ? new InMemorySessionManagerFactory(maxActiveSessions) : new InMemorySessionManagerFactory();
         target.addService(name,  new ValueService<>(new ImmediateValue<>(factory))).setInitialMode(Mode.ON_DEMAND).install();
         return name;
     }

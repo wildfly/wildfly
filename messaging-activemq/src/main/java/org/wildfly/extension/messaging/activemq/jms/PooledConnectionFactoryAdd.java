@@ -82,8 +82,16 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             jndiNames.add(node.asString());
         }
 
+        String managedConnectionPoolClassName = null;
+        if (resolvedModel.hasDefined(ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL.getName())) {
+            managedConnectionPoolClassName = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL.getName()).asString();
+        }
         final int minPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE.getName()).asInt();
         final int maxPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE.getName()).asInt();
+        Boolean enlistmentTrace = null;
+        if (resolvedModel.hasDefined(ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE.getName())) {
+            enlistmentTrace = resolvedModel.get(ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE.getName()).asBoolean();
+        }
 
         final String txSupport;
         if(resolvedModel.hasDefined(ConnectionFactoryAttributes.Pooled.TRANSACTION.getName())) {
@@ -115,7 +123,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         PooledConnectionFactoryService.installService(serviceTarget,
                 name, serverAddress.getLastElement().getValue(), connectors, discoveryGroupName, jgroupsChannelName,
-                adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize);
+                adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
     }
 
     static String getDiscoveryGroup(final ModelNode model) {

@@ -49,11 +49,17 @@ public class ChannelConnectorBuilder implements Builder<Channel>, Service<Channe
     private static final Logger LOGGER = org.jboss.logging.Logger.getLogger(ChannelConnectorBuilder.class);
 
     private final String name;
+    private final String cluster;
     private final InjectedValue<Channel> channel = new InjectedValue<>();
     private final InjectedValue<MBeanServer> server = new InjectedValue<>();
 
     public ChannelConnectorBuilder(String name) {
+        this(name, name);
+    }
+
+    public ChannelConnectorBuilder(String name, String cluster) {
         this.name = name;
+        this.cluster = cluster;
     }
 
     @Override
@@ -85,7 +91,7 @@ public class ChannelConnectorBuilder implements Builder<Channel>, Service<Channe
             }
         }
         try {
-            channel.connect(this.name);
+            channel.connect(this.cluster);
         } catch (Exception e) {
             throw new StartException(e);
         }

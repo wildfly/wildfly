@@ -97,7 +97,7 @@ public class PersistenceProviderAdaptorLoader {
      * @return the persistence provider adaptor for the provider class
      * @throws ModuleLoadException
      */
-    public static PersistenceProviderAdaptor loadPersistenceAdapterModule(final String adapterModule, final Platform platform) throws
+    public static PersistenceProviderAdaptor loadPersistenceAdapterModule(final String adapterModule, final Platform platform, JtaManagerImpl manager) throws
         ModuleLoadException {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
@@ -119,7 +119,7 @@ public class PersistenceProviderAdaptorLoader {
                 ROOT_LOGGER.debugf("loaded persistence provider adapter %s", adapterModule);
             }
             if (persistenceProviderAdaptor != null) {
-                persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
+                persistenceProviderAdaptor.injectJtaManager(manager);
                 persistenceProviderAdaptor.injectPlatform(platform);
             }
         }
@@ -133,7 +133,7 @@ public class PersistenceProviderAdaptorLoader {
      * @param persistenceProvider classloader will be used to load the persistence provider adapter
      * @return the persistence provider adaptor for the provider class
      */
-    public static PersistenceProviderAdaptor loadPersistenceAdapter(final PersistenceProvider persistenceProvider, final Platform platform)
+    public static PersistenceProviderAdaptor loadPersistenceAdapter(final PersistenceProvider persistenceProvider, final Platform platform, final JtaManagerImpl jtaManager)
         {
         PersistenceProviderAdaptor persistenceProviderAdaptor=null;
 
@@ -151,7 +151,7 @@ public class PersistenceProviderAdaptorLoader {
                         persistenceProvider.getClass().getClassLoader().toString());
             }
             if (persistenceProviderAdaptor != null) {
-                persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
+                persistenceProviderAdaptor.injectJtaManager(jtaManager);
                 persistenceProviderAdaptor.injectPlatform(platform);
             }
         }

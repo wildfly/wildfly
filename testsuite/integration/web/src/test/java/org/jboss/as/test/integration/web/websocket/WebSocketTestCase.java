@@ -51,5 +51,6 @@ public class WebSocketTestCase {
         WebSocketContainer serverContainer = ContainerProvider.getWebSocketContainer();
         Session session = serverContainer.connectToServer(endpoint, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), 8080, "/websocket/websocket/Stuart", "", ""));
         Assert.assertEquals("Hello Stuart", endpoint.getMessage());
+
     }
 }

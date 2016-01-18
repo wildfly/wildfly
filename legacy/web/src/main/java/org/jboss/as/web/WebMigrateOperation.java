@@ -22,48 +22,56 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.MultistepUtil;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
 import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
@@ -73,12 +81,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 import static org.jboss.as.controller.operations.common.Util.createOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
+import static org.wildfly.extension.undertow.UndertowExtension.PATH_FILTERS;
+
+import java.util.stream.Collectors;
 
 /**
  * Operation to migrate from the legacy web subsystem to the new undertow subsystem.
@@ -93,7 +103,7 @@ import static org.jboss.as.controller.operations.common.Util.createRemoveOperati
  * <li>for each web resources, transform the :add operations to add the
  * corresponding resource to the new undertow subsystem.
  * In this step, changes to the resources model are taken into account</li>
- * <li>:remove the messaging subsystem</li>
+ * <li>:remove the web subsystem</li>
  * </ul>
  * <p/>
  * The companion <code>:describe-migration</code> operation will return a list of all the actual operations that would be
@@ -115,7 +125,40 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     private static final OperationStepHandler DESCRIBE_MIGRATION_INSTANCE = new WebMigrateOperation(true);
     private static final OperationStepHandler MIGRATE_INSTANCE = new WebMigrateOperation(false);
-    public static final PathElement DEFAULT_SERVER_PATH = pathElement(Constants.SERVER, "default");
+    public static final PathElement DEFAULT_SERVER_PATH = pathElement(Constants.SERVER, "default-server");
+    public static final PathAddress EXTENSION_ADDRESS = pathAddress(pathElement(EXTENSION, "org.jboss.as.web"));
+    public static final String MIGRATE = "migrate";
+    public static final String MIGRATION_WARNINGS = "migration-warnings";
+    public static final String MIGRATION_ERROR = "migration-error";
+    public static final String MIGRATION_OPERATIONS = "migration-operations";
+    public static final String DESCRIBE_MIGRATION = "describe-migration";
+
+
+    public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
+            .setAllowNull(true)
+            .build();
+
+    public static final SimpleMapAttributeDefinition MIGRATION_ERROR_ATTR = new SimpleMapAttributeDefinition.Builder(MIGRATION_ERROR, ModelType.OBJECT, true)
+            .setValueType(ModelType.OBJECT)
+            .setAllowNull(true)
+            .build();
+
+    private static final Map<String, ValveHandler> VALVES_TO_FILTERS = new HashMap<String, ValveHandler>() {{
+            put("org.apache.catalina.valves.RequestDumperValve",
+                    new ValveHandler("io.undertow.server.handlers.RequestDumpingHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.RewriteValve",
+                    new ValveHandler("io.undertow.server.handlers.SetAttributeHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.RemoteHostValve",
+                    new ValveHandler("io.undertow.server.handlers.AccessControlListHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.RemoteAddrValve",
+                    new ValveHandler("io.undertow.server.handlers.IPAddressAccessControlHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.RemoteIpValve",
+                    new ValveHandler("io.undertow.server.handlers.ProxyPeerAddressHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.StuckThreadDetectionValve",
+                    new ValveHandler("io.undertow.server.handlers.StuckThreadDetectionHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.CrawlerSessionManagerValve",
+                    new ValveHandler("io.undertow.servlet.handlers.CrawlerSessionManagerHandler", "io.undertow.servlet"));
+        }};
 
     private final boolean describe;
 
@@ -125,15 +168,16 @@ public class WebMigrateOperation implements OperationStepHandler {
     }
 
     static void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resourceDescriptionResolver) {
-        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder("migrate", resourceDescriptionResolver)
+        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
                         .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
+                        .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .build(),
                 WebMigrateOperation.MIGRATE_INSTANCE);
-        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder("describe-migration", resourceDescriptionResolver)
-                        .setReplyType(ModelType.LIST).setReplyValueType(ModelType.OBJECT)
+        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
                         .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
+                        .setReplyParameters(MIGRATION_WARNINGS_ATTR)
                         .build(),
                 WebMigrateOperation.DESCRIBE_MIGRATION_INSTANCE);
     }
@@ -141,14 +185,15 @@ public class WebMigrateOperation implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (!describe && context.getRunningMode() != RunningMode.ADMIN_ONLY) {
-            throw UndertowLogger.ROOT_LOGGER.migrateOperationAllowedOnlyInAdminOnly();
+            throw WebLogger.ROOT_LOGGER.migrateOperationAllowedOnlyInAdminOnly();
         }
+
+        final List<String> warnings = new ArrayList<>();
 
         // node containing the description (list of add operations) of the legacy subsystem
         final ModelNode legacyModelAddOps = new ModelNode();
         //we don't preserve order, instead we sort by address length
-        //TODO: is this ok in every case?
-        final Map<PathAddress, ModelNode> migrationOperations = new TreeMap<>(new Comparator<PathAddress>() {
+        final Map<PathAddress, ModelNode> sortedMigrationOperations = new TreeMap<>(new Comparator<PathAddress>() {
             @Override
             public int compare(PathAddress o1, PathAddress o2) {
                 final int compare = Integer.compare(o1.size(), o2.size());
@@ -163,37 +208,88 @@ public class WebMigrateOperation implements OperationStepHandler {
         describeLegacyWebResources(context, legacyModelAddOps);
         // invoke an OSH to add the messaging-activemq extension
         // FIXME: this does not work it the extension :add is added to the migrationOperations directly (https://issues.jboss.org/browse/WFCORE-323)
-        addExtension(context, migrationOperations, describe, UNDERTOW_EXTENSION);
-        addExtension(context, migrationOperations, describe, IO_EXTENSION);
+        addExtension(context, sortedMigrationOperations, describe, UNDERTOW_EXTENSION);
+        addExtension(context, sortedMigrationOperations, describe, IO_EXTENSION);
 
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                addDefaultResources(migrationOperations, legacyModelAddOps);
-
-                //create the new IO subsystem
-                createIoSubsystem(context, migrationOperations);
-
-                createWelcomeContentHandler(migrationOperations);
-
+                addDefaultResources(sortedMigrationOperations, legacyModelAddOps, warnings);
                 // transform the legacy add operations and put them in migrationOperations
-                transformResources(context, legacyModelAddOps, migrationOperations);
+                boolean domainMode = context.getCallEnvironment().getProcessType() != ProcessType.STANDALONE_SERVER;
+                PathAddress baseAddres;
+                if(domainMode) {
+                    baseAddres = pathAddress(operation.get(ADDRESS)).getParent();
+                } else {
+                    baseAddres = pathAddress();
+                }
+                //create the new IO subsystem
+                createIoSubsystem(context, sortedMigrationOperations, baseAddres);
 
-                // put the /subsystem=messaging:remove operation
-                removeWebSubsystem(migrationOperations);
+                createWelcomeContentHandler(sortedMigrationOperations);
 
-                fixAddressesForDomainMode(pathAddress(operation.get(ADDRESS)), migrationOperations);
+                transformResources(context, legacyModelAddOps, sortedMigrationOperations, warnings, domainMode);
+
+                fixAddressesForDomainMode(pathAddress(operation.get(ADDRESS)), sortedMigrationOperations);
+
+                // put the /subsystem=web:remove operation
+                //we need the removes to be last, so we create a new linked hash map and add our sorted ops to it
+                LinkedHashMap<PathAddress, ModelNode> orderedMigrationOperations = new LinkedHashMap<>(sortedMigrationOperations);
+
+                removeWebSubsystem(orderedMigrationOperations, context.getProcessType() == ProcessType.STANDALONE_SERVER, pathAddress(operation.get(ADDRESS)));
 
                 if (describe) {
                     // :describe-migration operation
 
                     // for describe-migration operation, do nothing and return the list of operations that would
                     // be executed in the composite operation
-                    context.getResult().set(migrationOperations.values());
+                    final Collection<ModelNode> values = orderedMigrationOperations.values();
+                    ModelNode result = new ModelNode();
+                    if(!warnings.isEmpty()) {
+                        ModelNode rw = new ModelNode().setEmptyList();
+                        for (String warning : warnings) {
+                            rw.add(warning);
+                        }
+                        result.get(MIGRATION_WARNINGS).set(rw);
+                    }
+
+                    result.get(MIGRATION_OPERATIONS).set(values);
+
+                    context.getResult().set(result);
                 } else {
                     // :migrate operation
                     // invoke an OSH on a composite operation with all the migration operations
-                    migrateSubsystems(context, migrationOperations);
+                    final Map<PathAddress, ModelNode> migrateOpResponses = migrateSubsystems(context, orderedMigrationOperations);
+
+                    context.completeStep(new OperationContext.ResultHandler() {
+                        @Override
+                        public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                            final ModelNode result = new ModelNode();
+                            ModelNode rw = new ModelNode().setEmptyList();
+                            for (String warning : warnings) {
+                                rw.add(warning);
+                            }
+                            result.get(MIGRATION_WARNINGS).set(rw);
+                            if (resultAction == OperationContext.ResultAction.ROLLBACK) {
+                                for (Map.Entry<PathAddress, ModelNode> entry : migrateOpResponses.entrySet()) {
+                                    if (entry.getValue().hasDefined(FAILURE_DESCRIPTION)) {
+                                        //we check for failure description, as every node has 'failed', but one
+                                        //the real error has a failure description
+                                        //we break when we find the first one, as there will only ever be one failure
+                                        //as the op stops after the first failure
+                                        ModelNode desc = new ModelNode();
+                                        desc.get(OP).set(orderedMigrationOperations.get(entry.getKey()));
+                                        desc.get(RESULT).set(entry.getValue());
+                                        result.get(MIGRATION_ERROR).set(desc);
+                                        break;
+                                    }
+                                }
+                                context.getFailureDescription().set(new ModelNode(WebLogger.ROOT_LOGGER.migrationFailed()));
+                            }
+
+                            context.getResult().set(result);
+                        }
+                    });
                 }
             }
         }, MODEL);
@@ -206,33 +302,13 @@ public class WebMigrateOperation implements OperationStepHandler {
      * @param migrationOperations
      * @return
      */
-    private SSLInformation createSecurityRealm(OperationContext context, Map<PathAddress, ModelNode> migrationOperations, ModelNode legacyModelAddOps, String connector) {
+    private SSLInformation createSecurityRealm(OperationContext context, Map<PathAddress, ModelNode> migrationOperations, ModelNode legacyModelAddOps, String connector, List<String> warnings, boolean domainMode) {
         ModelNode legacyAddOp = findResource(pathAddress(WebExtension.SUBSYSTEM_PATH, pathElement(WebExtension.CONNECTOR_PATH.getKey(), connector), pathElement("configuration", "ssl")), legacyModelAddOps);
         if (legacyAddOp == null) {
             return null;
         }
         //we have SSL
-        //now we need to find a unique name
-        //in domain mode different profiles could have different SSL configurations
-        //but the realms are not scoped to a profile
-        //if we hard coded a name migration would fail when migrating domains with multiple profiles
-        int counter = 1;
-        String realmName = REALM_NAME + counter;
-        boolean ok = false;
-        do {
-            Resource root = context.readResourceFromRoot(pathAddress(CORE_SERVICE, MANAGEMENT), false);
-            if (root.getChildrenNames(SECURITY_REALM).contains(realmName)) {
-                counter++;
-                realmName = REALM_NAME + counter;
-            } else {
-                ok = true;
-            }
-        } while (!ok);
 
-        //we have a unique realm name
-        //add the realm
-        PathAddress addres = pathAddress(pathElement(CORE_SERVICE, MANAGEMENT), pathElement(SECURITY_REALM, realmName));
-        migrationOperations.put(addres, createAddOperation(addres));
 
         //read all the info from the SSL definition
         ModelNode keyAlias = legacyAddOp.get(WebSSLDefinition.KEY_ALIAS.getName());
@@ -250,41 +326,109 @@ public class WebMigrateOperation implements OperationStepHandler {
         ModelNode keystoreType = legacyAddOp.get(WebSSLDefinition.KEYSTORE_TYPE.getName());
         ModelNode sessionCacheSize = legacyAddOp.get(WebSSLDefinition.SESSION_CACHE_SIZE.getName());
         ModelNode sessionTimeout = legacyAddOp.get(WebSSLDefinition.SESSION_TIMEOUT.getName());
-        ModelNode sslProtocol = legacyAddOp.get(WebSSLDefinition.SSL_PROTOCOL.getName());
+        ModelNode sslProvider = legacyAddOp.get(WebSSLDefinition.SSL_PROTOCOL.getName());
+
+        if(verifyDepth.isDefined()) {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.VERIFY_DEPTH.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
+        }
+        if(certificateFile.isDefined()) {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CERTIFICATE_FILE.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
+        }
+        if(sslProvider.isDefined()) {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.SSL_PROTOCOL.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
+        }
+
+        if(csRevocationURL.isDefined()) {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CA_REVOCATION_URL.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
+        }
+        String realmName;
+        PathAddress managementCoreService;
+        if(domainMode) {
+            Set<String> hosts = new HashSet<>();
+            Resource hostResource = context.readResourceFromRoot(pathAddress(), false);
+            hosts.addAll(hostResource.getChildrenNames(HOST));
+
+            //now we need to find a unique name
+            //in domain mode different profiles could have different SSL configurations
+            //but the realms are not scoped to a profile
+            //if we hard coded a name migration would fail when migrating domains with multiple profiles
+            int counter = 1;
+            realmName = REALM_NAME + counter;
+            while(true) {
+                boolean hostOk = true;
+                for(String host : hosts) {
+                    Resource root = context.readResourceFromRoot(pathAddress(pathElement(HOST, host), pathElement(CORE_SERVICE, MANAGEMENT)), false);
+                    if (root.getChildrenNames(SECURITY_REALM).contains(realmName)) {
+                        counter++;
+                        realmName = REALM_NAME + counter;
+                        hostOk = false;
+                        break;
+                    }
+                }
+                if(hostOk) {
+                    break;
+                }
+            }
+            for (String host : hosts) {
+                createHostSSLConfig(realmName, migrationOperations, keyAlias, password, certificateKeyFile, protocol, caCertificateFile, caCertificatePassword, trustStoreType, keystoreType, pathAddress(pathElement(HOST, host), pathElement(CORE_SERVICE, MANAGEMENT)));
+            }
+
+        } else {
+            managementCoreService = pathAddress(CORE_SERVICE, MANAGEMENT);
+            //now we need to find a unique name
+            //in domain mode different profiles could have different SSL configurations
+            //but the realms are not scoped to a profile
+            //if we hard coded a name migration would fail when migrating domains with multiple profiles
+            int counter = 1;
+            realmName = REALM_NAME + counter;
+            boolean ok = false;
+            do {
+                Resource root = context.readResourceFromRoot(managementCoreService, false);
+                if (root.getChildrenNames(SECURITY_REALM).contains(realmName)) {
+                    counter++;
+                    realmName = REALM_NAME + counter;
+                } else {
+                    ok = true;
+                }
+            } while (!ok);
+
+            //we have a unique realm name
+            createHostSSLConfig(realmName, migrationOperations, keyAlias, password, certificateKeyFile, protocol, caCertificateFile, caCertificatePassword, trustStoreType, keystoreType, managementCoreService);
+
+        }
+
+
+
+        return new SSLInformation(realmName, verifyClient, sessionCacheSize, sessionTimeout, protocol, cipherSuite);
+    }
+
+    private String createHostSSLConfig(String realmName, Map<PathAddress, ModelNode> migrationOperations, ModelNode keyAlias, ModelNode password, ModelNode certificateKeyFile, ModelNode protocol, ModelNode caCertificateFile, ModelNode caCertificatePassword, ModelNode trustStoreType, ModelNode keystoreType, PathAddress managementCoreService) {
+
+        //add the realm
+        PathAddress addres = pathAddress(managementCoreService, pathElement(SECURITY_REALM, realmName));
+        migrationOperations.put(addres, createAddOperation(addres));
 
         //now lets add the trust store
-        addres = pathAddress(pathElement(CORE_SERVICE, MANAGEMENT), pathElement(SECURITY_REALM, realmName), pathElement(AUTHENTICATION, TRUSTSTORE));
+        addres = pathAddress(managementCoreService, pathElement(SECURITY_REALM, realmName), pathElement(AUTHENTICATION, TRUSTSTORE));
         ModelNode addOp = createAddOperation(addres);
-        addOp.get(KeystoreAttributes.KEYSTORE_PATH.getName()).set(caCertificateFile);
-        addOp.get(KeystoreAttributes.KEYSTORE_PASSWORD.getName()).set(caCertificatePassword);
-        addOp.get(KeystoreAttributes.KEYSTORE_PROVIDER.getName()).set(trustStoreType);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PATH).set(caCertificateFile);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PASSWORD).set(password);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PROVIDER).set(trustStoreType);
         migrationOperations.put(addres, addOp);
 
 
         //now lets add the key store
-        addres = pathAddress(pathElement(CORE_SERVICE, MANAGEMENT), pathElement(SECURITY_REALM, realmName), pathElement(SERVER_IDENTITY, SSL));
+        addres = pathAddress(managementCoreService, pathElement(SECURITY_REALM, realmName), pathElement(SERVER_IDENTITY, SSL));
         addOp = createAddOperation(addres);
-        addOp.get(KeystoreAttributes.KEYSTORE_PATH.getName()).set(certificateKeyFile);
-        addOp.get(KeystoreAttributes.KEYSTORE_PASSWORD.getName()).set(password);
-        addOp.get(KeystoreAttributes.KEYSTORE_PROVIDER.getName()).set(keystoreType);
-        addOp.get(KeystoreAttributes.ALIAS.getName()).set(keyAlias);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PATH).set(certificateKeyFile);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PASSWORD).set(password);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PROVIDER).set(keystoreType);
+        addOp.get(ModelDescriptionConstants.ALIAS).set(keyAlias);
         addOp.get(PROTOCOL).set(protocol);
         //addOp.get(KeystoreAttributes.KEY_PASSWORD.getName()).set(password); //TODO: is this correct? both key and keystore have same password?
 
-        if(verifyDepth.isDefined()) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.VERIFY_DEPTH.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
-        }
-        if(certificateFile.isDefined()) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CERTIFICATE_FILE.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
-        }
-
-        if(csRevocationURL.isDefined()) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSLDefinition.CA_REVOCATION_URL.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
-        }
-
         migrationOperations.put(addres, addOp);
-
-        return new SSLInformation(realmName, verifyClient, sessionCacheSize, sessionTimeout, sslProtocol, cipherSuite);
+        return realmName;
     }
 
     private void fixAddressesForDomainMode(PathAddress migrateAddress, Map<PathAddress, ModelNode> migrationOperations) {
@@ -325,13 +469,14 @@ public class WebMigrateOperation implements OperationStepHandler {
     /**
      * We need to create the IO subsystem, if it does not already exist
      */
-    private void createIoSubsystem(OperationContext context, Map<PathAddress, ModelNode> migrationOperations) {
-        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+    private void createIoSubsystem(OperationContext context, Map<PathAddress, ModelNode> migrationOperations, PathAddress baseAddress) {
+        Resource root = context.readResourceFromRoot(baseAddress, false);
         if (root.getChildrenNames(SUBSYSTEM).contains(IOExtension.SUBSYSTEM_NAME)) {
             // subsystem is already added, do nothing
             return;
         }
 
+        //these addresses will be fixed later, no need to use the base address
         PathAddress address = pathAddress(pathElement(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME));
         migrationOperations.put(address, createAddOperation(address));
         address = pathAddress(pathElement(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME), pathElement("worker", "default"));
@@ -356,7 +501,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         migrationOperations.put(address, add);
     }
 
-    private void addDefaultResources(Map<PathAddress, ModelNode> migrationOperations, final ModelNode legacyModelDescription) {
+    private void addDefaultResources(Map<PathAddress, ModelNode> migrationOperations, final ModelNode legacyModelDescription, List<String> warnings) {
         //add the default server
         PathAddress address = pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), DEFAULT_SERVER_PATH);
         ModelNode add = createAddOperation(address);
@@ -392,43 +537,48 @@ public class WebMigrateOperation implements OperationStepHandler {
                 }
                 node = legacyAddOp.get(WebStaticResources.SENDFILE.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.SENDFILE.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.SENDFILE.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
                     sendfile = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.FILE_ENCODING.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.FILE_ENCODING.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.FILE_ENCODING.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
                     fileEncoding = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.READ_ONLY.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.READ_ONLY.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.READ_ONLY.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
                     readOnly = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.WEBDAV.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.WEBDAV.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.WEBDAV.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
                     webdav = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.SECRET.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.SECRET.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.SECRET.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
                     secret = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.MAX_DEPTH.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.MAX_DEPTH.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.MAX_DEPTH.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
                     maxDepth = node;
                 }
                 node = legacyAddOp.get(WebStaticResources.DISABLED.getName());
                 if (node.isDefined()) {
-                    UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.DISABLED.getName(), pathAddress(legacyAddOp.get(ADDRESS)));
+                    warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebStaticResources.DISABLED.getName(), pathAddress(legacyAddOp.get(ADDRESS))));
                     disabled = node;
                 }
             }
         }
 
         migrationOperations.put(address, add);
+
+        address = pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), pathElement(Constants.BUFFER_CACHE, "default"));
+        add = createAddOperation(address);
+        migrationOperations.put(address, add);
+
         address = pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), pathElement(Constants.SERVLET_CONTAINER, "default"));
         add = createAddOperation(address);
         if (defaultSessionTimeout != null) {
@@ -437,7 +587,6 @@ public class WebMigrateOperation implements OperationStepHandler {
         if (directoryListing != null) {
             add.get(Constants.DIRECTORY_LISTING).set(directoryListing);
         }
-
         migrationOperations.put(address, add);
     }
 
@@ -461,19 +610,25 @@ public class WebMigrateOperation implements OperationStepHandler {
         }
     }
 
-    private void removeWebSubsystem(Map<PathAddress, ModelNode> migrationOperations) {
-        PathAddress subsystemAddress = pathAddress(WebExtension.SUBSYSTEM_PATH);
+    private void removeWebSubsystem(Map<PathAddress, ModelNode> migrationOperations, boolean standalone, PathAddress subsystemAddress) {
         ModelNode removeOperation = createRemoveOperation(subsystemAddress);
         migrationOperations.put(subsystemAddress, removeOperation);
+
+        //only add this if we are describing
+        //to maintain the order we manually execute this last
+        if(standalone) {
+            removeOperation = createRemoveOperation(EXTENSION_ADDRESS);
+            migrationOperations.put(EXTENSION_ADDRESS, removeOperation);
+        }
     }
 
-    private void migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) {
-        ModelNode compositeOp = createOperation(COMPOSITE, EMPTY_ADDRESS);
-        compositeOp.get(STEPS).set(migrationOperations.values());
-        context.addStep(compositeOp, CompositeOperationHandler.INSTANCE, MODEL);
+    private Map<PathAddress, ModelNode> migrateSubsystems(OperationContext context, final Map<PathAddress, ModelNode> migrationOperations) throws OperationFailedException {
+        final Map<PathAddress, ModelNode> result = new LinkedHashMap<>();
+        MultistepUtil.recordOperationSteps(context, migrationOperations, result);
+        return result;
     }
 
-    private void transformResources(final OperationContext context, final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations) throws OperationFailedException {
+    private void transformResources(final OperationContext context, final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations, List<String> warnings, boolean domainMode) throws OperationFailedException {
         for (ModelNode legacyAddOp : legacyModelDescription.get(RESULT).asList()) {
             final ModelNode newAddOp = legacyAddOp.clone();
             PathAddress address = pathAddress(newAddOp.get(ADDRESS));
@@ -488,23 +643,26 @@ public class WebMigrateOperation implements OperationStepHandler {
             } else if (address.equals(pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.CONTAINER_PATH))) {
                 migrateMimeMapping(newAddOperations, newAddOp);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.CONNECTOR_PATH))) {
-                migrateConnector(context, newAddOperations, newAddOp, address, legacyModelDescription);
+                migrateConnector(context, newAddOperations, newAddOp, address, legacyModelDescription, warnings, domainMode);
+            } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.CONNECTOR_PATH, WebExtension.SSL_PATH))) {
+                // ignore, handled as part of connector migration
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH))) {
                 migrateVirtualHost(newAddOperations, newAddOp, address);
+            } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.VALVE_PATH))) {
+                migrateValves(newAddOperations, newAddOp, address);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.ACCESS_LOG_PATH))) {
-                migrateAccessLog(newAddOperations, newAddOp, address, legacyModelDescription);
+                migrateAccessLog(newAddOperations, newAddOp, address, legacyModelDescription, warnings);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.ACCESS_LOG_PATH, WebExtension.DIRECTORY_PATH))) {
                 //ignore, handled by access-log
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.SSO_PATH))) {
-                migrateSso(newAddOperations, newAddOp, address);
+                migrateSso(newAddOperations, newAddOp, address, warnings);
             } else {
-                UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(legacyAddOp);
+                warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(legacyAddOp));
             }
-
         }
     }
 
-    private void migrateSso(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address) {
+    private void migrateSso(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, List<String> warnings) {
         PathAddress newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, address.getElement(address.size() - 2).getValue()), UndertowExtension.PATH_SSO);
         ModelNode add = createAddOperation(newAddress);
 
@@ -512,19 +670,19 @@ public class WebMigrateOperation implements OperationStepHandler {
         add.get(Constants.HTTP_ONLY).set(newAddOp.get(WebSSODefinition.HTTP_ONLY.getName()).clone());
 
         if (newAddOp.hasDefined(WebSSODefinition.CACHE_CONTAINER.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.CACHE_CONTAINER.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.CACHE_CONTAINER.getName(), pathAddress(newAddOp.get(ADDRESS))));
         }
         if (newAddOp.hasDefined(WebSSODefinition.REAUTHENTICATE.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.REAUTHENTICATE.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.REAUTHENTICATE.getName(), pathAddress(newAddOp.get(ADDRESS))));
         }
         if (newAddOp.hasDefined(WebSSODefinition.CACHE_NAME.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.CACHE_NAME.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebSSODefinition.CACHE_NAME.getName(), pathAddress(newAddOp.get(ADDRESS))));
         }
 
         newAddOperations.put(newAddress, add);
     }
 
-    private void migrateAccessLog(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, ModelNode legacyAddOps) {
+    private void migrateAccessLog(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, ModelNode legacyAddOps, List<String> warnings) {
         PathAddress newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, address.getElement(address.size() - 2).getValue()), UndertowExtension.PATH_ACCESS_LOG);
         ModelNode add = createAddOperation(newAddress);
 
@@ -533,17 +691,15 @@ public class WebMigrateOperation implements OperationStepHandler {
         add.get(Constants.PREFIX).set(newAddOp.get(WebAccessLogDefinition.PREFIX.getName()).clone());
         add.get(Constants.ROTATE).set(newAddOp.get(WebAccessLogDefinition.ROTATE.getName()).clone());
         if (newAddOp.hasDefined(WebAccessLogDefinition.RESOLVE_HOSTS.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.RESOLVE_HOSTS.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.RESOLVE_HOSTS.getName(), pathAddress(newAddOp.get(ADDRESS))));
         }
-        //TODO: extended access log
-        if (newAddOp.hasDefined(WebAccessLogDefinition.EXTENDED.getName())) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebAccessLogDefinition.EXTENDED.getName(), pathAddress(newAddOp.get(ADDRESS)));
-        }
+
+        add.get(Constants.EXTENDED).set(newAddOp.get(WebAccessLogDefinition.EXTENDED.getName()).clone());
 
         ModelNode directory = findResource(pathAddress(pathAddress(newAddOp.get(ADDRESS)), WebExtension.DIRECTORY_PATH), legacyAddOps);
         if(directory != null){
-            newAddOp.get(Constants.DIRECTORY).set(directory.get(PATH));
-            newAddOp.get(Constants.RELATIVE_TO).set(directory.get(RELATIVE_TO));
+            add.get(Constants.DIRECTORY).set(directory.get(PATH));
+            add.get(Constants.RELATIVE_TO).set(directory.get(RELATIVE_TO));
         }
 
         newAddOperations.put(newAddress, add);
@@ -582,9 +738,37 @@ public class WebMigrateOperation implements OperationStepHandler {
         add.get(Constants.DEFAULT_WEB_MODULE).set(newAddOp.get(WebVirtualHostDefinition.DEFAULT_WEB_MODULE.getName()));
 
         newAddOperations.put(newAddress, add);
+        final PathAddress allFilterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey()));
+        List<PathAddress> filterAddresses = newAddOperations.keySet().stream().filter(newOpAddress -> {
+            return wildcardEquals(allFilterAddress, newOpAddress);
+        }).collect(Collectors.toList());
+        for (PathAddress filterAddress : filterAddresses) {
+            PathAddress filterRefAddress = pathAddress(newAddress, pathElement(Constants.FILTER_REF, filterAddress.getLastElement().getValue()));
+            ModelNode filterRefAdd = createAddOperation(filterRefAddress);
+            newAddOperations.put(filterRefAddress, filterRefAdd);
+        }
     }
 
-    private void migrateConnector(OperationContext context, Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, ModelNode legacyModelAddOps) throws OperationFailedException {
+    private void migrateValves(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address) {
+        if (newAddOp.hasDefined(WebValveDefinition.CLASS_NAME.getName())) {
+            String valveClassName = newAddOp.get(WebValveDefinition.CLASS_NAME.getName()).asString();
+            if (VALVES_TO_FILTERS.containsKey(valveClassName)) {
+                newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
+                PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey(), address.getLastElement().getValue()));
+                if (!newAddOperations.containsKey(filterAddress)) {
+                    ModelNode filterAdd = createAddOperation(filterAddress);
+                    filterAdd.get(MODULE).set(VALVES_TO_FILTERS.get(valveClassName).module);
+                    filterAdd.get(CustomFilterDefinition.CLASS_NAME.getName()).set(VALVES_TO_FILTERS.get(valveClassName).handlerClassName);
+                    if(newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
+                        filterAdd.get(CustomFilterDefinition.PARAMETERS.getName()).set(newAddOp.get(WebValveDefinition.PARAMS.getName()));
+                    }
+                    newAddOperations.put(filterAddress, filterAdd);
+                }
+            }
+        }
+    }
+
+    private void migrateConnector(OperationContext context, Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, ModelNode legacyModelAddOps, List<String> warnings, boolean domainMode) throws OperationFailedException {
         String protocol = newAddOp.get(WebConnectorDefinition.PROTOCOL.getName()).asString();
         String scheme = null;
         if (newAddOp.hasDefined(WebConnectorDefinition.SCHEME.getName())) {
@@ -593,6 +777,9 @@ public class WebMigrateOperation implements OperationStepHandler {
         final PathAddress newAddress;
         final ModelNode addConnector;
         switch (protocol) {
+            case "org.apache.coyote.http11.Http11Protocol":
+            case "org.apache.coyote.http11.Http11NioProtocol":
+            case "org.apache.coyote.http11.Http11AprProtocol":
             case "HTTP/1.1":
                 if (scheme == null || scheme.equals("http")) {
                     newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTP_LISTENER, address.getLastElement().getValue()));
@@ -601,12 +788,24 @@ public class WebMigrateOperation implements OperationStepHandler {
                     newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTPS_LISTENER, address.getLastElement().getValue()));
                     addConnector = createAddOperation(newAddress);
 
-                    SSLInformation sslInfo = createSecurityRealm(context, newAddOperations, legacyModelAddOps, newAddress.getLastElement().getValue());
+                    SSLInformation sslInfo = createSecurityRealm(context, newAddOperations, legacyModelAddOps, newAddress.getLastElement().getValue(), warnings, domainMode);
                     if (sslInfo == null) {
-                        throw UndertowLogger.ROOT_LOGGER.noSslConfig();
+                        throw WebLogger.ROOT_LOGGER.noSslConfig();
                     } else {
                         addConnector.get(Constants.SECURITY_REALM).set(sslInfo.realmName);
-                        addConnector.get(Constants.VERIFY_CLIENT).set(sslInfo.verifyClient);
+                        ModelNode verify = sslInfo.verifyClient;
+                        if(verify.isDefined()) {
+                            if(verify.getType() == ModelType.EXPRESSION) {
+                                warnings.add(WebLogger.ROOT_LOGGER.couldNotTranslateVerifyClientExpression(verify.toString()));
+                                addConnector.get(Constants.VERIFY_CLIENT).set(verify);
+                            } else {
+                                String translated = translateVerifyClient(verify.asString(), warnings);
+                                if(translated != null) {
+                                    addConnector.get(Constants.VERIFY_CLIENT).set(translated);
+                                }
+                            }
+                        }
+
                         addConnector.get(Constants.SSL_SESSION_CACHE_SIZE).set(sslInfo.sessionCacheSize);
                         addConnector.get(Constants.SSL_SESSION_TIMEOUT).set(sslInfo.sessionTimeout);
                         addConnector.get(Constants.ENABLED_PROTOCOLS).set(sslInfo.sslProtocol);
@@ -617,16 +816,19 @@ public class WebMigrateOperation implements OperationStepHandler {
                     addConnector = null;
                 }
                 break;
-            case "AJP":
+            case "org.apache.coyote.ajp.AjpAprProtocol":
+            case "org.apache.coyote.ajp.AjpProtocol":
+            case "AJP/1.3":
                 newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.AJP_LISTENER, address.getLastElement().getValue()));
                 addConnector = createAddOperation(newAddress);
+                addConnector.get(Constants.SCHEME).set(newAddOp.get(Constants.SCHEME));
                 break;
             default:
                 newAddress = null;
                 addConnector = null;
         }
         if (newAddress == null) {
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(newAddOp);
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(newAddOp));
             return;
         }
         addConnector.get(Constants.SOCKET_BINDING).set(newAddOp.get(SOCKET_BINDING));
@@ -637,15 +839,45 @@ public class WebMigrateOperation implements OperationStepHandler {
         addConnector.get(Constants.MAX_POST_SIZE).set(newAddOp.get(WebConnectorDefinition.MAX_POST_SIZE.getName()));
         addConnector.get(Constants.REDIRECT_SOCKET).set(newAddOp.get(WebConnectorDefinition.REDIRECT_BINDING.getName()));
         addConnector.get(Constants.MAX_CONNECTIONS).set(newAddOp.get(WebConnectorDefinition.MAX_CONNECTIONS.getName()));
-        //TODO: secure
-        //TODO: max save post size
-        //TODO: proxy binding
+        addConnector.get(Constants.MAX_BUFFERED_REQUEST_SIZE).set(newAddOp.get(WebConnectorDefinition.MAX_SAVE_POST_SIZE.getName()));
+        addConnector.get(Constants.SECURE).set(newAddOp.get(WebConnectorDefinition.SECURE.getName()));
+        if(newAddOp.hasDefined(WebConnectorDefinition.REDIRECT_PORT.getName())) {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.REDIRECT_PORT.getName(), pathAddress(newAddOp.get(ADDRESS))));
+        }
+        if(newAddOp.hasDefined(WebConnectorDefinition.PROXY_BINDING.getName())) {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.PROXY_BINDING.getName(), pathAddress(newAddOp.get(ADDRESS))));
+        }
         if (newAddOp.hasDefined(WebConnectorDefinition.EXECUTOR.getName())) {
             //TODO: migrate executor to worker
-            UndertowLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.EXECUTOR.getName(), pathAddress(newAddOp.get(ADDRESS)));
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.EXECUTOR.getName(), pathAddress(newAddOp.get(ADDRESS))));
         }
 
         newAddOperations.put(pathAddress(newAddOp.get(OP_ADDR)), addConnector);
+    }
+
+    private String translateVerifyClient(String s, List<String> warnings) {
+        switch(s) {
+            case "optionalNoCA":
+            case "optional": {
+                return "REQUESTED";
+            }
+            case "require" : {
+                return "REQUIRED";
+            }
+            case "none": {
+                return "NOT_REQUESTED";
+            }
+            case "true": {
+                return "REQUIRED";
+            }
+            case "false": {
+                return "NOT_REQUESTED";
+            }
+            default: {
+                warnings.add(WebLogger.ROOT_LOGGER.couldNotTranslateVerifyClient(s));
+                return null;
+            }
+        }
     }
 
     private void migrateMimeMapping(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp) {
@@ -680,7 +912,8 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     private void migrateSubsystem(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp) {
         newAddOp.get(ADDRESS).set(pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)).toModelNode());
-        newAddOperations.put(pathAddress(newAddOp.get(OP_ADDR)), newAddOp);
+        PathAddress address = pathAddress(newAddOp.get(OP_ADDR));
+        newAddOperations.put(address, createAddOperation(address));
     }
 
     private void describeLegacyWebResources(OperationContext context, ModelNode legacyModelDescription) {
@@ -713,6 +946,16 @@ public class WebMigrateOperation implements OperationStepHandler {
             this.sessionTimeout = sessionTimeout;
             this.sslProtocol = sslProtocol;
             this.cipherSuites = cipherSuites;
+        }
+    }
+
+    private static class ValveHandler {
+        private String handlerClassName;
+        private String module;
+
+        private ValveHandler(String handlerClassName, String module) {
+            this.handlerClassName = handlerClassName;
+            this.module = module;
         }
     }
 }

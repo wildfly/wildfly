@@ -1,0 +1,4 @@
+<jboss-web>
+    <security-domain>client cert domain</security-domain>
+    <proactive-authentication>true</proactive-authentication>
+</jboss-web>

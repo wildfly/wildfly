@@ -24,41 +24,39 @@ package org.wildfly.clustering.ejb.infinispan;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.jboss.ejb.client.BasicSessionID;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.UnknownSessionID;
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionIDExternalizer extends AbstractSimpleExternalizer<SessionID> {
-    private static final long serialVersionUID = -760242454303210714L;
+public class SessionIDExternalizer implements Externalizer<SessionID> {
 
-    public SessionIDExternalizer() {
-        super(SessionID.class);
-    }
+    private final Class<? extends SessionID> targetClass;
+    private final Externalizer<Integer> externalizer;
 
-    @Override
-    public Set<Class<? extends SessionID>> getTypeClasses() {
-        return new HashSet<>(Arrays.asList(BasicSessionID.class, UnknownSessionID.class));
+    SessionIDExternalizer(Class<? extends SessionID> targetClass, Externalizer<Integer> externalizer) {
+        this.targetClass = targetClass;
+        this.externalizer = externalizer;
     }
 
     @Override
     public void writeObject(ObjectOutput output, SessionID id) throws IOException {
         byte[] encoded = id.getEncodedForm();
-        output.writeInt(encoded.length);
+        this.externalizer.writeObject(output, encoded.length);
         output.write(encoded);
     }
 
     @Override
-    public SessionID readObject(ObjectInput input) throws IOException {
-        byte[] encoded = new byte[input.readInt()];
+    public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        byte[] encoded = new byte[this.externalizer.readObject(input)];
         input.readFully(encoded);
         return SessionID.createSessionID(encoded);
+    }
+
+    @Override
+    public Class<? extends SessionID> getTargetClass() {
+        return this.targetClass;
     }
 }

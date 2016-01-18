@@ -26,12 +26,19 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import org.infinispan.commons.CacheException;
+import org.infinispan.notifications.cachelistener.event.Event;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
+import org.wildfly.clustering.group.Node;
 
 /**
  * @author <a href="mailto:pferraro@redhat.com">Paul Ferraro</a>
@@ -48,11 +55,11 @@ public interface ClusteringServerLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "This node will now operate as the singleton provider of the %s service")
-    void electedMaster(String service);
+    void startSingleton(String service);
 
     @LogMessage(level = INFO)
     @Message(id = 2, value = "This node will no longer operate as the singleton provider of the %s service")
-    void electedSlave(String service);
+    void stopSingleton(String service);
 
     @LogMessage(level = INFO)
     @Message(id = 3, value = "%s elected as the singleton provider of the %s service")
@@ -79,4 +86,16 @@ public interface ClusteringServerLogger {
 
     @Message(id = 9, value = "Singleton service %s is not started.")
     IllegalStateException notStarted(String serviceName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10, value = "Failed to purge %s/%s registry of old registry entries for: %s")
+    void registryPurgeFailed(@Cause CacheException e, String containerName, String cacheName, Collection<Node> nodes);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "Failed to notify %s/%s registry listener of %s(%s) event")
+    void registryListenerFailed(@Cause Throwable e, String containerName, String cacheName, Event.Type type, Map<?, ?> entries);
+
+    @LogMessage(level = WARN)
+    @Message(id = 12, value = "Failed to notify %s/%s service provider registration listener of new providers: %s")
+    void serviceProviderRegistrationListenerFailed(@Cause Throwable e, String containerName, String cacheName, Set<Node> providers);
 }

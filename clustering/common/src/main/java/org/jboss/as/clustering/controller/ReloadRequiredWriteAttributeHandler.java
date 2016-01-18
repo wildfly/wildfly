@@ -22,46 +22,45 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.TransformerOperationAttachment;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Convenience extension of {@link org.jboss.as.controller.ReloadRequiredWriteAttributeHandler} that can be initialized with an {@link Attribute} set.
  * @author Paul Ferraro
  */
-public class ReloadRequiredWriteAttributeHandler extends org.jboss.as.controller.ReloadRequiredWriteAttributeHandler implements Registration {
+public class ReloadRequiredWriteAttributeHandler extends org.jboss.as.controller.ReloadRequiredWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
 
-    private final Map<String, AttributeDefinition> attributes = new HashMap<>();
+    private final WriteAttributeStepHandlerDescriptor descriptor;
 
-    public <E extends Enum<E> & Attribute> ReloadRequiredWriteAttributeHandler(Class<E> enumClass) {
-        this(EnumSet.allOf(enumClass));
-    }
-
-    public ReloadRequiredWriteAttributeHandler(Attribute... attributes) {
-        this(Arrays.asList(attributes));
-    }
-
-    public ReloadRequiredWriteAttributeHandler(Iterable<? extends Attribute> attributes) {
-        for (Attribute attribute : attributes) {
-            AttributeDefinition definition = attribute.getDefinition();
-            this.attributes.put(definition.getName(), definition);
-        }
-    }
-
-    @Override
-    protected AttributeDefinition getAttributeDefinition(String name) {
-        return this.attributes.get(name);
+    public ReloadRequiredWriteAttributeHandler(WriteAttributeStepHandlerDescriptor descriptor) {
+        super(descriptor.getAttributes());
+        this.descriptor = descriptor;
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        for (AttributeDefinition attribute : this.attributes.values()) {
-            registration.registerReadWriteAttribute(attribute, null, this);
+        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this));
+    }
+
+    @Override
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+
+        if (!context.isBooting()) {
+            TransformerOperationAttachment attachment = TransformerOperationAttachment.getOrCreate(context);
+            InitialAttributeValueOperationContextAttachment valuesAttachment = attachment.getAttachment(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT);
+            if (valuesAttachment == null) {
+                valuesAttachment = new InitialAttributeValueOperationContextAttachment();
+                attachment.attach(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT, valuesAttachment);
+            }
+            valuesAttachment.putIfAbsentInitialValue(Operations.getPathAddress(operation), attributeName, oldValue);
         }
     }
+
 }

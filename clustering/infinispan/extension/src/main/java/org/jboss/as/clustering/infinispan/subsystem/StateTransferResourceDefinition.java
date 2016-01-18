@@ -22,9 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
@@ -36,12 +37,16 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/state-transfer=STATE_TRANSFER
+ * Resource description for the addressable resource and its alias
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/component=state-transfer
+ * /subsystem=infinispan/cache-container=X/cache=Y/state-transfer=STATE_TRANSFER
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
@@ -51,8 +56,8 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
     static final PathElement PATH = pathElement("state-transfer");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CHUNK_SIZE("chunk-size", ModelType.INT, new ModelNode(10000)),
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(60000L)),
+        CHUNK_SIZE("chunk-size", ModelType.INT, new ModelNode(512)),
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(4))),
         ;
         private final AttributeDefinition definition;
 
@@ -93,8 +98,13 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
+
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            parent.addChildRedirection(PATH, LEGACY_PATH);
+            builder.getAttributeBuilder()
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.TIMEOUT.getDefinition()), Attribute.TIMEOUT.getDefinition())
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CHUNK_SIZE.getDefinition()), Attribute.CHUNK_SIZE.getDefinition())
+            ;
         }
     }
 
@@ -103,21 +113,16 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(DeprecatedAttribute.class);
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(DeprecatedAttribute.class)
+                ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StateTransferBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-        new ReloadRequiredWriteAttributeHandler(DeprecatedAttribute.class).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
     }
 }

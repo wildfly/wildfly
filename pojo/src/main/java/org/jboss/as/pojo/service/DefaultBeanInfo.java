@@ -99,7 +99,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
         return lookup(new Lookup<Constructor<T>>() {
             @Override
             public Constructor<T> lookup(ClassReflectionIndex index) {
-                final Collection<Constructor> ctors = index.getConstructors();
+                final Collection<Constructor<?>> ctors = index.getConstructors();
                 for (Constructor c : ctors) {
                     if (Configurator.equals(parameterTypes, c.getParameterTypes()))
                         return c;

@@ -148,6 +148,11 @@ public class PathDefinition extends PersistentResourceDefinition {
         }
     }
 
+    // TODO add @Override once the WFCORE version with this method is integrated
+    public int getMinOccurs() {
+        return 1;
+    }
+
     protected static void registerResolveOperationHandler(ExtensionContext context, ManagementResourceRegistration registry) {
         if (context.getProcessType().isServer()) {
             final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())

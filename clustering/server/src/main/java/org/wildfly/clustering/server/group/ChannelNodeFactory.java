@@ -47,20 +47,18 @@ public class ChannelNodeFactory implements JGroupsNodeFactory, AutoCloseable {
     }
 
     @Override
-    public Node createNode(Address address) {
-        Node node = this.nodes.get(address);
-        if (node != null) return node;
-
-        IpAddress ipAddress = (IpAddress) this.channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
-        InetSocketAddress socketAddress = new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort());
-        String name = this.channel.getName(address);
-        if (name == null) {
-            // If no logical name exists, create one using physical address
-            name = String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort());
-        }
-        node = new AddressableNode(address, name, socketAddress);
-        Node existing = this.nodes.putIfAbsent(address, node);
-        return (existing != null) ? existing : node;
+    public Node createNode(Address key) {
+        return this.nodes.computeIfAbsent(key, (Address address) -> {
+            IpAddress ipAddress = (IpAddress) this.channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
+            // Physical address might be null if node is no longer a member of the cluster
+            InetSocketAddress socketAddress = (ipAddress != null) ? new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort()) : new InetSocketAddress(0);
+            String name = this.channel.getName(address);
+            if (name == null) {
+                // If no logical name exists, create one using physical address
+                name = String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort());
+            }
+            return new AddressableNode(address, name, socketAddress);
+        });
     }
 
     @Override

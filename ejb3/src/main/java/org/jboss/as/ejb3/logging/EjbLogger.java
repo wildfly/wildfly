@@ -114,10 +114,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
+import org.wildfly.clustering.group.Group;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.Logger.Level.DEBUG;
 
 /**
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
@@ -455,7 +457,7 @@ public interface EjbLogger extends BasicLogger {
      * @param channel The channel for which the {@link Channel.Receiver#handleEnd(org.jboss.remoting3.Channel)} notification
      *                was received
      */
-    @LogMessage(level = ERROR)
+    @LogMessage(level = DEBUG)
     @Message(id = 41, value = "Channel end notification received, closing channel %s")
     void closingChannelOnChannelEnd(Channel channel);
 
@@ -3068,4 +3070,37 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 473, value = "JNDI bindings for session bean named '%s' in deployment unit '%s' are as follows:%s")
     void jndiBindings(final String ejbName, final DeploymentUnit deploymentUnit, final StringBuilder bindings);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 474, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'. This attribute should be removed.")
+    void logInconsistentAttributeNotSupported(String attributeName, String mustMatch);
+
+    @LogMessage(level = INFO)
+    @Message(id = 475, value = "MDB delivery started: %s,%s")
+    void mdbDeliveryStarted(String appName, String componentName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 476, value = "MDB delivery stopped: %s,%s")
+    void mdbDeliveryStopped(String appName, String componentName);
+
+    @Message(id = 477, value = "MDB delivery group is missing: %s")
+    DeploymentUnitProcessingException missingMdbDeliveryGroup(String deliveryGroupName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 480, value = "Loaded timer (%s) for EJB (%s) and this node that is marked as being in a timeout. The original timeout may not have been processed. Please use graceful shutdown to ensure timeout tasks are finished before shutting down.")
+    void loadedPersistentTimerInTimeout(String timer, String timedObject);
+
+    @LogMessage(level = INFO)
+    @Message(id = 481, value = "Strict pool %s is using a max instance size of %d (per class), which is derived from thread worker pool sizing.")
+    void strictPoolDerivedFromWorkers(String name, int max);
+
+    @LogMessage(level = INFO)
+    @Message(id = 482, value = "Strict pool %s is using a max instance size of %d (per class), which is derived from the number of CPUs on this host.")
+    void strictPoolDerivedFromCPUs(String name, int max);
+
+    @Message(id = 483, value = "Attributes are mutually exclusive: %s, %s")
+    XMLStreamException mutuallyExclusiveAttributes(@Param Location location, String attribute1, String attribute2);
+
+    @LogMessage(level = WARN)
+    @Message(id = 484, value = "Could not send a cluster removal message for cluster: (%s) to the client on channel %s")
+    void couldNotSendClusterRemovalMessage(@Cause Throwable cause, Group group, Channel channel);
 }

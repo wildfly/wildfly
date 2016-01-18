@@ -58,15 +58,17 @@ public class SecurityDDOverrideTestCase {
 
     @Deployment
     public static Archive<?> runAsDeployment() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-security-partial-dd-test.jar");
-        jar.addPackage(PartialDDBean.class.getPackage());
-        jar.addClass(Util.class);
-        jar.addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class);
-        jar.addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "users.properties", "users.properties");
-        jar.addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "roles.properties", "roles.properties");
-        jar.addAsManifestResource(AnnotationAuthorizationTestCase.class.getPackage(), "partial-ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
-        jar.addPackage(CommonCriteria.class.getPackage());
+        final Package currentPackage = SecurityDDOverrideTestCase.class.getPackage();
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-security-partial-dd-test.jar")
+                .addPackage(PartialDDBean.class.getPackage())
+                .addClass(Util.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
+                .addAsResource(currentPackage, "users.properties", "users.properties")
+                .addAsResource(currentPackage, "roles.properties", "roles.properties")
+                .addAsManifestResource(currentPackage, "partial-ejb-jar.xml", "ejb-jar.xml")
+                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml")
+                .addPackage(CommonCriteria.class.getPackage());
         logger.info(jar.toString(true));
         return jar;
     }

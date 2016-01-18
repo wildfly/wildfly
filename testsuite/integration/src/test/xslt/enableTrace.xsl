@@ -1,7 +1,7 @@
 <xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-	<xsl:variable name="nsInf" select="'urn:jboss:domain:logging:'"/>
+	<xsl:variable name="nsInf" select="'urn:jboss:domain:logging:3.0'"/>
 
     <!--
       An XSLT style sheet which will enable trace logging for the test suite.
@@ -13,7 +13,7 @@
         <xsl:param name="list" />
         <xsl:variable name="first" select="substring-before(concat($list,','), ',')" />
         <xsl:variable name="remaining" select="substring-after($list, ',')" />
-        <logger>
+        <xsl:element name="logger"  namespace="{$nsInf}">
             <xsl:attribute name="category" >
                 <xsl:value-of select="$first"/>
             </xsl:attribute>
@@ -22,7 +22,7 @@
                     <xsl:value-of select="'TRACE'"/>
                 </xsl:attribute>
             </level>
-        </logger>
+        </xsl:element>
         <xsl:if test="string-length($remaining) > 0">
             <xsl:call-template name="output-loggers">
                 <xsl:with-param name="list" select="$remaining" />

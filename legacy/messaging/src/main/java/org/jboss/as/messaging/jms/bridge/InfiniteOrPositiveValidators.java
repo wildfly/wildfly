@@ -41,7 +41,7 @@ public interface InfiniteOrPositiveValidators {
             super.validateParameter(parameterName, value);
             long val = value.asLong();
             if (!(val == -1 || (val > 0 && val < Long.MAX_VALUE))) {
-                throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.illegalValue(value, parameterName)));
+                throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.illegalValue(value, parameterName));
             }
         }
     };
@@ -52,7 +52,7 @@ public interface InfiniteOrPositiveValidators {
             super.validateParameter(parameterName, value);
             int val = value.asInt();
             if (!(val == -1 || (val > 0 && val < Integer.MAX_VALUE))) {
-                throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.illegalValue(value, parameterName)));
+                throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.illegalValue(value, parameterName));
             }
         }
     };

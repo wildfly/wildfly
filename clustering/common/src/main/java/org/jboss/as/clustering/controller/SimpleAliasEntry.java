@@ -41,7 +41,7 @@ public class SimpleAliasEntry extends AliasEntry {
     }
 
     @Override
-    public PathAddress convertToTargetAddress(PathAddress address) {
+    public PathAddress convertToTargetAddress(PathAddress address, AliasContext aliasContext) {
         PathAddress target = this.getTargetAddress();
         List<PathElement> result = new ArrayList<>(address.size());
         for (int i = 0; i < address.size(); ++i) {

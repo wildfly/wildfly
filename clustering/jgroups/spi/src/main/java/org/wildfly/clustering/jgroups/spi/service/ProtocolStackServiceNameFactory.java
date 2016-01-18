@@ -22,28 +22,17 @@
 package org.wildfly.clustering.jgroups.spi.service;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
 
 /**
  * Factory for creating service names for stack-based services
  * @author Paul Ferraro
  */
-public interface ProtocolStackServiceNameFactory {
+public interface ProtocolStackServiceNameFactory extends GroupServiceNameFactory {
 
     /**
-     * The alias for the default stack.
-     */
-    String DEFAULT_STACK = "default-stack";
-
-    /**
-     * Returns an appropriate service name for the default stack
-     * @return
+     * Returns an appropriate service name for the stack of the default channel
+     * @return {@link ServiceName} for the stack of the default channel
      */
     ServiceName getServiceName();
-
-    /**
-     * Returns an appropriate service name for the specified stack
-     * @param name the stack name
-     * @return
-     */
-    ServiceName getServiceName(String name);
 }

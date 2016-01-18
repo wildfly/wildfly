@@ -46,7 +46,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -178,7 +177,6 @@ public final class WSExtension implements Extension {
         }
 
         if (context.isRegisterTransformers()) {
-            registerTransformers1_1_0(subsystem);
             registerTransformers1_2_0(subsystem);
         }
     }
@@ -190,22 +188,6 @@ public final class WSExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_1.getUriString(), WSSubsystem11Reader.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_2.getUriString(), WSSubSystem12Reader.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_2_0.getUriString(), WSSubSystem20Reader.getInstance());
-    }
-
-    private void registerTransformers1_1_0(SubsystemRegistration registration) {
-        ModelVersion version = ModelVersion.create(1, 1, 0);
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.STATISTICS_ENABLED);
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.SUBSYSTEM_ATTRIBUTES).end();
-        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.WSDL_URI_SCHEME);
-        builder.rejectChildResource(CLIENT_CONFIG_PATH);
-
-        ResourceTransformationDescriptionBuilder endpoint = builder.addChildResource(ENDPOINT_CONFIG_PATH);
-        endpoint.addChildResource(PRE_HANDLER_CHAIN_PATH).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.PROTOCOL_BINDINGS).end();
-        endpoint.addChildResource(POST_HANDLER_CHAIN_PATH).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.PROTOCOL_BINDINGS).end();
-
-        TransformationDescription.Tools.register(builder.build(), registration, version);
     }
 
     private void registerTransformers1_2_0(SubsystemRegistration registration) {

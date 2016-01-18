@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import javax.servlet.ServletContext;
+
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -28,17 +30,19 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.SessionContext;
+import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * Configuration for an {@link InfinispanSessionManager}.
  * @author Paul Ferraro
  */
 public interface InfinispanSessionManagerConfiguration {
-    SessionContext getSessionContext();
-    Cache<String, ?> getCache();
+    ServletContext getServletContext();
+    SessionExpirationListener getExpirationListener();
+    Cache<Key<String>, ?> getCache();
     IdentifierFactory<String> getIdentifierFactory();
     Batcher<TransactionBatch> getBatcher();
     CommandDispatcherFactory getCommandDispatcherFactory();

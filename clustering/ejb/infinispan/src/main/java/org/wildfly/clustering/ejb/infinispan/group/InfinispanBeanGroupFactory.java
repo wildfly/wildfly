@@ -21,8 +21,7 @@
  */
 package org.wildfly.clustering.ejb.infinispan.group;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -32,8 +31,8 @@ import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupFactory;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.marshalling.MarshalledValueFactory;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
 /**
  * Encapsulates the cache mapping strategy of a bean group.
@@ -58,10 +57,7 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
 
     @Override
     public BeanGroupEntry<I, T> createValue(G id, Void context) {
-        Map<I, T> beans = new HashMap<>();
-        BeanGroupEntry<I, T> entry = new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(beans));
-        BeanGroupEntry<I, T> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(id, entry);
-        return (existing != null) ? existing : entry;
+        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(id, key -> new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(new ConcurrentHashMap<>())));
     }
 
     @Override
@@ -79,8 +75,9 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
     }
 
     @Override
-    public void remove(G id) {
+    public boolean remove(G id) {
         this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(id);
+        return true;
     }
 
     @Override

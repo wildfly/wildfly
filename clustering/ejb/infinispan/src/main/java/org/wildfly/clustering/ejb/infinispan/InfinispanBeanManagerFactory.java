@@ -25,7 +25,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -42,10 +41,10 @@ import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanFactory;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupFactory;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.MarshalledValueFactory;
-import org.wildfly.clustering.marshalling.MarshallingContext;
-import org.wildfly.clustering.marshalling.SimpleMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.SimpleMarshallingContextFactory;
+import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.registry.Registry;
 
 /**
@@ -67,7 +66,7 @@ public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory
 
     @Override
     public BeanManager<G, I, T, TransactionBatch> createBeanManager(final IdentifierFactory<G> groupIdentifierFactory, final IdentifierFactory<I> beanIdentifierFactory, final PassivationListener<T> passivationListener, final RemoveListener<T> removeListener) {
-        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.configuration.getMarshallingConfiguration(), this.configuration.getBeanContext().getClassLoader());
+        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
         Cache<G, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
         org.infinispan.configuration.cache.Configuration config = groupCache.getCacheConfiguration();
@@ -82,7 +81,7 @@ public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory
         final boolean passivationEnabled = evictionAllowed && config.persistence().passivation();
         final boolean persistent = config.clustering().cacheMode().isClustered() || (evictionAllowed && !passivationEnabled);
         boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && (config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ);
-        BeanFactory<G, I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, lockOnRead ? beanCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : beanCache, this.configuration.getBeanContext().getTimeout(), persistent ? passivationListener : null);
+        BeanFactory<G, I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, lockOnRead, this.configuration.getBeanContext().getTimeout(), persistent ? passivationListener : null);
         Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory, beanIdentifierFactory);
         final NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
         final Registry<String, ?> registry = this.configuration.getRegistry();

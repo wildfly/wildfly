@@ -23,8 +23,9 @@
 package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JDBC_STORE_DATASOURCE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
-import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
 
 import java.util.LinkedList;
@@ -105,9 +106,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
 
     private TransactionSubsystemAdd() {
-        //
+        super(TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY);
     }
-
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -121,13 +121,15 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         TransactionSubsystemRootResourceDefinition.JTS.validateAndSet(operation, model);
 
-        TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.validateAndSet(operation, model);
+        validateStoreConfig(operation, model);
+
+        TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE.validateAndSet(operation, model);
 
         for (AttributeDefinition ad : TransactionSubsystemRootResourceDefinition.attributes_1_2) {
             ad.validateAndSet(operation, model);
         }
 
-        TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.validateAndSet(operation, model);
     }
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
@@ -189,6 +191,17 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionSubsystemRootResourceDefinition.BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.STATUS_BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateAndSet(operation, model);
+    }
+
+    private void validateStoreConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
+        if (operation.hasDefined(USE_JDBC_STORE) && operation.get(USE_JDBC_STORE).asBoolean()
+                && operation.hasDefined(USE_JOURNAL_STORE) && operation.get(USE_JOURNAL_STORE).asBoolean()) {
+            throw TransactionLogger.ROOT_LOGGER.onlyOneCanBeTrue(USE_JDBC_STORE, USE_JOURNAL_STORE);
+        }
+        if (operation.hasDefined(USE_JDBC_STORE) && operation.get(USE_JDBC_STORE).asBoolean()
+                && !operation.hasDefined(JDBC_STORE_DATASOURCE)) {
+            throw TransactionLogger.ROOT_LOGGER.mustBeDefinedIfTrue(JDBC_STORE_DATASOURCE, USE_JDBC_STORE);
+        }
     }
 
     @Override
@@ -303,8 +316,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private void performObjectStoreBoottime(OperationContext context, ModelNode model) throws OperationFailedException {
-        boolean useHornetqJournalStore = model.hasDefined(USEHORNETQSTORE) && model.get(USEHORNETQSTORE).asBoolean();
-        final boolean enableAsyncIO = TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.resolveModelAttribute(context, model).asBoolean();
+        boolean useJournalStore = model.hasDefined(USE_JOURNAL_STORE) && model.get(USE_JOURNAL_STORE).asBoolean();
+        final boolean enableAsyncIO = TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.resolveModelAttribute(context, model).asBoolean();
         final String objectStorePathRef = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, model).asString();
         final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.resolveModelAttribute(context, model).asString();
 
@@ -328,7 +341,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
-        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
+        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
         ServiceBuilder<Void> builder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);

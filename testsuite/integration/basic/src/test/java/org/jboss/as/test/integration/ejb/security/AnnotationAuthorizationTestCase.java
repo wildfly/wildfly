@@ -65,17 +65,18 @@ public class AnnotationAuthorizationTestCase {
 
     @Deployment
     public static Archive<?> runAsDeployment() {
+        final Package currentPackage = AnnotationAuthorizationTestCase.class.getPackage();
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(RolesAllowedOverrideBean.class.getPackage()).addClass(Util.class)
                 .addClasses(AnnotationAuthorizationTestCase.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-                .addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "roles.properties", "roles.properties")
-                .addAsWebInfResource(AnnotationAuthorizationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
-                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
+                .addAsResource(currentPackage, "users.properties", "users.properties")
+                .addAsResource(currentPackage, "roles.properties", "roles.properties")
+                .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml")
+                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
-        log.info(war.toString(true));
         return war;
     }
 

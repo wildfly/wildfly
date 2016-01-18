@@ -85,6 +85,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
     /*
      * Tests access to local cache attributes
      */
+    @SuppressWarnings("deprecation")
     @Test
     public void testDistributedCacheMixedJDBCStoreReadWriteOperation() throws Exception {
 
@@ -97,7 +98,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // read the distributed cache mixed-keyed-jdbc-store datasource attribute
         ModelNode result = servicesA.executeOperation(getMixedKeyedJDBCCacheStoreReadOperation("maximal", DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist", JDBCStoreResourceDefinition.Attribute.DATA_SOURCE));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("java:jboss/jdbc/store", result.get(RESULT).asString());
+        Assert.assertEquals("ExampleDS", result.get(RESULT).asString());
 
         // write the batching attribute
         result = servicesA.executeOperation(getMixedKeyedJDBCCacheStoreWriteOperation("maximal", DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist", JDBCStoreResourceDefinition.Attribute.DATA_SOURCE, "new-datasource"));
@@ -141,6 +142,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         return stringKeyedTable;
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testStoreProperties() throws Exception {
         KernelServices services = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();

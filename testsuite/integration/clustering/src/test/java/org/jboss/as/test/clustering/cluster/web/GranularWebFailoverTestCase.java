@@ -60,7 +60,6 @@ public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCas
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_granular.xml", "jboss-web.xml");
-        log.info(war.toString(true));
         return war;
     }
 }

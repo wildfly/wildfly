@@ -1,0 +1,50 @@
+<!--
+  ~ Copyright 2015 Red Hat, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:ee:4.0">
+    <global-modules>
+        <module name="org.jboss.logging" slot="main"/>
+        <module name="org.apache.log4j" annotations="true" meta-inf="true" services="false"/>
+    </global-modules>
+    <ear-subdeployments-isolated>${test-exp:true}</ear-subdeployments-isolated>
+    <spec-descriptor-property-replacement>${test-exp1:false}</spec-descriptor-property-replacement>
+    <jboss-descriptor-property-replacement>${test-exp2:false}</jboss-descriptor-property-replacement>
+    <annotation-property-replacement>${test-exp2:false}</annotation-property-replacement>
+    <concurrent>
+        <context-services>
+            <context-service name="default" jndi-name="java:jboss/ee/concurrency/context/default" use-transaction-setup-provider="true"/>
+        </context-services>
+        <managed-thread-factories>
+            <managed-thread-factory name="default" jndi-name="java:jboss/ee/concurrency/factory/default"
+                                    context-service="default"/>
+        </managed-thread-factories>
+        <managed-executor-services>
+            <managed-executor-service name="default" jndi-name="java:jboss/ee/concurrency/executor/default"
+                                      context-service="default" hung-task-threshold="60000" keepalive-time="5000"/>
+        </managed-executor-services>
+        <managed-scheduled-executor-services>
+            <managed-scheduled-executor-service name="default" jndi-name="java:jboss/ee/concurrency/scheduler/default"
+                                                context-service="default" hung-task-threshold="60000"
+                                                keepalive-time="3000"/>
+        </managed-scheduled-executor-services>
+    </concurrent>
+    <default-bindings context-service="${test-exp14:name}"
+                      datasource="${test-exp15:name}"
+                      jms-connection-factory="${test-exp16:name}"
+                      managed-executor-service="${test-exp17:name}"
+                      managed-scheduled-executor-service="${test-exp18:name}"
+                      managed-thread-factory="${test-exp19:name}"/>
+</subsystem>

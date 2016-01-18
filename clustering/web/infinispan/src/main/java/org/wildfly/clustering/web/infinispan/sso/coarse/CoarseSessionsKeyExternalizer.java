@@ -22,30 +22,15 @@
 
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 
 /**
  * Externalizer for {@link CoarseSessionsKey}.
  * @author Paul Ferraro
  */
-public class CoarseSessionsKeyExternalizer extends AbstractSimpleExternalizer<CoarseSessionsKey> {
-    private static final long serialVersionUID = 6459527251742494111L;
+public class CoarseSessionsKeyExternalizer extends SessionKeyExternalizer<CoarseSessionsKey> {
 
     public CoarseSessionsKeyExternalizer() {
-        super(CoarseSessionsKey.class);
-    }
-
-    @Override
-    public void writeObject(ObjectOutput output, CoarseSessionsKey key) throws IOException {
-        output.writeUTF(key.toString());
-    }
-
-    @Override
-    public CoarseSessionsKey readObject(ObjectInput input) throws IOException {
-        return new CoarseSessionsKey(input.readUTF());
+        super(CoarseSessionsKey.class, CoarseSessionsKey::new);
     }
 }

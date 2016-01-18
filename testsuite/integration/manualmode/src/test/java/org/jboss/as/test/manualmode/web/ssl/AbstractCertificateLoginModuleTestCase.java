@@ -26,6 +26,7 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
 import static org.jboss.as.test.integration.security.common.Utils.makeCallWithHttpClient;
 import static org.junit.Assert.assertEquals;
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
 
 import java.io.File;
 import java.io.IOException;
@@ -192,6 +193,8 @@ public abstract class AbstractCertificateLoginModuleTestCase {
             operation.get("keystore-path").set(SERVER_KEYSTORE_FILE.getAbsolutePath());
             operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
             Utils.applyUpdate(operation, client);
+
+            executeReloadAndWaitForCompletion(client, 100000);
 
             operation = createOpNode("subsystem=undertow/server=default-server/https-listener=https", ModelDescriptionConstants.ADD);
             operation.get("socket-binding").set("https");

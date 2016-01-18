@@ -29,6 +29,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.platform.PlatformImpl;
+import org.jboss.as.jpa.processor.HibernateSearchProcessor;
 import org.jboss.as.jpa.processor.JPAAnnotationProcessor;
 import org.jboss.as.jpa.processor.JPAClassFileTransformerProcessor;
 import org.jboss.as.jpa.processor.JPADependencyProcessor;
@@ -101,6 +102,8 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_PERSISTENCE_ANNOTATION, new JPAAnnotationProcessor());
                 // injects JPA dependencies into an application
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
+                // Inject Hibernate Search dependencies into an application
+                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES,Phase.DEPENDENCIES_HIBERNATE_SEARCH , new HibernateSearchProcessor());
 
                 // handle ClassFileTransformer
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.FIRST_MODULE_USE, Phase.FIRST_MODULE_USE_PERSISTENCE_CLASS_FILE_TRANSFORMER, new JPAClassFileTransformerProcessor());

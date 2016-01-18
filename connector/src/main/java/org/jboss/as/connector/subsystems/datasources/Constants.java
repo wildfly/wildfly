@@ -120,6 +120,10 @@ public class Constants {
 
     private static final String CONNECTABLE_NAME = "connectable";
 
+    private static final String MCP_NAME = "mcp";
+
+    private static final String ENLISTMENT_TRACE_NAME = "enlistment-trace";
+
     private static final String TRACKING_NAME = "tracking";
 
     static final String POOLNAME_NAME = "pool-name";
@@ -223,17 +227,21 @@ public class Constants {
             .build();
 
     static final SimpleAttributeDefinition MODULE_SLOT = SimpleAttributeDefinitionBuilder.create("module-slot", ModelType.STRING)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setAllowNull(true)
             .build();
 
     static final SimpleAttributeDefinition JDBC_COMPLIANT = SimpleAttributeDefinitionBuilder.create("jdbc-compliant", ModelType.BOOLEAN)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition PROFILE = SimpleAttributeDefinitionBuilder.create("profile", ModelType.STRING)
                 .setAllowNull(true)
-                .build();
+                .setAllowExpression(true)
+                .setDeprecated(ModelVersion.create(4, 0, 0))
+            .build();
 
     public static final String STATISTICS = "statistics";
 
@@ -323,7 +331,7 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
             .setAllowNull(true)
-            .setDeprecated(ModelVersion.create(3))
+            .setDeprecated(ModelVersion.create(3), false)
             .build();
 
     static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
@@ -331,6 +339,20 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
             .setAllowNull(true)
+            .build();
+
+    static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
+            .setXmlName(DataSource.Attribute.ENLISTMENT_TRACE.getLocalName())
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowNull(true)
+            .build();
+
+    static SimpleAttributeDefinition MCP = new SimpleAttributeDefinitionBuilder(MCP_NAME, ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreConcurrentLinkedDequeManagedConnectionPool.class.getName()))
+            .setXmlName(DataSource.Attribute.MCP.getLocalName())
             .build();
 
     static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
@@ -417,7 +439,7 @@ public class Constants {
     static SimpleAttributeDefinition ALLOW_MULTIPLE_USERS = new SimpleAttributeDefinitionBuilder(ALLOW_MULTIPLE_USERS_NAME, ModelType.BOOLEAN, true)
             .setXmlName(DsPool.Tag.ALLOW_MULTIPLE_USERS.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.ALLOW_MULTIPLE_USERS))
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition CONNECTION_LISTENER_CLASS = new SimpleAttributeDefinitionBuilder(CONNECTION_LISTENER_CLASS_NAME, ModelType.STRING)
@@ -576,7 +598,8 @@ public class Constants {
             URL_SELECTOR_STRATEGY_CLASS_NAME, USE_JAVA_CONTEXT,
             JTA, org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE,
             org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
             USERNAME, PASSWORD, SECURITY_DOMAIN,
             REAUTH_PLUGIN_CLASSNAME,
@@ -600,14 +623,13 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, SPY,
-            USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING};
+            USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING, MCP, ENLISTMENT_TRACE};
 
     static final PropertiesAttributeDefinition[] DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,
             EXCEPTION_SORTER_PROPERTIES,
             STALE_CONNECTION_CHECKER_PROPERTIES,
             VALID_CONNECTION_CHECKER_PROPERTIES, CONNECTION_LISTENER_PROPERTIES,
-            CONNECTION_PROPERTIES,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
 
     };
@@ -656,7 +678,8 @@ public class Constants {
             NEW_CONNECTION_SQL, URL_DELIMITER,
             URL_SELECTOR_STRATEGY_CLASS_NAME, USE_JAVA_CONTEXT,
             org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN, INTERLEAVING,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN, INTERLEAVING,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
             NO_TX_SEPARATE_POOL, PAD_XID, SAME_RM_OVERRIDE,
             WRAP_XA_RESOURCE, USERNAME, PASSWORD,
@@ -676,7 +699,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, XA_RESOURCE_TIMEOUT,
-            SPY, USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING,
+            SPY, USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING, MCP, ENLISTMENT_TRACE,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME,
             NO_RECOVERY, URL_PROPERTY};
@@ -708,7 +731,7 @@ public class Constants {
 
     static final SimpleAttributeDefinition DRIVER_MODULE_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_MODULE_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Attribute.MODULE.getLocalName())
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition DRIVER_MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(DRIVER_MAJOR_VERSION_NAME, ModelType.INT)
@@ -726,7 +749,7 @@ public class Constants {
     static final SimpleAttributeDefinition DRIVER_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_CLASS_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Tag.DRIVER_CLASS.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition DRIVER_DATASOURCE_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_DATASOURCE_CLASS_NAME_NAME, ModelType.STRING)
@@ -739,7 +762,7 @@ public class Constants {
     static final SimpleAttributeDefinition DRIVER_XA_DATASOURCE_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_XA_DATASOURCE_CLASS_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Tag.XA_DATASOURCE_CLASS.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition[] JDBC_DRIVER_ATTRIBUTES = {

@@ -1,8 +1,28 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2015, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.io.IOException;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
@@ -22,7 +42,7 @@ import org.jboss.dmr.ModelNode;
 */
 public class OperationTestCaseBase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = JGroupsSchema.CURRENT.format("subsystem-jgroups-%d_%d.xml");
+    static final String SUBSYSTEM_XML_FILE = String.format("subsystem-jgroups-%d_%d.xml", JGroupsSchema.CURRENT.major(), JGroupsSchema.CURRENT.minor());
 
     public OperationTestCaseBase() {
         super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension());
@@ -68,6 +88,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Util.createAddOperation(getTransportAddress(stackName, protocol));
     }
 
+    protected static ModelNode getLegacyTransportAddOperation(String stackName, String protocol) {
+        ModelNode op = Util.createAddOperation(getLegacyTransportAddress(stackName));
+        op.get("type").set(protocol);
+        return op;
+    }
+
     protected static ModelNode getTransportAddOperationWithProperties(String stackName, String type) {
         ModelNode[] operations = new ModelNode[] {
                 getTransportAddOperation(stackName, type),
@@ -79,6 +105,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getTransportRemoveOperation(String stackName, String type) {
         return Util.createRemoveOperation(getTransportAddress(stackName, type));
+    }
+
+    protected static ModelNode getLegacyTransportRemoveOperation(String stackName) {
+        return Util.createRemoveOperation(getLegacyTransportAddress(stackName));
     }
 
     protected static ModelNode getTransportReadOperation(String stackName, String type, Attribute attribute) {
@@ -107,6 +137,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createWriteAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), new SimpleAttribute(PropertyResourceDefinition.VALUE), new ModelNode(propertyValue));
     }
 
+    // Transport property map operations
     protected static ModelNode getTransportGetPropertyOperation(String stackName, String type, String propertyName) {
         return Operations.createMapGetOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
@@ -119,6 +150,28 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapRemoveOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
 
+    protected static ModelNode getTransportClearPropertiesOperation(String stackName, String type) {
+        return Operations.createMapClearOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    }
+
+    protected static ModelNode getTransportUndefinePropertiesOperation(String stackName, String type) {
+        return Operations.createUndefineAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    }
+
+    /**
+     * Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d})".
+     *
+     * @return resulting :write-attribute operation
+     */
+    protected static ModelNode getTransportSetPropertiesOperation(String stackName, String type, ModelNode values) {
+        return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), ProtocolResourceDefinition.Attribute.PROPERTIES, values);
+    }
+
+    protected static ModelNode getLegacyThreadPoolAddOperation(String stackName, String threadPoolName) {
+        return Util.createAddOperation(getLegacyTransportAddress(stackName).append("thread-pool", threadPoolName));
+    }
+
+    // Protocol operations
     protected static ModelNode getProtocolAddOperation(String stackName, String type) {
         return Util.createAddOperation(getProtocolAddress(stackName, type));
     }
@@ -170,6 +223,21 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createMapRemoveOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES, propertyName);
     }
 
+    protected static ModelNode getProtocolClearPropertiesOperation(String stackName, String protocolName) {
+        return Operations.createMapClearOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    }
+
+    protected static ModelNode getProtocolUndefinePropertiesOperation(String stackName, String protocolName) {
+        return Operations.createUndefineAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES);
+    }
+
+    /**
+     * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
+     */
+    protected static ModelNode getProtocolSetPropertiesOperation(String stackName, String protocolName, ModelNode values) {
+        return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolResourceDefinition.Attribute.PROPERTIES, values);
+    }
+
     protected static ModelNode getProtocolRemoveOperation(String stackName, String type) {
         return Util.createRemoveOperation(getProtocolAddress(stackName, type));
     }
@@ -184,6 +252,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static PathAddress getTransportAddress(String stackName, String type) {
         return getProtocolStackAddress(stackName).append(TransportResourceDefinition.pathElement(type));
+    }
+
+    protected static PathAddress getLegacyTransportAddress(String stackName) {
+        return getProtocolStackAddress(stackName).append(TransportResourceDefinition.LEGACY_PATH);
     }
 
     protected static PathAddress getTransportPropertyAddress(String stackName, String type, String propertyName) {
@@ -205,4 +277,5 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     protected KernelServices buildKernelServices() throws Exception {
         return createKernelServicesBuilder(new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
     }
+
 }

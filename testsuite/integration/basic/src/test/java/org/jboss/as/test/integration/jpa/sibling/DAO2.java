@@ -56,13 +56,13 @@ public class DAO2 {
      */
     @PostConstruct
     public void postconstruct() {
-        System.out.println("DAO2 PostConstruct occurred for " + this.toString() +", current thread=" + Thread.currentThread().getName() +", all dependency injection has been performed.");
+        //System.out.println("DAO2 PostConstruct occurred for " + this.toString() +", current thread=" + Thread.currentThread().getName() +", all dependency injection has been performed.");
     }
 
     public void myFunction() {
-        System.out.println("DAO2 myfunction entered");
+        //System.out.println("DAO2 myfunction entered");
         em.find(Employee.class, 123);
-        System.out.println("DAO2 myfunction returning");
+        //System.out.println("DAO2 myfunction returning");
     }
 
 }

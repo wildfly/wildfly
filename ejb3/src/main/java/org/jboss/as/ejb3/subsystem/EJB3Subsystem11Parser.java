@@ -224,7 +224,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
         }
     }
 
-    private void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    protected void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String poolName = null;
         Integer maxPoolSize = null;

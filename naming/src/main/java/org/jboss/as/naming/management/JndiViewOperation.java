@@ -116,7 +116,6 @@ public class JndiViewOperation implements OperationStepHandler {
         } else {
             throw new OperationFailedException(NamingLogger.ROOT_LOGGER.jndiViewNotAvailable());
         }
-        context.stepCompleted();
     }
 
     private void addEntries(final ModelNode current, final Context context) throws NamingException {

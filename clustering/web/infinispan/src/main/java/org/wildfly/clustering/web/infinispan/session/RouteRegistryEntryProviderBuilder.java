@@ -51,7 +51,7 @@ public class RouteRegistryEntryProviderBuilder implements Builder<RegistryEntryP
 
     @Override
     public ServiceName getServiceName() {
-        return CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER);
+        return CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, RouteCacheGroupBuilderProvider.CACHE_NAME);
     }
 
     @Override

@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.marshalling.ClassTableContributor;
+import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
  * ClassTable contributor for the marshaller of a {@link CommandDispatcher}.

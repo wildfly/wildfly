@@ -111,7 +111,8 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
         super(MessagingExtension.ROLE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SECURITY_ROLE),
                 runtimeOnly ? null : SecurityRoleAdd.INSTANCE,
-                runtimeOnly ? null : SecurityRoleRemove.INSTANCE);
+                runtimeOnly ? null : SecurityRoleRemove.INSTANCE,
+                runtimeOnly);
         this.runtimeOnly = runtimeOnly;
     }
 

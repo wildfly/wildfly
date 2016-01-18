@@ -95,6 +95,9 @@ public interface InfinispanLogger extends BasicLogger {
                 "; use the same attribute specified on the 'transport' element of corresponding JGroups stack instead")
     void topologyAttributeDeprecated(String attribute);
 
+    @Message(id = 6, value = "Failed to locate a data source bound to %s")
+    OperationFailedException dataSourceJndiNameNotFound(String jndiName);
+
     /**
      * Creates an exception indicating a failure to resolve the outbound socket binding represented by the
      * {@code binding} parameter.
@@ -120,4 +123,7 @@ public interface InfinispanLogger extends BasicLogger {
 
     @Message(id = 27, value = "Could not determine 'stack' attribute from JGroups subsystem")
     String indeterminiteStack();
+
+    @Message(id = 28, value = "Executor configuration '%s' was deprecated and will only be used to support legacy slaves in the domain.")
+    String executorIgnored(String executorName);
 }

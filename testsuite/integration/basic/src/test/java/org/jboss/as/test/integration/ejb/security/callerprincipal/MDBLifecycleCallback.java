@@ -109,7 +109,7 @@ public class MDBLifecycleCallback implements MessageDrivenBean, MessageListener 
     }
 
     public void onMessage(Message message) {
-        log.info("onMessage received msg: " + message.toString());
+        //log.info("onMessage received msg: " + message.toString());
         try {
             try {
                 sendReply((Queue) message.getJMSReplyTo(), message.getJMSMessageID(), null);

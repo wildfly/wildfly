@@ -50,7 +50,7 @@ import org.jboss.wsf.spi.invocation.Invocation;
  */
 abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.AbstractInvocationHandler {
 
-   private ServiceName componentViewName;
+   private volatile ServiceName componentViewName;
    private volatile ComponentView componentView;
    protected volatile ManagedReference reference;
 
@@ -63,33 +63,36 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
        componentViewName = (ServiceName) endpoint.getProperty(COMPONENT_VIEW_NAME);
    }
 
-   /**
-    * Gets endpoint container lazily.
-    *
-    * @return endpoint container
-    */
-   protected ComponentView getComponentView() {
-       // we need to check both, otherwise it is possible for
-       // componentView to be initialized before reference
-      if (componentView == null) {
-         synchronized(this) {
-            if (componentView == null) {
-               componentView = getMSCService(componentViewName, ComponentView.class);
-               if (componentView == null) {
-                  throw WSLogger.ROOT_LOGGER.cannotFindComponentView(componentViewName);
-               }
-               if (reference == null) {
-                  try {
-                      reference = componentView.createInstance();
-                  } catch (Exception e) {
-                      throw new RuntimeException(e);
-                  }
-               }
+    /**
+     * Gets endpoint container lazily.
+     *
+     * @return endpoint container
+     */
+    protected ComponentView getComponentView() {
+        ComponentView cv = componentView;
+        // we need to check both, otherwise it is possible for
+        // componentView to be initialized before reference
+        if (cv == null) {
+            synchronized (this) {
+                cv = componentView;
+                if (cv == null) {
+                    cv = getMSCService(componentViewName, ComponentView.class);
+                    if (cv == null) {
+                        throw WSLogger.ROOT_LOGGER.cannotFindComponentView(componentViewName);
+                    }
+                    if (reference == null) {
+                        try {
+                            reference = cv.createInstance();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    componentView = cv;
+                }
             }
-         }
-      }
-      return componentView;
-   }
+        }
+        return cv;
+    }
 
    /**
     * Invokes WS endpoint.
@@ -105,10 +108,9 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
          // prepare invocation data
          final ComponentView componentView = getComponentView();
          Component component = componentView.getComponent();
-         //for spring integration and @FactoryType is annotated we don't need to go into ee's interceptors
-         if(wsInvocation.getInvocationContext().getTargetBean() != null
-                 && (endpoint.getProperty("SpringBus") != null)
-                 || wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null) {
+         //in case of @FactoryType annotation we don't need to go into EE interceptors
+         final boolean forceTargetBean = (wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null);
+         if (forceTargetBean) {
              this.reference = new ManagedReference() {
                  public void release() {
                  }
@@ -128,7 +130,7 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
          context.setParameters(wsInvocation.getArgs());
          context.putPrivateData(Component.class, component);
          context.putPrivateData(ComponentView.class, componentView);
-         if(wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null) {
+         if(forceTargetBean) {
              context.putPrivateData(ManagedReference.class, reference);
          }
          // invoke method

@@ -114,13 +114,13 @@ public class StatefulUnitTestCase {
     @Test
     public void testStateful() throws Exception {
         StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
-        System.out.println("Before DOIT testStateful");
+        //System.out.println("Before DOIT testStateful");
         int id = remote.doit();
-        System.out.println("After DOIT testStateful");
+        //System.out.println("After DOIT testStateful");
         ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
         Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
         remote.find(id);
-        System.out.println("After find testStateful");
+        //System.out.println("After find testStateful");
     }
 
     @Test

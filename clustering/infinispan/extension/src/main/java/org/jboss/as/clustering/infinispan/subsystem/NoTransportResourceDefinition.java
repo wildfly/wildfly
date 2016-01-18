@@ -46,15 +46,12 @@ public class NoTransportResourceDefinition extends TransportResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
         ResourceServiceHandler handler = new NoTransportServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

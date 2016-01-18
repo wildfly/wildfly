@@ -21,9 +21,9 @@
  */
 package org.wildfly.clustering.web.session;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
@@ -35,14 +35,16 @@ import javax.servlet.http.HttpSession;
 public class ImmutableHttpSessionAdapter implements HttpSession {
 
     private final ImmutableSession session;
+    private final ServletContext context;
 
-    public ImmutableHttpSessionAdapter(ImmutableSession session) {
+    public ImmutableHttpSessionAdapter(ImmutableSession session, ServletContext context) {
         this.session = session;
+        this.context = context;
     }
 
     @Override
     public long getCreationTime() {
-        return this.session.getMetaData().getCreationTime().getTime();
+        return this.session.getMetaData().getCreationTime().toEpochMilli();
     }
 
     @Override
@@ -52,12 +54,12 @@ public class ImmutableHttpSessionAdapter implements HttpSession {
 
     @Override
     public long getLastAccessedTime() {
-        return this.session.getMetaData().getLastAccessedTime().getTime();
+        return this.session.getMetaData().getLastAccessedTime().toEpochMilli();
     }
 
     @Override
     public ServletContext getServletContext() {
-        return this.session.getContext().getServletContext();
+        return this.context;
     }
 
     @Override
@@ -67,7 +69,7 @@ public class ImmutableHttpSessionAdapter implements HttpSession {
 
     @Override
     public int getMaxInactiveInterval() {
-        return (int) this.session.getMetaData().getMaxInactiveInterval(TimeUnit.SECONDS);
+        return (int) this.session.getMetaData().getMaxInactiveInterval().get(ChronoUnit.SECONDS);
     }
 
     @Override

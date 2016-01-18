@@ -78,7 +78,7 @@ public class MessageDestinationTestCase {
     @Deployment
     public static Archive getDeployment() {
 
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MessageDestinationTestCase.jar");
         ejbJar.addPackage(MessageDestinationTestCase.class.getPackage());
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClass(JmsQueueSetup.class);

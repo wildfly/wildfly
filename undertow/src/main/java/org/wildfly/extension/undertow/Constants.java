@@ -82,6 +82,7 @@ public interface Constants {
     String FILE = "file";
     String FILE_ENCODING = "file-encoding";
     String GENERATE_STRINGS_AS_CHAR_ARRAYS = "generate-strings-as-char-arrays";
+    String OPTIMIZE_SCRIPTLETS = "optimize-scriptlets";
     String JAVA_ENCODING = "java-encoding";
     String JSP_CONFIGURATION = "jsp-configuration";
     String KEEP_GENERATED = "keep-generated";
@@ -210,4 +211,12 @@ public interface Constants {
     String URI = "uri";
     String ALIASES = "aliases";
     String ELECTED = "elected";
+    String PROACTIVE_AUTHENTICATION = "proactive-authentication";
+    String SESSION_ID_LENGTH = "session-id-length";
+    String EXTENDED = "extended";
+    String MAX_BUFFERED_REQUEST_SIZE = "max-buffered-request-size";
+    String MAX_SESSIONS = "max-sessions";
+    String USER_AGENTS = "user-agents";
+    String SESSION_TIMEOUT = "session-timeout";
+    String CRAWLER_SESSION_MANAGEMENT = "crawler-session-management";
 }

@@ -23,14 +23,10 @@
 package org.jboss.as.messaging.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
-import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Model Fixers for messaging extension.
@@ -38,16 +34,6 @@ import org.jboss.dmr.Property;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
 public class ModelFixers {
-    static final ModelFixer FIXER_EAP_6_1_0 = new ModelFixer() {
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            for (Property property : modelNode.get(HORNETQ_SERVER).asPropertyList()) {
-                modelNode.get(HORNETQ_SERVER, property.getName()).remove(CLUSTERED.getName());
-            }
-            return modelNode;
-        }
-    };
-
     static final ModelFixer PATH_FIXER = new ModelFixer() {
         @Override
         public ModelNode fixModel(ModelNode modelNode) {
@@ -55,23 +41,10 @@ public class ModelFixers {
             // however for legacy version, they were only created if the path attributes were different from the defaults.
             // The 'empty' hornetq-server does not set any messaging's path so we discard them to "fix" the model and
             // compare the current and legacy versions
-            for (String serverWithDefaultPath  : new String[] {"empty", "stuff"}) {
+            for (String serverWithDefaultPath : new String[]{"empty", "stuff"}) {
                 if (modelNode.get(HORNETQ_SERVER).has(serverWithDefaultPath)) {
                     modelNode.get(HORNETQ_SERVER, serverWithDefaultPath, PATH).set(new ModelNode());
                 }
-            }
-            return modelNode;
-        }
-    };
-
-    static final ModelFixer AS7_1_FIXER = new ModelFixer() {
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            for (Property property : modelNode.get(HORNETQ_SERVER).asPropertyList()) {
-                modelNode.get(HORNETQ_SERVER, property.getName()).remove(CLUSTERED.getName());
-            }
-            if (modelNode.get(HORNETQ_SERVER).has("default")) {
-                modelNode.get(HORNETQ_SERVER, "default", BRIDGE, "bridge1").remove(FAILOVER_ON_SERVER_SHUTDOWN.getName());
             }
             return modelNode;
         }

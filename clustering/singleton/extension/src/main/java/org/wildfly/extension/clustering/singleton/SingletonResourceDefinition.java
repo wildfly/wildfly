@@ -24,24 +24,24 @@ package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.BoottimeAddStepHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelType;
 
 /**
  * Definition of the singleton deployer resource.
  * @author Paul Ferraro
  */
-public class SingletonResourceDefinition extends SimpleResourceDefinition {
+public class SingletonResourceDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME);
 
@@ -65,22 +65,16 @@ public class SingletonResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(SubsystemRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubsystemModel(this);
+
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SingletonServiceHandler();
         new BoottimeAddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
         new SingletonPolicyResourceDefinition().register(registration);
     }
 }

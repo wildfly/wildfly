@@ -36,11 +36,10 @@ import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -50,6 +49,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -85,19 +85,17 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        log.info(war.toString(true));
         return war;
     }
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
     public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IOException, URISyntaxException {
-        HttpClient client = HttpClients.createDefault();
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
         URI uri = SimpleServlet.createURI(baseURL);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -116,8 +114,6 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -127,12 +123,11 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
-        HttpClient client = HttpClients.createDefault();
 
         URI url1 = SimpleServlet.createURI(baseURL1);
         URI url2 = SimpleServlet.createURI(baseURL2);
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -154,9 +149,6 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
             waitForReplication(GRACE_TIME_TO_REPLICATE);
 
             // Now check on the 2nd server
-
-            // Note that this DOES rely on the fact that both servers are running on the "same" domain,
-            // which is '127.0.0.0'. Otherwise you will have to spoof cookies. @Rado
             response = client.execute(new HttpGet(url2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -173,8 +165,6 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -198,11 +188,9 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
         this.abstractGracefulServe(baseURL1, false);
     }
 
-    private void abstractGracefulServe(URL baseURL, boolean undeployOnly) throws URISyntaxException, ClientProtocolException, IOException, InterruptedException {
+    private void abstractGracefulServe(URL baseURL, boolean undeployOnly) throws URISyntaxException, IOException, InterruptedException {
 
-//        HttpClient client = HttpClients.custom().setConnectionManager(new PoolingHttpClientConnectionManager()).build();
-        HttpClient client = HttpClients.createDefault();
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             URI uri = SimpleServlet.createURI(baseURL);
 
             // Make sure a normal request will succeed
@@ -254,8 +242,6 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
                     HttpClientUtils.closeQuietly(response);
                 }
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 

@@ -200,6 +200,9 @@ public interface ConnectionFactoryAttributes {
                 .setAllowExpression(true)
                 .build();
 
+        AttributeDefinition PROTOCOL_MANAGER_FACTORY = SimpleAttributeDefinitionBuilder.create("protocol-manager-factory", STRING)
+                .setAllowNull(true)
+                .build();
 
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
                 .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_RECONNECT_ATTEMPTS))
@@ -261,6 +264,7 @@ public interface ConnectionFactoryAttributes {
                 create(CONFIRMATION_WINDOW_SIZE, "confirmationWindowSize", true),
                 create(PRODUCER_WINDOW_SIZE, "producerWindowSize", true),
                 create(PRODUCER_MAX_RATE, "producerMaxRate", true),
+                create(PROTOCOL_MANAGER_FACTORY, "protocolManagerFactoryStr", true),
                 create(COMPRESS_LARGE_MESSAGES, "compressLargeMessage", true),
                 create(CACHE_LARGE_MESSAGE_CLIENT, "cacheLargeMessagesClient", true),
                 create(CommonAttributes.MIN_LARGE_MESSAGE_SIZE, "minLargeMessageSize", true),
@@ -309,6 +313,13 @@ public interface ConnectionFactoryAttributes {
         String SETUP_INTERVAL_PROP_NAME = "setupInterval";
         String RECONNECT_ATTEMPTS_PROP_NAME = "reconnectAttempts";
 
+        SimpleAttributeDefinition ENLISTMENT_TRACE = SimpleAttributeDefinitionBuilder.create("enlistment-trace", BOOLEAN)
+                .setAllowNull(true)
+                .setAllowExpression(true)
+                // no default value, this boolean is undefined
+                .setRestartAllServices()
+                .build();
+
         SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("initial-connect-attempts", INT)
                 .setAllowNull(true)
                 .setAllowExpression(true)
@@ -327,6 +338,12 @@ public interface ConnectionFactoryAttributes {
                 .setAttributeGroup("inbound-config")
                 .setAllowNull(true)
                 .setAllowExpression(true)
+                .setRestartAllServices()
+                .build();
+
+        SimpleAttributeDefinition MANAGED_CONNECTION_POOL = SimpleAttributeDefinitionBuilder.create("managed-connection-pool", STRING)
+                .setAllowExpression(true)
+                .setAllowNull(true)
                 .setRestartAllServices()
                 .build();
 
@@ -425,6 +442,8 @@ public interface ConnectionFactoryAttributes {
                 create(TRANSACTION, null, false),
                 create(USER, "userName", true),
                 create(PASSWORD, "password", true),
+                create(MANAGED_CONNECTION_POOL, null, false),
+                create(ENLISTMENT_TRACE, null, false),
                 create(MIN_POOL_SIZE, null, false),
                 create(MAX_POOL_SIZE, null, false),
                 create(USE_AUTO_RECOVERY, "useAutoRecovery", true),

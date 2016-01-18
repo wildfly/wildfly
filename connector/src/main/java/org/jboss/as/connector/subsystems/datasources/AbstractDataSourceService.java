@@ -205,7 +205,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             if (deploymentMD.getResourceAdapter() != null) {
                 deploymentMD.getResourceAdapter().stop();
 
-                BootstrapContextCoordinator.getInstance().removeBootstrapContext(deploymentMD.getBootstrapContextIdentifier());
+                if (BootstrapContextCoordinator.getInstance() != null && deploymentMD.getBootstrapContextIdentifier() != null) {
+                    BootstrapContextCoordinator.getInstance().removeBootstrapContext(deploymentMD.getBootstrapContextIdentifier());
+                }
             }
 
             if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
@@ -306,21 +308,18 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         private final org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig;
         private final XaDataSource xaDataSourceConfig;
-        private final String profile;
 
-        public AS7DataSourceDeployer(XaDataSource xaDataSourceConfig, final String profile) {
+        public AS7DataSourceDeployer(XaDataSource xaDataSourceConfig) {
             super();
             this.xaDataSourceConfig = xaDataSourceConfig;
             this.dataSourceConfig = null;
-            this.profile = profile;
 
         }
 
-        public AS7DataSourceDeployer(org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig, final String profile) {
+        public AS7DataSourceDeployer(org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig) {
             super();
             this.dataSourceConfig = dataSourceConfig;
             this.xaDataSourceConfig = null;
-            this.profile = profile;
 
         }
 
@@ -336,7 +335,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 DataSources dataSources = null;
                 if (dataSourceConfig != null) {
                     String driverName = dataSourceConfig.getDriver();
-                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName, profile);
+                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
                     if (installedDriver != null) {
                         String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
                                 : null;
@@ -349,7 +348,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     dataSources = new DatasourcesImpl(Arrays.asList(dataSourceConfig), null, drivers);
                 } else if (xaDataSourceConfig != null) {
                     String driverName = xaDataSourceConfig.getDriver();
-                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName, profile);
+                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
                     if (installedDriver != null) {
                         String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
                                 : null;

@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.web.session;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 /**
  * Statistics for inactive sessions.
@@ -36,12 +36,12 @@ public interface InactiveSessionStatistics {
     long getExpiredSessionCount();
 
     /**
-     * @return The longest a session has been alive using the specified unit
+     * @return The longest a session has been alive, as a time duration
      */
-    long getMaxSessionLifetime(TimeUnit unit);
+    Duration getMaxSessionLifetime();
 
     /**
-     * @return The average session lifetime using the specified unit
+     * @return The average session lifetime, as a time duration
      */
-    long getMeanSessionLifetime(TimeUnit unit);
+    Duration getMeanSessionLifetime();
 }

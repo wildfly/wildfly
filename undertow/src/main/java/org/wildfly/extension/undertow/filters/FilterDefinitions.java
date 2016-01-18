@@ -29,8 +29,12 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.registry.AliasEntry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
@@ -41,7 +45,7 @@ public class FilterDefinitions extends PersistentResourceDefinition {
 
     public static final FilterDefinitions INSTANCE = new FilterDefinitions();
     private static List<? extends PersistentResourceDefinition> FILTERS = Collections.unmodifiableList(Arrays.asList(
-            ConnectionLimitHandler.INSTANCE,
+            RequestLimitHandler.INSTANCE,
             ResponseHeaderFilter.INSTANCE,
             GzipFilter.INSTANCE,
             ErrorPageDefinition.INSTANCE,
@@ -67,5 +71,21 @@ public class FilterDefinitions extends PersistentResourceDefinition {
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return FILTERS;
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+
+        PathElement targetPe = RequestLimitHandler.INSTANCE.getPathElement();
+        AliasEntry aliasEntry = new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(targetPe))) {
+            @Override
+            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
+                PathElement pe = aliasAddress.getLastElement();
+
+                return aliasAddress.getParent().append(PathElement.pathElement(targetPe.getKey(), pe.getValue()));
+            }
+        };
+        resourceRegistration.registerAlias(PathElement.pathElement("connection-limit"), aliasEntry);
     }
 }

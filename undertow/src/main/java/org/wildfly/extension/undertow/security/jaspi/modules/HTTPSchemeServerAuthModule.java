@@ -27,7 +27,7 @@ import io.undertow.security.api.SecurityContext;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
-import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
+import org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechanism;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -77,8 +77,8 @@ public class HTTPSchemeServerAuthModule implements ServerAuthModule {
     @Override
     public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject)
             throws AuthException {
-        HttpServerExchange exchange = (HttpServerExchange) messageInfo.getMap().get(JASPIAuthenticationMechanism.HTTP_SERVER_EXCHANGE_ATTACHMENT_KEY);
-        SecurityContext securityContext = (SecurityContext) messageInfo.getMap().get(JASPIAuthenticationMechanism.SECURITY_CONTEXT_ATTACHMENT_KEY);
+        HttpServerExchange exchange = (HttpServerExchange) messageInfo.getMap().get(JASPICAuthenticationMechanism.HTTP_SERVER_EXCHANGE_ATTACHMENT_KEY);
+        SecurityContext securityContext = (SecurityContext) messageInfo.getMap().get(JASPICAuthenticationMechanism.SECURITY_CONTEXT_ATTACHMENT_KEY);
         ServletRequestContext src = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
         List<AuthenticationMechanism> mechanisms = src.getDeployment().getAuthenticationMechanisms();
 
@@ -93,17 +93,23 @@ public class HTTPSchemeServerAuthModule implements ServerAuthModule {
                     break;
                 }
             }
+
             if (!success) {
-                for (AuthenticationMechanism mechanism : mechanisms) {
-                    AuthenticationMechanism.ChallengeResult challengeResult = mechanism.sendChallenge(exchange, securityContext);
-                    if (challengeResult.getDesiredResponseCode() != null) {
-                        exchange.setResponseCode(challengeResult.getDesiredResponseCode());
+                String mandatory = (String) messageInfo.getMap().get("javax.security.auth.message.MessagePolicy.isMandatory");
+                if(mandatory != null && mandatory.toLowerCase().equals("false")) {
+                    return SUCCESS;
+                } else {
+                    for (AuthenticationMechanism mechanism : mechanisms) {
+                        AuthenticationMechanism.ChallengeResult challengeResult = mechanism.sendChallenge(exchange, securityContext);
+                        if (challengeResult.getDesiredResponseCode() != null) {
+                            exchange.setResponseCode(challengeResult.getDesiredResponseCode());
+                        }
+                        if (exchange.isResponseComplete()) {
+                            break;
+                        }
                     }
-                    if(exchange.isResponseComplete()) {
-                        break;
-                    }
+                    return SEND_CONTINUE;
                 }
-                return SEND_CONTINUE;
             }
         } catch (Exception e) {
             UndertowLogger.ROOT_LOGGER.debug(e);

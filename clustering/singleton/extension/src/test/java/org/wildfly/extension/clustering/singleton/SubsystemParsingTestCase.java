@@ -50,7 +50,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     private final int expectedOperationCount;
 
     public SubsystemParsingTestCase(SingletonSchema schema, int expectedOperationCount) {
-        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), schema.format("subsystem-singleton-%d_%d.xml"));
+        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), String.format("subsystem-singleton-%d_%d.xml", schema.major(), schema.minor()));
         this.expectedOperationCount = expectedOperationCount;
     }
 

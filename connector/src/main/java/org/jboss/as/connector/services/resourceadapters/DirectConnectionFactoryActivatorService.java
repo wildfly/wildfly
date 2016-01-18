@@ -202,11 +202,11 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
             if (transactionSupport == TransactionSupport.TransactionSupportLevel.XATransaction) {
                 pool = new XaPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : minPoolSize, Defaults.INITIAL_POOL_SIZE, maxPoolSize < 0 ? Defaults.MAX_POOL_SIZE : maxPoolSize,
                         Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY,
-                        null, Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
+                        null, Defaults.FAIR, Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
                 isXA = Boolean.TRUE;
             } else {
                 pool = new PoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : minPoolSize, Defaults.INITIAL_POOL_SIZE, maxPoolSize < 0 ? Defaults.MAX_POOL_SIZE : maxPoolSize,
-                        Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, null);
+                        Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, null, Defaults.FAIR);
             }
 
             TransactionSupportEnum transactionSupportValue = TransactionSupportEnum.NoTransaction;
@@ -218,7 +218,7 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
 
             org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition cd = new org.jboss.jca.common.metadata.resourceadapter.ConnectionDefinitionImpl(mcfConfigProperties, mcfClass, jndiName, poolName(cfInterface),
                     Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Defaults.CONNECTABLE, Defaults.TRACKING,
-                    pool, null, null, security, null, isXA);
+                    Defaults.MCP, Defaults.ENLISTMENT_TRACE, pool, null, null, security, null, isXA);
 
             Activation activation = new ActivationImpl(null, null, transactionSupportValue, Collections.singletonList(cd), Collections.<AdminObject>emptyList(), raConfigProperties, Collections.<String>emptyList(), null, null);
 

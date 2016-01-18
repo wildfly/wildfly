@@ -43,7 +43,6 @@ import org.wildfly.clustering.service.ValueDependency;
 public class TransportConfigurationBuilder extends AbstractProtocolConfigurationBuilder<TransportConfiguration> implements TransportConfiguration {
 
     private ValueDependency<SocketBinding> diagnosticsSocketBinding;
-    private boolean shared;
     private Topology topology = null;
 
     public TransportConfigurationBuilder(String stackName, String name) {
@@ -88,8 +87,6 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
             };
         }
 
-        this.shared = SHARED.getDefinition().resolveModelAttribute(context, transport).asBoolean();
-
         String diagnosticsBinding = ModelNodes.asString(DIAGNOSTICS_SOCKET_BINDING.getDefinition().resolveModelAttribute(context, transport));
         if (diagnosticsBinding != null) {
             this.diagnosticsSocketBinding = new CapabilityDependency<>(context, RequiredCapability.SOCKET_BINDING, diagnosticsBinding, SocketBinding.class);
@@ -110,6 +107,7 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
 
             // keepalive_time in milliseconds
             this.getProperties().put(prefix + ".keep_alive_time", pool.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asString());
+            this.getProperties().put(prefix + ".rejection_policy", "abort");
         }
 
         return super.configure(context, transport);
@@ -117,7 +115,7 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
 
     @Override
     public boolean isShared() {
-        return this.shared;
+        return false;
     }
 
     @Override

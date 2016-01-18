@@ -1,6 +1,0 @@
-org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionCacheEntryExternalizer
-org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesCacheKeyExternalizer
-org.wildfly.clustering.web.infinispan.session.fine.FineSessionCacheEntryExternalizer
-org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeCacheKeyExternalizer
-org.wildfly.clustering.web.infinispan.sso.coarse.CoarseAuthenticationEntryExternalizer
-org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKeyExternalizer

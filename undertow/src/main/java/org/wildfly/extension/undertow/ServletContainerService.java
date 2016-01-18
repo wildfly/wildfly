@@ -22,10 +22,13 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.cache.DirectBufferCache;
+import io.undertow.servlet.api.CrawlerSessionManagerConfig;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -62,6 +65,8 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final int defaultSessionTimeout;
     private final boolean disableCachingForSecuredPages;
     private final Boolean directoryListingEnabled;
+    private final int sessionIdLength;
+    private final CrawlerSessionManagerConfig crawlerSessionManagerConfig;
 
     private final boolean websocketsEnabled;
     private final InjectedValue<Pool<ByteBuffer>> websocketsBufferPool = new InjectedValue<>();
@@ -69,10 +74,14 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final boolean dispatchWebsocketInvocationToWorker;
     private final Map<String, String> mimeMappings;
     private final List<String> welcomeFiles;
+    private final boolean proactiveAuth;
+    private final Map<String, AuthenticationMechanismFactory> authenticationMechanisms;
+    private final Integer maxSessions;
 
     public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig,
                                    String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
-                                   boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, Map<String, String> mimeMappings, List<String> welcomeFiles, Boolean directoryListingEnabled) {
+                                   boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, Map<String, String> mimeMappings,
+                                   List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth, int sessionIdLength, Map<String, AuthenticationMechanismFactory> authenticationMechanisms, Integer maxSessions, CrawlerSessionManagerConfig crawlerSessionManagerConfig) {
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
         this.sessionCookieConfig = sessionCookieConfig;
@@ -86,20 +95,32 @@ public class ServletContainerService implements Service<ServletContainerService>
         this.websocketsEnabled = websocketsEnabled;
         this.dispatchWebsocketInvocationToWorker = dispatchWebsocketInvocationToWorker;
         this.directoryListingEnabled = directoryListingEnabled;
+        this.proactiveAuth = proactiveAuth;
+        this.maxSessions = maxSessions;
+        this.crawlerSessionManagerConfig = crawlerSessionManagerConfig;
         this.welcomeFiles = new ArrayList<>(welcomeFiles);
         this.mimeMappings = new HashMap<>(mimeMappings);
+        this.sessionIdLength = sessionIdLength;
+        this.authenticationMechanisms = authenticationMechanisms;
     }
 
+    @Override
     public void start(StartContext context) throws StartException {
         servletContainer = ServletContainer.Factory.newInstance();
     }
 
+    @Override
     public void stop(StopContext context) {
 
     }
 
+    @Override
     public ServletContainerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public Map<String, AuthenticationMechanismFactory> getAuthenticationMechanisms() {
+        return authenticationMechanisms;
     }
 
     public ServletContainer getServletContainer() {
@@ -188,5 +209,22 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public Boolean getDirectoryListingEnabled() {
         return directoryListingEnabled;
+    }
+
+
+    public boolean isProactiveAuth() {
+        return proactiveAuth;
+    }
+
+    public int getSessionIdLength() {
+        return sessionIdLength;
+    }
+
+    public Integer getMaxSessions() {
+        return maxSessions;
+    }
+
+    public CrawlerSessionManagerConfig getCrawlerSessionManagerConfig() {
+        return crawlerSessionManagerConfig;
     }
 }

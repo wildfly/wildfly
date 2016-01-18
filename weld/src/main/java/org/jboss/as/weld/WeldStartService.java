@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.weld.logging.WeldLogger;
+import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -35,6 +36,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.weld.Container;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -107,11 +109,28 @@ public class WeldStartService implements Service<WeldStartService> {
     }
 
     /**
-     * This is a no-op, the actual shutdown is performed in {@link WeldBootstrapService#stop(org.jboss.msc.service.StopContext)}
+     * Stops the container
+     * Executed in WeldStartService to shutdown the runtime before NamingService is closed.
+     *
+     * @throws IllegalStateException if the container is not running
      */
     @Override
     public void stop(final StopContext context) {
-
+        final WeldBootstrapService bootstrapService = bootstrap.getValue();
+        if (!bootstrapService.isStarted()) {
+            throw WeldLogger.ROOT_LOGGER.notStarted("WeldContainer");
+        }
+        WeldLogger.DEPLOYMENT_LOGGER.stoppingWeldService(bootstrapService.getDeploymentName());
+        ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(bootstrapService.getDeployment().getModule().getClassLoader());
+            WeldProvider.containerShutDown(Container.instance(bootstrapService.getDeploymentName()));
+            bootstrapService.getBootstrap().shutdown();
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
+            ModuleGroupSingletonProvider.removeClassLoader(bootstrapService.getDeployment().getModule().getClassLoader());
+        }
+        bootstrapService.setStarted(false);
     }
 
     @Override

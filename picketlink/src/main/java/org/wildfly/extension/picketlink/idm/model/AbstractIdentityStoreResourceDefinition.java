@@ -42,6 +42,6 @@ public abstract class AbstractIdentityStoreResourceDefinition extends AbstractID
         .build();
 
     protected AbstractIdentityStoreResourceDefinition(ModelElement modelElement, OperationStepHandler addHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, addHandler, attributes);
+        super(modelElement, addHandler, IdentityStoreRemoveStepHandler.INSTANCE, attributes);
     }
 }

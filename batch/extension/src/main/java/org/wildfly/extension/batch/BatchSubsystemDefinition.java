@@ -27,12 +27,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -46,15 +48,20 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
 import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadFactoryResourceDefinition;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.batch._private.Capabilities;
+import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
+import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProcessor;
-import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
+import org.wildfly.extension.batch.jberet.impl.JobExecutorService;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.batch.job.repository.JobRepositoryType;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
@@ -160,6 +167,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 
         private BatchSubsystemAdd() {
+            super(Capabilities.BATCH_CONFIGURATION_CAPABILITY);
         }
 
         @Override
@@ -172,7 +180,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
-            final boolean rcPresent = context.getOriginalRootResource().hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
+            final boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
@@ -186,9 +194,24 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                 }
             }, OperationContext.Stage.RUNTIME);
 
+            final ServiceTarget target = context.getServiceTarget();
+            final JobExecutorService service = new JobExecutorService();
+            target.addService(BatchServiceNames.BATCH_JOB_EXECUTOR_NAME, service)
+                    .addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME,
+                            ManagedJBossThreadPoolExecutorService.class,
+                            service.getThreadPoolInjector()
+                    )
+                    .install();
+
             // Determine the repository type
             final String repositoryType = JOB_REPOSITORY_TYPE.resolveModelAttribute(context, model).asString();
             JobRepositoryFactory.getInstance().setJobRepositoryType(repositoryType);
+
+            final DefaultConfigurationService configurationService = new DefaultConfigurationService();
+            target.addService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class), configurationService)
+                    .addDependency(BatchServiceNames.BATCH_JOB_EXECUTOR_NAME, JobExecutor.class, configurationService.getJobExecutorInjector())
+                    .install();
+
         }
     }
 }

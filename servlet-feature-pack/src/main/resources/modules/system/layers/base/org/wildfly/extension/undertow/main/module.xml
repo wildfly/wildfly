@@ -23,6 +23,9 @@
   -->
 
 <module xmlns="urn:jboss:module:1.3" name="org.wildfly.extension.undertow">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <exports>
         <exclude path="org/wildfly/extension/undertow/logging"/>
@@ -70,6 +73,7 @@
         <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
+        <module name="org.jboss.security.negotiation"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.as.version"/>

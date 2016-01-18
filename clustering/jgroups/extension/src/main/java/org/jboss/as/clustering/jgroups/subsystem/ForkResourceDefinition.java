@@ -23,7 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
@@ -44,7 +43,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  * Definition of a fork resource.
  * @author Paul Ferraro
  */
-public class ForkResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class ForkResourceDefinition extends ChildResourceDefinition {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -61,7 +60,9 @@ public class ForkResourceDefinition extends SimpleResourceDefinition implements 
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
         ResourceServiceHandler handler = new ForkServiceHandler(this.builderFactory);
         new AddStepHandler(descriptor, handler).register(registration);
@@ -78,15 +79,7 @@ public class ForkResourceDefinition extends SimpleResourceDefinition implements 
                 }
             }
         }.register(registration);
-    }
 
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
         new ForkProtocolResourceDefinition(this.builderFactory, this.allowRuntimeOnlyRegistration).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

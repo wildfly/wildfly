@@ -40,5 +40,7 @@ public interface ResourceServiceBuilder<T> extends Builder<T> {
      * @return the reference to this builder
      * @throws OperationFailedException if there was a failure reading the model
      */
-    Builder<T> configure(OperationContext context, ModelNode model) throws OperationFailedException;
+    default Builder<T> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        return this;
+    }
 }

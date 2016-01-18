@@ -23,46 +23,38 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Paul Ferraro
  */
-public class NoStoreResourceDefinition extends SimpleResourceDefinition implements Registration {
+public class NoStoreResourceDefinition extends ChildResourceDefinition {
 
-    static PathElement PATH = StoreResourceDefinition.pathElement("none");
+    static final PathElement PATH = StoreResourceDefinition.pathElement("none");
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         // Nothing to do yet
     }
 
-    /**
-     * @param type
-     * @param allowRuntimeOnlyRegistration
-     */
     public NoStoreResourceDefinition() {
         super(PATH, new InfinispanResourceDescriptionResolver(PATH));
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new NoStoreBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

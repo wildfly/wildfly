@@ -147,25 +147,4 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
         final ModelNode removeSubsystemOp = SubsystemOperations.createRemoveOperation(createAddress(null));
         executeOperation(kernelServices, removeSubsystemOp);
     }
-
-    @Test
-    public void testAddRemoveSubsystem() throws Exception {
-        final KernelServices kernelServices = boot();
-        final ModelNode removeSubsystemOp = SubsystemOperations.createRemoveOperation(createAddress(null));
-        executeOperation(kernelServices, removeSubsystemOp);
-        // Create the base subsystem address
-        final ModelNode subsystemAddress = createAddress(null);
-        final ModelNode addSubsystemOp = SubsystemOperations.createAddOperation(subsystemAddress);
-
-        addSubsystemOp.get(BatchSubsystemDefinition.JOB_REPOSITORY_TYPE.getName()).set("in-memory");
-
-        final ModelNode threadPool = addSubsystemOp.get(BatchConstants.THREAD_POOL, BatchConstants.THREAD_POOL_NAME);
-        threadPool.get("max-threads").set(10);
-        final ModelNode keepAlive = threadPool.get("keepalive-time");
-        keepAlive.get("time").set(100L);
-        keepAlive.get("unit").set(TimeUnit.MILLISECONDS.toString());
-
-        // Execute the add operation
-        executeOperation(kernelServices, addSubsystemOp);
-    }
 }

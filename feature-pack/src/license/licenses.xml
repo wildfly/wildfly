@@ -1062,6 +1062,18 @@
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-java8</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License, Version 2.1</name>
+          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <distribution>repo</distribution>
+          <comments>See discussion at http://hibernate.org/license for more details.</comments>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
       <artifactId>hibernate-envers</artifactId>
       <licenses>
         <license>
@@ -2557,16 +2569,6 @@
     <dependency>
       <groupId>org.jboss.security</groupId>
       <artifactId>jboss-negotiation-extras</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.security</groupId>
-      <artifactId>jboss-negotiation-net</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>

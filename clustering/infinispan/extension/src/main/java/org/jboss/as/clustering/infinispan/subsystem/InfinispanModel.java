@@ -21,16 +21,18 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
 
 /**
  * Enumerates the supported model versions.
  * @author Paul Ferraro
  */
-public enum InfinispanModel {
+public enum InfinispanModel implements Model {
 
     VERSION_1_4_1(1, 4, 1),
     VERSION_1_5_0(1, 5, 0),
+    VERSION_1_6_0(1, 6, 0),
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
     VERSION_4_0_0(4, 0, 0),
@@ -43,16 +45,8 @@ public enum InfinispanModel {
         this.version = ModelVersion.create(major, minor, micro);
     }
 
+    @Override
     public ModelVersion getVersion() {
         return this.version;
-    }
-
-    /**
-     * Indicates whether this model is more recent than the specified version and thus requires transformation
-     * @param version a model version
-     * @return true this this model is more recent than the specified version, false otherwise
-     */
-    public boolean requiresTransformation(ModelVersion version) {
-        return ModelVersion.compare(this.version, version) < 0;
     }
 }

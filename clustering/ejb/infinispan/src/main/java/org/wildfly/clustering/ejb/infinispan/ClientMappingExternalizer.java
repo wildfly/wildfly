@@ -27,35 +27,36 @@ import java.io.ObjectOutput;
 import java.net.InetAddress;
 
 import org.jboss.as.network.ClientMapping;
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class ClientMappingExternalizer extends AbstractSimpleExternalizer<ClientMapping> {
-    private static final long serialVersionUID = -826335918075494339L;
-
-    public ClientMappingExternalizer() {
-        super(ClientMapping.class);
-    }
+public class ClientMappingExternalizer implements Externalizer<ClientMapping> {
 
     @Override
     public void writeObject(ObjectOutput output, ClientMapping mapping) throws IOException {
         byte[] address = mapping.getSourceNetworkAddress().getAddress();
-        output.writeInt(address.length);
+        IndexExternalizer.UNSIGNED_BYTE.writeData(output, address.length);
         output.write(address);
-        output.writeInt(mapping.getSourceNetworkMaskBits());
+        IndexExternalizer.UNSIGNED_BYTE.writeData(output, mapping.getSourceNetworkMaskBits());
         output.writeUTF(mapping.getDestinationAddress());
-        output.writeInt(mapping.getDestinationPort());
+        IndexExternalizer.UNSIGNED_SHORT.writeData(output, mapping.getDestinationPort());
     }
 
     @Override
     public ClientMapping readObject(ObjectInput input) throws IOException {
-        byte[] sourceAddress = new byte[input.readInt()];
+        byte[] sourceAddress = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
         input.readFully(sourceAddress);
-        int sourcePort = input.readInt();
+        int sourceNetworkMaskBits = IndexExternalizer.UNSIGNED_BYTE.readData(input);
         String destAddress = input.readUTF();
-        int destPort = input.readInt();
-        return new ClientMapping(InetAddress.getByAddress(sourceAddress), sourcePort, destAddress, destPort);
+        int destPort = IndexExternalizer.UNSIGNED_SHORT.readData(input);
+        return new ClientMapping(InetAddress.getByAddress(sourceAddress), sourceNetworkMaskBits, destAddress, destPort);
+    }
+
+    @Override
+    public Class<ClientMapping> getTargetClass() {
+        return ClientMapping.class;
     }
 }

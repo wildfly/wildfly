@@ -49,7 +49,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.http.util.HttpClientUtils;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.Listener;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -120,7 +120,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         // check that the connector is live
         try {
             String cURL = "https://" + url.getHost() + ":8181";
-            HttpClient httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
+            HttpClient httpClient = TestHttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
             HttpGet get = new HttpGet(cURL);
 
             HttpResponse hr = httpClient.execute(get);

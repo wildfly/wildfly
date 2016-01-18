@@ -166,6 +166,14 @@ class JspDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
+
+    protected static final SimpleAttributeDefinition OPTIMIZE_SCRIPTLETS =
+            new SimpleAttributeDefinitionBuilder(Constants.OPTIMIZE_SCRIPTLETS, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build();
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             DISABLED,
@@ -186,7 +194,8 @@ class JspDefinition extends PersistentResourceDefinition {
             TARGET_VM,
             JAVA_ENCODING,
             X_POWERED_BY,
-            DISPLAY_SOURCE_FRAGMENT
+            DISPLAY_SOURCE_FRAGMENT,
+            OPTIMIZE_SCRIPTLETS
     };
     static final JspDefinition INSTANCE = new JspDefinition();
     static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
@@ -233,10 +242,10 @@ class JspDefinition extends PersistentResourceDefinition {
         String javaEncoding = JAVA_ENCODING.resolveModelAttribute(context, model).asString();
         boolean xPoweredBy = X_POWERED_BY.resolveModelAttribute(context, model).asBoolean();
         boolean displaySourceFragment = DISPLAY_SOURCE_FRAGMENT.resolveModelAttribute(context, model).asBoolean();
-
+        boolean optimizeScriptlets = OPTIMIZE_SCRIPTLETS.resolveModelAttribute(context, model).asBoolean();
         return new JSPConfig(development, disabled, keepGenerated, trimSpaces, tagPooling, mappedFile, checkInterval, modificationTestInterval,
                 recompileOnFile, snap, dumpSnap, generateStringsAsCharArrays, errorOnUseBeanInvalidClassAttribute, scratchDir,
-                sourceVm, targetVm, javaEncoding, xPoweredBy, displaySourceFragment);
+                sourceVm, targetVm, javaEncoding, xPoweredBy, displaySourceFragment, optimizeScriptlets);
     }
 
     private static class JSPAdd extends RestartParentResourceAddHandler {

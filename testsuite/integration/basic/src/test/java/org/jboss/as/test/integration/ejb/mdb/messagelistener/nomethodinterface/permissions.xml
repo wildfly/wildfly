@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<permissions version="7">
+    <!--SimpleResourceAdapter#endpointActivation instantiates new end point using reflection -->
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>accessDeclaredMembers</name>
+    </permission>
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>defineClassInPackage.org.jboss.as.test.integration.ejb.mdb.messagelistener.nomethodinterface</name>
+    </permission>
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>getClassLoader</name>
+    </permission>
+
+    <!--org.jboss.as.test.shared.TimeoutUtil reads ts.timeout.factor system property during static initialization-->
+    <permission>
+        <class-name>java.util.PropertyPermission</class-name>
+        <name>ts.timeout.factor</name>
+        <actions>read</actions>
+    </permission>
+</permissions>

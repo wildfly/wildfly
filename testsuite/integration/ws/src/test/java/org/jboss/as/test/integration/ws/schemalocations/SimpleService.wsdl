@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<wsdl:definitions name="SimpleService" targetNamespace="http://jbossws.org/SchemaLocationsRewrite"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://jbossws.org/SchemaLocationsRewrite"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <wsdl:import namespace="http://jbossws.org/SchemaLocationsRewrite/anotherservice"
+                 location="imported/AnotherService.wsdl"/>
+
+    <wsdl:types>
+        <xs:schema elementFormDefault="unqualified" targetNamespace="http://jbossws.org/SchemaLocationsRewrite"
+                   version="1.0" xmlns:tns="http://jbossws.org/SchemaLocationsRewrite">
+            <xs:import namespace="http://jbossws.org/SchemaLocationsRewrite" schemaLocation="imported/SimpleService.xsd"/>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="sayHelloResponse">
+        <wsdl:part element="tns:sayHelloResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="sayHello">
+        <wsdl:part element="tns:sayHello" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:portType name="SimpleService">
+        <wsdl:operation name="sayHello">
+            <wsdl:input message="tns:sayHello" name="sayHello">
+            </wsdl:input>
+            <wsdl:output message="tns:sayHelloResponse" name="sayHelloResponse">
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="SimpleServiceSoapBinding" type="tns:SimpleService">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="sayHello">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="sayHello">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="sayHelloResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="SimpleService">
+        <wsdl:port binding="tns:SimpleServiceSoapBinding" name="SimpleServicePort">
+            <soap:address location="http://server.domain:8080/schema-location-rewrite/SimpleService"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

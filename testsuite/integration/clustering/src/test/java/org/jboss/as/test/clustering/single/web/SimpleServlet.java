@@ -52,7 +52,7 @@ public class SimpleServlet extends HttpServlet {
     }
 
     public static URI createURI(URL baseURL, int requestDuration) throws URISyntaxException {
-        return baseURL.toURI().resolve(new StringBuilder(SERVLET_NAME).append('?').append(REQUEST_DURATION_PARAM).append('=').append(requestDuration).toString());
+        return baseURL.toURI().resolve(SERVLET_NAME + '?' + REQUEST_DURATION_PARAM + '=' + requestDuration);
     }
 
     @Override

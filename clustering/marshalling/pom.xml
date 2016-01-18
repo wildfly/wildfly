@@ -29,31 +29,16 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-clustering</artifactId>
-        <version>10.0.0.Beta2-SNAPSHOT</version>
+        <version>10.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-marshalling</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <name>WildFly: Clustering marshalling constructs</name>
+    <name>WildFly: Clustering marshalling modules</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.modules</groupId>
-            <artifactId>jboss-modules</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>api</module>
+        <module>jboss</module>
+    </modules>
 </project>

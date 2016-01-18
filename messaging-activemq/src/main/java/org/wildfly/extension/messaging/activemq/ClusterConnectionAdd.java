@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.apache.activemq.artemis.core.config.ClusterConnectionConfiguration;
 import org.apache.activemq.artemis.core.config.Configuration;
+import org.apache.activemq.artemis.core.server.cluster.impl.MessageLoadBalancingType;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -100,8 +101,8 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
         final long maxRetryInterval = ClusterConnectionDefinition.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final double retryIntervalMultiplier = ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
         final long clientFailureCheckPeriod = ClusterConnectionDefinition.CHECK_PERIOD.resolveModelAttribute(context, model).asInt();
+        final String messageLoadBalancingType = ClusterConnectionDefinition.MESSAGE_LOAD_BALANCING_TYPE.resolveModelAttribute(context, model).asString();
 
-        final boolean forwardWhenNoConsumers = ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.resolveModelAttribute(context, model).asBoolean();
         final int maxHops = ClusterConnectionDefinition.MAX_HOPS.resolveModelAttribute(context, model).asInt();
         final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final ModelNode discoveryNode = ClusterConnectionDefinition.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
@@ -126,7 +127,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
                 .setCallTimeout(callTimeout)
                 .setCallFailoverTimeout(callFailoverTimeout)
                 .setDuplicateDetection(duplicateDetection)
-                .setForwardWhenNoConsumers(forwardWhenNoConsumers)
+                .setMessageLoadBalancingType(MessageLoadBalancingType.valueOf(messageLoadBalancingType))
                 .setMaxHops(maxHops)
                 .setConfirmationWindowSize(confirmationWindowSize)
                 .setClusterNotificationInterval(clusterNotificationInterval)

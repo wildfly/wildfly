@@ -24,15 +24,16 @@ package org.wildfly.extension.batch.jberet;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Collections;
 
 import org.jberet.repository.JobRepository;
+import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -46,10 +47,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
-import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadFactoryResourceDefinition;
-import org.jboss.as.threads.ThreadsServices;
-import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceTarget;
@@ -60,6 +58,7 @@ import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProc
 import org.wildfly.extension.batch.jberet.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
 public class BatchSubsystemDefinition extends SimpleResourceDefinition {
@@ -69,23 +68,28 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
      */
     public static final String NAME = "batch-jberet";
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NAME);
-    static final String THREAD_POOL = "thread-pool";
     static final String THREAD_FACTORY = "thread-factory";
-    static final PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
 
-    static final SimpleAttributeDefinition DEFAULT_JOB_REPOSITORY = SimpleAttributeDefinitionBuilder.create("default-job-repository", ModelType.STRING, true)
+    static final SimpleAttributeDefinition DEFAULT_JOB_REPOSITORY = SimpleAttributeDefinitionBuilder.create("default-job-repository", ModelType.STRING, false)
             .setAllowExpression(false)
             .setAttributeGroup("environment")
-            .setAttributeMarshaller(NameAttributeMarshaller.INSTANCE)
-            .setCapabilityReference(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), Capabilities.DEFAULT_JOB_REPOSITORY_CAPABILITY)
+            .setAttributeMarshaller(AttributeMarshallers.NAMED)
+            .setCapabilityReference(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), Capabilities.BATCH_CONFIGURATION_CAPABILITY)
             .setRestartAllServices()
             .build();
 
-    static final SimpleAttributeDefinition DEFAULT_THREAD_POOL = SimpleAttributeDefinitionBuilder.create("default-thread-pool", ModelType.STRING, true)
+    static final SimpleAttributeDefinition DEFAULT_THREAD_POOL = SimpleAttributeDefinitionBuilder.create("default-thread-pool", ModelType.STRING, false)
             .setAllowExpression(false)
             .setAttributeGroup("environment")
-            .setAttributeMarshaller(NameAttributeMarshaller.INSTANCE)
+            .setAttributeMarshaller(AttributeMarshallers.NAMED)
+            .setCapabilityReference(Capabilities.THREAD_POOL_CAPABILITY.getName(), Capabilities.BATCH_CONFIGURATION_CAPABILITY)
             .setRestartAllServices()
+            .build();
+
+    static final SimpleAttributeDefinition RESTART_JOBS_ON_RESUME = SimpleAttributeDefinitionBuilder.create("restart-jobs-on-resume", ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(true))
+            .setAttributeMarshaller(AttributeMarshallers.VALUE)
             .build();
 
     private final boolean registerRuntimeOnly;
@@ -108,9 +112,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new InMemoryJobRepositoryDefinition());
         resourceRegistration.registerSubModel(new JdbcJobRepositoryDefinition());
         // thread-pool resource
-        final UnboundedQueueThreadPoolResourceDefinition threadPoolResource = UnboundedQueueThreadPoolResourceDefinition.create(THREAD_POOL_PATH,
-                BatchThreadFactoryResolver.INSTANCE, BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME, registerRuntimeOnly);
-        resourceRegistration.registerSubModel(threadPoolResource);
+        resourceRegistration.registerSubModel(new BatchThreadPoolResourceDefinition(registerRuntimeOnly));
 
         // thread-factory resource
         final ThreadFactoryResourceDefinition threadFactoryResource = new ThreadFactoryResourceDefinition();
@@ -123,6 +125,29 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_JOB_REPOSITORY, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_THREAD_POOL, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(RESTART_JOBS_ON_RESUME, null, new AbstractWriteAttributeHandler<Boolean>() {
+            @Override
+            protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
+                setValue(context, resolvedValue);
+                return false;
+            }
+
+            @Override
+            protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Boolean handback) throws OperationFailedException {
+                setValue(context, valueToRestore);
+            }
+
+            private void setValue(final OperationContext context, final ModelNode value) {
+                final BatchConfigurationService service = (BatchConfigurationService) context.getServiceRegistry(true)
+                        .getService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class)).getService();
+                service.setRestartOnResume(value.asBoolean());
+            }
+        });
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(Capabilities.BATCH_CONFIGURATION_CAPABILITY);
     }
 
     /**
@@ -133,14 +158,14 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 
         private BatchSubsystemAdd() {
-            super(Stream.of(Capabilities.DEFAULT_JOB_REPOSITORY_CAPABILITY, Capabilities.DEFAULT_THREAD_POOL_CAPABILITY).collect(Collectors.toSet()), DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL);
+            super(Collections.singleton(Capabilities.BATCH_CONFIGURATION_CAPABILITY), DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME);
         }
 
         @Override
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
-            final boolean rcPresent = context.getOriginalRootResource().hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
+            final boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
@@ -158,46 +183,24 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                 }
             }, OperationContext.Stage.RUNTIME);
 
-            final ServiceTarget target = context.getServiceTarget();
-
             final ModelNode defaultJobRepository = DEFAULT_JOB_REPOSITORY.resolveModelAttribute(context, model);
-            if (defaultJobRepository.isDefined()) {
-                final String name = defaultJobRepository.asString();
-                final DefaultValueService<JobRepository> service = DefaultValueService.create();
-                target.addService(context.getCapabilityServiceName(Capabilities.DEFAULT_JOB_REPOSITORY_CAPABILITY.getName(), JobRepository.class), service)
-                        .addDependency(
-                                context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class),
-                                JobRepository.class,
-                                service.getInjector()
-                        )
-                        .install();
-            }
-
             final ModelNode defaultThreadPool = DEFAULT_THREAD_POOL.resolveModelAttribute(context, model);
-            if (defaultThreadPool.isDefined()) {
-                final String name = defaultThreadPool.asString();
-                final DefaultValueService<ExecutorService> service = DefaultValueService.create();
-                target.addService(context.getCapabilityServiceName(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY.getName(), ExecutorService.class), service)
-                        .addDependency(
-                                BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME.append(name),
-                                ExecutorService.class,
-                                service.getInjector()
-                        )
-                        .install();
-            }
-        }
-    }
+            final boolean restartOnResume = RESTART_JOBS_ON_RESUME.resolveModelAttribute(context, model).asBoolean();
 
-    private static class BatchThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
-        static final BatchThreadFactoryResolver INSTANCE = new BatchThreadFactoryResolver();
-
-        private BatchThreadFactoryResolver() {
-            super(ThreadsServices.FACTORY);
-        }
-
-        @Override
-        protected String getThreadGroupName(String threadPoolName) {
-            return "Batch Thread";
+            final ServiceTarget target = context.getServiceTarget();
+            final BatchConfigurationService service = new BatchConfigurationService();
+            service.setRestartOnResume(restartOnResume);
+            target.addService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class), service)
+                    .addDependency(
+                            context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), defaultJobRepository.asString(), JobRepository.class),
+                            JobRepository.class,
+                            service.getJobRepositoryInjector()
+                    )
+                    .addDependency(
+                            context.getCapabilityServiceName(Capabilities.THREAD_POOL_CAPABILITY.getName(), defaultThreadPool.asString(), JobExecutor.class),
+                            JobExecutor.class,
+                            service.getJobExecutorInjector()
+                    ).install();
         }
     }
 }

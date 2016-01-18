@@ -31,7 +31,7 @@ import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
+import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.ExpressionFilterDefinition;
@@ -55,7 +55,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
 
     static {
         xmlDescription = builder(UndertowRootDefinition.INSTANCE, Namespace.UNDERTOW_3_0.getUriString())
-                .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID)
+                .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID, UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN)
                 .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
                         builder(BufferCacheDefinition.INSTANCE)
@@ -72,7 +72,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
                                                         ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
                                                         ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS)
+                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
                                 )
                                 .addChild(
                                         builder(HttpListenerResourceDefinition.INSTANCE)
@@ -82,7 +82,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
                                                         ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
                                                         ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS)
+                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
                                 ).addChild(
                                         builder(HttpsListenerResourceDefinition.INSTANCE)
                                                 .addAttributes(AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED)
@@ -92,7 +92,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
                                                         ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
                                                         ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS)
+                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE)
                                                 .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT)
@@ -105,7 +105,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                                 )
                                                 ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
-                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.RELATIVE_TO, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE, AccessLogDefinition.USE_SERVER_LOG)
+                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.RELATIVE_TO, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE, AccessLogDefinition.USE_SERVER_LOG, AccessLogDefinition.EXTENDED, AccessLogDefinition.PREDICATE)
                                         ).addChild(
                                                 builder(FilterRefDefinition.INSTANCE)
                                                         .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
@@ -127,6 +127,9 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT)
                                 .addAttribute(ServletContainerDefinition.DISABLE_CACHING_FOR_SECURED_PAGES)
                                 .addAttribute(ServletContainerDefinition.DIRECTORY_LISTING)
+                                .addAttribute(ServletContainerDefinition.PROACTIVE_AUTHENTICATION)
+                                .addAttribute(ServletContainerDefinition.SESSION_ID_LENGTH)
+                                .addAttribute(ServletContainerDefinition.MAX_SESSIONS)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
@@ -149,7 +152,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         JspDefinition.TARGET_VM,
                                                         JspDefinition.JAVA_ENCODING,
                                                         JspDefinition.X_POWERED_BY,
-                                                        JspDefinition.DISPLAY_SOURCE_FRAGMENT)
+                                                        JspDefinition.DISPLAY_SOURCE_FRAGMENT,
+                                                        JspDefinition.OPTIMIZE_SCRIPTLETS)
                                 )
                                 .addChild(
                                         builder(SessionCookieDefinition.INSTANCE)
@@ -183,6 +187,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                 MimeMappingDefinition.VALUE
                                         ))
                                 .addChild(builder(WelcomeFileDefinition.INSTANCE).setXmlWrapperElement("welcome-files"))
+                                .addChild(builder(CrawlerSessionManagementDefinition.INSTANCE)
+                                        .addAttributes(CrawlerSessionManagementDefinition.USER_AGENTS, CrawlerSessionManagementDefinition.SESSION_TIMEOUT))
                 )
                 .addChild(
                         builder(HandlerDefinitions.INSTANCE)
@@ -222,8 +228,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                 .setXmlElementName(Constants.FILTERS)
                                 .setNoAddOperation(true)
                                 .addChild(
-                                        builder(ConnectionLimitHandler.INSTANCE)
-                                                .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS, ConnectionLimitHandler.QUEUE_SIZE)
+                                        builder(RequestLimitHandler.INSTANCE)
+                                                .addAttributes(RequestLimitHandler.MAX_CONCURRENT_REQUESTS, RequestLimitHandler.QUEUE_SIZE)
                                 ).addChild(
                                 builder(ResponseHeaderFilter.INSTANCE)
                                         .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
@@ -250,7 +256,8 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.CONNECTION_IDLE_TIMEOUT,
                                         ModClusterDefinition.REQUEST_QUEUE_SIZE,
                                         ModClusterDefinition.SECURITY_REALM,
-                                        ModClusterDefinition.USE_ALIAS)
+                                        ModClusterDefinition.USE_ALIAS,
+                                        ModClusterDefinition.ENABLE_HTTP2)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)

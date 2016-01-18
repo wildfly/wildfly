@@ -49,6 +49,7 @@ class SingleSignOnDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING, true)
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setDefaultValue(new ModelNode("/"))
             .build();
     static final SimpleAttributeDefinition HTTP_ONLY = new SimpleAttributeDefinitionBuilder("http-only", ModelType.BOOLEAN, true)
             .setAllowNull(true)

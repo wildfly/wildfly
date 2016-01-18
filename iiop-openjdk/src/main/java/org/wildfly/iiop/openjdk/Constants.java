@@ -71,8 +71,6 @@ public final class Constants {
     public static final String SECURITY_CLIENT_REQUIRES = "client-requires";
     public static final String SECURITY_SERVER_SUPPORTS = "server-supports";
     public static final String SECURITY_SERVER_REQUIRES = "server-requires";
-    public static final String SECURITY_USE_DOMAIN_SF = "use-domain-socket-factory";
-    public static final String SECURITY_USE_DOMAIN_SSF = "use-domain-server-socket-factory";
 
     public static final String IOR_SETTINGS = "ior-settings";
     public static final String IOR_TRANSPORT_CONFIG = "transport-config";

@@ -60,7 +60,6 @@ public class JBossPDPServletInitializationTestCase {
         XACMLTestUtils.addCommonClassesToArchive(war);
         XACMLTestUtils.addJBossDeploymentStructureToArchive(war);
         XACMLTestUtils.addXACMLPoliciesToArchive(war);
-        LOGGER.info(war.toString(true));
         return war;
     }
 

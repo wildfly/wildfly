@@ -27,12 +27,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistryType;
@@ -60,7 +66,7 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
     public void migrateTest() throws Exception {
 
         String subsystemXml = readResource("subsystem.xml");
-        newSubsystemAdditionalInitialization additionalInitialization = new newSubsystemAdditionalInitialization();
+        NewSubsystemAdditionalInitialization additionalInitialization = new NewSubsystemAdditionalInitialization();
         KernelServices services = createKernelServicesBuilder(additionalInitialization).setSubsystemXml(subsystemXml).build();
 
         ModelNode model = services.readWholeModel();
@@ -69,7 +75,7 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
         Assert.assertFalse(model.get(SUBSYSTEM).hasDefined(IIOPExtension.SUBSYSTEM_NAME));
 
         ModelNode migrateOp = new ModelNode();
-        migrateOp.get(OP).set(JacORBSubsystemConstants.MIGRATE);
+        migrateOp.get(OP).set("migrate");
         migrateOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME)).toModelNode());
 
@@ -83,14 +89,22 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode newSubsystem = model.get(SUBSYSTEM).get("iiop-openjdk");
         Assert.assertTrue(newSubsystem.get("export-corbaloc").equals(new ModelNode(true)));
+        Assert.assertTrue(newSubsystem.get("confidentiality").equals(new ModelNode("required")));
     }
 
-    private static class newSubsystemAdditionalInitialization extends AdditionalInitialization {
+    private static class NewSubsystemAdditionalInitialization extends AdditionalInitialization {
         IIOPExtension newSubsystem = new IIOPExtension();
         boolean extensionAdded = false;
         @Override
-        public void initializeExtraSubystemsAndModel(final ExtensionRegistry extensionRegistry, Resource rootResource,
-                final ManagementResourceRegistration rootRegistration) {
+        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+
+            final OperationDefinition removeExtension = new SimpleOperationDefinitionBuilder("remove", new StandardResourceDescriptionResolver("test", "test", getClass().getClassLoader()))
+                    .build();
+
+            PathElement webExtension = PathElement.pathElement(EXTENSION, "org.jboss.as.jacorb");
+            rootRegistration.registerSubModel(new SimpleResourceDefinition(webExtension, ControllerResolver.getResolver(EXTENSION)))
+                    .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+            rootResource.registerChild(webExtension, Resource.Factory.create());
 
             rootRegistration.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement(EXTENSION),
                     ControllerResolver.getResolver(EXTENSION), new OperationStepHandler() {
@@ -107,5 +121,10 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
         protected RunningMode getRunningMode() {
             return RunningMode.ADMIN_ONLY;
         }
+
+        @Deprecated
+        protected ProcessType getProcessType() {
+                    return ProcessType.HOST_CONTROLLER;
+                }
     }
 }

@@ -22,17 +22,14 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.TransformerOperationAttachment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -40,41 +37,25 @@ import org.jboss.msc.service.ServiceName;
  * {@link org.jboss.as.controller.RestartParentWriteAttributeHandler} that leverages a {@link ResourceServiceBuilderFactory} for service recreation.
  * @author Paul Ferraro
  */
-public class RestartParentResourceWriteAttributeHandler<T> extends RestartParentWriteAttributeHandler implements Registration {
+public class RestartParentResourceWriteAttributeHandler<T> extends RestartParentWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
 
-    private final ResourceServiceBuilderFactory<T> builderFactory;
-    private final Map<String, AttributeDefinition> attributes = new HashMap<>();
+    private final WriteAttributeStepHandlerDescriptor descriptor;
+    private final ResourceServiceBuilderFactory<T> parentFactory;
 
-    public <E extends Enum<E> & Attribute> RestartParentResourceWriteAttributeHandler(ResourceServiceBuilderFactory<T> builderFactory, Class<E> enumClass) {
-        this(builderFactory, EnumSet.allOf(enumClass));
-    }
-
-    public RestartParentResourceWriteAttributeHandler(ResourceServiceBuilderFactory<T> builderFactory, Attribute... attributes) {
-        this(builderFactory, Arrays.asList(attributes));
-    }
-
-    public RestartParentResourceWriteAttributeHandler(ResourceServiceBuilderFactory<T> builderFactory, Iterable<? extends Attribute> attributes) {
-        super(null);
-        this.builderFactory = builderFactory;
-        for (Attribute attribute : attributes) {
-            AttributeDefinition definition = attribute.getDefinition();
-            this.attributes.put(definition.getName(), definition);
-        }
-    }
-
-    @Override
-    protected AttributeDefinition getAttributeDefinition(String name) {
-        return this.attributes.get(name);
+    public RestartParentResourceWriteAttributeHandler(ResourceServiceBuilderFactory<T> parentFactory, WriteAttributeStepHandlerDescriptor descriptor) {
+        super(null, descriptor.getAttributes());
+        this.descriptor = descriptor;
+        this.parentFactory = parentFactory;
     }
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        this.builderFactory.createBuilder(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
+        this.parentFactory.createBuilder(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return this.builderFactory.createBuilder(parentAddress).getServiceName();
+        return this.parentFactory.createBuilder(parentAddress).getServiceName();
     }
 
     @Override
@@ -84,8 +65,21 @@ public class RestartParentResourceWriteAttributeHandler<T> extends RestartParent
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        for (AttributeDefinition attribute : this.attributes.values()) {
-            registration.registerReadWriteAttribute(attribute, null, this);
+        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this));
+    }
+
+    @Override
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+
+        if (!context.isBooting()) {
+            TransformerOperationAttachment attachment = TransformerOperationAttachment.getOrCreate(context);
+            InitialAttributeValueOperationContextAttachment valuesAttachment = attachment.getAttachment(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT);
+            if (valuesAttachment == null) {
+                valuesAttachment = new InitialAttributeValueOperationContextAttachment();
+                attachment.attach(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT, valuesAttachment);
+            }
+            valuesAttachment.putIfAbsentInitialValue(Operations.getPathAddress(operation), attributeName, oldValue);
         }
     }
 }
