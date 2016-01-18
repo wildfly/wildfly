@@ -61,6 +61,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import javax.ejb.EJBException;
+
 
 /**
  * @author Jaikiran Pai
@@ -208,7 +210,14 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                                 MethodInvocationMessageHandler.this.writeNoSuchEJBFailureMessage(channelAssociation, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
                             } else {
                                 // write out the failure
-                                MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, throwable, attachments);
+                                Throwable throwableToWrite;
+                                if (throwable instanceof EJBException && throwable.getCause() != null && throwable.getCause() instanceof RuntimeException) {
+                                    // Avoid serializing RuntimeExceptions that the client will not be able to deserialize (ClassNotFoundException)
+                                    throwableToWrite = new EJBException((throwable.getLocalizedMessage() != null ? (throwable.getLocalizedMessage() + ": ") : "") + throwable.getCause().getLocalizedMessage());
+                                } else {
+                                    throwableToWrite = throwable;
+                                }
+                                MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, throwableToWrite, attachments);
                             }
                         } catch (Throwable ioe) {
                             // we couldn't write out a method invocation failure message. So let's at least log the
