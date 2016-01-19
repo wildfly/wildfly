@@ -27,7 +27,7 @@
     <buffer-cache name="extra" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
 
     <server name="some-server" default-host="other-host" servlet-container="myContainer">
-        <ajp-listener name="ajp-connector" disallowed-methods="FOO TRACE" socket-binding="ajp" redirect-socket="ajps" max-parameters="5000" tcp-keep-alive="true" tcp-backlog="500" receive-buffer="5000" send-buffer="50000" resolve-peer-address="true" no-request-timeout="10000" request-parse-timeout="2000"/>
+        <ajp-listener name="ajp-connector" disallowed-methods="FOO TRACE" socket-binding="ajp" redirect-socket="ajps" max-parameters="5000" tcp-keep-alive="true" tcp-backlog="500" receive-buffer="5000" send-buffer="50000" resolve-peer-address="true" no-request-timeout="10000" request-parse-timeout="2000" secure="true"/>
         <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}" resolve-peer-address="true"/>
         <http-listener name="second"  socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30" redirect-socket="https-non-default"/>
         <http-listener name="no-redirect" worker="non-default" socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
@@ -94,6 +94,7 @@
         <welcome-files>
             <welcome-file name="index.seam" />
         </welcome-files>
+        <crawler-session-management session-timeout="2" user-agents=".*googlebot.*"/>
     </servlet-container>
 
     <handlers>
@@ -106,7 +107,7 @@
     </handlers>
     <filters>
         <!--<basic-auth name="security-other" security-domain="other"/>-->
-        <connection-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
+        <request-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
         <gzip name="static-gzip"/>
         <error-page name="404-handler" code="404" path="/opt/data/404.html"/>
